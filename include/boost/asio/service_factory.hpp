@@ -1,0 +1,41 @@
+//
+// service_factory.hpp
+// ~~~~~~~~~~~~~~~~~~~
+//
+// Copyright (c) 2003-2005 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+#ifndef BOOST_ASIO_SERVICE_FACTORY_HPP
+#define BOOST_ASIO_SERVICE_FACTORY_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1200)
+# pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
+#include <boost/asio/detail/push_options.hpp>
+
+namespace boost {
+namespace asio {
+
+/// This class may be specialised to provide custom service creation.
+template <typename Service>
+class service_factory
+{
+public:
+  /// Create a service with the specified owner.
+  template <typename Owner>
+  Service* create(Owner& owner)
+  {
+    return new Service(owner);
+  }
+};
+
+} // namespace asio
+} // namespace boost
+
+#include <boost/asio/detail/pop_options.hpp>
+
+#endif // BOOST_ASIO_SERVICE_FACTORY_HPP

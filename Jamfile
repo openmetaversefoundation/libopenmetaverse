@@ -1,0 +1,32 @@
+project libsecondlife
+    : requirements <include>include
+    : default-build debug
+    ;
+
+lib openssl : : <name>ssl ;
+lib libcrypto : : <name>crypto ;
+lib libsocket : : <name>socket ;
+lib libnsl : : <name>nsl ;
+lib boostthread : : <name>boost_thread ;
+
+if $(UNIX)
+{
+  switch $(JAMUNAME)
+  {
+  case SunOS* :
+    {
+      SOCKET_LIBS = libsocket libnsl ;
+    }
+  }
+}
+
+lib secondlife 
+    : [ glob src/*.cpp ] 
+      openssl 
+      libcrypto
+      boostthread
+      $(SOCKET_LIBS)
+    : <threading>multi
+    ;
+
+build-project test_app ;
