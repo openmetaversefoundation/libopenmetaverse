@@ -41,6 +41,7 @@ protected:
 	boost::asio::datagram_socket* _socket;
 	bool _running;
 	char* _buffer;
+	unsigned short _sequence;
 
 public:
 	SimConnection();
@@ -64,6 +65,8 @@ public:
 
 	char* buffer() { return _buffer; };
 	size_t bufferSize() { return SL_BUFFER_SIZE; };
+
+	unsigned short sequence() { return _sequence++; };
 
 	bool operator==(SimConnection &p);
 	bool operator!=(SimConnection &p);

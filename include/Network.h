@@ -54,6 +54,8 @@ public:
 	Network(ProtocolManager* protocol);
 	virtual ~Network();
 
+	std::list<Packet*> inbox() { return _inbox; };
+
 	int connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
     int sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet);
 	void receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer);

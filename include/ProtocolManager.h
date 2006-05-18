@@ -60,6 +60,13 @@ namespace ll
 		Single,
 		Multiple
 	};
+
+	enum frequency {
+		Invalid,
+		Low,
+		Medium,
+		High
+	};
 };
 
 typedef struct llVector3 {
@@ -115,6 +122,7 @@ namespace std
 
 typedef struct packetDiagram {
 	std::string name;
+	ll::frequency frequency;
 	bool trusted;
 	bool encoded;
 	std::list<packetBlock*> blocks;

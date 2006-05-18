@@ -31,14 +31,18 @@
 #define _SL_DECODER_
 
 #include "includes.h"
+#include "Network.h"
 
 class Decoder
 {
 protected:
-	
+	Network* _network;
 public:
 	Decoder();
+	Decoder(Network* network);
 	virtual ~Decoder();
+
+	int decodePackets();
 };
 
 #endif //_SL_DECODER_

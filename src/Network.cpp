@@ -26,7 +26,7 @@ void Network::receivePacket(const boost::asio::error& error, std::size_t length,
 
 	// Build a Packet object and fill it with the incoming data
 	Packet* packet = new Packet();
-	packet->setRawData((byte*)receiveBuffer, length);
+	packet->rawData((byte*)receiveBuffer, length);
 
 	// Push it on to the list
 	boost::mutex::scoped_lock lock(_inboxMutex);
@@ -45,8 +45,7 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 
 	}
 
 	// Build a connection packet
-	Packet* packet = new Packet(_protocol, 36);
-	packet->setCommand("UseCircuitCode");
+	Packet* packet = new Packet("UseCircuitCode", _protocol, 36);
 	packet->setField("CircuitCode", 1, "ID", &_session_id);
 	packet->setField("CircuitCode", 1, "SessionID", &_session_id);
 	packet->setField("CircuitCode", 1, "Code", &code);
@@ -60,7 +59,7 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 
 
 	// Send the packet
 	try {
-		size_t bytesSent = socket->send_to(boost::asio::buffer(packet->getRawDataPtr(), packet->getLength()), 0, sim->endpoint());
+		size_t bytesSent = socket->send_to(boost::asio::buffer(packet->rawData(), packet->length()), 0, sim->endpoint());
 		// Debug
 		printf("Sent %i byte connection packet\n", bytesSent);
 
@@ -110,7 +109,8 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 	}
 
 	try {
-		size_t bytesSent = _connections[i]->socket()->send_to(boost::asio::buffer(packet->getRawDataPtr(), packet->getLength()), 0, _connections[i]->endpoint());
+		size_t bytesSent = _connections[i]->socket()->send_to(boost::asio::buffer(packet->rawData(), packet->length()),
+															  0, _connections[i]->endpoint());
 
 		// Debug
 		printf("Sent %i bytes\n", bytesSent);

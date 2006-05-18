@@ -32,8 +32,13 @@
 
 #include "includes.h"
 #include "ProtocolManager.h"
+#include "SimConnection.h"
 #include "Network.h"
 #include "Decoder.h"
+
+// Model for the callbacks:
+//  bool functionname(std::string command, Packet*)
+typedef boost::function2<bool, std::string, Packet*> callback;
 
 class LIBSECONDLIFE_CLASS_DECL SecondLife
 {
@@ -42,14 +47,24 @@ public:
 	ProtocolManager* _protocol;
 	Network* _network;
 	Decoder* _decoder;
+	bool _running;
+	// Later on we'll want internal callbacks and client callbacks, so the client doesn't overwrite
+	// for example the stream building functions
+	std::map<std::string, callback> _callbacks;
+
 //public:
 	SecondLife();
 	virtual ~SecondLife();
 
+	void registerCallback(std::string command, callback handler) { _callbacks[command] = handler; };
+	
 	// Pass-through functions to make life easier on the client
 	int loadKeywords(std::string filename) { return _protocol->loadKeywords(filename); };
 	int decryptCommFile(std::string source, std::string destination) { return _protocol->decryptCommFile(source, destination); };
 	int buildProtocolMap(std::string filename) { return _protocol->buildProtocolMap(filename); };
+
+	void connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
+	void tick();
 };
 
 #endif //_SL_SECONDLIFE_

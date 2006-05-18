@@ -327,12 +327,16 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 			// Truncate it to a short
 			int fixed = httoi((char*)temp.c_str()) ^ 0xffff0000;
 			packet = &_lowPackets[fixed];
+			packet->frequency = ll::Low;
 		} else if (temp == "Low") {
 			packet = &_lowPackets[low++];
+			packet->frequency = ll::Low;
 		} else if (temp == "Medium") {
 			packet = &_mediumPackets[medium++];
+			packet->frequency = ll::Medium;
 		} else if (temp == "High") {
 			packet = &_highPackets[high++];
+			packet->frequency = ll::High;
 		} else {
 			//FIXME: Debug log
 			return -2;

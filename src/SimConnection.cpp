@@ -5,8 +5,8 @@ SimConnection::SimConnection()
 	_code = 0;
 	_socket = NULL;
 	_running = true;
-
 	_buffer = (char*)malloc(SL_BUFFER_SIZE);
+	_sequence = 1;
 }
 
 SimConnection::SimConnection(boost::asio::ipv4::address ip, unsigned short port, U32 code)
@@ -15,8 +15,8 @@ SimConnection::SimConnection(boost::asio::ipv4::address ip, unsigned short port,
 	_code = code;
 	_socket = NULL;
 	_running = true;
-
 	_buffer = (char*)malloc(SL_BUFFER_SIZE);
+	_sequence = 1;
 }
 
 SimConnection::~SimConnection()

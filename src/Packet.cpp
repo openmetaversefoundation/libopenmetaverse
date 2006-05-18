@@ -1,27 +1,26 @@
 #include "Packet.h"
 
-Packet::Packet()
+Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 {
-	_buffer = (byte*)malloc(DEFAULT_PACKET_SIZE);
-	if (!_buffer) {
-		//FIXME: Log memory error
-	}
+	_length = length;
+	_protocol = protocol;
 
-	_length = 0;
-	_protocol = NULL;
-}
-
-Packet::Packet(ProtocolManager* protocol, size_t length)
-{
-	_buffer = (byte*)malloc(length ? length : DEFAULT_PACKET_SIZE);
-	if (!_buffer) {
-		//FIXME: Log memory error
+	_layout = _protocol->getCommand(command);
+	if (!_layout) {
+		//FIXME: Log invalid packet name
+		_buffer = NULL;
 		_length = 0;
 	} else {
-		_length = length;
-	}
+		_buffer = (byte*)malloc(_length ? _length : DEFAULT_PACKET_SIZE);
 
-	_protocol = protocol;
+		if (!_buffer) {
+			//FIXME: Log memory error
+			_length = 0;
+		}
+
+		// Setup the flags and the frequency right now
+		;
+	}	
 }
 
 Packet::~Packet()
@@ -29,7 +28,75 @@ Packet::~Packet()
 	free(_buffer);
 }
 
-bool Packet::setCommand(std::string command)
+ll::frequency Packet::frequency()
+{
+	if (!_layout) {
+		return ll::Invalid;
+	}
+
+	return _layout->frequency;
+}
+
+unsigned short Packet::flags()
+{
+	if (_length < 2) {
+		return 0;
+	}
+
+	return (unsigned short)*_buffer;
+}
+
+void Packet::flags(unsigned short flags)
+{
+	if (_length < 2) {
+		// Make room, assume the default packet size
+		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
+		_length = 2;
+	}
+
+	if (!_buffer) {
+		//FIXME: Log memory error
+		_length = 0;
+		return;
+	}
+
+	memcpy(_buffer, &flags, sizeof(flags));
+}
+
+unsigned short Packet::sequence()
+{
+	if (_length < 4) {
+		return 0;
+	}
+
+	return ntohs((unsigned short)*(_buffer + 2));
+}
+
+void Packet::sequence(unsigned short sequence)
+{
+	unsigned short hostSequence = htons(sequence);
+
+	if (_length < 4) {
+		// Make room, assume the default packet size
+		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
+		_length = 4;
+	}
+
+	if (!_buffer) {
+		//FIXME: Log memory error
+		_length = 0;
+		return;
+	}
+
+	memcpy(_buffer + 2, &hostSequence, sizeof(sequence));
+}
+
+std::string Packet::command()
+{
+	return _layout->name;
+}
+
+bool Packet::command(std::string command)
 {
 	packetDiagram* layout = _protocol->getCommand(command);
 	if (!layout) return false;
@@ -144,17 +211,12 @@ int Packet::setField(std::string block, size_t blockNumber, std::string field, v
 	return 0;
 }
 
-int Packet::getRawData(byte* buffer, size_t length)
-{
-	return (memcpy((void*)buffer, _buffer, length) != NULL);
-}
-
-byte* Packet::getRawDataPtr()
+byte* Packet::rawData()
 {
 	return _buffer;
 }
 
-void Packet::setRawData(byte* buffer, size_t length)
+void Packet::rawData(byte* buffer, size_t length)
 {
 	if (length > _length) {
 		_buffer = (byte*)realloc(_buffer, length);
