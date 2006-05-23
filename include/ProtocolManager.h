@@ -121,6 +121,7 @@ namespace std
 };
 
 typedef struct packetDiagram {
+	unsigned short id;
 	std::string name;
 	ll::frequency frequency;
 	bool trusted;

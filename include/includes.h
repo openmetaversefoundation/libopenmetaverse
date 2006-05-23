@@ -51,23 +51,39 @@
 
 #include <netinet/in.h>
 
-int httoi(const char* value);
 
-#define SL_BUFFER_SIZE 8192
-
-// Data types
+// Global defines
+#define VERSION "libsecondlife 0.0.1"
 #define byte unsigned char
 
+#define MSG_APPENDED_ACKS	0x10
+#define MSG_RESENT			0x20
+#define MSG_RELIABLE		0x40
+#define MSG_ZEROCODED		0x80
+#define MSG_FREQ_HIGH		0x0000
+#define MSG_FREQ_MED		0xFF00
+#define MSG_FREQ_LOW		0xFFFF
+
+// Global functions
+extern int httoi(const char* value);
+extern void hexstr2bin(const char* hex, byte* buf, size_t len);
+extern std::string rpcGetString(char* buffer, const char* name);
+extern int rpcGetU32(char* buffer, const char* name);
+extern std::string packUUID(std::string uuid);
+
+// Global data types
 struct LLUUID {
 	byte data[16];
+	LLUUID() { *this = 0; };
+	LLUUID(std::string p) { hexstr2bin(packUUID(p).c_str(), data, 16); };
 	LLUUID operator=(const int p) { for (size_t i = 0; i < 16; i++) { data[i] = (byte)p; } return *this; };
-	// This needs to loop through the string and convert each letter to a byte using (byte)httoi()
-	//LLUUID operator=(const std::string p) { memcpy(data, p.c_str(), 16); return *this; };
+	LLUUID operator=(LLUUID p) { memcpy(data, p.data, 16); return *this; };
+	LLUUID operator=(std::string p) { hexstr2bin(packUUID(p).c_str(), data, 16); return *this; };
 };
 
 typedef unsigned int U32;
-//
 
+// Platform-specific defines
 #ifdef WIN32
 #pragma warning (disable : 4996 4251)
 #ifdef LIBSECONDLIFE_EXPORTS

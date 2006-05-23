@@ -2,8 +2,10 @@
 
 Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 {
-	_length = length;
+	// Make the minimum length sane to avoid excessive bounds checking
+	_length = (length >= 8) ? length : 8;
 	_protocol = protocol;
+	unsigned short flags;
 
 	_layout = _protocol->getCommand(command);
 	if (!_layout) {
@@ -11,16 +13,45 @@ Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 		_buffer = NULL;
 		_length = 0;
 	} else {
-		_buffer = (byte*)malloc(_length ? _length : DEFAULT_PACKET_SIZE);
+		_buffer = (byte*)calloc(_length ? _length : DEFAULT_PACKET_SIZE, sizeof(byte));
 
 		if (!_buffer) {
 			//FIXME: Log memory error
 			_length = 0;
 		}
 
-		// Setup the flags and the frequency right now
-		;
-	}	
+		// Setup the flags
+		//FIXME: The flags are wrong right now, UseCircuitCode is supposed to be 0x4000 but
+		//       the current setup has it at 0x0000 according to the protocol map. Was
+		//       snowcrash wrong? Why are virtually all packets (except acks) sent with
+		//       0x4000 when lots of commands are untrusted? trusted != reliable?
+		flags = (_layout->trusted & MSG_RELIABLE) + (_layout->encoded & MSG_ZEROCODED);
+		flags = htons(flags);
+		memcpy(_buffer, &flags, 2);
+
+		// Setup the frequency/id bytes
+		switch (_layout->frequency) {
+			case ll::Low:
+				_buffer[4] = 0xFF;
+				_buffer[5] = 0xFF;
+				flags = htons(_layout->id);
+				memcpy(_buffer + 6, &flags, 2);
+				_headerLength = 8;
+				break;
+			case ll::Medium:
+				_buffer[4] = 0xFF;
+				_buffer[5] = _layout->id;
+				_headerLength = 6;
+				break;
+			case ll::High:
+				_buffer[4] = _layout->id;
+				_headerLength = 5;
+				break;
+			case ll::Invalid:
+				//FIXME: Log
+				break;
+		}
+	}
 }
 
 Packet::~Packet()
@@ -74,21 +105,8 @@ unsigned short Packet::sequence()
 
 void Packet::sequence(unsigned short sequence)
 {
-	unsigned short hostSequence = htons(sequence);
-
-	if (_length < 4) {
-		// Make room, assume the default packet size
-		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
-		_length = 4;
-	}
-
-	if (!_buffer) {
-		//FIXME: Log memory error
-		_length = 0;
-		return;
-	}
-
-	memcpy(_buffer + 2, &hostSequence, sizeof(sequence));
+	unsigned short nSequence = htons(sequence);
+	memcpy(_buffer + 2, &nSequence, sizeof(sequence));
 }
 
 std::string Packet::command()
@@ -154,7 +172,7 @@ void* Packet::getField(std::string block, size_t blockNumber, std::string field)
 	}
 	//
 
-	return (void*)(_buffer + blockSize * blockNumber + fieldOffset);
+	return (void*)(_buffer + _headerLength + blockSize * blockNumber + fieldOffset);
 }
 
 int Packet::setField(std::string block, size_t blockNumber, std::string field, void* value)
@@ -189,7 +207,7 @@ int Packet::setField(std::string block, size_t blockNumber, std::string field, v
 	}
 	
 	size_t fieldSize = _protocol->getTypeSize(type);
-	size_t offset = blockSize * (blockNumber - 1) + fieldOffset;
+	size_t offset = _headerLength + blockSize * (blockNumber - 1) + fieldOffset;
 
 	// Reallocate memory if necessary
 	if ((offset + fieldSize) > _length) {

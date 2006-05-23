@@ -3,8 +3,7 @@
 SecondLife::SecondLife()
 {
 	_protocol = new ProtocolManager();
-	_network = new Network(_protocol);
-	_decoder = new Decoder();
+	_network = new Network(_protocol, this);
 	_running = true;
 }
 
@@ -12,18 +11,10 @@ SecondLife::~SecondLife()
 {
 	delete _protocol;
 	delete _network;
-	delete _decoder;
 }
 
 void SecondLife::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent)
 {
-	if (!_network) {
-		//FIXME: Log
-		return;
-	}
-
-	boost::thread thread;
-	//FIXME: Run the below function in the above thread
 	_network->connectSim(ip, port, code, setCurrent);
 }
 

@@ -325,18 +325,25 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 			// Get the fixed position
 			temp = header_tokens.at(2);
 			// Truncate it to a short
-			int fixed = httoi((char*)temp.c_str()) ^ 0xffff0000;
+			int fixed = httoi(temp.c_str()) ^ 0xffff0000;
 			packet = &_lowPackets[fixed];
+			packet->id = fixed;
 			packet->frequency = ll::Low;
 		} else if (temp == "Low") {
-			packet = &_lowPackets[low++];
+			packet = &_lowPackets[low];
+			packet->id = low;
 			packet->frequency = ll::Low;
+			low++;
 		} else if (temp == "Medium") {
-			packet = &_mediumPackets[medium++];
+			packet = &_mediumPackets[medium];
+			packet->id = medium;
 			packet->frequency = ll::Medium;
+			medium++;
 		} else if (temp == "High") {
-			packet = &_highPackets[high++];
+			packet = &_highPackets[high];
+			packet->id = high;
 			packet->frequency = ll::High;
+			high++;
 		} else {
 			//FIXME: Debug log
 			return -2;

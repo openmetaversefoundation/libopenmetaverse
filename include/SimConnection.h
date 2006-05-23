@@ -32,6 +32,9 @@
 
 #include "includes.h"
 
+// Incoming datagram buffer
+#define SL_BUFFER_SIZE 8192
+
 class SimConnection
 {
 protected:

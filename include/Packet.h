@@ -33,7 +33,7 @@
 #include "includes.h"
 #include "ProtocolManager.h"
 
-// Higher value will mean less realloc()s, more wasted memory. Lower value is 
+// Higher value will mean less realloc()s, more wasted memory. Lower value is
 // vice versa.
 #define DEFAULT_PACKET_SIZE 128
 
@@ -45,6 +45,7 @@ protected:
 	size_t _length;
 	boost::asio::ipv4::udp::endpoint _remoteHost;
 	ProtocolManager* _protocol;
+	byte _headerLength;
 
 public:
 	Packet(std::string command = "TestMessage", ProtocolManager* protocol = NULL, size_t length = 0);

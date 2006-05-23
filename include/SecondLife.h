@@ -34,7 +34,6 @@
 #include "ProtocolManager.h"
 #include "SimConnection.h"
 #include "Network.h"
-#include "Decoder.h"
 
 // Model for the callbacks:
 //  bool functionname(std::string command, Packet*)
@@ -42,11 +41,11 @@ typedef boost::function2<bool, std::string, Packet*> callback;
 
 class LIBSECONDLIFE_CLASS_DECL SecondLife
 {
-//protected:
+protected:
+	
 public:
 	ProtocolManager* _protocol;
 	Network* _network;
-	Decoder* _decoder;
 	bool _running;
 	// Later on we'll want internal callbacks and client callbacks, so the client doesn't overwrite
 	// for example the stream building functions
@@ -57,13 +56,24 @@ public:
 	virtual ~SecondLife();
 
 	void registerCallback(std::string command, callback handler) { _callbacks[command] = handler; };
-	
-	// Pass-through functions to make life easier on the client
+
 	int loadKeywords(std::string filename) { return _protocol->loadKeywords(filename); };
 	int decryptCommFile(std::string source, std::string destination) { return _protocol->decryptCommFile(source, destination); };
 	int buildProtocolMap(std::string filename) { return _protocol->buildProtocolMap(filename); };
 
+	void login(std::string firstName, std::string lastName, std::string password, std::string mac, std::string platform,
+			   std::string viewerDigest, std::string userAgent, std::string author, loginCallback handler,
+			   std::string url = "https://login.agni.lindenlab.com/cgi-bin/login.cgi")
+	{ _network->login(firstName, lastName, password, mac, platform, viewerDigest, userAgent, author, handler, url); };
 	void connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
+
+	LLUUID agent_id() { return _network->agent_id(); };
+	void agent_id(LLUUID agent_id) { _network->agent_id(agent_id); };
+	LLUUID session_id() { return _network->session_id(); };
+	void session_id(LLUUID session_id) { _network->session_id(session_id); };
+	LLUUID secure_session_id() { return _network->secure_session_id(); };
+	void secure_session_id(LLUUID secure_session_id) { _network->secure_session_id(secure_session_id); };
+
 	void tick();
 };
 

@@ -34,31 +34,76 @@
 #include "Packet.h"
 #include "SimConnection.h"
 
+typedef struct loginParameters {
+	std::string session_id;
+	std::string secure_session_id;
+	std::string start_location;
+	std::string first_name;
+	std::string last_name;
+	int region_x;
+	int region_y;
+	std::string home;
+	std::string reason;
+	std::string message;
+	int circuit_code;
+	int sim_port;
+	std::string sim_ip;
+	std::string look_at;
+	std::string agent_id;
+	int seconds_since_epoch;
+
+	loginParameters() {
+		region_x = 0;
+		region_y = 0;
+		circuit_code = 0;
+		sim_port = 0;
+		seconds_since_epoch = 0;
+	}
+} loginParameters;
+
+typedef boost::function1<void, loginParameters> loginCallback;
+
+class SecondLife;
+
 class LIBSECONDLIFE_CLASS_DECL Network
 {
 protected:
     boost::asio::demuxer _demuxer;
-	SimConnection* _currentSim;
 	std::vector<SimConnection*> _connections;
 	std::list<Packet*> _inbox;
 	ProtocolManager* _protocol;
+	SecondLife* _secondlife;
 
-	LLUUID _avatar_id;
+	LLUUID _agent_id;
 	LLUUID _session_id;
 	LLUUID _secure_session_id;
 
 public:
+	// Debug
+	SimConnection* _currentSim;
 	boost::mutex _inboxMutex;
 
-	//Network();
-	Network(ProtocolManager* protocol);
+	Network(ProtocolManager* protocol, SecondLife* secondlife);
 	virtual ~Network();
+
+	void login(std::string firstName, std::string lastName, std::string password, std::string mac,
+			   std::string platform, std::string viewerDigest, std::string userAgent, std::string author,
+			   loginCallback handler, std::string url);
+
+	void listen(SimConnection* sim);
+	int connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
+    int sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet);
+	int sendPacket(Packet* packet);
+	void receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer);
 
 	std::list<Packet*> inbox() { return _inbox; };
 
-	int connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
-    int sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet);
-	void receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer);
+	LLUUID agent_id() { return _agent_id; };
+	void agent_id(LLUUID agent_id) { _agent_id = agent_id; };
+	LLUUID session_id() { return _session_id; };
+	void session_id(LLUUID session_id) { _session_id = session_id; };
+	LLUUID secure_session_id() { return _secure_session_id; };
+	void secure_session_id(LLUUID secure_session_id) { _secure_session_id = secure_session_id; };
 };
 
 #endif //_SL_NETWORK_
