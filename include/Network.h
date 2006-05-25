@@ -96,7 +96,7 @@ public:
 	int sendPacket(Packet* packet);
 	void receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer);
 
-	std::list<Packet*> inbox() { return _inbox; };
+	std::list<Packet*>* inbox() { return &_inbox; };
 
 	LLUUID agent_id() { return _agent_id; };
 	void agent_id(LLUUID agent_id) { _agent_id = agent_id; };

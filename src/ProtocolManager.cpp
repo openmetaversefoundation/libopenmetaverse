@@ -390,6 +390,24 @@ packetDiagram* ProtocolManager::getCommand(std::string command)
 	return NULL;
 }
 
+packetDiagram* ProtocolManager::getCommand(unsigned short command, ll::frequency frequency)
+{
+	switch (frequency)
+	{
+		case ll::Low:
+			return &_lowPackets[command];
+		case ll::Medium:
+			return &_mediumPackets[command];
+		case ll::High:
+			return &_highPackets[command];
+		case ll::Invalid:
+			//FIXME: Log
+			break;
+	}
+	
+	return NULL;
+}
+
 ll::llType ProtocolManager::getFieldType(std::string type)
 {
 	const std::string llTypes[] = {"U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64",

@@ -155,6 +155,7 @@ public:
 	int getKeywordPosition(std::string keyword);
 
 	packetDiagram* getCommand(std::string command);
+	packetDiagram* getCommand(unsigned short command, ll::frequency frequency);
 	ll::llType getFieldType(std::string type);
 	static int getTypeSize(ll::llType type);
 	std::string getTypeName(ll::llType type);

@@ -43,6 +43,7 @@
 #include <iostream>
 
 #include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>

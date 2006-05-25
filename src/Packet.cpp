@@ -3,7 +3,7 @@
 Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 {
 	// Make the minimum length sane to avoid excessive bounds checking
-	_length = (length >= 8) ? length : 8;
+	_length = (length > 8) ? length : 8;
 	_protocol = protocol;
 	unsigned short flags;
 
@@ -26,7 +26,12 @@ Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 		//       snowcrash wrong? Why are virtually all packets (except acks) sent with
 		//       0x4000 when lots of commands are untrusted? trusted != reliable?
 		flags = (_layout->trusted & MSG_RELIABLE) + (_layout->encoded & MSG_ZEROCODED);
-		flags = htons(flags);
+		
+		//FIXME: Serious hack to temporarily work around the aforementioned problem
+		if (!flags) {
+			flags = 0x40;
+		}
+		//flags = htons(flags);
 		memcpy(_buffer, &flags, 2);
 
 		// Setup the frequency/id bytes
@@ -52,6 +57,25 @@ Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 				break;
 		}
 	}
+}
+
+Packet::Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, byte headerLength,
+			   ll::frequency frequency)
+{
+	_length = length;
+	_protocol = protocol;
+	_layout = _protocol->getCommand(command, frequency);
+
+	_buffer = (byte*)malloc(length);
+	if (!_buffer) {
+		//FIXME: Log memory error
+		_length = 0;
+		return;
+	}
+
+	memcpy(_buffer, buffer, length);
+
+	_headerLength = headerLength;
 }
 
 Packet::~Packet()
@@ -211,13 +235,11 @@ int Packet::setField(std::string block, size_t blockNumber, std::string field, v
 
 	// Reallocate memory if necessary
 	if ((offset + fieldSize) > _length) {
-		if ((offset + fieldSize) > DEFAULT_PACKET_SIZE) {
-			_buffer = (byte*)realloc(_buffer, offset + fieldSize);
-			if (!_buffer) {
-				//FIXME: Log memory error
-				_length = 0;
-				return -5;
-			}
+		_buffer = (byte*)realloc(_buffer, offset + fieldSize);
+		if (!_buffer) {
+			//FIXME: Log memory error
+			_length = 0;
+			return -5;
 		}
 
 		_length = offset + fieldSize;
@@ -247,14 +269,4 @@ void Packet::rawData(byte* buffer, size_t length)
 
 	memcpy(_buffer, buffer, length);
 	_length = length;
-}
-
-boost::asio::ipv4::udp::endpoint Packet::getRemoteHost()
-{
-	return _remoteHost;
-}
-
-void Packet::setRemoteHost(boost::asio::ipv4::udp::endpoint remoteHost)
-{
-	_remoteHost = remoteHost;
 }

@@ -21,23 +21,41 @@ void SecondLife::connectSim(boost::asio::ipv4::address ip, unsigned short port, 
 void SecondLife::tick()
 {
 	Packet* packet;
-	// When we get to stream handling, this function will build data stream 
+	bool returnValue;
+	std::list<Packet*>* inbox = _network->inbox();
+	
+	// When we get to stream handling, this function will build data stream
 	// classes and append new data, for sounds/images/animations/etc
 
-	// tick() will process all of the outstanding packets, building classes and 
+	// tick() will process all of the outstanding packets, building classes and
 	// firing callbacks as it goes
 	if (_network) {
-		while (_network->inbox().size() > 0) {
-			packet = _network->inbox().front();
-			_network->inbox().pop_front();
+		while (inbox->size() > 0) {
+			packet = inbox->front();
+			inbox->pop_front();
 			std::string command = packet->command();
 			
-			callback handler = _callbacks[command];
-			bool returnValue = handler(command, packet);
+			std::map<std::string, callback>::iterator handler = _callbacks.find(command);
+			
+			if (handler == _callbacks.end()) {
+				handler = _callbacks.find("Default");
+				
+				if (handler != _callbacks.end()) {
+					returnValue = (handler->second)(command, packet);
+				}
+			} else {
+				returnValue = (handler->second)(command, packet);
+			}
 			
 			if (returnValue) {
-				;
+				//FIXME: What is the purpose of the return value?
 			}
 		}
 	}
+	
+	// Sleep for 1000 nanoseconds
+	boost::xtime xt;
+	boost::xtime_get(&xt, boost::TIME_UTC);
+	xt.nsec += 1000;
+	boost::thread::sleep(xt);
 }

@@ -94,9 +94,9 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 		"<member><name>passwd</name><value><string>" + passwordDigest + "</string></value></member>"
 		"<member><name>start</name><value><string>last</string></value></member>"
 		"<member><name>major</name><value><string>1</string></value></member>"
-		"<member><name>minor</name><value><string>9</string></value></member>"
+		"<member><name>minor</name><value><string>10</string></value></member>"
 		"<member><name>patch</name><value><string>0</string></value></member>"
-		"<member><name>build</name><value><string>21</string></value></member>"
+		"<member><name>build</name><value><string>32</string></value></member>"
 		"<member><name>platform</name><value><string>" + platform + "</string></value></member>"
 		"<member><name>mac</name><value><string>" + mac + "</string></value></member>"
 		"<member><name>viewer_digest</name><value><string>" + viewerDigest + "</string></value></member>"
@@ -146,6 +146,12 @@ void Network::listen(SimConnection* sim)
 		//       simultaneously
 		_demuxer.run();
 		_demuxer.reset();
+		
+		// Sleep for 1000 nanoseconds
+		boost::xtime xt;
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += 1000;
+		boost::thread::sleep(xt);
 	}
 
 	// Debug
@@ -178,6 +184,9 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 
 	boost::asio::datagram_socket* socket = new boost::asio::datagram_socket(_demuxer, boost::asio::ipv4::udp::endpoint(0));
 	sim->socket(socket);
 
+	// Push this connection on to the list
+	_connections.push_back(sim);
+	
 	// Send the packet
 	try {
 		size_t bytesSent = socket->send_to(boost::asio::buffer(packet->rawData(), packet->length()), 0, sim->endpoint());
@@ -202,23 +211,44 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 
 
 void Network::receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer)
 {
-	// Debug
-	printf("Received datagram, length: %u\n", length);
-	for (size_t i = 0; i < length; i++) {
-		printf("%02x ", receiveBuffer[i]);
+	if (length < 8) {
+		//FIXME: Log
+		return;
 	}
-	printf("\n");
-
-	//FIXME: Decode the command name from the packet so we can call the Packet constructor properly
-
-	// Build a Packet object and fill it with the incoming data
-	//FIXME: Something in here is segfaulting, fix it
-	/*Packet* packet = new Packet();
-	packet->rawData((byte*)receiveBuffer, length);
-
+	
+	Packet* packet;
+	unsigned short command;
+	
+	if (!receiveBuffer[0]) {
+		// We don't need to push this packet in to the inbox, it can be handled at the network layer
+		//TODO: Do something with this
+		
+		//Debug:
+		printf("Received network-level datagram, length: %u\n", length);
+		
+		return;
+	}
+	
+	if (receiveBuffer[4] & 0xFF) {
+		if (receiveBuffer[5] & 0xFF) {
+			// Low frequency packet
+			memcpy(&command, &receiveBuffer[6], 2);
+			command = ntohs(command);
+			packet = new Packet(command, _protocol, (byte*)receiveBuffer, length, 8, ll::Low);
+		} else {
+			// Medium frequency packet
+			command = (unsigned short)receiveBuffer[5];
+			packet = new Packet(command, _protocol, (byte*)receiveBuffer, length, 6, ll::Medium);
+		}
+	} else {
+		// High frequency packet
+		command = (unsigned short)receiveBuffer[4];
+		packet = new Packet(command, _protocol, (byte*)receiveBuffer, length, 5, ll::High);
+	}
+	
 	// Push it on to the list
 	boost::mutex::scoped_lock lock(_inboxMutex);
-	_inbox.push_back(packet);*/
+	_inbox.push_back(packet);
 }
 
 int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet)
@@ -238,6 +268,9 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 		//FIXME: Log
 		return -1;
 	}
+	
+	// Set the packet sequence number
+	packet->sequence(_connections[i]->sequence());
 
 	try {
 		size_t sent = _connections[i]->socket()->send_to(boost::asio::buffer(packet->rawData(), packet->length()),

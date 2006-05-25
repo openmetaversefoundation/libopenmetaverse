@@ -43,12 +43,13 @@ protected:
 	packetDiagram* _layout;
 	byte* _buffer;
 	size_t _length;
-	boost::asio::ipv4::udp::endpoint _remoteHost;
 	ProtocolManager* _protocol;
 	byte _headerLength;
 
 public:
 	Packet(std::string command = "TestMessage", ProtocolManager* protocol = NULL, size_t length = 0);
+	Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, byte headerLength,
+		   ll::frequency frequency);
 	virtual ~Packet();
 
 	std::string command();
@@ -69,9 +70,6 @@ public:
 
 	unsigned short sequence();
 	void sequence(unsigned short sequence);
-
-	boost::asio::ipv4::udp::endpoint getRemoteHost();
-	void setRemoteHost(boost::asio::ipv4::udp::endpoint remoteHost);
 };
 
 #endif //_SL_PACKET_
