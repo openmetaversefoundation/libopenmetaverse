@@ -1,11 +1,57 @@
 #include "SecondLife.h"
 #include <stdio.h>
 
+SecondLife* client;
+
+void loginHandler(loginParameters login)
+{
+	LLUUID tempID;
+
+	if (login.reason.length()) {
+		printf("Login failed\n");
+	} else {
+		// Set the variables received from login
+		client->session_id((LLUUID)login.session_id);
+		client->secure_session_id((LLUUID)login.secure_session_id);
+		client->agent_id((LLUUID)login.agent_id);
+
+		boost::asio::ipv4::address address(login.sim_ip);
+		client->_network->connectSim(address, login.sim_port, login.circuit_code, true);
+
+		Packet* packet = new Packet("CompleteAgentMovement", client->_protocol);
+
+		tempID = client->agent_id();
+		packet->setField("AgentData", 1, "AgentID", &tempID);
+		tempID = client->session_id();
+		packet->setField("AgentData", 1, "SessionID", &tempID);
+		packet->setField("AgentData", 1, "CircuitCode", &login.circuit_code);
+
+		client->_network->sendPacket(packet);
+
+		while (1) {
+			client->tick();
+		}
+	}
+}
+
+bool receivedPacket(std::string command, Packet* packet)
+{
+	byte* data = packet->rawData();
+	size_t length = packet->length();
+	
+	// Debug
+	printf("Received datagram, length: %u\n", length);
+	for (size_t i = 0; i < length; i++) {
+		printf("%02x ", data[i]);
+	}
+	printf("\n");
+	
+	return true;
+}
+
 int main()
 {
-	//Packet* packet;
-	bool success;
-	SecondLife* client = new SecondLife();
+	client = new SecondLife();
 
 	if (client->loadKeywords("keywords.txt") == 0) {
 		printf("Loaded keyword file\n");
@@ -31,22 +77,12 @@ int main()
 		return -2;
 	}
 
-	client->_protocol->printMap();
+	//client->_protocol->printMap();
 
-	//printf("Building UseCircuitCode packet\n");
-	//packet = new Packet(client->_protocol);
-	//success = packet->setCommand("UseCircuitCode");
+	client->registerCallback("Default", &receivedPacket);
+	
+	client->login("First", "Last", "password", "00:00:00:00:00:00", "Win", "0", "test_app", "email@address.com", loginHandler);
 
-	if (success) {
-		//byte agentID[16] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F};
-		//packet->setField("CircuitCode", 1, "ID", agentID);
-		boost::asio::ipv4::address address("192.168.0.105");
-		client->_network->connectSim(address, 1000, 12345, true);
-	} else {
-		printf("Failed to build the AddCircuitCode packet");
-	}
-
-	//delete packet;
 	delete client;
 	return 0;
 }
