@@ -15,8 +15,19 @@ Network::Network(ProtocolManager* protocol, SecondLife* secondlife)
 
 Network::~Network()
 {
-	//FIXME: Close and free all the sockets
-	//       Delete all remaining packets
+#ifdef DEBUG
+	std::cout << "Network::~Network() destructor called" << std::endl;
+#endif
+	std::vector<SimConnection*>::iterator connection;
+	std::list<Packet*>::iterator packet;
+	
+	for (connection = _connections.begin(); connection != _connections.end(); ++connection) {
+		delete (*connection);
+	}
+	
+	for (packet = _inbox.begin(); packet != _inbox.end(); ++packet) {
+		delete (*packet);
+	}
 }
 
 size_t loginReply(void* buffer, size_t size, size_t nmemb, void* userp)
@@ -26,14 +37,19 @@ size_t loginReply(void* buffer, size_t size, size_t nmemb, void* userp)
 	char* reply = (char*)buffer;
 	std::string msg;
 	int realsize = size * nmemb;
+	
+	if (!reply) {
+		login.reason = "libsecondlife";
+		login.message = "There was an error connecting to the login server, check the log file for details";
+		(*handler)(login);
+		return realsize;
+	}
 
 	msg = rpcGetString(reply, "<name>reason</name>");
 	if (msg.length()) {
-		//FIXME: Log
 		login.reason = msg;
 		login.message = rpcGetString(reply, "<name>message</name>");
-		// Debug
-		std::cout << "Login failed. Reason: " << login.reason << " Message: " << login.message << std::endl;
+		log("Network::loginReply(): Login failed. Reason: " + login.reason + ". Message: " + login.message, WARNING);
 	} else {
 		msg = rpcGetString(reply, "login</name><value><string>true");
 		if (msg.length()) {
@@ -54,9 +70,9 @@ size_t loginReply(void* buffer, size_t size, size_t nmemb, void* userp)
 			login.agent_id = rpcGetString(reply, "<name>agent_id</name>");
 			login.seconds_since_epoch = rpcGetU32(reply, "<name>seconds_since_epoch</name>");
 		} else {
-			//FIXME: Log
-			// Debug
-			std::cout << "Unknown login error, dumping server response\n\n" << reply << std::endl;
+			std::stringstream message;
+			message << "Network::loginReply(): Unknown login error, dumping server response:\n" << reply;
+			log(message.str(), ERROR);
 		}
 	}
 
@@ -66,13 +82,23 @@ size_t loginReply(void* buffer, size_t size, size_t nmemb, void* userp)
 }
 
 void Network::login(std::string firstName, std::string lastName, std::string password, std::string mac,
-					  		   std::string platform, std::string viewerDigest, std::string userAgent,
+					  		   size_t major, size_t minor, size_t patch, size_t build,
+							   std::string platform, std::string viewerDigest, std::string userAgent,
 							   std::string author, loginCallback handler, std::string url)
 {
 	char loginError[CURL_ERROR_SIZE] = {0x00};
 	struct curl_slist* headers = NULL;
 	CURLcode response;
 	CURL* curl = curl_easy_init();
+	
+	if (!curl) {
+		log("Network::login(): curl_easy_init() returned NULL", ERROR);
+		
+		// Synthesize the callback to keep the client informed
+		loginReply(NULL, 0, 0, &handler);
+		
+		return;
+	}
 
 	// Build an md5 hash of the password
 	md5_state_t state;
@@ -87,27 +113,24 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 	}
 	passwordDigest[35] = 0x00;
 	
-	std::string loginRequest =
+	std::stringstream loginStream;
+	loginStream <<
 		"<?xml version=\"1.0\"?><methodCall><methodName>login_to_simulator</methodName><params><param><value><struct>"
-		"<member><name>first</name><value><string>" + firstName + "</string></value></member>"
-		"<member><name>last</name><value><string>" + lastName + "</string></value></member>"
-		"<member><name>passwd</name><value><string>" + passwordDigest + "</string></value></member>"
+		"<member><name>first</name><value><string>" << firstName << "</string></value></member>"
+		"<member><name>last</name><value><string>" << lastName << "</string></value></member>"
+		"<member><name>passwd</name><value><string>" << passwordDigest << "</string></value></member>"
 		"<member><name>start</name><value><string>last</string></value></member>"
-		"<member><name>major</name><value><string>1</string></value></member>"
-		"<member><name>minor</name><value><string>10</string></value></member>"
-		"<member><name>patch</name><value><string>0</string></value></member>"
-		"<member><name>build</name><value><string>32</string></value></member>"
-		"<member><name>platform</name><value><string>" + platform + "</string></value></member>"
-		"<member><name>mac</name><value><string>" + mac + "</string></value></member>"
-		"<member><name>viewer_digest</name><value><string>" + viewerDigest + "</string></value></member>"
-		"<member><name>user-agent</name><value><string>" + userAgent + " (" + VERSION + ")</string></value></member>"
-		"<member><name>author</name><value><string>" + author + "</string></value></member>"
+		"<member><name>major</name><value><string>" << major << "</string></value></member>"
+		"<member><name>minor</name><value><string>" << minor << "</string></value></member>"
+		"<member><name>patch</name><value><string>" << patch << "</string></value></member>"
+		"<member><name>build</name><value><string>" << build << "</string></value></member>"
+		"<member><name>platform</name><value><string>" << platform << "</string></value></member>"
+		"<member><name>mac</name><value><string>" << mac << "</string></value></member>"
+		"<member><name>viewer_digest</name><value><string>" << viewerDigest << "</string></value></member>"
+		"<member><name>user-agent</name><value><string>" << userAgent << " (" << VERSION << ")</string></value></member>"
+		"<member><name>author</name><value><string>" << author << "</string></value></member>"
 		"</struct></value></param></params></methodCall>";
-
-	if (!curl) {
-		//FIXME: Log, and fire the callback
-		return;
-	}
+	std::string loginRequest = loginStream.str();
 
 	// Set the accepted encoding and content type of the request
 	headers = curl_slist_append(headers, "Accept-Encoding: gzip");
@@ -115,7 +138,7 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 
 	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, loginError);
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 9); // 10 second timeout
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0); // Ignore certificate authenticity (for now)
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, loginRequest.c_str());
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, loginRequest.length());
@@ -126,13 +149,67 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 	response = curl_easy_perform(curl);
 
 	if (response) {
-		//FIXME: Log, and fire the callback
-		// Debug
-		std::cout << "Error logging in: " << loginError << std::endl;
+		std::stringstream message;
+		message << "Network::login(): libcurl error: " << loginError;
+		log(message.str(), ERROR);
+		
+		// Synthesize the callback to keep the client informed
+		loginReply(NULL, 0, 0, &handler);
 	}
 
 	curl_slist_free_all(headers);
 	curl_easy_cleanup(curl);
+}
+
+int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent)
+{
+	// Check if we are already connected to this sim
+	for (size_t i = 0; i < _connections.size(); i++) {
+		if (ip == _connections[i]->ip() && port == _connections[i]->port()) {
+			log("Network::connectSim(): Attempting to connect to a sim we're already connected to", WARNING);
+			return -1;
+		}
+	}
+
+	// Build a connection packet
+	Packet* packet = new Packet("UseCircuitCode", _protocol, 44);
+	packet->setField("CircuitCode", 1, "ID", 1, &_agent_id);
+	packet->setField("CircuitCode", 1, "SessionID", 1, &_session_id);
+	packet->setField("CircuitCode", 1, "Code", 1, &code);
+
+	// Create the SimConnection
+	SimConnection* sim = new SimConnection(ip, port, code);
+	if (setCurrent || !_currentSim) _currentSim = sim;
+
+	// Set the packet sequence number
+	packet->sequence(sim->sequence());
+
+	boost::asio::datagram_socket* socket = new boost::asio::datagram_socket(_demuxer, boost::asio::ipv4::udp::endpoint(0));
+	sim->socket(socket);
+
+	// Push this connection on to the list
+	_connections.push_back(sim);
+	
+	// Send the packet
+	try {
+		size_t bytesSent = socket->send_to(boost::asio::buffer(packet->rawData(), packet->length()), 0, sim->endpoint());
+		// Debug
+		printf("Network::connectSim(): Sent %i byte connection packet\n", bytesSent);
+
+		delete packet;
+	} catch (boost::asio::error& e) {
+		std::stringstream message;
+		message << "Network::connectSim(): " << e;
+		log(message.str(), ERROR);
+
+		delete packet;
+		return -2;
+	}
+
+	// Start listening in a new thread
+	boost::thread thread(boost::bind(&Network::listen, this, sim));
+
+	return 0;
 }
 
 void Network::listen(SimConnection* sim)
@@ -154,98 +231,66 @@ void Network::listen(SimConnection* sim)
 		boost::thread::sleep(xt);
 	}
 
-	// Debug
-	printf("Closed connection to %u\n", (unsigned int)sim);
-}
-
-int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent)
-{
-	// Check if we are already connected to this sim
-	for (size_t i = 0; i < _connections.size(); i++) {
-		if (ip == _connections[i]->ip() && port == _connections[i]->port()) {
-			//FIXME: Log
-			return -1;
-		}
-	}
-
-	// Build a connection packet
-	Packet* packet = new Packet("UseCircuitCode", _protocol, 44);
-	packet->setField("CircuitCode", 1, "ID", &_agent_id);
-	packet->setField("CircuitCode", 1, "SessionID", &_session_id);
-	packet->setField("CircuitCode", 1, "Code", &code);
-
-	// Create the SimConnection
-	SimConnection* sim = new SimConnection(ip, port, code);
-	if (setCurrent || !_currentSim) _currentSim = sim;
-
-	// Set the packet sequence number
-	packet->sequence(sim->sequence());
-
-	boost::asio::datagram_socket* socket = new boost::asio::datagram_socket(_demuxer, boost::asio::ipv4::udp::endpoint(0));
-	sim->socket(socket);
-
-	// Push this connection on to the list
-	_connections.push_back(sim);
-	
-	// Send the packet
-	try {
-		size_t bytesSent = socket->send_to(boost::asio::buffer(packet->rawData(), packet->length()), 0, sim->endpoint());
-		// Debug
-		printf("Sent %i byte connection packet\n", bytesSent);
-
-		delete packet;
-	} catch (boost::asio::error& e) {
-		delete packet;
-
-		// Debug
-		std::cerr << e << std::endl;
-
-		return -2;
-	}
-
-	// Start listening in a new thread
-	boost::thread thread(boost::bind(&Network::listen, this, sim));
-
-	return 0;
+#ifdef DEBUG
+	std::stringstream message;
+	message << "Closed connection to sim " << sim->code();
+	log(message.str(), INFO);
+#endif
 }
 
 void Network::receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer)
 {
-	if (length < 8) {
-		//FIXME: Log
-		return;
-	}
-	
 	Packet* packet;
 	unsigned short command;
-	
-	if (!receiveBuffer[0]) {
-		// We don't need to push this packet in to the inbox, it can be handled at the network layer
-		//TODO: Do something with this
-		
-		//Debug:
-		printf("Received network-level datagram, length: %u\n", length);
-		
+	byte* buffer = (byte*)receiveBuffer;
+
+	if (length < 6) {
+		log("Network::receivePacket(): Received packet less than six bytes, ignoring", WARNING);
 		return;
 	}
-	
-	if (receiveBuffer[4] & 0xFF) {
-		if (receiveBuffer[5] & 0xFF) {
+
+	if (buffer[4] == 0xFF) {
+		if (buffer[5] == 0xFF) {
 			// Low frequency packet
-			memcpy(&command, &receiveBuffer[6], 2);
+			memcpy(&command, &buffer[6], 2);
 			command = ntohs(command);
-			packet = new Packet(command, _protocol, (byte*)receiveBuffer, length, 8, ll::Low);
+
+			if (_protocol->commandString(command, ll::Low) == "PacketAck") {
+				// TODO: At some point we'll want to track these Acks
+#ifdef DEBUG
+				log("Network::receivePacket(): Received PacketAck", INFO);
+#endif
+				return;
+			} else {
+				packet = new Packet(command, _protocol, buffer, length, ll::Low);
+			}
 		} else {
 			// Medium frequency packet
-			command = (unsigned short)receiveBuffer[5];
-			packet = new Packet(command, _protocol, (byte*)receiveBuffer, length, 6, ll::Medium);
+			command = (unsigned short)buffer[5];
+			packet = new Packet(command, _protocol, buffer, length, ll::Medium);
 		}
 	} else {
 		// High frequency packet
-		command = (unsigned short)receiveBuffer[4];
-		packet = new Packet(command, _protocol, (byte*)receiveBuffer, length, 5, ll::High);
+		command = (unsigned short)buffer[4];
+
+		if (_protocol->commandString(command, ll::High) == "StartPingCheck") {
+			// Ping request from the server, respond
+			packet = new Packet(command, _protocol, buffer, length, ll::High);
+			U8 pingID = *(U8*)packet->getField("PingID", 1, "PingID", 1);
+
+			//TODO: Should we be looking at OldestUnacked as well?
+			delete packet;
+
+			packet = new Packet("CompletePingCheck", _protocol, 6);
+			packet->setField("PingID", 1, "PingID", 1, &pingID);
+			sendPacket(packet);
+
+			return;
+		} else {
+			packet = new Packet(command, _protocol, buffer, length, ll::High);
+		}
 	}
-	
+
 	// Push it on to the list
 	boost::mutex::scoped_lock lock(_inboxMutex);
 	_inbox.push_back(packet);
@@ -253,6 +298,7 @@ void Network::receivePacket(const boost::asio::error& error, std::size_t length,
 
 int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet)
 {
+	size_t sent;
 	bool found = false;
 	size_t i;
 
@@ -268,22 +314,26 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 		//FIXME: Log
 		return -1;
 	}
-	
+
 	// Set the packet sequence number
 	packet->sequence(_connections[i]->sequence());
 
 	try {
-		size_t sent = _connections[i]->socket()->send_to(boost::asio::buffer(packet->rawData(), packet->length()),
-										   				 0, _connections[i]->endpoint());
-
-		// Debug
-		printf("Sent %u bytes\n", sent);
+		sent = _connections[i]->socket()->send_to(boost::asio::buffer(packet->rawData(), packet->length()),
+														 0, _connections[i]->endpoint());
 	} catch (boost::asio::error& e) {
-		// Debug
-		std::cerr << e << std::endl;
+		std::stringstream message;
+		message << "Network::sendPacket(): " << e;
+		log(message.str(), ERROR);
 
 		return -2;
 	}
+
+#ifdef DEBUG
+	std::stringstream message;
+	message << "Network::sendPacket(): Sent " << sent << " byte " << packet->command() << " datagram";
+	log(message.str(), INFO);
+#endif
 
 	return 0;
 }
@@ -291,7 +341,7 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 int Network::sendPacket(Packet* packet)
 {
 	if (!_currentSim) {
-		//FIXME: Log
+		log("Network::sendPacket() called when there is no current sim", ERROR);
 		return -1;
 	}
 

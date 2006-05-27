@@ -54,8 +54,7 @@
 
 
 // Global defines
-#define VERSION "libsecondlife 0.0.1"
-#define byte unsigned char
+#define VERSION "libsecondlife 0.0.2"
 
 #define MSG_APPENDED_ACKS	0x10
 #define MSG_RESENT			0x20
@@ -65,14 +64,31 @@
 #define MSG_FREQ_MED		0xFF00
 #define MSG_FREQ_LOW		0xFFFF
 
+//
+#define byte unsigned char
+
 // Global functions
-extern int httoi(const char* value);
-extern void hexstr2bin(const char* hex, byte* buf, size_t len);
-extern std::string rpcGetString(char* buffer, const char* name);
-extern int rpcGetU32(char* buffer, const char* name);
-extern std::string packUUID(std::string uuid);
+std::string trim(std::string &s, const std::string &drop = " ");
+int httoi(const char* value);
+void hexstr2bin(const char* hex, byte* buf, size_t len);
+std::string rpcGetString(char* buffer, const char* name);
+int rpcGetU32(char* buffer, const char* name);
+std::string packUUID(std::string uuid);
+int zeroDecode(char* src, int srclen, char* dest, int destlen);
+int zeroEncode(char* src, int srclen, char* dest, int destlen);
+
+// Global logging facility
+enum LogLevel {
+	INFO = 0,
+	WARNING,
+	ERROR
+};
+
+void log(std::string line, LogLevel level);
 
 // Global data types
+typedef unsigned int U32;
+typedef unsigned char U8;
 struct LLUUID {
 	byte data[16];
 	LLUUID() { *this = 0; };
@@ -81,8 +97,6 @@ struct LLUUID {
 	LLUUID operator=(LLUUID p) { memcpy(data, p.data, 16); return *this; };
 	LLUUID operator=(std::string p) { hexstr2bin(packUUID(p).c_str(), data, 16); return *this; };
 };
-
-typedef unsigned int U32;
 
 // Platform-specific defines
 #ifdef WIN32

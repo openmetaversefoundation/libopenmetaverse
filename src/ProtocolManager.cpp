@@ -1,12 +1,5 @@
 #include "ProtocolManager.h"
 
-// Trim an ISO C++ string by Marco Dorantes
-std::string trim(std::string &s, const std::string &drop = " ")
-{
-	std::string r = s.erase(s.find_last_not_of(drop) + 1);
-	return r.erase(0, r.find_first_not_of(drop));
-}
-
 bool getBlockMarkers(const char* buffer, size_t &start, size_t &end, size_t &children)
 {
 	size_t startBlock = 0;
@@ -35,20 +28,97 @@ bool getBlockMarkers(const char* buffer, size_t &start, size_t &end, size_t &chi
 		}
 	}
 
-	//FIXME: Log
 	return false;
 }
 
 ProtocolManager::ProtocolManager()
 {
-	;
+	llTypes[0]  = "U8";
+	llTypes[1]  = "U16";
+	llTypes[2]  = "U32";
+	llTypes[3]  = "U64";
+	llTypes[4]  = "S8";
+	llTypes[5]  = "S16";
+	llTypes[6]  = "S32";
+	llTypes[7]  = "S64";
+	llTypes[8]  = "F8";
+	llTypes[9]  = "F16";
+	llTypes[10] = "F32";
+	llTypes[11] = "F64";
+	llTypes[12] = "LLUUID";
+	llTypes[13] = "BOOL";
+	llTypes[14] = "LLVector3";
+	llTypes[15] = "LLVector3d";
+	llTypes[16] = "LLVector4";
+	llTypes[17] = "LLQuaternion";
+	llTypes[18] = "IPADDR";
+	llTypes[19] = "IPPORT";
+	llTypes[20] = "Variable";
+	llTypes[21] = "Fixed";
+	llTypes[22] = "Single";
+	llTypes[23] = "Multiple";
+	llTypes[24] = "";
+
+	llTypesSizes[0]  = 1;
+	llTypesSizes[1]  = 2;
+	llTypesSizes[2]  = 4;
+	llTypesSizes[3]  = 8;
+	llTypesSizes[4]  = 1;
+	llTypesSizes[5]  = 2;
+	llTypesSizes[6]  = 4;
+	llTypesSizes[7]  = 8;
+	llTypesSizes[8]  = 1;
+	llTypesSizes[9]  = 2;
+	llTypesSizes[10] = 4;
+	llTypesSizes[11] = 8;
+	llTypesSizes[12] = 16;
+	llTypesSizes[13] = 1;
+	llTypesSizes[14] = sizeof(llVector3);
+	llTypesSizes[15] = sizeof(llVector3d);
+	llTypesSizes[16] = sizeof(llVector4);
+	llTypesSizes[17] = sizeof(llQuaternion);
+	llTypesSizes[18] = 4;
+	llTypesSizes[19] = 2;
+	llTypesSizes[20] = -1;
 }
 
 ProtocolManager::~ProtocolManager()
 {
-	//FIXME: Apparently the linked lists don't automatically destroy the objects
-	//       it has pointers for, so we need to iterate through the entire map 
-	//       and free memory.
+#ifdef DEBUG
+	std::cout << "ProtocolManager::~ProtocolManager() destructor called" << std::endl;
+#endif
+
+	int i;
+	std::list<packetBlock*>::iterator j;
+	std::list<packetField*>::iterator k;
+
+	for (i = 0; i < 65536; ++i) {
+		if (i < 256) {
+			for (j = _mediumPackets[i].blocks.begin(); j != _mediumPackets[i].blocks.end(); ++j) {
+				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
+					delete (*k);
+				}
+				
+				delete (*j);
+			}
+
+			for (j = _highPackets[i].blocks.begin(); j != _highPackets[i].blocks.end(); ++j) {
+				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
+					delete (*k);
+				}
+				
+				delete (*j);
+			}
+		}
+
+		for (j = _lowPackets[i].blocks.begin(); j != _lowPackets[i].blocks.end(); ++j) {
+			for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
+				delete (*k);
+			}
+				
+			delete (*j);
+		}
+	}
 }
 
 void ProtocolManager::printMap()
@@ -67,7 +137,7 @@ void ProtocolManager::printMap()
 				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->frequency);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
-					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), getTypeName((*k)->type).c_str());
+					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
 				}
 			}
 		}
@@ -83,7 +153,7 @@ void ProtocolManager::printMap()
 				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->frequency);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
-					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), getTypeName((*k)->type).c_str());
+					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
 				}
 			}
 		}
@@ -99,7 +169,7 @@ void ProtocolManager::printMap()
 				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->frequency);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
-					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), getTypeName((*k)->type).c_str());
+					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
 				}
 			}
 		}
@@ -115,7 +185,7 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 
 	while(getBlockMarkers(protocolMap.c_str(), fieldStart, fieldEnd, children)) {
 		if (children) {
-			//FIXME: Log
+			log("ProtocolManager::getFields(): Found fourth tier elements", ERROR);
 			return false;
 		}
 
@@ -125,7 +195,7 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 
 		size_t delimiter = temp.find_first_of(" ");
 		if (delimiter == std::string::npos) {
-			//FIXME: Log
+			log("ProtocolManager::getFields(): Couldn't parse field: " + temp, ERROR);
 			return false;
 		}
 
@@ -133,11 +203,19 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 		field->name = temp.substr(0, delimiter);
 
 		// Get the keyword position
-		field->keywordPosition = getKeywordPosition(field->name);
+		field->keywordPosition = keywordPosition(field->name);
+
+		temp = temp.substr(delimiter + 1, temp.length() - delimiter - 1);
 
 		// Get the field type
-		temp = temp.substr(delimiter + 1, temp.length() - delimiter - 1);
-		field->type = getFieldType(temp);
+		delimiter = temp.find_first_of(" ");
+		if (delimiter != std::string::npos) {
+			field->frequency = atoi(temp.substr(delimiter + 1, temp.length() - delimiter - 1).c_str());
+			temp = temp.substr(0, delimiter);
+		} else {
+			field->frequency = 1;
+		}
+		field->type = fieldType(temp);
 
 		// Add this field to the linked list
 		block->fields.push_back(field);
@@ -188,7 +266,7 @@ bool ProtocolManager::getBlocks(packetDiagram* packet, std::string protocolMap, 
 		}
 
 		// Get the keyword position of this block
-		block->keywordPosition = getKeywordPosition(block->name);
+		block->keywordPosition = keywordPosition(block->name);
 
 		// Add this block to the linked list
 		packet->blocks.push_back(block);
@@ -214,7 +292,7 @@ int ProtocolManager::loadKeywords(std::string filename)
 	int i = 0;
 
 	if (!input.is_open()) {
-		//FIXME: Log
+		log("ProtocolManager::loadKeywords(): Error opening keyword file: " + filename, ERROR);
 		return -1;
 	}
 
@@ -236,13 +314,13 @@ int ProtocolManager::decryptCommFile(std::string source, std::string destination
 
 	FILE* commFile = fopen(source.c_str(), "rb");
 	if (!commFile) {
-		//FIXME: Debug log this
+		log("ProtocolManager::decryptCommFile(): Couldn't open comm file: " + source, ERROR);
 		return -1;
 	}
 
 	FILE* output = fopen(destination.c_str(), "wb");
 	if (!output) {
-		//FIXME: Debug log
+		log("ProtocolManager::decryptCommFile(): Couldn't open output file: " + destination, ERROR);
 		return -2;
 	}
 
@@ -263,13 +341,13 @@ int ProtocolManager::decryptCommFile(std::string source, std::string destination
 	return 0;
 }
 
-int ProtocolManager::getKeywordPosition(std::string keyword)
+int ProtocolManager::keywordPosition(std::string keyword)
 {
 	std::map<std::string, int>::iterator result;
 
 	result = _keywordMap.find(keyword);
 	if (result == _keywordMap.end()) {
-		//FIXME: Log
+		log("ProtocolManager::keywordPosition(): Couldn't find keyword: " + keyword, WARNING);
 		return -1;
 	}
 
@@ -281,7 +359,7 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 	std::string protocolMap;
 	byte buffer[2048];
 	size_t nread;
-	packetDiagram* packet;
+	packetDiagram* layout;
 	size_t end;
 	size_t cmdStart = 0;
 	size_t cmdEnd;
@@ -292,18 +370,12 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 
 	FILE* input = fopen(filename.c_str(), "rb");
 	if (!input) {
-		//FIXME: Debug log
+		log("ProtocolManager::buildProtocolMap(): Couldn't open output file: " + filename, ERROR);
 		return -1;
 	}
 
 	// Read the file in to memory
 	while ((nread = fread(buffer, sizeof(char), sizeof(buffer), input)) > 0) {
-		/*if (nread != BUFFER_SIZE) {
-			buffer[nread] = '\0';
-		} else {
-			buffer[BUFFER_SIZE] = '\0';
-		}*/
-
 		protocolMap.append((const char*)&buffer, nread);
 	}
 
@@ -318,7 +390,7 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 		while (header >> temp) {
 			header_tokens.push_back(temp);
 		}
-		
+
 		// Get the frequency first so we know where to put this command
 		temp = header_tokens.at(1);
 		if (temp == "Fixed") {
@@ -326,40 +398,44 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 			temp = header_tokens.at(2);
 			// Truncate it to a short
 			int fixed = httoi(temp.c_str()) ^ 0xffff0000;
-			packet = &_lowPackets[fixed];
-			packet->id = fixed;
-			packet->frequency = ll::Low;
+			layout = &_lowPackets[fixed];
+			layout->id = fixed;
+			layout->frequency = ll::Low;
 		} else if (temp == "Low") {
-			packet = &_lowPackets[low];
-			packet->id = low;
-			packet->frequency = ll::Low;
+			layout = &_lowPackets[low];
+			layout->id = low;
+			layout->frequency = ll::Low;
 			low++;
 		} else if (temp == "Medium") {
-			packet = &_mediumPackets[medium];
-			packet->id = medium;
-			packet->frequency = ll::Medium;
+			layout = &_mediumPackets[medium];
+			layout->id = medium;
+			layout->frequency = ll::Medium;
 			medium++;
 		} else if (temp == "High") {
-			packet = &_highPackets[high];
-			packet->id = high;
-			packet->frequency = ll::High;
+			layout = &_highPackets[high];
+			layout->id = high;
+			layout->frequency = ll::High;
 			high++;
 		} else {
-			//FIXME: Debug log
-			return -2;
+			log("ProtocolManager::buildProtocolMap(): Unknown frequency: " + temp, ERROR);
+
+			// Increment our position in protocol map
+			cmdStart = cmdEnd + 1;
+			cmdEnd = end;
+			continue;
 		}
 
 		// Get the command name
-		packet->name = header_tokens.at(0);
+		layout->name = header_tokens.at(0);
 
 		// Trusted?
-		packet->trusted = (header_tokens.at(2) == "Trusted");
+		layout->trusted = (header_tokens.at(2) == "Trusted");
 
 		// Encoded?
-		packet->encoded = (header_tokens.at(3) == "Zerocoded");
+		layout->encoded = (header_tokens.at(3) == "Zerocoded");
 
 		// Get the blocks
-		getBlocks(packet, protocolMap, cmdStart + 1, cmdEnd - 1);
+		getBlocks(layout, protocolMap, cmdStart + 1, cmdEnd - 1);
 
 		// Increment our position in protocol map
 		cmdStart = cmdEnd + 1;
@@ -371,7 +447,7 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 	return 0;
 }
 
-packetDiagram* ProtocolManager::getCommand(std::string command)
+packetDiagram* ProtocolManager::command(std::string command)
 {
 	size_t i;
 
@@ -390,7 +466,7 @@ packetDiagram* ProtocolManager::getCommand(std::string command)
 	return NULL;
 }
 
-packetDiagram* ProtocolManager::getCommand(unsigned short command, ll::frequency frequency)
+packetDiagram* ProtocolManager::command(unsigned short command, ll::frequency frequency)
 {
 	switch (frequency)
 	{
@@ -401,19 +477,35 @@ packetDiagram* ProtocolManager::getCommand(unsigned short command, ll::frequency
 		case ll::High:
 			return &_highPackets[command];
 		case ll::Invalid:
-			//FIXME: Log
 			break;
 	}
-	
+
+	log("ProtocolManager::command(): Invalid frequency passed in", WARNING);
 	return NULL;
 }
 
-ll::llType ProtocolManager::getFieldType(std::string type)
+std::string ProtocolManager::commandString(unsigned short command, ll::frequency frequency)
 {
-	const std::string llTypes[] = {"U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64",
-								   "F8", "F16", "F32", "F64", "LLUUID", "BOOL", "LLVector3", 
-								   "LLVector3d", "LLQuaternion", "IPADDR", "IPPORT", 
-								   "Variable", "Fixed", "Single", "Multiple", ""};
+	switch (frequency)
+	{
+		case ll::Low:
+			return _lowPackets[command].name;
+		case ll::Medium:
+			return _mediumPackets[command].name;
+		case ll::High:
+			return _highPackets[command].name;
+		case ll::Invalid:
+			break;
+		default:
+			break;
+	}
+	
+	log("ProtocolManager::commandString(): Invalid frequency passed in", WARNING);
+	return "";
+}
+
+ll::llType ProtocolManager::fieldType(std::string type)
+{
 	int i = 0;
 
 	while (llTypes[i].length()) {
@@ -424,43 +516,41 @@ ll::llType ProtocolManager::getFieldType(std::string type)
 		i++;
 	}
 
-	//FIXME: Log
+	log("ProtocolManager::fieldType(): Unknown type: " + type, WARNING);
 	return ll::INVALID_TYPE;
 }
 
-int ProtocolManager::getTypeSize(ll::llType type)
+int ProtocolManager::typeSize(ll::llType type)
 {
-	// U8, U16, U32, U64, S8, S16, S32, S64, F8, F16, F32, F64, LLUUID, BOOL, llVector3, 
-	// llVector3d, llQuaternion, IPADDR, IPPORT, Variable
-	const int sizes[] = {1, 2, 4, 8, 1, 2, 4, 8, 1, 2, 4, 8, 16, 1, sizeof(llVector3), 
-                         sizeof(llVector3d), sizeof(llQuaternion), 4, 2, -1};
-
 	if (type < 0 || type > 19) {
-		//FIXME: Log
+		std::stringstream message;
+		message << "ProtocolManager::typeSize(): Unknown type: " << type;
+		log(message.str(), WARNING);
+
 		return 0;
-	} else {
-		return sizes[type];
 	}
+
+	return llTypesSizes[type];
 }
 
-std::string ProtocolManager::getTypeName(ll::llType type)
+std::string ProtocolManager::typeName(ll::llType type)
 {
 	std::string typeName;
-	std::string names[] = {"U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F8", "F16", "F32", 
-						   "F64", "LLUUID", "BOOL", "llVector3", "llVector3d", "llQuaternion", "IPADDR", 
-						   "IPPORT", "Variable"};
 
 	if (type < 0 || type > 19) {
-		//FIXME: Log
+		std::stringstream message;
+		message << "ProtocolManager::typeName(): Unknown type: " << type;
+		log(message.str(), WARNING);
+
 		typeName = "Invalid";
 	} else {
-		typeName = names[type];
+		typeName = llTypes[type];
 	}
 
 	return typeName;
 }
 
-int ProtocolManager::getBlockFrequency(packetDiagram* layout, std::string block)
+int ProtocolManager::blockFrequency(packetDiagram* layout, std::string block)
 {
 	std::list<packetBlock*>::iterator i;
 
@@ -470,13 +560,18 @@ int ProtocolManager::getBlockFrequency(packetDiagram* layout, std::string block)
 		}
 	}
 
-	//FIXME: Log
+	log("ProtocolManager::blockFrequency(): Unknown block: " + block, WARNING);
 	return 0;
 }
 
-size_t ProtocolManager::getBlockSize(packetDiagram* layout, std::string block)
+size_t ProtocolManager::blockSize(packetDiagram* layout, std::string block)
 {
 	std::list<packetBlock*>::iterator i;
+
+	if (!layout) {
+		log("ProtocolManager::blockSize(): NULL layout passed in", WARNING);
+		return 0;
+	}
 
 	for (i = layout->blocks.begin(); i != layout->blocks.end(); ++i) {
 		if ((*i)->name == block) {
@@ -486,18 +581,18 @@ size_t ProtocolManager::getBlockSize(packetDiagram* layout, std::string block)
 			std::list<packetField*>::iterator j;
 
 			for (j = block->fields.begin(); j != block->fields.end(); ++j) {
-				size += getTypeSize((*j)->type);
+				size += typeSize((*j)->type);
 			}
 
 			return size;
 		}
 	}
 
-	//FIXME: Log
+	log("ProtocolManager::blockSize(): Unknown block: " + block, WARNING);
 	return 0;
 }
 
-int ProtocolManager::getFieldOffset(packetDiagram* layout, std::string block, std::string field)
+int ProtocolManager::fieldOffset(packetDiagram* layout, std::string block, std::string field)
 {
 	std::list<packetBlock*>::iterator i;
 
@@ -512,16 +607,18 @@ int ProtocolManager::getFieldOffset(packetDiagram* layout, std::string block, st
 				if ((*j)->name == field) {
 					return offset;
 				} else {
-					offset += (int)getTypeSize((*j)->type);
+					offset += (int)typeSize((*j)->type);
 				}
 			}
 
 			// The block didn't have the field we're looking for
-			//FIXME: Log
+			std::stringstream message;
+			message << "ProtocolManager::fieldOffset(): Couldn't find field: " << field << ", in block: " << block;
+			log(message.str(), WARNING);
 			return -1;
 		}
 	}
 
-	//FIXME: Log
+	log("ProtocolManager::fieldOffset(): Couldn't find block: " + block, WARNING);
 	return -2;
 }

@@ -21,6 +21,9 @@ SimConnection::SimConnection(boost::asio::ipv4::address ip, unsigned short port,
 
 SimConnection::~SimConnection()
 {
+#ifdef DEBUG
+	std::cout << "SimConnection::~SimConnection() destructor called" << std::endl;
+#endif
 	delete _socket;
 	free(_buffer);
 }

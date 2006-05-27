@@ -3,20 +3,23 @@
 Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 {
 	// Make the minimum length sane to avoid excessive bounds checking
-	_length = (length > 8) ? length : 8;
+	_length = (length > 5) ? length : 0;
 	_protocol = protocol;
 	unsigned short flags;
 
-	_layout = _protocol->getCommand(command);
+	_layout = _protocol->command(command);
+
 	if (!_layout) {
-		//FIXME: Log invalid packet name
+		log("Packet::Packet(): Trying to initialize with invalid command: " + command, ERROR);
 		_buffer = NULL;
 		_length = 0;
 	} else {
 		_buffer = (byte*)calloc(_length ? _length : DEFAULT_PACKET_SIZE, sizeof(byte));
 
 		if (!_buffer) {
-			//FIXME: Log memory error
+			std::stringstream message;
+			message << "Packet::Packet(): " << (_length ? _length : DEFAULT_PACKET_SIZE) << " byte calloc failed";
+			log(message.str(), ERROR);
 			_length = 0;
 		}
 
@@ -31,12 +34,22 @@ Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 		if (!flags) {
 			flags = 0x40;
 		}
-		//flags = htons(flags);
+
 		memcpy(_buffer, &flags, 2);
 
 		// Setup the frequency/id bytes
 		switch (_layout->frequency) {
 			case ll::Low:
+				if (_length < 8) {
+					_buffer = (byte*)realloc(_buffer, 8);
+					if (!_buffer) {
+						log("Packet::Packet(): 8 byte realloc failed", ERROR);
+						_length = 0;
+					} else {
+						_length = 8;
+					}
+				}
+
 				_buffer[4] = 0xFF;
 				_buffer[5] = 0xFF;
 				flags = htons(_layout->id);
@@ -44,11 +57,31 @@ Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 				_headerLength = 8;
 				break;
 			case ll::Medium:
+				if (_length < 6) {
+					_buffer = (byte*)realloc(_buffer, 6);
+					if (!_buffer) {
+						log("Packet::Packet(): 6 byte realloc failed", ERROR);
+						_length = 0;
+					} else {
+						_length = 6;
+					}
+				}
+
 				_buffer[4] = 0xFF;
 				_buffer[5] = _layout->id;
 				_headerLength = 6;
 				break;
 			case ll::High:
+				if (_length < 5) {
+					_buffer = (byte*)realloc(_buffer, 5);
+					if (!_buffer) {
+						log("Packet::Packet(): 5 byte realloc failed", ERROR);
+						_length = 0;
+					} else {
+						_length = 5;
+					}
+				}
+
 				_buffer[4] = _layout->id;
 				_headerLength = 5;
 				break;
@@ -59,12 +92,18 @@ Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
 	}
 }
 
-Packet::Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, byte headerLength,
-			   ll::frequency frequency)
+Packet::Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, ll::frequency frequency)
 {
 	_length = length;
 	_protocol = protocol;
-	_layout = _protocol->getCommand(command, frequency);
+	_layout = _protocol->command(command, frequency);
+
+	if (!_layout) {
+		std::stringstream message;
+		message << "Packet::Packet(): Trying to build a packet from unknown command code " << command <<
+				", frequency " << frequency;
+		log(message.str(), ERROR);
+	}
 
 	_buffer = (byte*)malloc(length);
 	if (!_buffer) {
@@ -75,7 +114,16 @@ Packet::Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, 
 
 	memcpy(_buffer, buffer, length);
 
-	_headerLength = headerLength;
+	switch (frequency) {
+		case ll::Low:
+			_headerLength = 8;
+		case ll::Medium:
+			_headerLength = 6;
+		case ll::High:
+			_headerLength = 5;
+		case ll::Invalid:
+			_headerLength = 0;
+	}
 }
 
 Packet::~Packet()
@@ -85,16 +133,13 @@ Packet::~Packet()
 
 ll::frequency Packet::frequency()
 {
-	if (!_layout) {
-		return ll::Invalid;
-	}
-
-	return _layout->frequency;
+	return _layout ? _layout->frequency : ll::Invalid;
 }
 
 unsigned short Packet::flags()
 {
 	if (_length < 2) {
+		log("Packet::flags(): Flags requested on a datagram less than 2 bytes", WARNING);
 		return 0;
 	}
 
@@ -106,29 +151,53 @@ void Packet::flags(unsigned short flags)
 	if (_length < 2) {
 		// Make room, assume the default packet size
 		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
-		_length = 2;
+
+		if (!_buffer) {
+			std::stringstream message;
+			message << "Packet::flags(): " << DEFAULT_PACKET_SIZE << " byte realloc failed";
+			log(message.str(), ERROR);
+
+			_length = 0;
+			return;
+		} else {
+			_length = 2;
+		}
 	}
 
-	if (!_buffer) {
-		//FIXME: Log memory error
-		_length = 0;
-		return;
-	}
-
-	memcpy(_buffer, &flags, sizeof(flags));
+	memcpy(_buffer, &flags, 2);
 }
 
 unsigned short Packet::sequence()
 {
 	if (_length < 4) {
+		log("Packet::sequence(): Sequence requested on a datagram less than 4 bytes", WARNING);
 		return 0;
 	}
-
-	return ntohs((unsigned short)*(_buffer + 2));
+	
+	unsigned short sequence;
+	memcpy(&sequence, _buffer + 2, 2);
+	//return ntohs((unsigned short)*(_buffer + 2));
+	return ntohs(sequence);
 }
 
 void Packet::sequence(unsigned short sequence)
 {
+	if (_length < 4) {
+		// Make room, assume the default packet size
+		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
+
+		if (!_buffer) {
+			std::stringstream message;
+			message << "Packet::sequence(): " << DEFAULT_PACKET_SIZE << " byte realloc failed";
+			log(message.str(), ERROR);
+
+			_length = 0;
+			return;
+		} else {
+			_length = 4;
+		}
+	}
+
 	unsigned short nSequence = htons(sequence);
 	memcpy(_buffer + 2, &nSequence, sizeof(sequence));
 }
@@ -140,14 +209,14 @@ std::string Packet::command()
 
 bool Packet::command(std::string command)
 {
-	packetDiagram* layout = _protocol->getCommand(command);
+	packetDiagram* layout = _protocol->command(command);
 	if (!layout) return false;
 
 	_layout = layout;
 	return true;
 }
 
-ll::llType Packet::getFieldType(std::string block, std::string field)
+ll::llType Packet::fieldType(std::string block, std::string field)
 {
 	std::list<packetBlock*>::iterator i;
 
@@ -164,18 +233,18 @@ ll::llType Packet::getFieldType(std::string block, std::string field)
 			}
 		}
 
-		//FIXME: Log
+		log("Packet::fieldType(): Couldn't find field " + field + " in block " + block, ERROR);
 		return ll::INVALID_TYPE;
 	}
 
-	//FIXME: Log
+	log("Packet::fieldType(): Couldn't find block " + block, ERROR);
 	return ll::INVALID_TYPE;
 }
 
-void* Packet::getField(std::string block, size_t blockNumber, std::string field)
+void* Packet::getField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber)
 {
 	// Check how many blocks this field can hold, and if blockNumber is in range
-	int frequency = _protocol->getBlockFrequency(_layout, block);
+	int frequency = _protocol->blockFrequency(_layout, block);
 	if (frequency != -1 && (int)blockNumber > frequency) {
 		// blockNumber is out of range
 		//FIXME: Log
@@ -183,23 +252,33 @@ void* Packet::getField(std::string block, size_t blockNumber, std::string field)
 	}
 
 	// Find the total offset for the field
-	size_t blockSize = _protocol->getBlockSize(_layout, block);
+	size_t blockSize = _protocol->blockSize(_layout, block);
 	if (!blockSize) {
 		//FIXME: Log
 		return NULL;
 	}
-
-	int fieldOffset = _protocol->getFieldOffset(_layout, block, field);
-	if (fieldOffset < 0) {
-		//FIXME: Log
+	
+	// Find out what type of field this is
+	ll::llType type = fieldType(block, field);
+	if (type == ll::INVALID_TYPE) {
+		log("Packet::getField(): Couldn't find field type for: " + field + ", in block: " + block, ERROR);
 		return NULL;
 	}
-	//
 
-	return (void*)(_buffer + _headerLength + blockSize * blockNumber + fieldOffset);
+	// Get the offset for this field
+	int fieldOffset = _protocol->fieldOffset(_layout, block, field);
+	if (fieldOffset < 0) {
+		log("Packet::getField(): Couldn't get the field offset for: " + field + ", in block: " + block, ERROR);
+		return NULL;
+	}
+
+	// Get the size of this type of field
+	size_t fieldSize = _protocol->typeSize(type);
+
+	return (void*)(_buffer + _headerLength + blockSize * blockNumber + fieldOffset + fieldSize * (fieldNumber - 1));
 }
 
-int Packet::setField(std::string block, size_t blockNumber, std::string field, void* value)
+int Packet::setField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber, void* value)
 {
 	if (!_layout) {
 		//FIXME: Log
@@ -207,44 +286,51 @@ int Packet::setField(std::string block, size_t blockNumber, std::string field, v
 	}
 
 	// Find out what type of field this is
-	ll::llType type = getFieldType(block, field);
-
-	// Check how many blocks this field can hold, and if blockNumber is in range
-	int frequency = _protocol->getBlockFrequency(_layout, block);
-	if (blockNumber <= 0 || (frequency != -1 && (int)blockNumber > frequency)) {
-		// blockNumber is out of range
-		//FIXME: Log
+	ll::llType type = fieldType(block, field);
+	if (type == ll::INVALID_TYPE) {
+		log("Packet::setField(): Couldn't find field type for: " + field + ", in block: " + block, ERROR);
 		return -2;
 	}
 
-	// Find the total offset for the field
-	size_t blockSize = _protocol->getBlockSize(_layout, block);
-	if (!blockSize) {
+	// Check how many blocks this field can hold, and if blockNumber is in range
+	int frequency = _protocol->blockFrequency(_layout, block);
+	if (blockNumber <= 0 || (frequency != -1 && (int)blockNumber > frequency)) {
+		// blockNumber is out of range
 		//FIXME: Log
 		return -3;
 	}
 
-	int fieldOffset = _protocol->getFieldOffset(_layout, block, field);
-	if (fieldOffset < 0) {
+	// Find the total offset for the field
+	size_t blockSize = _protocol->blockSize(_layout, block);
+	if (!blockSize) {
 		//FIXME: Log
 		return -4;
 	}
+
+	int fieldOffset = _protocol->fieldOffset(_layout, block, field);
+	if (fieldOffset < 0) {
+		log("Packet::setField(): Couldn't get the field offset for: " + field + ", in block: " + block, ERROR);
+		return -5;
+	}
 	
-	size_t fieldSize = _protocol->getTypeSize(type);
-	size_t offset = _headerLength + blockSize * (blockNumber - 1) + fieldOffset;
+	size_t fieldSize = _protocol->typeSize(type);
+	size_t offset = _headerLength + blockSize * (blockNumber - 1) + fieldOffset + fieldSize * (fieldNumber - 1);
 
 	// Reallocate memory if necessary
 	if ((offset + fieldSize) > _length) {
 		_buffer = (byte*)realloc(_buffer, offset + fieldSize);
 		if (!_buffer) {
-			//FIXME: Log memory error
+			std::stringstream message;
+			message << "Packet::setField(): " << offset + fieldSize << " byte realloc failed";
+			log(message.str(), ERROR);
+
 			_length = 0;
-			return -5;
+			return -6;
 		}
 
 		_length = offset + fieldSize;
 	}
-	
+
 	// Write the actual value
 	memcpy(_buffer + offset, value, fieldSize);
 
@@ -261,7 +347,10 @@ void Packet::rawData(byte* buffer, size_t length)
 	if (length > _length) {
 		_buffer = (byte*)realloc(_buffer, length);
 		if (!_buffer) {
-			//FIXME: Log memory error
+			std::stringstream message;
+			message << "Packet::rawData(): " << length << " byte realloc failed";
+			log(message.str(), ERROR);
+
 			_length = 0;
 			return;
 		}

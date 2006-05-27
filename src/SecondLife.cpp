@@ -9,19 +9,16 @@ SecondLife::SecondLife()
 
 SecondLife::~SecondLife()
 {
+#ifdef DEBUG
+	std::cout << "SecondLife::~SecondLife() destructor called" << std::endl;
+#endif
 	delete _protocol;
 	delete _network;
-}
-
-void SecondLife::connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent)
-{
-	_network->connectSim(ip, port, code, setCurrent);
 }
 
 void SecondLife::tick()
 {
 	Packet* packet;
-	bool returnValue;
 	std::list<Packet*>* inbox = _network->inbox();
 	
 	// When we get to stream handling, this function will build data stream
@@ -41,18 +38,16 @@ void SecondLife::tick()
 				handler = _callbacks.find("Default");
 				
 				if (handler != _callbacks.end()) {
-					returnValue = (handler->second)(command, packet);
+					(handler->second)(command, packet);
 				}
 			} else {
-				returnValue = (handler->second)(command, packet);
+				(handler->second)(command, packet);
 			}
 			
-			if (returnValue) {
-				//FIXME: What is the purpose of the return value?
-			}
+			delete packet;
 		}
 	}
-	
+
 	// Sleep for 1000 nanoseconds
 	boost::xtime xt;
 	boost::xtime_get(&xt, boost::TIME_UTC);

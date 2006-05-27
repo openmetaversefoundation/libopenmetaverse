@@ -1,5 +1,6 @@
 #include "SecondLife.h"
 #include <stdio.h>
+#include  <signal.h>
 
 SecondLife* client;
 
@@ -8,7 +9,7 @@ void loginHandler(loginParameters login)
 	LLUUID tempID;
 
 	if (login.reason.length()) {
-		printf("Login failed\n");
+		printf("test_app: Login failed\n");
 	} else {
 		// Set the variables received from login
 		client->session_id((LLUUID)login.session_id);
@@ -16,17 +17,17 @@ void loginHandler(loginParameters login)
 		client->agent_id((LLUUID)login.agent_id);
 
 		boost::asio::ipv4::address address(login.sim_ip);
-		client->_network->connectSim(address, login.sim_port, login.circuit_code, true);
+		client->connectSim(address, login.sim_port, login.circuit_code, true);
 
-		Packet* packet = new Packet("CompleteAgentMovement", client->_protocol);
+		Packet* packet = new Packet("CompleteAgentMovement", client->protocol());
 
 		tempID = client->agent_id();
-		packet->setField("AgentData", 1, "AgentID", &tempID);
+		packet->setField("AgentData", 1, "AgentID", 1, &tempID);
 		tempID = client->session_id();
-		packet->setField("AgentData", 1, "SessionID", &tempID);
-		packet->setField("AgentData", 1, "CircuitCode", &login.circuit_code);
+		packet->setField("AgentData", 1, "SessionID", 1, &tempID);
+		packet->setField("AgentData", 1, "CircuitCode", 1, &login.circuit_code);
 
-		client->_network->sendPacket(packet);
+		client->sendPacket(packet);
 
 		while (1) {
 			client->tick();
@@ -34,19 +35,30 @@ void loginHandler(loginParameters login)
 	}
 }
 
-bool receivedPacket(std::string command, Packet* packet)
+void ignorePacket(std::string command, Packet* packet)
+{
+	//printf("Ignoring...\n");
+}
+
+void receivedPacket(std::string command, Packet* packet)
 {
 	byte* data = packet->rawData();
 	size_t length = packet->length();
 	
-	// Debug
-	printf("Received datagram, length: %u\n", length);
-	for (size_t i = 0; i < length; i++) {
-		printf("%02x ", data[i]);
+	if (!command.length()) {
+		printf("test_app: Received foreign datagram. Possibly %u frequency:\n", packet->frequency());
+		
+		for (size_t i = 0; i < length; i++) {
+			printf("%02x ", data[i]);
+		}
+		printf("\n");
+
+		return;
 	}
-	printf("\n");
-	
-	return true;
+
+	printf("test_app: Received a %u byte %s datagram (%u)\n", length, command.c_str(), packet->sequence());
+
+	return;
 }
 
 int main()
@@ -54,34 +66,38 @@ int main()
 	client = new SecondLife();
 
 	if (client->loadKeywords("keywords.txt") == 0) {
-		printf("Loaded keyword file\n");
+		printf("test_app: Loaded keyword file\n");
 	} else {
-		printf("Failed to load the keyword file\n");
+		printf("test_app: Failed to load the keyword file\n");
 
 		delete client;
 		return -1;
 	}
-	
+
 	if (client->decryptCommFile("comm.dat", "output.txt") == 0) {
-		printf("Decrypted comm file\n");
+		printf("test_app: Decrypted comm file\n");
 	} else {
-		printf("Failed to decrypt the comm file\n");
+		printf("test_app: Failed to decrypt the comm file\n");
 	}
 
 	if (client->buildProtocolMap("output.txt") == 0) {
-		printf("Built protocol map\n");
+		printf("test_app: Built protocol map\n");
 	} else {
-		printf("Failed to build the protocol map\n");
+		printf("test_app: Failed to build the protocol map\n");
 
 		delete client;
 		return -2;
 	}
 
-	//client->_protocol->printMap();
+	//client->printMap();
 
+	client->registerCallback("ViewerEffect", &ignorePacket);
+	client->registerCallback("SimulatorViewerTimeMessage", &ignorePacket);
+	client->registerCallback("CoarseLocationUpdate", &ignorePacket);
 	client->registerCallback("Default", &receivedPacket);
-	
-	client->login("First", "Last", "password", "00:00:00:00:00:00", "Win", "0", "test_app", "email@address.com", loginHandler);
+
+	client->login("Chelsea", "Cork", "grape", "00:00:00:00:00:00", 1, 10, 0, 34, "Win", "0", "test_app",
+				  "jhurliman@wsu.edu", loginHandler);
 
 	delete client;
 	return 0;

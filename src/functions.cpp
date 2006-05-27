@@ -10,6 +10,13 @@ __inline static int atoin(char *s, unsigned int n)
 	return i;
 }
 
+// Trim an ISO C++ string by Marco Dorantes
+std::string trim(std::string &s, const std::string &drop)
+{
+	std::string r = s.erase(s.find_last_not_of(drop) + 1);
+	return r.erase(0, r.find_first_not_of(drop));
+}
+
 // Convert a "hex string" to an integer by Anders Molin
 int httoi(const char* value)
 {
@@ -171,3 +178,98 @@ std::string packUUID(std::string uuid)
 
 	return uuid;
 }
+
+void log(std::string line, LogLevel level)
+{
+	switch (level) {
+		case INFO:
+			line = "INFO: " + line;
+			break;
+		case WARNING:
+			line = "WARNING: " + line;
+			break;
+		case ERROR:
+			line = "ERROR: " + line;
+	}
+
+	line += "\n";
+
+	std::cout << line;
+
+	/*FILE* logFile = fopen("libsecondlife-log.txt", "a");
+	if (logFile) {
+		fwrite(line.c_str(), sizeof(char), line.length(), logFile);
+		fclose(logFile);
+	}*/
+}
+
+int zeroDecode(char* src, int srclen, char* dest, int destlen)
+{
+	int zerolen = 0;
+
+	if (src[0] & MSG_ZEROCODED) {
+		memcpy(dest, src, 4);
+		zerolen += 4;
+
+		for (int i = zerolen; i < srclen; i++) {
+			if ((unsigned char)src[i] == 0x00) {
+				for (unsigned char j = 0; j < (unsigned char)src[i+1]; j++) {
+					dest[zerolen++] = 0x00;
+				}
+
+				i++;
+			} else {
+				dest[zerolen++] = src[i];
+			}
+		}
+	} else {
+		memcpy(dest, src, srclen);
+		zerolen = srclen;
+	}
+
+	return zerolen;
+}
+
+int zeroEncode(char* src, int srclen, char* dest, int destlen)
+{
+	int zerolen = 0;
+	unsigned char zerocount = 0;
+
+	if (src[0] & MSG_ZEROCODED) {
+		memcpy(dest, src, 4);
+		zerolen += 4;
+
+		for (int i = zerolen; i < srclen; i++) {
+			if ((unsigned char)src[i] == 0x00) {
+				zerocount++;
+
+				if (zerocount == 0) {
+					dest[zerolen++] = 0x00;
+					dest[zerolen++] = 0xff;
+					zerocount++;
+				}
+			} else {
+				if (zerocount) {
+					dest[zerolen++] = 0x00;
+					dest[zerolen++] = zerocount;
+					zerocount = 0;
+				}
+
+				dest[zerolen++] = src[i];
+			}
+		}
+
+		if (zerocount) {
+			dest[zerolen++] = 0x00;
+			dest[zerolen++] = zerocount;
+		}
+	}
+	else
+	{
+		memcpy(dest, src, srclen);
+		zerolen = srclen;
+	}
+
+	return zerolen;
+}
+

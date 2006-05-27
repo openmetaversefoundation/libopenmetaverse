@@ -50,6 +50,12 @@ public:
 	SimConnection();
 	SimConnection(boost::asio::ipv4::address ip, unsigned short port, U32 code);
 	virtual ~SimConnection();
+	
+	std::string name() { return _name; };
+	void name(std::string name) { _name = name; };
+	
+	U32 code() { return _code; };
+	void code(U32 code) { _code = code; };
 
 	boost::asio::ipv4::udp::endpoint endpoint() { return _endpoint; };
 	void endpoint(boost::asio::ipv4::udp::endpoint endpoint) { _endpoint = endpoint; };

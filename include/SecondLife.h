@@ -36,14 +36,12 @@
 #include "Network.h"
 
 // Model for the callbacks:
-//  bool functionname(std::string command, Packet*)
-typedef boost::function2<bool, std::string, Packet*> callback;
+//  void functionname(std::string command, Packet*)
+typedef boost::function2<void, std::string, Packet*> callback;
 
 class LIBSECONDLIFE_CLASS_DECL SecondLife
 {
 protected:
-	
-public:
 	ProtocolManager* _protocol;
 	Network* _network;
 	bool _running;
@@ -51,28 +49,42 @@ public:
 	// for example the stream building functions
 	std::map<std::string, callback> _callbacks;
 
-//public:
+public:
 	SecondLife();
 	virtual ~SecondLife();
 
 	void registerCallback(std::string command, callback handler) { _callbacks[command] = handler; };
 
-	int loadKeywords(std::string filename) { return _protocol->loadKeywords(filename); };
-	int decryptCommFile(std::string source, std::string destination) { return _protocol->decryptCommFile(source, destination); };
-	int buildProtocolMap(std::string filename) { return _protocol->buildProtocolMap(filename); };
+	int loadKeywords(std::string filename)
+	{ return _protocol->loadKeywords(filename); };
+	int decryptCommFile(std::string source, std::string destination)
+	{ return _protocol->decryptCommFile(source, destination); };
+	int buildProtocolMap(std::string filename)
+	{ return _protocol->buildProtocolMap(filename); };
 
-	void login(std::string firstName, std::string lastName, std::string password, std::string mac, std::string platform,
-			   std::string viewerDigest, std::string userAgent, std::string author, loginCallback handler,
-			   std::string url = "https://login.agni.lindenlab.com/cgi-bin/login.cgi")
-	{ _network->login(firstName, lastName, password, mac, platform, viewerDigest, userAgent, author, handler, url); };
-	void connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
+	void printMap() { _protocol->printMap(); };
+
+	void login(std::string firstName, std::string lastName, std::string password, std::string mac,
+			   size_t major, size_t minor, size_t patch, size_t build,
+			   std::string platform, std::string viewerDigest, std::string userAgent, std::string author, 
+			   loginCallback handler, std::string url = "https://login.agni.lindenlab.com/cgi-bin/login.cgi")
+	{ _network->login(firstName, lastName, password, mac, major, minor, patch, build, platform, viewerDigest, 
+					  userAgent, author, handler, url); };
+	void connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false)
+	{ _network->connectSim(ip, port, code, setCurrent); };
+	
+	int sendPacket(Packet* packet) { return _network->sendPacket(packet); };
 
 	LLUUID agent_id() { return _network->agent_id(); };
 	void agent_id(LLUUID agent_id) { _network->agent_id(agent_id); };
+
 	LLUUID session_id() { return _network->session_id(); };
 	void session_id(LLUUID session_id) { _network->session_id(session_id); };
+
 	LLUUID secure_session_id() { return _network->secure_session_id(); };
 	void secure_session_id(LLUUID secure_session_id) { _network->secure_session_id(secure_session_id); };
+
+	ProtocolManager* protocol() { return _protocol; };
 
 	void tick();
 };

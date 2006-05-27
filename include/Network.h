@@ -87,11 +87,13 @@ public:
 	virtual ~Network();
 
 	void login(std::string firstName, std::string lastName, std::string password, std::string mac,
+			   size_t major, size_t minor, size_t patch, size_t build,
 			   std::string platform, std::string viewerDigest, std::string userAgent, std::string author,
 			   loginCallback handler, std::string url);
+	int connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
 
 	void listen(SimConnection* sim);
-	int connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
+
     int sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet);
 	int sendPacket(Packet* packet);
 	void receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer);

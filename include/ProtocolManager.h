@@ -52,6 +52,7 @@ namespace ll
 		BOOL,
 		LLVector3,
 		LLVector3d,
+		LLVector4,
 		LLQuaternion,
 		IPADDR,
 		IPPORT,
@@ -62,7 +63,7 @@ namespace ll
 	};
 
 	enum frequency {
-		Invalid,
+		Invalid = 0,
 		Low,
 		Medium,
 		High
@@ -88,10 +89,13 @@ typedef struct llQuaternion {
 	float s;
 } llQuaternion;
 
+#define llVector4 llQuaternion
+
 struct packetField {
 	int keywordPosition;
 	std::string name;
 	ll::llType type;
+	size_t frequency;
 };
 
 struct packetBlock {
@@ -133,6 +137,9 @@ typedef struct packetDiagram {
 class ProtocolManager
 {
 protected:
+	std::string llTypes[25];
+	int llTypesSizes[21];
+
 	std::map<std::string, int> _keywordMap;
 
 	// At some point these should become maps from command names to packetDiagram*s
@@ -152,16 +159,17 @@ public:
 	int decryptCommFile(std::string source, std::string destination);
 	int buildProtocolMap(std::string filename);
 
-	int getKeywordPosition(std::string keyword);
+	int keywordPosition(std::string keyword);
 
-	packetDiagram* getCommand(std::string command);
-	packetDiagram* getCommand(unsigned short command, ll::frequency frequency);
-	ll::llType getFieldType(std::string type);
-	static int getTypeSize(ll::llType type);
-	std::string getTypeName(ll::llType type);
-	int getBlockFrequency(packetDiagram* layout, std::string block);
-	size_t getBlockSize(packetDiagram* layout, std::string block);
-	int getFieldOffset(packetDiagram* layout, std::string block, std::string field);
+	packetDiagram* command(std::string command);
+	packetDiagram* command(unsigned short command, ll::frequency frequency);
+	std::string commandString(unsigned short command, ll::frequency frequency);
+	ll::llType fieldType(std::string type);
+	int typeSize(ll::llType type);
+	std::string typeName(ll::llType type);
+	int blockFrequency(packetDiagram* layout, std::string block);
+	size_t blockSize(packetDiagram* layout, std::string block);
+	int fieldOffset(packetDiagram* layout, std::string block, std::string field);
 };
 
 #endif //_SL_PROTOCOLMANAGER_

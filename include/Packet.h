@@ -35,7 +35,7 @@
 
 // Higher value will mean less realloc()s, more wasted memory. Lower value is
 // vice versa.
-#define DEFAULT_PACKET_SIZE 128
+#define DEFAULT_PACKET_SIZE 32
 
 class LIBSECONDLIFE_CLASS_DECL Packet
 {
@@ -48,16 +48,15 @@ protected:
 
 public:
 	Packet(std::string command = "TestMessage", ProtocolManager* protocol = NULL, size_t length = 0);
-	Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, byte headerLength,
-		   ll::frequency frequency);
+	Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, ll::frequency frequency);
 	virtual ~Packet();
 
 	std::string command();
 	bool command(std::string command);
 	
-	ll::llType getFieldType(std::string block, std::string field);
-	void* getField(std::string block, size_t blockNumber, std::string field);
-	int setField(std::string block, size_t blockNumber, std::string field, void* value);
+	ll::llType fieldType(std::string block, std::string field);
+	void* getField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber);
+	int setField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber, void* value);
 
 	size_t length() { return _length; };
 	byte* rawData();
@@ -70,6 +69,9 @@ public:
 
 	unsigned short sequence();
 	void sequence(unsigned short sequence);
+	
+	// Debug
+	packetDiagram* layout() { return _layout; };
 };
 
 #endif //_SL_PACKET_
