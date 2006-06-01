@@ -31,6 +31,79 @@ bool getBlockMarkers(const char* buffer, size_t &start, size_t &end, size_t &chi
 	return false;
 }
 
+FieldPtr createField(packetField* field, byte* data)
+{
+	FieldPtr fieldPtr;
+
+	switch (field->type) {
+		case types::U8:
+			fieldPtr.reset(new U8(data));
+			break;
+		case types::U16:
+			fieldPtr.reset(new U16(data));
+			break;
+		case types::U32:
+			fieldPtr.reset(new U32(data));
+			break;
+		case types::U64:
+			fieldPtr.reset(new U64_(data));
+			break;
+		case types::S8:
+			fieldPtr.reset(new S8(data));
+			break;
+		case types::S16:
+			fieldPtr.reset(new S16(data));
+			break;
+		case types::S32:
+			fieldPtr.reset(new S32(data));
+			break;
+		case types::S64:
+			fieldPtr.reset(new S64(data));
+			break;
+		case types::F32:
+			fieldPtr.reset(new F32(data));
+			break;
+		case types::F64:
+			fieldPtr.reset(new F64(data));
+			break;
+		case types::LLUUID:
+			fieldPtr.reset(new LLUUID(data));
+			break;
+		case types::Bool:
+			fieldPtr.reset(new Bool(data));
+			break;
+		case types::LLVector3:
+			fieldPtr.reset(new LLVector3(data));
+			break;
+		case types::LLVector3d:
+			fieldPtr.reset(new LLVector3d(data));
+			break;
+		case types::LLVector4:
+			fieldPtr.reset(new LLVector4(data));
+			break;
+		case types::LLQuaternion:
+			fieldPtr.reset(new LLQuaternion(data));
+			break;
+		case types::IPADDR:
+			fieldPtr.reset(new IPADDR(data));
+			break;
+		case types::IPPORT:
+			fieldPtr.reset(new IPPORT(data));
+			break;
+		case types::Variable:
+			log("Packet::createField(): Variable type", ERROR);
+			break;
+		case types::Invalid:
+			log("Packet::createField(): Invalid type", ERROR);
+			break;
+		default:
+			log("Packet::createField(): Unknown type", ERROR);
+			break;
+	}
+
+	return fieldPtr;
+}
+
 ProtocolManager::ProtocolManager()
 {
 	llTypes[0]  = "U8";
@@ -41,23 +114,21 @@ ProtocolManager::ProtocolManager()
 	llTypes[5]  = "S16";
 	llTypes[6]  = "S32";
 	llTypes[7]  = "S64";
-	llTypes[8]  = "F8";
-	llTypes[9]  = "F16";
-	llTypes[10] = "F32";
-	llTypes[11] = "F64";
-	llTypes[12] = "LLUUID";
-	llTypes[13] = "BOOL";
-	llTypes[14] = "LLVector3";
-	llTypes[15] = "LLVector3d";
-	llTypes[16] = "LLVector4";
-	llTypes[17] = "LLQuaternion";
-	llTypes[18] = "IPADDR";
-	llTypes[19] = "IPPORT";
-	llTypes[20] = "Variable";
-	llTypes[21] = "Fixed";
-	llTypes[22] = "Single";
-	llTypes[23] = "Multiple";
-	llTypes[24] = "";
+	llTypes[8] = "F32";
+	llTypes[9] = "F64";
+	llTypes[10] = "LLUUID";
+	llTypes[11] = "BOOL";
+	llTypes[12] = "LLVector3";
+	llTypes[13] = "LLVector3d";
+	llTypes[14] = "LLVector4";
+	llTypes[15] = "LLQuaternion";
+	llTypes[16] = "IPADDR";
+	llTypes[17] = "IPPORT";
+	llTypes[18] = "Variable";
+	llTypes[19] = "Fixed";
+	llTypes[20] = "Single";
+	llTypes[21] = "Multiple";
+	llTypes[22] = "";
 
 	llTypesSizes[0]  = 1;
 	llTypesSizes[1]  = 2;
@@ -67,19 +138,17 @@ ProtocolManager::ProtocolManager()
 	llTypesSizes[5]  = 2;
 	llTypesSizes[6]  = 4;
 	llTypesSizes[7]  = 8;
-	llTypesSizes[8]  = 1;
-	llTypesSizes[9]  = 2;
-	llTypesSizes[10] = 4;
-	llTypesSizes[11] = 8;
-	llTypesSizes[12] = 16;
-	llTypesSizes[13] = 1;
-	llTypesSizes[14] = sizeof(llVector3);
-	llTypesSizes[15] = sizeof(llVector3d);
-	llTypesSizes[16] = sizeof(llVector4);
-	llTypesSizes[17] = sizeof(llQuaternion);
-	llTypesSizes[18] = 4;
-	llTypesSizes[19] = 2;
-	llTypesSizes[20] = -1;
+	llTypesSizes[8] = 4;
+	llTypesSizes[9] = 8;
+	llTypesSizes[10] = 16;
+	llTypesSizes[11] = 1;
+	llTypesSizes[12] = 12;
+	llTypesSizes[13] = 24;
+	llTypesSizes[14] = 16;
+	llTypesSizes[15] = 16;
+	llTypesSizes[16] = 4;
+	llTypesSizes[17] = 2;
+	llTypesSizes[18] = -1;
 }
 
 ProtocolManager::~ProtocolManager()
@@ -134,7 +203,7 @@ void ProtocolManager::printMap()
 				   _lowPackets[i].encoded ? "Unencoded" : "Zerocoded");
 			
 			for (j = _lowPackets[i].blocks.begin(); j != _lowPackets[i].blocks.end(); ++j) {
-				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->frequency);
+				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
 					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
@@ -150,7 +219,7 @@ void ProtocolManager::printMap()
 				   _mediumPackets[i].encoded ? "Unencoded" : "Zerocoded");
 			
 			for (j = _mediumPackets[i].blocks.begin(); j != _mediumPackets[i].blocks.end(); ++j) {
-				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->frequency);
+				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
 					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
@@ -166,7 +235,7 @@ void ProtocolManager::printMap()
 				   _highPackets[i].encoded ? "Unencoded" : "Zerocoded");
 			
 			for (j = _highPackets[i].blocks.begin(); j != _highPackets[i].blocks.end(); ++j) {
-				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->frequency);
+				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
 					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
@@ -210,10 +279,10 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 		// Get the field type
 		delimiter = temp.find_first_of(" ");
 		if (delimiter != std::string::npos) {
-			field->frequency = atoi(temp.substr(delimiter + 1, temp.length() - delimiter - 1).c_str());
+			field->count = atoi(temp.substr(delimiter + 1, temp.length() - delimiter - 1).c_str());
 			temp = temp.substr(0, delimiter);
 		} else {
-			field->frequency = 1;
+			field->count = 1;
 		}
 		field->type = fieldType(temp);
 
@@ -255,14 +324,14 @@ bool ProtocolManager::getBlocks(packetDiagram* packet, std::string protocolMap, 
 		// Find the frequency of this block (-1 for variable, 1 for single)
 		temp = block_tokens.at(1);
 		if (temp == "Variable") {
-			block->frequency = -1;
+			block->count = -1;
 		} else if (temp == "Single") {
-			block->frequency = 1;
+			block->count = 1;
 		} else if (temp == "Multiple") {
 			std::istringstream int_stream(block_tokens.at(2));
-			int_stream >> block->frequency;
+			int_stream >> block->count;
 		} else {
-			block->frequency = 5;
+			block->count = 5;
 		}
 
 		// Get the keyword position of this block
@@ -400,21 +469,21 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 			int fixed = httoi(temp.c_str()) ^ 0xffff0000;
 			layout = &_lowPackets[fixed];
 			layout->id = fixed;
-			layout->frequency = ll::Low;
+			layout->frequency = frequencies::Low;
 		} else if (temp == "Low") {
 			layout = &_lowPackets[low];
 			layout->id = low;
-			layout->frequency = ll::Low;
+			layout->frequency = frequencies::Low;
 			low++;
 		} else if (temp == "Medium") {
 			layout = &_mediumPackets[medium];
 			layout->id = medium;
-			layout->frequency = ll::Medium;
+			layout->frequency = frequencies::Medium;
 			medium++;
 		} else if (temp == "High") {
 			layout = &_highPackets[high];
 			layout->id = high;
-			layout->frequency = ll::High;
+			layout->frequency = frequencies::High;
 			high++;
 		} else {
 			log("ProtocolManager::buildProtocolMap(): Unknown frequency: " + temp, ERROR);
@@ -466,17 +535,17 @@ packetDiagram* ProtocolManager::command(std::string command)
 	return NULL;
 }
 
-packetDiagram* ProtocolManager::command(unsigned short command, ll::frequency frequency)
+packetDiagram* ProtocolManager::command(unsigned short command, frequencies::Frequency frequency)
 {
 	switch (frequency)
 	{
-		case ll::Low:
+		case frequencies::Low:
 			return &_lowPackets[command];
-		case ll::Medium:
+		case frequencies::Medium:
 			return &_mediumPackets[command];
-		case ll::High:
+		case frequencies::High:
 			return &_highPackets[command];
-		case ll::Invalid:
+		case frequencies::Invalid:
 			break;
 	}
 
@@ -484,17 +553,17 @@ packetDiagram* ProtocolManager::command(unsigned short command, ll::frequency fr
 	return NULL;
 }
 
-std::string ProtocolManager::commandString(unsigned short command, ll::frequency frequency)
+std::string ProtocolManager::commandString(unsigned short command, frequencies::Frequency frequency)
 {
 	switch (frequency)
 	{
-		case ll::Low:
+		case frequencies::Low:
 			return _lowPackets[command].name;
-		case ll::Medium:
+		case frequencies::Medium:
 			return _mediumPackets[command].name;
-		case ll::High:
+		case frequencies::High:
 			return _highPackets[command].name;
-		case ll::Invalid:
+		case frequencies::Invalid:
 			break;
 		default:
 			break;
@@ -504,23 +573,23 @@ std::string ProtocolManager::commandString(unsigned short command, ll::frequency
 	return "";
 }
 
-ll::llType ProtocolManager::fieldType(std::string type)
+types::Type ProtocolManager::fieldType(std::string type)
 {
 	int i = 0;
 
 	while (llTypes[i].length()) {
 		if (type == llTypes[i]) {
-			return (ll::llType)i;
+			return (types::Type)i;
 		}
 
 		i++;
 	}
 
 	log("ProtocolManager::fieldType(): Unknown type: " + type, WARNING);
-	return ll::INVALID_TYPE;
+	return types::Invalid;
 }
 
-int ProtocolManager::typeSize(ll::llType type)
+int ProtocolManager::typeSize(types::Type type)
 {
 	if (type < 0 || type > 19) {
 		std::stringstream message;
@@ -533,7 +602,7 @@ int ProtocolManager::typeSize(ll::llType type)
 	return llTypesSizes[type];
 }
 
-std::string ProtocolManager::typeName(ll::llType type)
+std::string ProtocolManager::typeName(types::Type type)
 {
 	std::string typeName;
 
@@ -550,17 +619,17 @@ std::string ProtocolManager::typeName(ll::llType type)
 	return typeName;
 }
 
-int ProtocolManager::blockFrequency(packetDiagram* layout, std::string block)
+int ProtocolManager::blockCount(packetDiagram* layout, std::string block)
 {
 	std::list<packetBlock*>::iterator i;
 
 	for ( i = layout->blocks.begin(); i != layout->blocks.end(); ++i) {
 		if ((*i)->name == block) {
-			return (*i)->frequency;
+			return (*i)->count;
 		}
 	}
 
-	log("ProtocolManager::blockFrequency(): Unknown block: " + block, WARNING);
+	log("ProtocolManager::blockCount(): Unknown block: " + block, WARNING);
 	return 0;
 }
 

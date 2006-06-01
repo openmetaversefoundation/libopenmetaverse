@@ -9,7 +9,7 @@ SimConnection::SimConnection()
 	_sequence = 1;
 }
 
-SimConnection::SimConnection(boost::asio::ipv4::address ip, unsigned short port, U32 code)
+SimConnection::SimConnection(boost::asio::ipv4::address ip, unsigned short port, unsigned int code)
 {
 	_endpoint = boost::asio::ipv4::udp::endpoint(port, ip);
 	_code = code;

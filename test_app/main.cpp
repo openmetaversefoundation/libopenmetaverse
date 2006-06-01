@@ -6,28 +6,12 @@ SecondLife* client;
 
 void loginHandler(loginParameters login)
 {
-	LLUUID tempID;
-
 	if (login.reason.length()) {
 		printf("test_app: Login failed\n");
 	} else {
-		// Set the variables received from login
-		client->session_id((LLUUID)login.session_id);
-		client->secure_session_id((LLUUID)login.secure_session_id);
-		client->agent_id((LLUUID)login.agent_id);
-
-		boost::asio::ipv4::address address(login.sim_ip);
-		client->connectSim(address, login.sim_port, login.circuit_code, true);
-
-		Packet* packet = new Packet("CompleteAgentMovement", client->protocol());
-
-		tempID = client->agent_id();
-		packet->setField("AgentData", 1, "AgentID", 1, &tempID);
-		tempID = client->session_id();
-		packet->setField("AgentData", 1, "SessionID", 1, &tempID);
-		packet->setField("AgentData", 1, "CircuitCode", 1, &login.circuit_code);
-
-		client->sendPacket(packet);
+		PacketPtr packetPtr = DirLandQuery(client->protocol(), false, true, SimpleLLUUID(1), true, 0,
+								 		   client->agent_id(), client->session_id());
+		client->sendPacket(packetPtr);
 
 		while (1) {
 			client->tick();
@@ -35,18 +19,64 @@ void loginHandler(loginParameters login)
 	}
 }
 
-void ignorePacket(std::string command, Packet* packet)
+/*void writePacket(std::string command, PacketPtr packet)
 {
-	//printf("Ignoring...\n");
+	byte* data = packet->buffer();
+	size_t length = packet->length();
+
+	printf("Wrote packet to file\n");
+
+	FILE* file = fopen("dirlandreply.dat", "ab");
+	fwrite(data, length, 1, file);
+	fclose(file);
+}*/
+
+void landPacket(std::string command, PacketPtr packet)
+{
+	FieldList::iterator field;
+	BlockList::iterator block;
+	BlockList blocks = packet->getBlocks();
+	bool firstLand;
+	int area;
+	bool forSale;
+	byte* parcelID;
+	std::string name;
+	bool auction;
+	int salePrice;
+
+	for (block = blocks.begin(); block != blocks.end(); ++block) {
+		if ((*block)->name() == "QueryReplies") {
+			for (field = (*block)->fields.begin(); field != (*block)->fields.end(); ++field) {
+				if ((*field)->name() == "ReservedNewbie") {
+					firstLand = *(*field)->data;
+				} else if ((*field)->name() == "ActualArea") {
+					area = *(int*)(*field)->data;
+				} else if ((*field)->name() == "ForSale") {
+					forSale = *(*field)->data;
+				} else if ((*field)->name() == "ParcelID") {
+					parcelID = (*field)->data;
+				} else if ((*field)->name() == "Name") {
+					name = (char*)(*field)->data;
+				} else if ((*field)->name() == "Auction") {
+					auction = *(*field)->data;
+				} else if ((*field)->name() == "SalePrice") {
+					salePrice = *(int*)(*field)->data;
+				}
+			}
+
+			std::cout << name << " | Price: " << salePrice << " | Area: " << area << " | For Sale: "
+					  << forSale << " | Auction: " << auction << std::endl;
+		}
+	}
 }
 
-void receivedPacket(std::string command, Packet* packet)
+void receivedPacket(std::string command, PacketPtr packet)
 {
-	byte* data = packet->rawData();
+	/*byte* data = packet->buffer();
 	size_t length = packet->length();
 	
 	if (!command.length()) {
-		printf("test_app: Received foreign datagram. Possibly %u frequency:\n", packet->frequency());
+		printf("test_app: Received foreign datagram:\n");
 		
 		for (size_t i = 0; i < length; i++) {
 			printf("%02x ", data[i]);
@@ -58,7 +88,7 @@ void receivedPacket(std::string command, Packet* packet)
 
 	printf("test_app: Received a %u byte %s datagram (%u)\n", length, command.c_str(), packet->sequence());
 
-	return;
+	return;*/
 }
 
 int main()
@@ -91,12 +121,10 @@ int main()
 
 	//client->printMap();
 
-	client->registerCallback("ViewerEffect", &ignorePacket);
-	client->registerCallback("SimulatorViewerTimeMessage", &ignorePacket);
-	client->registerCallback("CoarseLocationUpdate", &ignorePacket);
+	client->registerCallback("DirLandReply", &landPacket);
 	client->registerCallback("Default", &receivedPacket);
 
-	client->login("Chelsea", "Cork", "grape", "00:00:00:00:00:00", 1, 10, 0, 34, "Win", "0", "test_app",
+	client->login("Chelsea", "Cork", "grapefruit", "00:00:00:00:00:00", 1, 10, 1, 0, "Win", "0", "test_app",
 				  "jhurliman@wsu.edu", loginHandler);
 
 	delete client;

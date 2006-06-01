@@ -31,47 +31,89 @@
 #define _SL_PACKET_
 
 #include "includes.h"
+#include "Fields.h"
 #include "ProtocolManager.h"
 
-// Higher value will mean less realloc()s, more wasted memory. Lower value is
-// vice versa.
-#define DEFAULT_PACKET_SIZE 32
+// Forward definitions for the smart pointers
+class PacketField;
+class PacketBlock;
+class Packet;
 
+// Smart pointers for the packet-related classes
+typedef boost::shared_ptr<Packet> PacketPtr;
+typedef boost::shared_ptr<PacketBlock> PacketBlockPtr;
+typedef boost::shared_ptr<PacketField> PacketFieldPtr;
+
+// Smart pointer lists
+typedef std::vector<PacketBlockPtr> BlockList;
+typedef std::vector<PacketFieldPtr> FieldList;
+
+//
+class PacketField
+{
+public:
+	packetField* layout;
+	byte* data;
+	size_t length;
+
+	PacketField(packetField* _layout, byte* _data, size_t _length)
+	{ layout = _layout; data = _data; length = _length; };
+
+	std::string name() { return layout->name; };
+	types::Type type() { return layout->type; };
+};
+
+//
+class PacketBlock
+{
+public:
+	packetBlock* layout;
+	FieldList fields;
+
+	PacketBlock(packetBlock* _layout) { layout = _layout; };
+
+	std::string name() { return layout->name; };
+};
+
+//
 class LIBSECONDLIFE_CLASS_DECL Packet
 {
 protected:
-	packetDiagram* _layout;
 	byte* _buffer;
 	size_t _length;
+	frequencies::Frequency _frequency;
+	std::string _command;
 	ProtocolManager* _protocol;
-	byte _headerLength;
+	packetDiagram* _layout;
 
 public:
-	Packet(std::string command = "TestMessage", ProtocolManager* protocol = NULL, size_t length = 0);
-	Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, ll::frequency frequency);
-	virtual ~Packet();
+	//std::vector<BlockContainerPtr> blockContainers;
 
-	std::string command();
-	bool command(std::string command);
-	
-	ll::llType fieldType(std::string block, std::string field);
-	void* getField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber);
-	int setField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber, void* value);
+	Packet(std::string command, ProtocolManager* protocol);
+	Packet(byte* buffer, size_t length, ProtocolManager* protocol);
+	~Packet() { free(_buffer); };
 
+	void payload(byte* payload, size_t payloadLength);
+
+	byte* buffer() { return _buffer; };
 	size_t length() { return _length; };
-	byte* rawData();
-	void rawData(byte* buffer, size_t length);
-
-	ll::frequency frequency();
-
+	
+	std::string command() { return _command; };
+	packetDiagram* layout() { return _layout; };
+	frequencies::Frequency frequency() { return _frequency; };
 	unsigned short flags();
 	void flags(unsigned short flags);
 
 	unsigned short sequence();
 	void sequence(unsigned short sequence);
-	
-	// Debug
-	packetDiagram* layout() { return _layout; };
+
+	size_t headerLength();
+
+	boost::any getField(std::string blockName, std::string fieldName);
+	boost::any getField(std::string blockName, size_t blockNumber, std::string fieldName);
+	PacketBlockPtr getBlock(std::string blockName);
+	PacketBlockPtr getBlock(std::string blockName, size_t blockNumber);
+	BlockList getBlocks();
 };
 
 #endif //_SL_PACKET_

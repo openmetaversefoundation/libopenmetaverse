@@ -8,6 +8,7 @@ lib libcrypto : : <name>crypto ;
 lib libsocket : : <name>socket ;
 lib libnsl : : <name>nsl ;
 lib boostthread : : <name>boost_thread ;
+lib libcurl : : <name>curl ;
 
 if $(UNIX)
 {
@@ -21,12 +22,14 @@ if $(UNIX)
 }
 
 lib secondlife 
-    : [ glob src/*.cpp ] 
-      openssl 
+    : [ glob src/*.cpp ]
+      openssl
       libcrypto
+      libcurl
       boostthread
       $(SOCKET_LIBS)
     : <threading>multi
+      <variant>debug:<define>DEBUG
     ;
 
 build-project test_app ;

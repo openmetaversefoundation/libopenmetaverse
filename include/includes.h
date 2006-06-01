@@ -45,10 +45,13 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/xtime.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/function.hpp>
+#include <boost/any.hpp>
 
 #include <netinet/in.h>
 
@@ -74,8 +77,8 @@ void hexstr2bin(const char* hex, byte* buf, size_t len);
 std::string rpcGetString(char* buffer, const char* name);
 int rpcGetU32(char* buffer, const char* name);
 std::string packUUID(std::string uuid);
-int zeroDecode(char* src, int srclen, char* dest, int destlen);
-int zeroEncode(char* src, int srclen, char* dest, int destlen);
+int zeroDecode(byte* src, int srclen, byte* dest);
+int zeroEncode(byte* src, int srclen, byte* dest);
 
 // Global logging facility
 enum LogLevel {
@@ -86,28 +89,23 @@ enum LogLevel {
 
 void log(std::string line, LogLevel level);
 
-// Global data types
-typedef unsigned int U32;
-typedef unsigned char U8;
-struct LLUUID {
-	byte data[16];
-	LLUUID() { *this = 0; };
-	LLUUID(std::string p) { hexstr2bin(packUUID(p).c_str(), data, 16); };
-	LLUUID operator=(const int p) { for (size_t i = 0; i < 16; i++) { data[i] = (byte)p; } return *this; };
-	LLUUID operator=(LLUUID p) { memcpy(data, p.data, 16); return *this; };
-	LLUUID operator=(std::string p) { hexstr2bin(packUUID(p).c_str(), data, 16); return *this; };
-};
-
 // Platform-specific defines
 #ifdef WIN32
-#pragma warning (disable : 4996 4251)
-#ifdef LIBSECONDLIFE_EXPORTS
-	#define LIBSECONDLIFE_CLASS_DECL       __declspec(dllexport)
+	#pragma warning (disable : 4996 4251)
+
+	#ifdef LIBSECONDLIFE_EXPORTS
+		#define LIBSECONDLIFE_CLASS_DECL       __declspec(dllexport)
+	#else
+		#define LIBSECONDLIFE_CLASS_DECL       __declspec(dllimport)
+	#endif //LIBSECONDLIFE_EXPORTS
+#elif GCC4
+	#ifdef LIBSECONDLIFE_EXPORTS
+		#define LIBSECONDLIFE_CLASS_DECL       ((visibility("visible")))
+	#else
+		#define LIBSECONDLIFE_CLASS_DECL
+	#endif //LIBSECONDLIFE_EXPORTS
 #else
-	#define LIBSECONDLIFE_CLASS_DECL       __declspec(dllimport)
-#endif
-#else
-#define LIBSECONDLIFE_CLASS_DECL
-#endif
+	#define LIBSECONDLIFE_CLASS_DECL
+#endif //WIN32
 
 #endif //_SL_INCLUDES_

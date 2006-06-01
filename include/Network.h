@@ -68,20 +68,19 @@ class SecondLife;
 class LIBSECONDLIFE_CLASS_DECL Network
 {
 protected:
-    boost::asio::demuxer _demuxer;
-	std::vector<SimConnection*> _connections;
-	std::list<Packet*> _inbox;
+	boost::asio::demuxer _demuxer;
+	std::vector<SimConnectionPtr> _connections;
+	std::list<PacketPtr> _inbox;
 	ProtocolManager* _protocol;
 	SecondLife* _secondlife;
-
-	LLUUID _agent_id;
-	LLUUID _session_id;
-	LLUUID _secure_session_id;
+	SimConnectionPtr _currentSim;
+	SimpleLLUUID _agent_id;
+	SimpleLLUUID _session_id;
+	SimpleLLUUID _secure_session_id;
 
 public:
-	// Debug
-	SimConnection* _currentSim;
-	boost::mutex _inboxMutex;
+	loginCallback callback;
+	boost::mutex inboxMutex;
 
 	Network(ProtocolManager* protocol, SecondLife* secondlife);
 	virtual ~Network();
@@ -90,22 +89,28 @@ public:
 			   size_t major, size_t minor, size_t patch, size_t build,
 			   std::string platform, std::string viewerDigest, std::string userAgent, std::string author,
 			   loginCallback handler, std::string url);
-	int connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false);
+	int connectSim(boost::asio::ipv4::address ip, unsigned short port, unsigned int code, bool setCurrent = false);
 
-	void listen(SimConnection* sim);
+	void listen(SimConnectionPtr sim);
 
-    int sendPacket(boost::asio::ipv4::address ip, unsigned short port, Packet* packet);
-	int sendPacket(Packet* packet);
+    int sendPacket(boost::asio::ipv4::address ip, unsigned short port, PacketPtr packet);
+	int sendPacket(PacketPtr packet);
 	void receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer);
 
-	std::list<Packet*>* inbox() { return &_inbox; };
+	std::list<PacketPtr>* inbox() { return &_inbox; };
 
-	LLUUID agent_id() { return _agent_id; };
-	void agent_id(LLUUID agent_id) { _agent_id = agent_id; };
-	LLUUID session_id() { return _session_id; };
-	void session_id(LLUUID session_id) { _session_id = session_id; };
-	LLUUID secure_session_id() { return _secure_session_id; };
-	void secure_session_id(LLUUID secure_session_id) { _secure_session_id = secure_session_id; };
+	ProtocolManager* protocol() { return _protocol; };
+
+	SimConnectionPtr currentSim() { return _currentSim; };
+
+	SimpleLLUUID agent_id() { return _agent_id; };
+	void agent_id(SimpleLLUUID agent_id) { _agent_id = agent_id; };
+
+	SimpleLLUUID session_id() { return _session_id; };
+	void session_id(SimpleLLUUID session_id) { _session_id = session_id; };
+
+	SimpleLLUUID secure_session_id() { return _secure_session_id; };
+	void secure_session_id(SimpleLLUUID secure_session_id) { _secure_session_id = secure_session_id; };
 };
 
 #endif //_SL_NETWORK_

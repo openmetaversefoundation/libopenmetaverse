@@ -31,77 +31,19 @@
 #define _SL_PROTOCOLMANAGER_
 
 #include "includes.h"
-
-namespace ll
-{
-	enum llType {
-		INVALID_TYPE = -1,
-		U8,
-		U16,
-		U32,
-		U64,
-		S8,
-		S16,
-		S32,
-		S64,
-		F8,
-		F16,
-		F32,
-		F64,
-		LLUUID,
-		BOOL,
-		LLVector3,
-		LLVector3d,
-		LLVector4,
-		LLQuaternion,
-		IPADDR,
-		IPPORT,
-		Variable,
-		Fixed,
-		Single,
-		Multiple
-	};
-
-	enum frequency {
-		Invalid = 0,
-		Low,
-		Medium,
-		High
-	};
-};
-
-typedef struct llVector3 {
-	float x;
-	float y;
-	float z;
-} llVector3;
-
-typedef struct llVector3d {
-	double x;
-	double y;
-	double z;
-} llVector3d;
-
-typedef struct llQuaternion {
-	float x;
-	float y;
-	float z;
-	float s;
-} llQuaternion;
-
-#define llVector4 llQuaternion
+#include "Fields.h"
 
 struct packetField {
 	int keywordPosition;
 	std::string name;
-	ll::llType type;
-	size_t frequency;
+	types::Type type;
+	size_t count;
 };
 
 struct packetBlock {
 	int keywordPosition;
 	std::string name;
-	int frequency;
+	int count;
 	std::list<packetField*> fields;
 };
 
@@ -127,12 +69,14 @@ namespace std
 typedef struct packetDiagram {
 	unsigned short id;
 	std::string name;
-	ll::frequency frequency;
+	frequencies::Frequency frequency;
 	bool trusted;
 	bool encoded;
 	std::list<packetBlock*> blocks;
 } packetDiagram;
 
+// Convenience function
+FieldPtr createField(packetField* field, byte* data);
 
 class ProtocolManager
 {
@@ -162,13 +106,17 @@ public:
 	int keywordPosition(std::string keyword);
 
 	packetDiagram* command(std::string command);
-	packetDiagram* command(unsigned short command, ll::frequency frequency);
-	std::string commandString(unsigned short command, ll::frequency frequency);
-	ll::llType fieldType(std::string type);
-	int typeSize(ll::llType type);
-	std::string typeName(ll::llType type);
-	int blockFrequency(packetDiagram* layout, std::string block);
+	packetDiagram* command(unsigned short command, frequencies::Frequency frequency);
+
+	std::string commandString(unsigned short command, frequencies::Frequency frequency);
+
+	types::Type fieldType(std::string type);
+	int typeSize(types::Type type);
+	std::string typeName(types::Type type);
+
+	int blockCount(packetDiagram* layout, std::string block);
 	size_t blockSize(packetDiagram* layout, std::string block);
+
 	int fieldOffset(packetDiagram* layout, std::string block, std::string field);
 };
 

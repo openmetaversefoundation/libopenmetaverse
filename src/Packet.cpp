@@ -1,361 +1,401 @@
 #include "Packet.h"
 
-Packet::Packet(std::string command, ProtocolManager* protocol, size_t length)
+/*BlockContainer::BlockContainer(packetBlock* _layout)
 {
-	// Make the minimum length sane to avoid excessive bounds checking
-	_length = (length > 5) ? length : 0;
-	_protocol = protocol;
-	unsigned short flags;
+	layout = _layout;
 
-	_layout = _protocol->command(command);
-
-	if (!_layout) {
-		log("Packet::Packet(): Trying to initialize with invalid command: " + command, ERROR);
-		_buffer = NULL;
-		_length = 0;
-	} else {
-		_buffer = (byte*)calloc(_length ? _length : DEFAULT_PACKET_SIZE, sizeof(byte));
-
-		if (!_buffer) {
-			std::stringstream message;
-			message << "Packet::Packet(): " << (_length ? _length : DEFAULT_PACKET_SIZE) << " byte calloc failed";
-			log(message.str(), ERROR);
-			_length = 0;
-		}
-
-		// Setup the flags
-		//FIXME: The flags are wrong right now, UseCircuitCode is supposed to be 0x4000 but
-		//       the current setup has it at 0x0000 according to the protocol map. Was
-		//       snowcrash wrong? Why are virtually all packets (except acks) sent with
-		//       0x4000 when lots of commands are untrusted? trusted != reliable?
-		flags = (_layout->trusted & MSG_RELIABLE) + (_layout->encoded & MSG_ZEROCODED);
-		
-		//FIXME: Serious hack to temporarily work around the aforementioned problem
-		if (!flags) {
-			flags = 0x40;
-		}
-
-		memcpy(_buffer, &flags, 2);
-
-		// Setup the frequency/id bytes
-		switch (_layout->frequency) {
-			case ll::Low:
-				if (_length < 8) {
-					_buffer = (byte*)realloc(_buffer, 8);
-					if (!_buffer) {
-						log("Packet::Packet(): 8 byte realloc failed", ERROR);
-						_length = 0;
-					} else {
-						_length = 8;
-					}
-				}
-
-				_buffer[4] = 0xFF;
-				_buffer[5] = 0xFF;
-				flags = htons(_layout->id);
-				memcpy(_buffer + 6, &flags, 2);
-				_headerLength = 8;
-				break;
-			case ll::Medium:
-				if (_length < 6) {
-					_buffer = (byte*)realloc(_buffer, 6);
-					if (!_buffer) {
-						log("Packet::Packet(): 6 byte realloc failed", ERROR);
-						_length = 0;
-					} else {
-						_length = 6;
-					}
-				}
-
-				_buffer[4] = 0xFF;
-				_buffer[5] = _layout->id;
-				_headerLength = 6;
-				break;
-			case ll::High:
-				if (_length < 5) {
-					_buffer = (byte*)realloc(_buffer, 5);
-					if (!_buffer) {
-						log("Packet::Packet(): 5 byte realloc failed", ERROR);
-						_length = 0;
-					} else {
-						_length = 5;
-					}
-				}
-
-				_buffer[4] = _layout->id;
-				_headerLength = 5;
-				break;
-			case ll::Invalid:
-				//FIXME: Log
-				break;
-		}
+	if (layout) {
+		variable = ((layout->frequency == -1) ? true : false);
 	}
 }
 
-Packet::Packet(unsigned short command, ProtocolManager* protocol, byte* buffer, size_t length, ll::frequency frequency)
+BlockContainer::BlockContainer(ProtocolManager* protocol, std::string command, std::string blockName)
 {
-	_length = length;
+	std::list<packetBlock*>::iterator block;
+
+	packetDiagram* _layout = protocol->command(command);
+
+	if (_layout) {
+		for (block = _layout->blocks.begin(); block != _layout->blocks.end(); ++block) {
+			if ((*block)->name == blockName) {
+				layout = (*block);
+				variable = ((layout->frequency == -1) ? true : false);
+				return;
+			}
+		}
+
+		log("BlockContainer::BlockContainer(): Block lookup: " + blockName + ", failed in command: " + command, ERROR);
+	} else {
+		log("BlockContainer::BlockContainer(): Command lookup failed: " + command, ERROR);
+	}
+}*/
+
+Packet::Packet(std::string command, ProtocolManager* protocol)
+{
+	unsigned short id;
+
 	_protocol = protocol;
-	_layout = _protocol->command(command, frequency);
+	_command = command;
+	_layout = _protocol->command(_command);
 
 	if (!_layout) {
-		std::stringstream message;
-		message << "Packet::Packet(): Trying to build a packet from unknown command code " << command <<
-				", frequency " << frequency;
-		log(message.str(), ERROR);
+		log("Packet::Packet(): Initializing with invalid command: \"" + _command + "\"", ERROR);
+		_buffer = NULL;
+		_length = 0;
+		return;
 	}
+
+	_frequency = _layout->frequency;
+
+	switch (_layout->frequency) {
+		case frequencies::Low:
+			_buffer = (byte*)malloc(8);
+			_buffer[4] = _buffer[5] = 0xFF;
+			id = _layout->id;
+			id = htons(id);
+			memcpy(_buffer + 6, &id, 2);
+			_length = 8;
+			break;
+		case frequencies::Medium:
+			_buffer = (byte*)malloc(6);
+			_buffer[4] = 0xFF;
+			_buffer[5] = (byte)_layout->id;
+			_length = 6;
+			break;
+		case frequencies::High:
+			_buffer = (byte*)malloc(5);
+			_buffer[4] = (byte)_layout->id;
+			_length = 5;
+			break;
+		case frequencies::Invalid:
+			log("Packet::Packet(): Command \"" + _command + "\" has an invalid frequency", ERROR);
+			_buffer = NULL;
+			_length = 0;
+			return;
+		default:
+			log("Packet::Packet(): Command \"" + _command + "\" has an unknown frequency", ERROR);
+			_buffer = NULL;
+			_length = 0;
+			return;
+	}
+}
+
+Packet::Packet(byte* buffer, size_t length, ProtocolManager* protocol)
+{
+	unsigned short command;
+
+	_protocol = protocol;
 
 	_buffer = (byte*)malloc(length);
 	if (!_buffer) {
-		//FIXME: Log memory error
+		log("Packet::Packet(): malloc() failed", ERROR);
 		_length = 0;
 		return;
 	}
 
 	memcpy(_buffer, buffer, length);
+	_length = length;
 
-	switch (frequency) {
-		case ll::Low:
-			_headerLength = 8;
-		case ll::Medium:
-			_headerLength = 6;
-		case ll::High:
-			_headerLength = 5;
-		case ll::Invalid:
-			_headerLength = 0;
+	// Determine the packet frequency
+	if (_length > 4) {
+		if (_buffer[4] == 0xFF) {
+			if (_buffer[5] == 0xFF) {
+				// Low frequency
+				_frequency = frequencies::Low;
+				memcpy(&command, &_buffer[6], 2);
+				command = ntohs(command);
+				_layout = _protocol->command(command, frequencies::Low);
+				_command = _protocol->commandString(command, frequencies::Low);
+			} else {
+				// Medium frequency
+				_frequency = frequencies::Medium;
+				command = _buffer[5];
+				_layout = _protocol->command(command, frequencies::Medium);
+				_command = _protocol->commandString(command, frequencies::Medium);
+			}
+		} else {
+			// High frequency
+			_frequency = frequencies::High;
+			command = _buffer[4];
+			_layout = _protocol->command(command, frequencies::High);
+			_command = _protocol->commandString(command, frequencies::High);
+		}
+	} else {
+		log("Received a datagram less than five bytes", WARNING);
 	}
 }
 
-Packet::~Packet()
+void Packet::payload(byte* payload, size_t payloadLength)
 {
-	free(_buffer);
-}
+	if (_buffer) {
+		_buffer = (byte*)realloc(_buffer, _length + payloadLength);
 
-ll::frequency Packet::frequency()
-{
-	return _layout ? _layout->frequency : ll::Invalid;
+		if (_buffer) {
+			memcpy(_buffer + _length, payload, payloadLength);
+			_length += payloadLength;
+		} else {
+			log("Packet::payload(): realloc() failed", ERROR);
+		}
+	} else {
+		log("Packet::payload(): Attempting to append a payload to a packet with a null buffer", ERROR);
+	}
 }
 
 unsigned short Packet::flags()
 {
-	if (_length < 2) {
-		log("Packet::flags(): Flags requested on a datagram less than 2 bytes", WARNING);
-		return 0;
-	}
-
-	return (unsigned short)*_buffer;
+	unsigned short* flags = (unsigned short*)_buffer;
+	return ntohs(*flags);
 }
 
 void Packet::flags(unsigned short flags)
 {
-	if (_length < 2) {
-		// Make room, assume the default packet size
-		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
-
-		if (!_buffer) {
-			std::stringstream message;
-			message << "Packet::flags(): " << DEFAULT_PACKET_SIZE << " byte realloc failed";
-			log(message.str(), ERROR);
-
-			_length = 0;
-			return;
-		} else {
-			_length = 2;
-		}
+	if (_buffer && _length > 2) {
+		memcpy(_buffer, &flags, 2);
+	} else {
+		log("Packet::flags(): Null or too short buffer", ERROR);
 	}
-
-	memcpy(_buffer, &flags, 2);
 }
 
 unsigned short Packet::sequence()
 {
-	if (_length < 4) {
-		log("Packet::sequence(): Sequence requested on a datagram less than 4 bytes", WARNING);
-		return 0;
-	}
-	
-	unsigned short sequence;
-	memcpy(&sequence, _buffer + 2, 2);
-	//return ntohs((unsigned short)*(_buffer + 2));
-	return ntohs(sequence);
+	unsigned short* sequence = (unsigned short*)(_buffer + 2);
+	return ntohs(*sequence);
 }
 
 void Packet::sequence(unsigned short sequence)
 {
-	if (_length < 4) {
-		// Make room, assume the default packet size
-		_buffer = (byte*)realloc(_buffer, DEFAULT_PACKET_SIZE);
+	if (_buffer && _length > 4) {
+		sequence = htons(sequence);
+		memcpy(_buffer + 2, &sequence, 2);
+	} else {
+		log("Packet::sequence(): Null or too short buffer", ERROR);
+	}
+}
 
-		if (!_buffer) {
-			std::stringstream message;
-			message << "Packet::sequence(): " << DEFAULT_PACKET_SIZE << " byte realloc failed";
-			log(message.str(), ERROR);
-
-			_length = 0;
-			return;
-		} else {
-			_length = 4;
+size_t Packet::headerLength()
+{
+	if (_layout) {
+		switch (_layout->frequency) {
+			case frequencies::Low:
+				return 8;
+			case frequencies::Medium:
+				return 6;
+			case frequencies::High:
+				return 5;
+			case frequencies::Invalid:
+				log("Packet::headerLength(): Invalid frequency", ERROR);
+				break;
+			default:
+				log("Packet::headerLength(): Unknown frequency", ERROR);
 		}
+	} else {
+		log("Packet::headerLength(): layout is NULL", ERROR);
 	}
-
-	unsigned short nSequence = htons(sequence);
-	memcpy(_buffer + 2, &nSequence, sizeof(sequence));
-}
-
-std::string Packet::command()
-{
-	return _layout->name;
-}
-
-bool Packet::command(std::string command)
-{
-	packetDiagram* layout = _protocol->command(command);
-	if (!layout) return false;
-
-	_layout = layout;
-	return true;
-}
-
-ll::llType Packet::fieldType(std::string block, std::string field)
-{
-	std::list<packetBlock*>::iterator i;
-
-	for (i = _layout->blocks.begin(); i != _layout->blocks.end(); ++i) {
-		if ((*i)->name == block) {
-			packetBlock* block = (*i);
-
-			std::list<packetField*>::iterator j;
-
-			for (j = block->fields.begin(); j != block->fields.end(); ++j) {
-				if ((*j)->name == field) {
-					return (*j)->type;
-				}
-			}
-		}
-
-		log("Packet::fieldType(): Couldn't find field " + field + " in block " + block, ERROR);
-		return ll::INVALID_TYPE;
-	}
-
-	log("Packet::fieldType(): Couldn't find block " + block, ERROR);
-	return ll::INVALID_TYPE;
-}
-
-void* Packet::getField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber)
-{
-	// Check how many blocks this field can hold, and if blockNumber is in range
-	int frequency = _protocol->blockFrequency(_layout, block);
-	if (frequency != -1 && (int)blockNumber > frequency) {
-		// blockNumber is out of range
-		//FIXME: Log
-		return NULL;
-	}
-
-	// Find the total offset for the field
-	size_t blockSize = _protocol->blockSize(_layout, block);
-	if (!blockSize) {
-		//FIXME: Log
-		return NULL;
-	}
-	
-	// Find out what type of field this is
-	ll::llType type = fieldType(block, field);
-	if (type == ll::INVALID_TYPE) {
-		log("Packet::getField(): Couldn't find field type for: " + field + ", in block: " + block, ERROR);
-		return NULL;
-	}
-
-	// Get the offset for this field
-	int fieldOffset = _protocol->fieldOffset(_layout, block, field);
-	if (fieldOffset < 0) {
-		log("Packet::getField(): Couldn't get the field offset for: " + field + ", in block: " + block, ERROR);
-		return NULL;
-	}
-
-	// Get the size of this type of field
-	size_t fieldSize = _protocol->typeSize(type);
-
-	return (void*)(_buffer + _headerLength + blockSize * blockNumber + fieldOffset + fieldSize * (fieldNumber - 1));
-}
-
-int Packet::setField(std::string block, size_t blockNumber, std::string field, size_t fieldNumber, void* value)
-{
-	if (!_layout) {
-		//FIXME: Log
-		return -1;
-	}
-
-	// Find out what type of field this is
-	ll::llType type = fieldType(block, field);
-	if (type == ll::INVALID_TYPE) {
-		log("Packet::setField(): Couldn't find field type for: " + field + ", in block: " + block, ERROR);
-		return -2;
-	}
-
-	// Check how many blocks this field can hold, and if blockNumber is in range
-	int frequency = _protocol->blockFrequency(_layout, block);
-	if (blockNumber <= 0 || (frequency != -1 && (int)blockNumber > frequency)) {
-		// blockNumber is out of range
-		//FIXME: Log
-		return -3;
-	}
-
-	// Find the total offset for the field
-	size_t blockSize = _protocol->blockSize(_layout, block);
-	if (!blockSize) {
-		//FIXME: Log
-		return -4;
-	}
-
-	int fieldOffset = _protocol->fieldOffset(_layout, block, field);
-	if (fieldOffset < 0) {
-		log("Packet::setField(): Couldn't get the field offset for: " + field + ", in block: " + block, ERROR);
-		return -5;
-	}
-	
-	size_t fieldSize = _protocol->typeSize(type);
-	size_t offset = _headerLength + blockSize * (blockNumber - 1) + fieldOffset + fieldSize * (fieldNumber - 1);
-
-	// Reallocate memory if necessary
-	if ((offset + fieldSize) > _length) {
-		_buffer = (byte*)realloc(_buffer, offset + fieldSize);
-		if (!_buffer) {
-			std::stringstream message;
-			message << "Packet::setField(): " << offset + fieldSize << " byte realloc failed";
-			log(message.str(), ERROR);
-
-			_length = 0;
-			return -6;
-		}
-
-		_length = offset + fieldSize;
-	}
-
-	// Write the actual value
-	memcpy(_buffer + offset, value, fieldSize);
 
 	return 0;
 }
 
-byte* Packet::rawData()
+boost::any Packet::getField(std::string blockName, std::string fieldName)
 {
-	return _buffer;
+	return 0;
 }
 
-void Packet::rawData(byte* buffer, size_t length)
+boost::any Packet::getField(std::string blockName, size_t blockNumber, std::string fieldName)
 {
-	if (length > _length) {
-		_buffer = (byte*)realloc(_buffer, length);
-		if (!_buffer) {
-			std::stringstream message;
-			message << "Packet::rawData(): " << length << " byte realloc failed";
-			log(message.str(), ERROR);
+	return 0;
+}
 
-			_length = 0;
-			return;
+PacketBlockPtr Packet::getBlock(std::string blockName)
+{
+	PacketBlockPtr block;
+
+	return block;
+}
+
+PacketBlockPtr Packet::getBlock(std::string blockName, size_t blockNumber)
+{
+	PacketBlockPtr block;
+
+	return block;
+}
+
+BlockList Packet::getBlocks()
+{
+	std::list<packetBlock*>::iterator blockMap;
+	std::list<packetField*>::iterator fieldMap;
+	BlockList blockList;
+	PacketBlockPtr block;
+	size_t pos = headerLength();
+
+	for (blockMap = _layout->blocks.begin(); blockMap != _layout->blocks.end(); ++blockMap) {
+		size_t blockCount;
+
+		if ((*blockMap)->count == -1) {
+			if (pos < _length) {
+				blockCount = _buffer[pos];
+				pos++;
+			} else {
+				log("Packet::getBlocks(): goto 1 reached", WARNING);
+				goto done;
+			}
+		} else {
+			blockCount = (*blockMap)->count;
+		}
+		
+		for (size_t i = 0; i < blockCount; ++i) {
+			block.reset(new PacketBlock(*blockMap));
+			blockList.push_back(block);
+
+			for (fieldMap = (*blockMap)->fields.begin(); fieldMap != (*blockMap)->fields.end(); ++fieldMap) {
+				size_t fieldCount = (*fieldMap)->count;
+
+				for (size_t j = 0; j < fieldCount; ++j) {
+					size_t fieldSize;
+
+					if ((*fieldMap)->type == types::Variable) {
+						if (pos < _length) {
+							fieldSize = _buffer[pos];
+							pos++;
+						} else {
+							log("Packet::getBlocks(): goto 2 reached", WARNING);
+							goto done;
+						}
+					} else {
+						fieldSize = _protocol->typeSize((*fieldMap)->type);
+					}
+
+					if (pos + fieldSize <= _length) {
+						PacketFieldPtr packetFieldPtr(new PacketField(*fieldMap, _buffer + pos, fieldSize));
+						block->fields.push_back(packetFieldPtr);
+
+						pos += fieldSize;
+					} else {
+						log("Packet::getBlocks(): goto 3 reached", WARNING);
+						goto done;
+					}
+				}
+			}
 		}
 	}
 
-	memcpy(_buffer, buffer, length);
-	_length = length;
+done:
+
+	return blockList;
 }
+
+
+/*void Packet::unserialize()
+{
+	size_t pos;
+	size_t i;
+	size_t j;
+	size_t fieldSize;
+	byte frequency;
+	byte fieldFrequency;
+	unsigned short command;
+	std::list<packetBlock*>::iterator block;
+	std::list<packetField*>::iterator field;
+
+	// Determine the packet frequency
+	if (_length > 4) {
+		if (_buffer[4] == 0xFF) {
+			if (_buffer[5] == 0xFF) {
+				// Low frequency
+				_frequency = frequencies::Low;
+				memcpy(&command, &_buffer[6], 2);
+				command = ntohs(command);
+				_layout = _protocol->command(command, frequencies::Low);
+				_command = _protocol->commandString(command, frequencies::Low);
+				pos = 8;
+			} else {
+				// Medium frequency
+				_frequency = frequencies::Medium;
+				command = _buffer[5];
+				_layout = _protocol->command(command, frequencies::Medium);
+				_command = _protocol->commandString(command, frequencies::Medium);
+				pos = 6;
+			}
+		} else {
+			// High frequency
+			_frequency = frequencies::High;
+			command = _buffer[4];
+			_layout = _protocol->command(command, frequencies::High);
+			_command = _protocol->commandString(command, frequencies::High);
+			pos = 5;
+		}
+	} else {
+		pos = _length;
+	}
+
+	// Clear any old structures
+	blockContainers.clear();
+
+	// Iterate through the packet map
+	if (_layout) {
+		for (block = _layout->blocks.begin(); block != _layout->blocks.end(); ++block) {
+			if (pos <= _length) {
+				// Get the number of occurrences for this block
+				if ((*block)->frequency == -1) {
+					// First byte of a variable block is the number of occurrences (frequency)
+					memcpy(&frequency, _buffer + pos, 1);
+					pos++;
+				} else {
+					frequency = (*block)->frequency;
+				}
+
+				// Create a BlockContainer for this block
+				BlockContainerPtr blockContainerPtr(new BlockContainer((*block)));
+				blockContainers.push_back(blockContainerPtr);
+
+				// Iterate through this set of blocks
+				for (i = 0; i < frequency; ++i) {
+					BlockPtr blockPtr(new Block());
+					blockContainerPtr->blocks.push_back(blockPtr);
+
+					// Iterate through this block
+					for (field = (*block)->fields.begin(); field != (*block)->fields.end(); ++field) {
+						if (pos <= _length) {
+							fieldFrequency = (*field)->frequency;
+
+							for (j = 0; j < fieldFrequency; j++) {
+								if ((*field)->type == types::Variable) {
+									// First byte of a variable field is the length in bytes
+									size_t length;
+									memcpy(&length, _buffer + pos, 1);
+									pos++;
+
+									FieldPtr fieldPtr(new Variable(_buffer + pos, length));
+									blockPtr->push_back(fieldPtr);
+									pos += length;
+								} else {
+									// Get the size of this field
+									fieldSize = _protocol->typeSize((*field)->type);
+
+									if (pos + fieldSize <= _length) {
+										FieldPtr fieldPtr = createField((*field), _buffer + pos);
+										blockPtr->push_back(fieldPtr);
+										pos += fieldSize;
+									} else {
+										log("Reached the end of the packet before the end of the map (1)", WARNING);
+										goto done;
+									}
+								}
+							}
+						} else {
+							//log("Reached the end of the packet before the end of the map (2)", WARNING);
+							goto done;
+						}
+					}
+				}
+			} else {
+				log("Reached the end of the packet before the end of the map (3)", WARNING);
+				goto done;
+			}
+		}
+	} else {
+		log("Packet::unserialize(): Trying to unserialize a packet with no layout", ERROR);
+	}
+
+done:
+	return;
+}*/

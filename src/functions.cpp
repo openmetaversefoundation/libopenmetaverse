@@ -194,80 +194,70 @@ void log(std::string line, LogLevel level)
 
 	line += "\n";
 
+#ifdef DEBUG
 	std::cout << line;
-
-	/*FILE* logFile = fopen("libsecondlife-log.txt", "a");
+#else
+	FILE* logFile = fopen("libsecondlife-log.txt", "a");
 	if (logFile) {
 		fwrite(line.c_str(), sizeof(char), line.length(), logFile);
 		fclose(logFile);
-	}*/
+	}
+#endif
 }
 
-int zeroDecode(char* src, int srclen, char* dest, int destlen)
+int zeroDecode(byte* src, int srclen, byte* dest)
 {
 	int zerolen = 0;
 
-	if (src[0] & MSG_ZEROCODED) {
-		memcpy(dest, src, 4);
-		zerolen += 4;
+	memcpy(dest, src, 4);
+	zerolen += 4;
 
-		for (int i = zerolen; i < srclen; i++) {
-			if ((unsigned char)src[i] == 0x00) {
-				for (unsigned char j = 0; j < (unsigned char)src[i+1]; j++) {
-					dest[zerolen++] = 0x00;
-				}
-
-				i++;
-			} else {
-				dest[zerolen++] = src[i];
+	for (int i = zerolen; i < srclen; i++) {
+		if (src[i] == 0x00) {
+			for (byte j = 0; j < src[i + 1]; j++) {
+				dest[zerolen++] = 0x00;
 			}
+
+			i++;
+		} else {
+			dest[zerolen++] = src[i];
 		}
-	} else {
-		memcpy(dest, src, srclen);
-		zerolen = srclen;
 	}
 
 	return zerolen;
 }
 
-int zeroEncode(char* src, int srclen, char* dest, int destlen)
+int zeroEncode(byte* src, int srclen, byte* dest)
 {
 	int zerolen = 0;
-	unsigned char zerocount = 0;
+	byte zerocount = 0;
 
-	if (src[0] & MSG_ZEROCODED) {
-		memcpy(dest, src, 4);
-		zerolen += 4;
+	memcpy(dest, src, 4);
+	zerolen += 4;
 
-		for (int i = zerolen; i < srclen; i++) {
-			if ((unsigned char)src[i] == 0x00) {
+	for (int i = zerolen; i < srclen; i++) {
+		if (src[i] == 0x00) {
+			zerocount++;
+
+			if (zerocount == 0) {
+				dest[zerolen++] = 0x00;
+				dest[zerolen++] = 0xff;
 				zerocount++;
-
-				if (zerocount == 0) {
-					dest[zerolen++] = 0x00;
-					dest[zerolen++] = 0xff;
-					zerocount++;
-				}
-			} else {
-				if (zerocount) {
-					dest[zerolen++] = 0x00;
-					dest[zerolen++] = zerocount;
-					zerocount = 0;
-				}
-
-				dest[zerolen++] = src[i];
 			}
-		}
+		} else {
+			if (zerocount) {
+				dest[zerolen++] = 0x00;
+				dest[zerolen++] = zerocount;
+				zerocount = 0;
+			}
 
-		if (zerocount) {
-			dest[zerolen++] = 0x00;
-			dest[zerolen++] = zerocount;
+			dest[zerolen++] = src[i];
 		}
 	}
-	else
-	{
-		memcpy(dest, src, srclen);
-		zerolen = srclen;
+
+	if (zerocount) {
+		dest[zerolen++] = 0x00;
+		dest[zerolen++] = zerocount;
 	}
 
 	return zerolen;

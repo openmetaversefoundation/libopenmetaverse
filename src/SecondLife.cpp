@@ -18,9 +18,9 @@ SecondLife::~SecondLife()
 
 void SecondLife::tick()
 {
-	Packet* packet;
-	std::list<Packet*>* inbox = _network->inbox();
-	
+	PacketPtr packet;
+	std::list<PacketPtr>* inbox = _network->inbox();
+
 	// When we get to stream handling, this function will build data stream
 	// classes and append new data, for sounds/images/animations/etc
 
@@ -28,8 +28,11 @@ void SecondLife::tick()
 	// firing callbacks as it goes
 	if (_network) {
 		while (inbox->size() > 0) {
+			boost::mutex::scoped_lock lock(_network->inboxMutex);
 			packet = inbox->front();
 			inbox->pop_front();
+			lock.unlock();
+			
 			std::string command = packet->command();
 			
 			std::map<std::string, callback>::iterator handler = _callbacks.find(command);
@@ -43,8 +46,6 @@ void SecondLife::tick()
 			} else {
 				(handler->second)(command, packet);
 			}
-			
-			delete packet;
 		}
 	}
 

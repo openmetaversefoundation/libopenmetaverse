@@ -34,10 +34,12 @@
 #include "ProtocolManager.h"
 #include "SimConnection.h"
 #include "Network.h"
+#include "Fields.h"
+#include "PacketBuilder.h"
 
 // Model for the callbacks:
-//  void functionname(std::string command, Packet*)
-typedef boost::function2<void, std::string, Packet*> callback;
+//  void functionname(std::string command, PacketPtr)
+typedef boost::function2<void, std::string, PacketPtr> callback;
 
 class LIBSECONDLIFE_CLASS_DECL SecondLife
 {
@@ -70,19 +72,19 @@ public:
 			   loginCallback handler, std::string url = "https://login.agni.lindenlab.com/cgi-bin/login.cgi")
 	{ _network->login(firstName, lastName, password, mac, major, minor, patch, build, platform, viewerDigest, 
 					  userAgent, author, handler, url); };
-	void connectSim(boost::asio::ipv4::address ip, unsigned short port, U32 code, bool setCurrent = false)
+	void connectSim(boost::asio::ipv4::address ip, unsigned short port, unsigned int code, bool setCurrent = false)
 	{ _network->connectSim(ip, port, code, setCurrent); };
 	
-	int sendPacket(Packet* packet) { return _network->sendPacket(packet); };
+	int sendPacket(PacketPtr packet) { return _network->sendPacket(packet); };
 
-	LLUUID agent_id() { return _network->agent_id(); };
-	void agent_id(LLUUID agent_id) { _network->agent_id(agent_id); };
+	SimpleLLUUID agent_id() { return _network->agent_id(); };
+	void agent_id(SimpleLLUUID agent_id) { _network->agent_id(agent_id); };
 
-	LLUUID session_id() { return _network->session_id(); };
-	void session_id(LLUUID session_id) { _network->session_id(session_id); };
+	SimpleLLUUID session_id() { return _network->session_id(); };
+	void session_id(SimpleLLUUID session_id) { _network->session_id(session_id); };
 
-	LLUUID secure_session_id() { return _network->secure_session_id(); };
-	void secure_session_id(LLUUID secure_session_id) { _network->secure_session_id(secure_session_id); };
+	SimpleLLUUID secure_session_id() { return _network->secure_session_id(); };
+	void secure_session_id(SimpleLLUUID secure_session_id) { _network->secure_session_id(secure_session_id); };
 
 	ProtocolManager* protocol() { return _protocol; };
 
