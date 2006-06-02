@@ -24,9 +24,9 @@ BlockContainer::BlockContainer(ProtocolManager* protocol, std::string command, s
 			}
 		}
 
-		log("BlockContainer::BlockContainer(): Block lookup: " + blockName + ", failed in command: " + command, ERROR);
+		log("BlockContainer::BlockContainer(): Block lookup: " + blockName + ", failed in command: " + command, LOGERROR);
 	} else {
-		log("BlockContainer::BlockContainer(): Command lookup failed: " + command, ERROR);
+		log("BlockContainer::BlockContainer(): Command lookup failed: " + command, LOGERROR);
 	}
 }*/
 
@@ -39,7 +39,7 @@ Packet::Packet(std::string command, ProtocolManager* protocol)
 	_layout = _protocol->command(_command);
 
 	if (!_layout) {
-		log("Packet::Packet(): Initializing with invalid command: \"" + _command + "\"", ERROR);
+		log("Packet::Packet(): Initializing with invalid command: \"" + _command + "\"", LOGERROR);
 		_buffer = NULL;
 		_length = 0;
 		return;
@@ -68,12 +68,12 @@ Packet::Packet(std::string command, ProtocolManager* protocol)
 			_length = 5;
 			break;
 		case frequencies::Invalid:
-			log("Packet::Packet(): Command \"" + _command + "\" has an invalid frequency", ERROR);
+			log("Packet::Packet(): Command \"" + _command + "\" has an invalid frequency", LOGERROR);
 			_buffer = NULL;
 			_length = 0;
 			return;
 		default:
-			log("Packet::Packet(): Command \"" + _command + "\" has an unknown frequency", ERROR);
+			log("Packet::Packet(): Command \"" + _command + "\" has an unknown frequency", LOGERROR);
 			_buffer = NULL;
 			_length = 0;
 			return;
@@ -88,7 +88,7 @@ Packet::Packet(byte* buffer, size_t length, ProtocolManager* protocol)
 
 	_buffer = (byte*)malloc(length);
 	if (!_buffer) {
-		log("Packet::Packet(): malloc() failed", ERROR);
+		log("Packet::Packet(): malloc() failed", LOGERROR);
 		_length = 0;
 		return;
 	}
@@ -121,7 +121,7 @@ Packet::Packet(byte* buffer, size_t length, ProtocolManager* protocol)
 			_command = _protocol->commandString(command, frequencies::High);
 		}
 	} else {
-		log("Received a datagram less than five bytes", WARNING);
+		log("Received a datagram less than five bytes", LOGWARNING);
 	}
 }
 
@@ -134,10 +134,10 @@ void Packet::payload(byte* payload, size_t payloadLength)
 			memcpy(_buffer + _length, payload, payloadLength);
 			_length += payloadLength;
 		} else {
-			log("Packet::payload(): realloc() failed", ERROR);
+			log("Packet::payload(): realloc() failed", LOGERROR);
 		}
 	} else {
-		log("Packet::payload(): Attempting to append a payload to a packet with a null buffer", ERROR);
+		log("Packet::payload(): Attempting to append a payload to a packet with a null buffer", LOGERROR);
 	}
 }
 
@@ -152,7 +152,7 @@ void Packet::flags(unsigned short flags)
 	if (_buffer && _length > 2) {
 		memcpy(_buffer, &flags, 2);
 	} else {
-		log("Packet::flags(): Null or too short buffer", ERROR);
+		log("Packet::flags(): Null or too short buffer", LOGERROR);
 	}
 }
 
@@ -168,7 +168,7 @@ void Packet::sequence(unsigned short sequence)
 		sequence = htons(sequence);
 		memcpy(_buffer + 2, &sequence, 2);
 	} else {
-		log("Packet::sequence(): Null or too short buffer", ERROR);
+		log("Packet::sequence(): Null or too short buffer", LOGERROR);
 	}
 }
 
@@ -183,13 +183,13 @@ size_t Packet::headerLength()
 			case frequencies::High:
 				return 5;
 			case frequencies::Invalid:
-				log("Packet::headerLength(): Invalid frequency", ERROR);
+				log("Packet::headerLength(): Invalid frequency", LOGERROR);
 				break;
 			default:
-				log("Packet::headerLength(): Unknown frequency", ERROR);
+				log("Packet::headerLength(): Unknown frequency", LOGERROR);
 		}
 	} else {
-		log("Packet::headerLength(): layout is NULL", ERROR);
+		log("Packet::headerLength(): layout is NULL", LOGERROR);
 	}
 
 	return 0;
@@ -235,7 +235,7 @@ BlockList Packet::getBlocks()
 				blockCount = _buffer[pos];
 				pos++;
 			} else {
-				log("Packet::getBlocks(): goto 1 reached", WARNING);
+				log("Packet::getBlocks(): goto 1 reached", LOGWARNING);
 				goto done;
 			}
 		} else {
@@ -254,10 +254,17 @@ BlockList Packet::getBlocks()
 
 					if ((*fieldMap)->type == types::Variable) {
 						if (pos < _length) {
-							fieldSize = _buffer[pos];
-							pos++;
+							if ((*fieldMap)->count == 1) {
+								fieldSize = _buffer[pos];
+								pos++;
+							} else if ((*fieldMap)->count == 2) {
+								fieldSize = *(unsigned short*)(_buffer + pos);
+								pos += 2;
+							} else {
+								log("Packet::getBlocks(): Abnormally sized Variable field", LOGWARNING);
+							}
 						} else {
-							log("Packet::getBlocks(): goto 2 reached", WARNING);
+							log("Packet::getBlocks(): goto 2 reached", LOGWARNING);
 							goto done;
 						}
 					} else {
@@ -270,7 +277,7 @@ BlockList Packet::getBlocks()
 
 						pos += fieldSize;
 					} else {
-						log("Packet::getBlocks(): goto 3 reached", WARNING);
+						log("Packet::getBlocks(): goto 3 reached", LOGWARNING);
 						goto done;
 					}
 				}
@@ -376,24 +383,24 @@ done:
 										blockPtr->push_back(fieldPtr);
 										pos += fieldSize;
 									} else {
-										log("Reached the end of the packet before the end of the map (1)", WARNING);
+										log("Reached the end of the packet before the end of the map (1)", LOGWARNING);
 										goto done;
 									}
 								}
 							}
 						} else {
-							//log("Reached the end of the packet before the end of the map (2)", WARNING);
+							//log("Reached the end of the packet before the end of the map (2)", LOGWARNING);
 							goto done;
 						}
 					}
 				}
 			} else {
-				log("Reached the end of the packet before the end of the map (3)", WARNING);
+				log("Reached the end of the packet before the end of the map (3)", LOGWARNING);
 				goto done;
 			}
 		}
 	} else {
-		log("Packet::unserialize(): Trying to unserialize a packet with no layout", ERROR);
+		log("Packet::unserialize(): Trying to unserialize a packet with no layout", LOGERROR);
 	}
 
 done:

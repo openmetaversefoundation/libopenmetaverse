@@ -62,12 +62,12 @@ size_t loginReply(void* buffer, size_t size, size_t nmemb, void* userp)
 		} else {
 			std::stringstream message;
 			message << "Network::loginReply(): Unknown login error, dumping server response:\n" << reply;
-			log(message.str(), ERROR);
+			log(message.str(), LOGERROR);
 		}
 	}
 
 	if (login.reason.length()) {
-		log("Network::loginReply(): Login failed. Reason: " + login.reason + ". Message: " + login.message, WARNING);
+		log("Network::loginReply(): Login failed. Reason: " + login.reason + ". Message: " + login.message, LOGWARNING);
 	} else {
 		// Set the variables received from login
 		network->session_id((SimpleLLUUID)login.session_id);
@@ -99,7 +99,7 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 	CURL* curl = curl_easy_init();
 	
 	if (!curl) {
-		log("Network::login(): curl_easy_init() returned NULL", ERROR);
+		log("Network::login(): curl_easy_init() returned NULL", LOGERROR);
 		
 		// Synthesize the callback to keep the client informed
 		loginReply(NULL, 0, 0, &handler);
@@ -161,7 +161,7 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 	if (response) {
 		std::stringstream message;
 		message << "Network::login(): libcurl error: " << loginError;
-		log(message.str(), ERROR);
+		log(message.str(), LOGERROR);
 		
 		// Synthesize the callback to keep the client informed
 		loginReply(NULL, 0, 0, &handler);
@@ -176,7 +176,7 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, unsi
 	// Check if we are already connected to this sim
 	for (size_t i = 0; i < _connections.size(); i++) {
 		if (ip == _connections[i]->ip() && port == _connections[i]->port()) {
-			log("Network::connectSim(): Attempting to connect to a sim we're already connected to", WARNING);
+			log("Network::connectSim(): Attempting to connect to a sim we're already connected to", LOGWARNING);
 			return -1;
 		}
 	}
@@ -203,12 +203,12 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, unsi
 #ifdef DEBUG
 		std::stringstream message;
 		message << "Network::connectSim(): Sent " << bytesSent << " byte connection packet";
-		log(message.str(), INFO);
+		log(message.str(), LOGINFO);
 #endif
 	} catch (boost::asio::error& e) {
 		std::stringstream message;
 		message << "Network::connectSim(): " << e;
-		log(message.str(), ERROR);
+		log(message.str(), LOGERROR);
 
 		return -2;
 	}
@@ -241,7 +241,7 @@ void Network::listen(SimConnectionPtr sim)
 #ifdef DEBUG
 	std::stringstream message;
 	message << "Closed connection to sim " << sim->code();
-	log(message.str(), INFO);
+	log(message.str(), LOGINFO);
 #endif
 }
 
@@ -314,7 +314,7 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 	}
 
 	if (!found) {
-		log("Network::sendPacket(): Trying to send a packet to a sim we're not connected to", ERROR);
+		log("Network::sendPacket(): Trying to send a packet to a sim we're not connected to", LOGERROR);
 		return -1;
 	}
 
@@ -341,7 +341,7 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 		} catch (boost::asio::error& e) {
 			std::stringstream message;
 			message << "Network::sendPacket(): " << e << " (1)";
-			log(message.str(), ERROR);
+			log(message.str(), LOGERROR);
 
 			return -2;
 		}
@@ -352,7 +352,7 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 		} catch (boost::asio::error& e) {
 			std::stringstream message;
 			message << "Network::sendPacket(): " << e << " (2)";
-			log(message.str(), ERROR);
+			log(message.str(), LOGERROR);
 
 			return -3;
 		}
@@ -361,7 +361,7 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 #ifdef DEBUG
 	std::stringstream message;
 	message << "Network::sendPacket(): Sent " << sent << " byte " << packet->command() << " datagram";
-	log(message.str(), INFO);
+	log(message.str(), LOGINFO);
 #endif
 
 	return 0;
@@ -370,7 +370,7 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 int Network::sendPacket(PacketPtr packet)
 {
 	if (!_currentSim) {
-		log("Network::sendPacket() called when there is no current sim", ERROR);
+		log("Network::sendPacket() called when there is no current sim", LOGERROR);
 		return -1;
 	}
 

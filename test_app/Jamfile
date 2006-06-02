@@ -1,6 +1,0 @@
-project test_app
-    : default-build debug
-    : build-dir ../bin
-    ;
-
-exe test_app : main.cpp ..//secondlife ;

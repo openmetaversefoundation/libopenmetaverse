@@ -7,9 +7,6 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *   this list of conditions and the following disclaimer in the documentation 
- *   and/or other materials provided with the distribution.
  * - Neither the name of the Second Life Reverse Engineering Team nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
@@ -49,12 +46,14 @@
 #include <boost/shared_array.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
 #include <boost/function.hpp>
 #include <boost/any.hpp>
 
-#include <netinet/in.h>
+#ifdef WIN32
 
+#else
+#include <netinet/in.h>
+#endif
 
 // Global defines
 #define VERSION "libsecondlife 0.0.2"
@@ -82,9 +81,9 @@ int zeroEncode(byte* src, int srclen, byte* dest);
 
 // Global logging facility
 enum LogLevel {
-	INFO = 0,
-	WARNING,
-	ERROR
+	LOGINFO = 0,
+	LOGWARNING = 1,
+	LOGERROR = 2
 };
 
 void log(std::string line, LogLevel level);

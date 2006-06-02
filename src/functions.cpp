@@ -182,14 +182,14 @@ std::string packUUID(std::string uuid)
 void log(std::string line, LogLevel level)
 {
 	switch (level) {
-		case INFO:
-			line = "INFO: " + line;
+		case LOGINFO:
+			line = "LOGINFO: " + line;
 			break;
-		case WARNING:
-			line = "WARNING: " + line;
+		case LOGWARNING:
+			line = "LOGWARNING: " + line;
 			break;
-		case ERROR:
-			line = "ERROR: " + line;
+		case LOGERROR:
+			line = "LOGERROR: " + line;
 	}
 
 	line += "\n";

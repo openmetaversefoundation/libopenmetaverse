@@ -1,5 +1,5 @@
 project libsecondlife
-    : requirements <include>include
+    : requirements <include>include <include>F:\\Boost\\include\\
     : default-build debug
     ;
 
@@ -23,8 +23,6 @@ if $(UNIX)
 
 lib secondlife 
     : [ glob src/*.cpp ]
-      openssl
-      libcrypto
       libcurl
       boostthread
       $(SOCKET_LIBS)
@@ -32,4 +30,4 @@ lib secondlife
       <variant>debug:<define>DEBUG
     ;
 
-build-project test_app ;
+build-project examples/sldump ;

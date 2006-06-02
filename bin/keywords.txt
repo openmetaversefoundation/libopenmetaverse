@@ -35,6 +35,7 @@ MoneyTransactionsRequest
 GroupAccountTransactionsRequest
 MapNameRequest
 MailTaskSimRequest
+LandScriptsRequest
 UpdateSimulator
 BillableFactor
 ObjectBonusFactor
@@ -89,15 +90,17 @@ InventoryFile
 ObjectPermissions
 RevokePermissions
 UpdateFlags
+ObjectExportSelected
 RezSelected
 AutoPilot
 UpdateMuteListEntry
 RemoveMuteListEntry
-SimStatusInDatabase
+SetSimStatusInDatabase
 SetSimPresenceInDatabase
 CameraProperty
 GroupRecallBallot
 BrushSize
+StartExpungeProcess
 SimulatorSetMap
 RegionPresenceRequestByRegionID
 TransferEnergy
@@ -112,10 +115,12 @@ AgentRequestSit
 AABBMin
 ClassifiedFlags
 ControlFlags
+TeleportRequest
 SpaceLocationTeleportRequest
 LeaderBoardRequest
 ScriptTeleportRequest
 DateUTC
+TaskIDs
 RequestResult
 ReputationAgentAssign
 CanAcceptAgents
@@ -140,6 +145,7 @@ UpdateInventoryItem
 MoveInventoryItem
 CopyInventoryItem
 RemoveInventoryItem
+CreateInventoryItem
 PathTwistBegin
 CRC
 AttachmentPoint
@@ -162,6 +168,7 @@ MapBlockReply
 PropertiesData
 ViewerEffect
 FreezeUser
+ScriptTime
 ObjectGrab
 ToAgentID
 ProxyBlock
@@ -213,7 +220,6 @@ NewName
 AgentID
 OnlineStatusRequest
 DataAgentAccessRequest
-AvatarNotesRequest
 EventNotificationRemoveRequest
 Arc
 NewFolderID
@@ -230,6 +236,7 @@ DataPacket
 ObjectDehinge
 You
 ScriptControlChange
+LoadURL
 SetCPURatio
 NameValueData
 AtomicPassObject
@@ -246,7 +253,6 @@ FailedResends
 CameraCenter
 CameraLeftAxis
 ExBlock
-ScriptBlock
 Channel
 NetTest
 DiscardLevel
@@ -310,7 +316,7 @@ AggregatePermInventory
 SimulatorInfo
 MoneyTransactionsReply
 GroupAccountTransactionsReply
-MultiTaskSimReply
+MailTaskSimReply
 WearableData
 StatisticsData
 AccessOK
@@ -327,6 +333,7 @@ LiveHelpGroupRequest
 ServerVersion
 PriceParcelClaimFactor
 BillableArea
+ScriptCount
 ObjectID
 ObjectFlagUpdate
 ActiveOnly
@@ -335,8 +342,11 @@ RedoLand
 TravelAccess
 ChangedGrid
 Details
+LocationX
 SaleType
 ObjectExportReply
+LocationY
+LocationZ
 EconomyData
 HeadRotation
 DeleteOnCompletion
@@ -409,7 +419,6 @@ ClosestSimulator
 Version
 OtherCount
 ChatData
-GhostData
 IsGroupOwned
 EnergyEfficiency
 MaxPlace
@@ -444,8 +453,10 @@ FetchInventoryReply
 MoneySummaryReply
 GroupAccountSummaryReply
 AttachedSound
+ParamInUse
 GodKickUser
 PickName
+TaskName
 SkillFlags
 ParcelGodReserveForNewbie
 SubType
@@ -544,6 +555,7 @@ GodExpungeUser
 QueryReplies
 ObjectCategory
 Time
+CreateLandmarkForEvent
 ParentID
 Ping
 Perp
@@ -559,7 +571,6 @@ West
 ElectionData
 Undo
 Info
-CheckCircuitsTime
 Area
 Behavior
 SimCrashed
@@ -623,6 +634,7 @@ LeaderBoardData
 RequestBlock
 GrantData
 DetachAttachmentIntoInv
+ParcelDisableObjects
 GodLevel
 StartGroupIM
 PayPriceReply
@@ -644,7 +656,6 @@ ParamValue
 GroupVoteHistoryRequest
 Checksum
 MaxAgents
-NumAttachments
 CreateNewOutfitAttachments
 RegionHandle
 TeleportProgress
@@ -655,6 +666,7 @@ ParcelName
 InviteOfficers
 PriceObjectRent
 ConnectAgentToUserserver
+ConnectToUserserver
 OfferCallingCard
 AgentAccess
 AcceptCallingCard
@@ -668,6 +680,7 @@ TerseDateID
 ObjectOwner
 AssetID
 AlertMessage
+AgentAlertMessage
 EstateOwnerMessage
 ParcelMediaCommandMessage
 Auction
@@ -705,7 +718,7 @@ SalePrice
 Animation
 CurrentDividend
 OwnerID
-NearestLandingRegionUpdate
+NearestLandingRegionUpdated
 PassToAgent
 PreyAgent
 SimStats
@@ -719,7 +732,7 @@ TransferData
 WantToMask
 AvatarData
 ParcelSelectObjects
-TopObjects
+ExtraParams
 LogLogin
 CreatorID
 Summary
@@ -808,6 +821,7 @@ TemplateChecksumRequest
 AgentPresenceRequest
 ClassifiedInfoRequest
 ParcelInfoRequest
+ParcelObjectOwnersRequest
 TeleportLandmarkRequest
 CommandID
 MovedIntoSimulator
@@ -822,6 +836,7 @@ TextureID
 GroupOfficersAndMembersRequest
 OldFolderID
 UserInfoRequest
+LandCollidersRequest
 Handle
 StartParcelRenameAck
 StateLoad
@@ -931,7 +946,6 @@ TransferRequest
 ScriptSensorRequest
 MoneyTransferRequest
 EjectGroupMemberRequest
-MapPopularRequest
 SkillsText
 Resent
 Center
@@ -942,6 +956,7 @@ Viewer
 Method
 TouchName
 CandidateID
+ParamData
 GodlikeMessage
 SystemMessage
 BodyRotation
@@ -1017,6 +1032,7 @@ MapBlockRequest
 LureID
 CopyCenters
 RegisterNewAgent
+TotalColliderCount
 ParamList
 InventorySerial
 EdgeDataPacket
@@ -1064,12 +1080,15 @@ LogoutDemand
 HistoryData
 VoteData
 EstimatedDividend
+ParamSize
 VoteCast
 EveryoneMask
+CastsShadows
 SetSunPhase
 ObjectSpinUpdate
 MaturePublish
 UseExistingAsset
+ParcelLocalID
 TeleportCancel
 UnixTime
 QueryFlags
@@ -1082,6 +1101,7 @@ ViewerStats
 RegionHandshake
 Description
 ObjectDescription
+ParamType
 UUIDNameReply
 UUIDGroupNameReply
 SaveAssetIntoInventory
@@ -1098,12 +1118,12 @@ DirPlacesQuery
 Distance
 SortOrder
 Hunter
+TotalScriptCount
 SunAngVelocity
 InventoryUpdate
 ImagePacket
 BinaryBucket
 StartGroupProposal
-PhysicsTime
 EnergyLevel
 PriceForListing
 Scale
@@ -1117,8 +1137,6 @@ VoteItem
 ObjectRotation
 SitRotation
 SnapSelection
-TerrainRaiseLimit
-SourceName
 TerrainRaiseLimit
 Quorum
 TokenBlock
@@ -1233,6 +1251,7 @@ ParcelObjectBonus
 TransactionBlock
 PowersMask
 Stamp
+RelatedID
 TotalCredits
 State
 TextureIndex
@@ -1285,6 +1304,7 @@ TeleportFinish
 PathRevolutions
 ClassifiedInfoReply
 ParcelInfoReply
+LandCollidersReply
 AutosaveData
 SetStartLocation
 PassHours
@@ -1319,6 +1339,7 @@ Rotation
 Selection
 TransactionData
 OperationData
+ExpirationDate
 AgentName
 ParcelDeedToGroup
 DirPicksReply
@@ -1329,6 +1350,7 @@ NextOwnerMask
 MuteData
 PassPrice
 SourceID
+TotalScriptTime
 ShowMembersInGroupDir
 TeleportFlags
 AssetData
@@ -1343,6 +1365,7 @@ UserListReply
 IsPhantom
 AgentList
 RezObject
+TaskLocalID
 ClaimDate
 MergeParcel
 Priority
@@ -1360,7 +1383,7 @@ OpenCircuit
 SecureSessionID
 CrossedRegion
 DirGroupsReply
-AvatarsGroupReply
+AvatarGroupsReply
 EmailMessageReply
 GroupVoteHistoryItemReply
 ViewerPosition
@@ -1398,7 +1421,6 @@ ParcelSales
 CurrentInterval
 PriceRentLight
 MediaAutoScale
-PriceRentLight
 NeighborBlock
 LayerData
 NVPairData
@@ -1407,6 +1429,7 @@ LayersPaused
 VoteInitiator
 MailPingBounce
 TypeData
+OwnerIDs
 SystemKickUser
 ErrorCode
 SLXML_ID
@@ -1441,9 +1464,11 @@ SimWideTotalObjects
 TotalObjects
 GroupObjects
 ParcelReturnObjects
+ObjectExtraParams
 Questions
 TransferAbort
 TransferInventory
+LandScriptsReply
 Collada_ID
 RayTargetID
 ClaimPrice
@@ -1467,6 +1492,7 @@ SpaceLocationTeleportReply
 IMViaEMail
 StartExpungeProcessAck
 RentPrice
+GenericMessage
 ChildAgentAlive
 SpawnPointBlock
 AttachmentBlock
@@ -1474,6 +1500,7 @@ RecallData
 OfficerData
 GroupOfficer
 ObjectMaterial
+OwnerName
 AvatarNotesReply
 CacheID
 OwnerMask

@@ -1,0 +1,12 @@
+project sldump
+    : default-build debug
+    : build-dir ../../bin
+    ;
+
+lib boostoptions : : <name>boost_program_options ;
+
+exe sldump
+    : [ glob *.cpp ]
+      boostoptions
+      ../..//secondlife
+    ;

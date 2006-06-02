@@ -91,13 +91,13 @@ FieldPtr createField(packetField* field, byte* data)
 			fieldPtr.reset(new IPPORT(data));
 			break;
 		case types::Variable:
-			log("Packet::createField(): Variable type", ERROR);
+			log("Packet::createField(): Variable type", LOGERROR);
 			break;
 		case types::Invalid:
-			log("Packet::createField(): Invalid type", ERROR);
+			log("Packet::createField(): Invalid type", LOGERROR);
 			break;
 		default:
-			log("Packet::createField(): Unknown type", ERROR);
+			log("Packet::createField(): Unknown type", LOGERROR);
 			break;
 	}
 
@@ -206,7 +206,8 @@ void ProtocolManager::printMap()
 				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
-					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
+					printf("\t\t%04u %s (%s / %u)\n", (*k)->keywordPosition, (*k)->name.c_str(), 
+						   typeName((*k)->type).c_str(), (*k)->count);
 				}
 			}
 		}
@@ -222,7 +223,8 @@ void ProtocolManager::printMap()
 				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
-					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
+					printf("\t\t%04u %s (%s / %u)\n", (*k)->keywordPosition, (*k)->name.c_str(), 
+						   typeName((*k)->type).c_str(), (*k)->count);
 				}
 			}
 		}
@@ -238,7 +240,8 @@ void ProtocolManager::printMap()
 				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
-					printf("\t\t%04u %s (%s)\n", (*k)->keywordPosition, (*k)->name.c_str(), typeName((*k)->type).c_str());
+					printf("\t\t%04u %s (%s / %u)\n", (*k)->keywordPosition, (*k)->name.c_str(), 
+						   typeName((*k)->type).c_str(), (*k)->count);
 				}
 			}
 		}
@@ -254,7 +257,7 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 
 	while(getBlockMarkers(protocolMap.c_str(), fieldStart, fieldEnd, children)) {
 		if (children) {
-			log("ProtocolManager::getFields(): Found fourth tier elements", ERROR);
+			log("ProtocolManager::getFields(): Found fourth tier elements", LOGERROR);
 			return false;
 		}
 
@@ -264,7 +267,7 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 
 		size_t delimiter = temp.find_first_of(" ");
 		if (delimiter == std::string::npos) {
-			log("ProtocolManager::getFields(): Couldn't parse field: " + temp, ERROR);
+			log("ProtocolManager::getFields(): Couldn't parse field: " + temp, LOGERROR);
 			return false;
 		}
 
@@ -276,7 +279,7 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 
 		temp = temp.substr(delimiter + 1, temp.length() - delimiter - 1);
 
-		// Get the field type
+		// Get the field count
 		delimiter = temp.find_first_of(" ");
 		if (delimiter != std::string::npos) {
 			field->count = atoi(temp.substr(delimiter + 1, temp.length() - delimiter - 1).c_str());
@@ -284,6 +287,8 @@ bool ProtocolManager::getFields(packetBlock* block, std::string protocolMap, siz
 		} else {
 			field->count = 1;
 		}
+
+		// Get the field type
 		field->type = fieldType(temp);
 
 		// Add this field to the linked list
@@ -361,7 +366,7 @@ int ProtocolManager::loadKeywords(std::string filename)
 	int i = 0;
 
 	if (!input.is_open()) {
-		log("ProtocolManager::loadKeywords(): Error opening keyword file: " + filename, ERROR);
+		log("ProtocolManager::loadKeywords(): Error opening keyword file: " + filename, LOGERROR);
 		return -1;
 	}
 
@@ -383,13 +388,13 @@ int ProtocolManager::decryptCommFile(std::string source, std::string destination
 
 	FILE* commFile = fopen(source.c_str(), "rb");
 	if (!commFile) {
-		log("ProtocolManager::decryptCommFile(): Couldn't open comm file: " + source, ERROR);
+		log("ProtocolManager::decryptCommFile(): Couldn't open comm file: " + source, LOGERROR);
 		return -1;
 	}
 
 	FILE* output = fopen(destination.c_str(), "wb");
 	if (!output) {
-		log("ProtocolManager::decryptCommFile(): Couldn't open output file: " + destination, ERROR);
+		log("ProtocolManager::decryptCommFile(): Couldn't open output file: " + destination, LOGERROR);
 		return -2;
 	}
 
@@ -416,7 +421,7 @@ int ProtocolManager::keywordPosition(std::string keyword)
 
 	result = _keywordMap.find(keyword);
 	if (result == _keywordMap.end()) {
-		log("ProtocolManager::keywordPosition(): Couldn't find keyword: " + keyword, WARNING);
+		log("ProtocolManager::keywordPosition(): Couldn't find keyword: " + keyword, LOGWARNING);
 		return -1;
 	}
 
@@ -439,7 +444,7 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 
 	FILE* input = fopen(filename.c_str(), "rb");
 	if (!input) {
-		log("ProtocolManager::buildProtocolMap(): Couldn't open output file: " + filename, ERROR);
+		log("ProtocolManager::buildProtocolMap(): Couldn't open output file: " + filename, LOGERROR);
 		return -1;
 	}
 
@@ -486,7 +491,7 @@ int ProtocolManager::buildProtocolMap(std::string filename)
 			layout->frequency = frequencies::High;
 			high++;
 		} else {
-			log("ProtocolManager::buildProtocolMap(): Unknown frequency: " + temp, ERROR);
+			log("ProtocolManager::buildProtocolMap(): Unknown frequency: " + temp, LOGERROR);
 
 			// Increment our position in protocol map
 			cmdStart = cmdEnd + 1;
@@ -549,7 +554,7 @@ packetDiagram* ProtocolManager::command(unsigned short command, frequencies::Fre
 			break;
 	}
 
-	log("ProtocolManager::command(): Invalid frequency passed in", WARNING);
+	log("ProtocolManager::command(): Invalid frequency passed in", LOGWARNING);
 	return NULL;
 }
 
@@ -569,7 +574,7 @@ std::string ProtocolManager::commandString(unsigned short command, frequencies::
 			break;
 	}
 	
-	log("ProtocolManager::commandString(): Invalid frequency passed in", WARNING);
+	log("ProtocolManager::commandString(): Invalid frequency passed in", LOGWARNING);
 	return "";
 }
 
@@ -585,7 +590,7 @@ types::Type ProtocolManager::fieldType(std::string type)
 		i++;
 	}
 
-	log("ProtocolManager::fieldType(): Unknown type: " + type, WARNING);
+	log("ProtocolManager::fieldType(): Unknown type: " + type, LOGWARNING);
 	return types::Invalid;
 }
 
@@ -594,7 +599,7 @@ int ProtocolManager::typeSize(types::Type type)
 	if (type < 0 || type > 19) {
 		std::stringstream message;
 		message << "ProtocolManager::typeSize(): Unknown type: " << type;
-		log(message.str(), WARNING);
+		log(message.str(), LOGWARNING);
 
 		return 0;
 	}
@@ -609,7 +614,7 @@ std::string ProtocolManager::typeName(types::Type type)
 	if (type < 0 || type > 19) {
 		std::stringstream message;
 		message << "ProtocolManager::typeName(): Unknown type: " << type;
-		log(message.str(), WARNING);
+		log(message.str(), LOGWARNING);
 
 		typeName = "Invalid";
 	} else {
@@ -629,7 +634,7 @@ int ProtocolManager::blockCount(packetDiagram* layout, std::string block)
 		}
 	}
 
-	log("ProtocolManager::blockCount(): Unknown block: " + block, WARNING);
+	log("ProtocolManager::blockCount(): Unknown block: " + block, LOGWARNING);
 	return 0;
 }
 
@@ -638,7 +643,7 @@ size_t ProtocolManager::blockSize(packetDiagram* layout, std::string block)
 	std::list<packetBlock*>::iterator i;
 
 	if (!layout) {
-		log("ProtocolManager::blockSize(): NULL layout passed in", WARNING);
+		log("ProtocolManager::blockSize(): NULL layout passed in", LOGWARNING);
 		return 0;
 	}
 
@@ -657,7 +662,7 @@ size_t ProtocolManager::blockSize(packetDiagram* layout, std::string block)
 		}
 	}
 
-	log("ProtocolManager::blockSize(): Unknown block: " + block, WARNING);
+	log("ProtocolManager::blockSize(): Unknown block: " + block, LOGWARNING);
 	return 0;
 }
 
@@ -683,11 +688,11 @@ int ProtocolManager::fieldOffset(packetDiagram* layout, std::string block, std::
 			// The block didn't have the field we're looking for
 			std::stringstream message;
 			message << "ProtocolManager::fieldOffset(): Couldn't find field: " << field << ", in block: " << block;
-			log(message.str(), WARNING);
+			log(message.str(), LOGWARNING);
 			return -1;
 		}
 	}
 
-	log("ProtocolManager::fieldOffset(): Couldn't find block: " + block, WARNING);
+	log("ProtocolManager::fieldOffset(): Couldn't find block: " + block, LOGWARNING);
 	return -2;
 }
