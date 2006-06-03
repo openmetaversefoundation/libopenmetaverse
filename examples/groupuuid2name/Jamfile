@@ -1,0 +1,12 @@
+project groupuuid2name
+    : default-build debug
+    : build-dir ../../bin
+    ;
+
+lib boostoptions : : <name>boost_program_options ;
+
+exe groupuuid2name
+    : [ glob *.cpp ]
+      boostoptions
+      ../..//secondlife
+    ;

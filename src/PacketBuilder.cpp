@@ -42,23 +42,38 @@ PacketPtr PacketAck(ProtocolManager* protocol, unsigned int ID)
 PacketPtr UseCircuitCode(ProtocolManager* protocol, SimpleLLUUID AgentID, SimpleLLUUID SessionID, unsigned int Code)
 {
 	PacketPtr packet(new Packet("UseCircuitCode", protocol));
-	byte* bytePtr = (byte*)malloc(36);
+	byte bytePtr[36];
+	unsigned short flags = MSG_RELIABLE;
 
 	memcpy(bytePtr, AgentID.data, 16);
 	memcpy(bytePtr + 16, SessionID.data, 16);
 	memcpy(bytePtr + 32, &Code, 4);
 
 	packet->payload(bytePtr, 36);
-	packet->flags(htons(0x4000));
+	packet->flags(htons(flags));
 
-	free(bytePtr);
+	return packet;
+}
+
+PacketPtr LogoutRequest(ProtocolManager* protocol, SimpleLLUUID AgentID, SimpleLLUUID SessionID)
+{
+	PacketPtr packet(new Packet("LogoutRequest", protocol));
+	byte bytePtr[32];
+	unsigned short flags = MSG_RELIABLE & MSG_ZEROCODED;
+
+	memcpy(bytePtr, AgentID.data, 16);
+	memcpy(bytePtr + 16, SessionID.data, 16);
+
+	packet->payload(bytePtr, 32);
+	packet->flags(htons(flags));
+
 	return packet;
 }
 
 PacketPtr CompleteAgentMovement(ProtocolManager* protocol, SimpleLLUUID AgentID, SimpleLLUUID SessionID, unsigned int CircuitCode)
 {
 	PacketPtr packet(new Packet("CompleteAgentMovement", protocol));
-	byte* bytePtr = (byte*)malloc(36);
+	byte bytePtr[36];
 	unsigned short flags = MSG_RELIABLE;
 
 	memcpy(bytePtr, AgentID.data, 16);
@@ -68,7 +83,6 @@ PacketPtr CompleteAgentMovement(ProtocolManager* protocol, SimpleLLUUID AgentID,
 	packet->payload(bytePtr, 36);
 	packet->flags(htons(flags));
 
-	free(bytePtr);
 	return packet;
 }
 
@@ -106,6 +120,20 @@ PacketPtr DirLandQuery(ProtocolManager* protocol, bool ReservedNewbie, bool ForS
 
 	packet->payload(bytePtr, 55);
 	packet->flags(0);
+
+	return packet;
+}
+
+PacketPtr UUIDGroupNameRequest(ProtocolManager* protocol, SimpleLLUUID ID)
+{
+	PacketPtr packet(new Packet("UUIDGroupNameRequest", protocol));
+	unsigned short flags = MSG_RELIABLE & MSG_ZEROCODED;
+	byte bytePtr[17];
+	bytePtr[0] = 1;
+	memcpy(bytePtr + 1, ID.data, 16);
+
+	packet->payload(bytePtr, 17);
+	packet->flags(htons(flags));
 
 	return packet;
 }

@@ -84,8 +84,6 @@ protected:
 	packetDiagram* _layout;
 
 public:
-	//std::vector<BlockContainerPtr> blockContainers;
-
 	Packet(std::string command, ProtocolManager* protocol);
 	Packet(byte* buffer, size_t length, ProtocolManager* protocol);
 	~Packet() { free(_buffer); };

@@ -203,7 +203,11 @@ void ProtocolManager::printMap()
 				   _lowPackets[i].encoded ? "Unencoded" : "Zerocoded");
 			
 			for (j = _lowPackets[i].blocks.begin(); j != _lowPackets[i].blocks.end(); ++j) {
-				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
+				if ((*j)->count == -1) {
+					printf("\t%04u %s (Variable)\n", (*j)->keywordPosition, (*j)->name.c_str());
+				} else {
+					printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
+				}
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
 					printf("\t\t%04u %s (%s / %u)\n", (*k)->keywordPosition, (*k)->name.c_str(), 
@@ -220,7 +224,11 @@ void ProtocolManager::printMap()
 				   _mediumPackets[i].encoded ? "Unencoded" : "Zerocoded");
 			
 			for (j = _mediumPackets[i].blocks.begin(); j != _mediumPackets[i].blocks.end(); ++j) {
-				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
+				if ((*j)->count == -1) {
+					printf("\t%04u %s (Variable)\n", (*j)->keywordPosition, (*j)->name.c_str());
+				} else {
+					printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
+				}
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
 					printf("\t\t%04u %s (%s / %u)\n", (*k)->keywordPosition, (*k)->name.c_str(), 
@@ -237,7 +245,11 @@ void ProtocolManager::printMap()
 				   _highPackets[i].encoded ? "Unencoded" : "Zerocoded");
 			
 			for (j = _highPackets[i].blocks.begin(); j != _highPackets[i].blocks.end(); ++j) {
-				printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
+				if ((*j)->count == -1) {
+					printf("\t%04u %s (Variable)\n", (*j)->keywordPosition, (*j)->name.c_str());
+				} else {
+					printf("\t%04u %s (%02i)\n", (*j)->keywordPosition, (*j)->name.c_str(), (*j)->count);
+				}
 
 				for (k = (*j)->fields.begin(); k != (*j)->fields.end(); ++k) {
 					printf("\t\t%04u %s (%s / %u)\n", (*k)->keywordPosition, (*k)->name.c_str(), 

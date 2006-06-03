@@ -250,7 +250,7 @@ BlockList Packet::getBlocks()
 				size_t fieldCount = (*fieldMap)->count;
 
 				for (size_t j = 0; j < fieldCount; ++j) {
-					size_t fieldSize;
+					size_t fieldSize = 0;
 
 					if ((*fieldMap)->type == types::Variable) {
 						if (pos < _length) {

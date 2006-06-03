@@ -31,3 +31,4 @@ lib secondlife
     ;
 
 build-project examples/sldump ;
+build-project examples/groupuuid2name ;

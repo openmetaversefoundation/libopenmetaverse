@@ -34,10 +34,12 @@
 PacketPtr PacketAck(ProtocolManager* protocol, std::vector<unsigned int> IDList);
 PacketPtr PacketAck(ProtocolManager* protocol, unsigned int ID);
 PacketPtr UseCircuitCode(ProtocolManager* protocol, SimpleLLUUID agentID, SimpleLLUUID sessionID, unsigned int code);
+PacketPtr LogoutRequest(ProtocolManager* protocol, SimpleLLUUID AgentID, SimpleLLUUID SessionID);
 PacketPtr CompleteAgentMovement(ProtocolManager* protocol, SimpleLLUUID AgentID, SimpleLLUUID SessionID, unsigned int CircuitCode);
 PacketPtr RegionHandshakeReply(ProtocolManager* protocol, unsigned int Flags);
 PacketPtr CompletePingCheck(ProtocolManager* protocol, byte PingID);
 PacketPtr DirLandQuery(ProtocolManager* protocol, bool ReservedNewbie, bool ForSale, SimpleLLUUID QueryID, bool Auction, 
 					   unsigned int QueryFlags, SimpleLLUUID AgentID, SimpleLLUUID SessionID);
+PacketPtr UUIDGroupNameRequest(ProtocolManager* protocol, SimpleLLUUID ID);
 
 #endif //_SL_BUILDER_

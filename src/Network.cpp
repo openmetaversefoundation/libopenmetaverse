@@ -11,6 +11,7 @@ Network::Network(ProtocolManager* protocol, SecondLife* secondlife)
 	_agent_id = 0;
 	_session_id = 0;
 	_secure_session_id = 0;
+	_running = true;
 }
 
 Network::~Network()
@@ -93,6 +94,10 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 							   std::string platform, std::string viewerDigest, std::string userAgent,
 							   std::string author, loginCallback handler, std::string url)
 {
+	if (!_running) {
+		return;
+	}
+
 	char loginError[CURL_ERROR_SIZE] = {0x00};
 	struct curl_slist* headers = NULL;
 	CURLcode response;
@@ -102,7 +107,7 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 		log("Network::login(): curl_easy_init() returned NULL", LOGERROR);
 		
 		// Synthesize the callback to keep the client informed
-		loginReply(NULL, 0, 0, &handler);
+		loginReply(NULL, 0, 0, this);
 		
 		return;
 	}
@@ -164,7 +169,7 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 		log(message.str(), LOGERROR);
 		
 		// Synthesize the callback to keep the client informed
-		loginReply(NULL, 0, 0, &handler);
+		loginReply(NULL, 0, 0, this);
 	}
 
 	curl_slist_free_all(headers);
@@ -173,6 +178,10 @@ void Network::login(std::string firstName, std::string lastName, std::string pas
 
 int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, unsigned int code, bool setCurrent)
 {
+	if (!_running) {
+		return 1;
+	}
+
 	// Check if we are already connected to this sim
 	for (size_t i = 0; i < _connections.size(); i++) {
 		if (ip == _connections[i]->ip() && port == _connections[i]->port()) {
@@ -199,11 +208,14 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, unsi
 
 	// Send the packet
 	try {
-		size_t bytesSent = socket->send_to(boost::asio::buffer(packetPtr->buffer(), packetPtr->length()), 0, sim->endpoint());
 #ifdef DEBUG
+		size_t bytesSent = socket->send_to(boost::asio::buffer(packetPtr->buffer(), packetPtr->length()), 0, sim->endpoint());
+
 		std::stringstream message;
 		message << "Network::connectSim(): Sent " << bytesSent << " byte connection packet";
 		log(message.str(), LOGINFO);
+#else
+		socket->send_to(boost::asio::buffer(packetPtr->buffer(), packetPtr->length()), 0, sim->endpoint());
 #endif
 	} catch (boost::asio::error& e) {
 		std::stringstream message;
@@ -222,7 +234,7 @@ int Network::connectSim(boost::asio::ipv4::address ip, unsigned short port, unsi
 void Network::listen(SimConnectionPtr sim)
 {
 	// Start listening on this socket
-	while (sim && sim->running()) {
+	while (_running && sim && sim->running()) {
 		sim->socket()->async_receive(boost::asio::buffer(sim->buffer(), sim->bufferSize()), 0,
 							  boost::bind(&Network::receivePacket, this, boost::asio::placeholders::error,
 							  boost::asio::placeholders::bytes_transferred, sim->buffer()));
@@ -248,6 +260,10 @@ void Network::listen(SimConnectionPtr sim)
 void Network::receivePacket(const boost::asio::error& error, std::size_t length, char* receiveBuffer)
 {
 	PacketPtr packet;
+
+	if (!_running) {
+		return;
+	}
 
 	if (receiveBuffer[0] & MSG_RELIABLE) {
 		// This packet requires an ACK
@@ -304,6 +320,10 @@ int Network::sendPacket(boost::asio::ipv4::address ip, unsigned short port, Pack
 	size_t sent;
 	bool found = false;
 	size_t i;
+
+	if (!_running) {
+		return 1;
+	}
 
 	// Check if we are connected to this sim
 	for (i = 0; i < _connections.size(); i++) {

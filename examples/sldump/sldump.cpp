@@ -25,7 +25,6 @@
  */
 
 #include <stdio.h>
-#include <signal.h>
 
 #include <boost/program_options.hpp>
 
@@ -39,7 +38,7 @@ SecondLife* client;
 void loginHandler(loginParameters login)
 {
 	if (login.reason.length()) {
-		cout << "test_app: Login failed. Reason: " << login.reason << ", Message: " << login.message << endl;
+		cout << "sldump: Login failed. Reason: " << login.reason << ", Message: " << login.message << endl;
 	} else {
 		while (1) {
 			client->tick();
@@ -169,6 +168,7 @@ int main(int ac, char** av)
 {
 	string keywordFile;
 	string commFile;
+	string mapFile;
 	string firstName;
 	string lastName;
 	string password;
@@ -180,6 +180,7 @@ int main(int ac, char** av)
 			("protocol-map", "dump the interpreted comm.dat to the console")
 			("keywords,k", po::value<string>(&keywordFile)->default_value("keywords.txt"), "keywords.txt file")
 			("comm,c", po::value<string>(&commFile)->default_value("comm.dat"), "comm.dat file")
+			("map,o", po::value<string>(&mapFile)->default_value("protocol.txt"), "decrypted protocol file")
 			("first,f", po::value<string>(&firstName), "account first name")
 			("last,l", po::value<string>(&lastName), "account last name")
 			("password,pass,p", po::value<string>(&password), "account password")
@@ -198,28 +199,28 @@ int main(int ac, char** av)
 
 	client = new SecondLife();
 
-	if (client->loadKeywords("keywords.txt") == 0) {
-		cout << "test_app: Loaded keyword file" << endl;
+	if (client->loadKeywords(keywordFile) == 0) {
+		cout << "sldump: Loaded keyword file" << endl;
 	} else {
-		cout << "test_app: Failed to load the keyword file" << endl;
+		cout << "sldump: Failed to load the keyword file" << endl;
 
 		delete client;
 		return 2;
 	}
 
-	if (client->decryptCommFile("comm.dat", "output.txt") == 0) {
-		cout << "test_app: Decrypted comm file" << endl;
+	if (client->decryptCommFile(commFile, mapFile) == 0) {
+		cout << "sldump: Decrypted comm file" << endl;
 	} else {
-		cout << "test_app: Failed to decrypt the comm file" << endl;
+		cout << "sldump: Failed to decrypt the comm file" << endl;
 
 		delete client;
 		return -2;
 	}
 
-	if (client->buildProtocolMap("output.txt") == 0) {
-		cout << "test_app: Built protocol map" << endl;
+	if (client->buildProtocolMap(mapFile) == 0) {
+		cout << "sldump: Built protocol map" << endl;
 	} else {
-		cout << "test_app: Failed to build the protocol map" << endl;
+		cout << "sldump: Failed to build the protocol map" << endl;
 
 		delete client;
 		return -2;
@@ -232,7 +233,7 @@ int main(int ac, char** av)
 
 	client->registerCallback("Default", &receivedPacket);
 
-	client->login(firstName, lastName, password, "00:00:00:00:00:00", 1, 10, 1, 0, "Win", "0", "test_app",
+	client->login(firstName, lastName, password, "00:00:00:00:00:00", 1, 10, 1, 0, "Win", "0", "sldump",
 				  "jhurliman@wsu.edu", loginHandler);
 
 	delete client;

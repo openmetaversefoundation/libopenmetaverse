@@ -74,6 +74,7 @@ protected:
 	SimpleLLUUID _agent_id;
 	SimpleLLUUID _session_id;
 	SimpleLLUUID _secure_session_id;
+	bool _running;
 
 public:
 	loginCallback callback;
@@ -108,6 +109,9 @@ public:
 
 	SimpleLLUUID secure_session_id() { return _secure_session_id; };
 	void secure_session_id(SimpleLLUUID secure_session_id) { _secure_session_id = secure_session_id; };
+
+	bool running() { return _running; };
+	void running(bool running) { _running = running; };
 };
 
 #endif //_SL_NETWORK_
