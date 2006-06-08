@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife", "libsecondlife.csproj", "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Debug.ActiveCfg = Debug|.NET
+		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Debug.Build.0 = Debug|.NET
+		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Release.ActiveCfg = Release|.NET
+		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Release.Build.0 = Release|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.ActiveCfg = Debug|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.Build.0 = Debug|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.ActiveCfg = Release|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
