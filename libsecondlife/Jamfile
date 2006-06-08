@@ -1,0 +1,34 @@
+project libsecondlife
+    : requirements <include>include <include>F:\\Boost\\include\\
+    : default-build debug
+    ;
+
+lib openssl : : <name>ssl ;
+lib libcrypto : : <name>crypto ;
+lib libsocket : : <name>socket ;
+lib libnsl : : <name>nsl ;
+lib boostthread : : <name>boost_thread ;
+lib libcurl : : <name>curl ;
+
+if $(UNIX)
+{
+  switch $(JAMUNAME)
+  {
+  case SunOS* :
+    {
+      SOCKET_LIBS = libsocket libnsl ;
+    }
+  }
+}
+
+lib secondlife 
+    : [ glob src/*.cpp ]
+      libcurl
+      boostthread
+      $(SOCKET_LIBS)
+    : <threading>multi
+      <variant>debug:<define>DEBUG
+    ;
+
+build-project examples/sldump ;
+build-project examples/groupuuid2name ;
