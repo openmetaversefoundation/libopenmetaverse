@@ -4,6 +4,12 @@ using System.Collections;
 
 namespace libsecondlife
 {
+	public struct Field
+	{
+		public object Data;
+		public MapField Layout;
+	}
+
 	public struct Block
 	{
 		public ArrayList Fields;
@@ -12,15 +18,41 @@ namespace libsecondlife
 
 	public class Packet
 	{
-		public ArrayList Data;
+		public byte[] Data;
 		public MapPacket Layout;
+		public ushort Sequence
+		{
+			get
+			{
+				short sequence = BitConverter.ToInt16(Data, 2);
+				// TODO: To support big endian platforms, we need to replace NetworkToHostOrder with
+				//       a big endian to little endian function
+				return (ushort)IPAddress.NetworkToHostOrder(sequence);
+			}
+
+			set
+			{
+				byte[] sequence = BitConverter.GetBytes(value);
+
+				if (BitConverter.IsLittleEndian)
+				{
+					Data[2] = sequence[1];
+					Data[3] = sequence[0];
+				}
+				else
+				{
+					Data[2] = sequence[0];
+					Data[3] = sequence[1];
+				}
+			}
+		}
 
 		private ProtocolManager Protocol;
 
-		public Packet(string command, ProtocolManager protocol)
+		public Packet(string command, ProtocolManager protocol, int length)
 		{
 			Protocol = protocol;
-			Data = new ArrayList();
+			Data = new byte[length];
 			Layout = protocol.Command(command);
 
 			if (Layout == null)
@@ -34,21 +66,21 @@ namespace libsecondlife
 				case PacketFrequency.Low:
 					// Set the low frequency identifier bits
 					byte[] lowHeader = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF};
-					Data.AddRange(lowHeader);
+					Array.Copy(lowHeader, 0, Data, 0, 6);
 					// Store the packet ID in big endian format
 					short id = IPAddress.HostToNetworkOrder((short)Layout.ID);
-					Data.AddRange(BitConverter.GetBytes(id));
+					Array.Copy(BitConverter.GetBytes(id), 0, Data, 6, 2);
 					break;
 				case PacketFrequency.Medium:
 					// Set the medium frequency identifier bit
 					byte[] mediumHeader = {0x00, 0x00, 0x00, 0x00, 0xFF};
-					Data.AddRange(mediumHeader);
-					Data.Add((byte)Layout.ID);
+					Array.Copy(mediumHeader, 0, Data, 0, 5);
+					Data[5] = (byte)Layout.ID;
 					break;
 				case PacketFrequency.High:
 					byte[] highHeader = {0x00, 0x00, 0x00, 0x00};
-					Data.AddRange(highHeader);
-					Data.Add((byte)Layout.ID);
+					Array.Copy(highHeader, 0, Data, 0, 4);
+					Data[4] = (byte)Layout.ID;
 					break;
 			}
 		}
@@ -57,12 +89,16 @@ namespace libsecondlife
 		{
 			Protocol = protocol;
 			ushort command;
-			Data = new ArrayList();
+			Data = new byte[length];
 
 			if (length < 5)
 			{
 				Helpers.Log("Received a packet with less than 5 bytes", Helpers.LogLevel.Warning);
-				Layout = null;
+				
+				// Create an empty MapPacket
+				Layout = new MapPacket();
+				Layout.Blocks = new ArrayList();
+
 				return;
 			}
 
@@ -79,16 +115,14 @@ namespace libsecondlife
 				else
 				{
 					// Medium frequency
-					command = BitConverter.ToUInt16(data, 5);
-					command = (ushort)IPAddress.NetworkToHostOrder((short)command);
+					command = (ushort)data[5];
 					Layout = protocol.Command(command, PacketFrequency.Medium);
 				}
 			}
 			else
 			{
 				// High frequency
-				command = BitConverter.ToUInt16(data, 4);
-				command = (ushort)IPAddress.NetworkToHostOrder((short)command);
+				command = (ushort)data[4];
 				Layout = protocol.Command(command, PacketFrequency.High);
 			}
 
@@ -102,20 +136,15 @@ namespace libsecondlife
 			}
 
 			// Copy the network byte array to this packet's byte array
-			for (int i = 0; i < length; ++i)
-			{
-				Data.Add(data[i]);
-			}
+			Array.Copy(data, 0, Data, 0, length);
 		}
 
 		public ArrayList Blocks()
 		{
+			Field field;
 			Block block;
 			byte blockCount;
-			ushort fieldSize;
-
-			// Create a temporary byte array for quicker conversions
-			byte[] byteArray = (byte[])Data.ToArray(typeof(Byte));
+			int fieldSize;
 
 			// Get the starting position of the SL payload (different than the UDP payload)
 			int pos = HeaderLength();
@@ -128,9 +157,9 @@ namespace libsecondlife
 				if (blockMap.Count == -1)
 				{
 					// Variable count block
-					if (pos < byteArray.Length)
+					if (pos < Data.Length)
 					{
-						blockCount = (byte)byteArray[pos];
+						blockCount = Data[pos];
 						pos++;
 					}
 					else
@@ -160,9 +189,9 @@ namespace libsecondlife
 								if (fieldMap.Count == 1)
 								{
 									// Field length described with one byte
-									if (pos < byteArray.Length)
+									if (pos < Data.Length)
 									{
-										fieldSize = (ushort)byteArray[pos];
+										fieldSize = (ushort)Data[pos];
 										pos++;
 									}
 									else
@@ -174,9 +203,9 @@ namespace libsecondlife
 								else // (fieldMap.Count == 2)
 								{
 									// Field length described with two bytes
-									if (pos + 1 < byteArray.Length)
+									if (pos + 1 < Data.Length)
 									{
-										fieldSize = BitConverter.ToUInt16(byteArray, pos);
+										fieldSize = BitConverter.ToUInt16(Data, pos);
 										pos += 2;
 									}
 									else
@@ -188,12 +217,17 @@ namespace libsecondlife
 							}
 							else
 							{
-								fieldSize = (ushort)Protocol.TypeSizes[fieldMap.Type];
+								fieldSize = (int)Protocol.TypeSizes[fieldMap.Type];
 							}
 
-							if (pos + fieldSize <= byteArray.Length)
+							if (pos + fieldSize <= Data.Length)
 							{
-								block.Fields.Add(GetField(byteArray, pos, fieldMap.Type));
+								// Create a new field to add to the fields for this block
+								field = new Field();
+								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+								field.Layout = fieldMap;
+
+								block.Fields.Add(field);
 
 								pos += fieldSize;
 							}
@@ -213,7 +247,7 @@ namespace libsecondlife
 				return blocks;
 		}
 
-		private object GetField(byte[] byteArray, int pos, FieldType type)
+		private object GetField(byte[] byteArray, int pos, FieldType type, int fieldSize)
 		{
 			switch (type)
 			{
@@ -254,7 +288,14 @@ namespace libsecondlife
 				case FieldType.IPPORT:
 					return BitConverter.ToUInt16(byteArray, pos);
 				case FieldType.Variable:
-					return BitConverter.ToString(byteArray, pos);
+					byte[] bytes = new byte[fieldSize];
+
+					for (int i = 0; i < fieldSize; ++i)
+					{
+						bytes[i] = byteArray[pos + i];
+					}
+
+					return bytes;
 			}
 
 			return null;
@@ -280,15 +321,63 @@ namespace libsecondlife
 	{
 		public static Packet UseCircuitCode(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID, uint code)
 		{
-			Packet packet = new Packet("UseCircuitCode", protocol);
+			Packet packet = new Packet("UseCircuitCode", protocol, 44);
 
 			// Append the payload
-			packet.Data.AddRange(agentID.Data);
-			packet.Data.AddRange(sessionID.Data);
-			packet.Data.AddRange(BitConverter.GetBytes(code));
+			Array.Copy(agentID.Data, 0, packet.Data, 8, 16);
+			Array.Copy(sessionID.Data, 0, packet.Data, 24, 16);
+			Array.Copy(BitConverter.GetBytes(code), 0, packet.Data, 40, 4);
 
 			// Set the packet flags
 			packet.Data[0] = Helpers.MSG_RELIABLE;
+
+			return packet;
+		}
+
+		public static Packet CompleteAgentMovement(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID, uint code)
+		{
+			Packet packet = new Packet("CompleteAgentMovement", protocol, 44);
+
+			// Append the payload
+			Array.Copy(agentID.Data, 0, packet.Data, 8, 16);
+			Array.Copy(sessionID.Data, 0, packet.Data, 24, 16);
+			Array.Copy(BitConverter.GetBytes(code), 0, packet.Data, 40, 4);
+
+			// Set the packet flags
+			packet.Data[0] = Helpers.MSG_RELIABLE;
+
+			return packet;
+		}
+		
+		public static Packet PacketAck(ProtocolManager protocol, ArrayList acks)
+		{
+			int pos = 9;
+
+			// Size of this packet is header (8) + block count (1) + 4 * number of blocks
+			Packet packet = new Packet("PacketAck", protocol, 9 + acks.Count * 4);
+
+			// Set the payload size
+			packet.Data[8] = (byte)acks.Count;
+
+			// Append the payload
+			foreach (uint ack in acks)
+			{
+				Array.Copy(BitConverter.GetBytes(ack), 0, packet.Data, pos, 4);
+				pos += 4;
+			}
+
+			return packet;
+		}
+
+		public static Packet CompletePingCheck(ProtocolManager protocol, byte PingID)
+		{
+			Packet packet = new Packet("CompletePingCheck", protocol, 6);
+
+			// Append the payload
+			packet.Data[5] = PingID;
+
+			// Set the packet flags
+			packet.Data[0] = Helpers.MSG_ZEROCODED;
 
 			return packet;
 		}

@@ -1,10 +1,35 @@
 using System;
+using System.Collections;
 using libsecondlife;
 
 namespace sldump
 {
 	class sldump
 	{
+		//
+		public static void DefaultHandler(Packet packet)
+		{
+			Console.WriteLine("Received " + packet.Layout.Name);
+			return;
+			
+			/*string output = "";
+			ArrayList blocks = packet.Blocks();
+
+			output += "---- " + packet.Layout.Name + " ----\n";
+
+			foreach (Block block in blocks)
+			{
+				output += " -- " + block.Layout.Name + " --\n";
+
+				foreach (Field field in block.Fields)
+				{
+					output += "  " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
+				}
+			}
+
+			Console.Write(output);*/
+		}
+
 		/// <summary>
 		/// The main entry point for the application.
 		/// </summary>
@@ -26,7 +51,7 @@ namespace sldump
 			catch (Exception e)
 			{
 				// Error initializing the client, probably missing file(s)
-				Console.WriteLine("Error: " + e.Message);
+				Console.WriteLine(e.ToString());
 				return;
 			}
 
@@ -35,6 +60,10 @@ namespace sldump
 				client.Protocol.PrintMap();
 				return;
 			}
+
+			// Setup the callback
+			PacketCallback defaultCallback = new PacketCallback(DefaultHandler);
+			client.Network.Callbacks["Default"] = defaultCallback;
 
 			if (!client.Network.Login(args[0], args[1], args[2], "00:00:00:00:00:00", 1, 10, 2, 2, "Win", 
 				"0", "sldump", "jhurliman@wsu.edu"))

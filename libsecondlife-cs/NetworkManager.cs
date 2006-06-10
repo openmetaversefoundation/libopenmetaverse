@@ -1,8 +1,10 @@
 using System;
 using System.Text;
+using System.Timers;
 using System.Collections;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Security.Cryptography;
 
 namespace libsecondlife
@@ -27,27 +29,57 @@ namespace libsecondlife
 	public class Circuit
 	{
 		public uint CircuitCode;
+		public bool Opened;
+		public ushort Sequence;
+		public IPEndPoint ipEndPoint;
 
+		private EndPoint endPoint;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
 		private byte[] Buffer;
 		private Socket Connection;
-		private IPEndPoint ipEndPoint;
-		private EndPoint endPoint;
+		private AsyncCallback ReceivedData;
+		private System.Timers.Timer OpenTimer;
+		private System.Timers.Timer ACKTimer;
+		private bool Timeout;
+		private ArrayList AckOutbox;
+		private Mutex AckOutboxMutex;
+		private Hashtable NeedAck;
+		private Mutex NeedAckMutex;
 
 		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
 		{
 			Protocol = protocol;
 			Network = network;
 			CircuitCode = circuitCode;
+			Sequence = 0;
 			Buffer = new byte[4096];
 			Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+			Opened = false;
+			Timeout = false;
+
+			// Initialize the queue of ACKs that need to be sent to the server
+			AckOutbox = new ArrayList();
+
+			// Initialize the hashtable for reliable packets waiting on ACKs from the server
+			NeedAck = new Hashtable();
+
+			// Create a timer to test if the connection times out
+			OpenTimer = new System.Timers.Timer(10000);
+			OpenTimer.Elapsed += new ElapsedEventHandler(OpenTimerEvent);
+
+			// Create a timer to resend unACKed packets
+			ACKTimer = new System.Timers.Timer(1000);
+			ACKTimer.Elapsed += new ElapsedEventHandler(ACKTimerEvent);
+
+			AckOutboxMutex = new Mutex(false, "AckOutboxMutex");
+			NeedAckMutex = new Mutex(false, "NeedAckMutex");
 		}
 
 		public bool Open(string ip, int port)
 		{
 			// Setup the callback
-			AsyncCallback onReceivedData = new AsyncCallback(this.OnRecievedData);
+			ReceivedData = new AsyncCallback(this.OnReceivedData);
 
 			// Create an endpoint that we will be communicating with (need it in two types due to
 			// .NET weirdness)
@@ -56,28 +88,351 @@ namespace libsecondlife
 
 			// Associate this circuit's socket with the given ip and port and start listening
 			Connection.Connect(endPoint);
-			Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, onReceivedData, null);
+			Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+			// Start the circuit opening timeout
+			OpenTimer.Start();
+
+			// Start the packet resend timer
+			ACKTimer.Start();
 
 			// Send the UseCircuitCode packet to initiate the connection
 			Packet packet = PacketBuilder.UseCircuitCode(Protocol, Network.LoginValues.AgentID, 
 				Network.LoginValues.SessionID, CircuitCode);
-			Connection.Send((byte[])packet.Data.ToArray(typeof(Byte)));
+
+			// Send the initial packet out
+			SendPacket(packet);
+
+			while (!Timeout)
+			{
+				if (Opened)
+				{
+					return true;
+				}
+
+				Thread.Sleep(0);
+			}
 
 			return false;
 		}
 
 		public void Close()
 		{
-			//FIXME: CloseCircuit
+			// Send the CloseCircuit notice
+			Packet packet = new Packet("CloseCircuit", Protocol, 8);
+			SendPacket(packet);
+
+			// Stop the resend timer
+			ACKTimer.Stop();
+
+			// Stop the open circuit timer (just in case it's still running)
+			OpenTimer.Stop();
+
+			// Claim the NeedAck mutex
+			NeedAckMutex.WaitOne();
+			
+			NeedAck.Clear();
+			
+			// Release the mutex
+			NeedAckMutex.ReleaseMutex();
+
+			// Send any last ACKs before closing the circuit
+			SendACKs();
+
 			Connection.Close();
 		}
 
-		private void OnRecievedData(IAsyncResult result)
+		private void ConnectionSend(byte[] byteArray, int length)
 		{
+			try
+			{
+				Connection.Send(byteArray, length, SocketFlags.None);
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
+		}
+
+		public void SendPacket(Packet packet)
+		{
+			byte[] zeroBuffer = new byte[4096];
+			int zeroBytes;
+
+			Console.WriteLine("Sending " + packet.Data.Length + " byte " + packet.Layout.Name);
+
+			if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+			{
+				// This packet needs an ACK, keep track of when it was sent out
+				NeedAckMutex.WaitOne();
+				NeedAck.Add(packet, Environment.TickCount);
+				NeedAckMutex.ReleaseMutex();
+			}
+
+			// Set the sequence number here since we are manually serializing the packet
+			packet.Sequence = ++Sequence;
+
+			// Zerocode if needed
+			if ((packet.Data[0] & Helpers.MSG_ZEROCODED) != 0)
+			{
+				zeroBytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+			}
+			else
+			{
+				// Normal packet, copy it straight over to the zeroBuffer
+				Array.Copy(packet.Data, 0, zeroBuffer, 0, packet.Data.Length);
+				zeroBytes = packet.Data.Length;
+			}
+
+			if (AckOutbox.Count != 0)
+			{
+				// Claim the mutex on the AckOutbox
+				AckOutboxMutex.WaitOne();
+
+				//TODO: Make sure we aren't appending more than 255 ACKs
+
+				// Append each ACK needing to be sent out to this packet
+				foreach (uint ack in AckOutbox)
+				{
+					Array.Copy(BitConverter.GetBytes(ack), 0, zeroBuffer, zeroBytes - 1, 4);
+					zeroBytes += 4;
+				}
+
+				// Last byte is the number of ACKs
+				zeroBuffer[zeroBytes - 1] = (byte)AckOutbox.Count;
+				zeroBytes += 1;
+
+				AckOutbox.Clear();
+
+				// Release the mutex
+				AckOutboxMutex.ReleaseMutex();
+
+				// Set the flag that this packet has ACKs appended to it
+				zeroBuffer[0] += Helpers.MSG_APPENDED_ACKS;
+			}
+
+			ConnectionSend(zeroBuffer, zeroBytes);
+		}
+
+		private void SendACKs()
+		{
+			if (AckOutbox.Count != 0)
+			{
+				// Claim the mutex on the AckOutbox
+				AckOutboxMutex.WaitOne();
+
+				Packet packet = PacketBuilder.PacketAck(Protocol, AckOutbox);
+
+				// Set the sequence number
+				packet.Sequence = ++Sequence;
+
+				// Bypass SendPacket since we are taking care of the AckOutbox ourself
+				ConnectionSend(packet.Data, packet.Data.Length);
+
+				Console.WriteLine("Sent " + packet.Data.Length + " byte " + packet.Layout.Name);
+
+				AckOutbox.Clear();
+
+				// Release the mutex
+				AckOutboxMutex.ReleaseMutex();
+			}
+		}
+
+		private void OnReceivedData(IAsyncResult result)
+		{
+			Packet packet;
+
+			// For the UseCircuitCode timeout
+			Opened = true;
+			OpenTimer.Stop();
+
+			// Retrieve the incoming packet
 			int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
-			Packet packet = new Packet(Buffer, numBytes, Protocol);
+
+			// Start listening again immediately
+			Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+			if ((Buffer[Buffer.Length - 1] & Helpers.MSG_APPENDED_ACKS) != 0)
+			{
+				// Grab the ACKs that are appended to this packet
+				byte numAcks = Buffer[Buffer.Length - 1];
+
+				Console.WriteLine("Found " + numAcks + " appended acks");
+
+				for (int i = 1; i <= numAcks; ++i)
+				{
+					uint ack = BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
+
+					// Claim the NeedAck mutex
+					NeedAckMutex.WaitOne();
+
+					ICollection reliablePackets = NeedAck.Keys;
+
+					// Remove this packet if it exists
+					foreach (Packet reliablePacket in reliablePackets)
+					{
+						if ((uint)reliablePacket.Sequence == ack)
+						{
+							NeedAck.Remove(reliablePacket);
+							goto Found;
+						}
+					}
+				//NotFound:
+					Helpers.Log("Received an ACK for a packet we're not tracking", Helpers.LogLevel.Warning);
+
+				Found:
+					// Release the mutex
+					NeedAckMutex.ReleaseMutex();
+				}
+
+				// Adjust the packet length
+				numBytes = numBytes - numAcks * 4 - 1;
+			}
+
+			if ((Buffer[0] & Helpers.MSG_ZEROCODED) != 0)
+			{
+				// Allocate a temporary buffer for the zerodecoded packet
+				byte[] zeroBuffer = new byte[4096];
+				int zeroBytes = Helpers.ZeroDecode(Buffer, numBytes, zeroBuffer);
+				Array.Copy(zeroBuffer, 0, Buffer, 0, zeroBytes);
+				numBytes = zeroBytes;
+			}
+
+			// Create the packet object from our byte array
+			packet = new Packet(Buffer, numBytes, Protocol);
+
+			if ((Buffer[0] & Helpers.MSG_RELIABLE) != 0)
+			{
+				if (!AckOutbox.Contains((uint)packet.Sequence))
+				{
+					// Claim a mutex on the AckOutbox
+					AckOutboxMutex.WaitOne();
+
+					// This packet needs to be ACKed, push its sequence number on to the queue
+					AckOutbox.Add((uint)packet.Sequence);
+
+					// Release the mutex
+					AckOutboxMutex.ReleaseMutex();
+				}
+				else
+				{
+					if ((packet.Data[0] & Helpers.MSG_RESENT) != 0)
+					{
+						// We received a resent packet
+						Helpers.Log("Received a resent packet, sequence=" + packet.Sequence, Helpers.LogLevel.Info);
+					}
+					else
+					{
+						Console.WriteLine("???");
+					}
+				}
+			}
+
+			if (packet.Layout.Name == null)
+			{
+				Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
+				return;
+			}
+			else if (packet.Layout.Name == "StartPingCheck")
+			{
+				//TODO: Should we care about OldestUnacked?
+
+				// Respond to the ping request
+				Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, packet.Data[5]);
+				SendPacket(pingPacket);
+			}
+			else if (packet.Layout.Name == "PacketAck")
+			{
+				ArrayList blocks = packet.Blocks();
+
+				// Claim the NeedAck mutex
+				NeedAckMutex.WaitOne();
+
+				// Remove each ACK in this packet from the NeedAck waiting list
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						ICollection reliablePackets = NeedAck.Keys;
+
+						// Remove this packet if it exists
+						foreach (Packet reliablePacket in reliablePackets)
+						{
+							if ((uint)reliablePacket.Sequence == (uint)field.Data)
+							{
+								NeedAck.Remove(reliablePacket);
+								goto Found;
+							}
+						}
+					//NotFound:
+						Helpers.Log("Received an ACK for a packet we're not tracking", Helpers.LogLevel.Warning);
+					Found:
+						;
+					}
+				}
+
+				// Release the mutex
+				NeedAckMutex.ReleaseMutex();
+			}
+
+			// Fire any callbacks registered with this packet type
 			PacketCallback callback = (PacketCallback)Network.Callbacks[packet.Layout.Name];
-			callback(packet);
+			
+			if (callback != null)
+			{
+				callback(packet);
+			}
+			else
+			{
+				callback = (PacketCallback)Network.Callbacks["Default"];
+
+				if (callback != null)
+				{
+					callback(packet);
+				}
+			}
+		}
+
+		private void OpenTimerEvent(object source, System.Timers.ElapsedEventArgs e)
+		{
+			Timeout = true;
+			OpenTimer.Stop();
+		}
+
+		private void ACKTimerEvent(object source, System.Timers.ElapsedEventArgs e)
+		{
+			// Send any ACKs in the queue
+			SendACKs();
+
+			// Claim the NeedAck mutex
+			NeedAckMutex.WaitOne();
+
+			// Check if any reliable packets haven't been ACKed by the server
+			IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
+
+			while (packetEnum.MoveNext())
+			{
+				int ticks = (int)packetEnum.Value;
+
+				// TODO: Is this hardcoded value correct? Should it be a higher level define or a 
+				//       changeable property?
+				if (Environment.TickCount - ticks > 3000)
+				{
+					Packet packet = (Packet)packetEnum.Key;
+
+					// Adjust the timeout value for this packet
+					NeedAck[packet] = Environment.TickCount;
+					
+					// Add the resent flag
+					packet.Data[0] += Helpers.MSG_RESENT;
+					
+					// Resend the packet
+					SendPacket((Packet)packet);
+				}
+			}
+
+			// Release the mutex
+			NeedAckMutex.ReleaseMutex();
 		}
 	}
 
@@ -105,17 +460,31 @@ namespace libsecondlife
 		public LoginReply LoginValues;
 		public string LoginError;
 		public Hashtable Callbacks;
+		public Circuit CurrentCircuit;
 
 		private ProtocolManager Protocol;
 		private string LoginBuffer;
 		private ArrayList Circuits;
-		private Hashtable InternalCallbacks;
+		//private Hashtable InternalCallbacks;
 
 		public NetworkManager(ProtocolManager protocol)
 		{
 			Protocol = protocol;
 			Circuits = new ArrayList();
 			Callbacks = new Hashtable();
+			CurrentCircuit = null;
+		}
+
+		public void SendPacket(Packet packet)
+		{
+			if (CurrentCircuit != null)
+			{
+				CurrentCircuit.SendPacket(packet);
+			}
+			else
+			{
+				Helpers.Log("Trying to send a packet when there is no current circuit", Helpers.LogLevel.Error);
+			}
 		}
 
 		public bool Login(string firstName, string lastName, string password, string mac,
@@ -163,18 +532,20 @@ namespace libsecondlife
 				"</struct></value></param></params></methodCall>"
 				;
 
+			// Override SSL authentication mechanisms
+			ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+
+			login = WebRequest.Create(url);
+			login.ContentType = "text/xml";
+			login.Method = "POST";
+			login.Timeout = 12000;
+			byte[] request = System.Text.Encoding.ASCII.GetBytes(loginRequest);
+			login.ContentLength = request.Length;
+			//HttpWebRequest test = new HttpWebRequest();
+			System.IO.Stream stream = login.GetRequestStream();
+
 			try
 			{
-				// Override SSL authentication mechanisms
-				ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-
-				login = WebRequest.Create(url);
-				login.ContentType = "text/xml";
-				login.Method = "POST";
-				login.Timeout = 12000;
-                byte[] request = System.Text.Encoding.ASCII.GetBytes(loginRequest);
-				login.ContentLength = request.Length;
-				System.IO.Stream stream = login.GetRequestStream();
 				stream.Write(request, 0, request.Length);
 				stream.Close();
 				response = login.GetResponse();
@@ -200,6 +571,7 @@ namespace libsecondlife
 				return false;
 			}
 
+			// Parse the login reply and put the returned variables in to a struct
 			if (!ParseLoginReply())
 			{
 				return false;
@@ -207,7 +579,19 @@ namespace libsecondlife
 
 			// Connect to the sim given in the login reply
 			Circuit circuit = new Circuit(Protocol, this, LoginValues.CircuitCode);
-			circuit.Open(LoginValues.IP, LoginValues.Port);
+			if (!circuit.Open(LoginValues.IP, LoginValues.Port))
+			{
+				return false;
+			}
+
+			// Circuit was successfully opened, add it to the list and set it as default
+			Circuits.Add(circuit);
+			CurrentCircuit = circuit;
+
+			// Move our agent in to the sim to complete the connection
+			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, LoginValues.AgentID, LoginValues.SessionID,
+				LoginValues.CircuitCode);
+			SendPacket(packet);
 
 			return true;
 		}

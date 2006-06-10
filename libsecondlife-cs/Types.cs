@@ -13,6 +13,8 @@ namespace libsecondlife
 
 		public LLUUID(string val)
 		{
+			Data = new byte[16];
+
 			if (val.Length == 36)
 			{
 				val = val.Replace("-", "");
@@ -20,11 +22,8 @@ namespace libsecondlife
 			
 			if (val.Length != 32)
 			{
-				Data = new byte[16];
 				return;
 			}
-
-			Data = new byte[val.Length / 2];
 
 			for(int i = 0; i < 16; ++i)
 			{
@@ -34,15 +33,26 @@ namespace libsecondlife
 
 		public LLUUID(byte[] byteArray, int pos)
 		{
-			for (int i = 0; i < 16; ++i)
-			{
-				Data[i] = byteArray[pos + i];
-			}
+			Data = new byte[16];
+
+			Array.Copy(byteArray, pos, Data, 0, 16);
 		}
 
 		public static implicit operator LLUUID(string val)
 		{
 			return new LLUUID(val);
+		}
+
+		public override string ToString()
+		{
+			string uuid = "";
+
+			for (int i = 0; i < 16; ++i)
+			{
+				uuid += Data[i].ToString("x2");
+			}
+
+			return uuid;
 		}
 	}
 
@@ -63,6 +73,11 @@ namespace libsecondlife
 			y = BitConverter.ToSingle(byteArray, pos + 4);
 			z = BitConverter.ToSingle(byteArray, pos + 8);
 		}
+
+		public override string ToString()
+		{
+			return x.ToString() + " " + y.ToString() + " " + z.ToString();
+		}
 	}
 
 	public class LLVector3d
@@ -81,6 +96,11 @@ namespace libsecondlife
 			x = BitConverter.ToDouble(byteArray, pos);
 			y = BitConverter.ToDouble(byteArray, pos + 8);
 			z = BitConverter.ToDouble(byteArray, pos + 16);
+		}
+
+		public override string ToString()
+		{
+			return x.ToString() + " " + y.ToString() + " " + z.ToString();
 		}
 	}
 
@@ -103,6 +123,11 @@ namespace libsecondlife
 			z = BitConverter.ToSingle(byteArray, pos + 8);
 			s = BitConverter.ToSingle(byteArray, pos + 12);
 		}
+
+		public override string ToString()
+		{
+			return x.ToString() + " " + y.ToString() + " " + z.ToString() + " " + s.ToString();
+		}
 	}
 
 	public class LLQuaternion
@@ -123,6 +148,11 @@ namespace libsecondlife
 			y = BitConverter.ToSingle(byteArray, pos + 4);
 			z = BitConverter.ToSingle(byteArray, pos + 8);
 			s = BitConverter.ToSingle(byteArray, pos + 12);
+		}
+
+		public override string ToString()
+		{
+			return x.ToString() + " " + y.ToString() + " " + z.ToString() + " " + s.ToString();
 		}
 	}
 }

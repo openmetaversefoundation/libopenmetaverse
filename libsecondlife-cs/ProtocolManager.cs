@@ -31,7 +31,10 @@ namespace libsecondlife
 		LLQuaternion,
 		IPADDR,
 		IPPORT,
-		Variable
+		Variable,
+		Fixed,
+		Single,
+		Multiple
 	}
 
 	public class MapField : IComparable
@@ -120,25 +123,25 @@ namespace libsecondlife
 
 			// Build the type size hash table
 			TypeSizes = new Hashtable();
-			TypeSizes.Add("U8", 1);
-			TypeSizes.Add("U16", 2);
-			TypeSizes.Add("U32", 4);
-			TypeSizes.Add("U64", 8);
-			TypeSizes.Add("S8", 1);
-			TypeSizes.Add("S16", 2);
-			TypeSizes.Add("S32", 4);
-			TypeSizes.Add("S64", 8);
-			TypeSizes.Add("F32", 4);
-			TypeSizes.Add("F64", 8);
-			TypeSizes.Add("LLUUID", 16);
-			TypeSizes.Add("BOOL", 1);
-			TypeSizes.Add("LLVector3", 12);
-			TypeSizes.Add("LLVector3d", 24);
-			TypeSizes.Add("LLVector4", 16);
-			TypeSizes.Add("LLQuaternion", 16);
-			TypeSizes.Add("IPADDR", 4);
-			TypeSizes.Add("IPPORT", 2);
-			TypeSizes.Add("Variable", -1);
+			TypeSizes.Add(FieldType.U8, 1);
+			TypeSizes.Add(FieldType.U16, 2);
+			TypeSizes.Add(FieldType.U32, 4);
+			TypeSizes.Add(FieldType.U64, 8);
+			TypeSizes.Add(FieldType.S8, 1);
+			TypeSizes.Add(FieldType.S16, 2);
+			TypeSizes.Add(FieldType.S32, 4);
+			TypeSizes.Add(FieldType.S64, 8);
+			TypeSizes.Add(FieldType.F32, 4);
+			TypeSizes.Add(FieldType.F64, 8);
+			TypeSizes.Add(FieldType.LLUUID, 16);
+			TypeSizes.Add(FieldType.BOOL, 1);
+			TypeSizes.Add(FieldType.LLVector3, 12);
+			TypeSizes.Add(FieldType.LLVector3d, 24);
+			TypeSizes.Add(FieldType.LLVector4, 16);
+			TypeSizes.Add(FieldType.LLQuaternion, 16);
+			TypeSizes.Add(FieldType.IPADDR, 4);
+			TypeSizes.Add(FieldType.IPPORT, 2);
+			TypeSizes.Add(FieldType.Variable, -1);
 
 			LoadKeywordFile(keywordFile);
 			LoadMapFile(mapFile);

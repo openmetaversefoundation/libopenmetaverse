@@ -25,6 +25,76 @@ namespace libsecondlife
 		{
 			Console.WriteLine(level.ToString() + ": " + message);
 		}
+
+		public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
+		{
+			int zerolen = 0;
+
+			Array.Copy(src, 0, dest, 0, 4);
+			zerolen += 4;
+
+			for (int i = zerolen; i < srclen; i++) 
+			{
+				if (src[i] == 0x00) 
+				{
+					for (byte j = 0; j < src[i + 1]; j++) 
+					{
+						dest[zerolen++] = 0x00;
+					}
+
+					i++;
+				} 
+				else 
+				{
+					dest[zerolen++] = src[i];
+				}
+			}
+
+			return zerolen;
+		}
+
+		public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
+		{
+			int zerolen = 0;
+			byte zerocount = 0;
+
+			Array.Copy(src, 0, dest, 0, 4);
+			zerolen += 4;
+
+			for (int i = zerolen; i < srclen; i++) 
+			{
+				if (src[i] == 0x00) 
+				{
+					zerocount++;
+
+					if (zerocount == 0) 
+					{
+						dest[zerolen++] = 0x00;
+						dest[zerolen++] = 0xff;
+						zerocount++;
+					}
+				}
+				else 
+				{
+					if (zerocount != 0) 
+					{
+						dest[zerolen++] = 0x00;
+						dest[zerolen++] = (byte)zerocount;
+						zerocount = 0;
+					}
+
+					dest[zerolen++] = src[i];
+				}
+			}
+
+			if (zerocount != 0) 
+			{
+				dest[zerolen++] = 0x00;
+				dest[zerolen++] = (byte)zerocount;
+			}
+
+			return zerolen;
+		}
 	}
 
 	public class PacketWrapper
