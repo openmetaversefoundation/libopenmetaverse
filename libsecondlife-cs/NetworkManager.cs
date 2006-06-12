@@ -46,6 +46,7 @@ namespace libsecondlife
 		private Mutex AckOutboxMutex;
 		private Hashtable NeedAck;
 		private Mutex NeedAckMutex;
+		private int ResendTick;
 
 		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
 		{
@@ -68,49 +69,64 @@ namespace libsecondlife
 			OpenTimer = new System.Timers.Timer(10000);
 			OpenTimer.Elapsed += new ElapsedEventHandler(OpenTimerEvent);
 
-			// Create a timer to resend unACKed packets
+			// Create a timer to send PacketAcks and resend unACKed packets
 			ACKTimer = new System.Timers.Timer(1000);
 			ACKTimer.Elapsed += new ElapsedEventHandler(ACKTimerEvent);
 
 			AckOutboxMutex = new Mutex(false, "AckOutboxMutex");
 			NeedAckMutex = new Mutex(false, "NeedAckMutex");
+
+			ResendTick = 0;
+		}
+
+		~Circuit()
+		{
+			Stop();
+			Connection.Close();
 		}
 
 		public bool Open(string ip, int port)
 		{
-			// Setup the callback
-			ReceivedData = new AsyncCallback(this.OnReceivedData);
-
-			// Create an endpoint that we will be communicating with (need it in two types due to
-			// .NET weirdness)
-			ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
-			endPoint = (EndPoint)ipEndPoint;
-
-			// Associate this circuit's socket with the given ip and port and start listening
-			Connection.Connect(endPoint);
-			Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-
-			// Start the circuit opening timeout
-			OpenTimer.Start();
-
-			// Start the packet resend timer
-			ACKTimer.Start();
-
-			// Send the UseCircuitCode packet to initiate the connection
-			Packet packet = PacketBuilder.UseCircuitCode(Protocol, Network.LoginValues.AgentID, 
-				Network.LoginValues.SessionID, CircuitCode);
-
-			// Send the initial packet out
-			SendPacket(packet);
-
-			while (!Timeout)
+			try
 			{
-				if (Opened)
-				{
-					return true;
-				}
+				// Setup the callback
+				ReceivedData = new AsyncCallback(this.OnReceivedData);
 
-				Thread.Sleep(0);
+				// Create an endpoint that we will be communicating with (need it in two types due to
+				// .NET weirdness)
+				ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+				endPoint = (EndPoint)ipEndPoint;
+
+				// Associate this circuit's socket with the given ip and port and start listening
+				Connection.Connect(endPoint);
+				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+				// Start the circuit opening timeout
+				OpenTimer.Start();
+
+				// Start the packet resend timer
+				ACKTimer.Start();
+
+				// Send the UseCircuitCode packet to initiate the connection
+				Packet packet = PacketBuilder.UseCircuitCode(Protocol, Network.LoginValues.AgentID, 
+					Network.LoginValues.SessionID, CircuitCode);
+
+				// Send the initial packet out
+				SendPacket(packet, true);
+
+				while (!Timeout)
+				{
+					if (Opened)
+					{
+						return true;
+					}
+
+					Thread.Sleep(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 
 			return false;
@@ -118,35 +134,18 @@ namespace libsecondlife
 
 		public void Close()
 		{
-			// Send the CloseCircuit notice
-			Packet packet = new Packet("CloseCircuit", Protocol, 8);
-			SendPacket(packet);
-
-			// Stop the resend timer
-			ACKTimer.Stop();
-
-			// Stop the open circuit timer (just in case it's still running)
-			OpenTimer.Stop();
-
-			// Claim the NeedAck mutex
-			NeedAckMutex.WaitOne();
-			
-			NeedAck.Clear();
-			
-			// Release the mutex
-			NeedAckMutex.ReleaseMutex();
-
-			// Send any last ACKs before closing the circuit
-			SendACKs();
-
-			Connection.Close();
-		}
-
-		private void ConnectionSend(byte[] byteArray, int length)
-		{
 			try
 			{
-				Connection.Send(byteArray, length, SocketFlags.None);
+				Stop();
+
+				// Send the CloseCircuit notice
+				Packet packet = new Packet("CloseCircuit", Protocol, 8);
+				SendPacket(packet, true);
+
+				// Send any last ACKs before closing the circuit
+				SendACKs();
+
+				Connection.Close();
 			}
 			catch (Exception e)
 			{
@@ -154,285 +153,364 @@ namespace libsecondlife
 			}
 		}
 
-		public void SendPacket(Packet packet)
+		public void Stop()
+		{
+			try
+			{
+				// Stop the resend timer
+				ACKTimer.Stop();
+
+				// Stop the open circuit timer (just in case it's still running)
+				OpenTimer.Stop();
+
+				// TODO: Is this safe? Using the mutex throws an exception about a disposed object
+				NeedAck.Clear();
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
+		}
+
+		public void SendPacket(Packet packet, bool incrementSequence)
 		{
 			byte[] zeroBuffer = new byte[4096];
 			int zeroBytes;
 
-			Console.WriteLine("Sending " + packet.Data.Length + " byte " + packet.Layout.Name);
+			//Console.WriteLine("Sending " + packet.Data.Length + " byte " + packet.Layout.Name);
 
-			if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+			try
 			{
-				// This packet needs an ACK, keep track of when it was sent out
-				NeedAckMutex.WaitOne();
-				NeedAck.Add(packet, Environment.TickCount);
-				NeedAckMutex.ReleaseMutex();
-			}
-
-			// Set the sequence number here since we are manually serializing the packet
-			packet.Sequence = ++Sequence;
-
-			// Zerocode if needed
-			if ((packet.Data[0] & Helpers.MSG_ZEROCODED) != 0)
-			{
-				zeroBytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-			}
-			else
-			{
-				// Normal packet, copy it straight over to the zeroBuffer
-				Array.Copy(packet.Data, 0, zeroBuffer, 0, packet.Data.Length);
-				zeroBytes = packet.Data.Length;
-			}
-
-			if (AckOutbox.Count != 0)
-			{
-				// Claim the mutex on the AckOutbox
-				AckOutboxMutex.WaitOne();
-
-				//TODO: Make sure we aren't appending more than 255 ACKs
-
-				// Append each ACK needing to be sent out to this packet
-				foreach (uint ack in AckOutbox)
+				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0 && incrementSequence)
 				{
-					Array.Copy(BitConverter.GetBytes(ack), 0, zeroBuffer, zeroBytes - 1, 4);
-					zeroBytes += 4;
+					if (!NeedAck.ContainsKey(packet))
+					{
+						// This packet needs an ACK, keep track of when it was sent out
+						NeedAckMutex.WaitOne();
+						NeedAck.Add(packet, Environment.TickCount);
+						NeedAckMutex.ReleaseMutex();
+					}
 				}
 
-				// Last byte is the number of ACKs
-				zeroBuffer[zeroBytes - 1] = (byte)AckOutbox.Count;
-				zeroBytes += 1;
+				if (incrementSequence)
+				{
+					// Set the sequence number here since we are manually serializing the packet
+					packet.Sequence = ++Sequence;
+				}
 
-				AckOutbox.Clear();
+				// Zerocode if needed
+				if ((packet.Data[0] & Helpers.MSG_ZEROCODED) != 0)
+				{
+					zeroBytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+				}
+				else
+				{
+					// Normal packet, copy it straight over to the zeroBuffer
+					Array.Copy(packet.Data, 0, zeroBuffer, 0, packet.Data.Length);
+					zeroBytes = packet.Data.Length;
+				}
 
-				// Release the mutex
-				AckOutboxMutex.ReleaseMutex();
+				// The incrementSequence check prevents a possible deadlock situation
+				if (AckOutbox.Count != 0 && incrementSequence && packet.Layout.Name != "PacketAck" && 
+					packet.Layout.Name != "LogoutRequest")
+				{
+					// Claim the mutex on the AckOutbox
+					AckOutboxMutex.WaitOne();
 
-				// Set the flag that this packet has ACKs appended to it
-				zeroBuffer[0] += Helpers.MSG_APPENDED_ACKS;
+					//TODO: Make sure we aren't appending more than 255 ACKs
+
+					// Append each ACK needing to be sent out to this packet
+					foreach (uint ack in AckOutbox)
+					{
+						Array.Copy(BitConverter.GetBytes(ack), 0, zeroBuffer, zeroBytes - 1, 4);
+						zeroBytes += 4;
+					}
+
+					// Last byte is the number of ACKs
+					zeroBuffer[zeroBytes - 1] = (byte)AckOutbox.Count;
+					zeroBytes += 1;
+
+					AckOutbox.Clear();
+
+					// Release the mutex
+					AckOutboxMutex.ReleaseMutex();
+
+					// Set the flag that this packet has ACKs appended to it
+					zeroBuffer[0] += Helpers.MSG_APPENDED_ACKS;
+				}
+
+				int numSent = Connection.Send(zeroBuffer, zeroBytes, SocketFlags.None);
+
+				//Console.WriteLine("Sent " + numSent + " bytes");
 			}
-
-			ConnectionSend(zeroBuffer, zeroBytes);
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
 		}
 
 		private void SendACKs()
 		{
+			// Claim the mutex on the AckOutbox
+			AckOutboxMutex.WaitOne();
+
 			if (AckOutbox.Count != 0)
 			{
-				// Claim the mutex on the AckOutbox
-				AckOutboxMutex.WaitOne();
+				try
+				{
+					Packet packet = PacketBuilder.PacketAck(Protocol, AckOutbox);
 
-				Packet packet = PacketBuilder.PacketAck(Protocol, AckOutbox);
+					if (packet.Data.Length < 13)
+					{
+						Helpers.Log("Trying to send a PacketAck with no ACKs, cancelling", Helpers.LogLevel.Warning);
+						// Release the mutex
+						AckOutboxMutex.ReleaseMutex();
 
-				// Set the sequence number
-				packet.Sequence = ++Sequence;
+						return;
+					}
 
-				// Bypass SendPacket since we are taking care of the AckOutbox ourself
-				ConnectionSend(packet.Data, packet.Data.Length);
+					// Set the sequence number
+					packet.Sequence = ++Sequence;
 
-				Console.WriteLine("Sent " + packet.Data.Length + " byte " + packet.Layout.Name);
+					// Bypass SendPacket since we are taking care of the AckOutbox ourself
+					int numSent = Connection.Send(packet.Data);
 
-				AckOutbox.Clear();
+					//Console.WriteLine("Sent " + numSent + " byte " + packet.Layout.Name);
 
-				// Release the mutex
-				AckOutboxMutex.ReleaseMutex();
+					AckOutbox.Clear();
+				}
+				catch (Exception e)
+				{
+					Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				}
 			}
+
+			// Release the mutex
+			AckOutboxMutex.ReleaseMutex();
 		}
 
 		private void OnReceivedData(IAsyncResult result)
 		{
 			Packet packet;
 
-			// For the UseCircuitCode timeout
-			Opened = true;
-			OpenTimer.Stop();
-
-			// Retrieve the incoming packet
-			int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
-
-			// Start listening again immediately
-			Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-
-			if ((Buffer[Buffer.Length - 1] & Helpers.MSG_APPENDED_ACKS) != 0)
+			try
 			{
-				// Grab the ACKs that are appended to this packet
-				byte numAcks = Buffer[Buffer.Length - 1];
+				// For the UseCircuitCode timeout
+				Opened = true;
+				OpenTimer.Stop();
 
-				Console.WriteLine("Found " + numAcks + " appended acks");
+				// Retrieve the incoming packet
+				int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
 
-				for (int i = 1; i <= numAcks; ++i)
+				// Start listening again immediately
+				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+				if ((Buffer[Buffer.Length - 1] & Helpers.MSG_APPENDED_ACKS) != 0)
 				{
-					uint ack = BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
+					// Grab the ACKs that are appended to this packet
+					byte numAcks = Buffer[Buffer.Length - 1];
+
+					Helpers.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
 					// Claim the NeedAck mutex
 					NeedAckMutex.WaitOne();
 
-					ICollection reliablePackets = NeedAck.Keys;
-
-					// Remove this packet if it exists
-					foreach (Packet reliablePacket in reliablePackets)
+					for (int i = 1; i <= numAcks; ++i)
 					{
-						if ((uint)reliablePacket.Sequence == ack)
-						{
-							NeedAck.Remove(reliablePacket);
-							goto Found;
-						}
-					}
-				//NotFound:
-					Helpers.Log("Received an ACK for a packet we're not tracking", Helpers.LogLevel.Warning);
+						uint ack = BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
 
-				Found:
-					// Release the mutex
-					NeedAckMutex.ReleaseMutex();
-				}
-
-				// Adjust the packet length
-				numBytes = numBytes - numAcks * 4 - 1;
-			}
-
-			if ((Buffer[0] & Helpers.MSG_ZEROCODED) != 0)
-			{
-				// Allocate a temporary buffer for the zerodecoded packet
-				byte[] zeroBuffer = new byte[4096];
-				int zeroBytes = Helpers.ZeroDecode(Buffer, numBytes, zeroBuffer);
-				Array.Copy(zeroBuffer, 0, Buffer, 0, zeroBytes);
-				numBytes = zeroBytes;
-			}
-
-			// Create the packet object from our byte array
-			packet = new Packet(Buffer, numBytes, Protocol);
-
-			if ((Buffer[0] & Helpers.MSG_RELIABLE) != 0)
-			{
-				if (!AckOutbox.Contains((uint)packet.Sequence))
-				{
-					// Claim a mutex on the AckOutbox
-					AckOutboxMutex.WaitOne();
-
-					// This packet needs to be ACKed, push its sequence number on to the queue
-					AckOutbox.Add((uint)packet.Sequence);
-
-					// Release the mutex
-					AckOutboxMutex.ReleaseMutex();
-				}
-				else
-				{
-					if ((packet.Data[0] & Helpers.MSG_RESENT) != 0)
-					{
-						// We received a resent packet
-						Helpers.Log("Received a resent packet, sequence=" + packet.Sequence, Helpers.LogLevel.Info);
-					}
-					else
-					{
-						Console.WriteLine("???");
-					}
-				}
-			}
-
-			if (packet.Layout.Name == null)
-			{
-				Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
-				return;
-			}
-			else if (packet.Layout.Name == "StartPingCheck")
-			{
-				//TODO: Should we care about OldestUnacked?
-
-				// Respond to the ping request
-				Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, packet.Data[5]);
-				SendPacket(pingPacket);
-			}
-			else if (packet.Layout.Name == "PacketAck")
-			{
-				ArrayList blocks = packet.Blocks();
-
-				// Claim the NeedAck mutex
-				NeedAckMutex.WaitOne();
-
-				// Remove each ACK in this packet from the NeedAck waiting list
-				foreach (Block block in blocks)
-				{
-					foreach (Field field in block.Fields)
-					{
+					Beginning:
 						ICollection reliablePackets = NeedAck.Keys;
 
 						// Remove this packet if it exists
 						foreach (Packet reliablePacket in reliablePackets)
 						{
-							if ((uint)reliablePacket.Sequence == (uint)field.Data)
+							if ((uint)reliablePacket.Sequence == ack)
 							{
 								NeedAck.Remove(reliablePacket);
-								goto Found;
+								goto Beginning;
 							}
 						}
-					//NotFound:
-						Helpers.Log("Received an ACK for a packet we're not tracking", Helpers.LogLevel.Warning);
-					Found:
-						;
+					}
+
+					// Release the mutex
+					NeedAckMutex.ReleaseMutex();
+
+					// Adjust the packet length
+					numBytes = numBytes - numAcks * 4 - 1;
+				}
+
+				if ((Buffer[0] & Helpers.MSG_ZEROCODED) != 0)
+				{
+					// Allocate a temporary buffer for the zerodecoded packet
+					byte[] zeroBuffer = new byte[4096];
+					int zeroBytes = Helpers.ZeroDecode(Buffer, numBytes, zeroBuffer);
+					Array.Copy(zeroBuffer, 0, Buffer, 0, zeroBytes);
+					numBytes = zeroBytes;
+				}
+
+				// Create the packet object from our byte array
+				packet = new Packet(Buffer, numBytes, Protocol);
+
+				if ((Buffer[0] & Helpers.MSG_RELIABLE) != 0)
+				{
+					if (!AckOutbox.Contains((uint)packet.Sequence))
+					{
+						// This packet needs to be ACKed, push its sequence number on to the queue
+						AckOutboxMutex.WaitOne();
+						AckOutbox.Add((uint)packet.Sequence);
+						AckOutboxMutex.ReleaseMutex();
+					}
+					else
+					{
+						if ((packet.Data[0] & Helpers.MSG_RESENT) != 0)
+						{
+							// We received a resent packet
+							Helpers.Log("Received a resent packet, sequence=" + packet.Sequence, Helpers.LogLevel.Warning);
+							return;
+						}
+						else
+						{
+							// We received a resent packet
+							Helpers.Log("Received a duplicate sequence number? sequence=" + packet.Sequence
+								+ ", name=" + packet.Layout.Name, Helpers.LogLevel.Warning);
+						}
 					}
 				}
 
-				// Release the mutex
-				NeedAckMutex.ReleaseMutex();
-			}
+				if (packet.Layout.Name == null)
+				{
+					Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
+					return;
+				}
+				else if (packet.Layout.Name == "StartPingCheck")
+				{
+					//TODO: Should we care about OldestUnacked?
 
-			// Fire any callbacks registered with this packet type
-			PacketCallback callback = (PacketCallback)Network.Callbacks[packet.Layout.Name];
-			
-			if (callback != null)
-			{
-				callback(packet);
-			}
-			else
-			{
-				callback = (PacketCallback)Network.Callbacks["Default"];
+					// Respond to the ping request
+					Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, packet.Data[5]);
+					SendPacket(pingPacket, true);
+				}
+				else if (packet.Layout.Name == "PacketAck")
+				{
+					ArrayList blocks = packet.Blocks();
 
+					// Claim the NeedAck mutex
+					NeedAckMutex.WaitOne();
+
+					// Remove each ACK in this packet from the NeedAck waiting list
+					foreach (Block block in blocks)
+					{
+						foreach (Field field in block.Fields)
+						{
+						Beginning:
+							ICollection reliablePackets = NeedAck.Keys;
+
+							// Remove this packet if it exists
+							foreach (Packet reliablePacket in reliablePackets)
+							{
+								if ((uint)reliablePacket.Sequence == (uint)field.Data)
+								{
+									NeedAck.Remove(reliablePacket);
+									goto Beginning;
+								}
+							}
+						}
+					}
+
+					// Release the mutex
+					NeedAckMutex.ReleaseMutex();
+				}
+
+				// Fire any callbacks registered with this packet type
+				PacketCallback callback = (PacketCallback)Network.Callbacks[packet.Layout.Name];
+				
 				if (callback != null)
 				{
 					callback(packet);
 				}
-			}
-		}
-
-		private void OpenTimerEvent(object source, System.Timers.ElapsedEventArgs e)
-		{
-			Timeout = true;
-			OpenTimer.Stop();
-		}
-
-		private void ACKTimerEvent(object source, System.Timers.ElapsedEventArgs e)
-		{
-			// Send any ACKs in the queue
-			SendACKs();
-
-			// Claim the NeedAck mutex
-			NeedAckMutex.WaitOne();
-
-			// Check if any reliable packets haven't been ACKed by the server
-			IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
-
-			while (packetEnum.MoveNext())
-			{
-				int ticks = (int)packetEnum.Value;
-
-				// TODO: Is this hardcoded value correct? Should it be a higher level define or a 
-				//       changeable property?
-				if (Environment.TickCount - ticks > 3000)
+				else
 				{
-					Packet packet = (Packet)packetEnum.Key;
+					callback = (PacketCallback)Network.Callbacks["Default"];
 
-					// Adjust the timeout value for this packet
-					NeedAck[packet] = Environment.TickCount;
-					
-					// Add the resent flag
-					packet.Data[0] += Helpers.MSG_RESENT;
-					
-					// Resend the packet
-					SendPacket((Packet)packet);
+					if (callback != null)
+					{
+						callback(packet);
+					}
 				}
 			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
+		}
 
-			// Release the mutex
-			NeedAckMutex.ReleaseMutex();
+		private void OpenTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
+		{
+			try
+			{
+				Timeout = true;
+				OpenTimer.Stop();
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
+		}
+
+		private void ACKTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
+		{
+			try
+			{
+				// Send any ACKs in the queue
+				SendACKs();
+
+				ResendTick++;
+
+				if (ResendTick >= 3)
+				{
+					ResendTick = 0;
+
+					// Claim the NeedAck mutex
+					NeedAckMutex.WaitOne();
+
+				Beginning:
+
+					// Check if any reliable packets haven't been ACKed by the server
+					IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
+
+					while (packetEnum.MoveNext())
+					{
+						int ticks = (int)packetEnum.Value;
+
+						// TODO: Is this hardcoded value correct? Should it be a higher level define or a 
+						//       changeable property?
+						if (Environment.TickCount - ticks > 3000)
+						{
+							Packet packet = (Packet)packetEnum.Key;
+
+							// Adjust the timeout value for this packet
+							NeedAck[packet] = Environment.TickCount;
+							
+							// Add the resent flag
+							packet.Data[0] += Helpers.MSG_RESENT;
+							
+							// Resend the packet
+							SendPacket((Packet)packet, false);
+
+							// Restart the loop since we modified a value and the iterator will fail
+							goto Beginning;
+						}
+					}
+
+					// Release the mutex
+					NeedAckMutex.ReleaseMutex();
+				}
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
 		}
 	}
 
@@ -479,7 +557,7 @@ namespace libsecondlife
 		{
 			if (CurrentCircuit != null)
 			{
-				CurrentCircuit.SendPacket(packet);
+				CurrentCircuit.SendPacket(packet, true);
 			}
 			else
 			{
@@ -541,7 +619,6 @@ namespace libsecondlife
 			login.Timeout = 12000;
 			byte[] request = System.Text.Encoding.ASCII.GetBytes(loginRequest);
 			login.ContentLength = request.Length;
-			//HttpWebRequest test = new HttpWebRequest();
 			System.IO.Stream stream = login.GetRequestStream();
 
 			try
@@ -566,9 +643,8 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				LoginError = "Error logging in: " + e.Message;
+				LoginError = "Caught an exception logging in: " + e.ToString();
 				Helpers.Log(LoginError, Helpers.LogLevel.Warning);
-				return false;
 			}
 
 			// Parse the login reply and put the returned variables in to a struct
@@ -594,6 +670,21 @@ namespace libsecondlife
 			SendPacket(packet);
 
 			return true;
+		}
+
+		public void Logout()
+		{
+			// TODO: Close all circuits except the current one
+
+			// Halt all timers on the current circuit
+			CurrentCircuit.Stop();
+
+			Packet packet = PacketBuilder.LogoutRequest(Protocol, LoginValues.AgentID, LoginValues.SessionID);
+			SendPacket(packet);
+
+			// TODO: We should probably check if the server actually received the logout request
+			// Instead we'll use this silly Sleep()
+			System.Threading.Thread.Sleep(1000);
 		}
 
 		private bool ParseLoginReply()

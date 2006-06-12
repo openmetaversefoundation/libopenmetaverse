@@ -14,7 +14,7 @@ namespace libsecondlife
 		public const ushort MSG_FREQ_MED = 0xFF00;
 		public const ushort MSG_FREQ_LOW = 0xFFFF;
 
-		public enum LogLevel 
+		public enum LogLevel
 		{
 			Info,
 			Warning,

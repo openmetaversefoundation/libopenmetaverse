@@ -10,9 +10,8 @@ namespace sldump
 		public static void DefaultHandler(Packet packet)
 		{
 			Console.WriteLine("Received " + packet.Layout.Name);
-			return;
 			
-			/*string output = "";
+			string output = "";
 			ArrayList blocks = packet.Blocks();
 
 			output += "---- " + packet.Layout.Name + " ----\n";
@@ -27,7 +26,7 @@ namespace sldump
 				}
 			}
 
-			Console.Write(output);*/
+			Console.Write(output);
 		}
 
 		/// <summary>

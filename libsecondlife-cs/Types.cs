@@ -58,101 +58,166 @@ namespace libsecondlife
 
 	public class LLVector3
 	{
-		public float x;
-		public float y;
-		public float z;
+		public float X;
+		public float Y;
+		public float Z;
 
 		public LLVector3()
 		{
-			x = y = z = 0.0F;
+			X = Y = Z = 0.0F;
 		}
 
 		public LLVector3(byte[] byteArray, int pos)
 		{
-			x = BitConverter.ToSingle(byteArray, pos);
-			y = BitConverter.ToSingle(byteArray, pos + 4);
-			z = BitConverter.ToSingle(byteArray, pos + 8);
+			X = BitConverter.ToSingle(byteArray, pos);
+			Y = BitConverter.ToSingle(byteArray, pos + 4);
+			Z = BitConverter.ToSingle(byteArray, pos + 8);
+		}
+
+		public LLVector3(float x, float y, float z)
+		{
+			X = x;
+			Y = y;
+			Z = z;
+		}
+
+		public byte[] GetBytes()
+		{
+			byte[] byteArray = new byte[12];
+
+			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
+
+			return byteArray;
 		}
 
 		public override string ToString()
 		{
-			return x.ToString() + " " + y.ToString() + " " + z.ToString();
+			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
 		}
 	}
 
 	public class LLVector3d
 	{
-		public double x;
-		public double y;
-		public double z;
+		public double X;
+		public double Y;
+		public double Z;
 
 		public LLVector3d()
 		{
-			x = y = z = 0.0D;
+			X = Y = Z = 0.0D;
 		}
 
 		public LLVector3d(byte[] byteArray, int pos)
 		{
-			x = BitConverter.ToDouble(byteArray, pos);
-			y = BitConverter.ToDouble(byteArray, pos + 8);
-			z = BitConverter.ToDouble(byteArray, pos + 16);
+			X = BitConverter.ToDouble(byteArray, pos);
+			Y = BitConverter.ToDouble(byteArray, pos + 8);
+			Z = BitConverter.ToDouble(byteArray, pos + 16);
 		}
 
 		public override string ToString()
 		{
-			return x.ToString() + " " + y.ToString() + " " + z.ToString();
+			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
 		}
 	}
 
 	public class LLVector4
 	{
-		public float x;
-		public float y;
-		public float z;
-		public float s;
+		public float X;
+		public float Y;
+		public float Z;
+		public float S;
 
 		public LLVector4()
 		{
-			x = y = z = s = 0.0F;
+			X = Y = Z = S = 0.0F;
 		}
 
 		public LLVector4(byte[] byteArray, int pos)
 		{
-			x = BitConverter.ToSingle(byteArray, pos);
-			y = BitConverter.ToSingle(byteArray, pos + 4);
-			z = BitConverter.ToSingle(byteArray, pos + 8);
-			s = BitConverter.ToSingle(byteArray, pos + 12);
+			X = BitConverter.ToSingle(byteArray, pos);
+			Y = BitConverter.ToSingle(byteArray, pos + 4);
+			Z = BitConverter.ToSingle(byteArray, pos + 8);
+			S = BitConverter.ToSingle(byteArray, pos + 12);
 		}
 
 		public override string ToString()
 		{
-			return x.ToString() + " " + y.ToString() + " " + z.ToString() + " " + s.ToString();
+			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
 		}
 	}
 
 	public class LLQuaternion
 	{
-		public float x;
-		public float y;
-		public float z;
-		public float s;
+		public float X;
+		public float Y;
+		public float Z;
+		public float S;
 
 		public LLQuaternion()
 		{
-			x = y = z = s = 0.0F;
+			X = Y = Z = S = 0.0F;
 		}
 
 		public LLQuaternion(byte[] byteArray, int pos)
 		{
-			x = BitConverter.ToSingle(byteArray, pos);
-			y = BitConverter.ToSingle(byteArray, pos + 4);
-			z = BitConverter.ToSingle(byteArray, pos + 8);
-			s = BitConverter.ToSingle(byteArray, pos + 12);
+			X = BitConverter.ToSingle(byteArray, pos);
+			Y = BitConverter.ToSingle(byteArray, pos + 4);
+			Z = BitConverter.ToSingle(byteArray, pos + 8);
+			S = BitConverter.ToSingle(byteArray, pos + 12);
+		}
+
+		public LLQuaternion(float x, float y, float z, float s)
+		{
+			X = x;
+			Y = y;
+			Z = z;
+			S = s;
+		}
+
+		public byte[] GetBytes()
+		{
+			byte[] byteArray = new byte[16];
+
+			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
+			Array.Copy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
+
+			return byteArray;
 		}
 
 		public override string ToString()
 		{
-			return x.ToString() + " " + y.ToString() + " " + z.ToString() + " " + s.ToString();
+			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
 		}
+	}
+
+	public class PrimObject
+	{
+		public sbyte PathTwistBegin;
+		public byte PathEnd;
+		public byte ProfileBegin;
+		public sbyte PathRadiusOffset;
+		public sbyte PathSkew;
+		public byte ProfileCurve;
+		public byte PathScaleX;
+		public byte PathScaleY;
+		public byte Material;
+		public string NameValue;
+		public byte PathShearX;
+		public byte PathShearY;
+		public sbyte PathTaperX;
+		public sbyte PathTaperY;
+		public byte ProfileEnd;
+		public byte PathBegin;
+		public byte PathCurve;
+		public LLVector3 Scale;
+		public byte State;
+		public sbyte PathTwist;
+		public byte ProfileHollow;
+		public byte PathRevolutions;
+		public LLQuaternion Rotation;
 	}
 }
