@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 
 namespace libsecondlife
 {
-	public delegate void PacketCallback(Packet packet);
+	public delegate void PacketCallback(Packet packet, Circuit circuit);
 
 	internal class AcceptAllCertificatePolicy : ICertificatePolicy
 	{
@@ -36,6 +36,8 @@ namespace libsecondlife
 		private EndPoint endPoint;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
+		private Hashtable UserCallbacks;
+		private Hashtable InternalCallbacks;
 		private byte[] Buffer;
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
@@ -48,10 +50,13 @@ namespace libsecondlife
 		private Mutex NeedAckMutex;
 		private int ResendTick;
 
-		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
+		public Circuit(ProtocolManager protocol, NetworkManager network, Hashtable userCallbacks, 
+			Hashtable internalCallbacks, uint circuitCode)
 		{
 			Protocol = protocol;
 			Network = network;
+			UserCallbacks = userCallbacks;
+			InternalCallbacks = internalCallbacks;
 			CircuitCode = circuitCode;
 			Sequence = 0;
 			Buffer = new byte[4096];
@@ -177,6 +182,7 @@ namespace libsecondlife
 			byte[] zeroBuffer = new byte[4096];
 			int zeroBytes;
 
+			// DEBUG
 			//Console.WriteLine("Sending " + packet.Data.Length + " byte " + packet.Layout.Name);
 
 			try
@@ -241,6 +247,7 @@ namespace libsecondlife
 
 				int numSent = Connection.Send(zeroBuffer, zeroBytes, SocketFlags.None);
 
+				// DEBUG
 				//Console.WriteLine("Sent " + numSent + " bytes");
 			}
 			catch (Exception e)
@@ -275,6 +282,7 @@ namespace libsecondlife
 					// Bypass SendPacket since we are taking care of the AckOutbox ourself
 					int numSent = Connection.Send(packet.Data);
 
+					// DEBUG
 					//Console.WriteLine("Sent " + numSent + " byte " + packet.Layout.Name);
 
 					AckOutbox.Clear();
@@ -301,9 +309,6 @@ namespace libsecondlife
 
 				// Retrieve the incoming packet
 				int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
-
-				// Start listening again immediately
-				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
 
 				if ((Buffer[Buffer.Length - 1] & Helpers.MSG_APPENDED_ACKS) != 0)
 				{
@@ -345,14 +350,22 @@ namespace libsecondlife
 					// Allocate a temporary buffer for the zerodecoded packet
 					byte[] zeroBuffer = new byte[4096];
 					int zeroBytes = Helpers.ZeroDecode(Buffer, numBytes, zeroBuffer);
-					Array.Copy(zeroBuffer, 0, Buffer, 0, zeroBytes);
+					packet = new Packet(zeroBuffer, zeroBytes, Protocol);
 					numBytes = zeroBytes;
 				}
+				else
+				{
+					// Create the packet object from our byte array
+					packet = new Packet(Buffer, numBytes, Protocol);
+				}
 
-				// Create the packet object from our byte array
-				packet = new Packet(Buffer, numBytes, Protocol);
+				// DEBUG
+				//Console.WriteLine("Received a " + numBytes + " byte " + packet.Layout.Name);
 
-				if ((Buffer[0] & Helpers.MSG_RELIABLE) != 0)
+				// Start listening again since we're done with Buffer
+				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 				{
 					if (!AckOutbox.Contains((uint)packet.Sequence))
 					{
@@ -383,19 +396,13 @@ namespace libsecondlife
 					Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
 					return;
 				}
-				else if (packet.Layout.Name == "StartPingCheck")
-				{
-					//TODO: Should we care about OldestUnacked?
-
-					// Respond to the ping request
-					Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, packet.Data[5]);
-					SendPacket(pingPacket, true);
-				}
 				else if (packet.Layout.Name == "PacketAck")
 				{
+					// PacketAck is handled directly instead of using a callback to simplify access to 
+					// the NeedAck hashtable and its mutex
+
 					ArrayList blocks = packet.Blocks();
 
-					// Claim the NeedAck mutex
 					NeedAckMutex.WaitOne();
 
 					// Remove each ACK in this packet from the NeedAck waiting list
@@ -412,30 +419,39 @@ namespace libsecondlife
 								if ((uint)reliablePacket.Sequence == (uint)field.Data)
 								{
 									NeedAck.Remove(reliablePacket);
+									// Restart the loop to avoid upsetting the enumerator
 									goto Beginning;
 								}
 							}
 						}
 					}
 
-					// Release the mutex
 					NeedAckMutex.ReleaseMutex();
 				}
+				
+				// Fire any internal callbacks registered with this packet type
+				PacketCallback callback = (PacketCallback)InternalCallbacks[packet.Layout.Name];
 
-				// Fire any callbacks registered with this packet type
-				PacketCallback callback = (PacketCallback)Network.Callbacks[packet.Layout.Name];
+				if (callback != null)
+				{
+					callback(packet, this);
+				}
+
+				// Fire any user callbacks registered with this packet type
+				callback = (PacketCallback)UserCallbacks[packet.Layout.Name];
 				
 				if (callback != null)
 				{
-					callback(packet);
+					callback(packet, this);
 				}
 				else
 				{
-					callback = (PacketCallback)Network.Callbacks["Default"];
+					// Attempt to fire a default user callback
+					callback = (PacketCallback)UserCallbacks["Default"];
 
 					if (callback != null)
 					{
-						callback(packet);
+						callback(packet, this);
 					}
 				}
 			}
@@ -537,20 +553,27 @@ namespace libsecondlife
 	{
 		public LoginReply LoginValues;
 		public string LoginError;
-		public Hashtable Callbacks;
+		public Hashtable UserCallbacks;
 		public Circuit CurrentCircuit;
 
 		private ProtocolManager Protocol;
 		private string LoginBuffer;
 		private ArrayList Circuits;
-		//private Hashtable InternalCallbacks;
+		private Hashtable InternalCallbacks;
 
 		public NetworkManager(ProtocolManager protocol)
 		{
 			Protocol = protocol;
 			Circuits = new ArrayList();
-			Callbacks = new Hashtable();
+			UserCallbacks = new Hashtable();
+			InternalCallbacks = new Hashtable();
 			CurrentCircuit = null;
+
+			// Register the internal callbacks
+			PacketCallback callback = new PacketCallback(RegionHandshakeHandler);
+			InternalCallbacks["RegionHandshake"] = callback;
+			callback = new PacketCallback(StartPingCheckHandler);
+			InternalCallbacks["StartPingCheck"] = callback;
 		}
 
 		public void SendPacket(Packet packet)
@@ -563,6 +586,11 @@ namespace libsecondlife
 			{
 				Helpers.Log("Trying to send a packet when there is no current circuit", Helpers.LogLevel.Error);
 			}
+		}
+
+		public void SendPacket(Packet packet, Circuit circuit)
+		{
+			circuit.SendPacket(packet, true);
 		}
 
 		public bool Login(string firstName, string lastName, string password, string mac,
@@ -654,7 +682,7 @@ namespace libsecondlife
 			}
 
 			// Connect to the sim given in the login reply
-			Circuit circuit = new Circuit(Protocol, this, LoginValues.CircuitCode);
+			Circuit circuit = new Circuit(Protocol, this, UserCallbacks, InternalCallbacks, LoginValues.CircuitCode);
 			if (!circuit.Open(LoginValues.IP, LoginValues.Port))
 			{
 				return false;
@@ -783,6 +811,22 @@ namespace libsecondlife
 			}
 
 			return Int32.Parse(rpc.Substring(0, pos2));
+		}
+
+		private void StartPingCheckHandler(Packet packet, Circuit circuit)
+		{
+			//TODO: Should we care about OldestUnacked?
+
+			// Respond to the ping request
+			Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, packet.Data[5]);
+			SendPacket(pingPacket, circuit);
+		}
+
+		private void RegionHandshakeHandler(Packet packet, Circuit circuit)
+		{
+			// Send a RegionHandshakeReply
+			Packet replyPacket = new Packet("RegionHandshakeReply", Protocol, 12);
+			SendPacket(replyPacket, circuit);
 		}
 	}
 }

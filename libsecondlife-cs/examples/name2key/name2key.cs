@@ -9,7 +9,7 @@ namespace name2key
 		static bool waiting = true;
 
 		//
-		public static void QueryHandler(Packet packet)
+		public static void QueryHandler(Packet packet, Circuit circuit)
 		{
 			if (packet.Layout.Name.IndexOf("Dir") > -1)
 			{
@@ -67,10 +67,10 @@ namespace name2key
 
 			// Setup the callback
 			PacketCallback queryCallback = new PacketCallback(QueryHandler);
-			client.Network.Callbacks["DirPeopleReply"] = queryCallback;
+			client.Network.UserCallbacks["DirPeopleReply"] = queryCallback;
 
 			if (!client.Network.Login(args[0], args[1], args[2], "00:00:00:00:00:00", 1, 10, 2, 2, "Win", 
-				"0", "sldump", "jhurliman@wsu.edu"))
+				"0", "name2key", "jhurliman@wsu.edu"))
 			{
 				// Login failed
 				Console.WriteLine("ERROR: " + client.Network.LoginError);

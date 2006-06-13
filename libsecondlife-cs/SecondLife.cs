@@ -28,40 +28,47 @@ namespace libsecondlife
 
 		public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
 		{
-			int zerolen = 0;
+			uint zerolen = 0;
 
-			Array.Copy(src, 0, dest, 0, 4);
-			zerolen += 4;
-
-			for (int i = zerolen; i < srclen; i++) 
+			try
 			{
-				if (src[i] == 0x00) 
-				{
-					for (byte j = 0; j < src[i + 1]; j++) 
-					{
-						dest[zerolen++] = 0x00;
-					}
+				Array.Copy(src, 0, dest, 0, 4);
+				zerolen += 4;
 
-					i++;
-				} 
-				else 
+				for (uint i = zerolen; i < srclen; i++) 
 				{
-					dest[zerolen++] = src[i];
+					if (src[i] == 0x00) 
+					{
+						for (byte j = 0; j < src[i + 1]; j++) 
+						{
+							dest[zerolen++] = 0x00;
+						}
+
+						i++;
+					} 
+					else 
+					{
+						dest[zerolen++] = src[i];
+					}
 				}
 			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
 
-			return zerolen;
+			return (int)zerolen;
 		}
 
 		public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
 		{
-			int zerolen = 0;
+			uint zerolen = 0;
 			byte zerocount = 0;
 
 			Array.Copy(src, 0, dest, 0, 4);
 			zerolen += 4;
 
-			for (int i = zerolen; i < srclen; i++) 
+			for (uint i = zerolen; i < srclen; i++) 
 			{
 				if (src[i] == 0x00) 
 				{
@@ -93,7 +100,7 @@ namespace libsecondlife
 				dest[zerolen++] = (byte)zerocount;
 			}
 
-			return zerolen;
+			return (int)zerolen;
 		}
 	}
 

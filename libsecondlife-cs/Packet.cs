@@ -435,6 +435,41 @@ namespace libsecondlife
 			return packet;
 		}
 
+		public static Packet TeleportLocationRequest(ProtocolManager protocol, long regionHandle, LLVector3 lookAt,
+			LLVector3 position, LLUUID agentID, LLUUID sessionID)
+		{
+			Packet packet = new Packet("LogoutRequest", protocol, 72);
+
+			Array.Copy(BitConverter.GetBytes(regionHandle), 0, packet.Data, 8, 8);
+			Array.Copy(lookAt.GetBytes(), 0, packet.Data, 16, 12);
+			Array.Copy(position.GetBytes(), 0, packet.Data, 28, 12);
+			Array.Copy(agentID.Data, 0, packet.Data, 40, 16);
+			Array.Copy(sessionID.Data, 0, packet.Data, 56, 16);
+
+			packet.Data[0] = Helpers.MSG_RELIABLE;
+
+			return packet;
+		}
+
+		public static Packet DirLandQuery(ProtocolManager protocol, bool reservedNewbie, bool forSale, 
+			LLUUID queryID, bool auction, uint queryFlags, LLUUID agentID, LLUUID sessionID)
+		{
+			Packet packet = new Packet("DirLandQuery", protocol, 63);
+
+			packet.Data[8] = BitConverter.GetBytes(reservedNewbie)[0];
+			packet.Data[9] = BitConverter.GetBytes(forSale)[0];
+			Array.Copy(queryID.Data, 0, packet.Data, 10, 16);
+			packet.Data[26] = BitConverter.GetBytes(auction)[0];
+			Array.Copy(BitConverter.GetBytes(queryFlags), 0, packet.Data, 27, 4);
+			Array.Copy(agentID.Data, 0, packet.Data, 31, 16);
+			Array.Copy(sessionID.Data, 0, packet.Data, 47, 16);
+
+			// Set the packet flags
+			packet.Data[0] = Helpers.MSG_RELIABLE;
+
+			return packet;
+		}
+
 		public static Packet DirFindQuery(ProtocolManager protocol, string queryText, LLUUID queryID,
 			LLUUID agentID, LLUUID sessionID)
 		{

@@ -7,10 +7,8 @@ namespace sldump
 	class sldump
 	{
 		//
-		public static void DefaultHandler(Packet packet)
+		public static void DefaultHandler(Packet packet, Circuit circuit)
 		{
-			Console.WriteLine("Received " + packet.Layout.Name);
-			
 			string output = "";
 			ArrayList blocks = packet.Blocks();
 
@@ -62,7 +60,7 @@ namespace sldump
 
 			// Setup the callback
 			PacketCallback defaultCallback = new PacketCallback(DefaultHandler);
-			client.Network.Callbacks["Default"] = defaultCallback;
+			client.Network.UserCallbacks["Default"] = defaultCallback;
 
 			if (!client.Network.Login(args[0], args[1], args[2], "00:00:00:00:00:00", 1, 10, 2, 2, "Win", 
 				"0", "sldump", "jhurliman@wsu.edu"))
