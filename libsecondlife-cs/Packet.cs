@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2006, Second Life Reverse Engineering Team
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without 
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Net;
 using System.Collections;
@@ -536,6 +562,20 @@ namespace libsecondlife
 			return packet;
 		}
 
+		public static Packet ParcelInfoRequest(ProtocolManager protocol, LLUUID parcelID, LLUUID agentID, 
+			LLUUID sessionID)
+		{
+			Packet packet = new Packet("ParcelInfoRequest", protocol, 56);
+			
+			Array.Copy(parcelID.Data, 0, packet.Data, 8, 16);
+			Array.Copy(agentID.Data, 0, packet.Data, 24, 16);
+			Array.Copy(sessionID.Data, 0, packet.Data, 40, 16);
+
+			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
+
+			return packet;
+		}
+
 		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
 			LLVector3 position, LLVector3 rayStart)
 		{
@@ -696,7 +736,7 @@ namespace libsecondlife
 }
 
 /* Generic packet builder idea:
- *  - Pass in a Hashtable of name/key pairs
+ *  - Pass in an ArrayList (blocks) of Hashtables (fields)
  *  - Iterate through the packet layout and add TypeSizes of each field * fieldCount to the total
  *    - Serialize the actual values to a temporary byte array
  *  - Each variable field, find the length of the actual values and add 1 or 2

@@ -263,6 +263,49 @@ namespace libsecondlife
 			file.Close();
 		}
 
+		public static void DecodeMapFile(string mapFile, string outputFile)
+		{
+			byte magicKey = 0;
+			byte[] buffer = new byte[2048];
+			int nread;
+			BinaryReader map;
+			BinaryWriter output;
+
+			try
+			{
+				map = new BinaryReader(new FileStream(mapFile, FileMode.Open));
+			}
+			catch(Exception e)
+			{
+				Helpers.Log("Error opening \"" + mapFile + "\": " + e.Message, Helpers.LogLevel.Error);
+				throw new Exception("Map file error", e);
+			}
+
+			try
+			{
+				output = new BinaryWriter(new FileStream(outputFile, FileMode.Open));
+			}
+			catch(Exception e)
+			{
+				Helpers.Log("Error opening \"" + outputFile + "\": " + e.Message, Helpers.LogLevel.Error);
+				throw new Exception("Map file error", e);
+			}
+
+			while ((nread = map.Read(buffer, 0, 2048)) != 0)
+			{
+				for (int i = 0; i < nread; ++i)
+				{
+					buffer[i] ^= magicKey;
+					magicKey += 43;
+				}
+
+				output.Write(buffer, 0, nread);
+			}
+
+			map.Close();
+			output.Close();
+		}
+
 		private void LoadMapFile(string mapFile)
 		{
 			FileStream map;

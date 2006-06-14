@@ -89,12 +89,22 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "Avatar.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "NetworkManager.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
                 <File
                     RelPath = "Packet.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Parcel.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
