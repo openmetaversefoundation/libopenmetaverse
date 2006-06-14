@@ -95,8 +95,11 @@ namespace name2key
 			PacketCallback queryCallback = new PacketCallback(QueryHandler);
 			client.Network.UserCallbacks["DirPeopleReply"] = queryCallback;
 
-			if (!client.Network.Login(args[0], args[1], args[2], "00:00:00:00:00:00", 1, 10, 2, 2, "Win", 
-				"0", "name2key", "jhurliman@wsu.edu"))
+			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
+				"last", 1, 10, 3, 3, "Win", "0", "name2key", "jhurliman@wsu.edu");
+			Hashtable loginReply = new Hashtable();
+
+			if (!client.Network.Login(loginParams, out loginReply))
 			{
 				// Login failed
 				Console.WriteLine("ERROR: " + client.Network.LoginError);
@@ -107,7 +110,7 @@ namespace name2key
 			string name = args[3] + " " + args[4];
 			LLUUID queryID = new LLUUID("00000000000000000000000000000001");
 			Packet packet = PacketBuilder.DirFindQuery(client.Protocol, name, queryID,
-				client.Network.LoginValues.AgentID, client.Network.LoginValues.SessionID);
+				client.Network.AgentID, client.Network.SessionID);
 			client.Network.SendPacket(packet);
 
 			while (waiting)

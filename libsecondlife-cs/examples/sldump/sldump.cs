@@ -103,8 +103,11 @@ namespace sldump
 			PacketCallback defaultCallback = new PacketCallback(DefaultHandler);
 			client.Network.UserCallbacks["Default"] = defaultCallback;
 
-			if (!client.Network.Login(args[0], args[1], args[2], "00:00:00:00:00:00", 1, 10, 2, 2, "Win", 
-				"0", "sldump", "jhurliman@wsu.edu"))
+			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
+				"last", 1, 10, 3, 3, "Win", "0", "sldump", "jhurliman@wsu.edu");
+			Hashtable loginReply = new Hashtable();
+
+			if (!client.Network.Login(loginParams, out loginReply))
 			{
 				// Login failed
 				Console.WriteLine("Error logging in: " + client.Network.LoginError);
@@ -112,7 +115,7 @@ namespace sldump
 			}
 
 			// Login was successful
-			Console.WriteLine("Message of the day: " + client.Network.LoginValues.Message);
+			Console.WriteLine("Message of the day: " + loginReply["message"]);
 
 			while (true)
 			{

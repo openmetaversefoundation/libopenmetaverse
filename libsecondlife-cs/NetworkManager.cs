@@ -562,7 +562,6 @@ namespace libsecondlife
 		public Circuit CurrentCircuit;
 
 		private ProtocolManager Protocol;
-		private string LoginBuffer;
 		private ArrayList Circuits;
 
 		public NetworkManager(ProtocolManager protocol)
@@ -632,8 +631,12 @@ namespace libsecondlife
 
 		public bool Login(Hashtable loginParams, out Hashtable values)
 		{
-			XmlRpcResponse result;
+			return Login(loginParams, "https://login.agni.lindenlab.com/cgi-bin/login.cgi", out values);
+		}
 
+		public bool Login(Hashtable loginParams, string url, out Hashtable values)
+		{
+			XmlRpcResponse result;
 			XmlRpcRequest xmlrpc = new XmlRpcRequest();
 			xmlrpc.MethodName = "login_to_simulator";
 			xmlrpc.Params.Clear();
@@ -641,7 +644,7 @@ namespace libsecondlife
 
 			try
 			{
-				result = (XmlRpcResponse)xmlrpc.Send("https://login.agni.lindenlab.com/cgi-bin/login.cgi");
+				result = (XmlRpcResponse)xmlrpc.Send(url);
 			}
 			catch (Exception e)
 			{
@@ -671,22 +674,6 @@ namespace libsecondlife
 			SessionID = new LLUUID((string)values["session_id"]);
 			uint circuitCode = (uint)(int)values["circuit_code"];
 
-			/*LoginValues.SessionID = RpcGetString(LoginBuffer.ToString(), "<name>session_id</name>");
-			LoginValues.SecureSessionID = RpcGetString(LoginBuffer.ToString(), "<name>secure_session_id</name>");
-			LoginValues.StartLocation = RpcGetString(LoginBuffer.ToString(), "<name>start_location</name>");
-			LoginValues.FirstName = RpcGetString(LoginBuffer.ToString(), "<name>first_name</name>");
-			LoginValues.LastName = RpcGetString(LoginBuffer.ToString(), "<name>last_name</name>");
-			LoginValues.RegionX = RpcGetInt(LoginBuffer.ToString(), "<name>region_x</name>");
-			LoginValues.RegionY = RpcGetInt(LoginBuffer.ToString(), "<name>region_y</name>");
-			LoginValues.Home = RpcGetString(LoginBuffer.ToString(), "<name>home</name>");
-			LoginValues.Message = RpcGetString(LoginBuffer.ToString(), "<name>message</name>").Replace("\r\n", "");
-			LoginValues.CircuitCode = (uint)RpcGetInt(LoginBuffer.ToString(), "<name>circuit_code</name>");
-			LoginValues.Port = RpcGetInt(LoginBuffer.ToString(), "<name>sim_port</name>");
-			LoginValues.IP = RpcGetString(LoginBuffer.ToString(), "<name>sim_ip</name>");
-			LoginValues.LookAt = RpcGetString(LoginBuffer.ToString(), "<name>look_at</name>");
-			LoginValues.AgentID = RpcGetString(LoginBuffer.ToString(), "<name>agent_id</name>");
-			LoginValues.SecondsSinceEpoch = (uint)RpcGetInt(LoginBuffer.ToString(), "<name>seconds_since_epoch</name>");*/
-
 			// Connect to the sim given in the login reply
 			Circuit circuit = new Circuit(Protocol, this, circuitCode);
 			if (!circuit.Open((string)values["sim_ip"], (int)values["sim_port"]))
@@ -703,116 +690,6 @@ namespace libsecondlife
 			SendPacket(packet);
 
 			return true;
-		}
-
-		public bool Login(string firstName, string lastName, string password, string mac,
-			int major, int minor, int patch, int build, string platform, string viewerDigest, 
-			string userAgent, string author)
-		{
-			return Login(firstName, lastName, password, mac, major, minor, patch, build, platform,
-				viewerDigest, userAgent, author, "https://login.agni.lindenlab.com/cgi-bin/login.cgi");
-		}
-
-		public bool Login(string firstName, string lastName, string password, string mac,
-			int major, int minor, int patch, int build, string platform, string viewerDigest, 
-			string userAgent, string author, string url)
-		{
-			WebRequest login;
-			WebResponse response;
-			
-			// Generate an MD5 hash of the password
-			MD5 md5 = new MD5CryptoServiceProvider();
-			byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
-			StringBuilder passwordDigest = new StringBuilder();
-			// Convert the hash to a hex string
-			foreach(byte b in hash)
-			{
-				passwordDigest.AppendFormat("{0:x2}", b);
-			}
-
-			string loginRequest = 
-				"<?xml version=\"1.0\"?><methodCall><methodName>login_to_simulator</methodName>" +
-				"<params><param><value><struct>" +
-				"<member><name>first</name><value><string>" + firstName + "</string></value></member>" +
-				"<member><name>last</name><value><string>" + lastName + "</string></value></member>" +
-				"<member><name>passwd</name><value><string>$1$" + passwordDigest + "</string></value></member>" +
-				"<member><name>start</name><value><string>last</string></value></member>" +
-				"<member><name>major</name><value><string>" + major + "</string></value></member>" +
-				"<member><name>minor</name><value><string>" + minor + "</string></value></member>" +
-				"<member><name>patch</name><value><string>" + patch + "</string></value></member>" +
-				"<member><name>build</name><value><string>" + build + "</string></value></member>" +
-				"<member><name>platform</name><value><string>" + platform + "</string></value></member>" +
-				"<member><name>mac</name><value><string>" + mac + "</string></value></member>" +
-				"<member><name>viewer_digest</name><value><string>" + viewerDigest + "</string></value></member>" +
-				"<member><name>user-agent</name><value><string>" + userAgent + 
-				" (" + Helpers.VERSION + ")</string></value></member>" +
-				"<member><name>author</name><value><string>" + author + "</string></value></member>" +
-				"</struct></value></param></params></methodCall>"
-				;
-
-			// Override SSL authentication mechanisms
-			ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-
-			login = WebRequest.Create(url);
-			login.ContentType = "text/xml";
-			login.Method = "POST";
-			login.Timeout = 12000;
-			byte[] request = System.Text.Encoding.ASCII.GetBytes(loginRequest);
-			login.ContentLength = request.Length;
-
-			try
-			{
-				System.IO.Stream stream = login.GetRequestStream();
-
-				stream.Write(request, 0, request.Length);
-				stream.Close();
-				response = login.GetResponse();
-
-				if (response == null)
-				{
-					LoginError = "Error logging in: (Unknown)";
-					Helpers.Log(LoginError, Helpers.LogLevel.Warning);
-					return false;
-				}
-
-				//TODO: To support UTF8 avatar names the encoding should be handled better
-				System.IO.StreamReader streamReader = new System.IO.StreamReader(response.GetResponseStream(), 
-					System.Text.Encoding.ASCII);
-				LoginBuffer = streamReader.ReadToEnd();
-				streamReader.Close();
-				response.Close();
-			}
-			catch (Exception e)
-			{
-				LoginError = "Caught an exception logging in: " + e.ToString();
-				Helpers.Log(LoginError, Helpers.LogLevel.Warning);
-			}
-
-			// Parse the login reply and put the returned variables in to a struct
-			/*if (!ParseLoginReply())
-			{
-				return false;
-			}
-
-			// Connect to the sim given in the login reply
-			Circuit circuit = new Circuit(Protocol, this, UserCallbacks, InternalCallbacks, LoginValues.CircuitCode);
-			if (!circuit.Open(LoginValues.IP, LoginValues.Port))
-			{
-				return false;
-			}
-
-			// Circuit was successfully opened, add it to the list and set it as default
-			Circuits.Add(circuit);
-			CurrentCircuit = circuit;
-
-			// Move our agent in to the sim to complete the connection
-			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, LoginValues.AgentID, LoginValues.SessionID,
-				LoginValues.CircuitCode);
-			SendPacket(packet);
-
-			return true;*/
-
-			return false;
 		}
 
 		public void Logout()
