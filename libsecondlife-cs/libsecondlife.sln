@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "name2key", "examples\name2k
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlRpcCS", "XmlRpcCS\XmlRpcCS.csproj", "{410F8877-F1E1-4696-ABC7-4339189EECC3}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -29,6 +33,10 @@ Global
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug.Build.0 = Debug|.NET
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.ActiveCfg = Release|.NET
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.Build.0 = Release|.NET
+		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.ActiveCfg = Debug|.NET
+		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.Build.0 = Debug|.NET
+		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.ActiveCfg = Release|.NET
+		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

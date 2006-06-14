@@ -90,7 +90,7 @@ namespace libsecondlife
 				if (parcel != null)
 				{
 					Packet parcelInfoPacket = PacketBuilder.ParcelInfoRequest(Client.Protocol, parcel.ID, 
-						Client.Network.LoginValues.AgentID, Client.Network.LoginValues.SessionID);
+						Client.Network.AgentID, Client.Network.SessionID);
 					Client.Network.SendPacket(parcelInfoPacket);
 
 					// Rate limiting
@@ -235,7 +235,7 @@ namespace libsecondlife
 
 			LLUUID queryID = new LLUUID();
 			Packet landQuery = PacketBuilder.DirLandQuery(Client.Protocol, ReservedNewbie, ForSale, queryID, 
-				Auction, 0, Client.Network.LoginValues.AgentID, Client.Network.LoginValues.SessionID);
+				Auction, 0, Client.Network.AgentID, Client.Network.SessionID);
 			Client.Network.SendPacket(landQuery);
 
 			while (!DirLandTimeout)

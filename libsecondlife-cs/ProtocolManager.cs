@@ -142,6 +142,7 @@ namespace libsecondlife
 			TypeSizes.Add(FieldType.IPADDR, 4);
 			TypeSizes.Add(FieldType.IPPORT, 2);
 			TypeSizes.Add(FieldType.Variable, -1);
+			TypeSizes.Add(FieldType.Fixed, -2);
 
 			LoadKeywordFile(keywordFile);
 			LoadMapFile(mapFile);

@@ -32,6 +32,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Security.Cryptography;
+using Nwc.XmlRpc;
 
 namespace libsecondlife
 {
@@ -62,8 +63,6 @@ namespace libsecondlife
 		private EndPoint endPoint;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
-		private Hashtable UserCallbacks;
-		private Hashtable InternalCallbacks;
 		private byte[] Buffer;
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
@@ -76,13 +75,10 @@ namespace libsecondlife
 		private Mutex NeedAckMutex;
 		private int ResendTick;
 
-		public Circuit(ProtocolManager protocol, NetworkManager network, Hashtable userCallbacks, 
-			Hashtable internalCallbacks, uint circuitCode)
+		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
 		{
 			Protocol = protocol;
 			Network = network;
-			UserCallbacks = userCallbacks;
-			InternalCallbacks = internalCallbacks;
 			CircuitCode = circuitCode;
 			Sequence = 0;
 			Buffer = new byte[4096];
@@ -139,8 +135,8 @@ namespace libsecondlife
 				ACKTimer.Start();
 
 				// Send the UseCircuitCode packet to initiate the connection
-				Packet packet = PacketBuilder.UseCircuitCode(Protocol, Network.LoginValues.AgentID, 
-					Network.LoginValues.SessionID, CircuitCode);
+				Packet packet = PacketBuilder.UseCircuitCode(Protocol, Network.AgentID, 
+					Network.SessionID, CircuitCode);
 
 				// Send the initial packet out
 				SendPacket(packet, true);
@@ -456,7 +452,7 @@ namespace libsecondlife
 				}
 				
 				// Fire any internal callbacks registered with this packet type
-				PacketCallback callback = (PacketCallback)InternalCallbacks[packet.Layout.Name];
+				PacketCallback callback = (PacketCallback)Network.InternalCallbacks[packet.Layout.Name];
 
 				if (callback != null)
 				{
@@ -464,7 +460,7 @@ namespace libsecondlife
 				}
 
 				// Fire any user callbacks registered with this packet type
-				callback = (PacketCallback)UserCallbacks[packet.Layout.Name];
+				callback = (PacketCallback)Network.UserCallbacks[packet.Layout.Name];
 				
 				if (callback != null)
 				{
@@ -473,7 +469,7 @@ namespace libsecondlife
 				else
 				{
 					// Attempt to fire a default user callback
-					callback = (PacketCallback)UserCallbacks["Default"];
+					callback = (PacketCallback)Network.UserCallbacks["Default"];
 
 					if (callback != null)
 					{
@@ -556,28 +552,10 @@ namespace libsecondlife
 		}
 	}
 
-	public struct LoginReply
-	{
-		public LLUUID SessionID;
-		public LLUUID SecureSessionID;
-		public string StartLocation;
-		public string FirstName;
-		public string LastName;
-		public int RegionX;
-		public int RegionY;
-		public string Home;
-		public string Message;
-		public uint CircuitCode;
-		public int Port;
-		public string IP;
-		public string LookAt;
-		public LLUUID AgentID;
-		public uint SecondsSinceEpoch;
-	}
-
 	public class NetworkManager
 	{
-		public LoginReply LoginValues;
+		public LLUUID AgentID;
+		public LLUUID SessionID;
 		public string LoginError;
 		public Hashtable UserCallbacks;
 		public Hashtable InternalCallbacks;
@@ -617,6 +595,114 @@ namespace libsecondlife
 		public void SendPacket(Packet packet, Circuit circuit)
 		{
 			circuit.SendPacket(packet, true);
+		}
+
+		public static Hashtable DefaultLoginValues(string firstName, string lastName, string password, string mac,
+			string startLocation, int major, int minor, int patch, int build, string platform, string viewerDigest, 
+			string userAgent, string author)
+		{
+			Hashtable values = new Hashtable();
+
+			// Generate an MD5 hash of the password
+			MD5 md5 = new MD5CryptoServiceProvider();
+			byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
+			StringBuilder passwordDigest = new StringBuilder();
+			// Convert the hash to a hex string
+			foreach(byte b in hash)
+			{
+				passwordDigest.AppendFormat("{0:x2}", b);
+			}
+
+			values["first"] = firstName;
+			values["last"] = lastName;
+			values["passwd"] = "$1$" + passwordDigest;
+			values["start"] = startLocation;
+			values["major"] = major;
+			values["minor"] = minor;
+			values["patch"] = patch;
+			values["build"] = build;
+			values["platform"] = platform;
+			values["mac"] = mac;
+			values["viewer_digest"] = viewerDigest;
+			values["user-agent"] = userAgent + " (" + Helpers.VERSION + ")";
+			values["author"] = author;
+
+			return values;
+		}
+
+		public bool Login(Hashtable loginParams, out Hashtable values)
+		{
+			XmlRpcResponse result;
+
+			XmlRpcRequest xmlrpc = new XmlRpcRequest();
+			xmlrpc.MethodName = "login_to_simulator";
+			xmlrpc.Params.Clear();
+			xmlrpc.Params.Add(loginParams);
+
+			try
+			{
+				result = (XmlRpcResponse)xmlrpc.Send("https://login.agni.lindenlab.com/cgi-bin/login.cgi");
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				LoginError = e.Message;
+				values = null;
+				return false;
+			}
+
+			if (result.IsFault)
+			{
+				Helpers.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
+				LoginError = "Fault " + result.FaultCode + ": " + result.FaultString;
+				values = null;
+				return false;
+			}
+
+			values = (Hashtable)result.Value;
+
+			if ((string)values["login"] == "false")
+			{
+				LoginError = values["reason"] + ": " + values["message"];
+				return false;
+			}
+
+			AgentID = new LLUUID((string)values["agent_id"]);
+			SessionID = new LLUUID((string)values["session_id"]);
+			uint circuitCode = (uint)(int)values["circuit_code"];
+
+			/*LoginValues.SessionID = RpcGetString(LoginBuffer.ToString(), "<name>session_id</name>");
+			LoginValues.SecureSessionID = RpcGetString(LoginBuffer.ToString(), "<name>secure_session_id</name>");
+			LoginValues.StartLocation = RpcGetString(LoginBuffer.ToString(), "<name>start_location</name>");
+			LoginValues.FirstName = RpcGetString(LoginBuffer.ToString(), "<name>first_name</name>");
+			LoginValues.LastName = RpcGetString(LoginBuffer.ToString(), "<name>last_name</name>");
+			LoginValues.RegionX = RpcGetInt(LoginBuffer.ToString(), "<name>region_x</name>");
+			LoginValues.RegionY = RpcGetInt(LoginBuffer.ToString(), "<name>region_y</name>");
+			LoginValues.Home = RpcGetString(LoginBuffer.ToString(), "<name>home</name>");
+			LoginValues.Message = RpcGetString(LoginBuffer.ToString(), "<name>message</name>").Replace("\r\n", "");
+			LoginValues.CircuitCode = (uint)RpcGetInt(LoginBuffer.ToString(), "<name>circuit_code</name>");
+			LoginValues.Port = RpcGetInt(LoginBuffer.ToString(), "<name>sim_port</name>");
+			LoginValues.IP = RpcGetString(LoginBuffer.ToString(), "<name>sim_ip</name>");
+			LoginValues.LookAt = RpcGetString(LoginBuffer.ToString(), "<name>look_at</name>");
+			LoginValues.AgentID = RpcGetString(LoginBuffer.ToString(), "<name>agent_id</name>");
+			LoginValues.SecondsSinceEpoch = (uint)RpcGetInt(LoginBuffer.ToString(), "<name>seconds_since_epoch</name>");*/
+
+			// Connect to the sim given in the login reply
+			Circuit circuit = new Circuit(Protocol, this, circuitCode);
+			if (!circuit.Open((string)values["sim_ip"], (int)values["sim_port"]))
+			{
+				return false;
+			}
+
+			// Circuit was successfully opened, add it to the list and set it as default
+			Circuits.Add(circuit);
+			CurrentCircuit = circuit;
+
+			// Move our agent in to the sim to complete the connection
+			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
+			SendPacket(packet);
+
+			return true;
 		}
 
 		public bool Login(string firstName, string lastName, string password, string mac,
@@ -703,7 +789,7 @@ namespace libsecondlife
 			}
 
 			// Parse the login reply and put the returned variables in to a struct
-			if (!ParseLoginReply())
+			/*if (!ParseLoginReply())
 			{
 				return false;
 			}
@@ -724,7 +810,9 @@ namespace libsecondlife
 				LoginValues.CircuitCode);
 			SendPacket(packet);
 
-			return true;
+			return true;*/
+
+			return false;
 		}
 
 		public void Logout()
@@ -734,56 +822,12 @@ namespace libsecondlife
 			// Halt all timers on the current circuit
 			CurrentCircuit.Stop();
 
-			Packet packet = PacketBuilder.LogoutRequest(Protocol, LoginValues.AgentID, LoginValues.SessionID);
+			Packet packet = PacketBuilder.LogoutRequest(Protocol, AgentID, SessionID);
 			SendPacket(packet);
 
 			// TODO: We should probably check if the server actually received the logout request
 			// Instead we'll use this silly Sleep()
 			System.Threading.Thread.Sleep(1000);
-		}
-
-		private bool ParseLoginReply()
-		{
-			string msg;
-
-			if (LoginBuffer == null)
-			{
-				LoginError = "Error connecting to the login server";
-				return false;
-			}
-
-			msg = RpcGetString(LoginBuffer, "<name>reason</name>");
-			if (msg.Length != 0) 
-			{
-				LoginError = RpcGetString(LoginBuffer, "<name>message</name>");
-				return false;
-			}
-
-			msg = RpcGetString(LoginBuffer, "login</name><value><string>true");
-			if (msg.Length == 0)
-			{
-				LoginError = "Unknown login error";
-				return false;
-			}
-
-			// Grab the login parameters
-			LoginValues.SessionID = RpcGetString(LoginBuffer.ToString(), "<name>session_id</name>");
-			LoginValues.SecureSessionID = RpcGetString(LoginBuffer.ToString(), "<name>secure_session_id</name>");
-			LoginValues.StartLocation = RpcGetString(LoginBuffer.ToString(), "<name>start_location</name>");
-			LoginValues.FirstName = RpcGetString(LoginBuffer.ToString(), "<name>first_name</name>");
-			LoginValues.LastName = RpcGetString(LoginBuffer.ToString(), "<name>last_name</name>");
-			LoginValues.RegionX = RpcGetInt(LoginBuffer.ToString(), "<name>region_x</name>");
-			LoginValues.RegionY = RpcGetInt(LoginBuffer.ToString(), "<name>region_y</name>");
-			LoginValues.Home = RpcGetString(LoginBuffer.ToString(), "<name>home</name>");
-			LoginValues.Message = RpcGetString(LoginBuffer.ToString(), "<name>message</name>").Replace("\r\n", "");
-			LoginValues.CircuitCode = (uint)RpcGetInt(LoginBuffer.ToString(), "<name>circuit_code</name>");
-			LoginValues.Port = RpcGetInt(LoginBuffer.ToString(), "<name>sim_port</name>");
-			LoginValues.IP = RpcGetString(LoginBuffer.ToString(), "<name>sim_ip</name>");
-			LoginValues.LookAt = RpcGetString(LoginBuffer.ToString(), "<name>look_at</name>");
-			LoginValues.AgentID = RpcGetString(LoginBuffer.ToString(), "<name>agent_id</name>");
-			LoginValues.SecondsSinceEpoch = (uint)RpcGetInt(LoginBuffer.ToString(), "<name>seconds_since_epoch</name>");
-
-			return true;
 		}
 
 		string RpcGetString(string rpc, string name)

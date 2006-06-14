@@ -64,6 +64,11 @@ namespace libsecondlife
 			Array.Copy(byteArray, pos, Data, 0, 16);
 		}
 
+		public override int GetHashCode()
+		{
+			return BitConverter.ToInt32(Data, 0);
+		}
+
 		public override bool Equals(object o)
 		{
 			if (!(o is LLUUID))
@@ -76,19 +81,12 @@ namespace libsecondlife
 
 		public static bool operator==(LLUUID lhs, LLUUID rhs)
 		{
-			if (lhs is LLUUID && rhs is LLUUID)
+			for (int i = 0; i < 16; ++i)
 			{
-				for (int i = 0; i < 16; ++i)
+				if (lhs.Data[i] != rhs.Data[i])
 				{
-					if (lhs.Data[i] != rhs.Data[i])
-					{
-						return false;
-					}
+					return false;
 				}
-			}
-			else
-			{
-				return false;
 			}
 
 			return true;

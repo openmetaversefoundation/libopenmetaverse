@@ -259,6 +259,27 @@ namespace libsecondlife
 								}
 							}
 						}
+						else if (fieldMap.Type == FieldType.Fixed)
+						{
+							fieldSize = fieldMap.Count;
+
+							if (pos + fieldSize <= Data.Length)
+							{
+								// Create a new field to add to the fields for this block
+								field = new Field();
+								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+								field.Layout = fieldMap;
+
+								block.Fields.Add(field);
+
+								pos += fieldSize;
+							}
+							else
+							{
+								Helpers.Log("getBlocks(): goto 4 reached", Helpers.LogLevel.Warning);
+								goto BlockDone;
+							}
+						}
 						else
 						{
 							for (int j = 0; j < fieldMap.Count; ++j)
@@ -355,6 +376,7 @@ namespace libsecondlife
 				case FieldType.IPPORT:
 					return BitConverter.ToUInt16(byteArray, pos);
 				case FieldType.Variable:
+				case FieldType.Fixed:
 					byte[] bytes = new byte[fieldSize];
 
 					for (int i = 0; i < fieldSize; ++i)
