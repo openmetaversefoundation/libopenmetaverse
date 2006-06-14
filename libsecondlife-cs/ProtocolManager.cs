@@ -283,7 +283,7 @@ namespace libsecondlife
 
 			try
 			{
-				output = new BinaryWriter(new FileStream(outputFile, FileMode.Open));
+				output = new BinaryWriter(new FileStream(outputFile, FileMode.CreateNew));
 			}
 			catch(Exception e)
 			{

@@ -68,17 +68,6 @@ namespace sldump
 				return;
 			}
 
-			try
-			{
-				client = new SecondLife("keywords.txt", "protocol.txt");
-			}
-			catch (Exception e)
-			{
-				// Error initializing the client, probably missing file(s)
-				Console.WriteLine(e.ToString());
-				return;
-			}
-
 			if (args[0] == "--decrypt")
 			{
 				try
@@ -92,7 +81,19 @@ namespace sldump
 
 				return;
 			}
-			else if (args[0] == "--protocol")
+
+			try
+			{
+				client = new SecondLife("keywords.txt", "protocol.txt");
+			}
+			catch (Exception e)
+			{
+				// Error initializing the client, probably missing file(s)
+				Console.WriteLine(e.ToString());
+				return;
+			}
+
+			if (args[0] == "--protocol")
 			{
 				client.Protocol.PrintMap();
 				return;
