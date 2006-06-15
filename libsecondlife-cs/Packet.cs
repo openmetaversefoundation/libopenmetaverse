@@ -626,6 +626,103 @@ namespace libsecondlife
 			return packet;
 		}
 
+		/* Generic packet builder idea:
+		 *  - Pass in an ArrayList (blocks) of Hashtables (fields)
+		 *  - Iterate through the packet layout and add TypeSizes of each field * fieldCount to the total
+		 *    - Serialize the actual values to a temporary byte array
+		 *  - Each variable field, find the length of the actual values and add 1 or 2
+		 *  - Copy the temporary array to the packet array after initialization
+		 */
+
+		/*public static Packet BuildPacket(string name, ProtocolManager protocol, ArrayList blocks)
+		{
+			ArrayList payload = new ArrayList();
+
+			MapPacket layout = protocol.Command(name);
+		}*/
+
+		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, LLUUID folderID, 
+			LLUUID agentID)
+		{
+			int packetLength = 8; // header
+			packetLength += 16; // OwnerID (UUID)
+			packetLength += 16; // FolderID (UUID)
+			packetLength += 4; // Sort Order (signed integer? - S32)
+			packetLength += 1; // FetchFolders (byte? - BOOL)
+			packetLength += 1; // FetchItmes (byte? - BOOL)
+			packetLength += 16; // AgentID (UUID)
+
+
+			Packet packet = new Packet("FetchInventoryDescendents", protocol, packetLength);
+
+			int pos = 8; // Leave room for header
+
+			// OwnerID
+			Array.Copy(ownerID.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// FolderID
+			Array.Copy(folderID.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// Sort Order (Any ideas on what the valid values are here?)
+			Array.Copy(BitConverter.GetBytes((int)1), 0, packet.Data, pos, 4);
+			pos += 4;
+
+			// FetchFolders
+			packet.Data[pos] = 1;
+			pos += 1;
+
+			// FetchItemss
+			packet.Data[pos] = 1;
+			pos += 1;
+
+			// AgentID
+			Array.Copy(agentID.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// Set the packet flags
+			//			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
+			packet.Data[0] = Helpers.MSG_RELIABLE;
+
+			return packet;
+		}
+
+		public static Packet RequestInventoryAsset(ProtocolManager protocol, LLUUID agentID, LLUUID queryUD, 
+			LLUUID ownerID, LLUUID itemID)
+		{
+			int packetLength = 8; // header
+			packetLength += 16; // AgentID (UUID)
+			packetLength += 16; // QueryID (UUID)
+			packetLength += 16; // OwnerID (UUID)
+			packetLength += 16; // ItemID (UUID)
+
+			Packet packet = new Packet("RequestInventoryAsset", protocol, packetLength);
+
+			int pos = 8; // Leave room for header
+
+			// AgentID
+			Array.Copy(agentID.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// QueryID
+			Array.Copy(queryUD.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// OwnerID
+			Array.Copy(ownerID.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// ItemID
+			Array.Copy(itemID.Data, 0, packet.Data, pos, 16);
+			pos += 16;
+
+			// Set the packet flags
+			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
+
+			return packet;
+		}
+
 		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
 			LLVector3 position, LLVector3 rayStart)
 		{
@@ -784,11 +881,3 @@ namespace libsecondlife
 		}
 	}
 }
-
-/* Generic packet builder idea:
- *  - Pass in an ArrayList (blocks) of Hashtables (fields)
- *  - Iterate through the packet layout and add TypeSizes of each field * fieldCount to the total
- *    - Serialize the actual values to a temporary byte array
- *  - Each variable field, find the length of the actual values and add 1 or 2
- *  - Copy the temporary array to the packet array after initialization
- */

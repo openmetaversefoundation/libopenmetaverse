@@ -73,6 +73,8 @@ namespace libsecondlife
 		private Mutex AckOutboxMutex;
 		private Hashtable NeedAck;
 		private Mutex NeedAckMutex;
+		private ArrayList Inbox;
+		private Mutex InboxMutex;
 		private int ResendTick;
 
 		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
@@ -105,6 +107,8 @@ namespace libsecondlife
 			// Initialize the hashtable for reliable packets waiting on ACKs from the server
 			NeedAck = new Hashtable();
 
+			Inbox = new ArrayList();
+
 			// Create a timer to test if the connection times out
 			OpenTimer = new System.Timers.Timer(10000);
 			OpenTimer.Elapsed += new ElapsedEventHandler(OpenTimerEvent);
@@ -115,6 +119,7 @@ namespace libsecondlife
 
 			AckOutboxMutex = new Mutex(false, "AckOutboxMutex");
 			NeedAckMutex = new Mutex(false, "NeedAckMutex");
+			InboxMutex = new Mutex(false, "InboxMutex");
 
 			ResendTick = 0;
 		}
@@ -306,16 +311,8 @@ namespace libsecondlife
 			{
 				try
 				{
+					// TODO: Take in to account the 255 ACK limit per packet
 					Packet packet = PacketBuilder.PacketAck(Protocol, AckOutbox);
-
-					if (packet.Data.Length < 13)
-					{
-						Helpers.Log("Trying to send a PacketAck with no ACKs, cancelling", Helpers.LogLevel.Warning);
-						// Release the mutex
-						AckOutboxMutex.ReleaseMutex();
-
-						return;
-					}
 
 					// Set the sequence number
 					packet.Sequence = ++Sequence;
@@ -365,16 +362,15 @@ namespace libsecondlife
 					{
 						uint ack = BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
 
-					Beginning:
-						ICollection reliablePackets = NeedAck.Keys;
+						ArrayList reliablePackets = (ArrayList)NeedAck.Keys;
 
-						// Remove this packet if it exists
-						foreach (Packet reliablePacket in reliablePackets)
+						for (int j = reliablePackets.Count - 1; j >= 0; j--)
 						{
+							Packet reliablePacket = (Packet)reliablePackets[i];
+
 							if ((uint)reliablePacket.Sequence == ack)
 							{
 								NeedAck.Remove(reliablePacket);
-								goto Beginning;
 							}
 						}
 					}
@@ -388,7 +384,7 @@ namespace libsecondlife
 
 				if ((Buffer[0] & Helpers.MSG_ZEROCODED) != 0)
 				{
-					// Allocate a temporary buffer for the zerodecoded packet
+					// Allocate a temporary buffer for the zerocoded packet
 					byte[] zeroBuffer = new byte[4096];
 					int zeroBytes = Helpers.ZeroDecode(Buffer, numBytes, zeroBuffer);
 					packet = new Packet(zeroBuffer, zeroBytes, Protocol);
@@ -406,14 +402,42 @@ namespace libsecondlife
 				// Start listening again since we're done with Buffer
 				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
 
+				// Track the sequence number for this packet if it's marked as reliable
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 				{
+					// Check if this is a duplicate packet
+					InboxMutex.WaitOne();
+					AckOutboxMutex.WaitOne();
+
+					if (Inbox.Contains(packet.Sequence))
+					{
+						if (AckOutbox.Contains((uint)packet.Sequence))
+						{
+							Helpers.Log("ACKs are being sent too slowly!", Helpers.LogLevel.Warning);
+						}
+						else
+						{
+							// DEBUG
+							//Helpers.Log("Received a duplicate " + packet.Layout.Name + " packet, sequence=" + 
+							//	packet.Sequence + ", not in the ACK outbox", Helpers.LogLevel.Info);
+
+							// Add this packet to the AckOutbox again and bypass the callbacks
+							AckOutbox.Add((uint)packet.Sequence);
+						}
+
+						// Avoid firing a callback twice for the same packet
+						Inbox.Add(packet.Sequence);
+						AckOutboxMutex.ReleaseMutex();
+						InboxMutex.ReleaseMutex();
+						return;
+					}
+
+					// Add this packet to the incoming log
+					Inbox.Add(packet.Sequence);
+
 					if (!AckOutbox.Contains((uint)packet.Sequence))
 					{
-						// This packet needs to be ACKed, push its sequence number on to the queue
-						AckOutboxMutex.WaitOne();
 						AckOutbox.Add((uint)packet.Sequence);
-						AckOutboxMutex.ReleaseMutex();
 					}
 					else
 					{
@@ -430,6 +454,9 @@ namespace libsecondlife
 								+ ", name=" + packet.Layout.Name, Helpers.LogLevel.Warning);
 						}
 					}
+
+					AckOutboxMutex.ReleaseMutex();
+					InboxMutex.ReleaseMutex();
 				}
 
 				if (packet.Layout.Name == null)
