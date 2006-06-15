@@ -76,14 +76,11 @@ namespace libsecondlife
 				return false;
 			}
 
-			return this == (LLUUID)o;
-		}
+			LLUUID uuid = (LLUUID)o;
 
-		public static bool operator==(LLUUID lhs, LLUUID rhs)
-		{
 			for (int i = 0; i < 16; ++i)
 			{
-				if (lhs.Data[i] != rhs.Data[i])
+				if (Data[i] != uuid.Data[i])
 				{
 					return false;
 				}
@@ -92,7 +89,49 @@ namespace libsecondlife
 			return true;
 		}
 
-		public static bool operator !=(LLUUID lhs, LLUUID rhs)
+		public static bool operator==(LLUUID lhs, LLUUID rhs)
+		{
+			try
+			{
+				for (int i = 0; i < 16; ++i)
+				{
+					if (lhs.Data[i] != rhs.Data[i])
+					{
+						return false;
+					}
+				}
+			}
+			catch (NullReferenceException)
+			{
+				byte test;
+				bool lhsnull = false;
+				bool rhsnull = false;
+
+				try
+				{
+					test = lhs.Data[0];
+				}
+				catch (NullReferenceException)
+				{
+					lhsnull = true;
+				}
+
+				try
+				{
+					test = rhs.Data[0];
+				}
+				catch (NullReferenceException)
+				{
+					rhsnull = true;
+				}
+				
+				return (lhsnull == rhsnull);
+			}
+
+			return true;
+		}
+
+		public static bool operator!=(LLUUID lhs, LLUUID rhs)
 		{
 			return !(lhs == rhs);
 		}

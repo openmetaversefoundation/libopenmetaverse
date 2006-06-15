@@ -131,12 +131,13 @@ namespace libsecondlife
 
 		public static ulong BuildULong(uint left, uint right)
 		{
-			ulong sixtyfour = left;
+			// TODO: Make sure this is cross platform to big endian architecture
+			byte[] byteArray = new byte[8];
 
-			sixtyfour = sixtyfour << 4;
-			sixtyfour += right;
+            Array.Copy(BitConverter.GetBytes(left), 0, byteArray, 0, 4);
+			Array.Copy(BitConverter.GetBytes(right), 0, byteArray, 4, 4);
 
-			return sixtyfour;
+			return BitConverter.ToUInt64(byteArray, 0);
 		}
 	}
 
@@ -153,12 +154,14 @@ namespace libsecondlife
 		public ProtocolManager Protocol;
 		public NetworkManager Network;
 		public ParcelManager Parcels;
+		public MainAvatar Avatar;
 
 		public SecondLife(string keywordFile, string mapFile)
 		{
 			Protocol = new ProtocolManager(keywordFile, mapFile);
 			Network = new NetworkManager(Protocol);
 			Parcels = new ParcelManager(this);
+			Avatar = new MainAvatar(this);
 		}
 
 		public void Tick()

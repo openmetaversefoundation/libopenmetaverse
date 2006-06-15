@@ -372,7 +372,8 @@ namespace libsecondlife
 				case FieldType.LLQuaternion:
 					return new LLQuaternion(byteArray, pos);
 				case FieldType.IPADDR:
-					return new IPAddress(BitConverter.ToInt32(byteArray, pos));
+					uint address = BitConverter.ToUInt32(byteArray, pos);
+					return new IPAddress(address);
 				case FieldType.IPPORT:
 					return BitConverter.ToUInt16(byteArray, pos);
 				case FieldType.Variable:
@@ -594,6 +595,33 @@ namespace libsecondlife
 			Array.Copy(sessionID.Data, 0, packet.Data, 40, 16);
 
 			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
+
+			return packet;
+		}
+
+		public static Packet TeleportLocationRequest(ProtocolManager protocol, ulong regionHandle, LLVector3 lookAt,
+			LLVector3 position, LLUUID agentID, LLUUID sessionID)
+		{
+			Packet packet = new Packet("TeleportLocationRequest", protocol, 72);
+
+			Array.Copy(BitConverter.GetBytes(regionHandle), 0, packet.Data, 8, 8);
+			Array.Copy(lookAt.GetBytes(), 0, packet.Data, 16, 12);
+			Array.Copy(position.GetBytes(), 0, packet.Data, 28, 12);
+			Array.Copy(agentID.Data, 0, packet.Data, 40, 16);
+			Array.Copy(sessionID.Data, 0, packet.Data, 56, 16);
+
+			// Set the packet flags
+			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
+
+			return packet;
+		}
+
+		public static Packet AgentSetAppearance(ProtocolManager protocol, ArrayList paramValues, byte[] textureEntry,
+			LLUUID agentID, LLVector3 size)
+		{
+			int length = 0;
+
+			Packet packet = new Packet("AgentSetAppearance", protocol, length);
 
 			return packet;
 		}

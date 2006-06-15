@@ -41,10 +41,15 @@ namespace libsecondlife
 		public string Desc;
 		public int SalePrice;
 		public int ActualArea;
-		public float GlobalX;
-		public float GlobalY;
-		public float GlobalZ;
+		public LLVector3 GlobalPosition;
+		public LLVector3 SimPosition;
 		public float Dwell;
+
+		public Parcel()
+		{
+			GlobalPosition = new LLVector3();
+			SimPosition = new LLVector3();
+		}
 	}
 
 	public class ParcelManager
@@ -55,18 +60,16 @@ namespace libsecondlife
 		private bool ReservedNewbie;
 		private bool ForSale;
 		private bool Auction;
-		private System.Timers.Timer Timer;
-		private bool Timeout;
+		private bool Finished;
+		private Timer DirLandTimer;
 		private bool DirLandTimeout;
-		private ArrayList ParcelList;
+		private bool ParcelInfoTimeout;
+		private Parcel ParcelInfoParcel;
 
 		public ParcelManager(SecondLife client)
 		{
 			Client = client;
 			ParcelsForSale = new ArrayList();
-			Timer = new System.Timers.Timer();
-			Timer.Elapsed += new ElapsedEventHandler(TimerEvent);
-			Timeout = false;
 
 			// Setup the callbacks
 			PacketCallback callback = new PacketCallback(DirLandReplyHandler);
@@ -75,45 +78,59 @@ namespace libsecondlife
 			Client.Network.InternalCallbacks["ParcelInfoReply"] = callback;
 		}
 
-		public void RequestParcelInfo(ArrayList parcels)
+		public void RequestParcelInfo(Parcel parcel)
 		{
-			ParcelList = parcels;
+		Beginning:
+			Finished = false;
+			ParcelInfoTimeout = false;
+			ParcelInfoParcel = parcel;
 
 			// Setup the timer
-			Timer.Interval = 8000;
-			Timeout = false;
-			Timer.Stop();
-			Timer.Start();
+			Timer ParcelInfoTimer = new Timer(5000);
+			ParcelInfoTimer.Elapsed += new ElapsedEventHandler(ParcelInfoTimerEvent);
+			ParcelInfoTimeout = false;
+			ParcelInfoTimer.Start();
 
-			foreach (Parcel parcel in ParcelList)
+			Packet parcelInfoPacket = PacketBuilder.ParcelInfoRequest(Client.Protocol, parcel.ID, 
+				Client.Network.AgentID, Client.Network.SessionID);
+			Client.Network.SendPacket(parcelInfoPacket);
+
+			while (!Finished)
+			{
+				if (ParcelInfoTimeout)
+				{
+					goto Beginning;
+				}
+
+				Client.Tick();
+			}
+
+			/*foreach (Parcel parcel in ParcelList)
 			{
 				if (parcel != null)
 				{
+					Finished = false;
+
 					Packet parcelInfoPacket = PacketBuilder.ParcelInfoRequest(Client.Protocol, parcel.ID, 
 						Client.Network.AgentID, Client.Network.SessionID);
 					Client.Network.SendPacket(parcelInfoPacket);
 
-					// Rate limiting
-					System.Threading.Thread.Sleep(10);
+					while (!Finished)
+					{
+						Client.Tick();
+					}
+
+					Console.Write(".");
 				}
 				else
 				{
 					Helpers.Log("Null parcel in ParcelList", Helpers.LogLevel.Info);
 				}
-			}
-
-			while (!Timeout)
-			{
-				System.Threading.Thread.Sleep(0);
-			}
+			}*/
 		}
 
 		private void ParcelInfoReplyHandler(Packet packet, Circuit circuit)
 		{
-			// Reset the timer
-			Timer.Stop();
-			Timer.Start();
-
 			string simName = "";
 			int actualArea = 0;
 			float globalX = 0.0F;
@@ -126,95 +143,106 @@ namespace libsecondlife
 			LLUUID ownerID = null;
 			LLUUID snapshotID = null;
 			float dwell = 0.0F;
-			bool found = false;
 
-			foreach (Block block in packet.Blocks())
+			try
 			{
-				foreach (Field field in block.Fields)
+				foreach (Block block in packet.Blocks())
 				{
-					if (field.Layout.Name == "ParcelID")
+					foreach (Field field in block.Fields)
 					{
-						parcelID = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "ActualArea")
-					{
-						actualArea = (int)field.Data;
-					}
-					else if (field.Layout.Name == "SalePrice")
-					{
-						salePrice = (int)field.Data;
-					}
-					else if (field.Layout.Name == "Name") 
-					{
-						name = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
-					}
-					else if (field.Layout.Name == "SimName") 
-					{
-						simName = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
-					} 
-					else if (field.Layout.Name == "GlobalX") 
-					{
-						globalX = (float)field.Data;
-					} 
-					else if (field.Layout.Name == "GlobalY") 
-					{
-						globalY = (float)field.Data;
-					} 
-					else if (field.Layout.Name == "GlobalZ") 
-					{
-						globalZ = (float)field.Data;
-					} 
-					else if (field.Layout.Name == "Desc") 
-					{
-						desc = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
-					} 
-					else if (field.Layout.Name == "OwnerID") 
-					{
-						ownerID = (LLUUID)field.Data;
-					} 
-					else if (field.Layout.Name == "SnapshotID") 
-					{
-						snapshotID = (LLUUID)field.Data;
-					} 
-					else if (field.Layout.Name == "Dwell") 
-					{
-						dwell = (float)field.Data;
+						if (field.Layout.Name == "ParcelID")
+						{
+							parcelID = (LLUUID)field.Data;
+
+							if (!parcelID.Equals(ParcelInfoParcel.ID))
+							{
+								Helpers.Log("Received a ParcelInfoReply for " + parcelID.ToString() + 
+									", looking for " + ParcelInfoParcel.ID.ToString(), Helpers.LogLevel.Warning);
+								return;
+							}
+						}
+						else if (field.Layout.Name == "ActualArea")
+						{
+							actualArea = (int)field.Data;
+						}
+						else if (field.Layout.Name == "SalePrice")
+						{
+							salePrice = (int)field.Data;
+						}
+						else if (field.Layout.Name == "Name") 
+						{
+							name = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+						}
+						else if (field.Layout.Name == "SimName") 
+						{
+							simName = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+						} 
+						else if (field.Layout.Name == "GlobalX") 
+						{
+							globalX = (float)field.Data;
+						} 
+						else if (field.Layout.Name == "GlobalY") 
+						{
+							globalY = (float)field.Data;
+						} 
+						else if (field.Layout.Name == "GlobalZ") 
+						{
+							globalZ = (float)field.Data;
+						} 
+						else if (field.Layout.Name == "Desc") 
+						{
+							desc = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+						} 
+						else if (field.Layout.Name == "OwnerID") 
+						{
+							ownerID = (LLUUID)field.Data;
+						} 
+						else if (field.Layout.Name == "SnapshotID") 
+						{
+							snapshotID = (LLUUID)field.Data;
+						} 
+						else if (field.Layout.Name == "Dwell") 
+						{
+							dwell = (float)field.Data;
+						}
 					}
 				}
-			}
 
-			// Find this parcel in the list that was passed in
-			foreach (Parcel parcel in ParcelList)
+				ParcelInfoParcel.SimName = simName;
+				ParcelInfoParcel.ActualArea = actualArea;
+				ParcelInfoParcel.GlobalPosition.X = globalX;
+				ParcelInfoParcel.GlobalPosition.Y = globalY;
+				ParcelInfoParcel.GlobalPosition.Z = globalZ;
+				ParcelInfoParcel.Name = name;
+				ParcelInfoParcel.Desc = desc;
+				ParcelInfoParcel.SalePrice = salePrice;
+				ParcelInfoParcel.OwnerID = ownerID;
+				ParcelInfoParcel.SnapshotID = snapshotID;
+				ParcelInfoParcel.Dwell = dwell;
+
+				// Get RegionHandle from GlobalX/GlobalY
+				uint handleX = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.X / 256.0F);
+				handleX *= 256;
+				uint handleY = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.Y / 256.0F);
+				handleY *= 256;
+				ParcelInfoParcel.RegionHandle = Helpers.BuildULong(handleX, handleY);
+
+				// Get SimPosition from GlobalX/GlobalY and RegionHandle
+				ParcelInfoParcel.SimPosition.X = ParcelInfoParcel.GlobalPosition.X - (float)handleX;
+				ParcelInfoParcel.SimPosition.Y = ParcelInfoParcel.GlobalPosition.Y - (float)handleY;
+				ParcelInfoParcel.SimPosition.Z = ParcelInfoParcel.GlobalPosition.Z;
+			}
+			catch (Exception e)
 			{
-				if (parcel.ID == parcelID)
-				{
-					parcel.SimName = simName;
-					parcel.ActualArea = actualArea;
-					parcel.GlobalX = globalX;
-					parcel.GlobalY = globalY;
-					parcel.GlobalZ = globalZ;
-					parcel.Name = name;
-					parcel.Desc = desc;
-					parcel.SalePrice = salePrice;
-					parcel.OwnerID = ownerID;
-					parcel.SnapshotID = snapshotID;
-					parcel.Dwell = dwell;
-
-					// Get RegionHandle from GlobalX/GlobalY
-					uint handleX = (uint)Math.Floor(parcel.GlobalX / 256.0F);
-					uint handleY = (uint)Math.Floor(parcel.GlobalY / 256.0F);
-					parcel.RegionHandle = Helpers.BuildULong(handleX, handleY);
-
-					found = true;
-					break;
-				}
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 
-			if (!found)
-			{
-				Helpers.Log("Got a ParcelInfoReply on " + parcelID.ToString() + " that we never requested",
-					Helpers.LogLevel.Warning);
-			}
+			Finished = true;
+		}
+
+		private void ParcelInfoTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
+		{
+			ParcelInfoTimeout = true;
 		}
 
 		public int DirLandRequest(bool reservedNewbie, bool forSale, bool auction)
@@ -228,10 +256,10 @@ namespace libsecondlife
             ParcelsForSale.Clear();
 
 			// Setup the timer
-			Timer.Interval = 15000;
+			DirLandTimer = new Timer(15000);
+			DirLandTimer.Elapsed += new ElapsedEventHandler(DirLandTimerEvent);
 			DirLandTimeout = false;
-			Timer.Stop();
-			Timer.Start();
+			DirLandTimer.Start();
 
 			LLUUID queryID = new LLUUID();
 			Packet landQuery = PacketBuilder.DirLandQuery(Client.Protocol, ReservedNewbie, ForSale, queryID, 
@@ -240,8 +268,11 @@ namespace libsecondlife
 
 			while (!DirLandTimeout)
 			{
-				System.Threading.Thread.Sleep(0);
+				Client.Tick();
 			}
+
+			// Double check the timer is actually stopped
+			DirLandTimer.Stop();
 
 			return ParcelsForSale.Count;
 		}
@@ -251,8 +282,8 @@ namespace libsecondlife
 			if (!DirLandTimeout)
 			{
 				// Reset the timer
-				Timer.Stop();
-				Timer.Start();
+				DirLandTimer.Stop();
+				DirLandTimer.Start();
 
 				foreach (Block block in packet.Blocks())
 				{
@@ -321,10 +352,9 @@ namespace libsecondlife
 			}
 		}
 
-		private void TimerEvent(object source, System.Timers.ElapsedEventArgs ea)
+		private void DirLandTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
 		{
-			Timer.Stop();
-			Timeout = true;
+			DirLandTimer.Stop();
 			DirLandTimeout = true;
 		}
 	}

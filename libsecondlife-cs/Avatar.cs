@@ -26,24 +26,142 @@
 
 using System;
 using System.Timers;
+using System.Net;
 using System.Collections;
 
 namespace libsecondlife
 {
-	public class Avatar
+	public class MainAvatar
 	{
-		private SecondLife Client;
+		public string TeleportMessage;
 
-		Avatar(SecondLife client)
+		private SecondLife Client;
+		private int TeleportStatus;
+
+		public MainAvatar(SecondLife client)
 		{
 			Client = client;
+			TeleportMessage = "";
+
+			// Setup the callbacks
+			PacketCallback callback = new PacketCallback(TeleportHandler);
+			Client.Network.InternalCallbacks["TeleportStart"] = callback;
+			Client.Network.InternalCallbacks["TeleportProgress"] = callback;
+			Client.Network.InternalCallbacks["TeleportFailed"] = callback;
+			Client.Network.InternalCallbacks["TeleportFinish"] = callback;
 		}
 
 		public bool Teleport(ulong regionHandle, LLVector3 position, out string message)
 		{
-			message = "";
+			TeleportStatus = 0;
+			LLVector3 lookAt = new LLVector3(position.X + 1.0F, position.Y, position.Z);
 
-			return false;
+			Packet packet = PacketBuilder.TeleportLocationRequest(Client.Protocol, regionHandle, lookAt, position,
+				Client.Network.AgentID, Client.Network.SessionID);
+			Client.Network.SendPacket(packet);
+
+			while (TeleportStatus == 0)
+			{
+				Client.Tick();
+			}
+
+			message = TeleportMessage;
+			
+			return (TeleportStatus == 1);
+		}
+
+		private void TeleportHandler(Packet packet, Circuit circuit)
+		{
+			ArrayList blocks;
+
+			if (packet.Layout.Name == "TeleportStart")
+			{
+				TeleportMessage = "Teleport started";
+			}
+			else if (packet.Layout.Name == "TeleportProgress")
+			{
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if (field.Layout.Name == "Message")
+						{
+							TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							return;
+						}
+					}
+				}
+			}
+			else if (packet.Layout.Name == "TeleportFailed")
+			{
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if (field.Layout.Name == "Reason")
+						{
+							TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							TeleportStatus = -1;
+							return;
+						}
+					}
+				}
+			}
+			else if (packet.Layout.Name == "TeleportFinish")
+			{
+				TeleportMessage = "Teleport finished";
+
+				ushort port = 0;
+				IPAddress ip = null;
+				ulong regionHandle;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if (field.Layout.Name == "SimPort")
+						{
+							port = (ushort)field.Data;
+						}
+						else if (field.Layout.Name == "SimIP")
+						{
+							ip = (IPAddress)field.Data;
+						}
+						else if (field.Layout.Name == "RegionHandle")
+						{
+							regionHandle = (ulong)field.Data;
+						}
+					}
+				}
+
+				uint oldCircuit = Client.Network.CurrentCircuit.CircuitCode;
+				if (Client.Network.Connect(ip, port, true))
+				{
+					Client.Network.Disconnect(oldCircuit);
+
+					// Move the avatar in to this sim
+					Packet movePacket = PacketBuilder.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
+						Client.Network.SessionID, Client.Network.CurrentCircuit.CircuitCode);
+					Client.Network.SendPacket(movePacket);
+
+					Helpers.Log("Connected to new Circuit " + Client.Network.CurrentCircuit.CircuitCode, 
+						Helpers.LogLevel.Info);
+
+					TeleportStatus = 1;
+					return;
+				}
+				else
+				{
+					TeleportStatus = -1;
+					return;
+				}
+			}
 		}
 	}
 }

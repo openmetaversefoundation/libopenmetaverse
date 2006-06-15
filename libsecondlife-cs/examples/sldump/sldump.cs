@@ -38,7 +38,7 @@ namespace sldump
 			string output = "";
 			ArrayList blocks = packet.Blocks();
 
-			output += "---- " + packet.Layout.Name + " ----\n";
+			output += "---- " + packet.Layout.Name + " ---- (" + packet.Data[0] + ") (" + packet.Sequence + ")\n";
 
 			foreach (Block block in blocks)
 			{
@@ -105,6 +105,13 @@ namespace sldump
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
 				"last", 1, 10, 3, 3, "Win", "0", "sldump", "jhurliman@wsu.edu");
+
+			// An example of how to pass additional options to the login server
+			ArrayList optionsArray = new ArrayList();
+			optionsArray.Add("inventory-root");
+			optionsArray.Add("inventory-skeleton");
+			loginParams["options"] = optionsArray;
+
 			Hashtable loginReply = new Hashtable();
 
 			if (!client.Network.Login(loginParams, out loginReply))

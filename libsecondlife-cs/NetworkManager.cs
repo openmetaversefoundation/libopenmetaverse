@@ -77,6 +77,19 @@ namespace libsecondlife
 
 		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
 		{
+			Initialize(protocol, network, circuitCode);
+		}
+
+		public Circuit(ProtocolManager protocol, NetworkManager network)
+		{
+			// Generate a random circuit code
+			System.Random random = new System.Random();
+
+			Initialize(protocol, network, (uint)random.Next());
+		}
+
+		private void Initialize(ProtocolManager protocol, NetworkManager network, uint circuitCode)
+		{
 			Protocol = protocol;
 			Network = network;
 			CircuitCode = circuitCode;
@@ -108,11 +121,15 @@ namespace libsecondlife
 
 		~Circuit()
 		{
-			Stop();
-			Connection.Close();
+			Close();
 		}
 
 		public bool Open(string ip, int port)
+		{
+			return Open(IPAddress.Parse(ip), port);
+		}
+
+		public bool Open(IPAddress ip, int port)
 		{
 			try
 			{
@@ -121,7 +138,7 @@ namespace libsecondlife
 
 				// Create an endpoint that we will be communicating with (need it in two types due to
 				// .NET weirdness)
-				ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
+				ipEndPoint = new IPEndPoint(ip, port);
 				endPoint = (EndPoint)ipEndPoint;
 
 				// Associate this circuit's socket with the given ip and port and start listening
@@ -163,16 +180,21 @@ namespace libsecondlife
 		{
 			try
 			{
-				Stop();
+				Opened = false;
+
+				StopTimers();
+
+				// TODO: Is this safe? Using the mutex throws an exception about a disposed object
+				NeedAck.Clear();
+
+				//Connection.EndReceiveFrom(
 
 				// Send the CloseCircuit notice
 				Packet packet = new Packet("CloseCircuit", Protocol, 8);
-				SendPacket(packet, true);
+				Connection.Send(packet.Data);
 
-				// Send any last ACKs before closing the circuit
-				SendACKs();
-
-				Connection.Close();
+				// Shut the socket communication down
+				Connection.Shutdown(SocketShutdown.Both);
 			}
 			catch (Exception e)
 			{
@@ -180,29 +202,26 @@ namespace libsecondlife
 			}
 		}
 
-		public void Stop()
+		public void StopTimers()
 		{
-			try
-			{
-				// Stop the resend timer
-				ACKTimer.Stop();
+			// Stop the resend timer
+			ACKTimer.Stop();
 
-				// Stop the open circuit timer (just in case it's still running)
-				OpenTimer.Stop();
-
-				// TODO: Is this safe? Using the mutex throws an exception about a disposed object
-				NeedAck.Clear();
-			}
-			catch (Exception e)
-			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
-			}
+			// Stop the open circuit timer (just in case it's still running)
+			OpenTimer.Stop();
 		}
 
 		public void SendPacket(Packet packet, bool incrementSequence)
 		{
 			byte[] zeroBuffer = new byte[4096];
 			int zeroBytes;
+
+			if (!Opened && packet.Layout.Name != "UseCircuitCode")
+			{
+				Helpers.Log("Trying to send a " + packet.Layout.Name + " packet when the socket is closed",
+					Helpers.LogLevel.Warning);
+				return;
+			}
 
 			// DEBUG
 			//Console.WriteLine("Sending " + packet.Data.Length + " byte " + packet.Layout.Name);
@@ -250,12 +269,12 @@ namespace libsecondlife
 					// Append each ACK needing to be sent out to this packet
 					foreach (uint ack in AckOutbox)
 					{
-						Array.Copy(BitConverter.GetBytes(ack), 0, zeroBuffer, zeroBytes - 1, 4);
+						Array.Copy(BitConverter.GetBytes(ack), 0, zeroBuffer, zeroBytes, 4);
 						zeroBytes += 4;
 					}
 
 					// Last byte is the number of ACKs
-					zeroBuffer[zeroBytes - 1] = (byte)AckOutbox.Count;
+					zeroBuffer[zeroBytes] = (byte)AckOutbox.Count;
 					zeroBytes += 1;
 
 					AckOutbox.Clear();
@@ -509,13 +528,12 @@ namespace libsecondlife
 				{
 					ResendTick = 0;
 
-					// Claim the NeedAck mutex
-					NeedAckMutex.WaitOne();
-
 				Beginning:
 
 					// Check if any reliable packets haven't been ACKed by the server
+					NeedAckMutex.WaitOne();
 					IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
+					NeedAckMutex.ReleaseMutex();
 
 					while (packetEnum.MoveNext())
 					{
@@ -528,21 +546,34 @@ namespace libsecondlife
 							Packet packet = (Packet)packetEnum.Key;
 
 							// Adjust the timeout value for this packet
-							NeedAck[packet] = Environment.TickCount;
-							
-							// Add the resent flag
-							packet.Data[0] += Helpers.MSG_RESENT;
-							
-							// Resend the packet
-							SendPacket((Packet)packet, false);
+							NeedAckMutex.WaitOne();
 
-							// Restart the loop since we modified a value and the iterator will fail
-							goto Beginning;
+							if (NeedAck.ContainsKey(packet))
+							{
+								NeedAck[packet] = Environment.TickCount;
+								NeedAckMutex.ReleaseMutex();
+
+								// Add the resent flag
+								packet.Data[0] += Helpers.MSG_RESENT;
+							
+								// Resend the packet
+								SendPacket((Packet)packet, false);
+
+								Helpers.Log("Resending " + packet.Layout.Name + " packet, sequence=" + packet.Sequence, 
+									Helpers.LogLevel.Info);
+
+								// Rate limiting
+								System.Threading.Thread.Sleep(100);
+
+								// Restart the loop since we modified a value and the iterator will fail
+								goto Beginning;
+							}
+							else
+							{
+								NeedAckMutex.ReleaseMutex();
+							}
 						}
 					}
-
-					// Release the mutex
-					NeedAckMutex.ReleaseMutex();
 				}
 			}
 			catch (Exception e)
@@ -692,12 +723,43 @@ namespace libsecondlife
 			return true;
 		}
 
+		public bool Connect(IPAddress ip, ushort port, bool setDefault)
+		{
+			Circuit circuit = new Circuit(Protocol, this);
+			if (!circuit.Open(ip, port))
+			{
+				return false;
+			}
+
+			Circuits.Add(circuit);
+
+			if (setDefault)
+			{
+				CurrentCircuit = circuit;
+			}
+
+			return true;
+		}
+
+		public void Disconnect(uint circuitCode)
+		{
+			foreach (Circuit circuit in Circuits)
+			{
+				if (circuit.CircuitCode == circuitCode)
+				{
+					circuit.Close();
+					Circuits.Remove(circuit);
+					return;
+				}
+			}
+		}
+
 		public void Logout()
 		{
 			// TODO: Close all circuits except the current one
 
 			// Halt all timers on the current circuit
-			CurrentCircuit.Stop();
+			CurrentCircuit.StopTimers();
 
 			Packet packet = PacketBuilder.LogoutRequest(Protocol, AgentID, SessionID);
 			SendPacket(packet);
@@ -705,66 +767,6 @@ namespace libsecondlife
 			// TODO: We should probably check if the server actually received the logout request
 			// Instead we'll use this silly Sleep()
 			System.Threading.Thread.Sleep(1000);
-		}
-
-		string RpcGetString(string rpc, string name)
-		{
-			int pos = rpc.IndexOf(name);
-			int pos2;
-
-			if (pos == -1)
-			{
-				return "";
-			}
-
-			rpc = rpc.Substring(pos, rpc.Length - pos);
-			pos = rpc.IndexOf("<string>");
-
-			if (pos == -1)
-			{
-				return "";
-			}
-
-			rpc = rpc.Substring(pos + 8, rpc.Length - (pos + 8));
-
-			pos2 = rpc.IndexOf("</string>");
-
-			if (pos2 == -1)
-			{
-				return "";
-			}
-
-			return rpc.Substring(0, pos2);
-		}
-
-		int RpcGetInt(string rpc, string name)
-		{
-			int pos = rpc.IndexOf(name);
-			int pos2;
-
-			if (pos == -1)
-			{
-				return -1;
-			}
-
-			rpc = rpc.Substring(pos, rpc.Length - pos);
-			pos = rpc.IndexOf("<i4>");
-
-			if (pos == -1)
-			{
-				return -1;
-			}
-
-			rpc = rpc.Substring(pos + 4, rpc.Length - (pos + 4));
-
-			pos2 = rpc.IndexOf("</i4>");
-			
-			if (pos2 == -1)
-			{
-				return -1;
-			}
-
-			return Int32.Parse(rpc.Substring(0, pos2));
 		}
 
 		private void StartPingCheckHandler(Packet packet, Circuit circuit)
