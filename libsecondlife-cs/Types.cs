@@ -64,6 +64,24 @@ namespace libsecondlife
 			Array.Copy(byteArray, pos, Data, 0, 16);
 		}
 
+		public LLUUID(bool randomize)
+		{
+			
+			if (randomize)
+			{
+				Data = Guid.NewGuid().ToByteArray();
+			}
+			else
+			{
+				Data = new byte[16];
+			}
+		}
+
+		public static LLUUID GenerateUUID()
+		{
+			return new LLUUID(Guid.NewGuid().ToByteArray(), 0);
+		}
+
 		public override int GetHashCode()
 		{
 			return BitConverter.ToInt32(Data, 0);

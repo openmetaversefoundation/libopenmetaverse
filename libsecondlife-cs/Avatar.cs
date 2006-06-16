@@ -31,6 +31,12 @@ using System.Collections;
 
 namespace libsecondlife
 {
+	public class Avatar
+	{
+		public LLUUID ID;
+		public string Name;
+	}
+
 	public class MainAvatar
 	{
 		public string TeleportMessage;

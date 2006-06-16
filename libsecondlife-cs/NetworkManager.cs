@@ -126,7 +126,8 @@ namespace libsecondlife
 
 		~Circuit()
 		{
-			Close();
+			Opened = false;
+			StopTimers();
 		}
 
 		public bool Open(string ip, int port)
@@ -181,18 +182,13 @@ namespace libsecondlife
 			return false;
 		}
 
-		public void Close()
+		public void CloseCircuit()
 		{
 			try
 			{
 				Opened = false;
 
 				StopTimers();
-
-				// TODO: Is this safe? Using the mutex throws an exception about a disposed object
-				NeedAck.Clear();
-
-				//Connection.EndReceiveFrom(
 
 				// Send the CloseCircuit notice
 				Packet packet = new Packet("CloseCircuit", Protocol, 8);
@@ -774,18 +770,57 @@ namespace libsecondlife
 			{
 				if (circuit.CircuitCode == circuitCode)
 				{
-					circuit.Close();
-					Circuits.Remove(circuit);
-					return;
+					if (circuitCode == CurrentCircuit.CircuitCode)
+					{
+						Helpers.Log("Disconnecting current circuit " + circuitCode, Helpers.LogLevel.Info);
+
+						circuit.CloseCircuit();
+						Circuits.Remove(circuit);
+
+						if (Circuits.Count > 0)
+						{
+							CurrentCircuit = (Circuit)Circuits[0];
+							Helpers.Log("Switched current circuit to " + CurrentCircuit.CircuitCode, Helpers.LogLevel.Info);
+						}
+						else
+						{
+							Helpers.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
+							CurrentCircuit = null;
+						}
+
+						return;
+					}
+					else
+					{
+						Helpers.Log("Disconnecting circuit " + circuitCode, Helpers.LogLevel.Info);
+
+						circuit.CloseCircuit();
+						Circuits.Remove(circuit);
+						return;
+					}
 				}
 			}
+
+			Helpers.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
 		}
 
 		public void Logout()
 		{
-			// TODO: Close all circuits except the current one
+		Beginning:
+			// Disconnect all circuits except the current one
+			if (Circuits.Count > 1)
+			{
+				foreach (Circuit circuit in Circuits)
+				{
+					if (circuit.CircuitCode != CurrentCircuit.CircuitCode)
+					{
+						Disconnect(circuit.CircuitCode);
+						goto Beginning;
+					}
+				}
+			}
 
-			// Halt all timers on the current circuit
+			// Halt all activity on the current circuit
 			CurrentCircuit.StopTimers();
 
 			Packet packet = PacketBuilder.LogoutRequest(Protocol, AgentID, SessionID);
@@ -793,13 +828,11 @@ namespace libsecondlife
 
 			// TODO: We should probably check if the server actually received the logout request
 			// Instead we'll use this silly Sleep()
-			System.Threading.Thread.Sleep(1000);
+			//System.Threading.Thread.Sleep(1000); // Pretty sure this does nothing whatsoever
 		}
 
 		private void StartPingCheckHandler(Packet packet, Circuit circuit)
 		{
-			//TODO: Should we care about OldestUnacked?
-
 			// Respond to the ping request
 			Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, packet.Data[5]);
 			SendPacket(pingPacket, circuit);

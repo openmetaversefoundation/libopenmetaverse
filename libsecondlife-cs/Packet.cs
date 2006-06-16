@@ -634,12 +634,181 @@ namespace libsecondlife
 		 *  - Copy the temporary array to the packet array after initialization
 		 */
 
-		/*public static Packet BuildPacket(string name, ProtocolManager protocol, ArrayList blocks)
+		public static Packet BuildPacket(string name, ProtocolManager protocol, Hashtable blocks)
 		{
+			Hashtable fields;
 			ArrayList payload = new ArrayList();
+			byte[] byteArray = new byte[1024];
+			int length = 0;
+			int blockCount = 0;
+			bool blockFound = false;
+			bool fieldFound = false;
+			IDictionaryEnumerator blocksEnum;
 
-			MapPacket layout = protocol.Command(name);
-		}*/
+			MapPacket packetMap = protocol.Command(name);
+
+			#region Header
+			// Make room for the header
+			switch (packetMap.Frequency)
+			{
+				case PacketFrequency.High:
+					length = 5;
+					break;
+				case PacketFrequency.Medium:
+					length = 6;
+					break;
+				case PacketFrequency.Low:
+					length = 8;
+					break;
+			}
+			#endregion Header
+
+			foreach (MapBlock blockMap in packetMap.Blocks)
+			{
+				#region VariableSize
+				if (blockMap.Count == -1)
+				{
+					blockCount = 0;
+
+					// Count the number of this type of block in the blocks Hashtable
+					blocksEnum = blocks.GetEnumerator();
+
+					while (blocksEnum.MoveNext())
+					{
+						if ((string)blocksEnum.Value == blockMap.Name)
+						{
+							blockCount++;
+						}
+					}
+
+					if (blockCount > 255)
+					{
+						Helpers.Log("Trying to put more than 255 blocks in a variable block position, " +
+							"this will not end well", Helpers.LogLevel.Error);
+					}
+
+					// Prepend the blocks with a count
+					byteArray[length] = (byte)blockCount;
+					length++;
+				}
+				#endregion VariablSize
+
+				// Check for blocks of this type in the Hashtable
+				blocksEnum = blocks.GetEnumerator();
+
+				blockFound = false;
+				blockCount = 0;
+
+				while (blocksEnum.MoveNext())
+				{
+					if ((string)blocksEnum.Value == blockMap.Name)
+					{
+						blockFound = true;
+
+						// Found a match of this block
+						if (blockMap.Count == -1 || blockCount < blockMap.Count)
+						{
+							blockCount++;
+
+							#region TryTypecast
+							try
+							{
+								fields = (Hashtable)blocksEnum.Key;
+							}
+							catch (Exception)
+							{
+								Helpers.Log("Something other than a field Hashtable was passed to BuildPacket " +
+									"inside of the block Hashtable", Helpers.LogLevel.Warning);
+								continue;
+							}
+							#endregion TryTypecast
+
+							foreach (MapField fieldMap in blockMap.Fields)
+							{
+								if (fields.ContainsKey(fieldMap.Name))
+								{
+									Type fieldType = fields[fieldMap.Name].GetType();
+
+									#region AddField
+									switch (fieldMap.Type)
+									{
+										case FieldType.U8:
+											break;
+										case FieldType.U16:
+											break;
+										case FieldType.U32:
+											break;
+										case FieldType.U64:
+											break;
+										case FieldType.S8:
+											break;
+										case FieldType.S16:
+											break;
+										case FieldType.S32:
+											break;
+										case FieldType.S64:
+											break;
+										case FieldType.F32:
+											break;
+										case FieldType.F64:
+											break;
+										case FieldType.LLUUID:
+											break;
+										case FieldType.BOOL:
+											break;
+										case FieldType.LLVector3:
+											break;
+										case FieldType.LLVector3d:
+											break;
+										case FieldType.LLVector4:
+											break;
+										case FieldType.LLQuaternion:
+											break;
+										case FieldType.IPADDR:
+											break;
+										case FieldType.IPPORT:
+											break;
+										case FieldType.Variable:
+											break;
+										case FieldType.Fixed:
+											break;
+										case FieldType.Single:
+											break;
+										case FieldType.Multiple:
+											break;
+									}
+									#endregion AddField
+								}
+								else
+								{
+									if (fieldMap.Type == FieldType.Variable)
+									{
+										;
+									}
+									else if (fieldMap.Type == FieldType.Fixed)
+									{
+										;
+									}
+									else
+									{
+										;
+									}
+								}
+							}
+						}
+						else
+						{
+							Helpers.Log("Trying to build a " + packetMap.Name + " packet with too many " + 
+								blockMap.Name + " blocks", Helpers.LogLevel.Warning);
+						}
+					}
+				}
+			}
+
+			Packet packet = new Packet(byteArray, length, protocol);
+			
+			return packet;
+		}
 
 		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, LLUUID folderID, 
 			LLUUID agentID)
