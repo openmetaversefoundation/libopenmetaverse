@@ -232,6 +232,17 @@ namespace libsecondlife
 			Z = BitConverter.ToDouble(byteArray, pos + 16);
 		}
 
+		public byte[] GetBytes()
+		{
+			byte[] byteArray = new byte[24];
+
+			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 8);
+			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 8, 8);
+			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 16, 8);
+
+			return byteArray;
+		}
+
 		public override string ToString()
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
@@ -256,6 +267,18 @@ namespace libsecondlife
 			Y = BitConverter.ToSingle(byteArray, pos + 4);
 			Z = BitConverter.ToSingle(byteArray, pos + 8);
 			S = BitConverter.ToSingle(byteArray, pos + 12);
+		}
+
+		public byte[] GetBytes()
+		{
+			byte[] byteArray = new byte[16];
+
+			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
+			Array.Copy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
+
+			return byteArray;
 		}
 
 		public override string ToString()

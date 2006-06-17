@@ -740,7 +740,14 @@ namespace libsecondlife
 			CurrentCircuit = circuit;
 
 			// Move our agent in to the sim to complete the connection
-			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["AgentID"] = AgentID;
+			fields["SessionID"] = SessionID;
+			fields["CircuitCode"] = circuitCode;
+			blocks[fields] = "AgentData";
+			Packet packet = PacketBuilder.BuildPacket("CompleteAgentMovement", Protocol, blocks);
+
 			SendPacket(packet);
 
 			return true;

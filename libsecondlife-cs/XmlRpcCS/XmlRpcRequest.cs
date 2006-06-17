@@ -119,7 +119,7 @@ namespace Nwc.XmlRpc
 	request.ContentType = "text/xml";
 	request.AllowWriteStreamBuffering = true;
 	request.KeepAlive = false;
-	request.Timeout = 8000; // miliseconds adjust as you see fit
+	request.Timeout = 15000; // miliseconds adjust as you see fit
 
 	Stream stream = request.GetRequestStream();
 	XmlTextWriter xml = new XmlTextWriter(stream, _encoding);

@@ -409,6 +409,333 @@ namespace libsecondlife
 
 	public class PacketBuilder
 	{
+		public static Packet BuildPacket(string name, ProtocolManager protocol, Hashtable blocks)
+		{
+			Hashtable fields;
+			ArrayList payload = new ArrayList();
+			byte[] byteArray = new byte[1024];
+			int length = 0;
+			int blockCount = 0;
+			int fieldLength = 0;
+			IDictionaryEnumerator blocksEnum;
+
+			MapPacket packetMap = protocol.Command(name);
+
+			// Build the header
+			#region Header
+			switch (packetMap.Frequency)
+			{
+				case PacketFrequency.High:
+					byteArray[4] = (byte)packetMap.ID;
+					length = 5;
+					break;
+				case PacketFrequency.Medium:
+					byteArray[4] = 0xFF;
+					byteArray[5] = (byte)packetMap.ID;
+					length = 6;
+					break;
+				case PacketFrequency.Low:
+					byteArray[4] = 0xFF;
+					byteArray[5] = 0xFF;
+					//short commandID = ;
+					Array.Copy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)packetMap.ID)), 0, 
+						byteArray, 6, 2);
+					length = 8;
+					break;
+			}
+			#endregion Header
+
+			foreach (MapBlock blockMap in packetMap.Blocks)
+			{
+				// If this is a variable count block, count the number of appearances of this block in the 
+				// passed in Hashtable and prepend a counter byte
+				#region VariableSize
+				if (blockMap.Count == -1)
+				{
+					blockCount = 0;
+
+					// Count the number of this type of block in the blocks Hashtable
+					blocksEnum = blocks.GetEnumerator();
+
+					while (blocksEnum.MoveNext())
+					{
+						if ((string)blocksEnum.Value == blockMap.Name)
+						{
+							blockCount++;
+						}
+					}
+
+					if (blockCount > 255)
+					{
+						Helpers.Log("Trying to put more than 255 blocks in a variable block position, " +
+							"this will not end well", Helpers.LogLevel.Error);
+					}
+
+					// Prepend the blocks with a count
+					byteArray[length] = (byte)blockCount;
+					length++;
+				}
+				#endregion VariablSize
+
+				// Reset blockCount
+				blockCount = 0;
+
+				// Check for blocks of this type in the Hashtable
+				#region BuildBlock
+				blocksEnum = blocks.GetEnumerator();
+
+				while (blocksEnum.MoveNext())
+				{
+					if ((string)blocksEnum.Value == blockMap.Name)
+					{
+						// Found a match of this block
+						if (blockMap.Count == -1 || blockCount < blockMap.Count)
+						{
+							blockCount++;
+
+							#region TryBlockTypecast
+							try
+							{
+								fields = (Hashtable)blocksEnum.Key;
+							}
+							catch (Exception)
+							{
+								Helpers.Log("Something other than a field Hashtable was passed to BuildPacket " +
+									"inside of the block Hashtable", Helpers.LogLevel.Warning);
+								continue;
+							}
+							#endregion TryBlockTypecast
+
+							foreach (MapField fieldMap in blockMap.Fields)
+							{
+								if (fields.ContainsKey(fieldMap.Name))
+								{
+									object field = fields[fieldMap.Name];
+
+									#region AddField
+									try
+									{
+										switch (fieldMap.Type)
+										{
+											case FieldType.U8:
+												byteArray[length] = (byte)field;
+												length++;
+												break;
+											case FieldType.U16:
+												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
+												length += 2;
+												break;
+											case FieldType.U32:
+												Array.Copy(BitConverter.GetBytes((uint)field), 0, byteArray, length, 4);
+												length += 4;
+												break;
+											case FieldType.U64:
+												Array.Copy(BitConverter.GetBytes((ulong)field), 0, byteArray, length, 8);
+												length += 8;
+												break;
+											case FieldType.S8:
+												byteArray[length] = (byte)field;
+												length++;
+												break;
+											case FieldType.S16:
+												Array.Copy(BitConverter.GetBytes((short)field), 0, byteArray, length, 2);
+												length += 2;
+												break;
+											case FieldType.S32:
+												Array.Copy(BitConverter.GetBytes((int)field), 0, byteArray, length, 4);
+												length += 4;
+												break;
+											case FieldType.S64:
+												Array.Copy(BitConverter.GetBytes((long)field), 0, byteArray, length, 8);
+												length += 8;
+												break;
+											case FieldType.F32:
+												Array.Copy(BitConverter.GetBytes((float)field), 0, byteArray, length, 4);
+												length += 4;
+												break;
+											case FieldType.F64:
+												Array.Copy(BitConverter.GetBytes((double)field), 0, byteArray, length, 8);
+												length += 8;
+												break;
+											case FieldType.LLUUID:
+												Array.Copy(((LLUUID)field).Data, 0, byteArray, length, 16);
+												length += 16;
+												break;
+											case FieldType.BOOL:
+												byteArray[length] = (byte)field;
+												length++;
+												break;
+											case FieldType.LLVector3:
+												Array.Copy(((LLVector3)field).GetBytes(), 0, byteArray, length, 12);
+												length += 12;
+												break;
+											case FieldType.LLVector3d:
+												Array.Copy(((LLVector3d)field).GetBytes(), 0, byteArray, length, 24);
+												length += 24;
+												break;
+											case FieldType.LLVector4:
+												Array.Copy(((LLVector4)field).GetBytes(), 0, byteArray, length, 16);
+												length += 16;
+												break;
+											case FieldType.LLQuaternion:
+												Array.Copy(((LLQuaternion)field).GetBytes(), 0, byteArray, length, 16);
+												length += 16;
+												break;
+											case FieldType.IPADDR:
+												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
+												length += 2;
+												break;
+											case FieldType.IPPORT:
+												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
+												length += 2;
+												break;
+											case FieldType.Variable:
+												if (((byte[])field).Length > 255)
+												{
+													Helpers.Log("Truncating variable field to 255 characters", 
+														Helpers.LogLevel.Warning);
+
+													fieldLength = 255;
+												}
+												else
+												{
+													if (field.GetType().IsArray)
+													{
+														// Assume this is a byte array
+														fieldLength = ((byte[])field).Length;
+													}
+													else
+													{
+														// Assume this is a string, add 1 for the null terminator
+														fieldLength = ((string)field).Length + 1;
+													}
+												}
+
+												if (fieldMap.Count == 2)
+												{
+													Array.Copy(BitConverter.GetBytes(fieldLength), 0, byteArray, 
+														length, 2);
+													length += 2;
+												}
+												else
+												{
+													if (fieldMap.Count != 1)
+													{
+														Helpers.Log("Variable field " + fieldMap.Name + " has a count of " + 
+															+ fieldMap.Count + ", ignoring and assuming 1", 
+															Helpers.LogLevel.Warning);
+													}
+
+													byteArray[length] = (byte)(fieldLength);
+													length++;
+												}
+												
+												if (field.GetType().IsArray)
+												{
+													// Assume this is a byte array
+													Array.Copy((byte[])field, 0, byteArray, length, fieldLength);
+												}
+												else
+												{
+													// Assume this is a string, add 1 for the null terminator
+													byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)field);
+													Array.Copy(stringBytes, 0, byteArray, length, stringBytes.Length);
+												}
+
+												length += fieldLength;
+
+												break;
+											case FieldType.Fixed:
+												Array.Copy((byte[])field, 0, byteArray, length, fieldMap.Count);
+												length += fieldMap.Count;
+												break;
+											default:
+												Helpers.Log("Unhandled field type " + fieldMap.Type + " during " +
+													"packet construction", Helpers.LogLevel.Error);
+												break;
+										}
+									}
+									catch (Exception)
+									{
+										Helpers.Log("Data type " + field.GetType().ToString() + " for field " +
+											fieldMap.Name + " doesn't match expected type " + fieldMap.Type.ToString(), 
+											Helpers.LogLevel.Error);
+										// This will fail for fixed or variable type packets, but it's a 
+										// last ditch effort
+										length += (int)protocol.TypeSizes[fieldMap.Type];
+									}
+									#endregion AddField
+								}
+								else
+								{
+									// This field wasn't passed in, create an empty version
+									#region EmptyField
+									if (fieldMap.Type == FieldType.Variable)
+									{
+										// Just set the counter to zero and move on
+										if (fieldMap.Count == 2)
+										{
+											length += 2;
+										}
+										else
+										{
+											if (fieldMap.Count != 1)
+											{
+												Helpers.Log("Variable field " + fieldMap.Name + " has a count of " + 
+													+ fieldMap.Count + ", ignoring and assuming 1", 
+													Helpers.LogLevel.Warning);
+											}
+
+											length++;
+										}
+									}
+									else if (fieldMap.Type == FieldType.Fixed)
+									{
+										length += fieldMap.Count;
+									}
+									else
+									{
+										length += (int)protocol.TypeSizes[fieldMap.Type];
+									}
+									#endregion EmptyField
+								}
+							}
+						}
+						else
+						{
+							Helpers.Log("Trying to build a " + packetMap.Name + " packet with too many " + 
+								blockMap.Name + " blocks", Helpers.LogLevel.Warning);
+						}
+					}
+				}
+				#endregion BuildBlock
+
+				// If this is a fixed count block and it doesn't appear in the Hashtable passed in, create 
+				// empty filler blocks
+				#region EmptyBlock
+				if (blockCount == 0 && blockMap.Count != -1)
+				{
+					for (int i = 0; i < blockMap.Count; ++i)
+					{
+						foreach (MapField field in blockMap.Fields)
+						{
+							if (field.Type == FieldType.Variable)
+							{
+								length++;
+							}
+							else
+							{
+								length += (int)protocol.TypeSizes[field.Type];
+							}
+						}
+					}
+				}
+				#endregion EmptyBlock
+			}
+
+			return new Packet(byteArray, length, protocol);
+		}
+
 		public static Packet UseCircuitCode(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID, uint code)
 		{
 			Packet packet = new Packet("UseCircuitCode", protocol, 44);
@@ -623,190 +950,6 @@ namespace libsecondlife
 
 			Packet packet = new Packet("AgentSetAppearance", protocol, length);
 
-			return packet;
-		}
-
-		/* Generic packet builder idea:
-		 *  - Pass in an ArrayList (blocks) of Hashtables (fields)
-		 *  - Iterate through the packet layout and add TypeSizes of each field * fieldCount to the total
-		 *    - Serialize the actual values to a temporary byte array
-		 *  - Each variable field, find the length of the actual values and add 1 or 2
-		 *  - Copy the temporary array to the packet array after initialization
-		 */
-
-		public static Packet BuildPacket(string name, ProtocolManager protocol, Hashtable blocks)
-		{
-			Hashtable fields;
-			ArrayList payload = new ArrayList();
-			byte[] byteArray = new byte[1024];
-			int length = 0;
-			int blockCount = 0;
-			bool blockFound = false;
-			bool fieldFound = false;
-			IDictionaryEnumerator blocksEnum;
-
-			MapPacket packetMap = protocol.Command(name);
-
-			#region Header
-			// Make room for the header
-			switch (packetMap.Frequency)
-			{
-				case PacketFrequency.High:
-					length = 5;
-					break;
-				case PacketFrequency.Medium:
-					length = 6;
-					break;
-				case PacketFrequency.Low:
-					length = 8;
-					break;
-			}
-			#endregion Header
-
-			foreach (MapBlock blockMap in packetMap.Blocks)
-			{
-				#region VariableSize
-				if (blockMap.Count == -1)
-				{
-					blockCount = 0;
-
-					// Count the number of this type of block in the blocks Hashtable
-					blocksEnum = blocks.GetEnumerator();
-
-					while (blocksEnum.MoveNext())
-					{
-						if ((string)blocksEnum.Value == blockMap.Name)
-						{
-							blockCount++;
-						}
-					}
-
-					if (blockCount > 255)
-					{
-						Helpers.Log("Trying to put more than 255 blocks in a variable block position, " +
-							"this will not end well", Helpers.LogLevel.Error);
-					}
-
-					// Prepend the blocks with a count
-					byteArray[length] = (byte)blockCount;
-					length++;
-				}
-				#endregion VariablSize
-
-				// Check for blocks of this type in the Hashtable
-				blocksEnum = blocks.GetEnumerator();
-
-				blockFound = false;
-				blockCount = 0;
-
-				while (blocksEnum.MoveNext())
-				{
-					if ((string)blocksEnum.Value == blockMap.Name)
-					{
-						blockFound = true;
-
-						// Found a match of this block
-						if (blockMap.Count == -1 || blockCount < blockMap.Count)
-						{
-							blockCount++;
-
-							#region TryTypecast
-							try
-							{
-								fields = (Hashtable)blocksEnum.Key;
-							}
-							catch (Exception)
-							{
-								Helpers.Log("Something other than a field Hashtable was passed to BuildPacket " +
-									"inside of the block Hashtable", Helpers.LogLevel.Warning);
-								continue;
-							}
-							#endregion TryTypecast
-
-							foreach (MapField fieldMap in blockMap.Fields)
-							{
-								if (fields.ContainsKey(fieldMap.Name))
-								{
-									Type fieldType = fields[fieldMap.Name].GetType();
-
-									#region AddField
-									switch (fieldMap.Type)
-									{
-										case FieldType.U8:
-											break;
-										case FieldType.U16:
-											break;
-										case FieldType.U32:
-											break;
-										case FieldType.U64:
-											break;
-										case FieldType.S8:
-											break;
-										case FieldType.S16:
-											break;
-										case FieldType.S32:
-											break;
-										case FieldType.S64:
-											break;
-										case FieldType.F32:
-											break;
-										case FieldType.F64:
-											break;
-										case FieldType.LLUUID:
-											break;
-										case FieldType.BOOL:
-											break;
-										case FieldType.LLVector3:
-											break;
-										case FieldType.LLVector3d:
-											break;
-										case FieldType.LLVector4:
-											break;
-										case FieldType.LLQuaternion:
-											break;
-										case FieldType.IPADDR:
-											break;
-										case FieldType.IPPORT:
-											break;
-										case FieldType.Variable:
-											break;
-										case FieldType.Fixed:
-											break;
-										case FieldType.Single:
-											break;
-										case FieldType.Multiple:
-											break;
-									}
-									#endregion AddField
-								}
-								else
-								{
-									if (fieldMap.Type == FieldType.Variable)
-									{
-										;
-									}
-									else if (fieldMap.Type == FieldType.Fixed)
-									{
-										;
-									}
-									else
-									{
-										;
-									}
-								}
-							}
-						}
-						else
-						{
-							Helpers.Log("Trying to build a " + packetMap.Name + " packet with too many " + 
-								blockMap.Name + " blocks", Helpers.LogLevel.Warning);
-						}
-					}
-				}
-			}
-
-			Packet packet = new Packet(byteArray, length, protocol);
-			
 			return packet;
 		}
 
