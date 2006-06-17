@@ -615,11 +615,13 @@ namespace libsecondlife
 		public Hashtable InternalCallbacks;
 		public Circuit CurrentCircuit;
 
+		private SecondLife Client;
 		private ProtocolManager Protocol;
 		private ArrayList Circuits;
 
-		public NetworkManager(ProtocolManager protocol)
+		public NetworkManager(SecondLife client, ProtocolManager protocol)
 		{
+			Client = client;
 			Protocol = protocol;
 			Circuits = new ArrayList();
 			UserCallbacks = new Hashtable();
@@ -726,6 +728,9 @@ namespace libsecondlife
 
 			AgentID = new LLUUID((string)values["agent_id"]);
 			SessionID = new LLUUID((string)values["session_id"]);
+			Client.Avatar.ID = new LLUUID((string)values["agent_id"]);
+			Client.Avatar.FirstName = (string)values["first_name"];
+			Client.Avatar.LastName = (string)values["last_name"];
 			uint circuitCode = (uint)(int)values["circuit_code"];
 
 			// Connect to the sim given in the login reply

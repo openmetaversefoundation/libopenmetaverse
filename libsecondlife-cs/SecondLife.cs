@@ -238,7 +238,7 @@ namespace libsecondlife
 		public SecondLife(string keywordFile, string mapFile)
 		{
 			Protocol = new ProtocolManager(keywordFile, mapFile);
-			Network = new NetworkManager(Protocol);
+			Network = new NetworkManager(this, Protocol);
 			Parcels = new ParcelManager(this);
 			Avatar = new MainAvatar(this);
 		}

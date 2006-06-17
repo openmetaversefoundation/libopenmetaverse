@@ -590,24 +590,30 @@ namespace libsecondlife
 												length += 2;
 												break;
 											case FieldType.Variable:
-												if (((byte[])field).Length > 255)
+												if (field.GetType().IsArray)
 												{
-													Helpers.Log("Truncating variable field to 255 characters", 
-														Helpers.LogLevel.Warning);
+													// Assume this is a byte array
+													fieldLength = ((byte[])field).Length;
 
-													fieldLength = 255;
+													if (fieldLength > 255)
+													{
+														Helpers.Log("Truncating variable (byte) field to 255 " +
+															"characters", Helpers.LogLevel.Warning);
+
+														fieldLength = 255;
+													}
 												}
 												else
 												{
-													if (field.GetType().IsArray)
+													// Assume this is a string, add 1 for the null terminator
+													fieldLength = ((string)field).Length + 1;
+
+													if (fieldLength > 255)
 													{
-														// Assume this is a byte array
-														fieldLength = ((byte[])field).Length;
-													}
-													else
-													{
-														// Assume this is a string, add 1 for the null terminator
-														fieldLength = ((string)field).Length + 1;
+														Helpers.Log("Truncating variable (string) field to 255 " +
+															"characters", Helpers.LogLevel.Warning);
+
+														fieldLength = 255;
 													}
 												}
 

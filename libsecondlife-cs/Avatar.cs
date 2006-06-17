@@ -39,6 +39,9 @@ namespace libsecondlife
 
 	public class MainAvatar
 	{
+		public LLUUID ID;
+		public string FirstName;
+		public string LastName;
 		public string TeleportMessage;
 
 		private SecondLife Client;
