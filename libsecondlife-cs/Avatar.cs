@@ -46,6 +46,8 @@ namespace libsecondlife
 
 		private SecondLife Client;
 		private int TeleportStatus;
+		private Timer TeleportTimer;
+		private bool TeleportTimeout;
 
 		public MainAvatar(SecondLife client)
 		{
@@ -58,24 +60,53 @@ namespace libsecondlife
 			Client.Network.InternalCallbacks["TeleportProgress"] = callback;
 			Client.Network.InternalCallbacks["TeleportFailed"] = callback;
 			Client.Network.InternalCallbacks["TeleportFinish"] = callback;
+
+			TeleportTimer = new Timer(8000);
+			TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
+			TeleportTimeout = false;
 		}
 
-		public bool Teleport(ulong regionHandle, LLVector3 position, out string message)
+		public bool Teleport(U64 regionHandle, LLVector3 position, out string message)
 		{
 			TeleportStatus = 0;
 			LLVector3 lookAt = new LLVector3(position.X + 1.0F, position.Y, position.Z);
 
-			Packet packet = PacketBuilder.TeleportLocationRequest(Client.Protocol, regionHandle, lookAt, position,
-				Client.Network.AgentID, Client.Network.SessionID);
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["RegionHandle"] = regionHandle;
+			fields["LookAt"] = lookAt;
+			fields["Position"] = position;
+			blocks[fields] = "Info";
+			fields = new Hashtable();
+			fields["AgentID"] = Client.Network.AgentID;
+			fields["SessionID"] = Client.Network.SessionID;
+			blocks[fields] = "AgentData";
+			Packet packet = PacketBuilder.BuildPacket("TeleportLocationRequest", Client.Protocol, blocks);
+
+			Helpers.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
+
+			// Start the timeout check
+			TeleportTimeout = false;
+			TeleportTimer.Start();
+
 			Client.Network.SendPacket(packet);
 
-			while (TeleportStatus == 0)
+			while (TeleportStatus == 0 && !TeleportTimeout)
 			{
 				Client.Tick();
 			}
 
-			message = TeleportMessage;
-			
+			TeleportTimer.Stop();
+
+			if (TeleportTimeout)
+			{
+				message = "Teleport timed out";
+			}
+			else
+			{
+				message = TeleportMessage;
+			}
+
 			return (TeleportStatus == 1);
 		}
 
@@ -97,7 +128,7 @@ namespace libsecondlife
 					{
 						if (field.Layout.Name == "Message")
 						{
-							TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 							return;
 						}
 					}
@@ -113,7 +144,7 @@ namespace libsecondlife
 					{
 						if (field.Layout.Name == "Reason")
 						{
-							TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 							TeleportStatus = -1;
 							return;
 						}
@@ -126,7 +157,7 @@ namespace libsecondlife
 
 				ushort port = 0;
 				IPAddress ip = null;
-				ulong regionHandle;
+				U64 regionHandle;
 
 				blocks = packet.Blocks();
 
@@ -144,23 +175,23 @@ namespace libsecondlife
 						}
 						else if (field.Layout.Name == "RegionHandle")
 						{
-							regionHandle = (ulong)field.Data;
+							regionHandle = (U64)field.Data;
 						}
 					}
 				}
 
-				uint oldCircuit = Client.Network.CurrentCircuit.CircuitCode;
-				if (Client.Network.Connect(ip, port, true))
+				if (Client.Network.Connect(ip, port, Client.Network.CurrentCircuit.CircuitCode, true))
 				{
-					Client.Network.Disconnect(oldCircuit);
-
 					// Move the avatar in to this sim
 					Packet movePacket = PacketBuilder.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
 						Client.Network.SessionID, Client.Network.CurrentCircuit.CircuitCode);
 					Client.Network.SendPacket(movePacket);
 
-					Helpers.Log("Connected to new Circuit " + Client.Network.CurrentCircuit.CircuitCode, 
+					Helpers.Log("Connected to new sim " + Client.Network.CurrentCircuit.ipEndPoint.ToString(), 
 						Helpers.LogLevel.Info);
+
+					// Sleep a little while so we can collect parcel information
+					System.Threading.Thread.Sleep(1000);
 
 					TeleportStatus = 1;
 					return;
@@ -171,6 +202,11 @@ namespace libsecondlife
 					return;
 				}
 			}
+		}
+
+		private void TeleportTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
+		{
+			TeleportTimeout = true;
 		}
 	}
 }

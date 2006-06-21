@@ -25,12 +25,69 @@
  */
 
 using System;
+using System.Collections;
+using System.Threading;
 
 namespace libsecondlife
 {
+	/// <summary>
+	/// Main class to expose Second Life functionality to clients. All of the 
+	/// classes are accessible through this class.
+	/// </summary>
+	public class SecondLife
+	{
+		public ProtocolManager Protocol;
+		public NetworkManager Network;
+		public ParcelManager Parcels;
+		public MainAvatar Avatar;
+		public ArrayList Regions;
+		public Mutex RegionsMutex;
+		public Region CurrentRegion;
+		public byte[] CurrentParcelOverlay;
+		public uint ParcelOverlaysReceived;
+
+		public SecondLife(string keywordFile, string mapFile)
+		{
+			Protocol = new ProtocolManager(keywordFile, mapFile);
+			Network = new NetworkManager(this, Protocol);
+			Parcels = new ParcelManager(this);
+			Avatar = new MainAvatar(this);
+			Regions = new ArrayList();
+			RegionsMutex = new Mutex(false, "RegionsMutex");
+			CurrentRegion = null;
+			CurrentParcelOverlay = new byte[4096];
+			ParcelOverlaysReceived = 0;
+		}
+
+		public void Tick()
+		{
+			System.Threading.Thread.Sleep(0);
+		}
+
+		public Region FindRegion(string name)
+		{
+			RegionsMutex.WaitOne();
+
+			foreach (Region region in Regions)
+			{
+				if (region.Name == name)
+				{
+					RegionsMutex.ReleaseMutex();
+					return region;
+				}
+			}
+
+			RegionsMutex.ReleaseMutex();
+			return null;
+		}
+	}
+
+	/// <summary>
+	/// Static helper functions and global variables
+	/// </summary>
 	public class Helpers
 	{
-		public const string VERSION = "libsecondlife-cs 0.0.3";
+		public readonly static string VERSION = "libsecondlife-cs 0.0.4";
 
 		public const byte MSG_APPENDED_ACKS = 0x10;
 		public const byte MSG_RESENT = 0x20;
@@ -47,7 +104,7 @@ namespace libsecondlife
 			Error
 		};
 
-		readonly static uint[] crcLookup = new uint[] {
+		private readonly static uint[] crcLookup = new uint[] {
 			0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA,
 			0x076DC419, 0x706AF48F, 0xE963A535, 0x9E6495A3,
 			0x0EDB8832, 0x79DCB8A4, 0xE0D5E91E, 0x97D2D988,
@@ -116,11 +173,28 @@ namespace libsecondlife
 			0xB3667A2E, 0xC4614AB8, 0x5D681B02, 0x2A6F2B94,
 			0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D};
 
+		/// <summary>
+		/// Send a log message to the debugging output system
+		/// </summary>
+		/// <param name="message">The log message</param>
+		/// <param name="level">From the LogLevel enum, either Info, Warning, or Error</param>
 		public static void Log(string message, LogLevel level)
 		{
 			Console.WriteLine(level.ToString() + ": " + message);
 		}
 
+		/// <summary>
+		/// Decode a zerocoded byte array. Used to decompress packets marked 
+		/// with the zerocoded flag. Any time a zero is encountered, the 
+		/// next byte is a count of how many zeroes to expand. One zero is 
+		/// encoded with 0x00 0x01, two zeroes is 0x00 0x02, three zeroes is 
+		/// 0x00 0x03, etc. The first four bytes are copied directly to the 
+		/// output buffer.
+		/// </summary>
+		/// <param name="src">The byte array to decode</param>
+		/// <param name="srclen">The length of the byte array to decode</param>
+		/// <param name="dest">The output byte array to decode to</param>
+		/// <returns>The length of the output buffer</returns>
 		public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
 		{
 			uint zerolen = 0;
@@ -155,6 +229,18 @@ namespace libsecondlife
 			return (int)zerolen;
 		}
 
+		/// <summary>
+		/// Encode a byte array with zerocoding. Used to compress packets marked
+		/// with the zerocoded flag. Any zeroes in the array are compressed down 
+		/// to a single zero byte followed by a count of how many zeroes to expand 
+		/// out. A single zero becomes 0x00 0x01, two zeroes becomes 0x00 0x02, 
+		/// three zeroes becomes 0x00 0x03, etc. The first four bytes are copied 
+		/// directly to the output buffer.
+		/// </summary>
+		/// <param name="src">The byte array to encode</param>
+		/// <param name="srclen">The length of the byte array to encode</param>
+		/// <param name="dest">The output byte array to encode to</param>
+		/// <returns>The length of the output buffer</returns>
 		public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
 		{
 			uint zerolen = 0;
@@ -198,17 +284,6 @@ namespace libsecondlife
 			return (int)zerolen;
 		}
 
-		public static ulong BuildULong(uint left, uint right)
-		{
-			// TODO: Make sure this is cross platform to big endian architecture
-			byte[] byteArray = new byte[8];
-
-            Array.Copy(BitConverter.GetBytes(left), 0, byteArray, 0, 4);
-			Array.Copy(BitConverter.GetBytes(right), 0, byteArray, 4, 4);
-
-			return BitConverter.ToUInt64(byteArray, 0);
-		}
-
 		/// <summary>
 		/// Get the CRC-32 value for a byte array
 		/// </summary>
@@ -222,30 +297,6 @@ namespace libsecondlife
 				CRC = (CRC >> 8) ^ crcLookup[(CRC & 0xFF) ^ byteArray[i]];
 			}
 			return Convert.ToUInt32(CRC ^ 0x04C11DB7);
-		}
-	}
-
-	/// <summary>
-	/// FIXME: Fill this in
-	/// </summary>
-	public class SecondLife
-	{
-		public ProtocolManager Protocol;
-		public NetworkManager Network;
-		public ParcelManager Parcels;
-		public MainAvatar Avatar;
-
-		public SecondLife(string keywordFile, string mapFile)
-		{
-			Protocol = new ProtocolManager(keywordFile, mapFile);
-			Network = new NetworkManager(this, Protocol);
-			Parcels = new ParcelManager(this);
-			Avatar = new MainAvatar(this);
-		}
-
-		public void Tick()
-		{
-			System.Threading.Thread.Sleep(0);
 		}
 	}
 }

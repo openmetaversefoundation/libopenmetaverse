@@ -35,7 +35,7 @@ namespace libsecondlife
 		public LLUUID ID;
 		public LLUUID OwnerID;
 		public LLUUID SnapshotID;
-		public ulong RegionHandle;
+		public U64 RegionHandle;
 		public string Name;
 		public string SimName;
 		public string Desc;
@@ -78,9 +78,16 @@ namespace libsecondlife
 			Client.Network.InternalCallbacks["ParcelInfoReply"] = callback;
 		}
 
-		public void RequestParcelInfo(Parcel parcel)
+		public bool RequestParcelInfo(Parcel parcel)
 		{
+			int attempts = 0;
+
 		Beginning:
+			if (attempts++ > 3)
+			{
+				return false;
+			}
+
 			Finished = false;
 			ParcelInfoTimeout = false;
 			ParcelInfoParcel = parcel;
@@ -89,10 +96,21 @@ namespace libsecondlife
 			Timer ParcelInfoTimer = new Timer(5000);
 			ParcelInfoTimer.Elapsed += new ElapsedEventHandler(ParcelInfoTimerEvent);
 			ParcelInfoTimeout = false;
+
+			// Build the ParcelInfoRequest packet
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["ParcelID"] = parcel.ID;
+			blocks[fields] = "Data";
+			fields = new Hashtable();
+			fields["AgentID"] = Client.Network.AgentID;
+			fields["SessionID"] = Client.Network.SessionID;
+			blocks[fields] = "AgentData";
+			Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks);
+
+			// Start the timer
 			ParcelInfoTimer.Start();
 
-			Packet parcelInfoPacket = PacketBuilder.ParcelInfoRequest(Client.Protocol, parcel.ID, 
-				Client.Network.AgentID, Client.Network.SessionID);
 			Client.Network.SendPacket(parcelInfoPacket);
 
 			while (!Finished)
@@ -105,28 +123,7 @@ namespace libsecondlife
 				Client.Tick();
 			}
 
-			/*foreach (Parcel parcel in ParcelList)
-			{
-				if (parcel != null)
-				{
-					Finished = false;
-
-					Packet parcelInfoPacket = PacketBuilder.ParcelInfoRequest(Client.Protocol, parcel.ID, 
-						Client.Network.AgentID, Client.Network.SessionID);
-					Client.Network.SendPacket(parcelInfoPacket);
-
-					while (!Finished)
-					{
-						Client.Tick();
-					}
-
-					Console.Write(".");
-				}
-				else
-				{
-					Helpers.Log("Null parcel in ParcelList", Helpers.LogLevel.Info);
-				}
-			}*/
+			return true;
 		}
 
 		private void ParcelInfoReplyHandler(Packet packet, Circuit circuit)
@@ -158,6 +155,20 @@ namespace libsecondlife
 							{
 								Helpers.Log("Received a ParcelInfoReply for " + parcelID.ToString() + 
 									", looking for " + ParcelInfoParcel.ID.ToString(), Helpers.LogLevel.Warning);
+								
+								// Build and resend the ParcelInfoRequest packet
+								Hashtable blocks = new Hashtable();
+								Hashtable fields = new Hashtable();
+								fields["ParcelID"] = ParcelInfoParcel.ID;
+								blocks[fields] = "Data";
+								fields = new Hashtable();
+								fields["AgentID"] = Client.Network.AgentID;
+								fields["SessionID"] = Client.Network.SessionID;
+								blocks[fields] = "AgentData";
+								Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks);
+
+								Client.Network.SendPacket(parcelInfoPacket);
+
 								return;
 							}
 						}
@@ -171,11 +182,11 @@ namespace libsecondlife
 						}
 						else if (field.Layout.Name == "Name") 
 						{
-							name = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 						}
 						else if (field.Layout.Name == "SimName") 
 						{
-							simName = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							simName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 						} 
 						else if (field.Layout.Name == "GlobalX") 
 						{
@@ -191,7 +202,7 @@ namespace libsecondlife
 						} 
 						else if (field.Layout.Name == "Desc") 
 						{
-							desc = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+							desc = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 						} 
 						else if (field.Layout.Name == "OwnerID") 
 						{
@@ -225,7 +236,7 @@ namespace libsecondlife
 				handleX *= 256;
 				uint handleY = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.Y / 256.0F);
 				handleY *= 256;
-				ParcelInfoParcel.RegionHandle = Helpers.BuildULong(handleX, handleY);
+				ParcelInfoParcel.RegionHandle = new U64(handleX, handleY);
 
 				// Get SimPosition from GlobalX/GlobalY and RegionHandle
 				ParcelInfoParcel.SimPosition.X = ParcelInfoParcel.GlobalPosition.X - (float)handleX;
@@ -320,7 +331,7 @@ namespace libsecondlife
 							}
 							else if (field.Layout.Name == "Name")
 							{
-								parcel.Name = System.Text.Encoding.UTF8.GetString((byte[])field.Data);
+								parcel.Name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 							}
 							else if (field.Layout.Name == "ActualArea")
 							{

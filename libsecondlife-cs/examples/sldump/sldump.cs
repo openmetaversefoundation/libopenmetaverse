@@ -46,7 +46,34 @@ namespace sldump
 
 				foreach (Field field in block.Fields)
 				{
-					output += "  " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
+					if (field.Layout.Type == FieldType.Variable || field.Layout.Type == FieldType.Fixed)
+					{
+						bool printable = true;
+						byte[] byteArray = (byte[])field.Data;
+
+						for (int i = 0; i < byteArray.Length; ++i)
+						{
+							// Check if there are any unprintable characters in the array
+							if ((byteArray[i] < 0x20 || byteArray[i] > 0x7E) && byteArray[i] != 0x09
+								&& byteArray[i] != 0x0D)
+							{
+								printable = false;
+							}
+						}
+
+						if (printable)
+						{
+							output += System.Text.Encoding.ASCII.GetChars(byteArray, 0, byteArray.Length);
+						}
+						else
+						{
+							;
+						}
+					}
+					else
+					{
+						output += "  " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
+					}
 				}
 			}
 
@@ -104,7 +131,7 @@ namespace sldump
 			client.Network.UserCallbacks["Default"] = defaultCallback;
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 10, 3, 3, "Win", "0", "sldump", "jhurliman@wsu.edu");
+				"last", 1, 10, 3, 4, "Win", "0", "sldump", "jhurliman@wsu.edu");
 
 			// An example of how to pass additional options to the login server
 			ArrayList optionsArray = new ArrayList();

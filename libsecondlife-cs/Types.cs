@@ -25,9 +25,152 @@
  */
 
 using System;
+using System.Net;
 
 namespace libsecondlife
 {
+	public class U64
+	{
+		public uint[] Data;
+
+		public U64()
+		{
+			Data = new uint[2];
+			Data[0] = 0;
+			Data[1] = 1;
+		}
+
+		public U64(uint left, uint right)
+		{
+			Data = new uint[2];
+			Data[0] = right; //left;
+			Data[1] = left; //right;
+		}
+
+		public U64(byte[] byteArray, int pos)
+		{
+			Data = new uint[2];
+			Data[0] = BitConverter.ToUInt32(byteArray, pos);
+			Data[1] = BitConverter.ToUInt32(byteArray, pos + 4);
+		}
+
+		public byte[] GetBytes()
+		{
+			byte[] byteArray = new byte[8];
+
+			Array.Copy(BitConverter.GetBytes(Data[0]), 0, byteArray, 0, 4);
+			Array.Copy(BitConverter.GetBytes(Data[1]), 0, byteArray, 4, 4);
+
+			return byteArray;
+		}
+
+		public override int GetHashCode()
+		{
+			byte[] byteArray = new byte[8];
+
+			Array.Copy(BitConverter.GetBytes(Data[0]), 0, byteArray, 0, 4);
+			Array.Copy(BitConverter.GetBytes(Data[1]), 0, byteArray, 4, 4);
+
+			return BitConverter.ToInt32(byteArray, 0);
+		}
+
+		public override bool Equals(object o)
+		{
+			if (!(o is U64))
+			{
+				return false;
+			}
+
+			U64 u64 = (U64)o;
+
+			if (u64.Data[0] == Data[0] && u64.Data[1] == Data[1])
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		public static bool operator==(U64 lhs, U64 rhs)
+		{
+			try
+			{
+				if (lhs.Data[0] == rhs.Data[0] && lhs.Data[1] == rhs.Data[1])
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			catch (NullReferenceException)
+			{
+				uint test;
+				bool lhsnull = false;
+				bool rhsnull = false;
+
+				try
+				{
+					test = lhs.Data[0];
+				}
+				catch (NullReferenceException)
+				{
+					lhsnull = true;
+				}
+
+				try
+				{
+					test = rhs.Data[0];
+				}
+				catch (NullReferenceException)
+				{
+					rhsnull = true;
+				}
+				
+				return (lhsnull == rhsnull);
+			}
+		}
+
+		public static bool operator!=(U64 lhs, U64 rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		public static bool operator==(U64 lhs, int rhs)
+		{
+			try
+			{
+				if (lhs.Data[1] == rhs)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			catch (NullReferenceException)
+			{
+				return (rhs == 0);
+			}
+		}
+
+		public static bool operator!=(U64 lhs, int rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		public override string ToString()
+		{
+			byte[] byteArray = GetBytes();
+			ulong u64 = BitConverter.ToUInt64(byteArray, 0);
+			return u64.ToString();
+		}
+	}
+
 	public class LLUUID
 	{
 		public byte[] Data;

@@ -346,7 +346,7 @@ namespace libsecondlife
 				case FieldType.U32:
 					return BitConverter.ToUInt32(byteArray, pos);
 				case FieldType.U64:
-					return BitConverter.ToUInt64(byteArray, pos);
+					return new U64(byteArray, pos);
 				case FieldType.S8:
 					return (sbyte)byteArray[pos];
 				case FieldType.S16:
@@ -375,7 +375,8 @@ namespace libsecondlife
 					uint address = BitConverter.ToUInt32(byteArray, pos);
 					return new IPAddress(address);
 				case FieldType.IPPORT:
-					return BitConverter.ToUInt16(byteArray, pos);
+					ushort port = BitConverter.ToUInt16(byteArray, pos);
+					return (ushort)IPAddress.NetworkToHostOrder((short)port);
 				case FieldType.Variable:
 				case FieldType.Fixed:
 					byte[] bytes = new byte[fieldSize];
@@ -530,7 +531,7 @@ namespace libsecondlife
 												length += 4;
 												break;
 											case FieldType.U64:
-												Array.Copy(BitConverter.GetBytes((ulong)field), 0, byteArray, length, 8);
+												Array.Copy(((U64)field).GetBytes(), 0, byteArray, length, 8);
 												length += 8;
 												break;
 											case FieldType.S8:
@@ -646,6 +647,7 @@ namespace libsecondlife
 													// Assume this is a string, add 1 for the null terminator
 													byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)field);
 													Array.Copy(stringBytes, 0, byteArray, length, stringBytes.Length);
+													fieldLength = stringBytes.Length + 1;
 												}
 
 												length += fieldLength;
@@ -817,12 +819,12 @@ namespace libsecondlife
 			return packet;
 		}
 
-		public static Packet TeleportLocationRequest(ProtocolManager protocol, long regionHandle, LLVector3 lookAt,
+		public static Packet TeleportLocationRequest(ProtocolManager protocol, U64 regionHandle, LLVector3 lookAt,
 			LLVector3 position, LLUUID agentID, LLUUID sessionID)
 		{
 			Packet packet = new Packet("LogoutRequest", protocol, 72);
 
-			Array.Copy(BitConverter.GetBytes(regionHandle), 0, packet.Data, 8, 8);
+			Array.Copy(regionHandle.GetBytes(), 0, packet.Data, 8, 8);
 			Array.Copy(lookAt.GetBytes(), 0, packet.Data, 16, 12);
 			Array.Copy(position.GetBytes(), 0, packet.Data, 28, 12);
 			Array.Copy(agentID.Data, 0, packet.Data, 40, 16);
@@ -932,12 +934,12 @@ namespace libsecondlife
 			return packet;
 		}
 
-		public static Packet TeleportLocationRequest(ProtocolManager protocol, ulong regionHandle, LLVector3 lookAt,
+		/*public static Packet TeleportLocationRequest(ProtocolManager protocol, U64 regionHandle, LLVector3 lookAt,
 			LLVector3 position, LLUUID agentID, LLUUID sessionID)
 		{
 			Packet packet = new Packet("TeleportLocationRequest", protocol, 72);
 
-			Array.Copy(BitConverter.GetBytes(regionHandle), 0, packet.Data, 8, 8);
+			Array.Copy(regionHandle.GetBytes(), 0, packet.Data, 8, 8);
 			Array.Copy(lookAt.GetBytes(), 0, packet.Data, 16, 12);
 			Array.Copy(position.GetBytes(), 0, packet.Data, 28, 12);
 			Array.Copy(agentID.Data, 0, packet.Data, 40, 16);
@@ -947,17 +949,7 @@ namespace libsecondlife
 			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
 
 			return packet;
-		}
-
-		public static Packet AgentSetAppearance(ProtocolManager protocol, ArrayList paramValues, byte[] textureEntry,
-			LLUUID agentID, LLVector3 size)
-		{
-			int length = 0;
-
-			Packet packet = new Packet("AgentSetAppearance", protocol, length);
-
-			return packet;
-		}
+		}*/
 
 		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, LLUUID folderID, 
 			LLUUID agentID)

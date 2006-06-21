@@ -137,6 +137,8 @@ namespace libsecondlife
 
 		public bool Open(IPAddress ip, int port)
 		{
+			Helpers.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
+
 			try
 			{
 				// Setup the callback
@@ -178,6 +180,9 @@ namespace libsecondlife
 			{
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
+
+			// Opening the connection failed, shut down all the timers
+			StopTimers();
 
 			return false;
 		}
@@ -553,11 +558,10 @@ namespace libsecondlife
 
 				Beginning:
 
-					// Check if any reliable packets haven't been ACKed by the server
 					NeedAckMutex.WaitOne();
 					IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
-					NeedAckMutex.ReleaseMutex();
 
+					// Check if any reliable packets haven't been ACKed by the server
 					while (packetEnum.MoveNext())
 					{
 						int ticks = (int)packetEnum.Value;
@@ -568,13 +572,9 @@ namespace libsecondlife
 						{
 							Packet packet = (Packet)packetEnum.Key;
 
-							// Adjust the timeout value for this packet
-							NeedAckMutex.WaitOne();
-
 							if (NeedAck.ContainsKey(packet))
 							{
 								NeedAck[packet] = Environment.TickCount;
-								NeedAckMutex.ReleaseMutex();
 
 								// Add the resent flag
 								packet.Data[0] += Helpers.MSG_RESENT;
@@ -586,17 +586,15 @@ namespace libsecondlife
 									Helpers.LogLevel.Info);
 
 								// Rate limiting
-								System.Threading.Thread.Sleep(100);
+								System.Threading.Thread.Sleep(500);
 
 								// Restart the loop since we modified a value and the iterator will fail
 								goto Beginning;
 							}
-							else
-							{
-								NeedAckMutex.ReleaseMutex();
-							}
 						}
 					}
+
+					NeedAckMutex.ReleaseMutex();
 				}
 			}
 			catch (Exception e)
@@ -629,10 +627,9 @@ namespace libsecondlife
 			CurrentCircuit = null;
 
 			// Register the internal callbacks
-			PacketCallback callback = new PacketCallback(RegionHandshakeHandler);
-			InternalCallbacks["RegionHandshake"] = callback;
-			callback = new PacketCallback(StartPingCheckHandler);
-			InternalCallbacks["StartPingCheck"] = callback;
+			InternalCallbacks["RegionHandshake"] = new PacketCallback(RegionHandshakeHandler);
+			InternalCallbacks["StartPingCheck"] = new PacketCallback(StartPingCheckHandler);
+			InternalCallbacks["ParcelOverlay"] = new PacketCallback(ParcelOverlayHandler);
 		}
 
 		public void SendPacket(Packet packet)
@@ -758,9 +755,9 @@ namespace libsecondlife
 			return true;
 		}
 
-		public bool Connect(IPAddress ip, ushort port, bool setDefault)
+		public bool Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault)
 		{
-			Circuit circuit = new Circuit(Protocol, this);
+			Circuit circuit = new Circuit(Protocol, this, circuitCode);
 			if (!circuit.Open(ip, port))
 			{
 				return false;
@@ -776,9 +773,9 @@ namespace libsecondlife
 			return true;
 		}
 
-		public void Disconnect(uint circuitCode)
+		public void Disconnect(Circuit circuit)
 		{
-			foreach (Circuit circuit in Circuits)
+			/*foreach (Circuit circuit in Circuits)
 			{
 				if (circuit.CircuitCode == circuitCode)
 				{
@@ -811,9 +808,39 @@ namespace libsecondlife
 						return;
 					}
 				}
+			}*/
+
+			if (circuit.ipEndPoint == CurrentCircuit.ipEndPoint)
+			{
+				Helpers.Log("Disconnecting current circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
+
+				circuit.CloseCircuit();
+				Circuits.Remove(circuit);
+
+				if (Circuits.Count > 0)
+				{
+					CurrentCircuit = (Circuit)Circuits[0];
+					Helpers.Log("Switched current circuit to " + CurrentCircuit.ipEndPoint.ToString(), 
+						Helpers.LogLevel.Info);
+				}
+				else
+				{
+					Helpers.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
+					CurrentCircuit = null;
+				}
+
+				return;
+			}
+			else
+			{
+				Helpers.Log("Disconnecting circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
+
+				circuit.CloseCircuit();
+				Circuits.Remove(circuit);
+				return;
 			}
 
-			Helpers.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
+			//Helpers.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
 		}
 
 		public void Logout()
@@ -826,7 +853,7 @@ namespace libsecondlife
 				{
 					if (circuit.CircuitCode != CurrentCircuit.CircuitCode)
 					{
-						Disconnect(circuit.CircuitCode);
+						Disconnect(circuit);
 						goto Beginning;
 					}
 				}
@@ -852,9 +879,173 @@ namespace libsecondlife
 
 		private void RegionHandshakeHandler(Packet packet, Circuit circuit)
 		{
+			ArrayList blocks = packet.Blocks();
+			float[] heightList = new float[9];
+			LLUUID[] terrainImages = new LLUUID[8];
+			string name = "";
+			LLUUID id = null;
+			LLUUID simOwner = null;
+			bool isEstateManager = false;
+
+			foreach (Block block in blocks)
+			{
+				foreach (Field field in block.Fields)
+				{
+					//output += "  " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
+					if (field.Layout.Name == "TerrainHeightRange00")
+					{
+						heightList[0] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainHeightRange01")
+					{
+						heightList[1] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainHeightRange10")
+					{
+						heightList[2] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainHeightRange11")
+					{
+						heightList[3] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainStartHeight00")
+					{
+						heightList[4] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainStartHeight01")
+					{
+						heightList[5] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainStartHeight10")
+					{
+						heightList[6] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainStartHeight11")
+					{
+						heightList[7] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "WaterHeight")
+					{
+						heightList[8] = (float)field.Data;
+					}
+					else if (field.Layout.Name == "SimOwner")
+					{
+						simOwner = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainBase0")
+					{
+						terrainImages[0] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainBase1")
+					{
+						terrainImages[1] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainBase2")
+					{
+						terrainImages[2] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainBase3")
+					{
+						terrainImages[3] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainDetail0")
+					{
+						terrainImages[4] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainDetail1")
+					{
+						terrainImages[5] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainDetail2")
+					{
+						terrainImages[6] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "TerrainDetail3")
+					{
+						terrainImages[7] = (LLUUID)field.Data;
+					}
+					else if (field.Layout.Name == "IsEstateManager")
+					{
+						isEstateManager = (bool)field.Data;
+					}
+					else if (field.Layout.Name == "SimName")
+					{
+						byte[] byteArray = (byte[])field.Data;
+						name = System.Text.Encoding.UTF8.GetString(byteArray, 0, byteArray.Length).Replace("\0", "");
+					}
+					else if (field.Layout.Name == "CacheID")
+					{
+						id = (LLUUID)field.Data;
+					}
+				}
+			}
+
+			Region region = new Region(id, name, heightList, simOwner, terrainImages, isEstateManager);
+
+			Region foundRegion = Client.FindRegion(region.Name);
+
+			Client.RegionsMutex.WaitOne();
+			if (foundRegion == null)
+			{
+				Client.Regions.Add(region);
+				Client.CurrentRegion = region;
+			}
+			else
+			{
+				Client.CurrentRegion = foundRegion;
+			}
+			Client.RegionsMutex.ReleaseMutex();
+
+			Helpers.Log("Received a region handshake for " + region.Name, Helpers.LogLevel.Info);
+
 			// Send a RegionHandshakeReply
 			Packet replyPacket = new Packet("RegionHandshakeReply", Protocol, 12);
 			SendPacket(replyPacket, circuit);
+		}
+
+		private void ParcelOverlayHandler(Packet packet, Circuit circuit)
+		{
+			int sequenceID = -1;
+			byte[] byteArray = null;
+
+			foreach (Block block in packet.Blocks())
+			{
+				foreach (Field field in block.Fields)
+				{
+					if (field.Layout.Name == "SequenceID")
+					{
+						sequenceID = (int)field.Data;
+					}
+					else if (field.Layout.Name == "Data")
+					{
+						byteArray = (byte[])field.Data;
+						if (byteArray.Length != 1024)
+						{
+							Helpers.Log("Received a parcel overlay packet with " + byteArray.Length + " bytes", 
+								Helpers.LogLevel.Error);
+						}
+					}
+				}
+			}
+
+			if (sequenceID >= 0 && sequenceID <= 3)
+			{
+				if (Client.ParcelOverlaysReceived > 3)
+				{
+					Client.ParcelOverlaysReceived = 0;
+					Array.Clear(Client.CurrentParcelOverlay, 0, Client.CurrentParcelOverlay.Length);
+					Helpers.Log("Reset current parcel overlay", Helpers.LogLevel.Info);
+				}
+
+				Array.Copy(byteArray, 0, Client.CurrentParcelOverlay, sequenceID * 1024, 1024);
+				Client.ParcelOverlaysReceived++;
+
+				Helpers.Log("Parcel overlay " + sequenceID + " received", Helpers.LogLevel.Info);
+			}
+			else
+			{
+				Helpers.Log("Parcel overlay with sequence ID of " + sequenceID + " received", Helpers.LogLevel.Error);
+			}
 		}
 	}
 }
