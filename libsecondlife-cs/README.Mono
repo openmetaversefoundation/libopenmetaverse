@@ -1,0 +1,32 @@
+How to build libSL-cs using Mono:
+
+1. Download and install Mono for your platform -- for OS X, I used
+ftp://www.go-mono.com/archive/1.1.15/macos-10-ppc/2/MonoFramework-1.1.15_2.macos10.novell.ppc.dmg
+
+2. If you haven't already, install the Subversion client from
+http://subversion.tigris.org/project_packages.html
+
+3. Grab the latest version of libsecondlife-cs:
+
+$ svn co svn://svn.gna.org/svn/libsecondlife/trunk libsecondlife
+$ cd libsecondlife/libsecondlife-cs
+
+4. Convert libsecondlife.sln to a Makefile using prj2make, which is part
+of the Mono distribution:
+
+$ prj2make libsecondlife.sln
+
+I got this as an output:
+
+-rw-r--r--    1 bbyer  bbyer   3099 Jun 26 14:43 Makefile
+
+5. Build the project with make:
+
+$ make
+
+6. The examples will be built and installed into bin/Debug:
+
+$ cd bin/Debug
+$ mono name2key.exe <firstname> <lastname> <password> eddy stryker
+Info: Connecting to 72.5.13.170:12035
+UUID: f6ec1e24fd294f4cb21e23b42841c8c7
