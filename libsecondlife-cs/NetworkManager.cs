@@ -234,19 +234,19 @@ namespace libsecondlife
 
 			try
 			{
-				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0 && incrementSequence)
-				{
-					if (!NeedAck.ContainsKey(packet))
-					{
-						// This packet needs an ACK, keep track of when it was sent out
-						NeedAckMutex.WaitOne();
-						NeedAck.Add(packet, Environment.TickCount);
-						NeedAckMutex.ReleaseMutex();
-					}
-				}
-
 				if (incrementSequence)
 				{
+					if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+					{
+						NeedAckMutex.WaitOne();
+						if (!NeedAck.ContainsKey(packet))
+						{
+							// This packet needs an ACK, keep track of when it was sent out
+							NeedAck.Add(packet, Environment.TickCount);
+						}
+						NeedAckMutex.ReleaseMutex();
+					}
+
 					// Set the sequence number here since we are manually serializing the packet
 					packet.Sequence = ++Sequence;
 				}
@@ -356,27 +356,23 @@ namespace libsecondlife
 
 					Helpers.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
-					// Claim the NeedAck mutex
 					NeedAckMutex.WaitOne();
-
 					for (int i = 1; i <= numAcks; ++i)
 					{
-						uint ack = BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
+						ushort ack = (ushort)BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
 
+					Beginning:
 						ArrayList reliablePackets = (ArrayList)NeedAck.Keys;
 
-						for (int j = reliablePackets.Count - 1; j >= 0; j--)
+						foreach (Packet reliablePacket in reliablePackets)
 						{
-							Packet reliablePacket = (Packet)reliablePackets[i];
-
-							if ((uint)reliablePacket.Sequence == ack)
+							if (reliablePacket.Sequence == ack)
 							{
 								NeedAck.Remove(reliablePacket);
+								goto Beginning;
 							}
 						}
 					}
-
-					// Release the mutex
 					NeedAckMutex.ReleaseMutex();
 
 					// Adjust the packet length
@@ -407,11 +403,11 @@ namespace libsecondlife
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 				{
 					// Check if this is a duplicate packet
+					
 					InboxMutex.WaitOne();
-					AckOutboxMutex.WaitOne();
-
 					if (Inbox.Contains(packet.Sequence))
 					{
+						AckOutboxMutex.WaitOne();
 						if (AckOutbox.Contains((uint)packet.Sequence))
 						{
 							Helpers.Log("ACKs are being sent too slowly!", Helpers.LogLevel.Warning);
@@ -419,23 +415,29 @@ namespace libsecondlife
 						else
 						{
 							// DEBUG
-							//Helpers.Log("Received a duplicate " + packet.Layout.Name + " packet, sequence=" + 
-							//	packet.Sequence + ", not in the ACK outbox", Helpers.LogLevel.Info);
+							Helpers.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" + 
+								packet.Sequence + ", not in the ACK outbox", Helpers.LogLevel.Info);
 
 							// Add this packet to the AckOutbox again and bypass the callbacks
 							AckOutbox.Add((uint)packet.Sequence);
 						}
+						AckOutboxMutex.ReleaseMutex();
+
+						// Add this packet to the incoming log
+						Inbox.Add(packet.Sequence);
+						InboxMutex.ReleaseMutex();
 
 						// Avoid firing a callback twice for the same packet
-						Inbox.Add(packet.Sequence);
-						AckOutboxMutex.ReleaseMutex();
-						InboxMutex.ReleaseMutex();
 						return;
 					}
+					else
+					{
+						// Add this packet to the incoming log
+						Inbox.Add(packet.Sequence);
+						InboxMutex.ReleaseMutex();
+					}
 
-					// Add this packet to the incoming log
-					Inbox.Add(packet.Sequence);
-
+					AckOutboxMutex.WaitOne();
 					if (!AckOutbox.Contains((uint)packet.Sequence))
 					{
 						AckOutbox.Add((uint)packet.Sequence);
@@ -451,13 +453,11 @@ namespace libsecondlife
 						else
 						{
 							// We received a resent packet
-							Helpers.Log("Received a duplicate sequence number? sequence=" + packet.Sequence
-								+ ", name=" + packet.Layout.Name, Helpers.LogLevel.Warning);
+							Helpers.Log("Received a duplicate sequence number? sequence=" + packet.Sequence + 
+								", name=" + packet.Layout.Name, Helpers.LogLevel.Warning);
 						}
 					}
-
 					AckOutboxMutex.ReleaseMutex();
-					InboxMutex.ReleaseMutex();
 				}
 
 				if (packet.Layout.Name == null)
@@ -473,8 +473,6 @@ namespace libsecondlife
 					ArrayList blocks = packet.Blocks();
 
 					NeedAckMutex.WaitOne();
-
-					// Remove each ACK in this packet from the NeedAck waiting list
 					foreach (Block block in blocks)
 					{
 						foreach (Field field in block.Fields)
@@ -494,10 +492,9 @@ namespace libsecondlife
 							}
 						}
 					}
-
 					NeedAckMutex.ReleaseMutex();
 				}
-				
+
 				// Fire any internal callbacks registered with this packet type
 				PacketCallback callback = (PacketCallback)Network.InternalCallbacks[packet.Layout.Name];
 
@@ -554,11 +551,10 @@ namespace libsecondlife
 
 				if (ResendTick >= 3)
 				{
+					NeedAckMutex.WaitOne();
 					ResendTick = 0;
 
 				Beginning:
-
-					NeedAckMutex.WaitOne();
 					IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
 
 					// Check if any reliable packets haven't been ACKed by the server
@@ -616,12 +612,14 @@ namespace libsecondlife
 		private SecondLife Client;
 		private ProtocolManager Protocol;
 		private ArrayList Circuits;
+		private Mutex CircuitsMutex;
 
 		public NetworkManager(SecondLife client, ProtocolManager protocol)
 		{
 			Client = client;
 			Protocol = protocol;
 			Circuits = new ArrayList();
+			CircuitsMutex = new Mutex(false, "CircuitsMutex");
 			UserCallbacks = new Hashtable();
 			InternalCallbacks = new Hashtable();
 			CurrentCircuit = null;
@@ -738,7 +736,9 @@ namespace libsecondlife
 			}
 
 			// Circuit was successfully opened, add it to the list and set it as default
+			CircuitsMutex.WaitOne();
 			Circuits.Add(circuit);
+			CircuitsMutex.ReleaseMutex();
 			CurrentCircuit = circuit;
 
 			// Move our agent in to the sim to complete the connection
@@ -763,7 +763,9 @@ namespace libsecondlife
 				return false;
 			}
 
+			CircuitsMutex.WaitOne();
 			Circuits.Add(circuit);
+			CircuitsMutex.ReleaseMutex();
 
 			if (setDefault)
 			{
@@ -775,48 +777,14 @@ namespace libsecondlife
 
 		public void Disconnect(Circuit circuit)
 		{
-			/*foreach (Circuit circuit in Circuits)
-			{
-				if (circuit.CircuitCode == circuitCode)
-				{
-					if (circuitCode == CurrentCircuit.CircuitCode)
-					{
-						Helpers.Log("Disconnecting current circuit " + circuitCode, Helpers.LogLevel.Info);
-
-						circuit.CloseCircuit();
-						Circuits.Remove(circuit);
-
-						if (Circuits.Count > 0)
-						{
-							CurrentCircuit = (Circuit)Circuits[0];
-							Helpers.Log("Switched current circuit to " + CurrentCircuit.CircuitCode, Helpers.LogLevel.Info);
-						}
-						else
-						{
-							Helpers.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
-							CurrentCircuit = null;
-						}
-
-						return;
-					}
-					else
-					{
-						Helpers.Log("Disconnecting circuit " + circuitCode, Helpers.LogLevel.Info);
-
-						circuit.CloseCircuit();
-						Circuits.Remove(circuit);
-						return;
-					}
-				}
-			}*/
-
-			if (circuit.ipEndPoint == CurrentCircuit.ipEndPoint)
+			if (circuit == CurrentCircuit)
 			{
 				Helpers.Log("Disconnecting current circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
 
 				circuit.CloseCircuit();
-				Circuits.Remove(circuit);
 
+				CircuitsMutex.WaitOne();
+				Circuits.Remove(circuit);
 				if (Circuits.Count > 0)
 				{
 					CurrentCircuit = (Circuit)Circuits[0];
@@ -828,6 +796,7 @@ namespace libsecondlife
 					Helpers.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
 					CurrentCircuit = null;
 				}
+				CircuitsMutex.ReleaseMutex();
 
 				return;
 			}
@@ -836,7 +805,9 @@ namespace libsecondlife
 				Helpers.Log("Disconnecting circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
 
 				circuit.CloseCircuit();
+				CircuitsMutex.WaitOne();
 				Circuits.Remove(circuit);
+				CircuitsMutex.ReleaseMutex();
 				return;
 			}
 
@@ -845,29 +816,41 @@ namespace libsecondlife
 
 		public void Logout()
 		{
-		Beginning:
-			// Disconnect all circuits except the current one
-			if (Circuits.Count > 1)
+			try
 			{
-				foreach (Circuit circuit in Circuits)
+				// Halt all activity on the current circuit
+				CurrentCircuit.StopTimers();
+
+			Beginning:
+				// Disconnect all circuits except the current one
+				CircuitsMutex.WaitOne();
+				if (Circuits.Count > 1)
 				{
-					if (circuit.CircuitCode != CurrentCircuit.CircuitCode)
+					foreach (Circuit circuit in Circuits)
 					{
-						Disconnect(circuit);
-						goto Beginning;
+						if (circuit.CircuitCode != CurrentCircuit.CircuitCode)
+						{
+							Disconnect(circuit);
+							goto Beginning;
+						}
 					}
 				}
+
+				Packet packet = PacketBuilder.LogoutRequest(Protocol, AgentID, SessionID);
+				SendPacket(packet);
+
+				Circuits.Clear();
+				CurrentCircuit = null;
+				CircuitsMutex.ReleaseMutex();
+
+				// TODO: We should probably check if the server actually received the logout request
+				// Instead we'll use this silly Sleep() to keep from accidentally flooding the login server
+				System.Threading.Thread.Sleep(1000);
 			}
-
-			// Halt all activity on the current circuit
-			CurrentCircuit.StopTimers();
-
-			Packet packet = PacketBuilder.LogoutRequest(Protocol, AgentID, SessionID);
-			SendPacket(packet);
-
-			// TODO: We should probably check if the server actually received the logout request
-			// Instead we'll use this silly Sleep()
-			//System.Threading.Thread.Sleep(1000); // Pretty sure this does nothing whatsoever
+			catch (Exception e)
+			{
+				Helpers.Log("Logout error: " + e.ToString(), Helpers.LogLevel.Error);
+			}
 		}
 
 		private void StartPingCheckHandler(Packet packet, Circuit circuit)

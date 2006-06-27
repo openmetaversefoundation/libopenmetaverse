@@ -1,3 +1,6 @@
+
+
+
 /*
  * Copyright (c) 2006, Second Life Reverse Engineering Team
  * All rights reserved.
@@ -31,6 +34,13 @@ using System.Collections;
 
 namespace libsecondlife
 {
+	public delegate void ChatCallback(string message, byte audible,	byte type, byte sourcetype, 
+	string name, LLUUID id, byte command, LLUUID commandID);
+
+	public delegate void InstantMessageCallback(LLUUID FromAgentID, LLUUID ToAgentID, 
+	uint ParentEstateID, LLUUID RegionID, LLVector3 Position, byte Offline, byte Dialog, 
+	LLUUID ID, uint Timestamp, string AgentName, string Message, string Bucket);
+	
 	public class Avatar
 	{
 		public LLUUID ID;
@@ -48,6 +58,9 @@ namespace libsecondlife
 		private int TeleportStatus;
 		private Timer TeleportTimer;
 		private bool TeleportTimeout;
+		
+		public event ChatCallback OnChat;
+		public event InstantMessageCallback OnInstantMessage;
 
 		public MainAvatar(SecondLife client)
 		{
@@ -61,9 +74,203 @@ namespace libsecondlife
 			Client.Network.InternalCallbacks["TeleportFailed"] = callback;
 			Client.Network.InternalCallbacks["TeleportFinish"] = callback;
 
+			// Instant Message Callback
+			PacketCallback IMCallback = new PacketCallback(InstantMessageHandler);
+			Client.Network.InternalCallbacks["ImprovedInstantMessage"] = IMCallback;
+
+			// Chat Callback
+			PacketCallback ChatCallback = new PacketCallback(ChatHandler);
+			Client.Network.InternalCallbacks["ChatFromSimulator"] = ChatCallback;
+
 			TeleportTimer = new Timer(8000);
 			TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
 			TeleportTimeout = false;
+		}
+
+		private void InstantMessageHandler(Packet packet, Circuit circuit) 
+		{
+			if (packet.Layout.Name == "ImprovedInstantMessage")
+			{
+				LLUUID FromAgentID	= new LLUUID();
+				LLUUID ToAgentID	= new LLUUID();
+				uint ParentEstateID	= 0;
+				LLUUID RegionID		= new LLUUID();
+				LLVector3 Position	= new LLVector3();
+				byte Offline		= 0;
+				byte Dialog			= 0;
+				LLUUID ID			= new LLUUID();
+				uint Timestamp		= 0;
+				string AgentName	= "";
+				string Message		= "";
+				string Bucket		= "";
+
+				ArrayList blocks;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if(field.Layout.Name == "FromAgentID")
+						{
+							FromAgentID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "ToAgentID")
+						{
+							ToAgentID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "ParentEstateID")
+						{
+							ParentEstateID = (uint)field.Data;
+						}
+						else if(field.Layout.Name == "RegionID")
+						{
+							RegionID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "Position")
+						{
+							Position = (LLVector3)field.Data;
+						}
+						else if(field.Layout.Name == "Offline")
+						{
+							Offline = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "Dialog")
+						{
+							Dialog = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "ID")
+						{
+							ID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "Timestamp")
+						{
+							Timestamp = (uint)field.Data;
+						}
+						else if(field.Layout.Name == "AgentName")
+						{
+							AgentName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "Message")
+						{
+							Message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "BinaryBucket")
+						{
+							Bucket = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+					}
+				}
+				OnInstantMessage(FromAgentID,ToAgentID,ParentEstateID,RegionID,Position,
+					Offline,Dialog,ID,Timestamp,AgentName,Message,Bucket);
+			} 
+		}
+
+		private void ChatHandler(Packet packet, Circuit circuit) 
+		{
+			if (packet.Layout.Name == "ChatFromSimulator")
+			{
+				string message		= "";
+				byte audible		= 0;
+				byte type			= 0;
+				byte sourcetype		= 0;
+				string name			= "";
+				LLUUID id			= new LLUUID();
+				byte command		= 0;
+				LLUUID commandID	= new LLUUID();
+
+				ArrayList blocks;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if (field.Layout.Name == "ID")
+						{
+							id = (LLUUID)field.Data;
+						} 
+						else if(field.Layout.Name == "Name")
+						{
+							name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "SourceType")
+						{
+							sourcetype = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "Type")
+						{
+							type = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "Audible")
+						{
+							audible = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "Message")
+						{
+							message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "Command")
+						{
+							command = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "CommandID")
+						{
+							commandID = (LLUUID)field.Data;
+						}
+						
+					}
+				}
+
+				//DEBUG
+                //Helpers.Log("Chat: Message=" + message + ", Type=" + type, Helpers.LogLevel.Info);
+
+				if (OnChat != null)
+				{
+					OnChat(message, audible, type, sourcetype, name, id, command, commandID);
+				}
+			}
+		}
+
+		public void InstantMessage(LLUUID target, string message) 
+		{
+			// Setup information about the 'world'
+			LLUUID RegionID = Client.CurrentRegion.ID;
+			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
+			TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+			uint Now = (uint)( t.TotalSeconds );
+			string Name = Client.Avatar.FirstName + " " + Client.Avatar.LastName;
+
+			// Build the packet
+			Packet packet = PacketBuilder.InstantMessage(Client.Protocol, target, Client.Network.AgentID, 0, 
+				RegionID, Position, 0, 0, LLUUID.GenerateUUID(), Now, Name, message, "");
+
+			// Send the message
+			Client.Network.SendPacket(packet);
+		}
+
+		public void Chat(string message) 
+		{
+			LLUUID CommandID = new LLUUID();
+			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
+
+			Packet packet = PacketBuilder.ChatOut(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
+				message, 0, 0, 0, CommandID,20,Position);
+
+			Client.Network.SendPacket(packet);
+		}
+
+		public void Shout(string message) 
+		{
+			LLUUID CommandID = new LLUUID();
+			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
+
+			Packet packet = PacketBuilder.ChatOut(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
+				message, 0, 0, 0, CommandID,100,Position);
+
+			Client.Network.SendPacket(packet);
 		}
 
 		public bool Teleport(U64 regionHandle, LLVector3 position, out string message)

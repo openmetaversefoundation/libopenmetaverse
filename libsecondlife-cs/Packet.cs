@@ -189,6 +189,7 @@ namespace libsecondlife
 						pos++;
 					}
 					else
+
 					{
 						Helpers.Log("getBlocks(): goto 1 reached", Helpers.LogLevel.Warning);
 						goto Done;
@@ -311,8 +312,8 @@ namespace libsecondlife
 				}
 			}
 
-		Done:
-			return blocks;
+			Done:
+				return blocks;
 		}
 
 		public override string ToString()
@@ -1030,6 +1031,61 @@ namespace libsecondlife
 			// Set the packet flags
 			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
 
+			return packet;
+		}
+
+		public static Packet InstantMessage(ProtocolManager protocol, LLUUID targetAgentID, LLUUID myAgentID, 
+			uint parentEstateID, LLUUID regionID, LLVector3 position, byte offline, byte dialog, LLUUID id, 
+			uint timestamp, string myAgentName, string message, string binaryBucket) 
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["FromAgentID"] = myAgentID;
+			fields["ToAgentID"] = targetAgentID;
+			fields["ParentEstateID"] = parentEstateID;
+			fields["RegionID"] = regionID;
+			fields["Position"] = position;
+			fields["Offline"] = offline;
+			fields["Dialog"] = dialog;
+			fields["ID"] = id;
+			fields["Timestamp"] = timestamp;
+			fields["FromAgentName"] = myAgentName;
+			fields["Message"] = message;
+			fields["BinaryBucket"] = binaryBucket;
+			blocks[fields] = "MessageBlock";
+
+			Packet packet = PacketBuilder.BuildPacket("ImprovedInstantMessage", protocol, blocks);
+			return packet;
+		}
+
+		public static Packet ChatOut(ProtocolManager protocol, LLUUID myAgentID, LLUUID mySessionID, string message,
+			byte type, int channel, byte command, LLUUID commandID, float radius, LLVector3 position) 
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable agentData = new Hashtable();
+			Hashtable chatData = new Hashtable();
+			Hashtable conversationData = new Hashtable();
+
+			// Agent Data Block
+			agentData["AgentID"] = myAgentID;
+			agentData["SessionID"] = mySessionID;
+			blocks[agentData] = "AgentData";
+
+			// Chat Data Block
+			chatData["Message"] = message;
+			chatData["Type"] = type;
+			chatData["Channel"] = channel;
+			blocks[chatData] = "ChatData";
+
+			// Conversation Data Block
+			conversationData["Command"] = command;
+			conversationData["CommandID"] = commandID;
+			conversationData["Radius"] = radius;
+			conversationData["Position"] = position;
+			blocks[conversationData] = "ConversationData";
+
+			Packet packet = PacketBuilder.BuildPacket("ChatFromViewer",protocol,blocks);
 			return packet;
 		}
 
