@@ -67,7 +67,36 @@ namespace sldump
 						}
 						else
 						{
-							;
+							for (int i = 0; i < byteArray.Length; i += 16)
+							{
+								output += "  " + field.Layout.Name + ": ";
+
+								for (int j = 0; j < 16; j++)
+								{
+									if ((i + j) < byteArray.Length)
+									{
+										output += String.Format("{0:X} ", byteArray[i + j]);
+									}
+									else
+									{
+										output += "   ";
+									}
+								}
+
+								for (int j = 0; j < 16 && (i + j) < byteArray.Length; j++)
+								{
+									if (byteArray[i + j] >= 0x20 && byteArray[i + j] < 0x7E)
+									{
+										output += (char)byteArray[i + j];
+									}
+									else
+									{
+										output += ".";
+									}
+								}
+
+								output += "\n";
+							}
 						}
 					}
 					else
@@ -90,7 +119,7 @@ namespace sldump
 
 			if (args.Length == 0 || (args.Length < 3 && args[0] != "--protocol"))
 			{
-				Console.WriteLine("Usage: sldump [--decrypt] [inputfile] [outputfile] [--protocol] [firstname] " +
+				Console.WriteLine("Usage: sldump [--printmap] [--decrypt] [inputfile] [outputfile] [--protocol] [firstname] " +
 					"[lastname] [password]");
 				return;
 			}
@@ -131,7 +160,7 @@ namespace sldump
 			client.Network.UserCallbacks["Default"] = defaultCallback;
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 10, 3, 4, "Win", "0", "sldump", "jhurliman@wsu.edu");
+				"last", 1, 10, 10, 10, "Win", "0", "sldump", "jhurliman@wsu.edu");
 
 			// An example of how to pass additional options to the login server
 			ArrayList optionsArray = new ArrayList();
