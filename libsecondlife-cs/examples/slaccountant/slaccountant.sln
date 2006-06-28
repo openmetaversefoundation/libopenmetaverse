@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slaccountant", "slaccountant.csproj", "{FC19D5F6-076E-4923-8456-9B0E00E22896}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.ActiveCfg = Debug|.NET
+		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.Build.0 = Debug|.NET
+		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Release.ActiveCfg = Release|.NET
+		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
