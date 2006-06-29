@@ -15,14 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlRpcCS", "XmlRpcCS\XmlRpc
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryDump", "examples\InventoryDump\InventoryDump.csproj", "{6478BE37-9272-4D91-B641-5E2FD0680B27}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sandbox", "examples\sandbox\sandbox.csproj", "{9C6ACB6E-D13D-4CCF-B293-29EFF90D248C}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slaccountant", "examples\slaccountant\slaccountant.csproj", "{FC19D5F6-076E-4923-8456-9B0E00E22896}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -49,14 +41,6 @@ Global
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.Build.0 = Debug|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.ActiveCfg = Release|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.Build.0 = Release|.NET
-		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Debug.ActiveCfg = Debug|.NET
-		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Debug.Build.0 = Debug|.NET
-		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.ActiveCfg = Release|.NET
-		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.Build.0 = Release|.NET
-		{9C6ACB6E-D13D-4CCF-B293-29EFF90D248C}.Debug.ActiveCfg = Debug|.NET
-		{9C6ACB6E-D13D-4CCF-B293-29EFF90D248C}.Debug.Build.0 = Debug|.NET
-		{9C6ACB6E-D13D-4CCF-B293-29EFF90D248C}.Release.ActiveCfg = Release|.NET
-		{9C6ACB6E-D13D-4CCF-B293-29EFF90D248C}.Release.Build.0 = Release|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.ActiveCfg = Debug|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.Build.0 = Debug|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Release.ActiveCfg = Release|.NET
