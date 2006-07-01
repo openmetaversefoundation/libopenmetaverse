@@ -1,0 +1,878 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JSON</name>
+    </assembly>
+    <members>
+        <member name="T:Nii.JSON.JSONArray">
+             <summary>
+             <para>
+             A JSONArray is an ordered sequence of values. Its external form is a string
+             wrapped in square brackets with commas between the values. The internal form
+             is an object having get() and opt() methods for accessing the values by
+             index, and put() methods for adding or replacing values. The values can be
+             any of these types: Boolean, JSONArray, JSONObject, Number, String, or the
+             JSONObject.NULL object.
+             </para>
+             <para>
+             The constructor can convert a JSON external form string into an
+             internal form Java object. The toString() method creates an external
+             form string.
+             </para>
+             <para>
+             A get() method returns a value if one can be found, and throws an exception
+             if one cannot be found. An opt() method returns a default value instead of
+             throwing an exception, and so is useful for obtaining optional values.
+             </para>
+             <para>
+             The generic get() and opt() methods return an object which you can cast or
+             query for type. There are also typed get() and opt() methods that do typing
+             checking and type coersion for you.
+            </para>
+             <para>
+             The texts produced by the toString() methods are very strict.
+             The constructors are more forgiving in the texts they will accept.
+             </para>
+             <para>
+             <list type="bullet">
+             <item><description>An extra comma may appear just before the closing bracket.</description></item>
+             <item><description>Strings may be quoted with single quotes.</description></item>
+             <item><description>Strings do not need to be quoted at all if they do not contain leading
+                 or trailing spaces, and if they do not contain any of these characters:
+                 { } [ ] / \ : , </description></item>
+             <item><description>Numbers may have the 0- (octal) or 0x- (hex) prefix.</description></item>
+             </list>
+             </para>
+             <para>
+             Public Domain 2002 JSON.org
+             @author JSON.org
+             @version 0.1
+            </para>
+             Ported to C# by Are Bjolseth, teleplan.no
+             TODO:
+             1. Implement Custom exceptions
+             2. Add indexer JSONObject[i] = object,     and object = JSONObject[i];
+             3. Add indexer JSONObject["key"] = object, and object = JSONObject["key"]
+             4. Add unit testing
+             5. Add log4net
+             6. Make get/put methods private, to force use of indexer instead?
+             </summary>
+        </member>
+        <member name="F:Nii.JSON.JSONArray.myArrayList">
+            <summary>The ArrayList where the JSONArray's properties are kept.</summary>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.#ctor">
+            <summary>
+            Construct an empty JSONArray
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.#ctor(Nii.JSON.JSONTokener)">
+            <summary>
+            Construct a JSONArray from a JSONTokener.
+            </summary>
+            <param name="x">A JSONTokener</param>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.#ctor(System.String)">
+            <summary>
+            Construct a JSONArray from a source string.
+            </summary>
+            <param name="s">A string that begins with '[' and ends with ']'.</param>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.#ctor(System.Collections.ICollection)">
+            <summary>
+            Construct a JSONArray from a Collection.
+            </summary>
+            <param name="collection">A Collection.</param>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getValue(System.Int32)">
+            <summary>
+            Get the object value associated with an index.
+            Use indexer instead!!! Added to be true to the original Java implementation
+            </summary>
+            <param name="i">index subscript. The index must be between 0 and length()-1</param>
+            <returns>An object value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getArrayList">
+            <summary>
+            Get the ArrayList which is holding the elements of the JSONArray.
+            Use the indexer instead!! Added to be true to the orignal Java src
+            </summary>
+            <returns>The ArrayList</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getBoolean(System.Int32)">
+            <summary>
+            Get the boolean value associated with an index.
+            The string values "true" and "false" are converted to boolean.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>The truth</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getDouble(System.Int32)">
+            <summary>
+            Get the double value associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A double value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getInt(System.Int32)">
+            <summary>
+            Get the int value associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>The int value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getJSONArray(System.Int32)">
+            <summary>
+            Get the JSONArray associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A JSONArray value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getJSONObject(System.Int32)">
+            <summary>
+            Get the JSONObject associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A JSONObject value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.getString(System.Int32)">
+            <summary>
+            Get the string associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A string value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.isNull(System.Int32)">
+            <summary>
+            Determine if the value is null.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>true if the value at the index is null, or if there is no value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.join(System.String)">
+            <summary>
+            Make a string from the contents of this JSONArray. The separator string
+            is inserted between each element.
+            Warning: This method assumes that the data structure is acyclical.
+            </summary>
+            <param name="separator">separator A string that will be inserted between the elements.</param>
+            <returns>A string.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.Length">
+            <summary>
+            Get the length of the JSONArray.
+            Added to be true to the original Java implementation
+            </summary>
+            <returns>Number of JSONObjects in array</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.opt(System.Int32)">
+            <summary>
+            Get the optional object value associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>object at that index.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optBoolean(System.Int32)">
+            <summary>
+            Get the optional boolean value associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>The truth</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optBoolean(System.Int32,System.Boolean)">
+            <summary>
+            Get the optional boolean value associated with an index.
+            It returns the defaultValue if there is no value at that index or if it is not
+            a Boolean or the String "true" or "false".
+            </summary>
+            <param name="i">index subscript</param>
+            <param name="defaultValue"></param>
+            <returns>The truth.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optDouble(System.Int32)">
+            <summary>
+            Get the optional double value associated with an index.
+            NaN is returned if the index is not found,
+            or if the value is not a number and cannot be converted to a number.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>The double value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optDouble(System.Int32,System.Double)">
+            <summary>
+            Get the optional double value associated with an index.
+            NaN is returned if the index is not found,
+            or if the value is not a number and cannot be converted to a number.
+            </summary>
+            <param name="i">index subscript</param>
+            <param name="defaultValue"></param>
+            <returns>The double value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optInt(System.Int32)">
+            <summary>
+            Get the optional int value associated with an index.
+            Zero is returned if the index is not found,
+            or if the value is not a number and cannot be converted to a number.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>The int value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optInt(System.Int32,System.Int32)">
+            <summary>
+            Get the optional int value associated with an index.
+            The defaultValue is returned if the index is not found,
+            or if the value is not a number and cannot be converted to a number.
+            </summary>
+            <param name="i">index subscript</param>
+            <param name="defaultValue">The default value</param>
+            <returns>The int value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optJSONArray(System.Int32)">
+            <summary>
+            Get the optional JSONArray associated with an index.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A JSONArray value, or null if the index has no value, or if the value is not a JSONArray.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optJSONObject(System.Int32)">
+            <summary>
+            Get the optional JSONObject associated with an index.
+            Null is returned if the key is not found, or null if the index has
+            no value, or if the value is not a JSONObject.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A JSONObject value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optString(System.Int32)">
+            <summary>
+            Get the optional string value associated with an index. It returns an
+            empty string if there is no value at that index. If the value
+            is not a string and is not null, then it is coverted to a string.
+            </summary>
+            <param name="i">index subscript</param>
+            <returns>A String value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.optString(System.Int32,System.String)">
+            <summary>
+            Get the optional string associated with an index.
+            The defaultValue is returned if the key is not found.
+            </summary>
+            <param name="i">index subscript</param>
+            <param name="defaultValue">The default value</param>
+            <returns>A string value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.put(System.Object)">
+            OMITTED:
+            public JSONArray put(bool val)
+            public JSONArray put(double val)
+            public JSONArray put(int val)		
+            <summary>
+            Append an object value.
+            </summary>
+            <param name="val">An object value.  The value should be a Boolean, Double, Integer, JSONArray, JSObject, or String, or the JSONObject.NULL object</param>
+            <returns>this (JSONArray)</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.put(System.Int32,System.Object)">
+            <summary>
+            Put or replace a boolean value in the JSONArray.
+            </summary>
+            <param name="i">
+            The subscript. If the index is greater than the length of
+            the JSONArray, then null elements will be added as necessary to pad it out.
+            </param>
+            <param name="val">An object value.</param>
+            <returns>this (JSONArray)</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.toJSONObject(Nii.JSON.JSONArray)">
+            <summary>
+            Produce a JSONObject by combining a JSONArray of names with the values
+            of this JSONArray.
+            </summary>
+            <param name="names">
+            A JSONArray containing a list of key strings. These will be paired with the values.
+            </param>
+            <returns>A JSONObject, or null if there are no names or if this JSONArray</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONArray.ToString">
+            <summary>
+            Make an JSON external form string of this JSONArray. For compactness, no
+            unnecessary whitespace is added.
+            </summary>
+            <returns>a printable, displayable, transmittable representation of the array.</returns>
+        </member>
+        <member name="P:Nii.JSON.JSONArray.Item(System.Int32)">
+            <summary>
+            Alternate to Java get/put method, by using indexer
+            </summary>
+        </member>
+        <member name="P:Nii.JSON.JSONArray.List">
+            <summary>
+            Alternativ to Java, getArrayList, by using propery
+            </summary>
+        </member>
+        <member name="P:Nii.JSON.JSONArray.Count">
+            <summary>
+            Get the length of the JSONArray.
+            Using a propery instead of method
+            </summary>
+        </member>
+        <member name="T:Nii.JSON.JsonFacade">
+            <summary>
+            Summary description for JsonFacade.
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JsonFacade.toJSON(System.Collections.IDictionary)">
+            <summary>
+            Parse a Hashtable and return a JSON formatted string
+            </summary>
+            <param name="idict"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Nii.JSON.JsonFacade.fromJSON(System.String)">
+            <summary>
+            Parse JSON formatted string and return a Hashtable
+            </summary>
+            <param name="sJSON"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Nii.JSON.JSONObject">
+             <summary>
+             <para>
+             A JSONArray is an ordered sequence of values. Its external form is a string
+             wrapped in square brackets with commas between the values. The internal form
+             is an object having get() and opt() methods for accessing the values by
+             index, and put() methods for adding or replacing values. The values can be
+             any of these types: Boolean, JSONArray, JSONObject, Number, String, or the
+             JSONObject.NULL object.
+             </para>
+             <para>
+             The constructor can convert a JSON external form string into an
+             internal form Java object. The toString() method creates an external
+             form string.
+             </para>
+             <para>
+             A get() method returns a value if one can be found, and throws an exception
+             if one cannot be found. An opt() method returns a default value instead of
+             throwing an exception, and so is useful for obtaining optional values.
+             </para>
+             <para>
+             The generic get() and opt() methods return an object which you can cast or
+             query for type. There are also typed get() and opt() methods that do typing
+             checking and type coersion for you.
+            </para>
+             <para>
+             The texts produced by the toString() methods are very strict.
+             The constructors are more forgiving in the texts they will accept.
+             </para>
+             <para>
+             <list type="bullet">
+             <item><description>An extra comma may appear just before the closing bracket.</description></item>
+             <item><description>Strings may be quoted with single quotes.</description></item>
+             <item><description>Strings do not need to be quoted at all if they do not contain leading
+                 or trailing spaces, and if they do not contain any of these characters:
+                 { } [ ] / \ : , </description></item>
+             <item><description>Numbers may have the 0- (octal) or 0x- (hex) prefix.</description></item>
+             </list>
+             </para>
+             <para>
+             Public Domain 2002 JSON.org
+             @author JSON.org
+             @version 0.1
+            </para>
+             Ported to C# by Are Bjolseth, teleplan.no
+             TODO:
+             1. Implement Custom exceptions
+             2. Add indexer JSONObject[i] = object,     and object = JSONObject[i];
+             3. Add indexer JSONObject["key"] = object, and object = JSONObject["key"]
+             4. Add unit testing
+             5. Add log4net
+             6. Make get/put methods private, to force use of indexer instead?
+             </summary>
+        </member>
+        <member name="F:Nii.JSON.JSONObject.myHashMap">
+            <summary>The hash map where the JSONObject's properties are kept.</summary>
+        </member>
+        <member name="F:Nii.JSON.JSONObject.myKeyIndexList">
+            <summary>A shadow list of keys to enable access by sequence of insertion</summary>
+        </member>
+        <member name="F:Nii.JSON.JSONObject.NULL">
+            <summary>
+            It is sometimes more convenient and less ambiguous to have a NULL
+            object than to use C#'s null value.
+            JSONObject.NULL.toString() returns "null".
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.#ctor">
+            <summary>
+             Construct an empty JSONObject.
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.#ctor(Nii.JSON.JSONTokener)">
+            <summary>
+            Construct a JSONObject from a JSONTokener.
+            </summary>
+            <param name="x">A JSONTokener object containing the source string.</param>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.#ctor(System.String)">
+            <summary>
+            Construct a JSONObject from a string.
+            </summary>
+            <param name="sJSON">A string beginning with '{' and ending with '}'.</param>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.#ctor(System.Collections.IDictionary)">
+            <summary>
+            Construct a JSONObject from a IDictionary
+            </summary>
+            <param name="map"></param>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.accumulate(System.String,System.Object)">
+            <summary>
+            Accumulate values under a key. It is similar to the put method except
+            that if there is already an object stored under the key then a
+            JSONArray is stored under the key to hold all of the accumulated values.
+            If there is already a JSONArray, then the new value is appended to it.
+            In contrast, the put method replaces the previous value.
+            </summary>
+            <param name="key">A key string.</param>
+            <param name="val">An object to be accumulated under the key.</param>
+            <returns>this</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getDictionary">
+            <summary>
+            C# convenience method
+            </summary>
+            <returns>The Hashtable</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getValue(System.String)">
+            <summary>
+            Alias to Java get method
+            Get the value object associated with a key.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>The object associated with the key.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getBool(System.String)">
+            <summary>
+            Get the boolean value associated with a key.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>The truth.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getDouble(System.String)">
+            <summary>
+            Get the double value associated with a key.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>The double value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getInt(System.String)">
+            <summary>
+            Get the int value associated with a key.
+            </summary>
+            <param name="key">A key string</param>
+            <returns> The integer value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getJSONArray(System.String)">
+            <summary>
+            Get the JSONArray value associated with a key.
+            </summary>
+            <param name="key">A key string</param>
+            <returns>A JSONArray which is the value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getJSONObject(System.String)">
+            <summary>
+            Get the JSONObject value associated with a key.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>A JSONObject which is the value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.getString(System.String)">
+            <summary>
+            Get the string associated with a key.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>A string which is the value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.has(System.String)">
+            <summary>
+            Determine if the JSONObject contains a specific key.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>true if the key exists in the JSONObject.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.keys">
+            <summary>
+            Get an enumeration of the keys of the JSONObject.
+            Added to be true to orginal Java implementation
+            Indexers are easier to use
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.isNull(System.String)">
+            <summary>
+            Determine if the value associated with the key is null or if there is no value.
+            </summary>
+            <param name="key">A key string</param>
+            <returns>true if there is no value associated with the key or if the valus is the JSONObject.NULL object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.Length">
+            <summary>
+            Get the number of keys stored in the JSONObject.
+            </summary>
+            <returns>The number of keys in the JSONObject.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.names">
+            <summary>
+            Produce a JSONArray containing the names of the elements of this JSONObject
+            </summary>
+            <returns>A JSONArray containing the key strings, or null if the JSONObject</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.numberToString(System.Object)">
+            <summary>
+            Produce a string from a number.
+            </summary>
+            <param name="number">Number value type object</param>
+            <returns>String representation of the number</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.opt(System.String)">
+            <summary>
+            Get an optional value associated with a key.
+            </summary>
+            <param name="key">A key string</param>
+            <returns>An object which is the value, or null if there is no value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optBoolean(System.String)">
+            <summary>
+            Get an optional value associated with a key.
+            It returns false if there is no such key, or if the value is not
+            Boolean.TRUE or the String "true".
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>bool value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optBoolean(System.String,System.Boolean)">
+            <summary>
+            Get an optional value associated with a key.
+            It returns false if there is no such key, or if the value is not
+            Boolean.TRUE or the String "true".
+            </summary>
+            <param name="key">A key string.</param>
+            <param name="defaultValue">The preferred return value if conversion fails</param>
+            <returns>bool value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optDouble(System.String)">
+            <summary>
+            Get an optional double associated with a key,
+            or NaN if there is no such key or if its value is not a number.
+            If the value is a string, an attempt will be made to evaluate it as
+            a number.
+            </summary>
+            <param name="key">A string which is the key.</param>
+            <returns>A double value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optDouble(System.String,System.Double)">
+            <summary>
+            Get an optional double associated with a key,
+            or NaN if there is no such key or if its value is not a number.
+            If the value is a string, an attempt will be made to evaluate it as
+            a number.
+            </summary>
+            <param name="key">A string which is the key.</param>
+            <param name="defaultValue">The default</param>
+            <returns>A double value object</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optInt(System.String)">
+            <summary>
+             Get an optional double associated with a key, or the
+             defaultValue if there is no such key or if its value is not a number.
+             If the value is a string, an attempt will be made to evaluate it as
+             number.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>An int object value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optInt(System.String,System.Int32)">
+            <summary>
+             Get an optional double associated with a key, or the
+             defaultValue if there is no such key or if its value is not a number.
+             If the value is a string, an attempt will be made to evaluate it as
+             number.
+            </summary>
+            <param name="key">A key string.</param>
+            <param name="defaultValue">The default value</param>
+            <returns>An int object value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optJSONArray(System.String)">
+            <summary>
+            Get an optional JSONArray associated with a key.
+            It returns null if there is no such key, or if its value is not a JSONArray
+            </summary>
+            <param name="key">A key string</param>
+            <returns>A JSONArray which is the value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optJSONObject(System.String)">
+            <summary>
+            Get an optional JSONObject associated with a key.
+            It returns null if there is no such key, or if its value is not a JSONObject.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>A JSONObject which is the value</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optString(System.String)">
+            <summary>
+            Get an optional string associated with a key.
+            It returns an empty string if there is no such key. If the value is not
+            a string and is not null, then it is coverted to a string.
+            </summary>
+            <param name="key">A key string.</param>
+            <returns>A string which is the value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.optString(System.String,System.String)">
+            <summary>
+            Get an optional string associated with a key.
+            It returns the defaultValue if there is no such key.
+            </summary>
+            <param name="key">A key string.</param>
+            <param name="defaultValue">The default</param>
+            <returns>A string which is the value.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.put(System.String,System.Object)">
+            <summary>
+            Put a key/value pair in the JSONObject. If the value is null,
+            then the key will be removed from the JSONObject if it is present.
+            </summary>
+            <param name="key"> A key string.</param>
+            <param name="val">
+            An object which is the value. It should be of one of these
+            types: Boolean, Double, Integer, JSONArray, JSONObject, String, or the
+            JSONObject.NULL object.
+            </param>
+            <returns>JSONObject</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.putOpt(System.String,System.Object)">
+            <summary>
+            Add a key value pair
+            </summary>
+            <param name="key"></param>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.remove(System.String)">
+            <summary>
+            Remove a object assosiateted with the given key
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.toJSONArray(Nii.JSON.JSONArray)">
+            <summary>
+            Append an array of JSONObjects to current object
+            </summary>
+            <param name="names"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.ToString">
+            <summary>
+            Overridden to return a JSON formattet object as a string
+            </summary>
+            <returns>JSON object as formatted string</returns>
+        </member>
+        <member name="P:Nii.JSON.JSONObject.Item(System.Int32)">
+            <summary>
+            Return the key for the associated index
+            </summary>
+        </member>
+        <member name="P:Nii.JSON.JSONObject.Item(System.String)">
+            <summary>
+            Get/Add an object with the associated key
+            </summary>
+        </member>
+        <member name="P:Nii.JSON.JSONObject.Count">
+            <summary>
+            Return the number of JSON items in hashtable
+            </summary>
+        </member>
+        <member name="T:Nii.JSON.JSONObject.JSONNull">
+            <summary>
+            Make a Null object
+            JSONObject.NULL is equivalent to the value that JavaScript calls null,
+            whilst C#'s null is equivalent to the value that JavaScript calls undefined.
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONObject.JSONNull.ToString">
+            <summary>
+            Overriden to return "null"
+            </summary>
+            <returns>null</returns>
+        </member>
+        <member name="T:Nii.JSON.JSONTokener">
+            <summary>
+            <para>
+             A JSONTokener takes a source string and extracts characters and tokens from
+             it. It is used by the JSONObject and JSONArray constructors to parse
+             JSON source strings.
+             </para>
+             <para>
+             Public Domain 2002 JSON.org
+             @author JSON.org
+             @version 0.1
+             </para>
+             <para>Ported to C# by Are Bjolseth, teleplan.no</para>
+             <para>
+             <list type="bullet">
+             <item><description>Implement Custom exceptions</description></item>
+             <item><description>Add unit testing</description></item>
+             <item><description>Add log4net</description></item>
+             </list>
+             </para>
+            </summary>
+        </member>
+        <member name="F:Nii.JSON.JSONTokener.myIndex">
+            <summary>The index of the next character.</summary>
+        </member>
+        <member name="F:Nii.JSON.JSONTokener.mySource">
+            <summary>The source string being tokenized.</summary>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.#ctor(System.String)">
+            <summary>
+            Construct a JSONTokener from a string.
+            </summary>
+            <param name="s">A source string.</param>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.back">
+            <summary>
+            Back up one character. This provides a sort of lookahead capability,
+            so that you can test for a digit or letter before attempting to parse
+            the next number or identifier.
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.dehexchar(System.Char)">
+            <summary>
+            Get the hex value of a character (base16).
+            </summary>
+            <param name="c">
+            A character between '0' and '9' or between 'A' and 'F' or
+            between 'a' and 'f'.
+            </param>
+            <returns>An int between 0 and 15, or -1 if c was not a hex digit.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.more">
+            <summary>
+            Determine if the source string still contains characters that next() can consume.
+            </summary>
+            <returns>true if not yet at the end of the source.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.next">
+            <summary>
+            Get the next character in the source string.
+            </summary>
+            <returns>The next character, or 0 if past the end of the source string.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.next(System.Char)">
+            <summary>
+            Consume the next character, and check that it matches a specified character
+            </summary>
+            <param name="c">The character to match.</param>
+            <returns>The character.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.next(System.Int32)">
+            <summary>
+            Get the next n characters.
+            </summary>
+            <param name="n">The number of characters to take.</param>
+            <returns>A string of n characters.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.nextClean">
+            <summary>
+            Get the next char in the string, skipping whitespace
+            and comments (slashslash and slashstar).
+            </summary>
+            <returns>A character, or 0 if there are no more characters.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.nextString(System.Char)">
+            <summary>
+            Return the characters up to the next close quote character.
+            Backslash processing is done. The formal JSON format does not
+            allow strings in single quotes, but an implementation is allowed to
+            accept them.
+            </summary>
+            <param name="quote">The quoting character, either " or '</param>
+            <returns>A String.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.nextTo(System.Char)">
+            <summary>
+            Get the text up but not including the specified character or the
+            end of line, whichever comes first.
+            </summary>
+            <param name="d">A delimiter character.</param>
+            <returns>A string.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.nextTo(System.String)">
+            <summary>
+             Get the text up but not including one of the specified delimeter
+             characters or the end of line, which ever comes first.
+            </summary>
+            <param name="delimiters">A set of delimiter characters.</param>
+            <returns>A string, trimmed.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.nextObject">
+            <summary>
+            Get the next value as object. The value can be a Boolean, Double, Integer,
+            JSONArray, JSONObject, or String, or the JSONObject.NULL object.
+            </summary>
+            <returns>An object.</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.skipTo(System.Char)">
+            <summary>
+            Skip characters until the next character is the requested character.
+            If the requested character is not found, no characters are skipped.
+            </summary>
+            <param name="to">A character to skip to.</param>
+            <returns>
+            The requested character, or zero if the requested character is not found.
+            </returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.skipPast(System.String)">
+            <summary>
+            Skip characters until past the requested string.
+            If it is not found, we are left at the end of the source.
+            </summary>
+            <param name="to">A string to skip past.</param>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.ToString">
+            <summary>
+            Make a printable string of this JSONTokener.
+            </summary>
+            <returns>" at character [myIndex] of [mySource]"</returns>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.unescape">
+            <summary>
+            Unescape the source text. Convert %hh sequences to single characters,
+            and convert plus to space. There are Web transport systems that insist on
+            doing unnecessary URL encoding. This provides a way to undo it.
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONTokener.unescape(System.String)">
+            <summary>
+            Convert %hh sequences to single characters, and convert plus to space.
+            </summary>
+            <param name="s">A string that may contain plus and %hh sequences.</param>
+            <returns>The unescaped string.</returns>
+        </member>
+        <member name="T:Nii.JSON.JSONUtils">
+            <summary>
+             Public Domain 2002 JSON.org
+             @author JSON.org
+             @version 0.1
+             Ported to C# by Are Bjolseth, teleplan.no
+            </summary>
+        </member>
+        <member name="M:Nii.JSON.JSONUtils.Enquote(System.String)">
+            <summary>
+            Produce a string in double quotes with backslash sequences in all the right places.
+            </summary>
+            <param name="s">A String</param>
+            <returns>A String correctly formatted for insertion in a JSON message.</returns>
+        </member>
+    </members>
+</doc>

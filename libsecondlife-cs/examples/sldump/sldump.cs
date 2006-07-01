@@ -168,9 +168,7 @@ namespace sldump
 			optionsArray.Add("inventory-skeleton");
 			loginParams["options"] = optionsArray;
 
-			Hashtable loginReply = new Hashtable();
-
-			if (!client.Network.Login(loginParams, out loginReply))
+			if (!client.Network.Login(loginParams))
 			{
 				// Login failed
 				Console.WriteLine("Error logging in: " + client.Network.LoginError);
@@ -178,7 +176,7 @@ namespace sldump
 			}
 
 			// Login was successful
-			Console.WriteLine("Message of the day: " + loginReply["message"]);
+			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
 
 			while (true)
 			{

@@ -33,6 +33,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Security.Cryptography;
 using Nwc.XmlRpc;
+using Nii.JSON;
 
 namespace libsecondlife
 {
@@ -608,6 +609,7 @@ namespace libsecondlife
 		public Hashtable UserCallbacks;
 		public Hashtable InternalCallbacks;
 		public Circuit CurrentCircuit;
+		public Hashtable LoginValues;
 
 		private SecondLife Client;
 		private ProtocolManager Protocol;
@@ -623,6 +625,7 @@ namespace libsecondlife
 			UserCallbacks = new Hashtable();
 			InternalCallbacks = new Hashtable();
 			CurrentCircuit = null;
+			LoginValues = null;
 
 			// Register the internal callbacks
 			InternalCallbacks["RegionHandshake"] = new PacketCallback(RegionHandshakeHandler);
@@ -680,12 +683,12 @@ namespace libsecondlife
 			return values;
 		}
 
-		public bool Login(Hashtable loginParams, out Hashtable values)
+		public bool Login(Hashtable loginParams)
 		{
-			return Login(loginParams, "https://login.agni.lindenlab.com/cgi-bin/login.cgi", out values);
+			return Login(loginParams, "https://login.agni.lindenlab.com/cgi-bin/login.cgi");
 		}
 
-		public bool Login(Hashtable loginParams, string url, out Hashtable values)
+		public bool Login(Hashtable loginParams, string url)
 		{
 			XmlRpcResponse result;
 			XmlRpcRequest xmlrpc = new XmlRpcRequest();
@@ -701,7 +704,7 @@ namespace libsecondlife
 			{
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 				LoginError = e.Message;
-				values = null;
+				LoginValues = null;
 				return false;
 			}
 
@@ -709,28 +712,74 @@ namespace libsecondlife
 			{
 				Helpers.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
 				LoginError = "Fault " + result.FaultCode + ": " + result.FaultString;
-				values = null;
+				LoginValues = null;
 				return false;
 			}
 
-			values = (Hashtable)result.Value;
+			LoginValues = (Hashtable)result.Value;
 
-			if ((string)values["login"] == "false")
+			// Replace LLSD variables with object representations
+			System.Text.RegularExpressions.Regex LLSDtoJSON = 
+				new System.Text.RegularExpressions.Regex(@"('|r([0-9]))");
+
+			// Convert LLSD string to JSON
+			string json = "{vector:" + LLSDtoJSON.Replace((string)LoginValues["look_at"], "$2") + "}";
+
+			// Convert JSON string to a JSON object
+			IDictionary jsonObject = JsonFacade.fromJSON(json);
+			JSONArray jsonVector = (JSONArray)jsonObject["vector"];
+
+			// Convert the JSON object to an LLVector3d
+			LLVector3d vector = new LLVector3d((double)jsonVector[0], (double)jsonVector[1], 
+				(double)jsonVector[2]);
+
+			LoginValues["look_at"] = vector;
+
+			// Convert LLSD string to JSON
+			json = LLSDtoJSON.Replace((string)LoginValues["home"], "$2");
+
+			// Convert JSON string to an object
+			jsonObject = JsonFacade.fromJSON(json);
+
+			// Create the position vector
+			JSONArray array = (JSONArray)jsonObject["position"];
+			LLVector3d posVector = new LLVector3d((double)array[0], (double)array[1], (double)array[2]);
+
+			// Create the look_at vector
+			array = (JSONArray)jsonObject["look_at"];
+			LLVector3d lookatVector = new LLVector3d((double)array[0], (double)array[1], (double)array[2]);
+
+			// Create the regionhandle U64
+			array = (JSONArray)jsonObject["region_handle"];
+			U64 regionhandle = new U64((int)array[0], (int)array[1]);
+
+			// Create a hashtable to hold the home values
+			Hashtable home = new Hashtable();
+			home["position"] = posVector;
+			home["look_at"] = lookatVector;
+			home["region_handle"] = regionhandle;
+
+			LoginValues["home"] = home;
+
+			if ((string)LoginValues["login"] == "false")
 			{
-				LoginError = values["reason"] + ": " + values["message"];
+				LoginError = LoginValues["reason"] + ": " + LoginValues["message"];
 				return false;
 			}
 
-			AgentID = new LLUUID((string)values["agent_id"]);
-			SessionID = new LLUUID((string)values["session_id"]);
-			Client.Avatar.ID = new LLUUID((string)values["agent_id"]);
-			Client.Avatar.FirstName = (string)values["first_name"];
-			Client.Avatar.LastName = (string)values["last_name"];
-			uint circuitCode = (uint)(int)values["circuit_code"];
+			AgentID = new LLUUID((string)LoginValues["agent_id"]);
+			SessionID = new LLUUID((string)LoginValues["session_id"]);
+			Client.Avatar.ID = new LLUUID((string)LoginValues["agent_id"]);
+			Client.Avatar.FirstName = (string)LoginValues["first_name"];
+			Client.Avatar.LastName = (string)LoginValues["last_name"];
+			Client.Avatar.LookAt = vector;
+			Client.Avatar.HomePosition = posVector;
+			Client.Avatar.HomeLookAt = lookatVector;
+			uint circuitCode = (uint)(int)LoginValues["circuit_code"];
 
 			// Connect to the sim given in the login reply
 			Circuit circuit = new Circuit(Protocol, this, circuitCode);
-			if (!circuit.Open((string)values["sim_ip"], (int)values["sim_port"]))
+			if (!circuit.Open((string)LoginValues["sim_ip"], (int)LoginValues["sim_port"]))
 			{
 				return false;
 			}

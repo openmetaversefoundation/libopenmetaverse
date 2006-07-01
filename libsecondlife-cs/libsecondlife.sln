@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlRpcCS", "XmlRpcCS\XmlRpc
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nii.JSON", "JSONlib\Nii.JSON.csproj", "{C40EB7FD-F957-4659-A184-A1C28908D748}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slaccountant", "examples\slaccountant\slaccountant.csproj", "{FC19D5F6-076E-4923-8456-9B0E00E22896}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -41,6 +45,10 @@ Global
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.Build.0 = Debug|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.ActiveCfg = Release|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.Build.0 = Release|.NET
+		{C40EB7FD-F957-4659-A184-A1C28908D748}.Debug.ActiveCfg = Debug|.NET
+		{C40EB7FD-F957-4659-A184-A1C28908D748}.Debug.Build.0 = Debug|.NET
+		{C40EB7FD-F957-4659-A184-A1C28908D748}.Release.ActiveCfg = Release|.NET
+		{C40EB7FD-F957-4659-A184-A1C28908D748}.Release.Build.0 = Release|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.ActiveCfg = Debug|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.Build.0 = Debug|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Release.ActiveCfg = Release|.NET

@@ -473,11 +473,11 @@ namespace SLAccountant
 				Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text, 
 					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 10, 10, 0, 
 					"Win", "0", "accountant", "jhurliman@wsu.edu");
-				Hashtable loginValues = new Hashtable();
 
-				if (client.Network.Login(loginParams, out loginValues))
+				if (client.Network.Login(loginParams))
 				{
-					lblName.Text = loginValues["first_name"] + " " + loginValues["last_name"];
+					lblName.Text = client.Network.LoginValues["first_name"] + " " + 
+						client.Network.LoginValues["last_name"];
 
 					// AgentHeightWidth
 					Hashtable blocks = new Hashtable();

@@ -1,6 +1,3 @@
-
-
-
 /*
  * Copyright (c) 2006, Second Life Reverse Engineering Team
  * All rights reserved.
@@ -53,6 +50,10 @@ namespace libsecondlife
 		public string FirstName;
 		public string LastName;
 		public string TeleportMessage;
+		public LLVector3d Position;
+		public LLVector3d LookAt;
+		public LLVector3d HomePosition;
+		public LLVector3d HomeLookAt;
 
 		private SecondLife Client;
 		private int TeleportStatus;
@@ -67,27 +68,56 @@ namespace libsecondlife
 			Client = client;
 			TeleportMessage = "";
 
-			// Setup the callbacks
-			PacketCallback callback = new PacketCallback(TeleportHandler);
+			// Create emtpy vectors for now
+			HomeLookAt = HomePosition = LookAt = Position = new LLVector3d();
+
+			// Location callback
+			PacketCallback callback = new PacketCallback(LocationHandler);
+			Client.Network.InternalCallbacks["CoarseLocationUpdate"] = callback;
+
+			// Teleport callbacks
+			callback = new PacketCallback(TeleportHandler);
 			Client.Network.InternalCallbacks["TeleportStart"] = callback;
 			Client.Network.InternalCallbacks["TeleportProgress"] = callback;
 			Client.Network.InternalCallbacks["TeleportFailed"] = callback;
 			Client.Network.InternalCallbacks["TeleportFinish"] = callback;
 
 			// Instant Message Callback
-			PacketCallback IMCallback = new PacketCallback(InstantMessageHandler);
-			Client.Network.InternalCallbacks["ImprovedInstantMessage"] = IMCallback;
+			callback = new PacketCallback(InstantMessageHandler);
+			Client.Network.InternalCallbacks["ImprovedInstantMessage"] = callback;
 
 			// Chat Callback
-			PacketCallback ChatCallback = new PacketCallback(ChatHandler);
-			Client.Network.InternalCallbacks["ChatFromSimulator"] = ChatCallback;
+			callback = new PacketCallback(ChatHandler);
+			Client.Network.InternalCallbacks["ChatFromSimulator"] = callback;
 
 			TeleportTimer = new Timer(8000);
 			TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
 			TeleportTimeout = false;
 		}
 
-		private void InstantMessageHandler(Packet packet, Circuit circuit) 
+		private void LocationHandler(Packet packet, Circuit circuit)
+		{
+			foreach (Block block in packet.Blocks())
+			{
+				foreach (Field field in block.Fields)
+				{
+					if (field.Layout.Name == "X")
+					{
+						Position.X = Convert.ToDouble((byte)field.Data);
+					}
+					else if (field.Layout.Name == "Y")
+					{
+						Position.Y = Convert.ToDouble((byte)field.Data);
+					}
+					else if (field.Layout.Name == "Z")
+					{
+						Position.Z = Convert.ToDouble((byte)field.Data);
+					}
+				}
+			}
+		}
+
+		private void InstantMessageHandler(Packet packet, Circuit circuit)
 		{
 			if (packet.Layout.Name == "ImprovedInstantMessage")
 			{
@@ -251,13 +281,13 @@ namespace libsecondlife
 			Client.Network.SendPacket(packet);
 		}
 
-		public void Chat(string message) 
+		public void Chat(string message, byte type) 
 		{
 			LLUUID CommandID = new LLUUID();
 			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 
-			Packet packet = PacketBuilder.ChatOut(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
-				message, 0, 0, 0, CommandID,20,Position);
+			Packet packet = PacketBuilder.Chat(Client.Protocol, Client.Avatar.ID, Client.Network.SessionID,
+				message, type, 0, 0, CommandID, 20, Position);
 
 			Client.Network.SendPacket(packet);
 		}
@@ -267,7 +297,7 @@ namespace libsecondlife
 			LLUUID CommandID = new LLUUID();
 			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 
-			Packet packet = PacketBuilder.ChatOut(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
+			Packet packet = PacketBuilder.Chat(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
 				message, 0, 0, 0, CommandID,100,Position);
 
 			Client.Network.SendPacket(packet);

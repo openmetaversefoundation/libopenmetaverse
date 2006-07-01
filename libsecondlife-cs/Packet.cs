@@ -1059,7 +1059,7 @@ namespace libsecondlife
 			return packet;
 		}
 
-		public static Packet ChatOut(ProtocolManager protocol, LLUUID myAgentID, LLUUID mySessionID, string message,
+		public static Packet Chat(ProtocolManager protocol, LLUUID myAgentID, LLUUID mySessionID, string message,
 			byte type, int channel, byte command, LLUUID commandID, float radius, LLVector3 position) 
 		{
 			Hashtable blocks = new Hashtable();

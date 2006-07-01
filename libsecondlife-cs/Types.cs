@@ -43,8 +43,17 @@ namespace libsecondlife
 		public U64(uint left, uint right)
 		{
 			Data = new uint[2];
-			Data[0] = right; //left;
-			Data[1] = left; //right;
+			// Backwards... don't ask me, it works
+			Data[0] = right;
+			Data[1] = left;
+		}
+
+		public U64(int left, int right)
+		{
+			Data = new uint[2];
+			// Backwards... don't ask me, it works
+			Data[0] = (uint)right;
+			Data[1] = (uint)left;
 		}
 
 		public U64(byte[] byteArray, int pos)
@@ -366,6 +375,13 @@ namespace libsecondlife
 		public LLVector3d()
 		{
 			X = Y = Z = 0.0D;
+		}
+
+		public LLVector3d(double x, double y, double z)
+		{
+			X = x;
+			Y = y;
+			Z = z;
 		}
 
 		public LLVector3d(byte[] byteArray, int pos)

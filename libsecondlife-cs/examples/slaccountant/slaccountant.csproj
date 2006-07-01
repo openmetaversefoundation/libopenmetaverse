@@ -93,6 +93,7 @@
                     Name = "libsecondlife"
                     Project = "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
                     Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
+                    Private = "False"
                 />
             </References>
         </Build>
