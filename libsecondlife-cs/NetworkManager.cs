@@ -718,48 +718,63 @@ namespace libsecondlife
 
 			LoginValues = (Hashtable)result.Value;
 
-			// Replace LLSD variables with object representations
 			System.Text.RegularExpressions.Regex LLSDtoJSON = 
-				new System.Text.RegularExpressions.Regex(@"('|r([0-9]))");
+				new System.Text.RegularExpressions.Regex(@"('|r([0-9])|r(\-))");
+			string json;
+			IDictionary jsonObject = null;
+			LLVector3d vector = null;
+			LLVector3d posVector = null;
+			LLVector3d lookatVector = null;
+			U64 regionhandle = null;
 
-			// Convert LLSD string to JSON
-			string json = "{vector:" + LLSDtoJSON.Replace((string)LoginValues["look_at"], "$2") + "}";
+			if (LoginValues.Contains("look_at"))
+			{
+				// Replace LLSD variables with object representations
 
-			// Convert JSON string to a JSON object
-			IDictionary jsonObject = JsonFacade.fromJSON(json);
-			JSONArray jsonVector = (JSONArray)jsonObject["vector"];
+				// Convert LLSD string to JSON
+				json = "{vector:" + LLSDtoJSON.Replace((string)LoginValues["look_at"], "$2") + "}";
 
-			// Convert the JSON object to an LLVector3d
-			LLVector3d vector = new LLVector3d((double)jsonVector[0], (double)jsonVector[1], 
-				(double)jsonVector[2]);
+				// Convert JSON string to a JSON object
+				jsonObject = JsonFacade.fromJSON(json);
+				JSONArray jsonVector = (JSONArray)jsonObject["vector"];
 
-			LoginValues["look_at"] = vector;
+				// Convert the JSON object to an LLVector3d
+				vector = new LLVector3d(Convert.ToDouble(jsonVector[0]), 
+					Convert.ToDouble(jsonVector[1]), Convert.ToDouble(jsonVector[2]));
 
-			// Convert LLSD string to JSON
-			json = LLSDtoJSON.Replace((string)LoginValues["home"], "$2");
+				LoginValues["look_at"] = vector;
+			}
 
-			// Convert JSON string to an object
-			jsonObject = JsonFacade.fromJSON(json);
+			if (LoginValues.Contains("home"))
+			{
+				// Convert LLSD string to JSON
+				json = LLSDtoJSON.Replace((string)LoginValues["home"], "$2");
 
-			// Create the position vector
-			JSONArray array = (JSONArray)jsonObject["position"];
-			LLVector3d posVector = new LLVector3d((double)array[0], (double)array[1], (double)array[2]);
+				// Convert JSON string to an object
+				jsonObject = JsonFacade.fromJSON(json);
 
-			// Create the look_at vector
-			array = (JSONArray)jsonObject["look_at"];
-			LLVector3d lookatVector = new LLVector3d((double)array[0], (double)array[1], (double)array[2]);
+				// Create the position vector
+				JSONArray array = (JSONArray)jsonObject["position"];
+				posVector = new LLVector3d(Convert.ToDouble(array[0]), Convert.ToDouble(array[1]), 
+					Convert.ToDouble(array[2]));
 
-			// Create the regionhandle U64
-			array = (JSONArray)jsonObject["region_handle"];
-			U64 regionhandle = new U64((int)array[0], (int)array[1]);
+				// Create the look_at vector
+				array = (JSONArray)jsonObject["look_at"];
+				lookatVector = new LLVector3d(Convert.ToDouble(array[0]), 
+					Convert.ToDouble(array[1]), Convert.ToDouble(array[2]));
 
-			// Create a hashtable to hold the home values
-			Hashtable home = new Hashtable();
-			home["position"] = posVector;
-			home["look_at"] = lookatVector;
-			home["region_handle"] = regionhandle;
+				// Create the regionhandle U64
+				array = (JSONArray)jsonObject["region_handle"];
+				regionhandle = new U64((int)array[0], (int)array[1]);
 
-			LoginValues["home"] = home;
+				// Create a hashtable to hold the home values
+				Hashtable home = new Hashtable();
+				home["position"] = posVector;
+				home["look_at"] = lookatVector;
+				home["region_handle"] = regionhandle;
+
+				LoginValues["home"] = home;
+			}
 
 			if ((string)LoginValues["login"] == "false")
 			{
