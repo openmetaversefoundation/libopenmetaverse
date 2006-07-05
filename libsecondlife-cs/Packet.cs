@@ -34,6 +34,71 @@ namespace libsecondlife
 	{
 		public object Data;
 		public MapField Layout;
+
+		public override string ToString()
+		{
+			string output = "";
+
+			if (Layout.Type == FieldType.Variable || Layout.Type == FieldType.Fixed)
+			{
+				bool printable = true;
+				byte[] byteArray = (byte[])Data;
+
+				for (int i = 0; i < byteArray.Length; ++i)
+				{
+					// Check if there are any unprintable characters in the array
+					if ((byteArray[i] < 0x20 || byteArray[i] > 0x7E) && byteArray[i] != 0x09
+						&& byteArray[i] != 0x0D)
+					{
+						printable = false;
+					}
+				}
+
+				if (printable)
+				{
+					output += System.Text.Encoding.ASCII.GetChars(byteArray, 0, byteArray.Length);
+				}
+				else
+				{
+					for (int i = 0; i < byteArray.Length; i += 16)
+					{
+						output += Layout.Name + ": ";
+
+						for (int j = 0; j < 16; j++)
+						{
+							if ((i + j) < byteArray.Length)
+							{
+								output += String.Format("{0:X} ", byteArray[i + j]);
+							}
+							else
+							{
+								output += "   ";
+							}
+						}
+
+						for (int j = 0; j < 16 && (i + j) < byteArray.Length; j++)
+						{
+							if (byteArray[i + j] >= 0x20 && byteArray[i + j] < 0x7E)
+							{
+								output += (char)byteArray[i + j];
+							}
+							else
+							{
+								output += ".";
+							}
+						}
+
+						output += "\n";
+					}
+				}
+			}
+			else
+			{
+				output += Layout.Name + ": " + Data.ToString();
+			}
+
+			return output;
+		}
 	}
 
 	public struct Block
@@ -334,11 +399,11 @@ namespace libsecondlife
 
 			foreach (Block block in blocks)
 			{
-				output += block.Layout.Name + "\n";
+				output += "-- " + block.Layout.Name + " --\n";
 
 				foreach (Field field in block.Fields)
 				{
-					output += " " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
+					output += field.ToString() + "\n";
 				}
 			}
 
@@ -353,24 +418,24 @@ namespace libsecondlife
 					return byteArray[pos];
 				case FieldType.U16:
 				case FieldType.IPPORT:
-					return (ushort)(byteArray[pos] + byteArray[pos + 1] << 8);
+					return (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
 				case FieldType.U32:
-					return (uint)(byteArray[pos] + byteArray[pos + 1] << 8 +
-						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24);
+					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
 				case FieldType.U64:
 					return new U64(byteArray, pos);
 				case FieldType.S8:
 					return (sbyte)byteArray[pos];
 				case FieldType.S16:
-					return (short)(byteArray[pos] + byteArray[pos + 1] << 8);
+					return (short)(byteArray[pos] + (byteArray[pos + 1] << 8));
 				case FieldType.S32:
-					return (int)(byteArray[pos] + byteArray[pos + 1] << 8 +
-						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24);
+					return byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24);
 				case FieldType.S64:
-					return (long)(byteArray[pos] + byteArray[pos + 1] << 8 +
-						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24 +
-						byteArray[pos + 4] << 32 + byteArray[pos + 5] << 40 +
-						byteArray[pos + 6] << 48 + byteArray[pos + 7] << 56);
+					return (long)(byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24) +
+						(byteArray[pos + 4] << 32) + (byteArray[pos + 5] << 40) +
+						(byteArray[pos + 6] << 48) + (byteArray[pos + 7] << 56));
 				case FieldType.F32:
 					return BitConverter.ToSingle(byteArray, pos); // FIXME
 				case FieldType.F64:
@@ -388,8 +453,8 @@ namespace libsecondlife
 				case FieldType.LLQuaternion:
 					return new LLQuaternion(byteArray, pos);
 				case FieldType.IPADDR:
-					uint address = (uint)(byteArray[pos] + byteArray[pos + 1] << 8 +
-						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24);
+					uint address = (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
 					return new IPAddress(address);
 				case FieldType.Variable:
 				case FieldType.Fixed:
