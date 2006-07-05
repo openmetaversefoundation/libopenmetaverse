@@ -46,30 +46,20 @@ namespace libsecondlife
 	{
 		public byte[] Data;
 		public MapPacket Layout;
+
 		public ushort Sequence
 		{
 			get
 			{
-				short sequence = BitConverter.ToInt16(Data, 2);
-				// TODO: To support big endian platforms, we need to replace NetworkToHostOrder with
-				//       a big endian to little endian function
-				return (ushort)IPAddress.NetworkToHostOrder(sequence);
+				// The sequence number is the third and fourth bytes of the packet, stored 
+				// in network order
+				return (ushort)(Data[2] * 256 + Data[3]);
 			}
 
 			set
 			{
-				byte[] sequence = BitConverter.GetBytes(value);
-
-				if (BitConverter.IsLittleEndian)
-				{
-					Data[2] = sequence[1];
-					Data[3] = sequence[0];
-				}
-				else
-				{
-					Data[2] = sequence[0];
-					Data[3] = sequence[1];
-				}
+				Data[2] = (byte)(value / 256);
+				Data[3] = (byte)(value % 256);
 			}
 		}
 
@@ -93,20 +83,24 @@ namespace libsecondlife
 					// Set the low frequency identifier bits
 					byte[] lowHeader = {0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF};
 					Array.Copy(lowHeader, 0, Data, 0, 6);
-					// Store the packet ID in big endian format
-					short id = IPAddress.HostToNetworkOrder((short)Layout.ID);
-					Array.Copy(BitConverter.GetBytes(id), 0, Data, 6, 2);
+
+					// Store the packet ID in network order
+					Data[6] = (byte)(Layout.ID / 256);
+					Data[7] = (byte)(Layout.ID % 256);
+
 					break;
 				case PacketFrequency.Medium:
 					// Set the medium frequency identifier bit
 					byte[] mediumHeader = {0x00, 0x00, 0x00, 0x00, 0xFF};
 					Array.Copy(mediumHeader, 0, Data, 0, 5);
 					Data[5] = (byte)Layout.ID;
+
 					break;
 				case PacketFrequency.High:
 					byte[] highHeader = {0x00, 0x00, 0x00, 0x00};
 					Array.Copy(highHeader, 0, Data, 0, 4);
 					Data[4] = (byte)Layout.ID;
+
 					break;
 			}
 		}
@@ -133,8 +127,7 @@ namespace libsecondlife
 				if ((byte)data[5] == 0xFF)
 				{
 					// Low frequency
-					command = BitConverter.ToUInt16(data, 6);
-					command = (ushort)IPAddress.NetworkToHostOrder((short)command);
+					command = (ushort)(data[6] * 256 + data[7]);
 
 					Layout = protocol.Command(command, PacketFrequency.Low);
 				}
@@ -230,7 +223,7 @@ namespace libsecondlife
 								// Field length described with two bytes
 								if (pos + 1 < Data.Length)
 								{
-									fieldSize = BitConverter.ToUInt16(Data, pos);
+									fieldSize = (ushort)(Data[pos] + Data[pos + 1] * 256);
 									pos += 2;
 								}
 								else
@@ -316,6 +309,22 @@ namespace libsecondlife
 				return blocks;
 		}
 
+		public object Field(string name)
+		{
+			foreach (Block block in Blocks())
+			{
+				foreach (Field field in block.Fields)
+				{
+					if (field.Layout.Name == name)
+					{
+						return field.Data;
+					}
+				}
+			}
+
+			return null;
+		}
+
 		public override string ToString()
 		{
 			string output = "";
@@ -343,23 +352,29 @@ namespace libsecondlife
 				case FieldType.U8:
 					return byteArray[pos];
 				case FieldType.U16:
-					return BitConverter.ToUInt16(byteArray, pos);
+				case FieldType.IPPORT:
+					return (ushort)(byteArray[pos] + byteArray[pos + 1] << 8);
 				case FieldType.U32:
-					return BitConverter.ToUInt32(byteArray, pos);
+					return (uint)(byteArray[pos] + byteArray[pos + 1] << 8 +
+						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24);
 				case FieldType.U64:
 					return new U64(byteArray, pos);
 				case FieldType.S8:
 					return (sbyte)byteArray[pos];
 				case FieldType.S16:
-					return BitConverter.ToInt16(byteArray, pos);
+					return (short)(byteArray[pos] + byteArray[pos + 1] << 8);
 				case FieldType.S32:
-					return BitConverter.ToInt32(byteArray, pos);
+					return (int)(byteArray[pos] + byteArray[pos + 1] << 8 +
+						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24);
 				case FieldType.S64:
-					return BitConverter.ToInt64(byteArray, pos);
+					return (long)(byteArray[pos] + byteArray[pos + 1] << 8 +
+						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24 +
+						byteArray[pos + 4] << 32 + byteArray[pos + 5] << 40 +
+						byteArray[pos + 6] << 48 + byteArray[pos + 7] << 56);
 				case FieldType.F32:
-					return BitConverter.ToSingle(byteArray, pos);
+					return BitConverter.ToSingle(byteArray, pos); // FIXME
 				case FieldType.F64:
-					return BitConverter.ToDouble(byteArray, pos);
+					return BitConverter.ToDouble(byteArray, pos); // FIXME
 				case FieldType.LLUUID:
 					return new LLUUID(byteArray, pos);
 				case FieldType.BOOL:
@@ -373,20 +388,13 @@ namespace libsecondlife
 				case FieldType.LLQuaternion:
 					return new LLQuaternion(byteArray, pos);
 				case FieldType.IPADDR:
-					uint address = BitConverter.ToUInt32(byteArray, pos);
+					uint address = (uint)(byteArray[pos] + byteArray[pos + 1] << 8 +
+						byteArray[pos + 2] << 16 + byteArray[pos + 3] << 24);
 					return new IPAddress(address);
-				case FieldType.IPPORT:
-					ushort port = BitConverter.ToUInt16(byteArray, pos);
-					return (ushort)IPAddress.NetworkToHostOrder((short)port);
 				case FieldType.Variable:
 				case FieldType.Fixed:
 					byte[] bytes = new byte[fieldSize];
-
-					for (int i = 0; i < fieldSize; ++i)
-					{
-						bytes[i] = byteArray[pos + i];
-					}
-
+					Array.Copy(byteArray, pos, bytes, 0, fieldSize);
 					return bytes;
 			}
 
@@ -439,9 +447,8 @@ namespace libsecondlife
 				case PacketFrequency.Low:
 					byteArray[4] = 0xFF;
 					byteArray[5] = 0xFF;
-					//short commandID = ;
-					Array.Copy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)packetMap.ID)), 0, 
-						byteArray, 6, 2);
+					byteArray[6] = (byte)(packetMap.ID / 256);
+					byteArray[7] = (byte)(packetMap.ID % 256);
 					length = 8;
 					break;
 			}
@@ -520,34 +527,45 @@ namespace libsecondlife
 										switch (fieldMap.Type)
 										{
 											case FieldType.U8:
-												byteArray[length] = (byte)field;
-												length++;
+												byteArray[length++] = (byte)field;
 												break;
 											case FieldType.U16:
-												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
-												length += 2;
+											case FieldType.IPPORT:
+												ushort fieldUShort = (ushort)field;
+												byteArray[length++] = (byte)(fieldUShort % 256);
+												fieldUShort >>= 8;
+												byteArray[length++] = (byte)(fieldUShort % 256);
 												break;
 											case FieldType.U32:
-												Array.Copy(BitConverter.GetBytes((uint)field), 0, byteArray, length, 4);
-												length += 4;
+												uint fieldUInt = (uint)field;
+												byteArray[length++] = (byte)(fieldUInt % 256);
+												fieldUInt >>= 8;
+												byteArray[length++] = (byte)(fieldUInt % 256);
+												fieldUInt >>= 8;
+												byteArray[length++] = (byte)(fieldUInt % 256);
+												fieldUInt >>= 8;
+												byteArray[length++] = (byte)(fieldUInt % 256);
 												break;
 											case FieldType.U64:
+												// FIXME: Apply endianness patch
 												Array.Copy(((U64)field).GetBytes(), 0, byteArray, length, 8);
 												length += 8;
 												break;
 											case FieldType.S8:
-												byteArray[length] = (byte)field;
-												length++;
+												byteArray[length++] = (byte)field;
 												break;
 											case FieldType.S16:
+												// FIXME: Apply endianness patch
 												Array.Copy(BitConverter.GetBytes((short)field), 0, byteArray, length, 2);
 												length += 2;
 												break;
 											case FieldType.S32:
+												// FIXME: Apply endianness patch
 												Array.Copy(BitConverter.GetBytes((int)field), 0, byteArray, length, 4);
 												length += 4;
 												break;
 											case FieldType.S64:
+												// FIXME: Apply endianness patch
 												Array.Copy(BitConverter.GetBytes((long)field), 0, byteArray, length, 8);
 												length += 8;
 												break;
@@ -584,10 +602,6 @@ namespace libsecondlife
 												length += 16;
 												break;
 											case FieldType.IPADDR:
-												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
-												length += 2;
-												break;
-											case FieldType.IPPORT:
 												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
 												length += 2;
 												break;
@@ -745,293 +759,87 @@ namespace libsecondlife
 			return new Packet(byteArray, length, protocol);
 		}
 
-		public static Packet UseCircuitCode(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID, uint code)
-		{
-			Packet packet = new Packet("UseCircuitCode", protocol, 44);
-
-			// Append the payload
-			Array.Copy(agentID.Data, 0, packet.Data, 8, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 24, 16);
-			Array.Copy(BitConverter.GetBytes(code), 0, packet.Data, 40, 4);
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
-
-		public static Packet CompleteAgentMovement(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID, uint code)
-		{
-			Packet packet = new Packet("CompleteAgentMovement", protocol, 44);
-
-			// Append the payload
-			Array.Copy(agentID.Data, 0, packet.Data, 8, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 24, 16);
-			Array.Copy(BitConverter.GetBytes(code), 0, packet.Data, 40, 4);
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
-		
 		public static Packet PacketAck(ProtocolManager protocol, ArrayList acks)
 		{
-			int pos = 9;
+			Hashtable blocks = new Hashtable();
+			Hashtable fields;
 
-			// Size of this packet is header (8) + block count (1) + 4 * number of blocks
-			Packet packet = new Packet("PacketAck", protocol, 9 + acks.Count * 4);
-
-			// Set the payload size
-			packet.Data[8] = (byte)acks.Count;
-
-			// Append the payload
 			foreach (uint ack in acks)
 			{
-				Array.Copy(BitConverter.GetBytes(ack), 0, packet.Data, pos, 4);
-				pos += 4;
+				fields = new Hashtable();
+				fields["ID"] = ack;
+				blocks[fields] = "Packets";
 			}
 
-			return packet;
+			return BuildPacket("PacketAck", protocol, blocks);
+		}
+
+		public static Packet CompleteAgentMovement(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID,
+			uint circuitCode)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			fields["CircuitCode"] = circuitCode;
+			blocks[fields] = "AgentData";
+
+			return BuildPacket("CompleteAgentMovement", protocol, blocks);
+		}
+
+		public static Packet UseCircuitCode(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID,
+			uint circuitCode)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["ID"] = agentID;
+			fields["SessionID"] = sessionID;
+			fields["Code"] = circuitCode;
+			blocks[fields] = "CircuitCode";
+
+			return BuildPacket("UseCircuitCode", protocol, blocks);
 		}
 
 		public static Packet CompletePingCheck(ProtocolManager protocol, byte pingID)
 		{
-			Packet packet = new Packet("CompletePingCheck", protocol, 6);
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["PingID"] = pingID;
+			blocks[fields] = "PingID";
 
-			// Append the payload
-			packet.Data[5] = pingID;
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_ZEROCODED;
-
-			return packet;
+			return BuildPacket("CompletePingCheck", protocol, blocks);
 		}
 
 		public static Packet LogoutRequest(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID)
 		{
-			Packet packet = new Packet("LogoutRequest", protocol, 40);
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
 
-			Array.Copy(agentID.Data, 0, packet.Data, 8, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 24, 16);
-
-			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
-
-			return packet;
+			return BuildPacket("LogoutRequest", protocol, blocks);
 		}
 
-		public static Packet TeleportLocationRequest(ProtocolManager protocol, U64 regionHandle, LLVector3 lookAt,
-			LLVector3 position, LLUUID agentID, LLUUID sessionID)
+		public static Packet DirLandQuery(ProtocolManager protocol, bool reservedNewbie, bool forSale, LLUUID queryID, 
+			bool auction, uint queryFlags, LLUUID agentID, LLUUID sessionID)
 		{
-			Packet packet = new Packet("LogoutRequest", protocol, 72);
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
 
-			Array.Copy(regionHandle.GetBytes(), 0, packet.Data, 8, 8);
-			Array.Copy(lookAt.GetBytes(), 0, packet.Data, 16, 12);
-			Array.Copy(position.GetBytes(), 0, packet.Data, 28, 12);
-			Array.Copy(agentID.Data, 0, packet.Data, 40, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 56, 16);
+			fields["ReservedNewbie"] = reservedNewbie;
+			fields["ForSale"] = forSale;
+			fields["QueryID"] = queryID;
+			fields["Auction"] = auction;
+			fields["QueryFlags"] = queryFlags;
+			blocks[fields] = "QueryData";
 
-			packet.Data[0] = Helpers.MSG_RELIABLE;
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
 
-			return packet;
-		}
-
-		public static Packet DirLandQuery(ProtocolManager protocol, bool reservedNewbie, bool forSale, 
-			LLUUID queryID, bool auction, uint queryFlags, LLUUID agentID, LLUUID sessionID)
-		{
-			Packet packet = new Packet("DirLandQuery", protocol, 63);
-
-			packet.Data[8] = BitConverter.GetBytes(reservedNewbie)[0];
-			packet.Data[9] = BitConverter.GetBytes(forSale)[0];
-			Array.Copy(queryID.Data, 0, packet.Data, 10, 16);
-			packet.Data[26] = BitConverter.GetBytes(auction)[0];
-			Array.Copy(BitConverter.GetBytes(queryFlags), 0, packet.Data, 27, 4);
-			Array.Copy(agentID.Data, 0, packet.Data, 31, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 47, 16);
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
-
-		public static Packet DirFindQuery(ProtocolManager protocol, string queryText, LLUUID queryID,
-			LLUUID agentID, LLUUID sessionID)
-		{
-			int pos = 8;
-			Packet packet = new Packet("DirFindQuery", protocol, 66 + queryText.Length);
-
-			// QueryID
-			Array.Copy(queryID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// QueryFlags
-			packet.Data[pos] = 1;
-			pos += 8;
-
-			// Set the QueryText field and it's length byte
-			packet.Data[pos] = (byte)(queryText.Length + 1);
-			pos++;
-			System.Text.Encoding.UTF8.GetBytes(queryText, 0, queryText.Length, packet.Data, pos);
-			pos += queryText.Length + 1;
-
-			// Set the AgentID and SessionID
-			Array.Copy(agentID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-			Array.Copy(sessionID.Data, 0, packet.Data, pos, 16);
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
-
-		public static Packet DirPeopleQuerySimple(ProtocolManager protocol, string name, bool online, 
-			LLUUID agentID, LLUUID sessionID)
-		{
-			int pos = 12;
-			Packet packet = new Packet("DirPeopleQuery", protocol, 71 + name.Length);
-
-			// Set the name field and it's length byte
-			packet.Data[pos] = (byte)(name.Length + 1);
-			pos++;
-			System.Text.Encoding.UTF8.GetBytes(name, 0, name.Length, packet.Data, pos);
-			pos += name.Length + 1;
-
-			// Set the QueryID to 1
-			pos += 15;
-			packet.Data[pos] = 1;
-			pos ++;
-
-			// Set the online field
-			packet.Data[pos] = BitConverter.GetBytes(online)[0];
-			pos++;
-
-			// Skip some fields
-			pos += 8;
-
-			// Set the AgentID and SessionID
-			Array.Copy(agentID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-			Array.Copy(sessionID.Data, 0, packet.Data, pos, 16);
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
-
-		public static Packet ParcelInfoRequest(ProtocolManager protocol, LLUUID parcelID, LLUUID agentID, 
-			LLUUID sessionID)
-		{
-			Packet packet = new Packet("ParcelInfoRequest", protocol, 56);
-			
-			Array.Copy(parcelID.Data, 0, packet.Data, 8, 16);
-			Array.Copy(agentID.Data, 0, packet.Data, 24, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 40, 16);
-
-			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
-
-			return packet;
-		}
-
-		/*public static Packet TeleportLocationRequest(ProtocolManager protocol, U64 regionHandle, LLVector3 lookAt,
-			LLVector3 position, LLUUID agentID, LLUUID sessionID)
-		{
-			Packet packet = new Packet("TeleportLocationRequest", protocol, 72);
-
-			Array.Copy(regionHandle.GetBytes(), 0, packet.Data, 8, 8);
-			Array.Copy(lookAt.GetBytes(), 0, packet.Data, 16, 12);
-			Array.Copy(position.GetBytes(), 0, packet.Data, 28, 12);
-			Array.Copy(agentID.Data, 0, packet.Data, 40, 16);
-			Array.Copy(sessionID.Data, 0, packet.Data, 56, 16);
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
-
-			return packet;
-		}*/
-
-		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, LLUUID folderID, 
-			LLUUID agentID)
-		{
-			int packetLength = 8; // header
-			packetLength += 16; // OwnerID (UUID)
-			packetLength += 16; // FolderID (UUID)
-			packetLength += 4; // Sort Order (signed integer? - S32)
-			packetLength += 1; // FetchFolders (byte? - BOOL)
-			packetLength += 1; // FetchItmes (byte? - BOOL)
-			packetLength += 16; // AgentID (UUID)
-
-
-			Packet packet = new Packet("FetchInventoryDescendents", protocol, packetLength);
-
-			int pos = 8; // Leave room for header
-
-			// OwnerID
-			Array.Copy(ownerID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// FolderID
-			Array.Copy(folderID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// Sort Order (Any ideas on what the valid values are here?)
-			Array.Copy(BitConverter.GetBytes((int)1), 0, packet.Data, pos, 4);
-			pos += 4;
-
-			// FetchFolders
-			packet.Data[pos] = 1;
-			pos += 1;
-
-			// FetchItemss
-			packet.Data[pos] = 1;
-			pos += 1;
-
-			// AgentID
-			Array.Copy(agentID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// Set the packet flags
-			//			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
-			packet.Data[0] = Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
-
-		public static Packet RequestInventoryAsset(ProtocolManager protocol, LLUUID agentID, LLUUID queryUD, 
-			LLUUID ownerID, LLUUID itemID)
-		{
-			int packetLength = 8; // header
-			packetLength += 16; // AgentID (UUID)
-			packetLength += 16; // QueryID (UUID)
-			packetLength += 16; // OwnerID (UUID)
-			packetLength += 16; // ItemID (UUID)
-
-			Packet packet = new Packet("RequestInventoryAsset", protocol, packetLength);
-
-			int pos = 8; // Leave room for header
-
-			// AgentID
-			Array.Copy(agentID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// QueryID
-			Array.Copy(queryUD.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// OwnerID
-			Array.Copy(ownerID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// ItemID
-			Array.Copy(itemID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// Set the packet flags
-			packet.Data[0] = Helpers.MSG_ZEROCODED + Helpers.MSG_RELIABLE;
-
-			return packet;
+			return BuildPacket("DirLandQuery", protocol, blocks);
 		}
 
 		public static Packet InstantMessage(ProtocolManager protocol, LLUUID targetAgentID, LLUUID myAgentID, 
@@ -1055,8 +863,7 @@ namespace libsecondlife
 			fields["BinaryBucket"] = binaryBucket;
 			blocks[fields] = "MessageBlock";
 
-			Packet packet = PacketBuilder.BuildPacket("ImprovedInstantMessage", protocol, blocks);
-			return packet;
+			return BuildPacket("ImprovedInstantMessage", protocol, blocks);
 		}
 
 		public static Packet Chat(ProtocolManager protocol, LLUUID myAgentID, LLUUID mySessionID, string message,
@@ -1085,165 +892,164 @@ namespace libsecondlife
 			conversationData["Position"] = position;
 			blocks[conversationData] = "ConversationData";
 
-			Packet packet = PacketBuilder.BuildPacket("ChatFromViewer",protocol,blocks);
-			return packet;
+			return BuildPacket("ChatFromViewer", protocol, blocks);
 		}
 
-		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
-			LLVector3 position, LLVector3 rayStart)
-		{
-			LLUUID woodTexture = new LLUUID("8955674724cb43ed920b47caed15465f");
-			LLUUID rayTargetID = new LLUUID("0f5d10f1f0a38634e893b70e00000000");
-			int length = 6 + 60 + 2 + objectData.NameValue.Length + 1 + 36 + 2 + 40 + 29;
-			Packet packet = new Packet("ObjectAdd", protocol, length);
-			int pos = 6;
-
-			// InventoryData appears 0 times
-			packet.Data[pos] = 0;
-			pos++;
-
-			// InventoryFile.Filename is of 1 length
-			packet.Data[pos] = 1;
-			pos++;
-
-			// InventoryFile.Filename is just a null terminator
-			packet.Data[pos] = 0;
-			pos++;
-
-			// U32 AddFlags = 2
-			uint addFlags = 2;
-			Array.Copy(BitConverter.GetBytes(addFlags), 0, packet.Data, pos, 4);
-			pos += 4;
-
-			packet.Data[pos] = (byte)objectData.PathTwistBegin;
-			pos++;
-
-			packet.Data[pos] = objectData.PathEnd;
-			pos++;
-
-			packet.Data[pos] = objectData.ProfileBegin;
-			pos++;
-
-			packet.Data[pos] = (byte)objectData.PathRadiusOffset;
-			pos++;
-
-			packet.Data[pos] = (byte)objectData.PathSkew;
-			pos++;
-
-			// SenderID
-			Array.Copy(senderID.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// RayStart
-			Array.Copy(rayStart.GetBytes(), 0, packet.Data, pos, 12);
-			pos += 12;
-
-			packet.Data[pos] = objectData.ProfileCurve;
-			pos++;
-
-			packet.Data[pos] = objectData.PathScaleX;
-			pos++;
-
-			packet.Data[pos] = objectData.PathScaleY;
-			pos++;
-
-			// Set GroupID to zero
-			pos += 16;
-
-			packet.Data[pos] = objectData.Material;
-			pos++;
-
-			if (objectData.NameValue.Length != 0)
-			{
-				// NameValue, begins with two bytes describing the size
-				Array.Copy(BitConverter.GetBytes((ushort)(objectData.NameValue.Length + 1)), 0, packet.Data, pos, 2);
-				pos += 2;
-				System.Text.Encoding.UTF8.GetBytes(objectData.NameValue, 0, objectData.NameValue.Length, packet.Data, pos);
-				// Jump an extra spot for the null terminator
-				pos += objectData.NameValue.Length + 1;
-			}
-			else
-			{
-				// Set the two size bytes to zero and increment
-				pos += 2;
-			}
-
-			packet.Data[pos] = objectData.PathShearX;
-			pos++;
-
-			packet.Data[pos] = objectData.PathShearY;
-			pos++;
-
-			packet.Data[pos] = (byte)objectData.PathTaperX;
-			pos++;
-
-			packet.Data[pos] = (byte)objectData.PathTaperY;
-			pos++;
-
-			// RayEndIsIntersection
-			packet.Data[pos] = 0;
-			pos++;
-
-			// RayEnd is the position to place the object
-			Array.Copy(position.GetBytes(), 0, packet.Data, pos, 12);
-			pos += 12;
-
-			packet.Data[pos] = objectData.ProfileEnd;
-			pos++;
-
-			packet.Data[pos] = objectData.PathBegin;
-			pos++;
-
-			// BypassRaycast is 0
-			packet.Data[pos] = 0;
-			pos++;
-
-			// PCode? set to 9
-			packet.Data[pos] = 9;
-			pos++;
-
-			packet.Data[pos] = objectData.PathCurve;
-			pos++;
-
-			// Scale
-			Array.Copy(objectData.Scale.GetBytes(), 0, packet.Data, pos, 12);
-			pos += 12;
-
-			// State? is 0
-			packet.Data[pos] = 0;
-			pos++;
-
-			packet.Data[pos] = (byte)objectData.PathTwist;
-			pos++;
-
-			// TextureEntry, starts with two bytes describing the size
-			Array.Copy(BitConverter.GetBytes((ushort)40), 0, packet.Data, pos, 2);
-			pos += 2;
-			Array.Copy(woodTexture.Data, 0, packet.Data, pos, 16);
-			pos += 16;
-			// Fill in the rest of TextureEntry
-			pos += 19;
-			packet.Data[pos] = 0xe0;
-			pos += 5;
-
-			packet.Data[pos] = objectData.ProfileHollow;
-			pos++;
-
-			packet.Data[pos] = objectData.PathRevolutions;
-			pos++;
-
-			// Rotation
-			Array.Copy(objectData.Rotation.GetBytes(), 0, packet.Data, pos, 16);
-			pos += 16;
-
-			// RayTargetID
-			Array.Copy(rayTargetID.Data, 0, packet.Data, pos, 12);
-			pos += 12;
-			
-			// Set the packet flags
-			packet.Data[0] = /*Helpers.MSG_ZEROCODED +*/ Helpers.MSG_RELIABLE;
-
-			return packet;
-		}
+//		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
+//			LLVector3 position, LLVector3 rayStart)
+//		{
+//			LLUUID woodTexture = new LLUUID("8955674724cb43ed920b47caed15465f");
+//			LLUUID rayTargetID = new LLUUID("0f5d10f1f0a38634e893b70e00000000");
+//			int length = 6 + 60 + 2 + objectData.NameValue.Length + 1 + 36 + 2 + 40 + 29;
+//			Packet packet = new Packet("ObjectAdd", protocol, length);
+//			int pos = 6;
+//
+//			// InventoryData appears 0 times
+//			packet.Data[pos] = 0;
+//			pos++;
+//
+//			// InventoryFile.Filename is of 1 length
+//			packet.Data[pos] = 1;
+//			pos++;
+//
+//			// InventoryFile.Filename is just a null terminator
+//			packet.Data[pos] = 0;
+//			pos++;
+//
+//			// U32 AddFlags = 2
+//			uint addFlags = 2;
+//			Array.Copy(BitConverter.GetBytes(addFlags), 0, packet.Data, pos, 4);
+//			pos += 4;
+//
+//			packet.Data[pos] = (byte)objectData.PathTwistBegin;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathEnd;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.ProfileBegin;
+//			pos++;
+//
+//			packet.Data[pos] = (byte)objectData.PathRadiusOffset;
+//			pos++;
+//
+//			packet.Data[pos] = (byte)objectData.PathSkew;
+//			pos++;
+//
+//			// SenderID
+//			Array.Copy(senderID.Data, 0, packet.Data, pos, 16);
+//			pos += 16;
+//
+//			// RayStart
+//			Array.Copy(rayStart.GetBytes(), 0, packet.Data, pos, 12);
+//			pos += 12;
+//
+//			packet.Data[pos] = objectData.ProfileCurve;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathScaleX;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathScaleY;
+//			pos++;
+//
+//			// Set GroupID to zero
+//			pos += 16;
+//
+//			packet.Data[pos] = objectData.Material;
+//			pos++;
+//
+//			if (objectData.NameValue.Length != 0)
+//			{
+//				// NameValue, begins with two bytes describing the size
+//				Array.Copy(BitConverter.GetBytes((ushort)(objectData.NameValue.Length + 1)), 0, packet.Data, pos, 2);
+//				pos += 2;
+//				System.Text.Encoding.UTF8.GetBytes(objectData.NameValue, 0, objectData.NameValue.Length, packet.Data, pos);
+//				// Jump an extra spot for the null terminator
+//				pos += objectData.NameValue.Length + 1;
+//			}
+//			else
+//			{
+//				// Set the two size bytes to zero and increment
+//				pos += 2;
+//			}
+//
+//			packet.Data[pos] = objectData.PathShearX;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathShearY;
+//			pos++;
+//
+//			packet.Data[pos] = (byte)objectData.PathTaperX;
+//			pos++;
+//
+//			packet.Data[pos] = (byte)objectData.PathTaperY;
+//			pos++;
+//
+//			// RayEndIsIntersection
+//			packet.Data[pos] = 0;
+//			pos++;
+//
+//			// RayEnd is the position to place the object
+//			Array.Copy(position.GetBytes(), 0, packet.Data, pos, 12);
+//			pos += 12;
+//
+//			packet.Data[pos] = objectData.ProfileEnd;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathBegin;
+//			pos++;
+//
+//			// BypassRaycast is 0
+//			packet.Data[pos] = 0;
+//			pos++;
+//
+//			// PCode? set to 9
+//			packet.Data[pos] = 9;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathCurve;
+//			pos++;
+//
+//			// Scale
+//			Array.Copy(objectData.Scale.GetBytes(), 0, packet.Data, pos, 12);
+//			pos += 12;
+//
+//			// State? is 0
+//			packet.Data[pos] = 0;
+//			pos++;
+//
+//			packet.Data[pos] = (byte)objectData.PathTwist;
+//			pos++;
+//
+//			// TextureEntry, starts with two bytes describing the size
+//			Array.Copy(BitConverter.GetBytes((ushort)40), 0, packet.Data, pos, 2);
+//			pos += 2;
+//			Array.Copy(woodTexture.Data, 0, packet.Data, pos, 16);
+//			pos += 16;
+//			// Fill in the rest of TextureEntry
+//			pos += 19;
+//			packet.Data[pos] = 0xe0;
+//			pos += 5;
+//
+//			packet.Data[pos] = objectData.ProfileHollow;
+//			pos++;
+//
+//			packet.Data[pos] = objectData.PathRevolutions;
+//			pos++;
+//
+//			// Rotation
+//			Array.Copy(objectData.Rotation.GetBytes(), 0, packet.Data, pos, 16);
+//			pos += 16;
+//
+//			// RayTargetID
+//			Array.Copy(rayTargetID.Data, 0, packet.Data, pos, 12);
+//			pos += 12;
+//			
+//			// Set the packet flags
+//			packet.Data[0] = /*Helpers.MSG_ZEROCODED +*/ Helpers.MSG_RELIABLE;
+//
+//			return packet;
+//		}
 	}
 }
