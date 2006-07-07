@@ -87,7 +87,7 @@ namespace libsecondlife
 	/// </summary>
 	public class Helpers
 	{
-		public readonly static string VERSION = "libsecondlife-cs 0.0.4";
+		public readonly static string VERSION = "libsecondlife-cs 0.0.5";
 
 		public const byte MSG_APPENDED_ACKS = 0x10;
 		public const byte MSG_RESENT = 0x20;

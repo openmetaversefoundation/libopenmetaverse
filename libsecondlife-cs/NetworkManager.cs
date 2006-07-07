@@ -806,33 +806,11 @@ namespace libsecondlife
 			CurrentCircuit = circuit;
 
 			// Move our agent in to the sim to complete the connection
-			Hashtable blocks = new Hashtable();
-			Hashtable fields = new Hashtable();
-			fields["AgentID"] = AgentID;
-			fields["SessionID"] = SessionID;
-			fields["CircuitCode"] = circuitCode;
-			blocks[fields] = "AgentData";
-			Packet packet = PacketBuilder.BuildPacket("CompleteAgentMovement", Protocol, blocks);
-
+			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
 			SendPacket(packet);
 
 			// Send the first AgentUpdate to provide the sim with info on what the avatar is doing
-			blocks = new Hashtable();
-			fields = new Hashtable();
-			fields["ID"] = AgentID;
-			fields["ControlFlags"] = (uint)0;
-			fields["CameraAtAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-			fields["Far"] = (float)128.0F; // Viewing distance
-			fields["CameraCenter"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-			fields["CameraLeftAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-			fields["HeadRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
-			fields["CameraUpAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-			fields["BodyRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
-			fields["Flags"] = (byte)221; // Why 221?
-			fields["State"] = (byte)221; // Why 221?
-			blocks[fields] = "AgentData";
-			packet = PacketBuilder.BuildPacket("AgentUpdate", Protocol, blocks);
-
+			packet = PacketBuilder.AgentUpdate(Protocol, AgentID);
 			SendPacket(packet);
 
 			return true;

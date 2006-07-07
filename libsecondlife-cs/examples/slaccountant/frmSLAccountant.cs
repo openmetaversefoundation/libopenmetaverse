@@ -490,8 +490,8 @@ namespace SLAccountant
 					fields["Height"] = (ushort)0;
 					fields["Width"] = (ushort)0;
 					blocks[fields] = "HeightWidthBlock";
-					Packet packet = PacketBuilder.BuildPacket("AgentHeightWidth", client.Protocol, blocks);
-					packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
+					Packet packet = PacketBuilder.BuildPacket("AgentHeightWidth", client.Protocol, blocks,
+						Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 
 					client.Network.SendPacket(packet);
 
@@ -501,8 +501,8 @@ namespace SLAccountant
 					fields["AgentID"] = client.Network.AgentID;
 					fields["SessionID"] = client.Network.SessionID;
 					blocks[fields] = "AgentData";
-					packet = PacketBuilder.BuildPacket("ConnectAgentToUserserver", client.Protocol, blocks);
-					packet.Data[0] = Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED;
+					packet = PacketBuilder.BuildPacket("ConnectAgentToUserserver", client.Protocol, blocks,
+						Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 
 					client.Network.SendPacket(packet);
 
@@ -512,8 +512,8 @@ namespace SLAccountant
 					fields["AgentID"] = client.Network.AgentID;
 					fields["TransactionID"] = LLUUID.GenerateUUID();
 					blocks[fields] = "MoneyData";
-					packet = PacketBuilder.BuildPacket("MoneyBalanceRequest", client.Protocol, blocks);
-					packet.Data[0] = Helpers.MSG_RELIABLE;
+					packet = PacketBuilder.BuildPacket("MoneyBalanceRequest", client.Protocol, blocks,
+						Helpers.MSG_RELIABLE);
 
 					client.Network.SendPacket(packet);
 
@@ -541,25 +541,10 @@ namespace SLAccountant
 					LLVector3 sizeVector = new LLVector3(0.45F, 0.6F, 1.831094F);
 					fields["Size"] = sizeVector;
 					blocks[fields] = "Sender";
-					packet = PacketBuilder.BuildPacket("AgentSetAppearance", client.Protocol, blocks);
-					packet.Data[0] = Helpers.MSG_RELIABLE;
+					packet = PacketBuilder.BuildPacket("AgentSetAppearance", client.Protocol, blocks,
+						Helpers.MSG_RELIABLE);
 
 					client.Network.SendPacket(packet);
-
-					// AgentUpdate
-					/*  1297 AgentData (01)
-						0030 ID (LLUUID / 1)
-						0116 ControlFlags (U32 / 1)
-						0131 CameraAtAxis (LLVector3 / 1)
-						0206 Far (F32 / 1)
-						0252 CameraCenter (LLVector3 / 1)
-						0253 CameraLeftAxis (LLVector3 / 1)
-						0350 HeadRotation (LLQuaternion / 1)
-						0607 CameraUpAxis (LLVector3 / 1)
-						0961 BodyRotation (LLQuaternion / 1)
-						1189 Flags (U8 / 1)
-						1255 State (U8 / 1)*/
-					;
 
 					txtFind.Enabled = cmdFind.Enabled = true;
 					txtTransfer.Enabled = cmdTransfer.Enabled = true;
@@ -602,14 +587,22 @@ namespace SLAccountant
 			fields["SessionID"] = client.Network.SessionID;
 			blocks[fields] = "AgentData";
 
-			Packet packet = PacketBuilder.BuildPacket("DirFindQuery", client.Protocol, blocks);
-			packet.Data[0] = Helpers.MSG_RELIABLE;
+			Packet packet = PacketBuilder.BuildPacket("DirFindQuery", client.Protocol, blocks,
+				Helpers.MSG_RELIABLE);
 
 			client.Network.SendPacket(packet);
 		}
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)
 		{
+			Packet im = PacketBuilder.InstantMessage(client.Protocol, 
+				new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
+				client.Network.AgentID, 0, LLUUID.GenerateUUID(), 
+				new LLVector3((float)client.Avatar.Position.X, (float)client.Avatar.Position.Y, 
+				(float)client.Avatar.Position.Z), (byte)0, (byte)0, new LLUUID(),
+				0, "Governor Linden", "This is definitely my favorite bug so far. -libsecondlife dev team", "");
+			client.Network.SendPacket(im);
+
 			int amount = 0;
 			
 			try
@@ -646,8 +639,8 @@ namespace SLAccountant
 			fields["SessionID"] = client.Network.SessionID;
 			blocks[fields] = "AgentData";
 
-			Packet packet = PacketBuilder.BuildPacket("MoneyTransferRequest", client.Protocol, blocks);
-			packet.Data[0] = Helpers.MSG_RELIABLE;
+			Packet packet = PacketBuilder.BuildPacket("MoneyTransferRequest", client.Protocol, blocks,
+				Helpers.MSG_RELIABLE);
 
 			client.Network.SendPacket(packet);
 		}

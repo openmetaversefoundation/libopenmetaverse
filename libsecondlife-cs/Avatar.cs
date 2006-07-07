@@ -178,7 +178,7 @@ namespace libsecondlife
 						{
 							Timestamp = (uint)field.Data;
 						}
-						else if(field.Layout.Name == "AgentName")
+						else if(field.Layout.Name == "FromAgentName")
 						{
 							AgentName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 						}
@@ -318,7 +318,8 @@ namespace libsecondlife
 			fields["AgentID"] = Client.Network.AgentID;
 			fields["SessionID"] = Client.Network.SessionID;
 			blocks[fields] = "AgentData";
-			Packet packet = PacketBuilder.BuildPacket("TeleportLocationRequest", Client.Protocol, blocks);
+			Packet packet = PacketBuilder.BuildPacket("TeleportLocationRequest", Client.Protocol, blocks, 
+				Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 
 			Helpers.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
 

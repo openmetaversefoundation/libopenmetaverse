@@ -106,7 +106,8 @@ namespace libsecondlife
 			fields["AgentID"] = Client.Network.AgentID;
 			fields["SessionID"] = Client.Network.SessionID;
 			blocks[fields] = "AgentData";
-			Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks);
+			Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks, 
+				Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 
 			// Start the timer
 			ParcelInfoTimer.Start();
@@ -165,7 +166,8 @@ namespace libsecondlife
 								fields["AgentID"] = Client.Network.AgentID;
 								fields["SessionID"] = Client.Network.SessionID;
 								blocks[fields] = "AgentData";
-								Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks);
+								Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks, 
+									Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 
 								Client.Network.SendPacket(parcelInfoPacket);
 

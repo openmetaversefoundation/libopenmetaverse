@@ -57,6 +57,7 @@ namespace libsecondlife
 				if (printable)
 				{
 					output += System.Text.Encoding.ASCII.GetChars(byteArray, 0, byteArray.Length);
+					output.Replace("\0", "");
 				}
 				else
 				{
@@ -484,7 +485,7 @@ namespace libsecondlife
 
 	public class PacketBuilder
 	{
-		public static Packet BuildPacket(string name, ProtocolManager protocol, Hashtable blocks)
+		public static Packet BuildPacket(string name, ProtocolManager protocol, Hashtable blocks, byte flags)
 		{
 			Hashtable fields;
 			ArrayList payload = new ArrayList();
@@ -821,7 +822,9 @@ namespace libsecondlife
 				#endregion EmptyBlock
 			}
 
-			return new Packet(byteArray, length, protocol);
+			Packet packet = new Packet(byteArray, length, protocol);
+			packet.Data[0] = flags;
+			return packet;
 		}
 
 		public static Packet PacketAck(ProtocolManager protocol, ArrayList acks)
@@ -836,7 +839,7 @@ namespace libsecondlife
 				blocks[fields] = "Packets";
 			}
 
-			return BuildPacket("PacketAck", protocol, blocks);
+			return BuildPacket("PacketAck", protocol, blocks, 0);
 		}
 
 		public static Packet CompleteAgentMovement(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID,
@@ -849,7 +852,7 @@ namespace libsecondlife
 			fields["CircuitCode"] = circuitCode;
 			blocks[fields] = "AgentData";
 
-			return BuildPacket("CompleteAgentMovement", protocol, blocks);
+			return BuildPacket("CompleteAgentMovement", protocol, blocks, Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 		}
 
 		public static Packet UseCircuitCode(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID,
@@ -862,7 +865,7 @@ namespace libsecondlife
 			fields["Code"] = circuitCode;
 			blocks[fields] = "CircuitCode";
 
-			return BuildPacket("UseCircuitCode", protocol, blocks);
+			return BuildPacket("UseCircuitCode", protocol, blocks, Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 		}
 
 		public static Packet CompletePingCheck(ProtocolManager protocol, byte pingID)
@@ -872,7 +875,28 @@ namespace libsecondlife
 			fields["PingID"] = pingID;
 			blocks[fields] = "PingID";
 
-			return BuildPacket("CompletePingCheck", protocol, blocks);
+			return BuildPacket("CompletePingCheck", protocol, blocks, Helpers.MSG_ZEROCODED);
+		}
+
+		public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["ID"] = agentID;
+			fields["ControlFlags"] = (uint)0;
+			fields["CameraAtAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+			fields["Far"] = (float)128.0F; // Viewing distance
+			fields["CameraCenter"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+			fields["CameraLeftAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+			fields["HeadRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
+			fields["CameraUpAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+			fields["BodyRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
+			fields["Flags"] = (byte)221; // Why 221?
+			fields["State"] = (byte)221; // Why 221?
+			blocks[fields] = "AgentData";
+
+			return PacketBuilder.BuildPacket("AgentUpdate", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
 
 		public static Packet LogoutRequest(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID)
@@ -883,7 +907,7 @@ namespace libsecondlife
 			fields["SessionID"] = sessionID;
 			blocks[fields] = "AgentData";
 
-			return BuildPacket("LogoutRequest", protocol, blocks);
+			return BuildPacket("LogoutRequest", protocol, blocks, Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 		}
 
 		public static Packet DirLandQuery(ProtocolManager protocol, bool reservedNewbie, bool forSale, LLUUID queryID, 
@@ -904,7 +928,7 @@ namespace libsecondlife
 			fields["SessionID"] = sessionID;
 			blocks[fields] = "AgentData";
 
-			return BuildPacket("DirLandQuery", protocol, blocks);
+			return BuildPacket("DirLandQuery", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
 
 		public static Packet InstantMessage(ProtocolManager protocol, LLUUID targetAgentID, LLUUID myAgentID, 
@@ -928,7 +952,7 @@ namespace libsecondlife
 			fields["BinaryBucket"] = binaryBucket;
 			blocks[fields] = "MessageBlock";
 
-			return BuildPacket("ImprovedInstantMessage", protocol, blocks);
+			return BuildPacket("ImprovedInstantMessage", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
 
 		public static Packet Chat(ProtocolManager protocol, LLUUID myAgentID, LLUUID mySessionID, string message,
@@ -957,7 +981,42 @@ namespace libsecondlife
 			conversationData["Position"] = position;
 			blocks[conversationData] = "ConversationData";
 
-			return BuildPacket("ChatFromViewer", protocol, blocks);
+			return BuildPacket("ChatFromViewer", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
+		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, 
+			LLUUID folderID, LLUUID agentID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["OwnerID"] = ownerID;
+			fields["FolderID"] = folderID;
+			fields["SortOrder"] = (int)1; // TODO: Any ideas on valid values for this field?
+			fields["FetchFolders"] = true;
+			fields["FetchItems"] = true;
+			blocks[fields] = "InventoryData";
+
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			blocks[fields] = "AgentData";
+
+			return BuildPacket("FetchInventoryDescendents", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
+		public static Packet RequestInventoryAsset(ProtocolManager protocol, LLUUID agentID, 
+			LLUUID queryID, LLUUID ownerID, LLUUID itemID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["AgentID"] = agentID;
+			fields["QueryID"] = queryID;
+			fields["OwnerID"] = ownerID;
+			fields["ItemID"] = itemID;
+			blocks[fields] = "QueryData";
+
+			return BuildPacket("RequestInventoryAsset", protocol, blocks, Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
 		}
 
 //		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
