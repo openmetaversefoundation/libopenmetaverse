@@ -108,7 +108,7 @@ namespace name2key
 			// Send the Query
 			string name = args[3] + " " + args[4];
 			LLUUID queryID = new LLUUID("00000000000000000000000000000001");
-			Packet packet = PacketBuilder.DirFindQuery(client.Protocol, name, queryID,
+			Packet packet = PacketBuilder.DirFindQuery(client.Protocol, name, 0, queryID,
 				client.Network.AgentID, client.Network.SessionID);
 			client.Network.SendPacket(packet);
 

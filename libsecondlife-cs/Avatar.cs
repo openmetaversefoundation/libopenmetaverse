@@ -115,6 +115,11 @@ namespace libsecondlife
 					}
 				}
 			}
+
+			// Send an AgentUpdate packet with the new camera location
+			packet = PacketBuilder.AgentUpdate(Client.Protocol, Client.Network.AgentID, 56.0F, 
+				new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z));
+			Client.Network.SendPacket(packet);
 		}
 
 		private void InstantMessageHandler(Packet packet, Circuit circuit)

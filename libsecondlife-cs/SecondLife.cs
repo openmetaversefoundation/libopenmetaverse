@@ -184,6 +184,27 @@ namespace libsecondlife
 		}
 
 		/// <summary>
+		/// Converting a variable length field (byte array) to a string
+		/// </summary>
+		/// <param name="data">The Data member of the Field class you are converting</param>
+		public static string FieldToString(object data)
+		{
+			byte[] byteArray;
+
+			try
+			{
+				byteArray = (byte[])data;
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Warning);
+				return "";
+			}
+
+			return System.Text.Encoding.ASCII.GetString(byteArray).Replace("\0", "");
+		}
+
+		/// <summary>
 		/// Decode a zerocoded byte array. Used to decompress packets marked 
 		/// with the zerocoded flag. Any time a zero is encountered, the 
 		/// next byte is a count of how many zeroes to expand. One zero is 

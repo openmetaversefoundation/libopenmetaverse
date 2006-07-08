@@ -809,10 +809,6 @@ namespace libsecondlife
 			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
 			SendPacket(packet);
 
-			// Send the first AgentUpdate to provide the sim with info on what the avatar is doing
-			packet = PacketBuilder.AgentUpdate(Protocol, AgentID);
-			SendPacket(packet);
-
 			return true;
 		}
 

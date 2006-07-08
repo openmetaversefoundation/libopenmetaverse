@@ -878,16 +878,17 @@ namespace libsecondlife
 			return BuildPacket("CompletePingCheck", protocol, blocks, Helpers.MSG_ZEROCODED);
 		}
 
-		public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID)
+		public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID, float drawDistance, 
+			LLVector3 cameraCenter)
 		{
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();
 
 			fields["ID"] = agentID;
 			fields["ControlFlags"] = (uint)0;
-			fields["CameraAtAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-			fields["Far"] = (float)128.0F; // Viewing distance
-			fields["CameraCenter"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+			fields["CameraAtAxis"] = new LLVector3(0.0F, 1.0F, 0.0F); // Looking straight ahead, north
+			fields["Far"] = drawDistance;
+			fields["CameraCenter"] = cameraCenter;
 			fields["CameraLeftAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
 			fields["HeadRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
 			fields["CameraUpAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
@@ -896,18 +897,39 @@ namespace libsecondlife
 			fields["State"] = (byte)221; // Why 221?
 			blocks[fields] = "AgentData";
 
-			return PacketBuilder.BuildPacket("AgentUpdate", protocol, blocks, Helpers.MSG_RELIABLE);
+			return PacketBuilder.BuildPacket("AgentUpdate", protocol, blocks, (byte)0);
 		}
 
 		public static Packet LogoutRequest(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID)
 		{
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();
+
 			fields["AgentID"] = agentID;
 			fields["SessionID"] = sessionID;
 			blocks[fields] = "AgentData";
 
 			return BuildPacket("LogoutRequest", protocol, blocks, Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
+		}
+
+		public static Packet DirFindQuery(ProtocolManager protocol, string query, int queryStart, LLUUID queryID,
+			LLUUID agentID, LLUUID sessionID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["QueryID"] = queryID;
+			fields["QueryFlags"] = (uint)1;
+			fields["QueryStart"] = queryStart;
+			fields["QueryText"] = query;
+			blocks[fields] = "QueryData";
+
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
+
+			return BuildPacket("DirFindQuery", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
 
 		public static Packet DirLandQuery(ProtocolManager protocol, bool reservedNewbie, bool forSale, LLUUID queryID, 
