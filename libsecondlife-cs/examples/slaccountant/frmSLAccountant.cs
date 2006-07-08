@@ -595,14 +595,6 @@ namespace SLAccountant
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)
 		{
-			Packet im = PacketBuilder.InstantMessage(client.Protocol, 
-				new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
-				client.Network.AgentID, 0, LLUUID.GenerateUUID(), 
-				new LLVector3((float)client.Avatar.Position.X, (float)client.Avatar.Position.Y, 
-				(float)client.Avatar.Position.Z), (byte)0, (byte)0, new LLUUID(),
-				0, "Governor Linden", "This is definitely my favorite bug so far. -libsecondlife dev team", "");
-			client.Network.SendPacket(im);
-
 			int amount = 0;
 			
 			try

@@ -953,9 +953,10 @@ namespace libsecondlife
 			return BuildPacket("DirLandQuery", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
 
-		public static Packet InstantMessage(ProtocolManager protocol, LLUUID targetAgentID, LLUUID myAgentID, 
-			uint parentEstateID, LLUUID regionID, LLVector3 position, byte offline, byte dialog, LLUUID id, 
-			uint timestamp, string myAgentName, string message, string binaryBucket) 
+		public static Packet ImprovedInstantMessage(ProtocolManager protocol, LLUUID targetAgentID, 
+			LLUUID myAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte offline, 
+			byte dialog, LLUUID id, uint timestamp, string myAgentName, string message, 
+			byte[] binaryBucket) 
 		{
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();

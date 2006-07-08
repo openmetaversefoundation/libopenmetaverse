@@ -271,16 +271,38 @@ namespace libsecondlife
 
 		public void InstantMessage(LLUUID target, string message) 
 		{
-			// Setup information about the 'world'
-			LLUUID RegionID = Client.CurrentRegion.ID;
-			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 			TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-			uint Now = (uint)( t.TotalSeconds );
-			string Name = Client.Avatar.FirstName + " " + Client.Avatar.LastName;
+			uint now = (uint)(t.TotalSeconds);
+			string name = FirstName + " " + LastName;
+
+			InstantMessage(name, LLUUID.GenerateUUID(), target, message, null);
+		}
+
+		public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
+		{
+			TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+			uint now = (uint)(t.TotalSeconds);
+
+			byte[] binaryBucket;
+			
+			if (conferenceIDs != null && conferenceIDs.Length > 0)
+			{
+				binaryBucket = new byte[16 * conferenceIDs.Length];
+
+				for (int i = 0; i < conferenceIDs.Length; ++i)
+				{
+					Array.Copy(conferenceIDs[i].Data, 0, binaryBucket, 16 * i, 16);
+				}
+			}
+			else
+			{
+				binaryBucket = new byte[0];
+			}
 
 			// Build the packet
-			Packet packet = PacketBuilder.InstantMessage(Client.Protocol, target, Client.Network.AgentID, 0, 
-				RegionID, Position, 0, 0, LLUUID.GenerateUUID(), Now, Name, message, "");
+			Packet packet = PacketBuilder.ImprovedInstantMessage(Client.Protocol, target, Client.Network.AgentID, 0, 
+				Client.CurrentRegion.ID, new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z), 
+				0, 0, sessionID, now, fromName, message, binaryBucket);
 
 			// Send the message
 			Client.Network.SendPacket(packet);
