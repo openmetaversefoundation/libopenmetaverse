@@ -275,7 +275,7 @@ namespace libsecondlife
 			DirLandTimer.Start();
 
 			LLUUID queryID = new LLUUID();
-			Packet landQuery = PacketBuilder.DirLandQuery(Client.Protocol, ReservedNewbie, ForSale, queryID, 
+			Packet landQuery = Packets.Sim.DirLandQuery(Client.Protocol, ReservedNewbie, ForSale, queryID, 
 				Auction, 0, Client.Network.AgentID, Client.Network.SessionID);
 			Client.Network.SendPacket(landQuery);
 

@@ -229,6 +229,23 @@ namespace libsecondlife
 			}
 		}
 
+		/// <summary>
+		/// Calculate an LLCRC for the given LLUUID
+		/// </summary>
+		/// <param name="uuid">The LLUUID to calculate the CRC value for</param>
+		/// <returns>The CRC checksum for this LLUUID</returns>
+		public uint CRC() 
+		{
+			uint retval = 0;
+
+			retval += (uint)((Data[3] << 24) + (Data[2] << 16) + (Data[1] << 8) + Data[0]);
+			retval += (uint)((Data[7] << 24) + (Data[6] << 16) + (Data[5] << 8) + Data[4]);
+			retval += (uint)((Data[11] << 24) + (Data[10] << 16) + (Data[9] << 8) + Data[8]);
+			retval += (uint)((Data[15] << 24) + (Data[14] << 16) + (Data[13] << 8) + Data[12]);
+
+			return retval;
+		}
+
 		public static LLUUID GenerateUUID()
 		{
 			return new LLUUID(Guid.NewGuid().ToByteArray(), 0);

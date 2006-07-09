@@ -161,7 +161,7 @@ namespace libsecondlife
 				ACKTimer.Start();
 
 				// Send the UseCircuitCode packet to initiate the connection
-				Packet packet = PacketBuilder.UseCircuitCode(Protocol, Network.AgentID, 
+				Packet packet = Packets.Network.UseCircuitCode(Protocol, Network.AgentID, 
 					Network.SessionID, CircuitCode);
 
 				// Send the initial packet out
@@ -314,7 +314,7 @@ namespace libsecondlife
 				try
 				{
 					// TODO: Take in to account the 255 ACK limit per packet
-					Packet packet = PacketBuilder.PacketAck(Protocol, AckOutbox);
+					Packet packet = Packets.Network.PacketAck(Protocol, AckOutbox);
 
 					// Set the sequence number
 					packet.Sequence = ++Sequence;
@@ -676,6 +676,7 @@ namespace libsecondlife
 			values["build"] = build;
 			values["platform"] = platform;
 			values["mac"] = mac;
+			values["agree_to_tos"] = "true";
 			values["viewer_digest"] = viewerDigest;
 			values["user-agent"] = userAgent + " (" + Helpers.VERSION + ")";
 			values["author"] = author;
@@ -806,7 +807,7 @@ namespace libsecondlife
 			CurrentCircuit = circuit;
 
 			// Move our agent in to the sim to complete the connection
-			Packet packet = PacketBuilder.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
+			Packet packet = Packets.Sim.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
 			SendPacket(packet);
 
 			return true;
@@ -893,7 +894,7 @@ namespace libsecondlife
 					}
 				}
 
-				Packet packet = PacketBuilder.LogoutRequest(Protocol, AgentID, SessionID);
+				Packet packet = Packets.Network.LogoutRequest(Protocol, AgentID, SessionID);
 				SendPacket(packet);
 
 				Circuits.Clear();
@@ -913,7 +914,7 @@ namespace libsecondlife
 		private void StartPingCheckHandler(Packet packet, Circuit circuit)
 		{
 			// Respond to the ping request
-			Packet pingPacket = PacketBuilder.CompletePingCheck(Protocol, (byte)packet.Field("PingID"));
+			Packet pingPacket = Packets.Network.CompletePingCheck(Protocol, (byte)packet.Field("PingID"));
 			SendPacket(pingPacket, circuit);
 		}
 

@@ -117,7 +117,7 @@ namespace libsecondlife
 			}
 
 			// Send an AgentUpdate packet with the new camera location
-			packet = PacketBuilder.AgentUpdate(Client.Protocol, Client.Network.AgentID, 56.0F, 
+			packet = Packets.Sim.AgentUpdate(Client.Protocol, Client.Network.AgentID, 56.0F, 
 				new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z));
 			Client.Network.SendPacket(packet);
 		}
@@ -260,7 +260,7 @@ namespace libsecondlife
 				}
 
 				//DEBUG
-                //Helpers.Log("Chat: Message=" + message + ", Type=" + type, Helpers.LogLevel.Info);
+				//Helpers.Log("Chat: Message=" + message + ", Type=" + type, Helpers.LogLevel.Info);
 
 				if (OnChat != null)
 				{
@@ -300,7 +300,7 @@ namespace libsecondlife
 			}
 
 			// Build the packet
-			Packet packet = PacketBuilder.ImprovedInstantMessage(Client.Protocol, target, Client.Network.AgentID, 0, 
+			Packet packet = Packets.Communication.ImprovedInstantMessage(Client.Protocol, target, Client.Network.AgentID, 0, 
 				Client.CurrentRegion.ID, new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z), 
 				0, 0, sessionID, now, fromName, message, binaryBucket);
 
@@ -313,7 +313,7 @@ namespace libsecondlife
 			LLUUID CommandID = new LLUUID();
 			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 
-			Packet packet = PacketBuilder.Chat(Client.Protocol, Client.Avatar.ID, Client.Network.SessionID,
+			Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol, Client.Avatar.ID, Client.Network.SessionID,
 				message, type, 0, 0, CommandID, 20, Position);
 
 			Client.Network.SendPacket(packet);
@@ -324,7 +324,7 @@ namespace libsecondlife
 			LLUUID CommandID = new LLUUID();
 			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 
-			Packet packet = PacketBuilder.Chat(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
+			Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
 				message, 0, 0, 0, CommandID,100,Position);
 
 			Client.Network.SendPacket(packet);
@@ -448,7 +448,7 @@ namespace libsecondlife
 				if (Client.Network.Connect(ip, port, Client.Network.CurrentCircuit.CircuitCode, true))
 				{
 					// Move the avatar in to this sim
-					Packet movePacket = PacketBuilder.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
+					Packet movePacket = Packets.Sim.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
 						Client.Network.SessionID, Client.Network.CurrentCircuit.CircuitCode);
 					Client.Network.SendPacket(movePacket);
 

@@ -32,81 +32,10 @@ namespace sldump
 {
 	class sldump
 	{
-		//
+		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Circuit circuit)
 		{
-			string output = "";
-			ArrayList blocks = packet.Blocks();
-
-			output += "---- " + packet.Layout.Name + " ---- (" + packet.Data[0] + ") (" + packet.Sequence + ")\n";
-
-			foreach (Block block in blocks)
-			{
-				output += " -- " + block.Layout.Name + " --\n";
-
-				foreach (Field field in block.Fields)
-				{
-					if (field.Layout.Type == FieldType.Variable || field.Layout.Type == FieldType.Fixed)
-					{
-						bool printable = true;
-						byte[] byteArray = (byte[])field.Data;
-
-						for (int i = 0; i < byteArray.Length; ++i)
-						{
-							// Check if there are any unprintable characters in the array
-							if ((byteArray[i] < 0x20 || byteArray[i] > 0x7E) && byteArray[i] != 0x09
-								&& byteArray[i] != 0x0D)
-							{
-								printable = false;
-							}
-						}
-
-						if (printable)
-						{
-							output += System.Text.Encoding.ASCII.GetChars(byteArray, 0, byteArray.Length);
-						}
-						else
-						{
-							for (int i = 0; i < byteArray.Length; i += 16)
-							{
-								output += "  " + field.Layout.Name + ": ";
-
-								for (int j = 0; j < 16; j++)
-								{
-									if ((i + j) < byteArray.Length)
-									{
-										output += String.Format("{0:X} ", byteArray[i + j]);
-									}
-									else
-									{
-										output += "   ";
-									}
-								}
-
-								for (int j = 0; j < 16 && (i + j) < byteArray.Length; j++)
-								{
-									if (byteArray[i + j] >= 0x20 && byteArray[i + j] < 0x7E)
-									{
-										output += (char)byteArray[i + j];
-									}
-									else
-									{
-										output += ".";
-									}
-								}
-
-								output += "\n";
-							}
-						}
-					}
-					else
-					{
-						output += "  " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
-					}
-				}
-			}
-
-			Console.Write(output);
+			Console.Write(packet.ToString());
 		}
 
 		/// <summary>
@@ -117,7 +46,7 @@ namespace sldump
 		{
 			SecondLife client;
 
-			if (args.Length == 0 || (args.Length < 3 && args[0] != "--protocol"))
+			if (args.Length == 0 || (args.Length < 3 && args[0] != "--printmap"))
 			{
 				Console.WriteLine("Usage: sldump [--printmap] [--decrypt] [inputfile] [outputfile] [--protocol] [firstname] " +
 					"[lastname] [password]");
@@ -149,7 +78,7 @@ namespace sldump
 				return;
 			}
 
-			if (args[0] == "--protocol")
+			if (args[0] == "--printmap")
 			{
 				client.Protocol.PrintMap();
 				return;
