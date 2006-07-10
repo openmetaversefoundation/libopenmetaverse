@@ -3,14 +3,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife", "libsecondl
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "name2key", "examples\name2key\name2key.csproj", "{66FFD34E-652C-4EF5-81FE-06AD011169D2}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlRpcCS", "XmlRpcCS\XmlRpcCS.csproj", "{410F8877-F1E1-4696-ABC7-4339189EECC3}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -19,7 +11,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nii.JSON", "JSONlib\Nii.JSO
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slaccountant", "examples\slaccountant\slaccountant.csproj", "{FC19D5F6-076E-4923-8456-9B0E00E22896}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "name2key", "examples\name2key\name2key.csproj", "{66FFD34E-652C-4EF5-81FE-06AD011169D2}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
@@ -33,14 +33,6 @@ Global
 		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Debug.Build.0 = Debug|.NET
 		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Release.ActiveCfg = Release|.NET
 		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Release.Build.0 = Release|.NET
-		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.ActiveCfg = Debug|.NET
-		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.Build.0 = Debug|.NET
-		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.ActiveCfg = Release|.NET
-		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.Build.0 = Release|.NET
-		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug.ActiveCfg = Debug|.NET
-		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug.Build.0 = Debug|.NET
-		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.ActiveCfg = Release|.NET
-		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.Build.0 = Release|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.ActiveCfg = Debug|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.Build.0 = Debug|.NET
 		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.ActiveCfg = Release|.NET
@@ -49,10 +41,18 @@ Global
 		{C40EB7FD-F957-4659-A184-A1C28908D748}.Debug.Build.0 = Debug|.NET
 		{C40EB7FD-F957-4659-A184-A1C28908D748}.Release.ActiveCfg = Release|.NET
 		{C40EB7FD-F957-4659-A184-A1C28908D748}.Release.Build.0 = Release|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.ActiveCfg = Debug|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.Build.0 = Debug|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.ActiveCfg = Release|.NET
+		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.Build.0 = Release|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.ActiveCfg = Debug|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Debug.Build.0 = Debug|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Release.ActiveCfg = Release|.NET
 		{FC19D5F6-076E-4923-8456-9B0E00E22896}.Release.Build.0 = Release|.NET
+		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug.ActiveCfg = Debug|.NET
+		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug.Build.0 = Debug|.NET
+		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.ActiveCfg = Release|.NET
+		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
