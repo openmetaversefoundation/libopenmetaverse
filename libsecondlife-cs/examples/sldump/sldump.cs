@@ -85,8 +85,7 @@ namespace sldump
 			}
 
 			// Setup the callback
-			PacketCallback defaultCallback = new PacketCallback(DefaultHandler);
-			client.Network.UserCallbacks["Default"] = defaultCallback;
+			client.Network.RegisterCallback("Default", new PacketCallback(DefaultHandler));
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
 				"last", 1, 10, 10, 10, "Win", "0", "sldump", "jhurliman@wsu.edu");

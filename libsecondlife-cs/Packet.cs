@@ -550,7 +550,7 @@ namespace libsecondlife
 					byteArray[length] = (byte)blockCount;
 					length++;
 				}
-				#endregion VariablSize
+				#endregion VariableSize
 
 				// Reset blockCount
 				blockCount = 0;
@@ -618,7 +618,7 @@ namespace libsecondlife
 												length += 8;
 												break;
 											case FieldType.S8:
-												byteArray[length++] = (byte)field;
+												byteArray[length++] = (byte)((sbyte)field);
 												break;
 											case FieldType.S16:
 												// FIXME: Apply endianness patch
@@ -648,7 +648,7 @@ namespace libsecondlife
 												length += 16;
 												break;
 											case FieldType.BOOL:
-												byteArray[length] = (byte)field;
+												byteArray[length] = (byte)((bool)field == true ? 1 : 0);
 												length++;
 												break;
 											case FieldType.LLVector3:
@@ -672,11 +672,8 @@ namespace libsecondlife
 												length += 2;
 												break;
 											case FieldType.Variable:
-												if (field.GetType().IsArray)
+												if (fieldMap.Count == 1)
 												{
-													// Assume this is a byte array
-													fieldLength = ((byte[])field).Length;
-
 													if (fieldLength > 255)
 													{
 														Helpers.Log("Truncating variable (byte) field to 255 " +
@@ -685,18 +682,30 @@ namespace libsecondlife
 														fieldLength = 255;
 													}
 												}
+												else if (fieldMap.Count == 2)
+												{
+													if (fieldLength > 1024)
+													{
+														Helpers.Log("Truncating variable (byte) field to 1024 " +
+															"characters", Helpers.LogLevel.Warning);
+
+														fieldLength = 1024;
+													}
+												}
+												else
+												{
+													Helpers.Log("Variable field with an unknown count", Helpers.LogLevel.Warning);
+												}
+
+												if (field.GetType().IsArray)
+												{
+													// Assume this is a byte array
+													fieldLength = ((byte[])field).Length;
+												}
 												else
 												{
 													// Assume this is a string, add 1 for the null terminator
 													fieldLength = ((string)field).Length + 1;
-
-													if (fieldLength > 255)
-													{
-														Helpers.Log("Truncating variable (string) field to 255 " +
-															"characters", Helpers.LogLevel.Warning);
-
-														fieldLength = 255;
-													}
 												}
 
 												if (fieldMap.Count == 2)

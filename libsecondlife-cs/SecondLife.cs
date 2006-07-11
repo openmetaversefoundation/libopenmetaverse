@@ -61,6 +61,11 @@ namespace libsecondlife
 			ParcelOverlaysReceived = 0;
 		}
 
+		public override string ToString()
+		{
+			return Avatar.FirstName + " " + Avatar.LastName;
+		}
+
 		public void Tick()
 		{
 			System.Threading.Thread.Sleep(0);

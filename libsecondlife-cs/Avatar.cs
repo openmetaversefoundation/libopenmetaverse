@@ -73,22 +73,22 @@ namespace libsecondlife
 
 			// Location callback
 			PacketCallback callback = new PacketCallback(LocationHandler);
-			Client.Network.InternalCallbacks["CoarseLocationUpdate"] = callback;
+			Client.Network.RegisterCallback("CoarseLocationUpdate", callback);
 
 			// Teleport callbacks
 			callback = new PacketCallback(TeleportHandler);
-			Client.Network.InternalCallbacks["TeleportStart"] = callback;
-			Client.Network.InternalCallbacks["TeleportProgress"] = callback;
-			Client.Network.InternalCallbacks["TeleportFailed"] = callback;
-			Client.Network.InternalCallbacks["TeleportFinish"] = callback;
+			Client.Network.RegisterCallback("TeleportStart", callback);
+			Client.Network.RegisterCallback("TeleportProgress", callback);
+			Client.Network.RegisterCallback("TeleportFailed", callback);
+			Client.Network.RegisterCallback("TeleportFinish", callback);
 
 			// Instant Message Callback
 			callback = new PacketCallback(InstantMessageHandler);
-			Client.Network.InternalCallbacks["ImprovedInstantMessage"] = callback;
+			Client.Network.RegisterCallback("ImprovedInstantMessage", callback);
 
 			// Chat Callback
 			callback = new PacketCallback(ChatHandler);
-			Client.Network.InternalCallbacks["ChatFromSimulator"] = callback;
+			Client.Network.RegisterCallback("ChatFromSimulator", callback);
 
 			TeleportTimer = new Timer(8000);
 			TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);

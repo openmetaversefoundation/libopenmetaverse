@@ -451,9 +451,9 @@ namespace SLAccountant
 				client = new SecondLife("keywords.txt", "protocol.txt");
 
 				// Install our packet handlers
-				client.Network.UserCallbacks["AvatarAppearance"] = new PacketCallback(AvatarAppearanceHandler);
-				client.Network.UserCallbacks["MoneyBalanceReply"] = new PacketCallback(BalanceHandler);
-				client.Network.UserCallbacks["DirPeopleReply"] = new PacketCallback(DirPeopleHandler);
+				client.Network.RegisterCallback("AvatarAppearance", new PacketCallback(AvatarAppearanceHandler));
+				client.Network.RegisterCallback("MoneyBalanceReply", new PacketCallback(BalanceHandler));
+				client.Network.RegisterCallback("DirPeopleReply", new PacketCallback(DirPeopleHandler));
 
 				grpLogin.Enabled = true;
 			}
@@ -518,7 +518,7 @@ namespace SLAccountant
 					client.Network.SendPacket(packet);
 
 					// This is needed to make the avatar skin textures work for some odd reason
-					System.Threading.Thread.Sleep(1000);
+					//System.Threading.Thread.Sleep(1000);
 
 					// AgentSetAppearance
 					blocks = new Hashtable();

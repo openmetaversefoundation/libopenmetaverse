@@ -54,6 +54,29 @@ namespace libsecondlife
 		}
 	}
 
+	public class CallbackThread
+	{
+		private PacketCallback Callback;
+		private Thread Thread;
+		Packet Packet;
+		Circuit Circuit;
+
+		public CallbackThread(PacketCallback callback, Packet packet, Circuit circuit)
+		{
+			Callback = callback;
+			Packet = packet;
+			Circuit = circuit;
+			Thread = new Thread(new ThreadStart(this.run));
+			Thread.Priority = ThreadPriority.BelowNormal;
+			Thread.Start();
+		}
+
+		private void run()
+		{
+			Callback(Packet, Circuit);
+		}
+	}
+
 	public class Circuit
 	{
 		public uint CircuitCode;
@@ -64,6 +87,7 @@ namespace libsecondlife
 		private EndPoint endPoint;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
+		private Hashtable Callbacks;
 		private byte[] Buffer;
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
@@ -78,23 +102,26 @@ namespace libsecondlife
 		private Mutex InboxMutex;
 		private int ResendTick;
 
-		public Circuit(ProtocolManager protocol, NetworkManager network, uint circuitCode)
+		public Circuit(ProtocolManager protocol, NetworkManager network, Hashtable callbacks, 
+			uint circuitCode)
 		{
-			Initialize(protocol, network, circuitCode);
+			Initialize(protocol, network, callbacks, circuitCode);
 		}
 
-		public Circuit(ProtocolManager protocol, NetworkManager network)
+		public Circuit(ProtocolManager protocol, NetworkManager network, Hashtable callbacks)
 		{
 			// Generate a random circuit code
 			System.Random random = new System.Random();
 
-			Initialize(protocol, network, (uint)random.Next());
+			Initialize(protocol, network, callbacks, (uint)random.Next());
 		}
 
-		private void Initialize(ProtocolManager protocol, NetworkManager network, uint circuitCode)
+		private void Initialize(ProtocolManager protocol, NetworkManager network, Hashtable callbacks, 
+			uint circuitCode)
 		{
 			Protocol = protocol;
 			Network = network;
+			Callbacks = callbacks;
 			CircuitCode = circuitCode;
 			Sequence = 0;
 			Buffer = new byte[4096];
@@ -496,29 +523,32 @@ namespace libsecondlife
 					NeedAckMutex.ReleaseMutex();
 				}
 
-				// Fire any internal callbacks registered with this packet type
-				PacketCallback callback = (PacketCallback)Network.InternalCallbacks[packet.Layout.Name];
-
-				if (callback != null)
+				if (Callbacks.ContainsKey(packet.Layout.Name))
 				{
-					callback(packet, this);
-				}
+					ArrayList callbackArray = (ArrayList)Callbacks[packet.Layout.Name];
 
-				// Fire any user callbacks registered with this packet type
-				callback = (PacketCallback)Network.UserCallbacks[packet.Layout.Name];
-				
-				if (callback != null)
-				{
-					callback(packet, this);
-				}
-				else
-				{
-					// Attempt to fire a default user callback
-					callback = (PacketCallback)Network.UserCallbacks["Default"];
-
-					if (callback != null)
+					// Fire any registered callbacks
+					foreach (PacketCallback callback in callbackArray)
 					{
-						callback(packet, this);
+						if (callback != null)
+						{
+							CallbackThread callbackThread = 
+								new CallbackThread(callback, packet, this);
+						}
+					}
+				}
+				else if (Callbacks.ContainsKey("Default"))
+				{
+					ArrayList callbackArray = (ArrayList)Callbacks["Default"];
+
+					// Fire any registered callbacks
+					foreach (PacketCallback callback in callbackArray)
+					{
+						if (callback != null)
+						{
+							CallbackThread callbackThread = 
+								new CallbackThread(callback, packet, this);
+						}
 					}
 				}
 			}
@@ -606,11 +636,10 @@ namespace libsecondlife
 		public LLUUID AgentID;
 		public LLUUID SessionID;
 		public string LoginError;
-		public Hashtable UserCallbacks;
-		public Hashtable InternalCallbacks;
 		public Circuit CurrentCircuit;
 		public Hashtable LoginValues;
 
+		private Hashtable Callbacks;
 		private SecondLife Client;
 		private ProtocolManager Protocol;
 		private ArrayList Circuits;
@@ -622,15 +651,47 @@ namespace libsecondlife
 			Protocol = protocol;
 			Circuits = new ArrayList();
 			CircuitsMutex = new Mutex(false, "CircuitsMutex");
-			UserCallbacks = new Hashtable();
-			InternalCallbacks = new Hashtable();
+			Callbacks = new Hashtable();
 			CurrentCircuit = null;
 			LoginValues = null;
 
 			// Register the internal callbacks
-			InternalCallbacks["RegionHandshake"] = new PacketCallback(RegionHandshakeHandler);
-			InternalCallbacks["StartPingCheck"] = new PacketCallback(StartPingCheckHandler);
-			InternalCallbacks["ParcelOverlay"] = new PacketCallback(ParcelOverlayHandler);
+			RegisterCallback("RegionHandshake", new PacketCallback(RegionHandshakeHandler));
+			RegisterCallback("StartPingCheck", new PacketCallback(StartPingCheckHandler));
+			RegisterCallback("ParcelOverlay",  new PacketCallback(ParcelOverlayHandler));
+		}
+
+		public void RegisterCallback(string packet, PacketCallback callback)
+		{
+			if (!Callbacks.ContainsKey(packet))
+			{
+				Callbacks[packet] = new ArrayList();
+			}
+
+			ArrayList callbackArray = (ArrayList)Callbacks[packet];
+			callbackArray.Add(callback);
+		}
+		
+		public void UnregisterCallback(string packet, PacketCallback callback)
+		{
+			if (!Callbacks.ContainsKey(packet))
+			{
+				Helpers.Log("Trying to unregister a callback for packet " + packet + 
+					" when no callbacks are setup for that packet", Helpers.LogLevel.Info);
+				return;
+			}
+
+			ArrayList callbackArray = (ArrayList)Callbacks[packet];
+
+			if (callbackArray.Contains(callback))
+			{
+				callbackArray.Remove(callback);
+			}
+			else
+			{
+				Helpers.Log("Trying to unregister a non-existant callback for packet " + packet,
+					Helpers.LogLevel.Info);
+			}
 		}
 
 		public void SendPacket(Packet packet)
@@ -794,7 +855,7 @@ namespace libsecondlife
 			uint circuitCode = (uint)(int)LoginValues["circuit_code"];
 
 			// Connect to the sim given in the login reply
-			Circuit circuit = new Circuit(Protocol, this, circuitCode);
+			Circuit circuit = new Circuit(Protocol, this, this.Callbacks, circuitCode);
 			if (!circuit.Open((string)LoginValues["sim_ip"], (int)LoginValues["sim_port"]))
 			{
 				return false;
@@ -815,7 +876,7 @@ namespace libsecondlife
 
 		public bool Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault)
 		{
-			Circuit circuit = new Circuit(Protocol, this, circuitCode);
+			Circuit circuit = new Circuit(Protocol, this, this.Callbacks, circuitCode);
 			if (!circuit.Open(ip, port))
 			{
 				return false;

@@ -50,6 +50,18 @@ namespace libsecondlife
 			GlobalPosition = new LLVector3();
 			SimPosition = new LLVector3();
 		}
+
+		public bool Buy(SecondLife client, bool forGroup, LLUUID groupID)
+		{
+			//SIDENOTE: Teleport should not finish until we update the current region name!
+
+			// Sanity check to make sure we're in the same sim
+
+			// Attempt to buy the parcel
+
+			// Check if the purchase was successful (look for money packet?)
+			return false;
+		}
 	}
 
 	public class ParcelManager
@@ -73,9 +85,9 @@ namespace libsecondlife
 
 			// Setup the callbacks
 			PacketCallback callback = new PacketCallback(DirLandReplyHandler);
-			Client.Network.InternalCallbacks["DirLandReply"] = callback;
+			Client.Network.RegisterCallback("DirLandReply", callback);
 			callback = new PacketCallback(ParcelInfoReplyHandler);
-			Client.Network.InternalCallbacks["ParcelInfoReply"] = callback;
+			Client.Network.RegisterCallback("ParcelInfoReply", callback);
 		}
 
 		public bool RequestParcelInfo(Parcel parcel)
@@ -98,16 +110,8 @@ namespace libsecondlife
 			ParcelInfoTimeout = false;
 
 			// Build the ParcelInfoRequest packet
-			Hashtable blocks = new Hashtable();
-			Hashtable fields = new Hashtable();
-			fields["ParcelID"] = parcel.ID;
-			blocks[fields] = "Data";
-			fields = new Hashtable();
-			fields["AgentID"] = Client.Network.AgentID;
-			fields["SessionID"] = Client.Network.SessionID;
-			blocks[fields] = "AgentData";
-			Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks, 
-				Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
+			Packet parcelInfoPacket = Packets.Parcel.ParcelInfoRequest(Client.Protocol, parcel.ID, 
+				Client.Network.AgentID, Client.Network.SessionID);
 
 			// Start the timer
 			ParcelInfoTimer.Start();
@@ -158,16 +162,8 @@ namespace libsecondlife
 									", looking for " + ParcelInfoParcel.ID.ToString(), Helpers.LogLevel.Warning);
 								
 								// Build and resend the ParcelInfoRequest packet
-								Hashtable blocks = new Hashtable();
-								Hashtable fields = new Hashtable();
-								fields["ParcelID"] = ParcelInfoParcel.ID;
-								blocks[fields] = "Data";
-								fields = new Hashtable();
-								fields["AgentID"] = Client.Network.AgentID;
-								fields["SessionID"] = Client.Network.SessionID;
-								blocks[fields] = "AgentData";
-								Packet parcelInfoPacket = PacketBuilder.BuildPacket("ParcelInfoRequest", Client.Protocol, blocks, 
-									Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
+								Packet parcelInfoPacket = Packets.Parcel.ParcelInfoRequest(Client.Protocol, ParcelInfoParcel.ID, 
+									Client.Network.AgentID, Client.Network.SessionID);
 
 								Client.Network.SendPacket(parcelInfoPacket);
 

@@ -92,9 +92,9 @@ namespace name2key
 			}
 
 			// Setup the callback
-			PacketCallback queryCallback = new PacketCallback(QueryHandler);
-			client.Network.UserCallbacks["DirPeopleReply"] = queryCallback;
+			client.Network.RegisterCallback("DirPeopleReply", new PacketCallback(QueryHandler));
 
+			// Setup the login values
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
 				"last", 1, 10, 10, 10, "Win", "0", "name2key", "jhurliman@wsu.edu");
 
