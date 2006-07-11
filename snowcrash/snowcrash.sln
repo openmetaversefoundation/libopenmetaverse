@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "snowcrash", "snowcrash\snowcrash.vcproj", "{2105B930-471B-4E1B-A52E-C9DF97A4D8A0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4} = {99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "snowflake", "snowflake\snowflake.vcproj", "{99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{2105B930-471B-4E1B-A52E-C9DF97A4D8A0}.Debug.ActiveCfg = Debug|Win32
+		{2105B930-471B-4E1B-A52E-C9DF97A4D8A0}.Debug.Build.0 = Debug|Win32
+		{2105B930-471B-4E1B-A52E-C9DF97A4D8A0}.Release.ActiveCfg = Release|Win32
+		{2105B930-471B-4E1B-A52E-C9DF97A4D8A0}.Release.Build.0 = Release|Win32
+		{99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4}.Debug.ActiveCfg = Debug|Win32
+		{99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4}.Debug.Build.0 = Debug|Win32
+		{99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4}.Release.ActiveCfg = Release|Win32
+		{99CC21CC-D63D-49D3-9CFF-FEC3FE7B60E4}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
