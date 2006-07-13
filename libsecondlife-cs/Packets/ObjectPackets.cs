@@ -31,6 +31,51 @@ namespace libsecondlife.Packets
 {
 	public class Object
 	{
+		public static Packet ObjectAdd(ProtocolManager protocol, LLUUID senderID, LLUUID targetID, 
+		                               LLVector3 rayStart, LLVector3 rayEnd, PrimObject prim, 
+		                               byte[] textureEntry)
+		{
+			Hashtable fields = new Hashtable();
+			Hashtable blocks = new Hashtable();
+			
+			fields["AddFlags"] = (uint)2; // TODO: ???
+			fields["PathTwistBegin"] = (sbyte)prim.PathTwistBegin;
+			fields["PathEnd"] = (byte)prim.PathEnd;
+			fields["ProfileBegin"] = (byte)prim.ProfileBegin;
+			fields["PathRadiusOffset"] = (sbyte)prim.PathRadiusOffset;
+			fields["PathSkew"] = (sbyte)prim.PathSkew;
+			fields["SenderID"] = senderID;
+			fields["RayStart"] = rayStart;
+			fields["ProfileCurve"] = (byte)prim.ProfileCurve;
+			fields["PathScaleX"] = (byte)prim.PathScaleX;
+			fields["PathScaleY"] = (byte)prim.PathScaleY;
+			fields["GroupID"] = prim.GroupID;
+			fields["Material"] = (byte)prim.Material;
+			fields["NameValue"] = prim.Name;
+			fields["PathShearX"] = (byte)prim.PathShearX;
+			fields["PathShearY"] = (byte)prim.PathShearY;
+			fields["PathTaperX"] = (sbyte)prim.PathTaperX;
+			fields["PathTaperY"] = (sbyte)prim.PathTaperY;
+			fields["RayEndIsIntersection"] = (byte)0;
+			fields["RayEnd"] = rayEnd;
+			fields["ProfileEnd"] = (byte)prim.ProfileEnd;
+			fields["PathBegin"] = (byte)prim.PathBegin;
+			fields["BypassRaycast"] = (byte)1;
+			fields["PCode"] = (byte)9; // TODO: ???
+			fields["PathCurve"] = (byte)prim.PathCurve;
+			fields["Scale"] = prim.Scale;
+			fields["State"] = (byte)0; // TODO: ???
+			fields["PathTwist"] = (sbyte)prim.PathTwist;
+			fields["TextureEntry"] = textureEntry;
+			fields["ProfileHollow"] = (byte)prim.ProfileHollow;
+			fields["PathRevolutions"] = (byte)prim.PathRevolutions;
+			fields["Rotation"] = prim.Rotation;
+			fields["RayTargetID"] = targetID;
+			blocks[fields] = "ObjectData";
+			
+			return PacketBuilder.BuildPacket("ObjectAdd", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+		
 		//		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
 		//			LLVector3 position, LLVector3 rayStart)
 		//		{
