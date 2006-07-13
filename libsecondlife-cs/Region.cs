@@ -60,10 +60,13 @@ namespace libsecondlife
 		public LLUUID TerrainDetail3;
 
 		public bool IsEstateManager;
+		
+		private SecondLife Client;
 
-		public Region(LLUUID id, string name, float[] heightList, LLUUID simOwner, 
-			LLUUID[] terrainImages, bool isEstateManager)
+		public Region(SecondLife client, LLUUID id, string name, float[] heightList, LLUUID simOwner, 
+		              LLUUID[] terrainImages, bool isEstateManager)
 		{
+			Client = client;
 			ID = id;
 			Handle = new U64();
 			Name = name;
@@ -91,6 +94,18 @@ namespace libsecondlife
 			TerrainDetail3 = terrainImages[7];
 
 			IsEstateManager = isEstateManager;
+		}
+		
+		public void RezObject(PrimObject prim, LLVector3 position, LLVector3 avatarPosition)
+		{
+			byte[] textureEntry = new byte[40];
+			Array.Copy(prim.Texture.Data, textureEntry, 16);
+			textureEntry[35] = 0xe0; // No clue
+			
+			Packet objectAdd = libsecondlife.Packets.Object.ObjectAdd(Client.Protocol, Client.Network.AgentID,
+			                                                          LLUUID.GenerateUUID(), avatarPosition,
+			                                                          position, prim, textureEntry);
+			Client.Network.SendPacket(objectAdd);
 		}
 
 		public override int GetHashCode()

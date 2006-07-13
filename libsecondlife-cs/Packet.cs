@@ -56,8 +56,7 @@ namespace libsecondlife
 
 				if (printable)
 				{
-					output += System.Text.Encoding.ASCII.GetChars(byteArray, 0, byteArray.Length);
-					output.Replace("\0", "");
+					output = Helpers.FieldToString(byteArray);
 				}
 				else
 				{

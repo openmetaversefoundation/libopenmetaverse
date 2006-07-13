@@ -182,16 +182,20 @@ namespace libsecondlife
 
 	public class LLUUID
 	{
-		public byte[] Data;
+		private byte[] data = null;
+		public byte[] Data
+		{
+			get { return data; }
+		}
 
 		public LLUUID()
 		{
-			Data = new byte[16];
+			data = new byte[16];
 		}
 
 		public LLUUID(string val)
 		{
-			Data = new byte[16];
+			data = new byte[16];
 
 			if (val.Length == 36)
 			{
@@ -205,15 +209,15 @@ namespace libsecondlife
 
 			for(int i = 0; i < 16; ++i)
 			{
-				Data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
+				data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
 			}
 		}
 
 		public LLUUID(byte[] byteArray, int pos)
 		{
-			Data = new byte[16];
+			data = new byte[16];
 
-			Array.Copy(byteArray, pos, Data, 0, 16);
+			Array.Copy(byteArray, pos, data, 0, 16);
 		}
 
 		public LLUUID(bool randomize)
@@ -221,11 +225,11 @@ namespace libsecondlife
 			
 			if (randomize)
 			{
-				Data = Guid.NewGuid().ToByteArray();
+				data = Guid.NewGuid().ToByteArray();
 			}
 			else
 			{
-				Data = new byte[16];
+				data = new byte[16];
 			}
 		}
 
@@ -253,7 +257,8 @@ namespace libsecondlife
 
 		public override int GetHashCode()
 		{
-			return BitConverter.ToInt32(Data, 0);
+			//return BitConverter.ToInt32(Data, 0);
+			return ToString().GetHashCode();
 		}
 
 		public override bool Equals(object o)
@@ -350,6 +355,13 @@ namespace libsecondlife
 		public LLVector3()
 		{
 			X = Y = Z = 0.0F;
+		}
+		
+		public LLVector3(LLVector3d vector)
+		{
+			X = (float)vector.X;
+			Y = (float)vector.Y;
+			Z = (float)vector.Z;
 		}
 
 		public LLVector3(byte[] byteArray, int pos)
@@ -507,32 +519,5 @@ namespace libsecondlife
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
 		}
-	}
-
-	public class PrimObject
-	{
-		public sbyte PathTwistBegin;
-		public byte PathEnd;
-		public byte ProfileBegin;
-		public sbyte PathRadiusOffset;
-		public sbyte PathSkew;
-		public byte ProfileCurve;
-		public byte PathScaleX;
-		public byte PathScaleY;
-		public byte Material;
-		public string NameValue;
-		public byte PathShearX;
-		public byte PathShearY;
-		public sbyte PathTaperX;
-		public sbyte PathTaperY;
-		public byte ProfileEnd;
-		public byte PathBegin;
-		public byte PathCurve;
-		public LLVector3 Scale;
-		public byte State;
-		public sbyte PathTwist;
-		public byte ProfileHollow;
-		public byte PathRevolutions;
-		public LLQuaternion Rotation;
 	}
 }

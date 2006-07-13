@@ -1082,7 +1082,7 @@ namespace libsecondlife
 				}
 			}
 
-			Region region = new Region(id, name, heightList, simOwner, terrainImages, isEstateManager);
+			Region region = new Region(Client, id, name, heightList, simOwner, terrainImages, isEstateManager);
 
 			Region foundRegion = Client.FindRegion(region.Name);
 

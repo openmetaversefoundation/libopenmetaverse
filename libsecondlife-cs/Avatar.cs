@@ -197,8 +197,12 @@ namespace libsecondlife
 						}
 					}
 				}
-				OnInstantMessage(FromAgentID,ToAgentID,ParentEstateID,RegionID,Position,
-					Offline,Dialog,ID,Timestamp,AgentName,Message,Bucket);
+
+				if (OnInstantMessage != null)
+				{
+					OnInstantMessage(FromAgentID,ToAgentID,ParentEstateID,RegionID,Position,
+						Offline,Dialog,ID,Timestamp,AgentName,Message,Bucket);
+				}
 			} 
 		}
 
@@ -326,6 +330,32 @@ namespace libsecondlife
 
 			Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
 				message, 0, 0, 0, CommandID,100,Position);
+
+			Client.Network.SendPacket(packet);
+		}
+		
+		public void GiveMoney(LLUUID target, int amount, string description)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+			
+			fields["AggregatePermInventory"] = (byte)0;
+			fields["AggregatePermNextOwner"] = (byte)0;
+			fields["DestID"] = target;
+			fields["Amount"] = amount;
+			fields["Description"] = description;
+			fields["Flags"] = (byte)0;
+			fields["SourceID"] = Client.Network.AgentID;
+			fields["TransactionType"] = (int)5001; // No idea why it's 5001
+			blocks[fields] = "MoneyData";
+
+			fields = new Hashtable();
+			fields["AgentID"] = Client.Network.AgentID;
+			fields["SessionID"] = Client.Network.SessionID;
+			blocks[fields] = "AgentData";
+
+			Packet packet = PacketBuilder.BuildPacket("MoneyTransferRequest", Client.Protocol, blocks,
+				Helpers.MSG_RELIABLE);
 
 			Client.Network.SendPacket(packet);
 		}
