@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2006, Second Life Reverse Engineering Team
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without 
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names 
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Drawing;
 using System.Collections;
@@ -54,16 +80,13 @@ namespace SLAccountant
 			InitializeComponent();
 		}
 
-		~frmSLAccountant()
-		{
-			client.Network.Logout();
-		}
-
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		protected override void Dispose( bool disposing )
 		{
+			client.Network.Logout();
+			
 			if( disposing )
 			{
 				if (components != null) 
@@ -476,6 +499,8 @@ namespace SLAccountant
 
 				if (client.Network.Login(loginParams))
 				{
+					Random rand = new Random();
+					
 					lblName.Text = client.Network.LoginValues["first_name"] + " " + 
 						client.Network.LoginValues["last_name"];
 
@@ -487,8 +512,8 @@ namespace SLAccountant
 					fields["CircuitCode"] = client.Network.CurrentCircuit.CircuitCode;
 					blocks[fields] = "Sender";
 					fields = new Hashtable();
-					fields["Height"] = (ushort)0;
-					fields["Width"] = (ushort)0;
+					fields["Height"] = (ushort)rand.Next(0, 65535);
+					fields["Width"] = (ushort)rand.Next(0, 65535);
 					blocks[fields] = "HeightWidthBlock";
 					Packet packet = PacketBuilder.BuildPacket("AgentHeightWidth", client.Protocol, blocks,
 						Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
@@ -517,13 +542,9 @@ namespace SLAccountant
 
 					client.Network.SendPacket(packet);
 
-					// This is needed to make the avatar skin textures work for some odd reason
-					//System.Threading.Thread.Sleep(1000);
-
 					// AgentSetAppearance
 					blocks = new Hashtable();
 					// Setup some random appearance values
-					Random rand = new Random();
 					for (int i = 0; i < 218; ++i)
 					{
 						fields = new Hashtable();
@@ -594,7 +615,7 @@ namespace SLAccountant
 		}
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)
-		{
+		{			
 			int amount = 0;
 			
 			try
@@ -613,28 +634,9 @@ namespace SLAccountant
 					"their name to transfer money");
 				return;
 			}
-
-			Hashtable blocks = new Hashtable();
-			Hashtable fields = new Hashtable();
-			fields["AggregatePermInventory"] = (byte)0;
-			fields["AggregatePermNextOwner"] = (byte)0;
-			fields["DestID"] = new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text);
-			fields["Amount"] = amount;
-			fields["Description"] = "libsecondlife payment";
-			fields["Flags"] = (byte)0;
-			fields["SourceID"] = client.Network.AgentID;
-			fields["TransactionType"] = (int)5001; // No idea why it's 5001
-			blocks[fields] = "MoneyData";
-
-			fields = new Hashtable();
-			fields["AgentID"] = client.Network.AgentID;
-			fields["SessionID"] = client.Network.SessionID;
-			blocks[fields] = "AgentData";
-
-			Packet packet = PacketBuilder.BuildPacket("MoneyTransferRequest", client.Protocol, blocks,
-				Helpers.MSG_RELIABLE);
-
-			client.Network.SendPacket(packet);
+			
+			client.Avatar.GiveMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
+			                        amount, "SLAccountant payment");
 		}
 	}
 }
