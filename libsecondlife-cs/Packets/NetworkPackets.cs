@@ -69,6 +69,18 @@ namespace libsecondlife.Packets
 			return PacketBuilder.BuildPacket("CompletePingCheck", protocol, blocks, Helpers.MSG_ZEROCODED);
 		}
 
+		public static Packet ConfirmEnableSimulator(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
+
+			return PacketBuilder.BuildPacket("ConfirmEnableSimulator", protocol, blocks, Helpers.MSG_ZEROCODED);
+		}
+
 		public static Packet LogoutRequest(ProtocolManager protocol, LLUUID agentID, LLUUID sessionID)
 		{
 			Hashtable blocks = new Hashtable();

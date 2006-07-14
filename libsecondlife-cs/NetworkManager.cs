@@ -54,29 +54,6 @@ namespace libsecondlife
 		}
 	}
 
-	public class CallbackThread
-	{
-		private PacketCallback Callback;
-		private Thread Thread;
-		Packet Packet;
-		Circuit Circuit;
-
-		public CallbackThread(PacketCallback callback, Packet packet, Circuit circuit)
-		{
-			Callback = callback;
-			Packet = packet;
-			Circuit = circuit;
-			Thread = new Thread(new ThreadStart(this.run));
-			Thread.Priority = ThreadPriority.BelowNormal;
-			Thread.Start();
-		}
-
-		private void run()
-		{
-			Callback(Packet, Circuit);
-		}
-	}
-
 	public class Circuit
 	{
 		public uint CircuitCode;
@@ -98,7 +75,7 @@ namespace libsecondlife
 		private Mutex AckOutboxMutex;
 		private Hashtable NeedAck;
 		private Mutex NeedAckMutex;
-		private ArrayList Inbox;
+		private SortedList Inbox;
 		private Mutex InboxMutex;
 		private int ResendTick;
 
@@ -135,14 +112,14 @@ namespace libsecondlife
 			// Initialize the hashtable for reliable packets waiting on ACKs from the server
 			NeedAck = new Hashtable();
 
-			Inbox = new ArrayList();
+			Inbox = new SortedList();
 
 			// Create a timer to test if the connection times out
 			OpenTimer = new System.Timers.Timer(10000);
 			OpenTimer.Elapsed += new ElapsedEventHandler(OpenTimerEvent);
 
 			// Create a timer to send PacketAcks and resend unACKed packets
-			ACKTimer = new System.Timers.Timer(1000);
+			ACKTimer = new System.Timers.Timer(300);
 			ACKTimer.Elapsed += new ElapsedEventHandler(ACKTimerEvent);
 
 			AckOutboxMutex = new Mutex(false, "AckOutboxMutex");
@@ -201,7 +178,7 @@ namespace libsecondlife
 						return true;
 					}
 
-					Thread.Sleep(0);
+					Thread.Sleep(10);
 				}
 			}
 			catch (Exception e)
@@ -298,8 +275,6 @@ namespace libsecondlife
 					// Claim the mutex on the AckOutbox
 					AckOutboxMutex.WaitOne();
 
-					//TODO: Make sure we aren't appending more than 255 ACKs
-
 					// Append each ACK needing to be sent out to this packet
 					foreach (uint ack in AckOutbox)
 					{
@@ -333,14 +308,11 @@ namespace libsecondlife
 
 		private void SendACKs()
 		{
-			// Claim the mutex on the AckOutbox
 			AckOutboxMutex.WaitOne();
-
 			if (AckOutbox.Count != 0)
 			{
 				try
 				{
-					// TODO: Take in to account the 255 ACK limit per packet
 					Packet packet = Packets.Network.PacketAck(Protocol, AckOutbox);
 
 					// Set the sequence number
@@ -349,9 +321,6 @@ namespace libsecondlife
 					// Bypass SendPacket since we are taking care of the AckOutbox ourself
 					int numSent = Connection.Send(packet.Data);
 
-					// DEBUG
-					//Console.WriteLine("Sent " + numSent + " byte " + packet.Layout.Name);
-
 					AckOutbox.Clear();
 				}
 				catch (Exception e)
@@ -359,8 +328,6 @@ namespace libsecondlife
 					Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 				}
 			}
-
-			// Release the mutex
 			AckOutboxMutex.ReleaseMutex();
 		}
 
@@ -430,41 +397,7 @@ namespace libsecondlife
 				// Track the sequence number for this packet if it's marked as reliable
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 				{
-					// Check if this is a duplicate packet
-					
-					InboxMutex.WaitOne();
-					if (Inbox.Contains(packet.Sequence))
-					{
-						AckOutboxMutex.WaitOne();
-						if (AckOutbox.Contains((uint)packet.Sequence))
-						{
-							Helpers.Log("ACKs are being sent too slowly!", Helpers.LogLevel.Warning);
-						}
-						else
-						{
-							// DEBUG
-							Helpers.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" + 
-								packet.Sequence + ", not in the ACK outbox", Helpers.LogLevel.Info);
-
-							// Add this packet to the AckOutbox again and bypass the callbacks
-							AckOutbox.Add((uint)packet.Sequence);
-						}
-						AckOutboxMutex.ReleaseMutex();
-
-						// Add this packet to the incoming log
-						Inbox.Add(packet.Sequence);
-						InboxMutex.ReleaseMutex();
-
-						// Avoid firing a callback twice for the same packet
-						return;
-					}
-					else
-					{
-						// Add this packet to the incoming log
-						Inbox.Add(packet.Sequence);
-						InboxMutex.ReleaseMutex();
-					}
-
+					// Add this packet to the ACK outbox if it isn't there already
 					AckOutboxMutex.WaitOne();
 					if (!AckOutbox.Contains((uint)packet.Sequence))
 					{
@@ -472,20 +405,34 @@ namespace libsecondlife
 					}
 					else
 					{
-						if ((packet.Data[0] & Helpers.MSG_RESENT) != 0)
-						{
-							// We received a resent packet
-							Helpers.Log("Received a resent packet, sequence=" + packet.Sequence, Helpers.LogLevel.Warning);
-							return;
-						}
-						else
-						{
-							// We received a resent packet
-							Helpers.Log("Received a duplicate sequence number? sequence=" + packet.Sequence + 
-								", name=" + packet.Layout.Name, Helpers.LogLevel.Warning);
-						}
+						Helpers.Log("ACKs are being sent too slowly!", Helpers.LogLevel.Warning);
 					}
-					AckOutboxMutex.ReleaseMutex();
+					if (AckOutbox.Count > 3)
+					{
+						AckOutboxMutex.ReleaseMutex();
+						SendACKs();
+					}
+					else
+					{
+						AckOutboxMutex.ReleaseMutex();
+					}
+
+					// Check if we already received this packet
+					InboxMutex.WaitOne();
+					if (Inbox.Contains(packet.Sequence))
+					{
+						Helpers.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" +
+							packet.Sequence + ", resent=" + 
+							(((packet.Data[0] & Helpers.MSG_RESENT) != 0) ? "Yes" : "No"), Helpers.LogLevel.Info);
+
+						// Avoid firing a callback twice for the same packet
+						return;
+					}
+					else
+					{
+						Inbox.Add(packet.Sequence, packet);
+					}
+					InboxMutex.ReleaseMutex();
 				}
 
 				if (packet.Layout.Name == null)
@@ -497,7 +444,6 @@ namespace libsecondlife
 				{
 					// PacketAck is handled directly instead of using a callback to simplify access to 
 					// the NeedAck hashtable and its mutex
-
 					ArrayList blocks = packet.Blocks();
 
 					NeedAckMutex.WaitOne();
@@ -505,7 +451,6 @@ namespace libsecondlife
 					{
 						foreach (Field field in block.Fields)
 						{
-						Beginning:
 							ICollection reliablePackets = NeedAck.Keys;
 
 							// Remove this packet if it exists
@@ -514,8 +459,7 @@ namespace libsecondlife
 								if ((uint)reliablePacket.Sequence == (uint)field.Data)
 								{
 									NeedAck.Remove(reliablePacket);
-									// Restart the loop to avoid upsetting the enumerator
-									goto Beginning;
+									break;
 								}
 							}
 						}
@@ -532,8 +476,7 @@ namespace libsecondlife
 					{
 						if (callback != null)
 						{
-							CallbackThread callbackThread = 
-								new CallbackThread(callback, packet, this);
+							callback(packet, this);
 						}
 					}
 				}
@@ -546,8 +489,7 @@ namespace libsecondlife
 					{
 						if (callback != null)
 						{
-							CallbackThread callbackThread = 
-								new CallbackThread(callback, packet, this);
+							callback(packet, this);
 						}
 					}
 				}
@@ -595,7 +537,7 @@ namespace libsecondlife
 
 						// TODO: Is this hardcoded value correct? Should it be a higher level define or a 
 						//       changeable property?
-						if (Environment.TickCount - ticks > 3000)
+						if (Environment.TickCount - ticks > 4000)
 						{
 							Packet packet = (Packet)packetEnum.Key;
 
@@ -659,6 +601,7 @@ namespace libsecondlife
 			RegisterCallback("RegionHandshake", new PacketCallback(RegionHandshakeHandler));
 			RegisterCallback("StartPingCheck", new PacketCallback(StartPingCheckHandler));
 			RegisterCallback("ParcelOverlay",  new PacketCallback(ParcelOverlayHandler));
+			RegisterCallback("EnableSimulator",  new PacketCallback(EnableSimulatorHandler));
 		}
 
 		public void RegisterCallback(string packet, PacketCallback callback)
@@ -1148,6 +1091,17 @@ namespace libsecondlife
 			{
 				Helpers.Log("Parcel overlay with sequence ID of " + sequenceID + " received", Helpers.LogLevel.Error);
 			}
+		}
+
+		private void EnableSimulatorHandler(Packet packet, Circuit circuit)
+		{
+			// TODO: Actually connect to the simulator
+
+			// TODO: Sending ConfirmEnableSimulator completely screws things up. :-?
+
+			// Respond to the simulator connection request
+			//Packet replyPacket = Packets.Network.ConfirmEnableSimulator(Protocol, AgentID, SessionID);
+			//SendPacket(replyPacket, circuit);
 		}
 	}
 }
