@@ -28,6 +28,8 @@ LogMessages
 DropGroupIM
 AboutText
 VisualParam
+GroupPrims
+SelectedPrims
 ID
 UUIDNameRequest
 UUIDGroupNameRequest
@@ -169,6 +171,7 @@ MapBlockReply
 PropertiesData
 ViewerEffect
 FreezeUser
+OwnerPrims
 ScriptTime
 ObjectGrab
 ToAgentID
@@ -300,7 +303,6 @@ SlaveID
 Charter
 TargetBlock
 AlertData
-MaxObjects
 CheckParcelAuctions
 ParcelAuctions
 NameValuePair
@@ -408,6 +410,8 @@ DeclineFriendship
 FormFriendship
 TerminateFriendship
 TaskData
+SimWideMaxPrims
+TotalPrims
 SourceFilename
 ProfileBegin
 MoneyDetailsRequest
@@ -484,8 +488,6 @@ NVPair
 ObjectSpinStart
 UseEstateSun
 LogoutBlock
-OwnerObjects
-OtherObjects
 RelayLogControl
 RegionID
 Creator
@@ -502,6 +504,7 @@ ChatPass
 TargetID
 DefaultPayPrice
 UserLocation
+MaxPrims
 RegionIP
 LandmarkID
 InitiateDownload
@@ -589,6 +592,7 @@ Body
 FileData
 List
 KickUser
+OtherPrims
 RunTime
 RpcScriptRequestInboundForward
 More
@@ -990,8 +994,8 @@ SelfCount
 PacketCount
 ParcelBuyPass
 SimHandle
-OldItemID
 Identified
+OldItemID
 RegionPort
 PriceEnergyUnit
 Bitmap
@@ -1221,6 +1225,7 @@ ItemType
 MailFilter
 Disconnect
 SimPosition
+SimWideTotalPrims
 Index
 BaseFilename
 SimFilename
@@ -1249,7 +1254,6 @@ Price
 SunDirection
 ChangeInventoryItemFlags
 Force
-ParcelObjectBonus
 TransactionBlock
 PowersMask
 Stamp
@@ -1267,7 +1271,6 @@ Color
 SourceType
 World
 QueryData
-QueryPrice
 Users
 SysOS
 Notes
@@ -1443,6 +1446,7 @@ DirGroupsQuery
 BonusEstimate
 MusicURL
 CompleteLure
+ParcelPrimBonus
 EjectUser
 CoarseLocationUpdate
 ChildAgentPositionUpdate
@@ -1461,11 +1465,8 @@ PriceUpload
 RemoveParcel
 ConfirmAuctionStart
 RpcScriptRequestInbound
-SimWideMaxObjects
-SimWideTotalObjects
-TotalObjects
-GroupObjects
 ParcelReturnObjects
+TotalObjects
 ObjectExtraParams
 Questions
 TransferAbort
