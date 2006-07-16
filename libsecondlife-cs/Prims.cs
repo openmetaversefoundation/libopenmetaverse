@@ -39,6 +39,8 @@ namespace libsecondlife
 		public int ProfileCurve = 0;
 		public float PathScaleX = 0;
 		public float PathScaleY = 0;
+		public LLUUID UUID = new LLUUID();
+		public uint ID = 0;
 		public LLUUID GroupID = new LLUUID();
 		public uint Material = 0;
 		public string Name = "";
@@ -52,7 +54,7 @@ namespace libsecondlife
 		public uint PathCurve = 0;
 		public LLVector3 Scale = new LLVector3();
 		public int PathTwist = 0;
-		public LLUUID Texture = null; // TODO: Add multi-texture support
+		public LLUUID Texture = new LLUUID(); // TODO: Add multi-texture support
 		public uint ProfileHollow = 0;
 		public float PathRevolutions = 0;
 		public LLQuaternion Rotation = new LLQuaternion();

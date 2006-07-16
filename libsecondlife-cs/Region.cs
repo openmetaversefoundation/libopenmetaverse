@@ -63,11 +63,12 @@ namespace libsecondlife
 		
 		private SecondLife Client;
 
-		public Region(SecondLife client, LLUUID id, string name, float[] heightList, LLUUID simOwner, 
-		              LLUUID[] terrainImages, bool isEstateManager)
+		public Region(SecondLife client, LLUUID id, U64 handle, string name, float[] heightList, 
+			LLUUID simOwner, LLUUID[] terrainImages, bool isEstateManager)
 		{
 			Client = client;
 			ID = id;
+			Handle = handle;
 			Handle = new U64();
 			Name = name;
 			ParcelOverlay = new byte[4096];

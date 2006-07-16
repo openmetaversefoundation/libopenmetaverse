@@ -730,7 +730,7 @@ namespace libsecondlife
 			LLVector3d vector = null;
 			LLVector3d posVector = null;
 			LLVector3d lookatVector = null;
-			U64 regionhandle = null;
+			U64 regionHandle = null;
 
 			if (LoginValues.Contains("look_at"))
 			{
@@ -770,13 +770,13 @@ namespace libsecondlife
 
 				// Create the regionhandle U64
 				array = (JSONArray)jsonObject["region_handle"];
-				regionhandle = new U64((int)array[0], (int)array[1]);
+				regionHandle = new U64((int)array[0], (int)array[1]);
 
 				// Create a hashtable to hold the home values
 				Hashtable home = new Hashtable();
 				home["position"] = posVector;
 				home["look_at"] = lookatVector;
-				home["region_handle"] = regionhandle;
+				home["region_handle"] = regionHandle;
 
 				LoginValues["home"] = home;
 			}
@@ -1025,7 +1025,9 @@ namespace libsecondlife
 				}
 			}
 
-			Region region = new Region(Client, id, name, heightList, simOwner, terrainImages, isEstateManager);
+			Hashtable home = (Hashtable)LoginValues["home"];
+
+			Region region = new Region(Client, id, (U64)home["region_handle"], name, heightList, simOwner, terrainImages, isEstateManager);
 
 			Region foundRegion = Client.FindRegion(region.Name);
 
