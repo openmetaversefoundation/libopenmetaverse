@@ -69,7 +69,6 @@ namespace libsecondlife
 			Client = client;
 			ID = id;
 			Handle = handle;
-			Handle = new U64();
 			Name = name;
 			ParcelOverlay = new byte[4096];
 
