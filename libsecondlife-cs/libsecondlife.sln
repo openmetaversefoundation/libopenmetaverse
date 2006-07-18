@@ -23,6 +23,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "name2key", "examples\name2k
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventory", "Inventory\Inventory\Inventory.csproj", "{F6297392-3422-42EB-977A-F86C50CD557F}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateNotecard", "Inventory\CreateNotecard\CreateNotecard.csproj", "{D5ACEEA1-89CD-4FD2-8A1F-1BD828988FDC}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryDump", "Inventory\InventoryDump\InventoryDump.csproj", "{6478BE37-9272-4D91-B641-5E2FD0680B27}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -53,6 +65,18 @@ Global
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Debug.Build.0 = Debug|.NET
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.ActiveCfg = Release|.NET
 		{66FFD34E-652C-4EF5-81FE-06AD011169D2}.Release.Build.0 = Release|.NET
+		{F6297392-3422-42EB-977A-F86C50CD557F}.Debug.ActiveCfg = Debug|.NET
+		{F6297392-3422-42EB-977A-F86C50CD557F}.Debug.Build.0 = Debug|.NET
+		{F6297392-3422-42EB-977A-F86C50CD557F}.Release.ActiveCfg = Release|.NET
+		{F6297392-3422-42EB-977A-F86C50CD557F}.Release.Build.0 = Release|.NET
+		{D5ACEEA1-89CD-4FD2-8A1F-1BD828988FDC}.Debug.ActiveCfg = Debug|.NET
+		{D5ACEEA1-89CD-4FD2-8A1F-1BD828988FDC}.Debug.Build.0 = Debug|.NET
+		{D5ACEEA1-89CD-4FD2-8A1F-1BD828988FDC}.Release.ActiveCfg = Release|.NET
+		{D5ACEEA1-89CD-4FD2-8A1F-1BD828988FDC}.Release.Build.0 = Release|.NET
+		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Debug.ActiveCfg = Debug|.NET
+		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Debug.Build.0 = Debug|.NET
+		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.ActiveCfg = Release|.NET
+		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
