@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimImporter", "Plugins\Pri
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimBuilder", "Plugins\PrimBuilder\PrimBuilder.csproj", "{16A48BFA-9B8B-4226-ACE7-BDABADB9E62D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -37,6 +41,10 @@ Global
 		{1F9A11C3-5A68-4618-85CC-1BBC131EACB6}.Debug.Build.0 = Debug|.NET
 		{1F9A11C3-5A68-4618-85CC-1BBC131EACB6}.Release.ActiveCfg = Release|.NET
 		{1F9A11C3-5A68-4618-85CC-1BBC131EACB6}.Release.Build.0 = Release|.NET
+		{16A48BFA-9B8B-4226-ACE7-BDABADB9E62D}.Debug.ActiveCfg = Debug|.NET
+		{16A48BFA-9B8B-4226-ACE7-BDABADB9E62D}.Debug.Build.0 = Debug|.NET
+		{16A48BFA-9B8B-4226-ACE7-BDABADB9E62D}.Release.ActiveCfg = Release|.NET
+		{16A48BFA-9B8B-4226-ACE7-BDABADB9E62D}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

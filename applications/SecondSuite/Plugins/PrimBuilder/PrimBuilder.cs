@@ -33,22 +33,22 @@ namespace SecondSuite.Plugins
 	/// <summary>
 	/// Accountant plugin implementation
 	/// </summary>
-	public class PrimImporter : SSPlugin
+	public class PrimBuilder : SSPlugin
 	{
-		public string Name { get { return "Prim Importer"; } }
+		public string Name { get { return "Prim Builder"; } }
 		public string Author { get { return "John Hurliman"; } }
 		public string Homepage { get { return "http://www.highenergychemistry.com/"; } }
-		public string Description { get { return "Import structures created with Prim.Blender"; } }
+		public string Description { get { return "Create prims the hard way"; } }
 		public bool SecondLifeClient { get { return true; } }
 		public ConnectionEvent ConnectionHandler { get { return OnConnection; } }
 		public override string ToString() { return Name; }
 
-		private frmPrimImporter Form;
+		private frmPrimBuilder Form;
 		private ConnectionEvent OnConnection;
 
 		public void Init(SecondLife client)
 		{
-			Form = new frmPrimImporter(client);
+			Form = new frmPrimBuilder(client);
 			OnConnection = new ConnectionEvent(Form.Connected);
 		}
 

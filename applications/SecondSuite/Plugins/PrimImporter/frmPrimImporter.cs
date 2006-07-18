@@ -4,6 +4,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Xml;
+using System.Threading;
 using libsecondlife;
 
 namespace SecondSuite.Plugins
@@ -22,6 +23,9 @@ namespace SecondSuite.Plugins
 
 		// libsecondlife instance
 		private SecondLife Client;
+		bool WaitingOnUpdate = false;
+		PrimObject CurrentPrim;
+		Mutex CurrentPrimMutex = new Mutex(false, "CurrentPrimMutex");
 
 		public frmPrimImporter(SecondLife client)
 		{
@@ -31,6 +35,80 @@ namespace SecondSuite.Plugins
 			InitializeComponent();
 
 			Client = client;
+
+			// Install our packet handlers
+			Client.Network.RegisterCallback("ObjectAdd", new PacketCallback(ObjectAddHandler));
+			Client.Network.RegisterCallback("ObjectUpdate", new PacketCallback(ObjectUpdateHandler));
+		}
+
+		public void ObjectAddHandler(Packet packet, Circuit circuit)
+		{
+			LLVector3 position = null;
+
+			if (WaitingOnUpdate)
+			{
+				CurrentPrimMutex.WaitOne();
+
+				foreach (Block block in packet.Blocks())
+				{
+					foreach (Field field in block.Fields)
+					{
+						if (field.Layout.Name == "RayEnd")
+						{
+							position = (LLVector3)field.Data;
+						}
+					}
+				}
+
+				txtLog.AppendText("Received an ObjectAdd, setting CurrentPrim position to " + position.ToString());
+				CurrentPrim.Position = position;
+
+				CurrentPrimMutex.ReleaseMutex();
+			}
+		}
+
+		public void ObjectUpdateHandler(Packet packet, Circuit circuit)
+		{
+			uint id = 0;
+			LLUUID uuid = null;
+
+			if (WaitingOnUpdate)
+			{
+				CurrentPrimMutex.WaitOne();
+
+				foreach (Block block in packet.Blocks())
+				{
+					foreach (Field field in block.Fields)
+					{
+						if (field.Layout.Name == "ID")
+						{
+							id = (uint)field.Data;
+						}
+						else if (field.Layout.Name == "FullID")
+						{
+							uuid = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "ObjectData")
+						{
+							byte[] byteArray = (byte[])field.Data;
+							LLVector3 position = new LLVector3(byteArray, 0);
+							if (CurrentPrim != null && position != CurrentPrim.Position)
+							{
+								txtLog.AppendText(position.ToString() + " doesn't match CurrentPrim.Position " + 
+									CurrentPrim.Position.ToString() + "\n"/* + ", ignoring"*/);
+								//return;
+							}
+						}
+					}
+				}
+
+				CurrentPrim.ID = id;
+				CurrentPrim.UUID = uuid;
+
+				WaitingOnUpdate = false;
+
+				CurrentPrimMutex.ReleaseMutex();
+			}
 		}
 
 		/// <summary>
@@ -66,7 +144,7 @@ namespace SecondSuite.Plugins
 			// 
 			// cmdImport
 			// 
-			this.cmdImport.Location = new System.Drawing.Point(328, 256);
+			this.cmdImport.Location = new System.Drawing.Point(376, 304);
 			this.cmdImport.Name = "cmdImport";
 			this.cmdImport.Size = new System.Drawing.Size(104, 24);
 			this.cmdImport.TabIndex = 56;
@@ -78,18 +156,17 @@ namespace SecondSuite.Plugins
 			this.txtLog.Location = new System.Drawing.Point(16, 16);
 			this.txtLog.Multiline = true;
 			this.txtLog.Name = "txtLog";
-			this.txtLog.Size = new System.Drawing.Size(416, 232);
+			this.txtLog.Size = new System.Drawing.Size(464, 232);
 			this.txtLog.TabIndex = 57;
 			this.txtLog.Text = "";
 			// 
 			// frmPrimImporter
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-			this.ClientSize = new System.Drawing.Size(448, 293);
+			this.ClientSize = new System.Drawing.Size(496, 349);
 			this.Controls.Add(this.txtLog);
 			this.Controls.Add(this.cmdImport);
 			this.MaximizeBox = false;
-			this.MaximumSize = new System.Drawing.Size(456, 320);
 			this.MinimumSize = new System.Drawing.Size(456, 320);
 			this.Name = "frmPrimImporter";
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
@@ -147,12 +224,13 @@ namespace SecondSuite.Plugins
 
 				prim.Material = Convert.ToUInt16(properties["material"].Attributes["val"].Value);
 				prim.Name = node.Attributes["key"].Value;
+				// Either PathBegin/End or ProfileBegin/End should be dimple
 				prim.PathBegin = PrimObject.PathBeginByte(Convert.ToSingle(properties["cut"].Attributes["x"].Value));
 				prim.PathEnd = PrimObject.PathEndByte(Convert.ToSingle(properties["cut"].Attributes["y"].Value));
 				prim.PathRadiusOffset = PrimObject.PathRadiusOffsetByte(Convert.ToSingle(properties["radiusoffset"].Attributes["val"].Value));
 				prim.PathRevolutions = PrimObject.PathRevolutionsByte(Convert.ToSingle(properties["revolutions"].Attributes["val"].Value));
-				prim.PathScaleX = PrimObject.PathScaleByte(Convert.ToSingle(properties["taper"].Attributes["x"].Value));
-				prim.PathScaleY = PrimObject.PathScaleByte(Convert.ToSingle(properties["taper"].Attributes["y"].Value));
+				prim.PathScaleX = PrimObject.PathScaleByte(Convert.ToSingle(properties["topsize"].Attributes["x"].Value));
+				prim.PathScaleY = PrimObject.PathScaleByte(Convert.ToSingle(properties["topsize"].Attributes["y"].Value));
 				prim.PathShearX = PrimObject.PathShearByte(Convert.ToSingle(properties["topshear"].Attributes["x"].Value));
 				prim.PathShearY = PrimObject.PathShearByte(Convert.ToSingle(properties["topshear"].Attributes["y"].Value));
 				prim.PathSkew = PrimObject.PathSkewByte(Convert.ToSingle(properties["skew"].Attributes["val"].Value));
@@ -161,6 +239,7 @@ namespace SecondSuite.Plugins
 				prim.PathTwist = PrimObject.PathTwistByte(Convert.ToSingle(properties["twist"].Attributes["y"].Value));
 				prim.PathTwistBegin = PrimObject.PathTwistByte(Convert.ToSingle(properties["twist"].Attributes["x"].Value));
 				prim.ProfileBegin = PrimObject.ProfileBeginByte(Convert.ToSingle(properties["cut"].Attributes["x"].Value));
+				prim.ProfileEnd = PrimObject.ProfileEndByte(Convert.ToSingle(properties["cut"].Attributes["y"].Value));
 				ushort curve = Convert.ToUInt16(properties["type"].Attributes["val"].Value);
 				switch (curve)
 				{
@@ -200,7 +279,6 @@ namespace SecondSuite.Plugins
 						prim.PathCurve = 16;
 						break;
 				}
-				prim.ProfileEnd = PrimObject.ProfileEndByte(Convert.ToSingle(properties["cut"].Attributes["y"].Value));
 				prim.ProfileHollow = Convert.ToUInt32(properties["hollow"].Attributes["val"].Value);
 				prim.Rotation = new LLQuaternion(
 					Convert.ToSingle(properties["rotation"].Attributes["x"].Value),
@@ -215,9 +293,58 @@ namespace SecondSuite.Plugins
 				LLVector3 position = new LLVector3(
 					Convert.ToSingle(properties["position"].Attributes["x"].Value) + (float)Client.Avatar.Position.X,
 					Convert.ToSingle(properties["position"].Attributes["y"].Value) + (float)Client.Avatar.Position.Y,
-					Convert.ToSingle(properties["position"].Attributes["z"].Value) + (float)Client.Avatar.Position.Z + 5.0F);
+					Convert.ToSingle(properties["position"].Attributes["z"].Value) + (float)Client.Avatar.Position.Z + 50.0F);
+				prim.Position = position;
+
+				CurrentPrim = prim;
+				WaitingOnUpdate = true;
 
 				Client.CurrentRegion.RezObject(prim, position, new LLVector3(Client.Avatar.Position));
+
+				while (WaitingOnUpdate)
+				{
+					System.Threading.Thread.Sleep(100);
+					Application.DoEvents();
+				}
+
+				txtLog.AppendText("Rezzed primitive with UUID " + CurrentPrim.UUID + " and ID " + CurrentPrim.ID + " \n");
+
+				Hashtable blocks = new Hashtable();
+				Hashtable fields = new Hashtable();
+
+				/*fields["ObjectLocalID"] = CurrentPrim.ID;
+				blocks[fields] = "ObjectData";
+
+				fields = new Hashtable();
+
+				fields["AgentID"] = Client.Network.AgentID;
+				blocks[fields] = "AgentData";
+
+				Packet packet = PacketBuilder.BuildPacket("ObjectSelect", Client.Protocol, blocks, Helpers.MSG_RELIABLE);
+				Client.Network.SendPacket(packet);
+
+				System.Threading.Thread.Sleep(100);*/
+				Packet packet;
+
+				byte[] byteArray = new byte[12];
+				Array.Copy(position.GetBytes(), byteArray, 12);
+
+				fields["Data"] = byteArray;
+				fields["Type"] = (byte)9;
+				fields["ObjectLocalID"] = CurrentPrim.ID;
+				blocks[fields] = "ObjectData";
+
+				fields = new Hashtable();
+
+				fields["AgentID"] = Client.Network.AgentID;
+				blocks[fields] = "AgentData";
+
+				packet = PacketBuilder.BuildPacket("MultipleObjectUpdate", Client.Protocol, blocks, Helpers.MSG_RELIABLE);
+				Client.Network.SendPacket(packet);
+				Client.Network.SendPacket(packet);
+				Client.Network.SendPacket(packet);
+
+				System.Threading.Thread.Sleep(500);
 			}
 		}
 	}
