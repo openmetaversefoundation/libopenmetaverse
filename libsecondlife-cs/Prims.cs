@@ -35,8 +35,8 @@ namespace libsecondlife
 		public float ProfileBegin = 0;
 		public float PathRadiusOffset = 0;
 		public float PathSkew = 0;
-		public LLVector3 RayStart = new LLVector3();
-		public int ProfileCurve = 0;
+		public LLVector3 Position = new LLVector3();
+		public uint ProfileCurve = 0;
 		public float PathScaleX = 0;
 		public float PathScaleY = 0;
 		public LLUUID UUID = new LLUUID();
@@ -58,6 +58,7 @@ namespace libsecondlife
 		public uint ProfileHollow = 0;
 		public float PathRevolutions = 0;
 		public LLQuaternion Rotation = new LLQuaternion();
+		public uint State;
 		
 		public PrimObject(LLUUID texture)
 		{
@@ -88,13 +89,13 @@ namespace libsecondlife
 		public static byte ProfileBeginByte(float profileBegin)
 		{
 			// Y = ceil (200X)
-			return (byte)Convert.ToInt16(Math.Ceiling(200.0F * profileBegin));
+			return (byte)Convert.ToInt16(200.0F * profileBegin);
 		}
 
 		public static byte ProfileEndByte(float profileEnd)
 		{
-			// Y = 200 - ceil (200X) 
-			return (byte)(200 - (int)ProfileBeginByte(profileEnd));
+			// Y = 200 - ceil (200X)
+			return (byte)(200 - (200.0F * profileEnd));
 		}
 
 		public static byte PathBeginByte(float pathBegin)

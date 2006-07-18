@@ -312,24 +312,24 @@ namespace libsecondlife
 			Client.Network.SendPacket(packet);
 		}
 
-		public void Chat(string message, byte type) 
+		public void Say(string message, int channel) 
 		{
 			LLUUID CommandID = new LLUUID();
 			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 
 			Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol, Client.Avatar.ID, Client.Network.SessionID,
-				message, type, 0, 0, CommandID, 20, Position);
+				message, (byte)1, channel, 0, CommandID, 20, Position);
 
 			Client.Network.SendPacket(packet);
 		}
 
-		public void Shout(string message) 
+		public void Shout(string message, int channel) 
 		{
 			LLUUID CommandID = new LLUUID();
 			LLVector3 Position = new LLVector3(0.0F,0.0F,0.0F);
 
 			Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,
-				message, 0, 0, 0, CommandID,100,Position);
+				message, (byte)2, channel, 0, CommandID, 100, Position);
 
 			Client.Network.SendPacket(packet);
 		}

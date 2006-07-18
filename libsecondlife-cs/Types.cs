@@ -393,6 +393,82 @@ namespace libsecondlife
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
 		}
+
+		public override int GetHashCode()
+		{
+			int x = (int)X;
+			int y = (int)Y;
+			int z = (int)Z;
+
+			return (x ^ y ^ z);
+		}
+
+		public override bool Equals(object o)
+		{
+			if (!(o is LLVector3))
+			{
+				return false;
+			}
+
+			LLVector3 vector = (LLVector3)o;
+
+			if (X == vector.X && Y == vector.Y && Z == vector.Z)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		public static bool operator==(LLVector3 lhs, LLVector3 rhs)
+		{
+			try
+			{
+				if (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			catch (NullReferenceException)
+			{
+				float test;
+				bool lhsnull = false;
+				bool rhsnull = false;
+
+				try
+				{
+					test = lhs.X;
+				}
+				catch (NullReferenceException)
+				{
+					lhsnull = true;
+				}
+
+				try
+				{
+					test = rhs.X;
+				}
+				catch (NullReferenceException)
+				{
+					rhsnull = true;
+				}
+				
+				return (lhsnull == rhsnull);
+			}
+
+			return false;
+		}
+
+		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)
+		{
+			return !(lhs == rhs);
+		}
 	}
 
 	public class LLVector3d
