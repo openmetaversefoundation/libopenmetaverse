@@ -461,8 +461,6 @@ namespace libsecondlife
 				
 				return (lhsnull == rhsnull);
 			}
-
-			return false;
 		}
 
 		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)

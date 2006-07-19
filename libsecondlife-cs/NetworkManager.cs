@@ -65,7 +65,9 @@ namespace libsecondlife
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
 		private Hashtable Callbacks;
-		private byte[] Buffer;
+		private byte[][] Buffers;
+		private int CurrentBuffer;
+		private Mutex CurrentBufferMutex = new Mutex(false, "CurrentBufferMutex");
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
 		private System.Timers.Timer OpenTimer;
@@ -101,7 +103,12 @@ namespace libsecondlife
 			Callbacks = callbacks;
 			CircuitCode = circuitCode;
 			Sequence = 0;
-			Buffer = new byte[4096];
+			Buffers = new byte[8][];
+			for (int i = 0; i < 8; ++i)
+			{
+				Buffers[i] = new byte[4096];
+			}
+			CurrentBuffer = 0;
 			Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 			Opened = false;
 			Timeout = false;
@@ -156,7 +163,7 @@ namespace libsecondlife
 
 				// Associate this circuit's socket with the given ip and port and start listening
 				Connection.Connect(endPoint);
-				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+				Connection.BeginReceiveFrom(Buffers[0], 0, Buffers[0].Length, SocketFlags.None, ref endPoint, ReceivedData, null);
 
 				// Start the circuit opening timeout
 				OpenTimer.Start();
@@ -344,20 +351,36 @@ namespace libsecondlife
 				// Retrieve the incoming packet
 				int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
 
-				if ((Buffer[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+				CurrentBufferMutex.WaitOne();
+
+				// TODO: Before we can make the number of packet buffers a configurable number, 
+				//       each buffer needs a lock associated with it. Maybe a parallel array 
+				//       of booleans to keep track of the locked status of each buffer
+
+				// Track which buffer we're listening to and increment to the next buffer
+				int ThisBuffer = CurrentBuffer;
+				CurrentBuffer++;
+				if (CurrentBuffer >= 8) { CurrentBuffer = 0; }
+
+				// Start listening again since we're done with Buffer
+				Connection.BeginReceiveFrom(Buffers[CurrentBuffer], 0, 4096, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+				CurrentBufferMutex.ReleaseMutex();
+
+				if ((Buffers[ThisBuffer][0] & Helpers.MSG_APPENDED_ACKS) != 0)
 				{
 					// Grab the ACKs that are appended to this packet
-					byte numAcks = Buffer[Buffer.Length - 1];
+					byte numAcks = Buffers[ThisBuffer][numBytes - 1];
 
 					Helpers.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
 					NeedAckMutex.WaitOne();
 					for (int i = 1; i <= numAcks; ++i)
 					{
-						ushort ack = (ushort)BitConverter.ToUInt32(Buffer, numBytes - i * 4 - 1);
+						ushort ack = (ushort)BitConverter.ToUInt32(Buffers[ThisBuffer], numBytes - i * 4 - 1);
 
 					Beginning:
-						ArrayList reliablePackets = (ArrayList)NeedAck.Keys;
+						ICollection reliablePackets = NeedAck.Keys;
 
 						foreach (Packet reliablePacket in reliablePackets)
 						{
@@ -374,25 +397,19 @@ namespace libsecondlife
 					numBytes = numBytes - numAcks * 4 - 1;
 				}
 
-				if ((Buffer[0] & Helpers.MSG_ZEROCODED) != 0)
+				if ((Buffers[ThisBuffer][0] & Helpers.MSG_ZEROCODED) != 0)
 				{
 					// Allocate a temporary buffer for the zerocoded packet
 					byte[] zeroBuffer = new byte[4096];
-					int zeroBytes = Helpers.ZeroDecode(Buffer, numBytes, zeroBuffer);
+					int zeroBytes = Helpers.ZeroDecode(Buffers[ThisBuffer], numBytes, zeroBuffer);
 					packet = new Packet(zeroBuffer, zeroBytes, Protocol);
 					numBytes = zeroBytes;
 				}
 				else
 				{
 					// Create the packet object from our byte array
-					packet = new Packet(Buffer, numBytes, Protocol);
+					packet = new Packet(Buffers[ThisBuffer], numBytes, Protocol);
 				}
-
-				// DEBUG
-				//Console.WriteLine("Received a " + numBytes + " byte " + packet.Layout.Name);
-
-				// Start listening again since we're done with Buffer
-				Connection.BeginReceiveFrom(Buffer, 0, Buffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
 
 				// Track the sequence number for this packet if it's marked as reliable
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
@@ -407,7 +424,7 @@ namespace libsecondlife
 					{
 						Helpers.Log("ACKs are being sent too slowly!", Helpers.LogLevel.Warning);
 					}
-					if (AckOutbox.Count > 3)
+					if (AckOutbox.Count > 0)
 					{
 						AckOutboxMutex.ReleaseMutex();
 						SendACKs();
@@ -426,7 +443,7 @@ namespace libsecondlife
 							(((packet.Data[0] & Helpers.MSG_RESENT) != 0) ? "Yes" : "No"), Helpers.LogLevel.Info);
 
 						// Avoid firing a callback twice for the same packet
-						return;
+						goto Finished;
 					}
 					else
 					{
@@ -438,7 +455,7 @@ namespace libsecondlife
 				if (packet.Layout.Name == null)
 				{
 					Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
-					return;
+					goto Finished;
 				}
 				else if (packet.Layout.Name == "PacketAck")
 				{
@@ -498,6 +515,9 @@ namespace libsecondlife
 			{
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
+
+		Finished:
+			;
 		}
 
 		private void OpenTimerEvent(object source, System.Timers.ElapsedEventArgs ea)

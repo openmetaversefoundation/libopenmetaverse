@@ -174,6 +174,12 @@ namespace libsecondlife
 				}
 			}
 
+			// This will speed things up for now
+			if (command == LowMaps[65531].Name)
+			{
+				return LowMaps[65531];
+			}
+
 			foreach (MapPacket map in LowMaps)
 			{
 				if (map != null)
