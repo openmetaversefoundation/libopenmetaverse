@@ -640,6 +640,7 @@ RequestBlock
 GrantData
 DetachAttachmentIntoInv
 ParcelDisableObjects
+Sections
 GodLevel
 StartGroupIM
 PayPriceReply
@@ -828,17 +829,16 @@ ClassifiedInfoRequest
 ParcelInfoRequest
 ParcelObjectOwnersRequest
 TeleportLandmarkRequest
-CommandID
+EventInfoRequest
 MovedIntoSimulator
 ChatFromSimulator
-EventInfoRequest
 PickInfoRequest
-DirPeopleQuery
 MoneyBalanceRequest
+DirPeopleQuery
 GroupElectionInfoRequest
 GroupMembersRequest
-TextureID
 GroupOfficersAndMembersRequest
+TextureID
 OldFolderID
 UserInfoRequest
 LandCollidersRequest
@@ -968,7 +968,6 @@ BodyRotation
 StartGroupElection
 SearchRegions
 Ignore
-ConversationData
 AnimationData
 StatID
 ItemID
