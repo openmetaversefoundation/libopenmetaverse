@@ -344,7 +344,7 @@ namespace libsecondlife
 				// Retrieve the incoming packet
 				int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
 
-				if ((Buffer[Buffer.Length - 1] & Helpers.MSG_APPENDED_ACKS) != 0)
+				if ((Buffer[0] & Helpers.MSG_APPENDED_ACKS) != 0)
 				{
 					// Grab the ACKs that are appended to this packet
 					byte numAcks = Buffer[Buffer.Length - 1];
