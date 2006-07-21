@@ -37,11 +37,14 @@ namespace libsecondlife
 	public delegate void InstantMessageCallback(LLUUID FromAgentID, LLUUID ToAgentID, 
 	uint ParentEstateID, LLUUID RegionID, LLVector3 Position, byte Offline, byte Dialog, 
 	LLUUID ID, uint Timestamp, string AgentName, string Message, string Bucket);
+
+	public delegate void FriendNotificationCallback(LLUUID AgentID, bool Online);
 	
 	public class Avatar
 	{
 		public LLUUID ID;
 		public string Name;
+		public bool Online;
 	}
 
 	public class MainAvatar
@@ -62,6 +65,7 @@ namespace libsecondlife
 		
 		public event ChatCallback OnChat;
 		public event InstantMessageCallback OnInstantMessage;
+		public event FriendNotificationCallback OnFriendNotification;
 
 		public MainAvatar(SecondLife client)
 		{
@@ -82,17 +86,91 @@ namespace libsecondlife
 			Client.Network.RegisterCallback("TeleportFailed", callback);
 			Client.Network.RegisterCallback("TeleportFinish", callback);
 
-			// Instant Message Callback
+			// Instant Message callback
 			callback = new PacketCallback(InstantMessageHandler);
 			Client.Network.RegisterCallback("ImprovedInstantMessage", callback);
 
-			// Chat Callback
+			// Chat callback
 			callback = new PacketCallback(ChatHandler);
 			Client.Network.RegisterCallback("ChatFromSimulator", callback);
+
+			// Friend notification callback
+			callback = new PacketCallback(FriendNotificationHandler);
+			Client.Network.RegisterCallback("OnlineNotification", callback);
+			Client.Network.RegisterCallback("OfflineNotification", callback);
 
 			TeleportTimer = new Timer(8000);
 			TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
 			TeleportTimeout = false;
+		}
+
+		private void FriendNotificationHandler(Packet packet, Circuit ciruit)
+		{
+			// If the agent is online...
+			if (packet.Layout.Name == "OnlineNotification")
+			{
+				LLUUID AgentID = new LLUUID();
+
+				ArrayList blocks;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if(field.Layout.Name == "AgentID")
+						{
+							AgentID = (LLUUID)field.Data;
+
+							Client.AddAvatar(AgentID);
+							Client.AvatarsMutex.WaitOne();
+							((Avatar)Client.Avatars[AgentID]).Online = true;
+							Client.AvatarsMutex.ReleaseMutex();
+
+							if (OnFriendNotification != null)
+							{
+								OnFriendNotification(AgentID, true);
+							}
+						}
+					}
+				}
+
+				return;
+			}
+
+			// If the agent is Offline...
+			if (packet.Layout.Name == "OfflineNotification")
+			{
+				LLUUID AgentID = new LLUUID();
+
+				ArrayList blocks;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if(field.Layout.Name == "AgentID")
+						{
+							AgentID = (LLUUID)field.Data;
+
+							Client.AddAvatar(AgentID);
+							Client.AvatarsMutex.WaitOne();
+							((Avatar)Client.Avatars[AgentID]).Online = false;
+							Client.AvatarsMutex.ReleaseMutex();
+
+							if (OnFriendNotification != null)
+							{
+								OnFriendNotification(AgentID, false);
+							}
+						}
+					}
+				}
+
+				return;
+			}
 		}
 
 		private void LocationHandler(Packet packet, Circuit circuit)

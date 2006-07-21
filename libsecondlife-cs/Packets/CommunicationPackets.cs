@@ -31,6 +31,18 @@ namespace libsecondlife.Packets
 {
 	public class Communication
 	{
+		public static Packet UUIDNameRequest(ProtocolManager protocol, LLUUID ID) 
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["ID"] = ID;
+			blocks[fields] = "UUIDNameBlock";
+
+			Packet packet = PacketBuilder.BuildPacket("UUIDNameRequest", protocol, blocks, Helpers.MSG_RELIABLE);
+			return packet;
+		}
+
 		public static Packet ImprovedInstantMessage(ProtocolManager protocol, LLUUID targetAgentID, 
 			LLUUID myAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte offline, 
 			byte dialog, LLUUID id, uint timestamp, string myAgentName, string message, 

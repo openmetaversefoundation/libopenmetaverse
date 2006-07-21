@@ -40,6 +40,8 @@ namespace libsecondlife
 		public NetworkManager Network;
 		public ParcelManager Parcels;
 		public MainAvatar Avatar;
+		public Hashtable Avatars;
+		public Mutex AvatarsMutex;
 		public Inventory Inventory;
 		public ArrayList Regions;
 		public Mutex RegionsMutex;
@@ -53,6 +55,8 @@ namespace libsecondlife
 			Network = new NetworkManager(this, Protocol);
 			Parcels = new ParcelManager(this);
 			Avatar = new MainAvatar(this);
+			Avatars = new Hashtable();
+			AvatarsMutex = new Mutex(false, "AvatarsMutex");
 			Inventory = new Inventory(this);
 			Regions = new ArrayList();
 			RegionsMutex = new Mutex(false, "RegionsMutex");
@@ -86,6 +90,68 @@ namespace libsecondlife
 
 			RegionsMutex.ReleaseMutex();
 			return null;
+		}
+
+		public void AddAvatar(LLUUID AgentID) 
+		{
+			// Quick sanity check
+			if(Avatars.ContainsKey(AgentID)) 
+			{
+				return;
+			}
+			
+			GetAgentDetails(AgentID);
+			
+			AvatarsMutex.WaitOne();
+			Avatars[AgentID] = new Avatar();
+			AvatarsMutex.ReleaseMutex();
+
+			return;
+		}
+
+		private void GetAgentDetails(LLUUID AgentID) 
+		{
+			PacketCallback callback = new PacketCallback(GetAgentNameHandler);
+			Network.RegisterCallback("UUIDNameReply", callback);
+
+			Packet packet = Packets.Communication.UUIDNameRequest(Protocol, AgentID);
+			Network.SendPacket(packet);
+		}
+
+		private void GetAgentNameHandler(Packet packet, Circuit circuit) 
+		{
+			if (packet.Layout.Name == "UUIDNameReply")
+			{
+				LLUUID ID			= new LLUUID();
+				string Firstname	= "";
+				string Lastname		= "";
+
+				ArrayList blocks;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if(field.Layout.Name == "ID")
+						{
+							ID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "FirstName")
+						{
+							Firstname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "LastName")
+						{
+							Lastname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+					}
+				}
+				AvatarsMutex.WaitOne();
+				((Avatar)Avatars[ID]).Name = Firstname + " " + Lastname;
+				AvatarsMutex.ReleaseMutex();
+			} 
 		}
 	}
 

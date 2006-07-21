@@ -743,6 +743,12 @@ namespace libsecondlife
 
 			LoginValues = (Hashtable)result.Value;
 
+			if ((string)LoginValues["login"] == "false")
+			{
+				LoginError = LoginValues["reason"] + ": " + LoginValues["message"];
+				return false;
+			}
+
 			System.Text.RegularExpressions.Regex LLSDtoJSON = 
 				new System.Text.RegularExpressions.Regex(@"('|r([0-9])|r(\-))");
 			string json;
@@ -799,12 +805,6 @@ namespace libsecondlife
 				home["region_handle"] = regionHandle;
 
 				LoginValues["home"] = home;
-			}
-
-			if ((string)LoginValues["login"] == "false")
-			{
-				LoginError = LoginValues["reason"] + ": " + LoginValues["message"];
-				return false;
 			}
 
 			AgentID = new LLUUID((string)LoginValues["agent_id"]);
