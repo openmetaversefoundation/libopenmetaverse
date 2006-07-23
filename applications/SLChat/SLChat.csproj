@@ -1,0 +1,75 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>SLChat</RootNamespace>
+    <AssemblyName>SLChat</AssemblyName>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BF9AED39-880E-4165-A292-00736330D2D9}</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <Optimize>False</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <Optimize>True</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="XmlRpcCS">
+      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\XmlRpcCS.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="libsecondlife">
+      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\libsecondlife.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Inventory">
+      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\Inventory\Inventory\bin\Debug\Inventory.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="winLogin.cs" />
+    <Compile Include="winChat.cs" />
+    <Compile Include="NetCom.cs" />
+    <Compile Include="winIM.cs" />
+    <Compile Include="winIM.Designer.cs" />
+    <Compile Include="winInventory.cs" />
+    <Compile Include="winInventory.Designer.cs" />
+    <EmbeddedResource Include="winLogin.resx">
+      <DependentUpon>winLogin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="winChat.resx">
+      <DependentUpon>winChat.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="winIM.resx">
+      <DependentUpon>winIM.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="winInventory.resx">
+      <DependentUpon>winInventory.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Include="winAbout.Designer.cs">
+      <DependentUpon>winAbout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="winAbout.cs" />
+    <EmbeddedResource Include="winAbout.resx">
+      <DependentUpon>winAbout.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+</Project>
