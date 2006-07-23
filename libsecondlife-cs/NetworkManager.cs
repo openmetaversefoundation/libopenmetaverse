@@ -674,6 +674,13 @@ namespace libsecondlife
 			circuit.SendPacket(packet, true);
 		}
 
+		public static Hashtable DefaultLoginValues(string firstName, string lastName, string password,
+			string userAgent, string author)
+		{
+			return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last", 
+				1, 50, 50, 50, "Win", "0", userAgent, author);
+		}
+
 		public static Hashtable DefaultLoginValues(string firstName, string lastName, string password, string mac,
 			string startLocation, int major, int minor, int patch, int build, string platform, string viewerDigest, 
 			string userAgent, string author)
@@ -1061,6 +1068,7 @@ namespace libsecondlife
 			{
 				Client.CurrentRegion = foundRegion;
 			}
+			Client.CurrentParcelOverlay = Client.CurrentRegion.ParcelOverlay;
 			Client.RegionsMutex.ReleaseMutex();
 
 			Helpers.Log("Received a region handshake for " + region.Name, Helpers.LogLevel.Info);
@@ -1097,17 +1105,19 @@ namespace libsecondlife
 
 			if (sequenceID >= 0 && sequenceID <= 3)
 			{
-				if (Client.ParcelOverlaysReceived > 3)
-				{
-					Client.ParcelOverlaysReceived = 0;
-					Array.Clear(Client.CurrentParcelOverlay, 0, Client.CurrentParcelOverlay.Length);
-					Helpers.Log("Reset current parcel overlay", Helpers.LogLevel.Info);
-				}
-
 				Array.Copy(byteArray, 0, Client.CurrentParcelOverlay, sequenceID * 1024, 1024);
 				Client.ParcelOverlaysReceived++;
 
-				Helpers.Log("Parcel overlay " + sequenceID + " received", Helpers.LogLevel.Info);
+				if (Client.ParcelOverlaysReceived > 3)
+				{
+					Client.ParcelOverlaysReceived = 0;
+					Helpers.Log("Finished building the current parcel overlay", Helpers.LogLevel.Info);
+
+					// The int i = 0; is just there so I could break on it and check the 
+					// value of debug
+					//int[,] debug = Region.ParcelOverlayToParcels(Client.CurrentRegion);
+					//int i = 0;
+				}
 			}
 			else
 			{

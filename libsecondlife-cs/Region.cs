@@ -108,6 +108,63 @@ namespace libsecondlife
 			Client.Network.SendPacket(objectAdd);
 		}
 
+		private static void ParcelOverlayToParcels_bitfill(int x, int y, int[,] Parcels, int index)
+		{
+			if(x < 0 || x >= 128) return;
+			if(y < 0 || y >= 128) return;
+
+			if(Parcels[x,y] == 0)
+			{
+				Parcels[x,y] = index;
+				ParcelOverlayToParcels_bitfill(x-1,y,Parcels,index);
+				ParcelOverlayToParcels_bitfill(x+1,y,Parcels,index);
+				ParcelOverlayToParcels_bitfill(x-1,y-1,Parcels,index);
+				ParcelOverlayToParcels_bitfill(x-1,y+1,Parcels,index);
+			}
+		}
+
+		public static int[,] ParcelOverlayToParcels(Region region)
+		{
+			byte[] Overlay = region.ParcelOverlay;
+			int[,] ParcelsHigh = new int[128, 128];
+			int[,] Parcels = new int[64, 64];
+
+			int x, y;
+			int x2, y2;
+			int index;
+
+			for(x = 0; x < 64; x++)
+				for(y = 0; y < 64; y++)
+				{
+					x2 = x * 2;
+					y2 = y * 2;
+					ParcelsHigh[x2,y2] = 0;
+					ParcelsHigh[x2 + 1,y2] = (Overlay[x * 64 + y] & 64) == 64 ? -1 : 0;
+					ParcelsHigh[x2,y2 + 1] = (Overlay[x * 64 + y] & 128) == 128 ? -1 : 0;
+					ParcelsHigh[x2+1,y2+1] = (ParcelsHigh[x2+1,y2] == -1 || ParcelsHigh[x2,y2 + 1] == -1) ? -1 : 0;
+				}
+
+			index = 0;
+			for(x = 0; x < 64; x++)
+				for(y = 0; y < 64; y++)
+				{
+					x2 = x * 2;
+					y2 = y * 2;
+					if(ParcelsHigh[x2,y2] == 0)
+					{
+						ParcelOverlayToParcels_bitfill(x2,y2,ParcelsHigh,index++);
+					}
+				}
+			for(x = 0; x < 64; x++)
+				for(y = 0; y < 64; y++)
+				{
+					x2 = x * 2;
+					y2 = y * 2;
+					Parcels[x,y] = ParcelsHigh[x2,y2];
+				}
+			return Parcels;
+		}
+
 		public override int GetHashCode()
 		{
 			return ID.GetHashCode();

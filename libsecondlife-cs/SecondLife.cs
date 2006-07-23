@@ -61,7 +61,7 @@ namespace libsecondlife
 			Regions = new ArrayList();
 			RegionsMutex = new Mutex(false, "RegionsMutex");
 			CurrentRegion = null;
-			CurrentParcelOverlay = new byte[4096];
+			CurrentParcelOverlay = null;
 			ParcelOverlaysReceived = 0;
 		}
 
