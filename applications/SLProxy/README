@@ -1,0 +1,221 @@
+SLProxy is a library that works in conjunction with libsecondlife to
+allow applications to wedge themselves between the official Second
+Life client and servers.  SLProxy applications can inspect and modify
+any packet as it passes between the client and the servers; remove
+packets from the stream; and inject new packets into the stream.
+SLProxy automatically takes care of tracking circuits and modifying
+sequence numbers and acknowledgements to account for changes to the
+packet stream.
+
+The continued existence of this software of course rests on the good
+will of Linden Lab toward the Second Life reverse engineering effort.
+Please use common sense when designing applications and report any
+security holes you may find to security@lindenlab.com.
+
+In addition to the SLProxy library, this package contains two short
+example applications.  Analyst simply dumps every packet sent between
+the client and the server to the console.  ChatConsole dumps all
+in-world chat to the console, and sends all text typed at the console
+to the world as chat.
+
+To use an SLProxy application, you must first start the proxy, then
+start Second Life with the switch `-loginuri http://localhost:8080/'.
+In Windows, add this switch (without the quotes) to your Second Life
+shortcut.  In MacOS X, this can be accomplished by sending the
+following commands to the Terminal (assuming Second Life is installed
+in /Applications):
+
+	cd "/Applications/Second Life.app"
+	"Contents/MacOS/Second Life" -loginuri http://localhost:8080/
+
+Note that for security reasons, by default, SLProxy applications must
+be running on the same computer as Second Life.  If you need to run a
+proxy on a different machine or port, start the proxy with the
+--proxy-help switch and see the options available.
+
+SLProxy can only handle one client using a proxy at a time.
+
+PUBLIC INTERFACE
+================
+
+This section describes the interface that SLProxy applications will
+use to interact with the packet stream.  Please see ChatConsole.cs for
+a simple example of how this interface can be used.
+
+SLProxy extends the functionality of libsecondlife, so we assume here
+that the reader is already familiar with libsecondlife's Packet and
+PacketBuilder classes.
+
+1. ProxyConfig class
+--------------------
+
+An instance of ProxyConfig represents the configuration of a Proxy
+object, and must be provided when constructing a Proxy.  ProxyConfig
+has two constructors:
+
+	ProxyConfig(string userAgent, string author)
+	ProxyConfig(string userAgent, string author, string[] args)
+
+Both constructors require a user agent name and the author's email
+address.  These are sent to Second Life's login server to identify the
+client, and to allow Linden Lab to get in touch with authors whose
+applications may inadvertantly be causing problems.  The second
+constructor is preferred and takes an array of command-line arguments
+that allow the user to override certain network settings.  For a list
+of command line arguments, start your appliation with the --proxy-help
+switch.
+
+2. Proxy class
+--------------
+
+The Proxy class represents an instance of an SLProxy and provides the
+methods necessary to modify the packet stream.  Proxy's sole
+constructor takes an instance of ProxyConfig.
+
+2.1 Login delegates
+- - - - - - - - - -
+
+You may specify that SLProxy should call a delegate method in your
+application when the user successfully logs into Second Life:
+
+	delegate void LoginDelegate(SessionInformation session)
+	void SetLoginDelegate(LoginDelegate loginDelegate)
+
+LoginDelegate methods are passed a SessionInformation object, which
+contains the agentID and sessionID for the current session.  These
+values are required when injecting certain kinds of packets.
+
+Note that all delegates must terminate (not go into an infinite loop),
+and must be thread-safe.
+
+2.2 Packet delegates
+- - - - - - - - - -
+
+Packet delegates allow you to inspect and modify packets as they pass
+between the client and the server:
+
+	delegate Packet PacketDelegate(Packet packet, IPEndPoint endPoint)
+	void AddDelegate(string packetName, Direction direction, PacketDelegate packetDelegate)
+	void RemoveDelegate(string packetName, Direction direction)
+
+AddDelegate adds a callback delegate for packets named packetName
+going direction.  Directions are either Direction.Incoming, meaning
+packets heading from the server to the client, or Direction.Outgoing,
+meaning packets heading from the client to the server.  Only one
+delegate can apply to a packet at a time; if you add a new delegate
+with the same packetName and direction, the old one will be removed.
+
+RemoveDelegate simply removes the delegate for the specified type of
+packet.
+
+PacketDelegate methods are passed a copy of the packet (in the form of
+a libsecondlife Packet object) and the IPEndPoint of the server that
+sent (or will receive) the packet.  PacketDelegate methods may do one
+of three things:
+
+1. Return the same packet, in which case it will be passed on.
+2. Return a new packet (built with libsecondlife), in which case the
+   new packet will substitute for the original.  SLProxy will
+   automatically copy the sequence number and appended ACKs from the
+   old packet to the new one.
+3. Return null, in which case the packet will not be passed on.
+
+SLProxy automatically takes care of ensuring that sequence numbers and
+acknowledgements are adjusted to account for changes made by the
+application.  When replacing a reliable packet with an unreliable
+packet or removing a reliable packet, a fake acknowledgement is
+injected.  When replacing an unreliable packet with a reliable packet,
+SLProxy ensures delivery and intercepts its acknowledgement.  Note
+that if a reliable packet is passed on but then lost on the network,
+Second Life will resend it and the delegate will be called again.  You
+can tell if a packet is being resent by checking if (packet.Data[0] &
+Helpers.MSG_RESENT) is nonzero, although be advised that it's possible
+that the original packet never made it to the proxy and the packet
+will be marked RESENT the first time the proxy ever sees it.
+
+Note that all delegates must terminate (not go into an infinite loop),
+and must be thread-safe.
+
+2.3 Packet injection
+- - - - - - - - - -
+
+New packets may be injected into the stream at any point, either
+during a delegate callback or by another thread in your application.
+Packets are injected with the InjectPacket method:
+
+	void InjectPacket(Packet packet, Direction direction)
+
+This will inject a packet heading to either the client or to the
+active server, when direction is Direction.Incoming or
+Direction.Outgoing, respectively.  The packet's sequence number will
+be set automatically, and if the packet is reliable, SLProxy will
+ensure its delivery and intercept its acknowledgement.
+
+Injecting a packet immediately upon (or prior to) connection is not
+recommended, since the client and the server won't have initialized
+their session yet.
+
+2.4 Starting the proxy
+- - - - - - - - - - -
+
+Once you've constructed a Proxy and added your delegates, you must
+start it with the Start method:
+
+	void Start()
+
+Once started, the proxy will begin listening for connections.  The
+Start method spawns new threads for the proxy and returns immediately.
+
+3. PacketUtility class
+----------------------
+
+The PacketUtility class provides a handful of static methods which may
+be useful when inspecting and modifying packets.
+
+3.1 Hashtable Unbuild(Packet packet)
+- - - - - - - - - - - - - - - - - -
+
+The Unbuild method takes a Packet object and returns a table of
+blocks, structured in a format suitable for passing to PacketUtility's
+GetField and SetField methods or PacketBuilder's BuildPacket method.
+
+For example, this should make an approximate copy of a packet:
+
+Hashtable packetBlocks = PacketUtility.Unbuild(packet);
+Packet packetCopy = PacketBuilder.BuildPacket(packet.Layout.Name, protocolManager, packetBlocks, packet.Data[0]);
+
+3.2 object GetField(Hashtable blocks, string block, string field)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+The GetField method takes a table of blocks (produced by
+PacketUtility.Unbuild) and extracts the value of a particular field.
+If the field is part of a variable block, an arbitrary instance of the
+field will be returned.  If the field does not exist, null will be
+returned.
+
+3.3 void SetField(Hashtable blocks, string block, string field, object value)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+The SetField method takes a table of blocks (produced by
+PacketUtility.Unbuild) and sets the value of a particular field.  If
+the field is part of a variable block, all instances of the field will
+be set.  If the field does not exist, SetField will have no effect.
+
+This can be used by a packet delegate method in conjunction with
+PacketUtility.Unbuild and PacketBuilder.BuildPacket to substitute a
+new packet that is a copy of the original packet with certain fields
+modified.
+
+3.4 string VariableToString(byte[] field)
+- - - - - - - - - - - - - - - - - - - - -
+
+The VariableToString method interprets a variable field in a packet as
+a UTF-8 encoded string.  If conversion fails, an empty string is
+returned.
+
+3.5 byte[] StringToVariable(string str)
+- - - - - - - - - - - - - - - - - - - -
+
+The StringToVariable method returns a variable field representing the
+UTF-8 encoding of a string.  If conversion fails, an empty field is
+returned.
