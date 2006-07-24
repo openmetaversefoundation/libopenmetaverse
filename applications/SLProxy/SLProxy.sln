@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsole", "ChatConsole.
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodMode", "GodMode.csproj", "{6222B134-AE5F-489A-8A77-423A721B7C62}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -29,6 +33,10 @@ Global
 		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Debug.Build.0 = Debug|.NET
 		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Release.ActiveCfg = Release|.NET
 		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Release.Build.0 = Release|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Debug.ActiveCfg = Debug|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Debug.Build.0 = Debug|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Release.ActiveCfg = Release|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
