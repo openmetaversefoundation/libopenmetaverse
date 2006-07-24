@@ -91,6 +91,15 @@ Life through ChatConsole, all in-world chat will be echoed to the
 console, and anything typed in the console will be echoed to the game as
 in-world chat.
 
+3. GodMode
+----------
+
+GodMode enables client-side God Mode privileges.  To activate God
+Mode, say /god via in-world chat.  The command will be dropped and
+nobody will hear you say it, but the God menu will become available.
+To see the God menu, you must also enable the debug menu by pressing
+Control+Alt+Shift+D (Command+Option+Shift+D on a Mac).
+
 PUBLIC INTERFACE
 ================
 

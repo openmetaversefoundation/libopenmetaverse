@@ -35,28 +35,34 @@ using libsecondlife;
 public class GodMode {
 	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
+	private static SessionInformation sessionInformation;
 
 	public static void Main(string[] args) {
 		protocolManager = new ProtocolManager("keywords.txt", "protocol.txt");
 		ProxyConfig proxyConfig = new ProxyConfig("GodMode", "jhurliman@wsu.edu", protocolManager, args);
 		proxy = new Proxy(proxyConfig);
 
+		// register login delegate
+		proxy.SetLoginDelegate(new LoginDelegate(Login));
+
 		// register delegates for all packets
-		proxy.AddDelegate("CompleteAgentMovement", Direction.Outgoing, new PacketDelegate(CompleteAgentMovement));
+		proxy.AddDelegate("ChatFromViewer", Direction.Outgoing, new PacketDelegate(ChatFromViewer));
 
 		proxy.Start();
 	}
 
+	private static void Login(SessionInformation session) {
+		sessionInformation = session;
+	}
+
 	// delegate for movement packet: log the packet and return it unharmed
-	private static Packet CompleteAgentMovement(Packet packet, IPEndPoint endPoint) {
+	private static Packet ChatFromViewer(Packet packet, IPEndPoint endPoint) {
 		// deconstruct the packet
 		Hashtable blocks = PacketUtility.Unbuild(packet);
 
-		LLUUID agentID = (LLUUID)PacketUtility.GetField(blocks, "AgentData", "AgentID");
-		LLUUID sessionID = (LLUUID)PacketUtility.GetField(blocks, "AgentData", "SessionID");
-
-		Console.WriteLine("Captured CompleteAgentMovement packet, AgentID: " + 
-			agentID.ToString() + ", SessionID: " + sessionID.ToString());
+		// return the packet unmodified unless they said /god
+		if (PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "Message")) != "/god")
+			return packet;
 
 		// construct a GrantGodlikePowers packet
 		blocks = new Hashtable();
@@ -67,19 +73,19 @@ public class GodMode {
 		blocks[fields] = "GrantData";
 
 		fields = new Hashtable();
-		fields["AgentID"] = agentID;
-		fields["SessionID"] = sessionID;
+		fields["AgentID"] = sessionInformation.agentID;
+		fields["SessionID"] = sessionInformation.sessionID;
 		blocks[fields] = "AgentData";
 
 		Packet godPacket = PacketBuilder.BuildPacket("GrantGodlikePowers", 
-			protocolManager, blocks, Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
+			protocolManager, blocks, Helpers.MSG_RELIABLE | Helpers.MSG_ZEROCODED);
 
 		// inject the packet
 		proxy.InjectPacket(godPacket, Direction.Incoming);
 
 		Console.WriteLine("Injected GrantGodlikePowers packet");
 
-		// return the packet unmodified
-		return packet;
+		// drop the packet
+		return null;
 	}
 }
