@@ -46,7 +46,7 @@ namespace libsecondlife.Packets
 			fields["PathSkew"] = (sbyte)prim.PathSkew;
 			fields["SenderID"] = senderID;
 			fields["RayStart"] = rayStart;
-			fields["ProfileCurve"] = (byte)prim.ProfileCurve;
+			fields["ProfileCurve"] = (prim.ProfileCurve > 5) ? (byte)5 : (byte)prim.ProfileCurve;
 			fields["PathScaleX"] = (byte)prim.PathScaleX;
 			fields["PathScaleY"] = (byte)prim.PathScaleY;
 			fields["GroupID"] = prim.GroupID;
@@ -64,7 +64,7 @@ namespace libsecondlife.Packets
 			fields["PCode"] = (byte)9; // TODO: ???
 			fields["PathCurve"] = (byte)prim.PathCurve;
 			fields["Scale"] = prim.Scale;
-			fields["State"] = (byte)0; // TODO: ???
+			fields["State"] = (byte)prim.State;
 			fields["PathTwist"] = (sbyte)prim.PathTwist;
 			fields["TextureEntry"] = textureEntry;
 			fields["ProfileHollow"] = (byte)prim.ProfileHollow;
@@ -75,162 +75,5 @@ namespace libsecondlife.Packets
 			
 			return PacketBuilder.BuildPacket("ObjectAdd", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
-		
-		//		public static Packet ObjectAddSimple(ProtocolManager protocol, PrimObject objectData, LLUUID senderID, 
-		//			LLVector3 position, LLVector3 rayStart)
-		//		{
-		//			LLUUID woodTexture = new LLUUID("8955674724cb43ed920b47caed15465f");
-		//			LLUUID rayTargetID = new LLUUID("0f5d10f1f0a38634e893b70e00000000");
-		//			int length = 6 + 60 + 2 + objectData.NameValue.Length + 1 + 36 + 2 + 40 + 29;
-		//			Packet packet = new Packet("ObjectAdd", protocol, length);
-		//			int pos = 6;
-		//
-		//			// InventoryData appears 0 times
-		//			packet.Data[pos] = 0;
-		//			pos++;
-		//
-		//			// InventoryFile.Filename is of 1 length
-		//			packet.Data[pos] = 1;
-		//			pos++;
-		//
-		//			// InventoryFile.Filename is just a null terminator
-		//			packet.Data[pos] = 0;
-		//			pos++;
-		//
-		//			// U32 AddFlags = 2
-		//			uint addFlags = 2;
-		//			Array.Copy(BitConverter.GetBytes(addFlags), 0, packet.Data, pos, 4);
-		//			pos += 4;
-		//
-		//			packet.Data[pos] = (byte)objectData.PathTwistBegin;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathEnd;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.ProfileBegin;
-		//			pos++;
-		//
-		//			packet.Data[pos] = (byte)objectData.PathRadiusOffset;
-		//			pos++;
-		//
-		//			packet.Data[pos] = (byte)objectData.PathSkew;
-		//			pos++;
-		//
-		//			// SenderID
-		//			Array.Copy(senderID.Data, 0, packet.Data, pos, 16);
-		//			pos += 16;
-		//
-		//			// RayStart
-		//			Array.Copy(rayStart.GetBytes(), 0, packet.Data, pos, 12);
-		//			pos += 12;
-		//
-		//			packet.Data[pos] = objectData.ProfileCurve;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathScaleX;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathScaleY;
-		//			pos++;
-		//
-		//			// Set GroupID to zero
-		//			pos += 16;
-		//
-		//			packet.Data[pos] = objectData.Material;
-		//			pos++;
-		//
-		//			if (objectData.NameValue.Length != 0)
-		//			{
-		//				// NameValue, begins with two bytes describing the size
-		//				Array.Copy(BitConverter.GetBytes((ushort)(objectData.NameValue.Length + 1)), 0, packet.Data, pos, 2);
-		//				pos += 2;
-		//				System.Text.Encoding.UTF8.GetBytes(objectData.NameValue, 0, objectData.NameValue.Length, packet.Data, pos);
-		//				// Jump an extra spot for the null terminator
-		//				pos += objectData.NameValue.Length + 1;
-		//			}
-		//			else
-		//			{
-		//				// Set the two size bytes to zero and increment
-		//				pos += 2;
-		//			}
-		//
-		//			packet.Data[pos] = objectData.PathShearX;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathShearY;
-		//			pos++;
-		//
-		//			packet.Data[pos] = (byte)objectData.PathTaperX;
-		//			pos++;
-		//
-		//			packet.Data[pos] = (byte)objectData.PathTaperY;
-		//			pos++;
-		//
-		//			// RayEndIsIntersection
-		//			packet.Data[pos] = 0;
-		//			pos++;
-		//
-		//			// RayEnd is the position to place the object
-		//			Array.Copy(position.GetBytes(), 0, packet.Data, pos, 12);
-		//			pos += 12;
-		//
-		//			packet.Data[pos] = objectData.ProfileEnd;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathBegin;
-		//			pos++;
-		//
-		//			// BypassRaycast is 0
-		//			packet.Data[pos] = 0;
-		//			pos++;
-		//
-		//			// PCode? set to 9
-		//			packet.Data[pos] = 9;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathCurve;
-		//			pos++;
-		//
-		//			// Scale
-		//			Array.Copy(objectData.Scale.GetBytes(), 0, packet.Data, pos, 12);
-		//			pos += 12;
-		//
-		//			// State? is 0
-		//			packet.Data[pos] = 0;
-		//			pos++;
-		//
-		//			packet.Data[pos] = (byte)objectData.PathTwist;
-		//			pos++;
-		//
-		//			// TextureEntry, starts with two bytes describing the size
-		//			Array.Copy(BitConverter.GetBytes((ushort)40), 0, packet.Data, pos, 2);
-		//			pos += 2;
-		//			Array.Copy(woodTexture.Data, 0, packet.Data, pos, 16);
-		//			pos += 16;
-		//			// Fill in the rest of TextureEntry
-		//			pos += 19;
-		//			packet.Data[pos] = 0xe0;
-		//			pos += 5;
-		//
-		//			packet.Data[pos] = objectData.ProfileHollow;
-		//			pos++;
-		//
-		//			packet.Data[pos] = objectData.PathRevolutions;
-		//			pos++;
-		//
-		//			// Rotation
-		//			Array.Copy(objectData.Rotation.GetBytes(), 0, packet.Data, pos, 16);
-		//			pos += 16;
-		//
-		//			// RayTargetID
-		//			Array.Copy(rayTargetID.Data, 0, packet.Data, pos, 12);
-		//			pos += 12;
-		//			
-		//			// Set the packet flags
-		//			packet.Data[0] = /*Helpers.MSG_ZEROCODED +*/ Helpers.MSG_RELIABLE;
-		//
-		//			return packet;
-		//		}
 	}
 }

@@ -418,7 +418,7 @@ namespace libsecondlife
 					return byteArray[pos];
 				case FieldType.U16:
 				case FieldType.IPPORT:
-					return (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
+					return (ushort)((byteArray[pos] << 8) + byteArray[pos + 1]);
 				case FieldType.U32:
 					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
 						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
@@ -595,7 +595,6 @@ namespace libsecondlife
 												byteArray[length++] = (byte)field;
 												break;
 											case FieldType.U16:
-											case FieldType.IPPORT:
 												ushort fieldUShort = (ushort)field;
 												byteArray[length++] = (byte)(fieldUShort % 256);
 												fieldUShort >>= 8;
@@ -667,7 +666,14 @@ namespace libsecondlife
 												length += 16;
 												break;
 											case FieldType.IPADDR:
-												Array.Copy(BitConverter.GetBytes((ushort)field), 0, byteArray, length, 2);
+												Array.Copy(BitConverter.GetBytes((uint)field), 0, byteArray, length, 4);
+												length += 4;
+												break;
+											case FieldType.IPPORT:
+												ushort fieldIPPort = (ushort)field;
+												byteArray[length + 1] = (byte)(fieldIPPort % 256);
+												fieldIPPort >>= 8;
+												byteArray[length] = (byte)(fieldIPPort % 256);
 												length += 2;
 												break;
 											case FieldType.Variable:
