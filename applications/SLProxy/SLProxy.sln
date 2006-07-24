@@ -1,0 +1,37 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLProxy", "SLProxy.csproj", "{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyst", "Analyst.csproj", "{6222B134-AE5F-489A-8A77-423A721B7C62}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsole", "ChatConsole.csproj", "{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Debug.ActiveCfg = Debug|.NET
+		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Debug.Build.0 = Debug|.NET
+		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Release.ActiveCfg = Release|.NET
+		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Release.Build.0 = Release|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Debug.ActiveCfg = Debug|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Debug.Build.0 = Debug|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Release.ActiveCfg = Release|.NET
+		{6222B134-AE5F-489A-8A77-423A721B7C62}.Release.Build.0 = Release|.NET
+		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Debug.ActiveCfg = Debug|.NET
+		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Debug.Build.0 = Debug|.NET
+		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Release.ActiveCfg = Release|.NET
+		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
