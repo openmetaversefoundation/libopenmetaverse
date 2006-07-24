@@ -12,12 +12,6 @@ will of Linden Lab toward the Second Life reverse engineering effort.
 Please use common sense when designing applications and report any
 security holes you may find to security@lindenlab.com.
 
-In addition to the SLProxy library, this package contains two short
-example applications.  Analyst simply dumps every packet sent between
-the client and the server to the console.  ChatConsole dumps all
-in-world chat to the console, and sends all text typed at the console
-to the world as chat.
-
 To use an SLProxy application, you must first start the proxy, then
 start Second Life with the switch `-loginuri http://localhost:8080/'.
 In Windows, add this switch (without the quotes) to your Second Life
@@ -34,6 +28,68 @@ proxy on a different machine or port, start the proxy with the
 --proxy-help switch and see the options available.
 
 SLProxy can only handle one client using a proxy at a time.
+
+INCLUDED APPLICATIONS
+=====================
+
+Included with SLProxy are a few example application, which are covered
+in this section.
+
+1. Analyst
+----------
+
+Analyst makes SLProxy's packet inspection and modification
+functionality interactive.  When connected to Second Life through
+Analyst, you use the following commands by saying them using in-world
+chat:
+
+/log <packet name>
+
+  Packets of type <packet name> will be dumped to the console.  For
+  example, say `/log ChatFromSimulator' to get a packet dump of all
+  incoming chat.
+
+/-log <packet name>
+
+  Packets of type <packet name> will no longer be dumped to the
+  console.
+
+/log *
+
+  All packets will be dumped to the console.
+
+/-log *
+
+  No packets will be dumped to the console.
+
+/set <packet name> <block name> <field name> <value>
+
+  All forthcoming packets of type <packet name> will have the field
+  identified by <block name> and <field name> set to <value>.  For
+  example, if you say `/set ChatFromViewer ChatData Type 0',
+  everything you say thereafter will be whispered.
+
+/-set <packet name> <block name> <field name>
+
+  Packets of type <packet name> will no longer have the field
+  identified by <block name> and <field name> modified.
+
+These commands will not be forwarded to the server, so other people
+won't hear you say them.
+
+Analyst accepts a --log-all command line switch, which causes the
+proxy to start out logging all packets as if you had typed `/log *'.
+This can be useful if you want to capture a complete dump of your
+session, including login.
+
+2. ChatConsole
+--------------
+
+ChatConsole is a trivial SLProxy application intended as an example of
+how SLProxy applications can be written.  When connected to Second
+Life through ChatConsole, all in-world chat will be echoed to the
+console, and anything typed in the console will be echoed to the game as
+in-world chat.
 
 PUBLIC INTERFACE
 ================
