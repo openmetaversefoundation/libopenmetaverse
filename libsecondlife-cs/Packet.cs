@@ -666,7 +666,7 @@ namespace libsecondlife
 												length += 16;
 												break;
 											case FieldType.IPADDR:
-												Array.Copy(BitConverter.GetBytes((uint)field), 0, byteArray, length, 4);
+												Array.Copy(((IPAddress)field).GetAddressBytes(), 0, byteArray, length, 4);
 												length += 4;
 												break;
 											case FieldType.IPPORT:
