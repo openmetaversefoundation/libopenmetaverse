@@ -211,17 +211,23 @@ namespace libsecondlife
 
 		public void PrintMap()
 		{
+			PrintOneMap(LowMaps,    "Low   ");
+			PrintOneMap(MediumMaps, "Medium");
+			PrintOneMap(HighMaps,   "High  ");
+		}
+
+		private void PrintOneMap(MapPacket[] map, string frequency) {
 			int i;
 
-			for (i = 0; i < 65536; ++i) 
+			for (i = 0; i < map.Length; ++i)
 			{
-				if (LowMaps[i] != null)
+				if (map[i] != null)
 				{
-					Console.WriteLine("Low {0,5} - {1} - {2} - {3}", i, LowMaps[i].Name,
-						LowMaps[i].Trusted ? "Trusted" : "Untrusted",
-						LowMaps[i].Encoded ? "Unencoded" : "Zerocoded");
+					Console.WriteLine("{0} {1,5} - {2} - {3} - {4}", frequency, i, map[i].Name,
+						map[i].Trusted ? "Trusted" : "Untrusted",
+						map[i].Encoded ? "Unencoded" : "Zerocoded");
 
-					foreach (MapBlock block in LowMaps[i].Blocks)
+					foreach (MapBlock block in map[i].Blocks)
 					{
 						if (block.Count == -1) 
 						{
@@ -240,8 +246,6 @@ namespace libsecondlife
 					}
 				}
 			}
-
-			//FIXME: Print medium and high packets too
 		}
 
 		private void LoadKeywordFile(string keywordFile)
