@@ -411,8 +411,14 @@ namespace libsecondlife
 
 			Client.Network.SendPacket(packet);
 		}
-		
+
 		public void GiveMoney(LLUUID target, int amount, string description)
+		{
+			// 5001 - transaction type for av to av money transfers
+			GiveMoney(target, amount, description, 5001);
+		}
+		
+		public void GiveMoney(LLUUID target, int amount, string description, int transactiontype)
 		{
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();
@@ -424,7 +430,7 @@ namespace libsecondlife
 			fields["Description"] = description;
 			fields["Flags"] = (byte)0;
 			fields["SourceID"] = Client.Network.AgentID;
-			fields["TransactionType"] = (int)5001; // No idea why it's 5001
+			fields["TransactionType"] = transactiontype;
 			blocks[fields] = "MoneyData";
 
 			fields = new Hashtable();
