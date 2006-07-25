@@ -229,7 +229,14 @@ namespace libsecondlife
 				Array.Copy(src, 0, dest, 0, 4);
 				zerolen += 4;
 
-				for (uint i = zerolen; i < srclen; i++) 
+				int bodylen;
+				if ((src[0] & MSG_APPENDED_ACKS) == 0)
+					bodylen = srclen;
+				else
+					bodylen = srclen - src[srclen - 1] * 4 - 1;
+
+				uint i;
+				for (i = zerolen; i < bodylen; i++) 
 				{
 					if (src[i] == 0x00) 
 					{
@@ -245,6 +252,9 @@ namespace libsecondlife
 						dest[zerolen++] = src[i];
 					}
 				}
+
+				for (; i < srclen; i++)
+					dest[zerolen++] = src[i];
 			}
 			catch (Exception e)
 			{
@@ -274,7 +284,14 @@ namespace libsecondlife
 			Array.Copy(src, 0, dest, 0, 4);
 			zerolen += 4;
 
-			for (uint i = zerolen; i < srclen; i++) 
+			int bodylen;
+			if ((src[0] & MSG_APPENDED_ACKS) == 0)
+				bodylen = srclen;
+			else
+				bodylen = srclen - src[srclen - 1] * 4 - 1;
+
+			uint i;
+			for (i = zerolen; i < bodylen; i++) 
 			{
 				if (src[i] == 0x00) 
 				{
@@ -305,6 +322,9 @@ namespace libsecondlife
 				dest[zerolen++] = 0x00;
 				dest[zerolen++] = (byte)zerocount;
 			}
+
+			for (; i < srclen; i++)
+				dest[zerolen++] = src[i];
 
 			return (int)zerolen;
 		}
