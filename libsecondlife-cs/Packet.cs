@@ -236,12 +236,17 @@ namespace libsecondlife
 			// Initialize the block list we are returning
 			ArrayList blocks = new ArrayList();
 
+			// Get the packet body's length so we can do bounds checking
+			int length = Data.Length;
+			if ((Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+				length -= Data[Data.Length - 1] * 4 + 1;
+
 			foreach (MapBlock blockMap in Layout.Blocks)
 			{
 				if (blockMap.Count == -1)
 				{
 					// Variable count block
-					if (pos < Data.Length)
+					if (pos < length)
 					{
 						blockCount = Data[pos];
 						pos++;
@@ -249,7 +254,7 @@ namespace libsecondlife
 					else
 
 					{
-						Helpers.Log("getBlocks(): goto 1 reached", Helpers.LogLevel.Warning);
+						Helpers.Log("Blocks(): end of packet in 1-byte variable block count for " + Layout.Name + "." + blockMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
 						goto Done;
 					}
 				}
@@ -272,35 +277,35 @@ namespace libsecondlife
 							if (fieldMap.Count == 1)
 							{
 								// Field length described with one byte
-								if (pos < Data.Length)
+								if (pos < length)
 								{
 									fieldSize = (ushort)Data[pos];
 									pos++;
 								}
 								else
 								{
-									Helpers.Log("getBlocks(): goto 2 reached", Helpers.LogLevel.Warning);
+									Helpers.Log("Blocks(): end of packet in 1-byte variable field count for " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
 									goto BlockDone;
 								}
 							}
 							else // (fieldMap.Count == 2)
 							{
 								// Field length described with two bytes
-								if (pos + 1 < Data.Length)
+								if (pos + 1 < length)
 								{
 									fieldSize = (ushort)(Data[pos] + Data[pos + 1] * 256);
 									pos += 2;
 								}
 								else
 								{
-									Helpers.Log("getBlocks(): goto 3 reached", Helpers.LogLevel.Warning);
+									Helpers.Log("Blocks(): end of packet in 2-byte variable field count for " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
 									goto BlockDone;
 								}
 							}
 
 							if (fieldSize != 0)
 							{
-								if (pos + fieldSize <= Data.Length)
+								if (pos + fieldSize <= length)
 								{
 									// Create a new field to add to the fields for this block
 									field = new Field();
@@ -313,7 +318,7 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("getBlocks(): goto 4 reached", Helpers.LogLevel.Warning);
+									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte variable field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
 									goto BlockDone;
 								}
 							}
@@ -322,7 +327,7 @@ namespace libsecondlife
 						{
 							fieldSize = fieldMap.Count;
 
-							if (pos + fieldSize <= Data.Length)
+							if (pos + fieldSize <= length)
 							{
 								// Create a new field to add to the fields for this block
 								field = new Field();
@@ -335,7 +340,7 @@ namespace libsecondlife
 							}
 							else
 							{
-								Helpers.Log("getBlocks(): goto 4 reached", Helpers.LogLevel.Warning);
+								Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte fixed field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
 								goto BlockDone;
 							}
 						}
@@ -345,7 +350,7 @@ namespace libsecondlife
 							{
 								fieldSize = (int)Protocol.TypeSizes[fieldMap.Type];
 
-								if (pos + fieldSize <= Data.Length)
+								if (pos + fieldSize <= length)
 								{
 									// Create a new field to add to the fields for this block
 									field = new Field();
@@ -358,7 +363,7 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("getBlocks(): goto 5 reached", Helpers.LogLevel.Warning);
+									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte " + fieldMap.Type + " field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
 									goto BlockDone;
 								}
 							}

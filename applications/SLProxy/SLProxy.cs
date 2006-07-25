@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: decode incoming packets, encode outgoing packets
+
 using Nwc.XmlRpc;
 using System;
 using System.Collections;
@@ -394,7 +396,14 @@ namespace SLProxy {
 					SimProxy simProxy = (SimProxy)proxyHandlers[remoteEndPoint];
 
 					// interpret the packet according to the SL protocol
-					Packet packet = new Packet(receiveBuffer, length, proxyConfig.protocol);
+					Packet packet;
+					if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
+						packet = new Packet(receiveBuffer, length, proxyConfig.protocol);
+					else {
+						byte[] zeroBuffer = new byte[4096];
+						int zeroLength = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
+						packet = new Packet(zeroBuffer, zeroLength, proxyConfig.protocol);
+					}
 
 					// check for ACKs we're waiting for
 					packet = simProxy.CheckAcks(packet, Direction.Incoming);
@@ -418,7 +427,7 @@ namespace SLProxy {
 									if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 										simProxy.Inject(SpoofAck(packet), Direction.Outgoing);
 	
-									if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) !=0)
+									if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
 										packet = SeparateAck(packet);
 									else
 										packet = null;
@@ -502,7 +511,13 @@ namespace SLProxy {
 		// SendPacket: send a packet to a sim from our fake client endpoint
 		public void SendPacket(Packet packet, IPEndPoint endPoint) {
 			lock(simFacingSocket)
-				simFacingSocket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, endPoint);
+				if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+					simFacingSocket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, endPoint);
+				else {
+					byte[] zeroBuffer = new byte[4096];
+					int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+					simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
+				}
 		}
 
 		// SpoofAck: create an ACK for the given packet
@@ -511,7 +526,7 @@ namespace SLProxy {
 			Hashtable fields = new Hashtable();
 			fields["ID"] = (uint)packet.Sequence;
 			blocks[fields] = "Packets";
-			return PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, 0);
+			return PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, Helpers.MSG_ZEROCODED);
 		}
 
 		// SeparateAck: create a standalone PacketAck for packet's appended ACKs
@@ -530,7 +545,7 @@ namespace SLProxy {
 				blocks[fields] = "Packets";
 			}
 
-			Packet ack = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, 0);
+			Packet ack = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, Helpers.MSG_ZEROCODED);
 			ack.Sequence = packet.Sequence;
 			return ack;
 		}
@@ -667,7 +682,14 @@ namespace SLProxy {
 				lock(clientEndPoint)
 					lock(socket)
 						length = socket.EndReceiveFrom(ar, ref clientEndPoint);
-				Packet packet = new Packet(receiveBuffer, length, proxyConfig.protocol);
+				Packet packet;
+				if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
+					packet = new Packet(receiveBuffer, length, proxyConfig.protocol);
+				else {
+					byte[] zeroBuffer = new byte[4096];
+					int zeroLength = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
+					packet = new Packet(zeroBuffer, zeroLength, proxyConfig.protocol);
+				}
 
 				// keep track of sequence numbers
 				lock(sequenceLock)
@@ -718,7 +740,13 @@ namespace SLProxy {
 			public void SendPacket(Packet packet) {
 				lock(clientEndPoint)
 					lock(socket)
-						socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
+						if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+							socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
+						else {
+							byte[] zeroBuffer = new byte[4096];
+							int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+							socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+						}
 			}
 
 			// Inject: inject a packet
@@ -745,7 +773,13 @@ namespace SLProxy {
 				if (direction == Direction.Incoming) {
 					lock (clientEndPoint)
 						lock (socket)
-							socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
+							if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+								socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
+							else {
+								byte[] zeroBuffer = new byte[4096];
+								int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+								socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+							}
 				} else
 					proxy.SendPacket(packet, remoteEndPoint);
 			}
@@ -899,9 +933,9 @@ namespace SLProxy {
 			AddChecker("TeleportFinish", Direction.Incoming, new AddressChecker(CheckTeleportFinish));
 			AddMystery("AddModifyAbility");
 			AddMystery("RemoveModifyAbility");
-			AddMystery("ViewerStats");
+			//AddMystery("ViewerStats"); IP is 0.0.0.0
 			AddChecker("EnableSimulator", Direction.Incoming, new AddressChecker(CheckEnableSimulator));
-			AddMystery("KickUser");
+			//AddMystery("KickUser"); IP is 0.0.0.0
 			AddMystery("LogLogin");
 			AddMystery("DataServerLogout");
 			AddMystery("RequestLocationGetAccess");
@@ -1014,7 +1048,7 @@ namespace SLProxy {
 		// Unbuild: deconstruct a packet into a Hashtable of blocks suitable for passing to PacketBuilder
 		public static Hashtable Unbuild(Packet packet) {
 			Hashtable blockTable = new Hashtable();
-			foreach (Block block in packet.Blocks()) {
+			foreach (Block block in Kludges.Blocks(packet)) {
 				Hashtable fieldTable = new Hashtable();
 				foreach (Field field in block.Fields)
 					fieldTable[field.Layout.Name] = field.Data;
@@ -1070,6 +1104,196 @@ namespace SLProxy {
 				empty[0] = 0;
 				return empty;
 			}
+		}
+	}
+
+	// Kludges: this class patches over bugs in libsecondlife until they're fixed (TODO)
+	public class Kludges {
+		private static ProtocolManager Protocol = new ProtocolManager("keywords.txt", "protocol.txt");
+
+		// Blocks: like Packet.Blocks, but in case of goto 5 don't use appended ACKs and zero out the rest of the field
+		public static ArrayList Blocks(Packet packet)
+		{
+			Field field;
+			Block block;
+			byte blockCount;
+			int fieldSize;
+
+			// Get the starting position of the SL payload (different than the UDP payload)
+			int pos = packet.HeaderLength();
+
+			// Initialize the block list we are returning
+			ArrayList blocks = new ArrayList();
+
+			// Until the goto 5 bug is sorted out, work out of a larger buffer and just report what would be an overrun
+			int length = packet.Data.Length;
+			if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+				length -= packet.Data[packet.Data.Length - 1] * 4 + 1;
+			byte[] Data = new byte[4096];
+			Array.Copy(packet.Data, 0, Data, 0, length);
+
+			foreach (MapBlock blockMap in packet.Layout.Blocks)
+			{
+				if (blockMap.Count == -1)
+				{
+					// Variable count block
+					if (pos < length)
+					{
+						blockCount = packet.Data[pos];
+						pos++;
+					}
+					else
+
+					{
+						Helpers.Log("Blocks(): end of packet in 1-byte variable block count for " + packet.Layout.Name + "." + blockMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+						goto Done;
+					}
+				}
+				else
+				{
+					blockCount = (byte)blockMap.Count;
+				}
+
+				for (int i = 0; i < blockCount; ++i)
+				{
+					// Create a new block to push back on the list
+					block = new Block();
+					block.Layout = blockMap;
+					block.Fields = new ArrayList();
+
+					foreach (MapField fieldMap in blockMap.Fields)
+					{
+						if (fieldMap.Type == FieldType.Variable)
+						{
+							if (fieldMap.Count == 1)
+							{
+								// Field length described with one byte
+								if (!(pos < length))
+									Helpers.Log("Blocks(): end of packet in 1-byte variable field count for " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+								fieldSize = (ushort)Data[pos];
+								pos++;
+							}
+							else // (fieldMap.Count == 2)
+							{
+								// Field length described with two bytes
+								if (!(pos + 1 < length))
+									Helpers.Log("Blocks(): end of packet in 2-byte variable field count for " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+								fieldSize = (ushort)(Data[pos] + Data[pos + 1] * 256);
+								pos += 2;
+							}
+
+							if (fieldSize != 0)
+							{
+								if (!(pos + fieldSize <= length))
+									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte variable field " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+								// Create a new field to add to the fields for this block
+								field = new Field();
+								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+								field.Layout = fieldMap;
+
+								block.Fields.Add(field);
+
+								pos += fieldSize;
+							}
+						}
+						else if (fieldMap.Type == FieldType.Fixed)
+						{
+							fieldSize = fieldMap.Count;
+
+							if (!(pos + fieldSize <= length))
+								Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte fixed field " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+							// Create a new field to add to the fields for this block
+							field = new Field();
+							field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+							field.Layout = fieldMap;
+
+							block.Fields.Add(field);
+
+							pos += fieldSize;
+						}
+						else
+						{
+							for (int j = 0; j < fieldMap.Count; ++j)
+							{
+								fieldSize = (int)Protocol.TypeSizes[fieldMap.Type];
+
+								if (!(pos + fieldSize <= length))
+									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte " + fieldMap.Type + " field " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+								// Create a new field to add to the fields for this block
+								field = new Field();
+								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+								field.Layout = fieldMap;
+
+								block.Fields.Add(field);
+
+								pos += fieldSize;
+							}
+						}
+					}
+
+					blocks.Add(block);
+				}
+			}
+
+			Done:
+				return blocks;
+		}
+
+		// GetField: same as Packet.GetField
+		private static object GetField(byte[] byteArray, int pos, FieldType type, int fieldSize)
+		{
+			switch (type)
+			{
+				case FieldType.U8:
+					return byteArray[pos];
+				case FieldType.U16:
+				case FieldType.IPPORT:
+					return (ushort)((byteArray[pos] << 8) + byteArray[pos + 1]);
+				case FieldType.U32:
+					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
+				case FieldType.U64:
+					return new U64(byteArray, pos);
+				case FieldType.S8:
+					return (sbyte)byteArray[pos];
+				case FieldType.S16:
+					return (short)(byteArray[pos] + (byteArray[pos + 1] << 8));
+				case FieldType.S32:
+					return byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24);
+				case FieldType.S64:
+					return (long)(byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24) +
+						(byteArray[pos + 4] << 32) + (byteArray[pos + 5] << 40) +
+						(byteArray[pos + 6] << 48) + (byteArray[pos + 7] << 56));
+				case FieldType.F32:
+					return BitConverter.ToSingle(byteArray, pos); // FIXME
+				case FieldType.F64:
+					return BitConverter.ToDouble(byteArray, pos); // FIXME
+				case FieldType.LLUUID:
+					return new LLUUID(byteArray, pos);
+				case FieldType.BOOL:
+					return (byteArray[pos] != 0) ? (bool)true : (bool)false;
+				case FieldType.LLVector3:
+					return new LLVector3(byteArray, pos);
+				case FieldType.LLVector3d:
+					return new LLVector3d(byteArray, pos);
+				case FieldType.LLVector4:
+					return new LLVector4(byteArray, pos);
+				case FieldType.LLQuaternion:
+					return new LLQuaternion(byteArray, pos);
+				case FieldType.IPADDR:
+					uint address = (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
+						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
+					return new IPAddress(address);
+				case FieldType.Variable:
+				case FieldType.Fixed:
+					byte[] bytes = new byte[fieldSize];
+					Array.Copy(byteArray, pos, bytes, 0, fieldSize);
+					return bytes;
+			}
+
+			return null;
 		}
 	}
 }

@@ -88,7 +88,7 @@ namespace sldump
 			client.Network.RegisterCallback("Default", new PacketCallback(DefaultHandler));
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 10, 10, 10, "Win", "0", "sldump", "jhurliman@wsu.edu");
+				"last", 1, 11, 0, 11, "Win", "0", "sldump", "jhurliman@wsu.edu");
 
 			// An example of how to pass additional options to the login server
 			ArrayList optionsArray = new ArrayList();

@@ -494,7 +494,7 @@ namespace SLAccountant
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
 				Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text, 
-					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 10, 10, 0, 
+					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 11, 0, 11, 
 					"Win", "0", "accountant", "jhurliman@wsu.edu");
 
 				if (client.Network.Login(loginParams))
