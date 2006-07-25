@@ -332,6 +332,7 @@ namespace SLProxy {
 					loginDelegate(session);
 				} catch (Exception e) {
 					Log("exception in login delegate: " + e.Message);
+					Log(e.StackTrace);
 				}
 			}
 
@@ -434,6 +435,7 @@ namespace SLProxy {
 								}
 							} catch (Exception e) {
 								Log("exception in incoming delegate: " + e.Message);
+								Log(e.StackTrace);
 							}
 						}
 
@@ -488,6 +490,7 @@ namespace SLProxy {
 						}
 					} catch (Exception e) {
 						Log("exception in outgoing delegate: " + e.Message);
+						Log(e.StackTrace);
 					}
 				}
 
