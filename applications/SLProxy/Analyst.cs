@@ -40,6 +40,7 @@ public class Analyst {
 	private static Proxy proxy;
 	private static Hashtable commandDelegates = new Hashtable();
 	private static Hashtable loggedPackets = new Hashtable();
+	private static string logGrep = null;
 	private static Hashtable modifiedPackets = new Hashtable();
 
 	public static void Main(string[] args) {
@@ -104,6 +105,7 @@ public class Analyst {
 	private static void InitializeCommandDelegates() {
 		commandDelegates["/log"] = new CommandDelegate(CmdLog);
 		commandDelegates["/-log"] = new CommandDelegate(CmdNoLog);
+		commandDelegates["/grep"] = new CommandDelegate(CmdGrep);
 		commandDelegates["/set"] = new CommandDelegate(CmdSet);
 		commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
 	}
@@ -146,6 +148,19 @@ public class Analyst {
 		}
 	}
 
+	// CmdGrep: handle a /grep command
+	private static void CmdGrep(string[] words) {
+		if (words.Length == 1) {
+			logGrep = null;
+			SayToUser("stopped filtering logs");
+		} else {
+			string[] regexArray = new string[words.Length - 1];
+			Array.Copy(words, 1, regexArray, 0, words.Length - 1);
+			logGrep = String.Join(" ", regexArray);
+			SayToUser("filtering log with " + logGrep);
+		}
+	}
+
 	// CmdSet: handle a /set command
 	private static void CmdSet(string[] words) {
 		if (words.Length < 5)
@@ -182,9 +197,16 @@ public class Analyst {
 
 	// CmdNoSet: handle a /-set command
 	private static void CmdNoSet(string[] words) {
-		if (words.Length != 4)
-			SayToUser("Usage: /-set <packet name> <block> <field>");
-		else {
+		if (words.Length == 2 && words[1] == "*") {
+			foreach (string name in modifiedPackets.Keys)
+				if (!loggedPackets.Contains(name) && name != "ChatFromViewer") {
+					proxy.RemoveDelegate(name, Direction.Incoming);
+					proxy.RemoveDelegate(name, Direction.Outgoing);
+				}
+			modifiedPackets = new Hashtable();
+
+			SayToUser("stopped setting all fields");
+		} else if (words.Length == 4) {
 			if (modifiedPackets.Contains(words[1])) {
 				Hashtable fields = (Hashtable)modifiedPackets[words[1]];
 				fields.Remove(new BlockField(words[2], words[3]));
@@ -202,7 +224,8 @@ public class Analyst {
 			}
 
 			SayToUser("stopped setting " + words[1] + "." + words[2] + "." + words[3]);
-		}
+		} else
+			SayToUser("Usage: /-set <packet name> <block> <field>");
 	}
 
 	// SayToUser: send a message to the user as in-world chat
@@ -419,6 +442,22 @@ public class Analyst {
 
 	// LogPacket: dump a packet to the console
 	private static void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction) {
+		if (logGrep != null) {
+			bool match = false;
+			foreach (Block block in Kludges.Blocks(packet))
+				foreach (Field field in block.Fields) {
+					string value;
+					if (field.Layout.Type == FieldType.Variable)
+						value = PacketUtility.VariableToString((byte[])field.Data);
+					else
+						value = field.Data.ToString();
+					if ((new Regex(logGrep)).Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value).Success)
+						match = true;
+}
+			if (!match)
+				return;
+		}
+
 		Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
 				 ,direction == Direction.Incoming ? "<--" : "-->"
 				 ,endPoint

@@ -62,6 +62,12 @@ chat:
 
   No packets will be dumped to the console.
 
+/grep [regex]
+
+  Only log packets that have a field for which regex matches
+  <packet name>.<block name>.<field name> = <value>.  To stop
+  filtering, type /grep without an argument.
+
 /set <packet name> <block name> <field name> <value>
 
   All forthcoming packets of type <packet name> will have the field
@@ -73,6 +79,10 @@ chat:
 
   Packets of type <packet name> will no longer have the field
   identified by <block name> and <field name> modified.
+
+/-set *
+
+  No fields will be modified.
 
 These commands will not be forwarded to the server, so other people
 won't hear you say them.
