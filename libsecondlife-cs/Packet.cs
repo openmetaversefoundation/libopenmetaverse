@@ -68,7 +68,7 @@ namespace libsecondlife
 						{
 							if ((i + j) < byteArray.Length)
 							{
-								output += String.Format("{0:X} ", byteArray[i + j]);
+								output += String.Format("{0:X2} ", byteArray[i + j]);
 							}
 							else
 							{
