@@ -88,7 +88,7 @@ namespace SecondSuite.Plugins
 			Client.Network.SendPacket(packet);
 		}
 
-		private void BalanceHandler(Packet packet, Circuit circuit)
+		private void BalanceHandler(Packet packet, Simulator simulator)
 		{
 			if (packet.Layout.Name == "MoneyBalanceReply")
 			{
@@ -130,7 +130,7 @@ namespace SecondSuite.Plugins
 			}
 		}
 
-		private void DirPeopleHandler(Packet packet, Circuit circuit)
+		private void DirPeopleHandler(Packet packet, Simulator simulator)
 		{
 			lstFindMutex.WaitOne();
 

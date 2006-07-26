@@ -102,7 +102,7 @@ namespace SecondSuite.Plugins
 			Client.Network.RegisterCallback("CoarseLocationUpdate", new PacketCallback(LocationHandler));
 		}
 
-		private void LocationHandler(Packet packet, Circuit circuit)
+		private void LocationHandler(Packet packet, Simulator simulator)
 		{
 			if (numPositionX.Value == 0)
 			{

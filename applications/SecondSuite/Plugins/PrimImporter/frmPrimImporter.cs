@@ -41,7 +41,7 @@ namespace SecondSuite.Plugins
 			Client.Network.RegisterCallback("ObjectUpdate", new PacketCallback(ObjectUpdateHandler));
 		}
 
-		public void ObjectAddHandler(Packet packet, Circuit circuit)
+		public void ObjectAddHandler(Packet packet, Simulator simulator)
 		{
 			LLVector3 position = null;
 
@@ -67,7 +67,7 @@ namespace SecondSuite.Plugins
 			}
 		}
 
-		public void ObjectUpdateHandler(Packet packet, Circuit circuit)
+		public void ObjectUpdateHandler(Packet packet, Simulator simulator)
 		{
 			uint id = 0;
 			LLUUID uuid = null;

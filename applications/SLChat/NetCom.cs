@@ -47,7 +47,7 @@ namespace SLChat
 			password = pwrd;
 		}
 		
-		private void ChatIncoming(Packet packet, Circuit circuit)
+		private void ChatIncoming(Packet packet, Simulator simulator)
 		{
 			//Incoming chat handler, basicly chat from simulator
 			//Callback for "ChatFromSimulator"

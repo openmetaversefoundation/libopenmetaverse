@@ -112,7 +112,7 @@ namespace libsecondlife.AssetSystem
 		}
 
 
-		public void AssetUploadCompleteCallbackHandler(Packet packet, Circuit circuit)
+		public void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
 			ArrayList blocks = packet.Blocks();
 			
@@ -172,7 +172,7 @@ namespace libsecondlife.AssetSystem
 					1062 Status (S32 / 1)
 		
 		*/
-		public void TransferInfoCallbackHandler(Packet packet, Circuit circuit)
+		public void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
 		{
 			ArrayList blocks = packet.Blocks();
 			
@@ -243,7 +243,7 @@ namespace libsecondlife.AssetSystem
 				Status: 1
 
 		 */
-		public void TransferPacketCallbackHandler(Packet packet, Circuit circuit)
+		public void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
 		{
 			LLUUID TransferID = "";
 			byte[] Data = null;
@@ -295,7 +295,7 @@ namespace libsecondlife.AssetSystem
 
 		 */
 
-		public void ConfirmXferPacketCallbackHandler(Packet packet, Circuit circuit)
+		public void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
 		{
 			U64 XferID = new U64();
 			uint PacketNum = 0;
@@ -344,7 +344,7 @@ namespace libsecondlife.AssetSystem
 				VFileID: b16097032e253a9d5220ba07c1a1b28a
 				VFileType: 7
 		*/
-		public void RequestXferCallbackHandler(Packet packet, Circuit circuit)
+		public void RequestXferCallbackHandler(Packet packet, Simulator simulator)
 		{
 			U64 XferID = new U64();
 			LLUUID AssetID = "";

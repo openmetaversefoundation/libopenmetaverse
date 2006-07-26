@@ -362,7 +362,7 @@ namespace libsecondlife.InventorySystem
 				0630 Type (S8 / 1)
 				1025 FolderID (LLUUID / 1)
 		*/
-		public void InventoryDescendentsHandler(Packet packet, Circuit circuit)
+		public void InventoryDescendentsHandler(Packet packet, Simulator simulator)
 		{
 //			Console.WriteLine("Status|Queue :: " + htFolderDownloadStatus.Count + "/" + qFolderRequestQueue.Count);
 			iLastPacketRecieved = getUnixtime();
