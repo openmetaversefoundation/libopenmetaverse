@@ -37,6 +37,7 @@ namespace libsecondlife
 		public U64 Handle;
 		public string Name;
 		public byte[] ParcelOverlay;
+		public int ParcelOverlaysReceived;
 
 		public float TerrainHeightRange00;
 		public float TerrainHeightRange01;
@@ -62,6 +63,29 @@ namespace libsecondlife
 		public bool IsEstateManager;
 		
 		private SecondLife Client;
+
+		public Region(SecondLife client)
+		{
+			Client = client;
+			ID = new LLUUID();
+			Handle = new U64();
+			Name = "";
+			ParcelOverlay = new byte[4096];
+			ParcelOverlaysReceived = 0;
+
+			SimOwner = new LLUUID();
+
+			TerrainBase0 = new LLUUID();
+			TerrainBase1 = new LLUUID();
+			TerrainBase2 = new LLUUID();
+			TerrainBase3 = new LLUUID();
+			TerrainDetail0 = new LLUUID();
+			TerrainDetail1 = new LLUUID();
+			TerrainDetail2 = new LLUUID();
+			TerrainDetail3 = new LLUUID();
+
+			IsEstateManager = false;
+		}
 
 		public Region(SecondLife client, LLUUID id, U64 handle, string name, float[] heightList, 
 			LLUUID simOwner, LLUUID[] terrainImages, bool isEstateManager)

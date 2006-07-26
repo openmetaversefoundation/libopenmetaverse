@@ -131,7 +131,7 @@ namespace libsecondlife
 			return true;
 		}
 
-		private void ParcelInfoReplyHandler(Packet packet, Circuit circuit)
+		private void ParcelInfoReplyHandler(Packet packet, Simulator simulator)
 		{
 			string simName = "";
 			int actualArea = 0;
@@ -286,7 +286,7 @@ namespace libsecondlife
 			return ParcelsForSale.Count;
 		}
 
-		private void DirLandReplyHandler(Packet packet, Circuit circuit)
+		private void DirLandReplyHandler(Packet packet, Simulator simulator)
 		{
 			if (!DirLandTimeout)
 			{

@@ -35,7 +35,7 @@ namespace name2key
 		static bool waiting = true;
 
 		//
-		public static void QueryHandler(Packet packet, Circuit circuit)
+		public static void QueryHandler(Packet packet, Simulator simulator)
 		{
 			if (packet.Layout.Name.IndexOf("Dir") > -1)
 			{
@@ -96,7 +96,7 @@ namespace name2key
 
 			// Setup the login values
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 11, 0, 11, "Win", "0", "name2key", "jhurliman@wsu.edu");
+				"last", 1, 50, 50, 50, "Win", "0", "name2key", "jhurliman@wsu.edu");
 
 			if (!client.Network.Login(loginParams))
 			{

@@ -355,7 +355,7 @@ namespace SLAccountant
 			Application.Run(new frmSLAccountant());
 		}
 
-		private void BalanceHandler(Packet packet, Circuit circuit)
+		private void BalanceHandler(Packet packet, Simulator simulator)
 		{
 			if (packet.Layout.Name == "MoneyBalanceReply")
 			{
@@ -397,7 +397,7 @@ namespace SLAccountant
 			}
 		}
 
-		private void DirPeopleHandler(Packet packet, Circuit circuit)
+		private void DirPeopleHandler(Packet packet, Simulator simulator)
 		{
 			lstFindMutex.WaitOne();
 
@@ -442,7 +442,7 @@ namespace SLAccountant
 			lstFindMutex.ReleaseMutex();
 		}
 
-		private void AvatarAppearanceHandler(Packet packet, Circuit circuit)
+		private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
 		{
 			LLUUID id = null;
 			bool trial = false;
@@ -494,7 +494,7 @@ namespace SLAccountant
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
 				Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text, 
-					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 11, 0, 11, 
+					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 50, 50, 50, 
 					"Win", "0", "accountant", "jhurliman@wsu.edu");
 
 				if (client.Network.Login(loginParams))
@@ -509,7 +509,7 @@ namespace SLAccountant
 					Hashtable fields = new Hashtable();
 					fields["ID"] = client.Network.AgentID;
 					fields["GenCounter"] = (uint)0;
-					fields["CircuitCode"] = client.Network.CurrentCircuit.CircuitCode;
+					fields["CircuitCode"] = client.Network.CurrentSim.CircuitCode;
 					blocks[fields] = "Sender";
 					fields = new Hashtable();
 					fields["Height"] = (ushort)rand.Next(0, 65535);
@@ -615,9 +615,9 @@ namespace SLAccountant
 		}
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)
-		{			
+		{
 			int amount = 0;
-			
+
 			try
 			{
 				amount = System.Convert.ToInt32(txtTransfer.Text);

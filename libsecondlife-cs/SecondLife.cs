@@ -43,11 +43,7 @@ namespace libsecondlife
 		public Hashtable Avatars;
 		public Mutex AvatarsMutex;
 		public Inventory Inventory;
-		public ArrayList Regions;
-		public Mutex RegionsMutex;
 		public Region CurrentRegion;
-		public byte[] CurrentParcelOverlay;
-		public uint ParcelOverlaysReceived;
 
 		public SecondLife(string keywordFile, string mapFile)
 		{
@@ -58,11 +54,7 @@ namespace libsecondlife
 			Avatars = new Hashtable();
 			AvatarsMutex = new Mutex(false, "AvatarsMutex");
 			Inventory = new Inventory(this);
-			Regions = new ArrayList();
-			RegionsMutex = new Mutex(false, "RegionsMutex");
 			CurrentRegion = null;
-			CurrentParcelOverlay = null;
-			ParcelOverlaysReceived = 0;
 		}
 
 		public override string ToString()
@@ -73,23 +65,6 @@ namespace libsecondlife
 		public void Tick()
 		{
 			System.Threading.Thread.Sleep(0);
-		}
-
-		public Region FindRegion(string name)
-		{
-			RegionsMutex.WaitOne();
-
-			foreach (Region region in Regions)
-			{
-				if (region.Name == name)
-				{
-					RegionsMutex.ReleaseMutex();
-					return region;
-				}
-			}
-
-			RegionsMutex.ReleaseMutex();
-			return null;
 		}
 
 		public void AddAvatar(LLUUID AgentID) 
@@ -118,7 +93,7 @@ namespace libsecondlife
 			Network.SendPacket(packet);
 		}
 
-		private void GetAgentNameHandler(Packet packet, Circuit circuit) 
+		private void GetAgentNameHandler(Packet packet, Simulator simulator) 
 		{
 			if (packet.Layout.Name == "UUIDNameReply")
 			{
@@ -231,12 +206,16 @@ namespace libsecondlife
 
 				int bodylen;
 				if ((src[0] & MSG_APPENDED_ACKS) == 0)
+				{
 					bodylen = srclen;
+				}
 				else
+				{
 					bodylen = srclen - src[srclen - 1] * 4 - 1;
-
+				}
+  	 
 				uint i;
-				for (i = zerolen; i < bodylen; i++) 
+				for (i = zerolen; i < bodylen; i++)
 				{
 					if (src[i] == 0x00) 
 					{
@@ -254,7 +233,9 @@ namespace libsecondlife
 				}
 
 				for (; i < srclen; i++)
+				{
 					dest[zerolen++] = src[i];
+				}
 			}
 			catch (Exception e)
 			{
@@ -286,12 +267,16 @@ namespace libsecondlife
 
 			int bodylen;
 			if ((src[0] & MSG_APPENDED_ACKS) == 0)
+			{
 				bodylen = srclen;
+			}
 			else
+			{
 				bodylen = srclen - src[srclen - 1] * 4 - 1;
-
+			}
+  			
 			uint i;
-			for (i = zerolen; i < bodylen; i++) 
+			for (i = zerolen; i < bodylen; i++)
 			{
 				if (src[i] == 0x00) 
 				{
@@ -324,7 +309,9 @@ namespace libsecondlife
 			}
 
 			for (; i < srclen; i++)
+			{
 				dest[zerolen++] = src[i];
+			}
 
 			return (int)zerolen;
 		}

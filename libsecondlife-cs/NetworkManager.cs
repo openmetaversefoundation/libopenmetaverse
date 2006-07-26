@@ -37,7 +37,9 @@ using Nii.JSON;
 
 namespace libsecondlife
 {
-	public delegate void PacketCallback(Packet packet, Circuit circuit);
+	public delegate void PacketCallback(Packet packet, Simulator simulator);
+
+	public class NotConnectedException : ApplicationException { }
 
 	internal class AcceptAllCertificatePolicy : ICertificatePolicy
 	{
@@ -54,122 +56,83 @@ namespace libsecondlife
 		}
 	}
 
-	public class Circuit
+	public class Simulator
 	{
-		public uint CircuitCode;
-		public bool Opened;
-		public ushort Sequence;
-		public IPEndPoint ipEndPoint;
-
-		private EndPoint endPoint;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
 		private Hashtable Callbacks;
-		private byte[][] Buffers;
-		private int CurrentBuffer;
-		private Mutex CurrentBufferMutex = new Mutex(false, "CurrentBufferMutex");
+		private ushort Sequence;
+		private byte[] RecvBuffer;
+		private Mutex RecvBufferMutex = new Mutex(false, "RecvBufferMutex");
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
-		private System.Timers.Timer OpenTimer;
-		private System.Timers.Timer ACKTimer;
-		private bool Timeout;
-		private ArrayList AckOutbox;
-		private Mutex AckOutboxMutex;
 		private Hashtable NeedAck;
 		private Mutex NeedAckMutex;
 		private SortedList Inbox;
 		private Mutex InboxMutex;
-		private int ResendTick;
+		private bool connected;
 
-		public Circuit(ProtocolManager protocol, NetworkManager network, Hashtable callbacks, 
-			uint circuitCode)
+		private uint circuitCode;
+		private IPEndPoint ipEndPoint;
+		private EndPoint endPoint;
+
+		public uint CircuitCode
 		{
-			Initialize(protocol, network, callbacks, circuitCode);
+			get { return circuitCode; }
+		}
+		public IPEndPoint IPEndPoint
+		{
+			get { return ipEndPoint; }
+		}
+		public bool Connected
+		{
+			get { return connected; }
+		}
+		public Region Region;
+
+		public Simulator(SecondLife client, Hashtable callbacks, uint circuit, 
+			IPAddress ip, int port)
+		{
+			Initialize(client, callbacks, circuit, ip, port);
 		}
 
-		public Circuit(ProtocolManager protocol, NetworkManager network, Hashtable callbacks)
+		private void Initialize(SecondLife client, Hashtable callbacks, uint circuit, 
+			IPAddress ip, int port)
 		{
-			// Generate a random circuit code
-			System.Random random = new System.Random();
-
-			Initialize(protocol, network, callbacks, (uint)random.Next());
-		}
-
-		private void Initialize(ProtocolManager protocol, NetworkManager network, Hashtable callbacks, 
-			uint circuitCode)
-		{
-			Protocol = protocol;
-			Network = network;
+			Protocol = client.Protocol;
+			Network = client.Network;
 			Callbacks = callbacks;
-			CircuitCode = circuitCode;
+			Region = new Region(client);
+			circuitCode = circuit;
 			Sequence = 0;
-			Buffers = new byte[8][];
-			for (int i = 0; i < 8; ++i)
-			{
-				Buffers[i] = new byte[4096];
-			}
-			CurrentBuffer = 0;
+			RecvBuffer = new byte[2048];
 			Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-			Opened = false;
-			Timeout = false;
-
-			// Initialize the queue of ACKs that need to be sent to the server
-			AckOutbox = new ArrayList();
+			connected = false;
 
 			// Initialize the hashtable for reliable packets waiting on ACKs from the server
 			NeedAck = new Hashtable();
 
+			// Initialize the list of sequence numbers we've received so far
 			Inbox = new SortedList();
 
-			// Create a timer to test if the connection times out
-			OpenTimer = new System.Timers.Timer(10000);
-			OpenTimer.Elapsed += new ElapsedEventHandler(OpenTimerEvent);
-
-			// Create a timer to send PacketAcks and resend unACKed packets
-			ACKTimer = new System.Timers.Timer(300);
-			ACKTimer.Elapsed += new ElapsedEventHandler(ACKTimerEvent);
-
-			AckOutboxMutex = new Mutex(false, "AckOutboxMutex");
 			NeedAckMutex = new Mutex(false, "NeedAckMutex");
 			InboxMutex = new Mutex(false, "InboxMutex");
 
-			ResendTick = 0;
-		}
-
-		~Circuit()
-		{
-			Opened = false;
-			StopTimers();
-		}
-
-		public bool Open(string ip, int port)
-		{
-			return Open(IPAddress.Parse(ip), port);
-		}
-
-		public bool Open(IPAddress ip, int port)
-		{
 			Helpers.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
 
 			try
 			{
 				// Setup the callback
-				ReceivedData = new AsyncCallback(this.OnReceivedData);
+				ReceivedData = new AsyncCallback(OnReceivedData);
 
-				// Create an endpoint that we will be communicating with (need it in two types due to
-				// .NET weirdness)
+				// Create an endpoint that we will be communicating with (need it in two 
+				// types due to .NET weirdness)
 				ipEndPoint = new IPEndPoint(ip, port);
 				endPoint = (EndPoint)ipEndPoint;
 
-				// Associate this circuit's socket with the given ip and port and start listening
+				// Associate this simulator's socket with the given ip/port and start listening
 				Connection.Connect(endPoint);
-				Connection.BeginReceiveFrom(Buffers[0], 0, Buffers[0].Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-
-				// Start the circuit opening timeout
-				OpenTimer.Start();
-
-				// Start the packet resend timer
-				ACKTimer.Start();
+				Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
 
 				// Send the UseCircuitCode packet to initiate the connection
 				Packet packet = Packets.Network.UseCircuitCode(Protocol, Network.AgentID, 
@@ -178,12 +141,14 @@ namespace libsecondlife
 				// Send the initial packet out
 				SendPacket(packet, true);
 
-				while (!Timeout)
+				// Track the current time for timeout purposes
+				DateTime start = DateTime.Now;
+				TimeSpan timeTaken;
+
+				while (true)
 				{
-					if (Opened)
-					{
-						return true;
-					}
+					timeTaken = DateTime.Now - start;
+					if (connected || timeTaken.Milliseconds > 5000) { return; }
 
 					Thread.Sleep(10);
 				}
@@ -192,20 +157,13 @@ namespace libsecondlife
 			{
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
-
-			// Opening the connection failed, shut down all the timers
-			StopTimers();
-
-			return false;
 		}
 
-		public void CloseCircuit()
+		public void Disconnect()
 		{
 			try
 			{
-				Opened = false;
-
-				StopTimers();
+				connected = false;
 
 				// Send the CloseCircuit notice
 				Packet packet = new Packet("CloseCircuit", Protocol, 8);
@@ -220,29 +178,18 @@ namespace libsecondlife
 			}
 		}
 
-		public void StopTimers()
-		{
-			// Stop the resend timer
-			ACKTimer.Stop();
-
-			// Stop the open circuit timer (just in case it's still running)
-			OpenTimer.Stop();
-		}
-
 		public void SendPacket(Packet packet, bool incrementSequence)
 		{
-			byte[] zeroBuffer = new byte[4096];
-			int zeroBytes;
+			byte[] buffer;
+			int bytes;
 
-			if (!Opened && packet.Layout.Name != "UseCircuitCode")
+			if (!connected && packet.Layout.Name != "UseCircuitCode")
 			{
 				Helpers.Log("Trying to send a " + packet.Layout.Name + " packet when the socket is closed",
 					Helpers.LogLevel.Warning);
-				return;
+				
+				throw new NotConnectedException();
 			}
-
-			// DEBUG
-			//Console.WriteLine("Sending " + packet.Data.Length + " byte " + packet.Layout.Name);
 
 			try
 			{
@@ -266,17 +213,20 @@ namespace libsecondlife
 				// Zerocode if needed
 				if ((packet.Data[0] & Helpers.MSG_ZEROCODED) != 0)
 				{
-					zeroBytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+					byte[] zeroBuffer = new byte[4096];
+					bytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+					buffer = zeroBuffer;
 				}
 				else
 				{
-					// Normal packet, copy it straight over to the zeroBuffer
-					Array.Copy(packet.Data, 0, zeroBuffer, 0, packet.Data.Length);
-					zeroBytes = packet.Data.Length;
+					// Normal packet, no zerocoding required
+					buffer = packet.Data;
+					bytes = buffer.Length;
 				}
 
-				// The incrementSequence check prevents a possible deadlock situation
-				if (AckOutbox.Count != 0 && incrementSequence && packet.Layout.Name != "PacketAck" && 
+				// Append any ACKs that need to be sent out to this packet
+				/*if (AckOutbox.Count != 0 && incrementSequence && 
+					packet.Layout.Name != "PacketAck" && 
 					packet.Layout.Name != "LogoutRequest")
 				{
 					// Claim the mutex on the AckOutbox
@@ -300,12 +250,9 @@ namespace libsecondlife
 
 					// Set the flag that this packet has ACKs appended to it
 					zeroBuffer[0] += Helpers.MSG_APPENDED_ACKS;
-				}
+				}*/
 
-				int numSent = Connection.Send(zeroBuffer, zeroBytes, SocketFlags.None);
-
-				// DEBUG
-				//Console.WriteLine("Sent " + numSent + " bytes");
+				Connection.Send(buffer, bytes, SocketFlags.None);
 			}
 			catch (Exception e)
 			{
@@ -313,29 +260,24 @@ namespace libsecondlife
 			}
 		}
 
-		private void SendACKs()
+		private void SendACK(uint id)
 		{
-			AckOutboxMutex.WaitOne();
-			if (AckOutbox.Count != 0)
+			try
 			{
-				try
-				{
-					Packet packet = Packets.Network.PacketAck(Protocol, AckOutbox);
+				Packet packet = new Packet("PacketAck", Protocol, 13);
+				packet.Data[8] = 1;
+				Array.Copy(BitConverter.GetBytes(id), 0, packet.Data, 9, 4);
 
-					// Set the sequence number
-					packet.Sequence = ++Sequence;
+				// Set the sequence number
+				packet.Sequence = ++Sequence;
 
-					// Bypass SendPacket since we are taking care of the AckOutbox ourself
-					int numSent = Connection.Send(packet.Data);
-
-					AckOutbox.Clear();
-				}
-				catch (Exception e)
-				{
-					Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
-				}
+				// Bypass SendPacket and send the ACK directly
+				int numSent = Connection.Send(packet.Data);
 			}
-			AckOutboxMutex.ReleaseMutex();
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+			}
 		}
 
 		private void OnReceivedData(IAsyncResult result)
@@ -344,40 +286,25 @@ namespace libsecondlife
 
 			try
 			{
-				// For the UseCircuitCode timeout
-				Opened = true;
-				OpenTimer.Stop();
+				RecvBufferMutex.WaitOne();
+
+				// If we're receiving data the sim connection is open
+				connected = true;
 
 				// Retrieve the incoming packet
 				int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
 
-				CurrentBufferMutex.WaitOne();
-
-				// TODO: Before we can make the number of packet buffers a configurable number, 
-				//       each buffer needs a lock associated with it. Maybe a parallel array 
-				//       of booleans to keep track of the locked status of each buffer
-
-				// Track which buffer we're listening to and increment to the next buffer
-				int ThisBuffer = CurrentBuffer;
-				CurrentBuffer++;
-				if (CurrentBuffer >= 8) { CurrentBuffer = 0; }
-
-				// Start listening again since we're done with Buffer
-				Connection.BeginReceiveFrom(Buffers[CurrentBuffer], 0, 4096, SocketFlags.None, ref endPoint, ReceivedData, null);
-
-				CurrentBufferMutex.ReleaseMutex();
-
-				if ((Buffers[ThisBuffer][0] & Helpers.MSG_APPENDED_ACKS) != 0)
+				if ((RecvBuffer[0] & Helpers.MSG_APPENDED_ACKS) != 0)
 				{
 					// Grab the ACKs that are appended to this packet
-					byte numAcks = Buffers[ThisBuffer][numBytes - 1];
+					byte numAcks = RecvBuffer[numBytes - 1];
 
 					Helpers.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
 					NeedAckMutex.WaitOne();
 					for (int i = 1; i <= numAcks; ++i)
 					{
-						ushort ack = (ushort)BitConverter.ToUInt32(Buffers[ThisBuffer], numBytes - i * 4 - 1);
+						ushort ack = (ushort)BitConverter.ToUInt32(RecvBuffer, numBytes - i * 4 - 1);
 
 					Beginning:
 						ICollection reliablePackets = NeedAck.Keys;
@@ -397,42 +324,32 @@ namespace libsecondlife
 					numBytes = numBytes - numAcks * 4 - 1;
 				}
 
-				if ((Buffers[ThisBuffer][0] & Helpers.MSG_ZEROCODED) != 0)
+				// Zerodecode this packet if necessary
+				if ((RecvBuffer[0] & Helpers.MSG_ZEROCODED) != 0)
 				{
 					// Allocate a temporary buffer for the zerocoded packet
 					byte[] zeroBuffer = new byte[4096];
-					int zeroBytes = Helpers.ZeroDecode(Buffers[ThisBuffer], numBytes, zeroBuffer);
-					packet = new Packet(zeroBuffer, zeroBytes, Protocol);
+					int zeroBytes = Helpers.ZeroDecode(RecvBuffer, numBytes, zeroBuffer);
 					numBytes = zeroBytes;
+					packet = new Packet(zeroBuffer, numBytes, Protocol);
 				}
 				else
 				{
 					// Create the packet object from our byte array
-					packet = new Packet(Buffers[ThisBuffer], numBytes, Protocol);
+					packet = new Packet(RecvBuffer, numBytes, Protocol);
 				}
+
+				// Start listening again since we're done with RecvBuffer
+				Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
+				RecvBufferMutex.ReleaseMutex();
 
 				// Track the sequence number for this packet if it's marked as reliable
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 				{
-					// Add this packet to the ACK outbox if it isn't there already
-					AckOutboxMutex.WaitOne();
-					if (!AckOutbox.Contains((uint)packet.Sequence))
-					{
-						AckOutbox.Add((uint)packet.Sequence);
-					}
-					else
-					{
-						Helpers.Log("ACKs are being sent too slowly!", Helpers.LogLevel.Warning);
-					}
-					if (AckOutbox.Count > 0)
-					{
-						AckOutboxMutex.ReleaseMutex();
-						SendACKs();
-					}
-					else
-					{
-						AckOutboxMutex.ReleaseMutex();
-					}
+					// Send the ACK for this packet
+					// TODO: If we can make it stable, go back to the periodic ACK system
+					SendACK((uint)packet.Sequence);
 
 					// Check if we already received this packet
 					InboxMutex.WaitOne();
@@ -440,10 +357,11 @@ namespace libsecondlife
 					{
 						Helpers.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" +
 							packet.Sequence + ", resent=" + 
-							(((packet.Data[0] & Helpers.MSG_RESENT) != 0) ? "Yes" : "No"), Helpers.LogLevel.Info);
+							(((packet.Data[0] & Helpers.MSG_RESENT) != 0) ? "Yes" : "No"), 
+							Helpers.LogLevel.Info);
 
 						// Avoid firing a callback twice for the same packet
-						goto Finished;
+						return;
 					}
 					else
 					{
@@ -455,7 +373,7 @@ namespace libsecondlife
 				if (packet.Layout.Name == null)
 				{
 					Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
-					goto Finished;
+					return;
 				}
 				else if (packet.Layout.Name == "PacketAck")
 				{
@@ -515,81 +433,6 @@ namespace libsecondlife
 			{
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
-
-		Finished:
-			;
-		}
-
-		private void OpenTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
-		{
-			try
-			{
-				Timeout = true;
-				OpenTimer.Stop();
-			}
-			catch (Exception e)
-			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
-			}
-		}
-
-		private void ACKTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
-		{
-			try
-			{
-				// Send any ACKs in the queue
-				SendACKs();
-
-				ResendTick++;
-
-				if (ResendTick >= 3)
-				{
-					NeedAckMutex.WaitOne();
-					ResendTick = 0;
-
-				Beginning:
-					IDictionaryEnumerator packetEnum = NeedAck.GetEnumerator();
-
-					// Check if any reliable packets haven't been ACKed by the server
-					while (packetEnum.MoveNext())
-					{
-						int ticks = (int)packetEnum.Value;
-
-						// TODO: Is this hardcoded value correct? Should it be a higher level define or a 
-						//       changeable property?
-						if (Environment.TickCount - ticks > 4000)
-						{
-							Packet packet = (Packet)packetEnum.Key;
-
-							if (NeedAck.ContainsKey(packet))
-							{
-								NeedAck[packet] = Environment.TickCount;
-
-								// Add the resent flag
-								packet.Data[0] += Helpers.MSG_RESENT;
-							
-								// Resend the packet
-								SendPacket((Packet)packet, false);
-
-								Helpers.Log("Resending " + packet.Layout.Name + " packet, sequence=" + packet.Sequence, 
-									Helpers.LogLevel.Info);
-
-								// Rate limiting
-								System.Threading.Thread.Sleep(500);
-
-								// Restart the loop since we modified a value and the iterator will fail
-								goto Beginning;
-							}
-						}
-					}
-
-					NeedAckMutex.ReleaseMutex();
-				}
-			}
-			catch (Exception e)
-			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
-			}
 		}
 	}
 
@@ -598,23 +441,23 @@ namespace libsecondlife
 		public LLUUID AgentID;
 		public LLUUID SessionID;
 		public string LoginError;
-		public Circuit CurrentCircuit;
+		public Simulator CurrentSim;
 		public Hashtable LoginValues;
 
 		private Hashtable Callbacks;
 		private SecondLife Client;
 		private ProtocolManager Protocol;
-		private ArrayList Circuits;
-		private Mutex CircuitsMutex;
+		private ArrayList Simulators;
+		private Mutex SimulatorsMutex;
 
 		public NetworkManager(SecondLife client, ProtocolManager protocol)
 		{
 			Client = client;
 			Protocol = protocol;
-			Circuits = new ArrayList();
-			CircuitsMutex = new Mutex(false, "CircuitsMutex");
+			Simulators = new ArrayList();
+			SimulatorsMutex = new Mutex(false, "SimulatorsMutex");
 			Callbacks = new Hashtable();
-			CurrentCircuit = null;
+			CurrentSim = null;
 			LoginValues = null;
 
 			// Register the internal callbacks
@@ -659,19 +502,19 @@ namespace libsecondlife
 
 		public void SendPacket(Packet packet)
 		{
-			if (CurrentCircuit != null)
+			if (CurrentSim != null)
 			{
-				CurrentCircuit.SendPacket(packet, true);
+				CurrentSim.SendPacket(packet, true);
 			}
 			else
 			{
-				Helpers.Log("Trying to send a packet when there is no current circuit", Helpers.LogLevel.Error);
+				Helpers.Log("Trying to send a packet when there is no current simulator", Helpers.LogLevel.Error);
 			}
 		}
 
-		public void SendPacket(Packet packet, Circuit circuit)
+		public void SendPacket(Packet packet, Simulator simulator)
 		{
-			circuit.SendPacket(packet, true);
+			simulator.SendPacket(packet, true);
 		}
 
 		public static Hashtable DefaultLoginValues(string firstName, string lastName, string password,
@@ -783,6 +626,8 @@ namespace libsecondlife
 				LoginValues["look_at"] = vector;
 			}
 
+			Hashtable home = null;
+
 			if (LoginValues.Contains("home"))
 			{
 				// Convert LLSD string to JSON
@@ -806,7 +651,7 @@ namespace libsecondlife
 				regionHandle = new U64((int)array[0], (int)array[1]);
 
 				// Create a hashtable to hold the home values
-				Hashtable home = new Hashtable();
+				home = new Hashtable();
 				home["position"] = posVector;
 				home["look_at"] = lookatVector;
 				home["region_handle"] = regionHandle;
@@ -825,50 +670,58 @@ namespace libsecondlife
 			uint circuitCode = (uint)(int)LoginValues["circuit_code"];
 
 			// Connect to the sim given in the login reply
-			Circuit circuit = new Circuit(Protocol, this, this.Callbacks, circuitCode);
-			if (!circuit.Open((string)LoginValues["sim_ip"], (int)LoginValues["sim_port"]))
+			Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode, 
+				IPAddress.Parse((string)LoginValues["sim_ip"]), (int)LoginValues["sim_port"]);
+			if (!simulator.Connected)
 			{
 				return false;
 			}
 
-			// Circuit was successfully opened, add it to the list and set it as default
-			CircuitsMutex.WaitOne();
-			Circuits.Add(circuit);
-			CircuitsMutex.ReleaseMutex();
-			CurrentCircuit = circuit;
+			// Set the current region
+			Client.CurrentRegion = simulator.Region;
+
+			// Simulator is successfully connected, add it to the list and set it as default
+			SimulatorsMutex.WaitOne();
+			Simulators.Add(simulator);
+			SimulatorsMutex.ReleaseMutex();
+			CurrentSim = simulator;
 
 			// Move our agent in to the sim to complete the connection
 			Packet packet = Packets.Sim.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
-			SendPacket(packet);
+			SendPacket(packet, simulator);
 
 			return true;
 		}
 
 		public bool Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault)
 		{
-			Circuit circuit = new Circuit(Protocol, this, this.Callbacks, circuitCode);
-			if (!circuit.Open(ip, port))
+			Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode,
+				ip, (int)port);
+
+			if (!simulator.Connected)
 			{
 				return false;
 			}
 
-			CircuitsMutex.WaitOne();
-			Circuits.Add(circuit);
-			CircuitsMutex.ReleaseMutex();
+			SimulatorsMutex.WaitOne();
+			Simulators.Add(simulator);
+			SimulatorsMutex.ReleaseMutex();
 
 			if (setDefault)
 			{
-				CurrentCircuit = circuit;
+				CurrentSim = simulator;
 			}
 
 			return true;
 		}
 
-		public void Disconnect(Circuit circuit)
+		public void Disconnect(Simulator simulator)
 		{
+			// FIXME: Properly handle disconnects
+			/*
 			if (circuit == CurrentCircuit)
 			{
-				Helpers.Log("Disconnecting current circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
+				Helpers.Log("Disconnecting simulator " + simulator.IPEndPoint.ToString(), Helpers.LogLevel.Info);
 
 				circuit.CloseCircuit();
 
@@ -877,7 +730,7 @@ namespace libsecondlife
 				if (Circuits.Count > 0)
 				{
 					CurrentCircuit = (Circuit)Circuits[0];
-					Helpers.Log("Switched current circuit to " + CurrentCircuit.ipEndPoint.ToString(), 
+					Helpers.Log("Switched current simulator to " + CurrentCircuit.ipEndPoint.ToString(), 
 						Helpers.LogLevel.Info);
 				}
 				else
@@ -901,36 +754,34 @@ namespace libsecondlife
 			}
 
 			//Helpers.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
+			*/
 		}
 
 		public void Logout()
 		{
 			try
 			{
-				// Halt all activity on the current circuit
-				CurrentCircuit.StopTimers();
-
 			Beginning:
-				// Disconnect all circuits except the current one
-				CircuitsMutex.WaitOne();
-				if (Circuits.Count > 1)
+				// Disconnect all simulators except the current one
+				SimulatorsMutex.WaitOne();
+				if (Simulators.Count > 1)
 				{
-					foreach (Circuit circuit in Circuits)
+					foreach (Simulator simulator in Simulators)
 					{
-						if (circuit.CircuitCode != CurrentCircuit.CircuitCode)
+						if (simulator.CircuitCode != CurrentSim.CircuitCode)
 						{
-							Disconnect(circuit);
+							Disconnect(simulator);
 							goto Beginning;
 						}
 					}
 				}
 
 				Packet packet = Packets.Network.LogoutRequest(Protocol, AgentID, SessionID);
-				SendPacket(packet);
+				CurrentSim.SendPacket(packet, true);
 
-				Circuits.Clear();
-				CurrentCircuit = null;
-				CircuitsMutex.ReleaseMutex();
+				Simulators.Clear();
+				CurrentSim = null;
+				SimulatorsMutex.ReleaseMutex();
 
 				// TODO: We should probably check if the server actually received the logout request
 				// Instead we'll use this silly Sleep() to keep from accidentally flooding the login server
@@ -942,143 +793,122 @@ namespace libsecondlife
 			}
 		}
 
-		private void StartPingCheckHandler(Packet packet, Circuit circuit)
+		private void StartPingCheckHandler(Packet packet, Simulator simulator)
 		{
 			// Respond to the ping request
 			Packet pingPacket = Packets.Network.CompletePingCheck(Protocol, (byte)packet.Field("PingID"));
-			SendPacket(pingPacket, circuit);
+			SendPacket(pingPacket, simulator);
 		}
 
-		private void RegionHandshakeHandler(Packet packet, Circuit circuit)
+		private void RegionHandshakeHandler(Packet packet, Simulator simulator)
 		{
-			ArrayList blocks = packet.Blocks();
-			float[] heightList = new float[9];
-			LLUUID[] terrainImages = new LLUUID[8];
-			string name = "";
-			LLUUID id = null;
-			LLUUID simOwner = null;
-			bool isEstateManager = false;
-
-			foreach (Block block in blocks)
+			try
 			{
-				foreach (Field field in block.Fields)
+				foreach (Block block in packet.Blocks())
 				{
-					//output += "  " + field.Layout.Name + ": " + field.Data.ToString() + "\n";
-					if (field.Layout.Name == "TerrainHeightRange00")
+					foreach (Field field in block.Fields)
 					{
-						heightList[0] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainHeightRange01")
-					{
-						heightList[1] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainHeightRange10")
-					{
-						heightList[2] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainHeightRange11")
-					{
-						heightList[3] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainStartHeight00")
-					{
-						heightList[4] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainStartHeight01")
-					{
-						heightList[5] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainStartHeight10")
-					{
-						heightList[6] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainStartHeight11")
-					{
-						heightList[7] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "WaterHeight")
-					{
-						heightList[8] = (float)field.Data;
-					}
-					else if (field.Layout.Name == "SimOwner")
-					{
-						simOwner = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainBase0")
-					{
-						terrainImages[0] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainBase1")
-					{
-						terrainImages[1] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainBase2")
-					{
-						terrainImages[2] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainBase3")
-					{
-						terrainImages[3] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainDetail0")
-					{
-						terrainImages[4] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainDetail1")
-					{
-						terrainImages[5] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainDetail2")
-					{
-						terrainImages[6] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "TerrainDetail3")
-					{
-						terrainImages[7] = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "IsEstateManager")
-					{
-						isEstateManager = (bool)field.Data;
-					}
-					else if (field.Layout.Name == "SimName")
-					{
-						byte[] byteArray = (byte[])field.Data;
-						name = System.Text.Encoding.UTF8.GetString(byteArray, 0, byteArray.Length).Replace("\0", "");
-					}
-					else if (field.Layout.Name == "CacheID")
-					{
-						id = (LLUUID)field.Data;
+						if (field.Layout.Name == "TerrainHeightRange00")
+						{
+							simulator.Region.TerrainHeightRange00 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainHeightRange01")
+						{
+							simulator.Region.TerrainHeightRange01 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainHeightRange10")
+						{
+							simulator.Region.TerrainHeightRange10 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainHeightRange11")
+						{
+							simulator.Region.TerrainHeightRange11 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainStartHeight00")
+						{
+							simulator.Region.TerrainStartHeight00 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainStartHeight01")
+						{
+							simulator.Region.TerrainStartHeight01 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainStartHeight10")
+						{
+							simulator.Region.TerrainStartHeight10 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainStartHeight11")
+						{
+							simulator.Region.TerrainStartHeight11 = (float)field.Data;
+						}
+						else if (field.Layout.Name == "WaterHeight")
+						{
+							simulator.Region.WaterHeight = (float)field.Data;
+						}
+						else if (field.Layout.Name == "SimOwner")
+						{
+							simulator.Region.SimOwner = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainBase0")
+						{
+							simulator.Region.TerrainBase0 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainBase1")
+						{
+							simulator.Region.TerrainBase1 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainBase2")
+						{
+							simulator.Region.TerrainBase2 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainBase3")
+						{
+							simulator.Region.TerrainBase3 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainDetail0")
+						{
+							simulator.Region.TerrainDetail0 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainDetail1")
+						{
+							simulator.Region.TerrainDetail1 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainDetail2")
+						{
+							simulator.Region.TerrainDetail2 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "TerrainDetail3")
+						{
+							simulator.Region.TerrainDetail3 = (LLUUID)field.Data;
+						}
+						else if (field.Layout.Name == "IsEstateManager")
+						{
+							simulator.Region.IsEstateManager = (bool)field.Data;
+						}
+						else if (field.Layout.Name == "SimName")
+						{
+							byte[] byteArray = (byte[])field.Data;
+							simulator.Region.Name = System.Text.Encoding.UTF8.GetString(byteArray, 0, byteArray.Length).Replace("\0", "");
+						}
+						else if (field.Layout.Name == "CacheID")
+						{
+							simulator.Region.ID = (LLUUID)field.Data;
+						}
 					}
 				}
+
+				Helpers.Log("Received a region handshake for " + simulator.Region.Name, Helpers.LogLevel.Info);
+
+				// Send a RegionHandshakeReply
+				Packet replyPacket = new Packet("RegionHandshakeReply", Protocol, 12);
+				SendPacket(replyPacket, simulator);
 			}
-
-			Hashtable home = (Hashtable)LoginValues["home"];
-
-			Region region = new Region(Client, id, (U64)home["region_handle"], name, heightList, simOwner, terrainImages, isEstateManager);
-
-			Region foundRegion = Client.FindRegion(region.Name);
-
-			Client.RegionsMutex.WaitOne();
-			if (foundRegion == null)
+			catch (Exception e)
 			{
-				Client.Regions.Add(region);
-				Client.CurrentRegion = region;
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Warning);
 			}
-			else
-			{
-				Client.CurrentRegion = foundRegion;
-			}
-			Client.CurrentParcelOverlay = Client.CurrentRegion.ParcelOverlay;
-			Client.RegionsMutex.ReleaseMutex();
-
-			Helpers.Log("Received a region handshake for " + region.Name, Helpers.LogLevel.Info);
-
-			// Send a RegionHandshakeReply
-			Packet replyPacket = new Packet("RegionHandshakeReply", Protocol, 12);
-			SendPacket(replyPacket, circuit);
 		}
 
-		private void ParcelOverlayHandler(Packet packet, Circuit circuit)
+		private void ParcelOverlayHandler(Packet packet, Simulator simulator)
 		{
 			int sequenceID = -1;
 			byte[] byteArray = null;
@@ -1105,13 +935,14 @@ namespace libsecondlife
 
 			if (sequenceID >= 0 && sequenceID <= 3)
 			{
-				Array.Copy(byteArray, 0, Client.CurrentParcelOverlay, sequenceID * 1024, 1024);
-				Client.ParcelOverlaysReceived++;
+				Array.Copy(byteArray, 0, simulator.Region.ParcelOverlay, sequenceID * 1024, 1024);
+				simulator.Region.ParcelOverlaysReceived++;
 
-				if (Client.ParcelOverlaysReceived > 3)
+				if (simulator.Region.ParcelOverlaysReceived > 3)
 				{
-					Client.ParcelOverlaysReceived = 0;
-					Helpers.Log("Finished building the current parcel overlay", Helpers.LogLevel.Info);
+					simulator.Region.ParcelOverlaysReceived = 0;
+					Helpers.Log("Finished building the " + simulator.Region.Name + " parcel overlay", 
+						Helpers.LogLevel.Info);
 
 					// The int i = 0; is just there so I could break on it and check the 
 					// value of debug
@@ -1121,11 +952,12 @@ namespace libsecondlife
 			}
 			else
 			{
-				Helpers.Log("Parcel overlay with sequence ID of " + sequenceID + " received", Helpers.LogLevel.Error);
+				Helpers.Log("Parcel overlay with sequence ID of " + sequenceID + " received from " + 
+					simulator.Region.Name, Helpers.LogLevel.Error);
 			}
 		}
 
-		private void EnableSimulatorHandler(Packet packet, Circuit circuit)
+		private void EnableSimulatorHandler(Packet packet, Simulator simulator)
 		{
 			// TODO: Actually connect to the simulator
 

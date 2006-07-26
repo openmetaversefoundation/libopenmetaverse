@@ -33,9 +33,9 @@ namespace sldump
 	class sldump
 	{
 		// Default packet handler, registered for all packet types
-		public static void DefaultHandler(Packet packet, Circuit circuit)
+		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
-			Console.Write(packet.ToString());
+			//Console.Write(packet.ToString());
 		}
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace sldump
 			client.Network.RegisterCallback("Default", new PacketCallback(DefaultHandler));
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 11, 0, 11, "Win", "0", "sldump", "jhurliman@wsu.edu");
+				"last", 1, 50, 50, 50, "Win", "0", "sldump", "jhurliman@wsu.edu");
 
 			// An example of how to pass additional options to the login server
 			ArrayList optionsArray = new ArrayList();

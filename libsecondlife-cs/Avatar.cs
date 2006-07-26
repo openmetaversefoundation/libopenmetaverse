@@ -104,7 +104,7 @@ namespace libsecondlife
 			TeleportTimeout = false;
 		}
 
-		private void FriendNotificationHandler(Packet packet, Circuit ciruit)
+		private void FriendNotificationHandler(Packet packet, Simulator simulator)
 		{
 			// If the agent is online...
 			if (packet.Layout.Name == "OnlineNotification")
@@ -173,7 +173,7 @@ namespace libsecondlife
 			}
 		}
 
-		private void LocationHandler(Packet packet, Circuit circuit)
+		private void LocationHandler(Packet packet, Simulator simulator)
 		{
 			foreach (Block block in packet.Blocks())
 			{
@@ -200,7 +200,7 @@ namespace libsecondlife
 			Client.Network.SendPacket(packet);
 		}
 
-		private void InstantMessageHandler(Packet packet, Circuit circuit)
+		private void InstantMessageHandler(Packet packet, Simulator simulator)
 		{
 			if (packet.Layout.Name == "ImprovedInstantMessage")
 			{
@@ -284,7 +284,7 @@ namespace libsecondlife
 			} 
 		}
 
-		private void ChatHandler(Packet packet, Circuit circuit) 
+		private void ChatHandler(Packet packet, Simulator simulator) 
 		{
 			if (packet.Layout.Name == "ChatFromSimulator")
 			{
@@ -489,7 +489,7 @@ namespace libsecondlife
 			return (TeleportStatus == 1);
 		}
 
-		private void TeleportHandler(Packet packet, Circuit circuit)
+		private void TeleportHandler(Packet packet, Simulator simulator)
 		{
 			ArrayList blocks;
 
@@ -559,14 +559,14 @@ namespace libsecondlife
 					}
 				}
 
-				if (Client.Network.Connect(ip, port, Client.Network.CurrentCircuit.CircuitCode, true))
+				if (Client.Network.Connect(ip, port, Client.Network.CurrentSim.CircuitCode, true))
 				{
 					// Move the avatar in to this sim
 					Packet movePacket = Packets.Sim.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
-						Client.Network.SessionID, Client.Network.CurrentCircuit.CircuitCode);
+						Client.Network.SessionID, Client.Network.CurrentSim.CircuitCode);
 					Client.Network.SendPacket(movePacket);
 
-					Helpers.Log("Connected to new sim " + Client.Network.CurrentCircuit.ipEndPoint.ToString(), 
+					Helpers.Log("Connected to new sim " + Client.Network.CurrentSim.IPEndPoint.ToString(), 
 						Helpers.LogLevel.Info);
 
 					// Sleep a little while so we can collect parcel information
