@@ -320,17 +320,12 @@ namespace libsecondlife
 		private void LoadMapFile(string mapFile)
 		{
 			FileStream map;
-			string protocolMap = "";
-			int end;
-			int cmdStart = 0;
-			int cmdEnd;
-			int cmdChildren = 0;
 			ushort low = 1;
 			ushort medium = 1;
 			ushort high = 1;
 
 			// Load the protocol map file
-			try 
+			try
 			{
 				map = new FileStream(mapFile, FileMode.Open, FileAccess.Read); 
 			}
@@ -340,106 +335,217 @@ namespace libsecondlife
 				throw new Exception("Map file error", e);
 			}
 
-			StreamReader r = new StreamReader(map);        
-			r.BaseStream.Seek(0, SeekOrigin.Begin);
-
-			while (r.Peek() > -1) 
+			try
 			{
-				// While not at the end of the file  
-				protocolMap += r.ReadLine();
-			}
+				StreamReader r = new StreamReader(map);        
+				r.BaseStream.Seek(0, SeekOrigin.Begin);
+				string newline;
+				string trimmedline;
+				bool inPacket = false;
+				bool inBlock = false;
+				MapPacket currentPacket = null;
+				MapBlock currentBlock = null;
+				char[] trimArray = new char[] {' ', '\t'};
 
-			r.Close();
-			map.Close();
+				// While not at the end of the file
+				while (r.Peek() > -1) 
+				{
+					#region ParseMap
 
-			cmdEnd = end = protocolMap.Length;
+					newline = r.ReadLine();
+					trimmedline = System.Text.RegularExpressions.Regex.Replace(newline, @"\s+", " ");
+					trimmedline = trimmedline.Trim(trimArray);
 
-			while (GetBlockMarkers(protocolMap, ref cmdStart, ref cmdEnd, ref cmdChildren)) 
-			{
-				int length = (cmdChildren != 0 ? cmdChildren - 1 : cmdEnd - 1) - cmdStart;
-				string temp = protocolMap.Substring(cmdStart + 1, length).Trim();
-
-				char[] seps = {' '};
-				string[] headerTokens = temp.Split(seps);
-				
-				// Get the frequency first so we know where to put this command
-				temp = headerTokens[1];
-				if (temp == "Fixed") {
-					// Get the fixed position
-					temp = headerTokens[2];
-
-					// Remove the leading "0x"
-					if (temp.Substring(0, 2) == "0x")
+					if (!inPacket)
 					{
-						temp = temp.Substring(2, temp.Length - 2);
+						// Outside of all packet blocks
+
+						if (trimmedline == "{")
+						{
+							inPacket = true;
+						}
+					}
+					else
+					{
+						// Inside of a packet block
+
+						if (!inBlock)
+						{
+							// Inside a packet block, outside of the blocks
+
+							if (trimmedline == "{")
+							{
+								inBlock = true;
+							}
+							else if (trimmedline == "}")
+							{
+								// Reached the end of the packet
+								currentPacket.Blocks.Sort();
+								inPacket = false;
+							}
+							else 
+							{
+								// The packet header
+								#region ParsePacketHeader
+
+								// Splice the string in to tokens
+								string[] tokens = trimmedline.Split(new char[] {' ', '\t'});
+
+								if (tokens.Length > 3)
+								{
+									if (tokens[1] == "Fixed")
+									{
+										// Remove the leading "0x"
+										if (tokens[2].Substring(0, 2) == "0x")
+										{
+											tokens[2] = tokens[2].Substring(2, tokens[2].Length - 2);
+										}
+
+										uint fixedID = UInt32.Parse(tokens[2], System.Globalization.NumberStyles.HexNumber);
+										// Truncate the id to a short
+										fixedID ^= 0xFFFF0000;
+										LowMaps[fixedID] = new MapPacket();
+										LowMaps[fixedID].ID = (ushort)fixedID;
+										LowMaps[fixedID].Frequency = PacketFrequency.Low;
+										LowMaps[fixedID].Name = tokens[0];
+										LowMaps[fixedID].Trusted = (tokens[3] == "Trusted");
+										LowMaps[fixedID].Encoded = (tokens[4] == "Zerocoded");
+										LowMaps[fixedID].Blocks = new ArrayList();
+
+										currentPacket = LowMaps[fixedID];
+									}
+									else if (tokens[1] == "Low")
+									{
+										LowMaps[low] = new MapPacket();
+										LowMaps[low].ID = low;
+										LowMaps[low].Frequency = PacketFrequency.Low;
+										LowMaps[low].Name = tokens[0];
+										LowMaps[low].Trusted = (tokens[2] == "Trusted");
+										LowMaps[low].Encoded = (tokens[3] == "Zerocoded");
+										LowMaps[low].Blocks = new ArrayList();
+
+										currentPacket = LowMaps[low];
+
+										low++;
+									}
+									else if (tokens[1] == "Medium")
+									{
+										MediumMaps[medium] = new MapPacket();
+										MediumMaps[medium].ID = medium;
+										MediumMaps[medium].Frequency = PacketFrequency.Medium;
+										MediumMaps[medium].Name = tokens[0];
+										MediumMaps[medium].Trusted = (tokens[2] == "Trusted");
+										MediumMaps[medium].Encoded = (tokens[3] == "Zerocoded");
+										MediumMaps[medium].Blocks = new ArrayList();
+
+										currentPacket = MediumMaps[medium];
+
+										medium++;
+									}
+									else if (tokens[1] == "High")
+									{
+										HighMaps[high] = new MapPacket();
+										HighMaps[high].ID = high;
+										HighMaps[high].Frequency = PacketFrequency.High;
+										HighMaps[high].Name = tokens[0];
+										HighMaps[high].Trusted = (tokens[2] == "Trusted");
+										HighMaps[high].Encoded = (tokens[3] == "Zerocoded");
+										HighMaps[high].Blocks = new ArrayList();
+
+										currentPacket = HighMaps[high];
+
+										high++;
+									}
+									else
+									{
+										Helpers.Log("!!!", Helpers.LogLevel.Error);
+									}
+								}
+
+								#endregion
+							}
+						}
+						else
+						{
+							if (trimmedline.Length > 0 && trimmedline.Substring(0, 1) == "{")
+							{
+								// A field
+								#region ParseField
+
+								MapField field = new MapField();
+
+								// Splice the string in to tokens
+								string[] tokens = trimmedline.Split(new char[] {' ', '\t'});
+
+								field.Name = tokens[1];
+								field.KeywordPosition = KeywordPosition(field.Name);
+								field.Type = (FieldType)Enum.Parse(typeof(FieldType), tokens[2], true);
+
+								if (tokens[3] != "}")
+								{
+									field.Count = Int32.Parse(tokens[3]);
+								}
+								else
+								{
+									field.Count = 1;
+								}
+
+								// Save this field to the current block
+								currentBlock.Fields.Add(field);
+
+								#endregion
+							}
+							else if (trimmedline == "}")
+							{
+								currentBlock.Fields.Sort();
+								inBlock = false;
+							}
+							else if (trimmedline.Length != 0 && trimmedline.Substring(0, 2) != "//")
+							{
+								// The block header
+								#region ParseBlockHeader
+
+								currentBlock = new MapBlock();
+
+								// Splice the string in to tokens
+								string[] tokens = trimmedline.Split(new char[] {' ', '\t'});
+
+								currentBlock.Name = tokens[0];
+								currentBlock.KeywordPosition = KeywordPosition(currentBlock.Name);
+								currentBlock.Fields = new ArrayList();
+								currentPacket.Blocks.Add(currentBlock);
+
+								if (tokens[1] == "Single")
+								{
+									currentBlock.Count = 1;
+								}
+								else if (tokens[1] == "Multiple")
+								{
+									currentBlock.Count = Int32.Parse(tokens[2]);
+								}
+								else if (tokens[1] == "Variable")
+								{
+									currentBlock.Count = -1;
+								}
+								else
+								{
+									Helpers.Log("Unknown block frequency!", Helpers.LogLevel.Error);
+								}
+
+								#endregion
+							}
+						}
 					}
 
-					// Convert the hex string to an integer
-					uint fix;
-
-					try
-					{
-						fix = UInt32.Parse(temp, System.Globalization.NumberStyles.HexNumber);
-					}
-					catch (Exception e)
-					{
-						Helpers.Log("Protocol map parsing error: " + e.Message, Helpers.LogLevel.Error);
-						throw new Exception("Map file error", e);
-					}
-
-					// Truncate it to a short
-					fix ^= 0xffff0000;
-					LowMaps[fix] = new MapPacket();
-					LowMaps[fix].ID = (ushort)fix;
-					LowMaps[fix].Frequency = PacketFrequency.Low;
-					LowMaps[fix].Name = headerTokens[0];
-					LowMaps[fix].Trusted = (headerTokens[2] == "Trusted");
-					LowMaps[fix].Encoded = (headerTokens[3] == "Zerocoded");
-					LowMaps[fix].Blocks = new ArrayList();
-
-					// Get the blocks
-					GetBlocks(ref LowMaps[fix], protocolMap, cmdStart + 1, cmdEnd - 1);
-				} else if (temp == "Low") {
-					LowMaps[low] = new MapPacket();
-					LowMaps[low].ID = low;
-					LowMaps[low].Frequency = PacketFrequency.Low;
-					LowMaps[low].Name = headerTokens[0];
-					LowMaps[low].Trusted = (headerTokens[2] == "Trusted");
-					LowMaps[low].Encoded = (headerTokens[3] == "Zerocoded");
-					LowMaps[low].Blocks = new ArrayList();
-
-					GetBlocks(ref LowMaps[low], protocolMap, cmdStart + 1, cmdEnd - 1);
-					low++;
-				} else if (temp == "Medium") {
-					MediumMaps[medium] = new MapPacket();
-					MediumMaps[medium].ID = medium;
-					MediumMaps[medium].Frequency = PacketFrequency.Medium;
-					MediumMaps[medium].Name = headerTokens[0];
-					MediumMaps[medium].Trusted = (headerTokens[2] == "Trusted");
-					MediumMaps[medium].Encoded = (headerTokens[3] == "Zerocoded");
-					MediumMaps[medium].Blocks = new ArrayList();
-
-					GetBlocks(ref MediumMaps[medium], protocolMap, cmdStart + 1, cmdEnd - 1);
-					medium++;
-				} else if (temp == "High") {
-					HighMaps[high] = new MapPacket();
-					HighMaps[high].ID = high;
-					HighMaps[high].Frequency = PacketFrequency.High;
-					HighMaps[high].Name = headerTokens[0];
-					HighMaps[high].Trusted = (headerTokens[2] == "Trusted");
-					HighMaps[high].Encoded = (headerTokens[3] == "Zerocoded");
-					HighMaps[high].Blocks = new ArrayList();
-
-					GetBlocks(ref HighMaps[high], protocolMap, cmdStart + 1, cmdEnd - 1);
-					high++;
-				} else {
-					Helpers.Log("Unknown frequency \"" + temp + "\"", Helpers.LogLevel.Error);
-					throw new Exception("Unknown frequency \"" + temp + "\"");
+					#endregion
 				}
 
-				// Increment our position in protocol map
-				cmdStart = cmdEnd + 1;
-				cmdEnd = end;
+				r.Close();
+				map.Close();
+			}
+			catch (Exception e)
+			{
+				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 
@@ -454,185 +560,6 @@ namespace libsecondlife
 				Helpers.Log("Couldn't find keyword: " + keyword, Helpers.LogLevel.Warning);
 				return -1;
 			}
-		}
-
-		private bool GetBlockMarkers(string protocolMap, ref int start, ref int end, ref int children)
-		{
-			int startBlock = 0;
-			int depth = 0;
-	
-			children = 0;
-
-			for (int i = start; i < end; ++i) 
-			{
-				if (protocolMap[i] == '{') 
-				{
-					depth++;
-
-					if (depth == 1) 
-					{
-						startBlock = i;
-					} 
-					else if (depth == 2 && children == 0) 
-					{
-						children = i;
-					}
-				} 
-				else if (protocolMap[i] == '}') 
-				{
-					depth--;
-
-					if (depth == 0 && startBlock != 0) 
-					{
-						start = startBlock;
-						end = i;
-
-						return true;
-					}
-				}
-			}
-
-			return false;
-		}
-
-		private bool GetFields(ref MapBlock block, string protocolMap, int start, int end)
-		{
-			int fieldStart = start;
-			int fieldEnd = end;
-			int children = 0;
-			MapField field;
-
-			while(GetBlockMarkers(protocolMap, ref fieldStart, ref fieldEnd, ref children)) 
-			{
-				if (children != 0) 
-				{
-					Helpers.Log("Found fourth tier elements in the protocol map", Helpers.LogLevel.Error);
-					return false;
-				}
-
-				string temp = protocolMap.Substring(fieldStart + 1, (fieldEnd - 1) - fieldStart).Trim();
-				field = new MapField();
-
-				int delimiter = temp.IndexOf(" ");
-				if (delimiter == -1) 
-				{
-					Helpers.Log("Couldn't parse protocol map field: " + temp, Helpers.LogLevel.Error);
-					return false;
-				}
-
-				// Get the field name
-				field.Name = temp.Substring(0, delimiter);
-
-				// Get the keyword position
-				field.KeywordPosition = KeywordPosition(field.Name);
-
-				temp = temp.Substring(delimiter + 1, temp.Length - delimiter - 1);
-
-				// Get the field count
-				delimiter = temp.IndexOf(" ");
-				if (delimiter != -1) 
-				{
-					try 
-					{
-						field.Count = Int32.Parse(temp.Substring(delimiter + 1, temp.Length - delimiter - 1));
-					} 
-					catch (Exception e) 
-					{
-						Helpers.Log("Error parsing protocol map field count: " + e.Message, Helpers.LogLevel.Error);
-					}
-
-					temp = temp.Substring(0, delimiter);
-				} 
-				else 
-				{
-					field.Count = 1;
-				}
-
-				// Get the field type
-				field.Type = (FieldType)Enum.Parse(typeof(FieldType), temp, true);
-
-				// Add this field to the linked list
-				block.Fields.Add(field);
-
-				fieldStart = fieldEnd + 1;
-				fieldEnd = end;
-			}
-
-			// Sort the fields based on the keyword position
-			block.Fields.Sort();
-
-			return true;
-		}
-
-		private bool GetBlocks(ref MapPacket packet, string protocolMap, int start, int end)
-		{
-			int blockStart = start;
-			int blockEnd = end;
-			int children = 0;
-			MapBlock block;
-
-			while (GetBlockMarkers(protocolMap, ref blockStart, ref blockEnd, ref children)) 
-			{
-				int length = (children != 0 ? children - 1 : blockEnd - 1) - blockStart;
-				string temp = protocolMap.Substring(blockStart + 1, length).Trim();
-
-				char[] seps = {' '};
-				string[] blockTokens = temp.Split(seps);
-
-				block = new MapBlock();
-
-				// Get the block name
-				block.Name = blockTokens[0];
-
-				// Find the frequency of this block (-1 for variable, 1 for single)
-				temp = blockTokens[1];
-
-				if (temp == "Variable")
-				{
-					block.Count = -1;
-				}
-				else if (temp == "Single")
-				{
-					block.Count = 1;
-				}
-				else if (temp == "Multiple")
-				{
-					try
-					{
-						block.Count = Int32.Parse(blockTokens[2]);
-					}
-					catch (Exception e)
-					{
-						Helpers.Log("Error parsing block frequency : " + e.Message, Helpers.LogLevel.Error);
-						throw new Exception("Keyword file error", e);
-					}
-				}
-				else
-				{
-					//TODO: Why is this five?
-					block.Count = 5;
-				}
-
-				// Get the keyword position of this block
-				block.KeywordPosition = KeywordPosition(block.Name);
-
-				// Initialize the ArrayList of fields
-				block.Fields = new ArrayList();
-
-				// Add this block to the linked list
-				packet.Blocks.Add(block);
-
-				// Populate the fields linked list
-				GetFields(ref block, protocolMap, blockStart + 1, blockEnd - 1);
-
-				blockStart = blockEnd + 1;
-				blockEnd = end;
-			}
-
-			// Sort the blocks based on the keyword position
-			packet.Blocks.Sort();
-
-			return true;
 		}
 	}
 }
