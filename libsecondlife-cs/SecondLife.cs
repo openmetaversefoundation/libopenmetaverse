@@ -242,6 +242,13 @@ namespace libsecondlife
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 
+			// HACK: Fix truncated zerocoded messages
+			for (uint i = zerolen; i < zerolen + 16; i++)
+			{
+				dest[zerolen] = 0;
+			}
+			zerolen += 16;
+
 			return (int)zerolen;
 		}
 
