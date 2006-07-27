@@ -26,8 +26,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: decode incoming packets, encode outgoing packets
-
 using Nwc.XmlRpc;
 using System;
 using System.Collections;
@@ -155,6 +153,8 @@ namespace SLProxy {
 
 		// Proxy: construct a proxy server with the given configuration
 		public Proxy(ProxyConfig proxyConfig) {
+			Kludges.Protocol = proxyConfig.protocol; // TODO
+
 			this.proxyConfig = proxyConfig;
 
 			InitializeLoginProxy();
@@ -374,7 +374,8 @@ namespace SLProxy {
 				simProxy.Reset();
 		}
 
-		private byte[] receiveBuffer = new byte[4096];
+		private byte[] receiveBuffer = new byte[8192];
+		private byte[] zeroBuffer = new byte[8192];
 		private EndPoint remoteEndPoint = (EndPoint)new IPEndPoint(IPAddress.Any, 0);
 
 		// start listening for packets from remote sims
@@ -399,11 +400,11 @@ namespace SLProxy {
 					Packet packet;
 					if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
 						packet = new Packet(receiveBuffer, length, proxyConfig.protocol);
-					else {
-						byte[] zeroBuffer = new byte[4096];
-						int zeroLength = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
-						packet = new Packet(zeroBuffer, zeroLength, proxyConfig.protocol);
-					}
+					else
+						lock(zeroBuffer) {
+							int zeroLength = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
+							packet = new Packet(zeroBuffer, zeroLength, proxyConfig.protocol);
+						}
 
 					// check for ACKs we're waiting for
 					packet = simProxy.CheckAcks(packet, Direction.Incoming);
@@ -513,11 +514,11 @@ namespace SLProxy {
 			lock(simFacingSocket)
 				if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
 					simFacingSocket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, endPoint);
-				else {
-					byte[] zeroBuffer = new byte[4096];
-					int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-					simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
-				}
+				else
+					lock(zeroBuffer) {
+						int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+						simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
+					}
 		}
 
 		// SpoofAck: create an ACK for the given packet
@@ -664,7 +665,8 @@ namespace SLProxy {
 					return (IPEndPoint)socket.LocalEndPoint;
 			}
 
-			private byte[] receiveBuffer = new byte[4096];
+			private byte[] receiveBuffer = new byte[8192];
+			private byte[] zeroBuffer = new byte[8192];
 			private EndPoint clientEndPoint = new IPEndPoint(IPAddress.Any, 0);
 			bool firstReceive = true;
 
@@ -685,11 +687,11 @@ namespace SLProxy {
 				Packet packet;
 				if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
 					packet = new Packet(receiveBuffer, length, proxyConfig.protocol);
-				else {
-					byte[] zeroBuffer = new byte[4096];
-					int zeroLength = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
-					packet = new Packet(zeroBuffer, zeroLength, proxyConfig.protocol);
-				}
+				else
+					lock(zeroBuffer) {
+						int zeroLength = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
+						packet = new Packet(zeroBuffer, zeroLength, proxyConfig.protocol);
+					}
 
 				// keep track of sequence numbers
 				lock(sequenceLock)
@@ -742,11 +744,11 @@ namespace SLProxy {
 					lock(socket)
 						if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
 							socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
-						else {
-							byte[] zeroBuffer = new byte[4096];
-							int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-							socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
-						}
+						else
+							lock(zeroBuffer) {
+								int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+								socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+							}
 			}
 
 			// Inject: inject a packet
@@ -775,11 +777,11 @@ namespace SLProxy {
 						lock (socket)
 							if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
 								socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
-							else {
-								byte[] zeroBuffer = new byte[4096];
-								int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-								socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
-							}
+							else
+								lock(zeroBuffer) {
+									int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+									socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+								}
 				} else
 					proxy.SendPacket(packet, remoteEndPoint);
 			}
@@ -1109,7 +1111,7 @@ namespace SLProxy {
 
 	// Kludges: this class patches over bugs in libsecondlife until they're fixed (TODO)
 	public class Kludges {
-		private static ProtocolManager Protocol = new ProtocolManager("keywords.txt", "protocol.txt");
+		public static ProtocolManager Protocol;
 
 		// Blocks: like Packet.Blocks, but in case of goto 5 don't use appended ACKs and zero out the rest of the field
 		public static ArrayList Blocks(Packet packet)
@@ -1129,7 +1131,7 @@ namespace SLProxy {
 			int length = packet.Data.Length;
 			if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
 				length -= packet.Data[packet.Data.Length - 1] * 4 + 1;
-			byte[] Data = new byte[4096];
+			byte[] Data = new byte[8192];
 			Array.Copy(packet.Data, 0, Data, 0, length);
 
 			foreach (MapBlock blockMap in packet.Layout.Blocks)
@@ -1267,9 +1269,9 @@ namespace SLProxy {
 						(byteArray[pos + 4] << 32) + (byteArray[pos + 5] << 40) +
 						(byteArray[pos + 6] << 48) + (byteArray[pos + 7] << 56));
 				case FieldType.F32:
-					return BitConverter.ToSingle(byteArray, pos); // FIXME
+					return BitConverter.ToSingle(byteArray, pos);
 				case FieldType.F64:
-					return BitConverter.ToDouble(byteArray, pos); // FIXME
+					return BitConverter.ToDouble(byteArray, pos);
 				case FieldType.LLUUID:
 					return new LLUUID(byteArray, pos);
 				case FieldType.BOOL:
