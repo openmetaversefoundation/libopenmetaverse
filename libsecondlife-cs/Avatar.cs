@@ -309,7 +309,7 @@ namespace libsecondlife
 						{
 							id = (LLUUID)field.Data;
 						} 
-						else if(field.Layout.Name == "Name")
+						else if(field.Layout.Name == "FromName")
 						{
 							name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 						}

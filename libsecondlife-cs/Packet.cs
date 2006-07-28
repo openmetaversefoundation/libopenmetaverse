@@ -493,7 +493,7 @@ namespace libsecondlife
 		{
 			Hashtable fields;
 			ArrayList payload = new ArrayList();
-			byte[] byteArray = new byte[1024];
+			byte[] byteArray = new byte[4096];
 			int length = 0;
 			int blockCount = 0;
 			int fieldLength = 0;
@@ -687,7 +687,9 @@ namespace libsecondlife
 													if (fieldLength > 255)
 													{
 														Helpers.Log("Truncating variable (byte) field to 255 " +
-															"characters", Helpers.LogLevel.Warning);
+															"characters. fieldLength=" + fieldLength + 
+															", fieldMap.Name=" + fieldMap.Name + ", packetMap.Name=" + packetMap.Name, 
+															Helpers.LogLevel.Warning);
 
 														fieldLength = 255;
 													}
@@ -763,11 +765,12 @@ namespace libsecondlife
 												break;
 										}
 									}
-									catch (Exception)
+									catch (Exception err)
 									{
-										Helpers.Log("Data type " + field.GetType().ToString() + " for field " +
-											fieldMap.Name + " doesn't match expected type " + fieldMap.Type.ToString(), 
-											Helpers.LogLevel.Error);
+										Helpers.Log("PacketBuilder.BuildPacket(): " + err.ToString(), Helpers.LogLevel.Error);
+										//Data type " + field.GetType().ToString() + " for field " +
+										//	fieldMap.Name + " doesn't match expected type " + fieldMap.Type.ToString(), 
+										//	);
 										// This will fail for fixed or variable type packets, but it's a 
 										// last ditch effort
 										length += (int)protocol.TypeSizes[fieldMap.Type];
