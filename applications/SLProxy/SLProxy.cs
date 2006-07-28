@@ -546,7 +546,7 @@ namespace SLProxy {
 			for (int i = 0; i < ackCount; ++i) {
 				Hashtable fields = new Hashtable();
 				int offset = packet.Data.Length - (ackCount - i) * 4 - 1;
-				fields["ID"] = (int)
+				fields["ID"] = (uint)
 					  (packet.Data[offset++] <<  0)
 					+ (packet.Data[offset++] <<  8)
 					+ (packet.Data[offset++] << 16)
@@ -697,7 +697,7 @@ namespace SLProxy {
 								SendPacket(packet);
 							}
 
-						foreach (ushort id in outgoingAcks.Values)
+						foreach (ushort id in outgoingAcks.Keys)
 							if (!outgoingSeenAcks.Contains(id)) {
 								Packet packet = (Packet)outgoingAcks[id];
 								packet.Data[0] |= Helpers.MSG_RESENT;
