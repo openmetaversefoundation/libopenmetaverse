@@ -153,8 +153,6 @@ namespace SLProxy {
 
 		// Proxy: construct a proxy server with the given configuration
 		public Proxy(ProxyConfig proxyConfig) {
-			Kludges.Protocol = proxyConfig.protocol; // TODO
-
 			this.proxyConfig = proxyConfig;
 
 			InitializeLoginProxy();
@@ -1058,7 +1056,7 @@ namespace SLProxy {
 		// Unbuild: deconstruct a packet into a Hashtable of blocks suitable for passing to PacketBuilder
 		public static Hashtable Unbuild(Packet packet) {
 			Hashtable blockTable = new Hashtable();
-			foreach (Block block in Kludges.Blocks(packet)) {
+			foreach (Block block in packet.Blocks()) {
 				Hashtable fieldTable = new Hashtable();
 				foreach (Field field in block.Fields)
 					fieldTable[field.Layout.Name] = field.Data;
@@ -1114,196 +1112,6 @@ namespace SLProxy {
 				empty[0] = 0;
 				return empty;
 			}
-		}
-	}
-
-	// Kludges: this class patches over bugs in libsecondlife until they're fixed (TODO)
-	public class Kludges {
-		public static ProtocolManager Protocol;
-
-		// Blocks: like Packet.Blocks, but in case of goto 5 don't use appended ACKs and zero out the rest of the field
-		public static ArrayList Blocks(Packet packet)
-		{
-			Field field;
-			Block block;
-			byte blockCount;
-			int fieldSize;
-
-			// Get the starting position of the SL payload (different than the UDP payload)
-			int pos = packet.HeaderLength();
-
-			// Initialize the block list we are returning
-			ArrayList blocks = new ArrayList();
-
-			// Until the goto 5 bug is sorted out, work out of a larger buffer and just report what would be an overrun
-			int length = packet.Data.Length;
-			if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
-				length -= packet.Data[packet.Data.Length - 1] * 4 + 1;
-			byte[] Data = new byte[8192];
-			Array.Copy(packet.Data, 0, Data, 0, length);
-
-			foreach (MapBlock blockMap in packet.Layout.Blocks)
-			{
-				if (blockMap.Count == -1)
-				{
-					// Variable count block
-					if (pos < length)
-					{
-						blockCount = packet.Data[pos];
-						pos++;
-					}
-					else
-
-					{
-						Helpers.Log("Blocks(): end of packet in 1-byte variable block count for " + packet.Layout.Name + "." + blockMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
-						goto Done;
-					}
-				}
-				else
-				{
-					blockCount = (byte)blockMap.Count;
-				}
-
-				for (int i = 0; i < blockCount; ++i)
-				{
-					// Create a new block to push back on the list
-					block = new Block();
-					block.Layout = blockMap;
-					block.Fields = new ArrayList();
-
-					foreach (MapField fieldMap in blockMap.Fields)
-					{
-						if (fieldMap.Type == FieldType.Variable)
-						{
-							if (fieldMap.Count == 1)
-							{
-								// Field length described with one byte
-								if (!(pos < length))
-									Helpers.Log("Blocks(): end of packet in 1-byte variable field count for " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
-								fieldSize = (ushort)Data[pos];
-								pos++;
-							}
-							else // (fieldMap.Count == 2)
-							{
-								// Field length described with two bytes
-								if (!(pos + 1 < length))
-									Helpers.Log("Blocks(): end of packet in 2-byte variable field count for " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
-								fieldSize = (ushort)(Data[pos] + Data[pos + 1] * 256);
-								pos += 2;
-							}
-
-							if (fieldSize != 0)
-							{
-								if (!(pos + fieldSize <= length))
-									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte variable field " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
-								// Create a new field to add to the fields for this block
-								field = new Field();
-								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
-								field.Layout = fieldMap;
-
-								block.Fields.Add(field);
-
-								pos += fieldSize;
-							}
-						}
-						else if (fieldMap.Type == FieldType.Fixed)
-						{
-							fieldSize = fieldMap.Count;
-
-							if (!(pos + fieldSize <= length))
-								Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte fixed field " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
-							// Create a new field to add to the fields for this block
-							field = new Field();
-							field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
-							field.Layout = fieldMap;
-
-							block.Fields.Add(field);
-
-							pos += fieldSize;
-						}
-						else
-						{
-							for (int j = 0; j < fieldMap.Count; ++j)
-							{
-								fieldSize = (int)Protocol.TypeSizes[fieldMap.Type];
-
-								if (!(pos + fieldSize <= length))
-									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte " + fieldMap.Type + " field " + packet.Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
-								// Create a new field to add to the fields for this block
-								field = new Field();
-								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
-								field.Layout = fieldMap;
-
-								block.Fields.Add(field);
-
-								pos += fieldSize;
-							}
-						}
-					}
-
-					blocks.Add(block);
-				}
-			}
-
-			Done:
-				return blocks;
-		}
-
-		// GetField: same as Packet.GetField
-		private static object GetField(byte[] byteArray, int pos, FieldType type, int fieldSize)
-		{
-			switch (type)
-			{
-				case FieldType.U8:
-					return byteArray[pos];
-				case FieldType.U16:
-				case FieldType.IPPORT:
-					return (ushort)((byteArray[pos] << 8) + byteArray[pos + 1]);
-				case FieldType.U32:
-					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
-				case FieldType.U64:
-					return new U64(byteArray, pos);
-				case FieldType.S8:
-					return (sbyte)byteArray[pos];
-				case FieldType.S16:
-					return (short)(byteArray[pos] + (byteArray[pos + 1] << 8));
-				case FieldType.S32:
-					return byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24);
-				case FieldType.S64:
-					return (long)(byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24) +
-						(byteArray[pos + 4] << 32) + (byteArray[pos + 5] << 40) +
-						(byteArray[pos + 6] << 48) + (byteArray[pos + 7] << 56));
-				case FieldType.F32:
-					return BitConverter.ToSingle(byteArray, pos);
-				case FieldType.F64:
-					return BitConverter.ToDouble(byteArray, pos);
-				case FieldType.LLUUID:
-					return new LLUUID(byteArray, pos);
-				case FieldType.BOOL:
-					return (byteArray[pos] != 0) ? (bool)true : (bool)false;
-				case FieldType.LLVector3:
-					return new LLVector3(byteArray, pos);
-				case FieldType.LLVector3d:
-					return new LLVector3d(byteArray, pos);
-				case FieldType.LLVector4:
-					return new LLVector4(byteArray, pos);
-				case FieldType.LLQuaternion:
-					return new LLQuaternion(byteArray, pos);
-				case FieldType.IPADDR:
-					uint address = (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
-					return new IPAddress(address);
-				case FieldType.Variable:
-				case FieldType.Fixed:
-					byte[] bytes = new byte[fieldSize];
-					Array.Copy(byteArray, pos, bytes, 0, fieldSize);
-					return bytes;
-			}
-
-			return null;
 		}
 	}
 }

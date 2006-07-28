@@ -461,7 +461,7 @@ public class Analyst {
 	private static void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction) {
 		if (logGrep != null) {
 			bool match = false;
-			foreach (Block block in Kludges.Blocks(packet))
+			foreach (Block block in packet.Blocks())
 				foreach (Field field in block.Fields) {
 					string value;
 					if (field.Layout.Type == FieldType.Variable)
