@@ -3,14 +3,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife", "libsecondl
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlRpcCS", "XmlRpcCS\XmlRpcCS.csproj", "{410F8877-F1E1-4696-ABC7-4339189EECC3}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nii.JSON", "JSONlib\Nii.JSON.csproj", "{C40EB7FD-F957-4659-A184-A1C28908D748}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -45,14 +37,6 @@ Global
 		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Debug.Build.0 = Debug|.NET
 		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Release.ActiveCfg = Release|.NET
 		{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}.Release.Build.0 = Release|.NET
-		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.ActiveCfg = Debug|.NET
-		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Debug.Build.0 = Debug|.NET
-		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.ActiveCfg = Release|.NET
-		{410F8877-F1E1-4696-ABC7-4339189EECC3}.Release.Build.0 = Release|.NET
-		{C40EB7FD-F957-4659-A184-A1C28908D748}.Debug.ActiveCfg = Debug|.NET
-		{C40EB7FD-F957-4659-A184-A1C28908D748}.Debug.Build.0 = Debug|.NET
-		{C40EB7FD-F957-4659-A184-A1C28908D748}.Release.ActiveCfg = Release|.NET
-		{C40EB7FD-F957-4659-A184-A1C28908D748}.Release.Build.0 = Release|.NET
 		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.ActiveCfg = Debug|.NET
 		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Debug.Build.0 = Debug|.NET
 		{F6258A68-C624-46A0-BA73-B55D21BB0A3B}.Release.ActiveCfg = Release|.NET
