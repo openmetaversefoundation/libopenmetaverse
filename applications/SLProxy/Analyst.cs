@@ -29,6 +29,7 @@
 
 using SLProxy;
 using libsecondlife;
+using Nwc.XmlRpc;
 
 using System;
 using System.Collections;
@@ -56,13 +57,29 @@ public class Analyst {
 		proxy.AddDelegate("ChatFromViewer", Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
 		proxy.AddDelegate("ChatFromViewer", Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
 
-		// if requested, all logging delegates for all packets
+		//  handle command line arguments
 		foreach (string arg in args)
 			if (arg == "--log-all")
 				LogAll();
+			else if (arg == "--log-login") {
+				proxy.SetLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
+				proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
+			}
 
 		// start the proxy
 		proxy.Start();
+	}
+
+	// LoginRequest: dump a login request to the console
+	private static void LoginRequest(XmlRpcRequest request) {
+		Console.WriteLine("==> Login Request");
+		Console.WriteLine(request);
+	}
+
+	// Loginresponse: dump a login response to the console
+	private static void LoginResponse(XmlRpcResponse response) {
+		Console.WriteLine("<== Login Response");
+		Console.WriteLine(response);
 	}
 
 	// ChatFromViewerIn: incoming ChatFromViewer delegate; shouldn't be possible, but just in case...

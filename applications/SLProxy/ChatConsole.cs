@@ -29,6 +29,7 @@
 
 using SLProxy;
 using libsecondlife;
+using Nwc.XmlRpc;
 
 using System;
 using System.Collections;
@@ -38,7 +39,8 @@ using System.Threading;
 public class ChatConsole {
 	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
-	private static SessionInformation sessionInformation;
+	private static LLUUID agentID;
+	private static LLUUID sessionID;
 
 	public static void Main(string[] args) {
 		// configure the proxy
@@ -47,7 +49,7 @@ public class ChatConsole {
 		proxy = new Proxy(proxyConfig);
 
 		// set a delegate for when the client logs in
-		proxy.SetLoginDelegate(new LoginDelegate(Login));
+		proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(Login));
 
 		// add a delegate for incoming chat
 		proxy.AddDelegate("ChatFromSimulator", Direction.Incoming, new PacketDelegate(ChatFromSimulator));
@@ -56,12 +58,16 @@ public class ChatConsole {
 		proxy.Start();
 	}
 
-	private static void Login(SessionInformation session) {
-		// remember our session information
-		sessionInformation = session;
+	private static void Login(XmlRpcResponse response) {
+		Hashtable values = (Hashtable)response.Value;
+		if (values.Contains("agent_id") && values.Contains("session_id")) {
+			// remember our agentID and sessionID
+			agentID = new LLUUID((string)values["agent_id"]);
+			sessionID = new LLUUID((string)values["session_id"]);
 
-		// start a new thread that reads lines from the console
-		(new Thread(new ThreadStart(ReadFromConsole))).Start();
+			// start a new thread that reads lines from the console
+			(new Thread(new ThreadStart(ReadFromConsole))).Start();
+		}
 	}
 
 	private static void ReadFromConsole() {
@@ -79,8 +85,8 @@ public class ChatConsole {
 			fields["Type"] = (byte)1;
 			blocks[fields] = "ChatData";
 			fields = new Hashtable();
-			fields["AgentID"] = sessionInformation.agentID;
-			fields["SessionID"] = sessionInformation.sessionID;
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
 			blocks[fields] = "AgentData";
 			Packet chatPacket = PacketBuilder.BuildPacket("ChatFromViewer", protocolManager, blocks, Helpers.MSG_RELIABLE);
 
@@ -93,9 +99,9 @@ public class ChatConsole {
 		// deconstruct the packet
 		Hashtable blocks = PacketUtility.Unbuild(packet);
 		string message = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "Message"));
-		string name = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "Name"));
+		string name = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "FromName"));
 		byte audible = (byte)PacketUtility.GetField(blocks, "ChatData", "Audible");
-		byte type = (byte)PacketUtility.GetField(blocks, "ChatData", "Type");
+		byte type = (byte)PacketUtility.GetField(blocks, "ChatData", "ChatType");
 
 		// if this was a normal, audible message, write it to the console
 		if (audible != 0 && (type == 0 || type == 1 || type == 2))

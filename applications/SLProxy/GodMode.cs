@@ -31,11 +31,13 @@ using System.Net;
 using System.Collections;
 using SLProxy;
 using libsecondlife;
+using Nwc.XmlRpc;
 
 public class GodMode {
 	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
-	private static SessionInformation sessionInformation;
+	private static LLUUID agentID;
+	private static LLUUID sessionID;
 
 	public static void Main(string[] args) {
 		protocolManager = new ProtocolManager("keywords.txt", "protocol.txt");
@@ -43,7 +45,7 @@ public class GodMode {
 		proxy = new Proxy(proxyConfig);
 
 		// register login delegate
-		proxy.SetLoginDelegate(new LoginDelegate(Login));
+		proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(Login));
 
 		// register delegates for all packets
 		proxy.AddDelegate("ChatFromViewer", Direction.Outgoing, new PacketDelegate(ChatFromViewer));
@@ -51,8 +53,12 @@ public class GodMode {
 		proxy.Start();
 	}
 
-	private static void Login(SessionInformation session) {
-		sessionInformation = session;
+	private static void Login(XmlRpcResponse response) {
+		Hashtable values = (Hashtable)response.Value;
+		if (values.Contains("agent_id") && values.Contains("session_id")) {
+			agentID = new LLUUID((string)values["agent_id"]);
+			sessionID = new LLUUID((string)values["session_id"]);
+		}
 	}
 
 	// delegate for movement packet: log the packet and return it unharmed
@@ -73,8 +79,8 @@ public class GodMode {
 		blocks[fields] = "GrantData";
 
 		fields = new Hashtable();
-		fields["AgentID"] = sessionInformation.agentID;
-		fields["SessionID"] = sessionInformation.sessionID;
+		fields["AgentID"] = agentID;
+		fields["SessionID"] = sessionID;
 		blocks[fields] = "AgentData";
 
 		Packet godPacket = PacketBuilder.BuildPacket("GrantGodlikePowers", 

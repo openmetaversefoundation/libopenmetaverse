@@ -92,6 +92,9 @@ proxy to start out logging all packets as if you had typed `/log *'.
 This can be useful if you want to capture a complete dump of your
 session, including login.
 
+Analyst also accepts a --log-login command line switch, which causes
+the XML-RPC login request and response to dumped to the console.
+
 2. ChatConsole
 --------------
 
@@ -151,14 +154,17 @@ constructor takes an instance of ProxyConfig.
 - - - - - - - - - -
 
 You may specify that SLProxy should call a delegate method in your
-application when the user successfully logs into Second Life:
+application when the user requests login or the server responds.
 
-	delegate void LoginDelegate(SessionInformation session)
-	void SetLoginDelegate(LoginDelegate loginDelegate)
+	delegate void XmlRpcRequestDelegate(XmlRpcRequest request)
+	delegate void XmlRpcResponseDelegate(XmlRpcResponse response)
+	void SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate)
+	void SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate)
 
-LoginDelegate methods are passed a SessionInformation object, which
-contains the agentID and sessionID for the current session.  These
-values are required when injecting certain kinds of packets.
+A login response delegate, in particular, is useful for retrieving the
+agent_id and session_id, which are required when injecting certain
+types of packets.  See ChatConsole.cs for an example of how these can
+be retrieved.
 
 Note that all delegates must terminate (not go into an infinite loop),
 and must be thread-safe.

@@ -175,9 +175,14 @@ namespace SLProxy {
 			Log("proxy ready at http://" + displayAddress + ":" + endPoint.Port + "/");
 		}
 
-		// SetLoginDelegate: specify a callback loginDelegate that will be called when the client logs in
-		public void SetLoginDelegate(LoginDelegate loginDelegate) {
-			this.loginDelegate = loginDelegate;
+		// SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
+		public void SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate) {
+			this.loginRequestDelegate = loginRequestDelegate;
+		}
+
+		// SetLoginResponseDelegate: specify a callback loginResponseDelegate that will be called when the server responds to login
+		public void SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate) {
+			this.loginResponseDelegate = loginResponseDelegate;
 		}
 
 		// AddDelegate: add callback packetDelegate for packets of type packetName going direction
@@ -299,6 +304,15 @@ namespace SLProxy {
 			// convert the body into an XML-RPC request
 			XmlRpcRequest request = (XmlRpcRequest)XmlRpcRequestDeserializer.Singleton.Deserialize(new String(content));
 
+			// call the loginRequestDelegate
+			if (loginRequestDelegate != null)
+				try {
+					loginRequestDelegate(request);
+				} catch (Exception e) {
+					Log("exception in login request deligate: " + e.Message);
+					Log(e.StackTrace);
+				}
+
 			// add our userAgent and author to the request
 			Hashtable requestParams = new Hashtable();
 			if (proxyConfig.userAgent != null)
@@ -323,17 +337,12 @@ namespace SLProxy {
 			// start a new proxy session
 			Reset();
 
-			// call the loginDelegate
-			if (loginDelegate != null) {
-				SessionInformation session = new SessionInformation();
-				if (responseData.Contains("agent_id"))
-					session.agentID = new LLUUID((string)responseData["agent_id"]);
-				if (responseData.Contains("session_id"))
-					session.sessionID = new LLUUID((string)responseData["session_id"]);
+			// call the loginResponseDelegate
+			if (loginResponseDelegate != null) {
 				try {
-					loginDelegate(session);
+					loginResponseDelegate(response);
 				} catch (Exception e) {
-					Log("exception in login delegate: " + e.Message);
+					Log("exception in login response delegate: " + e.Message);
 					Log(e.StackTrace);
 				}
 			}
@@ -353,7 +362,8 @@ namespace SLProxy {
 		private Hashtable proxyEndPoints = new Hashtable();
 		private Hashtable simProxies = new Hashtable();
 		private Hashtable proxyHandlers = new Hashtable();
-		private LoginDelegate loginDelegate = null;
+		private XmlRpcRequestDelegate loginRequestDelegate = null;
+		private XmlRpcResponseDelegate loginResponseDelegate = null;
 		private Hashtable incomingDelegates = new Hashtable();
 		private Hashtable outgoingDelegates = new Hashtable();
 		private ArrayList queuedIncomingInjections = new ArrayList();
@@ -810,7 +820,7 @@ namespace SLProxy {
 						foreach (Hashtable fields in blocks.Keys) {
 							ushort id = (ushort)((uint)fields["ID"]);
 							if (acks.Contains(id)) {
-								acks.Remove(id);
+								acks.Remove(id); // FIXME: we could see this packet again
 								changed = true;
 							} else
 								newBlocks.Add(fields, blocks[fields]);
@@ -835,6 +845,7 @@ namespace SLProxy {
 								--newData[newData.Length - 1];
 								packet.Data = newData;
 								--ackCount;
+								acks.Remove(ackID); // FIXME: we could see this packet again
 							} else
 								++i;
 						}
@@ -1027,17 +1038,14 @@ namespace SLProxy {
 		}
 	}
 
-	// LoginDelegate: specifies a delegate to be called when the client logs in
-	public delegate void LoginDelegate(SessionInformation session);
+	// XmlRpcRequestDelegate: specifies a delegate to be called for XML-RPC requests
+	public delegate void XmlRpcRequestDelegate(XmlRpcRequest request);
+
+	// XmlRpcResponseDelegate: specifies a delegate to be called for XML-RPC responses
+	public delegate void XmlRpcResponseDelegate(XmlRpcResponse response);
 
 	// PacketDelegate: specifies a delegate to be called when a packet passes through the proxy
 	public delegate Packet PacketDelegate(Packet packet, IPEndPoint endPoint);
-
-	// SessionInformation: contains information about a Second Life session
-	public class SessionInformation {
-		public LLUUID agentID;
-		public LLUUID sessionID;
-	}
 
 	// Direction: specifies whether a packet is going to the client (Incoming) or to a sim (Outgoing)
 	public enum Direction {
