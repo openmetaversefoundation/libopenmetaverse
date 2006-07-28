@@ -19,14 +19,6 @@ namespace Nwc.XmlRpc
 	IsFault = false;
       }
 
-    /// <summary>Constructor for a fault.</summary>
-    /// <param name="code"><c>int</c> the numeric faultCode value.</param>
-    /// <param name="message"><c>String</c> the faultString value.</param>
-    public XmlRpcResponse(int code, String message) : this()
-      {
-	SetFault(code,message);
-      }
-
     /// <summary>The data value of the response, may be fault data.</summary>
     public Object Value
       {

@@ -40,16 +40,6 @@ namespace Nwc.XmlRpc
 	_params = new ArrayList();
       }
 
-    /// <summary>Instantiate an <c>XmlRpcRequest</c> for a specified method and parameters.</summary>
-    /// <param name="methodName"><c>String</c> designating the <i>object.method</i> on the server the request
-    /// should be directed to.</param>
-    /// <param name="parameters"><c>ArrayList</c> of XML-RPC type parameters to invoke the request with.</param>
-    public XmlRpcRequest(String methodName, IList parameters)
-      {
-	MethodName = methodName;
-	_params = parameters;
-      }
-
     /// <summary><c>ArrayList</c> conntaining the parameters for the request.</summary>
     public virtual IList Params
       {
@@ -61,46 +51,6 @@ namespace Nwc.XmlRpc
       {
 	get { return _methodName; }
 	set { _methodName = value; }
-      }
-
-    /// <summary><c>String</c> object name portion of the method name.</summary>
-    public String MethodNameObject
-      {
-	get {
-	  int index = MethodName.IndexOf(".");
-
-	  if (index == -1)
-	    return MethodName;
-
-	  return MethodName.Substring(0,index);
-	}
-      }
-
-    /// <summary><c>String</c> method name portion of the object.method name.</summary>
-    public String MethodNameMethod
-      {
-	get {
-	  int index = MethodName.IndexOf(".");
-
-	  if (index == -1)
-	    return MethodName;
-
-	  return MethodName.Substring(index + 1, MethodName.Length - index - 1);
-	}
-      }
-
-    /// <summary>Invoke this request on the server.</summary>
-    /// <param name="url"><c>String</c> The url of the XML-RPC server.</param>
-    /// <returns><c>Object</c> The value returned from the method invocation on the server.</returns>
-    /// <exception cref="XmlRpcException">If an exception generated on the server side.</exception>
-    public Object Invoke(String url)
-      {
-	XmlRpcResponse res = Send(url);
-
-	if (res.IsFault)
-	  throw new XmlRpcException(res.FaultCode, res.FaultString);
-	
-	return res.Value;
       }
 
     /// <summary>Send the request to the server.</summary>

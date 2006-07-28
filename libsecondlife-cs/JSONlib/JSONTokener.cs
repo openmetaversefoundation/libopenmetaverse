@@ -98,22 +98,6 @@ namespace Nii.JSON
         }
 
         /// <summary>
-        /// Consume the next character, and check that it matches a specified character
-        /// </summary>
-        /// <param name="c">The character to match.</param>
-        /// <returns>The character.</returns>
-        public char next(char c)
-        {
-            char n = next();
-            if (n != c)
-            {
-                string msg = "Expected '" + c + "' and instead saw '" + n + "'.";
-                throw (new Exception(msg));
-            }
-            return n;
-        }
-
-        /// <summary>
         /// Get the next n characters.
         /// </summary>
         /// <param name="n">The number of characters to take.</param>
@@ -243,55 +227,6 @@ namespace Nii.JSON
         }
 
         /// <summary>
-        /// Get the text up but not including the specified character or the
-        /// end of line, whichever comes first.
-        /// </summary>
-        /// <param name="d">A delimiter character.</param>
-        /// <returns>A string.</returns>
-        public string nextTo(char d)
-        {
-            StringBuilder sb = new StringBuilder();
-            while (true)
-            {
-                char c = next();
-                if (c == d || c == (char)0 || c == '\n' || c == '\r')
-                {
-                    if (c != (char)0)
-                    {
-                        back();
-                    }
-                    return sb.ToString().Trim();
-                }
-                sb.Append(c);
-            }
-        }
-
-        /// <summary>
-        ///  Get the text up but not including one of the specified delimeter
-        ///  characters or the end of line, which ever comes first.
-        /// </summary>
-        /// <param name="delimiters">A set of delimiter characters.</param>
-        /// <returns>A string, trimmed.</returns>
-        public string nextTo(string delimiters)
-        {
-            char c;
-            StringBuilder sb = new StringBuilder();
-            while (true)
-            {
-                c = next();
-                if ((delimiters.IndexOf(c) >= 0) || (c == (char)0 ) || (c == '\n') || (c == '\r'))
-                {
-                    if (c != (char)0)
-                    {
-                        back();
-                    }
-                    return sb.ToString().Trim();
-                }
-                sb.Append(c);
-            }
-        }
-
-        /// <summary>
         /// Get the next value as object. The value can be a Boolean, Double, Integer,
         /// JSONArray, JSONObject, or String, or the JSONObject.NULL object.
         /// </summary>
@@ -343,17 +278,15 @@ namespace Nii.JSON
                 {
                     return Convert.ToInt32(s);
                 }
-                catch (Exception e)
+                catch
                 {
-                    string msg = e.Message;
                 }
                 try
                 {
                     return Convert.ToDouble(s, NumberFormatInfo.InvariantInfo);
                 }
-                catch (Exception e)
+                catch
                 {
-                    string msg = e.Message;
                 }
             }
             if (s == "")
@@ -361,62 +294,6 @@ namespace Nii.JSON
                 throw (new Exception("Missing value"));
             }
             return s;
-        }
-
-        /// <summary>
-        /// Skip characters until the next character is the requested character.
-        /// If the requested character is not found, no characters are skipped.
-        /// </summary>
-        /// <param name="to">A character to skip to.</param>
-        /// <returns>
-        /// The requested character, or zero if the requested character is not found.
-        /// </returns>
-        public char skipTo(char to)
-        {
-            char c;
-            int i = myIndex;
-            do
-            {
-                c = next();
-                if (c == (char)0)
-                {
-                    myIndex = i;
-                    return c;
-                }
-            }while (c != to);
-
-            back();
-            return c;
-        }
-
-        /// <summary>
-        /// Skip characters until past the requested string.
-        /// If it is not found, we are left at the end of the source.
-        /// </summary>
-        /// <param name="to">A string to skip past.</param>
-        public void skipPast(string to)
-        {
-            myIndex = mySource.IndexOf(to, myIndex);
-            if (myIndex < 0)
-            {
-                myIndex = mySource.Length;
-            }
-            else
-            {
-                myIndex += to.Length;
-            }
-        }
-
-        // TODO implement exception SyntaxError
-
-
-        /// <summary>
-        /// Make a printable string of this JSONTokener.
-        /// </summary>
-        /// <returns>" at character [myIndex] of [mySource]"</returns>
-        public override string ToString()
-        {
-            return " at charachter " + myIndex + " of " + mySource;
         }
 
         /// <summary>

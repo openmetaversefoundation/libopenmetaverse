@@ -31,7 +31,6 @@ namespace Nwc.XmlRpc
     /// <summary>Protected reference to last name field.</summary>
     protected String _name;
 
-
     /// <summary>Basic constructor.</summary>
     public XmlRpcDeserializer()
       {
@@ -175,20 +174,6 @@ namespace Nwc.XmlRpc
 	_container = null;
 	_containerStack = new Stack();
       }
-
-#if __MONO__
-    private DateTime DateParse(String str)
-      {
-	int year = Int32.Parse(str.Substring(0,4));
-	int month = Int32.Parse(str.Substring(4,2));
-	int day = Int32.Parse(str.Substring(6,2));
-	int hour = Int32.Parse(str.Substring(9,2));
-	int min = Int32.Parse(str.Substring(12,2));
-	int sec = Int32.Parse(str.Substring(15,2));
-	return new DateTime(year,month,day,hour,min,sec);
-      }
-#endif
-
   }
 }
 
