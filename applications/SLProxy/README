@@ -29,6 +29,30 @@ proxy on a different machine or port, start the proxy with the
 
 SLProxy can only handle one client using a proxy at a time.
 
+BUILDING
+========
+
+To build SLProxy, you must check out the entire libsecondlife trunk
+with subversion:
+
+  svn co svn://svn.gna.org/svn/libsecondlife/trunk libsecondlife
+
+The libsecondlife-cs project must be built first; see
+libsecondlife-cs/README for instructions.  Building SLProxy should be
+straightforward with Microsoft Visual Studio.  If you're using Mono,
+you can build the solution with make:
+
+  prj2make SLProxy.sln
+  make
+
+The SLProxy library and its example applications will be built in
+bin/Debug.  In order to run the example applications, you must first
+add the libsecondlife-cs build directory to your MONO_PATH environment
+variable.  For example, if your libsecondlife-cs directory is
+~/libsecondlife/libsecondlife-cs and your shell is bash, you can type:
+
+  export MONO_PATH=$MONO_PATH:~/libsecondlife/libsecondlife-cs/bin/Debug/
+
 INCLUDED APPLICATIONS
 =====================
 
