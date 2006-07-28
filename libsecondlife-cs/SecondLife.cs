@@ -232,6 +232,14 @@ namespace libsecondlife
 					}
 				}
 
+				// HACK: Fix truncated zerocoded messages
+				for (uint j = zerolen; j < zerolen + 16; j++)
+				{
+					dest[zerolen] = 0;
+				}
+				zerolen += 16;
+
+				// copy appended ACKs
 				for (; i < srclen; i++)
 				{
 					dest[zerolen++] = src[i];
@@ -241,13 +249,6 @@ namespace libsecondlife
 			{
 				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
-
-			// HACK: Fix truncated zerocoded messages
-			for (uint i = zerolen; i < zerolen + 16; i++)
-			{
-				dest[zerolen] = 0;
-			}
-			zerolen += 16;
 
 			return (int)zerolen;
 		}
@@ -315,6 +316,7 @@ namespace libsecondlife
 				dest[zerolen++] = (byte)zerocount;
 			}
 
+			// copy appended ACKs
 			for (; i < srclen; i++)
 			{
 				dest[zerolen++] = src[i];
