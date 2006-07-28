@@ -235,7 +235,7 @@ namespace libsecondlife
 				// HACK: Fix truncated zerocoded messages
 				for (uint j = zerolen; j < zerolen + 16; j++)
 				{
-					dest[zerolen] = 0;
+					dest[j] = 0;
 				}
 				zerolen += 16;
 
