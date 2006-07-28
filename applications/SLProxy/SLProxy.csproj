@@ -84,11 +84,6 @@
                     AssemblyName = "libsecondlife"
                     HintPath = "..\..\libsecondlife-cs\bin\Debug\libsecondlife.dll"
                 />
-                <Reference
-                    Name = "XmlRpcCS"
-                    AssemblyName = "XmlRpcCS"
-                    HintPath = "..\..\libsecondlife-cs\bin\Debug\XmlRpcCS.dll"
-                />
             </References>
         </Build>
         <Files>
