@@ -43,6 +43,8 @@ public class Analyst {
 	private static Hashtable loggedPackets = new Hashtable();
 	private static string logGrep = null;
 	private static Hashtable modifiedPackets = new Hashtable();
+	private static LLUUID agentID;
+	private static bool logLogin = false;
 
 	public static void Main(string[] args) {
 		// configure the proxy
@@ -53,6 +55,10 @@ public class Analyst {
 		// build the table of /command delegates
 		InitializeCommandDelegates();
 
+		// add delegates for login
+		proxy.SetLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
+		proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
+
 		// add a delegate for outgoing chat
 		proxy.AddDelegate("ChatFromViewer", Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
 		proxy.AddDelegate("ChatFromViewer", Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
@@ -61,10 +67,8 @@ public class Analyst {
 		foreach (string arg in args)
 			if (arg == "--log-all")
 				LogAll();
-			else if (arg == "--log-login") {
-				proxy.SetLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
-				proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
-			}
+			else if (arg == "--log-login")
+				logLogin = true;
 
 		// start the proxy
 		proxy.Start();
@@ -72,14 +76,22 @@ public class Analyst {
 
 	// LoginRequest: dump a login request to the console
 	private static void LoginRequest(XmlRpcRequest request) {
-		Console.WriteLine("==> Login Request");
-		Console.WriteLine(request);
+		if (logLogin) {
+			Console.WriteLine("==> Login Request");
+			Console.WriteLine(request);
+		}
 	}
 
 	// Loginresponse: dump a login response to the console
 	private static void LoginResponse(XmlRpcResponse response) {
-		Console.WriteLine("<== Login Response");
-		Console.WriteLine(response);
+		Hashtable values = (Hashtable)response.Value;
+		if (values.Contains("agent_id"))
+			agentID = new LLUUID((string)values["agent_id"]);
+
+		if (logLogin) {
+			Console.WriteLine("<== Login Response");
+			Console.WriteLine(response);
+		}
 	}
 
 	// ChatFromViewerIn: incoming ChatFromViewer delegate; shouldn't be possible, but just in case...
@@ -250,12 +262,14 @@ public class Analyst {
 		Hashtable blocks = new Hashtable();
 		Hashtable fields;
 		fields = new Hashtable();
-		fields["ID"] = new LLUUID(true);//sessionInformation.agentID;
-		fields["Message"] = message;
-		fields["Name"] = "Analyst";
-		fields["Audible"] = (byte)1;
-		fields["Type"] = (byte)1;
+		fields["FromName"] = "Analyst";
+		fields["SourceID"] = new LLUUID(true);
+		fields["OwnerID"] = agentID;
 		fields["SourceType"] = (byte)2;
+		fields["ChatType"] = (byte)1;
+		fields["Audible"] = (byte)1;
+		fields["Position"] = new LLVector3(0, 0, 0);
+		fields["Message"] = message;
 		blocks[fields] = "ChatData";
 		Packet packet = PacketBuilder.BuildPacket("ChatFromSimulator", protocolManager, blocks, Helpers.MSG_RELIABLE);
 		proxy.InjectPacket(packet, Direction.Incoming);
