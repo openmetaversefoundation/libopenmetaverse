@@ -607,7 +607,29 @@ namespace SLChat
 			winIM IM = new winIM();
 			IM.Show();
 		}
-		
+        public delegate void SetStringDel(string s);
+        void SetToolStripMenuItemText(string v)
+        {
+            if (!InvokeRequired)
+            {
+                loginToolStripMenuItem.Text = v;
+            }
+            else
+            {
+                Invoke(new SetStringDel(SetToolStripMenuItemText), new object[] { v });
+            }
+        }
+        void AddToHistory(string v)
+        {
+            if (!InvokeRequired)
+            {
+                rChatHistory.Text += v;
+            }
+            else
+            {
+                Invoke(new SetStringDel(AddToHistory), new object[] { v });
+            }
+        }
 		public void ReturnData(string data, int type, string extra1, string extra2)
 		{
 			//This is how we get data back from our NetCom.cs file
@@ -618,17 +640,17 @@ namespace SLChat
 				//Reply Type: Login
 				if(extra1!="error")
 				{
-					loginToolStripMenuItem.Text = "Logout";
+                    SetToolStripMenuItemText("Logout");
 					//string loginReply = Login(firstname, lastname, password);
 					//string loginReply = "OMG WHATS: ON YUR FACE?! Yes yes yes cabam shamzaameiawml" + newline;
-					rChatHistory.Text += data + newline;
+					AddToHistory(data + newline);
 					//ChatEffects(loginReply,1);
 					//string text2 = "Bob Smith: AHWIWEAM W!";
 					//rChatHistory.Text += text2 + newline;
 					//ChatEffects(18,loginReply.Length,1);
 					loggedin = true;
 				}else if(extra1=="error"){
-					rChatHistory.Text += data + newline;
+                    AddToHistory(data + newline);
 					loggedin = false;
 				}
 			}else if(type==2){

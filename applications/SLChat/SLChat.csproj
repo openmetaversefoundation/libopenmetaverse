@@ -24,6 +24,10 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="libsecondlife, Version=0.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\libsecondlife-cs\bin\Debug\libsecondlife.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -33,10 +37,6 @@
       <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\XmlRpcCS.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="libsecondlife">
-      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\libsecondlife.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="Inventory">
       <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\Inventory\Inventory\bin\Debug\Inventory.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -44,12 +44,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="winLogin.cs" />
-    <Compile Include="winChat.cs" />
+    <Compile Include="winLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="winChat.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="NetCom.cs" />
-    <Compile Include="winIM.cs" />
+    <Compile Include="winIM.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="winIM.Designer.cs" />
-    <Compile Include="winInventory.cs" />
+    <Compile Include="winInventory.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="winInventory.Designer.cs" />
     <EmbeddedResource Include="winLogin.resx">
       <DependentUpon>winLogin.cs</DependentUpon>
@@ -66,7 +74,9 @@
     <Compile Include="winAbout.Designer.cs">
       <DependentUpon>winAbout.cs</DependentUpon>
     </Compile>
-    <Compile Include="winAbout.cs" />
+    <Compile Include="winAbout.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <EmbeddedResource Include="winAbout.resx">
       <DependentUpon>winAbout.cs</DependentUpon>
     </EmbeddedResource>
