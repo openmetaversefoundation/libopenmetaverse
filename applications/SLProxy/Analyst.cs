@@ -142,6 +142,7 @@ public class Analyst {
 		commandDelegates["/set"] = new CommandDelegate(CmdSet);
 		commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
 		commandDelegates["/inject"] = new CommandDelegate(CmdInject);
+		commandDelegates["/in"] = new CommandDelegate(CmdInject);
 	}
 
 	// CmdLog: handle a /log command
@@ -267,14 +268,9 @@ public class Analyst {
 		if (words.Length < 2)
 			SayToUser("Usage: /inject <packet file> [value]");
 		else {
-			string value;
-			if (words.Length == 2)
-				value = "";
-			else {
-				string[] valueArray = new string[words.Length - 2];
-				Array.Copy(words, 2, valueArray, 0, words.Length - 1);
-				value = String.Join(" ", valueArray);
-			}
+			string[] valueArray = new string[words.Length - 2];
+			Array.Copy(words, 2, valueArray, 0, words.Length - 2);
+			string value = String.Join(" ", valueArray);
 
 			FileStream fs = null;
 			StreamReader sr = null;

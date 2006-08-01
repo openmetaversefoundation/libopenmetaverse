@@ -112,9 +112,11 @@ chat:
 
   Inject the packet described by <packet file>.packet in the working
   directory.  The [value] is optional and may be required by some
-  packet files.  The syntax of a packet file is described in section
-  2.1.  SLProxy comes with god.packet, an example packet file that
-  enables hacked God mode, which can be used by typing `/inject god'.
+  packet files.  `/in' is an alias for `/inject'.  The syntax of a
+  packet file is described in section 2.1.  SLProxy comes with two
+  example packet files: god.packet allows you to enable hacked god
+  mode by typing `/inject god', and whisper.packet allows you to
+  whisper by typing `/inject whisper <message>'.
 
 These commands will not be forwarded to the server, so other people
 won't hear you say them.
@@ -131,7 +133,8 @@ the XML-RPC login request and response to dumped to the console.
 - - - - - - - -
 
 A packet file describes a packet that can be injected with the /inject
-command.  See god.packet for a simple example.
+command.  Please refer to god.packet and whisper.packet (in the
+bin/Debug/ directory) as examples.
 
 The first line of a packet file must contain the word `in' or `out',
 specifying whether the packet is incoming or outgoing, respectively,
