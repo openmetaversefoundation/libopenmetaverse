@@ -33,6 +33,7 @@ using Nwc.XmlRpc;
 
 using System;
 using System.Collections;
+using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -44,6 +45,7 @@ public class Analyst {
 	private static string logGrep = null;
 	private static Hashtable modifiedPackets = new Hashtable();
 	private static LLUUID agentID;
+	private static LLUUID sessionID;
 	private static bool logLogin = false;
 
 	public static void Main(string[] args) {
@@ -87,6 +89,8 @@ public class Analyst {
 		Hashtable values = (Hashtable)response.Value;
 		if (values.Contains("agent_id"))
 			agentID = new LLUUID((string)values["agent_id"]);
+		if (values.Contains("session_id"))
+			sessionID = new LLUUID((string)values["session_id"]);
 
 		if (logLogin) {
 			Console.WriteLine("<== Login Response");
@@ -137,6 +141,7 @@ public class Analyst {
 		commandDelegates["/grep"] = new CommandDelegate(CmdGrep);
 		commandDelegates["/set"] = new CommandDelegate(CmdSet);
 		commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
+		commandDelegates["/inject"] = new CommandDelegate(CmdInject);
 	}
 
 	// CmdLog: handle a /log command
@@ -255,6 +260,121 @@ public class Analyst {
 			SayToUser("stopped setting " + words[1] + "." + words[2] + "." + words[3]);
 		} else
 			SayToUser("Usage: /-set <packet name> <block> <field>");
+	}
+
+	// CmdInject: handle an /inject command
+	private static void CmdInject(string[] words) {
+		if (words.Length < 2)
+			SayToUser("Usage: /inject <packet file> [value]");
+		else {
+			string value;
+			if (words.Length == 2)
+				value = "";
+			else {
+				string[] valueArray = new string[words.Length - 2];
+				Array.Copy(words, 2, valueArray, 0, words.Length - 1);
+				value = String.Join(" ", valueArray);
+			}
+
+			FileStream fs = null;
+			StreamReader sr = null;
+			Direction direction = Direction.Incoming;
+			string name = null;
+			Hashtable blocks = new Hashtable();
+			string block = null;
+			Hashtable fields = new Hashtable();
+
+			try {
+				fs = File.OpenRead(words[1] + ".packet");
+				sr = new StreamReader(fs);
+
+				string line;
+				while ((line = sr.ReadLine()) != null) {
+					Match match;
+
+					if (name == null) {
+						match = (new Regex(@"^\s*(in|out)\s+(\w+)\s*$")).Match(line);
+						if (!match.Success) {
+							SayToUser("expecting direction and packet name, got: " + line);
+							return;
+						}
+
+						string lineDir = match.Groups[1].Captures[0].ToString();
+						string lineName = match.Groups[2].Captures[0].ToString();
+
+						if (lineDir == "in")
+							direction = Direction.Incoming;
+						else if (lineDir == "out")
+							direction = Direction.Outgoing;
+						else {
+							SayToUser("expecting 'in' or 'out', got: " + line);
+							return;
+						}
+
+						name = lineName;
+					} else {
+						match = (new Regex(@"^\s*\[(\w+)\]\s*$")).Match(line);
+						if (match.Success) {
+							if (block != null)
+								blocks[fields] = block;
+							block = match.Groups[1].Captures[0].ToString();
+							fields = new Hashtable();
+							continue;
+						}
+
+						if (block == null) {
+							SayToUser("expecting block name, got: " + line);
+							return;
+						}
+
+						match = (new Regex(@"^\s*(\w+)\s*=\s*(.*)$")).Match(line);
+						if (match.Success) {
+							string lineField = match.Groups[1].Captures[0].ToString();
+							string lineValue = match.Groups[2].Captures[0].ToString();
+
+							if (lineValue == "$Value")
+								fields[lineField] = MagicCast(name, block, lineField, value);
+							else if (lineValue == "$UUID")
+								fields[lineField] = new LLUUID(true);
+							else if (lineValue == "$AgentID")
+								fields[lineField] = agentID;
+							else if (lineValue == "$SessionID")
+								fields[lineField] = sessionID;
+							else
+								fields[lineField] = MagicCast(name, block, lineField, lineValue);
+
+							continue;
+						}
+
+						SayToUser("expecting block name or field, got: " + line);
+						return;
+					}
+				}
+
+				if (name == null) {
+					SayToUser("expecting direction and packet name, got EOF");
+					return;
+				}
+
+				if (block != null)
+					blocks[fields] = block;
+
+				byte flags = Helpers.MSG_RELIABLE;
+				if (protocolManager.Command(name).Encoded)
+					flags |= Helpers.MSG_ZEROCODED;
+				Packet packet = PacketBuilder.BuildPacket(name, protocolManager, blocks, flags);
+				proxy.InjectPacket(packet, direction);
+
+				SayToUser("injected " + words[1]);
+			} catch (Exception e) {
+				SayToUser("failed to inject " + words[1] + ": " + e.Message);
+			} finally {
+				if (fs != null)
+					fs.Close();
+				if (sr != null)
+					sr.Close();
+			}
+		}
 	}
 
 	// SayToUser: send a message to the user as in-world chat

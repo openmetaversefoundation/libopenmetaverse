@@ -108,6 +108,14 @@ chat:
 
   No fields will be modified.
 
+/inject <packet file> [value]
+
+  Inject the packet described by <packet file>.packet in the working
+  directory.  The [value] is optional and may be required by some
+  packet files.  The syntax of a packet file is described in section
+  2.1.  SLProxy comes with god.packet, an example packet file that
+  enables hacked God mode, which can be used by typing `/inject god'.
+
 These commands will not be forwarded to the server, so other people
 won't hear you say them.
 
@@ -119,6 +127,41 @@ session, including login.
 Analyst also accepts a --log-login command line switch, which causes
 the XML-RPC login request and response to dumped to the console.
 
+2.1 Packet files
+- - - - - - - -
+
+A packet file describes a packet that can be injected with the /inject
+command.  See god.packet for a simple example.
+
+The first line of a packet file must contain the word `in' or `out',
+specifying whether the packet is incoming or outgoing, respectively,
+followed by the name of the packet.
+
+The remainder of the file specifies the packet's blocks and fields.  A
+block is described by placing its name in square brackets
+(e.g. `[GrantData]').  Following the the line specifying the block's
+name, the block's fields and values are specified, separated by equal
+signs (e.g. `GodLevel = 255'), one per line.
+
+The value of a field can be a literal value (e.g. `255'), or one of
+the following special values:
+
+$Value
+
+  the [value] specified by the user
+
+$UUID
+
+  a random UUID
+
+$AgentID
+
+  the user's AgentID
+
+$SessionID
+
+  the user's SessionID
+
 2. ChatConsole
 --------------
 
@@ -127,15 +170,6 @@ how SLProxy applications can be written.  When connected to Second
 Life through ChatConsole, all in-world chat will be echoed to the
 console, and anything typed in the console will be echoed to the game as
 in-world chat.
-
-3. GodMode
-----------
-
-GodMode enables client-side God Mode privileges.  To activate God
-Mode, say /god via in-world chat.  The command will be dropped and
-nobody will hear you say it, but the God menu will become available.
-To see the God menu, you must also enable the debug menu by pressing
-Control+Alt+Shift+D (Command+Option+Shift+D on a Mac).
 
 PUBLIC INTERFACE
 ================
