@@ -1847,6 +1847,7 @@ sim -> dataserver
 		{	SimIP			IPADDR			}
 		{	SimPort			IPPORT			}
 		{	RegionHandle	U64				}
+		{	SeedCapability	Variable	2	}	// URL
 		{	SimAccess		U8				}
 		{	TeleportFlags 	U32				}
 	}
@@ -2387,10 +2388,14 @@ sim -> dataserver
 {
 	ObjectAdd Medium NotTrusted Zerocoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+		{	GroupID			LLUUID	}
+	}
+	{
 		ObjectData			Single
 		{	PCode			U8	}
-		{	SenderID		LLUUID	}
-		{	GroupID			LLUUID	}
 		{	Material		U8	}
 		{	AddFlags		U32	}	// see object_flags.h
 
@@ -2573,6 +2578,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -2589,6 +2595,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -2605,6 +2612,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -2621,6 +2629,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	ObjectLocalID	U32		}
 		{	UsePhysics		BOOL	}
 		{	IsTemporary		BOOL	}
@@ -2653,6 +2662,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData			Variable
@@ -2668,6 +2678,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -2682,6 +2693,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData			Variable
@@ -2712,6 +2724,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData			Variable
@@ -2820,6 +2833,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		HeaderData		Single
@@ -2840,6 +2854,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		ObjectData			Variable
@@ -2856,6 +2871,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -2870,6 +2886,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -2884,6 +2901,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3131,27 +3149,6 @@ sim -> dataserver
 	}
 }
 
-// Export selected objects
-{
-	ObjectExportReply Low NotTrusted Zerocoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-		{	RequestID		LLUUID  }
-	}
-	{
-		AssetData			Single
-		{	SLXML_ID		LLUUID	}
-		{	Collada_ID		LLUUID	}
-		{	ErrorCode		S32		}
-	}
-	{
-		TextureData			Variable
-		{	AssetID			LLUUID	}
-		{	AssetNum		S32		}
-	}
-}
-
 // Import an object
 {
 	ObjectImport Low NotTrusted Zerocoded
@@ -3165,16 +3162,6 @@ sim -> dataserver
 		{	FileID			LLUUID		1	}
 		{	ObjectName		Variable	1	}
 		{	Description		Variable	1	}
-	}
-}
-
-// Importing succeeded or failed
-{
-	ObjectImportReply Low NotTrusted Zerocoded
-	{
-		AssetData			Single
-		{	FileID			LLUUID		1	}
-		{	ErrorValue		S32				}
 	}
 }
 
@@ -4005,6 +3992,7 @@ sim -> dataserver
 		{	SimIP			IPADDR	}
 		{	SimPort			IPPORT	}
 		{	RegionHandle	U64	}
+		{	SeedCapability	Variable	2	}	// URL
 	}
 	{
 		Info			Single
@@ -6095,6 +6083,11 @@ sim -> dataserver
 {
 	SetScriptRunning	Low	 	NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		Script			Single
 		{	ObjectID	LLUUID	}
 		{	ItemID		LLUUID	}
@@ -6106,8 +6099,12 @@ sim -> dataserver
 {
 	ScriptReset Low NotTrusted Unencoded
 	{
-		Script				Single
+		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
+		Script				Single
 		{	ObjectID		LLUUID	}
 		{	ItemID			LLUUID	}
 	}
@@ -7172,9 +7169,13 @@ sim -> dataserver
 {
 	UpdateTaskInventory Low NotTrusted Zerocoded
 	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID  }
+		{	GroupID		LLUUID	}
+	}
+	{
 		UpdateData			Single
-		{	AgentID			LLUUID	}
-		{	GroupID			LLUUID	}
 		{	LocalID			U32	}
 		{	Key				U8	}
 	}
@@ -7207,9 +7208,13 @@ sim -> dataserver
 {
 	RemoveTaskInventory Low NotTrusted Zerocoded
 	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID  }
+		{	GroupID		LLUUID	}
+	}
+	{
 		InventoryData		Single
-		{	AgentID			LLUUID	}
-		{	GroupID			LLUUID	}
 		{	LocalID			U32	}
 		{	ItemID			LLUUID	}
 	}
@@ -7220,6 +7225,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID  }
 		{	GroupID		LLUUID	}
 		{	FolderID	LLUUID	}
 	}
@@ -7233,8 +7239,12 @@ sim -> dataserver
 {
 	RequestTaskInventory Low NotTrusted Unencoded
 	{
-		InventoryData		Single
+		AgentData	Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID  }
+	}
+	{
+		InventoryData		Single
 		{	LocalID		U32	}
 	}
 }
@@ -7484,9 +7494,13 @@ sim -> dataserver
 {
 	RezScript Low NotTrusted Zerocoded
 	{
-		UpdateBlock			Single
-		{  AgentID			LLUUID  }
+		AgentData		Single
+		{ AgentID		LLUUID	}
+		{ SessionID		LLUUID	}
 		{  GroupID			LLUUID	}
+	}
+	{
+		UpdateBlock			Single
 		{  ObjectLocalID	U32	}   // object id in world 
 		{  Enabled			BOOL	}	// is script rezzed in enabled?
 	}
@@ -8248,7 +8262,7 @@ sim -> dataserver
 
 // NameValuePair - if the specific task exists on simulator, add or replace this name value pair
 {
-	NameValuePair Low NotTrusted Unencoded
+	NameValuePair Low Trusted Unencoded
 	{
 		TaskData			Single
 		{	ID				LLUUID	}
@@ -8261,7 +8275,7 @@ sim -> dataserver
 
 // NameValuePair - if the specific task exists on simulator or dataserver, remove the name value pair (value is ignored)
 {
-	RemoveNameValuePair Low NotTrusted Unencoded
+	RemoveNameValuePair Low Trusted Unencoded
 	{
 		TaskData			Single
 		{	ID				LLUUID	}

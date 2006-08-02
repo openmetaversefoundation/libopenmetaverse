@@ -1437,7 +1437,7 @@ TypeData
 OwnerIDs
 SystemKickUser
 ErrorCode
-SLXMLID
+SLXML_ID
 TransactionTime
 TimeToLive
 StartParcelRemove
@@ -1472,7 +1472,7 @@ Questions
 TransferAbort
 TransferInventory
 LandScriptsReply
-ColladaID
+Collada_ID
 RayTargetID
 ClaimPrice
 ObjectProperties
