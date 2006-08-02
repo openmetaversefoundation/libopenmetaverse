@@ -37,7 +37,7 @@ namespace SLChat
 		private void InitializeComponent()
 		{
 			this.grpLabels = new System.Windows.Forms.GroupBox();
-			this.lblCreditsNames = new System.Windows.Forms.Label();
+			this.rCredits = new System.Windows.Forms.RichTextBox();
 			this.lblCredits = new System.Windows.Forms.Label();
 			this.lblURL = new System.Windows.Forms.Label();
 			this.lblLib = new System.Windows.Forms.Label();
@@ -49,7 +49,7 @@ namespace SLChat
 			// 
 			// grpLabels
 			// 
-			this.grpLabels.Controls.Add(this.lblCreditsNames);
+			this.grpLabels.Controls.Add(this.rCredits);
 			this.grpLabels.Controls.Add(this.lblCredits);
 			this.grpLabels.Controls.Add(this.lblURL);
 			this.grpLabels.Controls.Add(this.lblLib);
@@ -62,50 +62,50 @@ namespace SLChat
 			this.grpLabels.TabStop = false;
 			this.grpLabels.Text = "About This Program:";
 			// 
-			// lblCreditsNames
+			// rCredits
 			// 
-			this.lblCreditsNames.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblCreditsNames.Location = new System.Drawing.Point(6, 131);
-			this.lblCreditsNames.Name = "lblCreditsNames";
-			this.lblCreditsNames.Size = new System.Drawing.Size(260, 85);
-			this.lblCreditsNames.TabIndex = 4;
-			this.lblCreditsNames.Text = "Oz Spade";
+			this.rCredits.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.rCredits.Location = new System.Drawing.Point(6, 134);
+			this.rCredits.Name = "rCredits";
+			this.rCredits.Size = new System.Drawing.Size(263, 79);
+			this.rCredits.TabIndex = 4;
+			this.rCredits.Text = "Oz Spade";
 			// 
 			// lblCredits
 			// 
 			this.lblCredits.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblCredits.Location = new System.Drawing.Point(83, 101);
+			this.lblCredits.Location = new System.Drawing.Point(7, 111);
 			this.lblCredits.Name = "lblCredits";
-			this.lblCredits.Size = new System.Drawing.Size(75, 30);
+			this.lblCredits.Size = new System.Drawing.Size(75, 20);
 			this.lblCredits.TabIndex = 3;
 			this.lblCredits.Text = "Credits:";
 			// 
 			// lblURL
 			// 
-			this.lblURL.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblURL.Location = new System.Drawing.Point(74, 73);
+			this.lblURL.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblURL.Location = new System.Drawing.Point(19, 51);
 			this.lblURL.Name = "lblURL";
-			this.lblURL.Size = new System.Drawing.Size(94, 18);
+			this.lblURL.Size = new System.Drawing.Size(241, 20);
 			this.lblURL.TabIndex = 2;
-			this.lblURL.Text = "URL goes here";
+			this.lblURL.Text = "http://slwiki.slinked.net/index.php?title=SLChat";
 			// 
 			// lblLib
 			// 
 			this.lblLib.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblLib.Location = new System.Drawing.Point(50, 51);
+			this.lblLib.Location = new System.Drawing.Point(54, 71);
 			this.lblLib.Name = "lblLib";
-			this.lblLib.Size = new System.Drawing.Size(216, 22);
+			this.lblLib.Size = new System.Drawing.Size(162, 40);
 			this.lblLib.TabIndex = 1;
-			this.lblLib.Text = "Created using libsecondlife";
+			this.lblLib.Text = "Created using libsecondlife (http://libsecondlife.org)";
 			// 
 			// lblName
 			// 
 			this.lblName.Font = new System.Drawing.Font("Tahoma", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblName.Location = new System.Drawing.Point(83, 26);
+			this.lblName.Location = new System.Drawing.Point(63, 26);
 			this.lblName.Name = "lblName";
-			this.lblName.Size = new System.Drawing.Size(75, 25);
+			this.lblName.Size = new System.Drawing.Size(133, 25);
 			this.lblName.TabIndex = 0;
-			this.lblName.Text = "SLChat:";
+			this.lblName.Text = "SLChat 0.0.0.1";
 			// 
 			// btnClose
 			// 
@@ -123,13 +123,13 @@ namespace SLChat
 			this.lblRandomQuote.Name = "lblRandomQuote";
 			this.lblRandomQuote.Size = new System.Drawing.Size(196, 16);
 			this.lblRandomQuote.TabIndex = 2;
-			this.lblRandomQuote.Text = "You\'re going to have to cheat.";
+			this.lblRandomQuote.Text = "But how can the snowmen talk?";
 			// 
 			// winAbout
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(289, 262);
+			this.ClientSize = new System.Drawing.Size(291, 264);
 			this.Controls.Add(this.lblRandomQuote);
 			this.Controls.Add(this.btnClose);
 			this.Controls.Add(this.grpLabels);
@@ -143,9 +143,9 @@ namespace SLChat
 			this.grpLabels.ResumeLayout(false);
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.RichTextBox rCredits;
 		private System.Windows.Forms.Label lblRandomQuote;
 		private System.Windows.Forms.GroupBox grpLabels;
-		private System.Windows.Forms.Label lblCreditsNames;
 		private System.Windows.Forms.Label lblCredits;
 		private System.Windows.Forms.Label lblURL;
 		private System.Windows.Forms.Label lblLib;

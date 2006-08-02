@@ -35,16 +35,103 @@ namespace SLChat
 		public string lastname;
 		public string password;
 		public bool loggedin;
+		public string loginLocation;
 		
-		public NetCom(string fname, string lname, string pwrd, ChatScreen wndChat)
+		public NetCom(string fname, string lname, string pwrd, string logLocation, ChatScreen wndChat)
 		{
 			//Our NetCom main thing, we go through and set
 			//our settings up.
 			winChat = wndChat;
 			client = new SecondLife("keywords.txt", "protocol.txt");
+			client.Network.RegisterCallback("ChatFromSimulator", new PacketCallback(ChatIncoming));
+			client.Network.RegisterCallback("ImprovedInstantMessage", new PacketCallback(InstantMessageIncoming));
+			
 			firstname = fname;
 			lastname = lname;
 			password = pwrd;
+			loginLocation = logLocation;
+		}
+		
+		private void InstantMessageIncoming(Packet packet, Simulator simulator)
+		{
+			if (packet.Layout.Name == "ImprovedInstantMessage")
+			{
+				string output = "";
+				LLUUID FromAgentID	= new LLUUID();
+				LLUUID ToAgentID	= new LLUUID();
+				uint ParentEstateID	= 0;
+				LLUUID RegionID		= new LLUUID();
+				LLVector3 Position	= new LLVector3();
+				byte Offline		= 0;
+				byte Dialog			= 0;
+				LLUUID ID			= new LLUUID();
+				uint Timestamp		= 0;
+				string FromAgentName	= "";
+				string Message		= "";
+				string BinaryBucket		= "";
+
+				ArrayList blocks;
+
+				blocks = packet.Blocks();
+
+				foreach (Block block in blocks)
+				{
+					foreach (Field field in block.Fields)
+					{
+						if(field.Layout.Name == "FromAgentID")
+						{
+							FromAgentID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "ToAgentID")
+						{
+							ToAgentID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "ParentEstateID")
+						{
+							ParentEstateID = (uint)field.Data;
+						}
+						else if(field.Layout.Name == "RegionID")
+						{
+							RegionID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "Position")
+						{
+							Position = (LLVector3)field.Data;
+						}
+						else if(field.Layout.Name == "Offline")
+						{
+							Offline = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "Dialog")
+						{
+							Dialog = (byte)field.Data;
+						}
+						else if(field.Layout.Name == "ID")
+						{
+							ID = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "Timestamp")
+						{
+							Timestamp = (uint)field.Data;
+						}
+						else if(field.Layout.Name == "FromAgentName")
+						{
+							FromAgentName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "Message")
+						{
+							Message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "BinaryBucket")
+						{
+							BinaryBucket = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+					}
+				}
+
+				output = newline + FromAgentName + ": " + Message;
+				winChat.ReturnData(output,4,FromAgentName,FromAgentID.ToString());
+			} 
 		}
 		
 		private void ChatIncoming(Packet packet, Simulator simulator)
@@ -55,14 +142,16 @@ namespace SLChat
 			if (packet.Layout.Name == "ChatFromSimulator")
 			{
 				string output		= "";
-				string message		= "";
-				byte audible		= 0;
-				byte type			= 0;
-				byte sourcetype		= 0;
-				string name			= "";
-				LLUUID id			= new LLUUID();
-				byte command		= 0;
-				LLUUID commandID	= new LLUUID();
+				string fromname			= ""; //Name of source.
+				LLUUID sourceid			= new LLUUID(); //UUID of source, object/avatar
+				LLUUID ownerid			= new LLUUID(); //UUID of owner, if object UUID = owner of object, if avatar UUID = same as source
+				byte sourcetype		= 0; //1 = avatar, 2 = object
+				byte chattype			= 0; //0 = Whisper, 1 = Say, 2 = Shout, 3 = unknown, 4 = typing notification, 5 = chatbar open/close
+				byte audible		= 0; //Audible: 1 if audible, 0 if beyond 20m (message is null)
+				LLVector3 position		= new LLVector3(); //Region local position of source.
+				string message		= ""; //Message from source
+				byte command		= 0; //Unused?
+				LLUUID commandID	= new LLUUID(); //Unused?
 
 				ArrayList blocks;
 
@@ -72,21 +161,25 @@ namespace SLChat
 				{
 					foreach (Field field in block.Fields)
 					{
-						if (field.Layout.Name == "ID")
+						if (field.Layout.Name == "SourceID")
 						{
-							id = (LLUUID)field.Data;
+							sourceid = (LLUUID)field.Data;
 						} 
-						else if(field.Layout.Name == "Name")
+						else if(field.Layout.Name == "OwnerID")
 						{
-							name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+							ownerid = (LLUUID)field.Data;
+						}
+						else if(field.Layout.Name == "FromName")
+						{
+							fromname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
 						}
 						else if(field.Layout.Name == "SourceType")
 						{
 							sourcetype = (byte)field.Data;
 						}
-						else if(field.Layout.Name == "Type")
+						else if(field.Layout.Name == "ChatType")
 						{
-							type = (byte)field.Data;
+							chattype = (byte)field.Data;
 						}
 						else if(field.Layout.Name == "Audible")
 						{
@@ -95,6 +188,10 @@ namespace SLChat
 						else if(field.Layout.Name == "Message")
 						{
 							message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+						}
+						else if(field.Layout.Name == "Position")
+						{
+							position = (LLVector3)field.Data;
 						}
 						else if(field.Layout.Name == "Command")
 						{
@@ -110,19 +207,19 @@ namespace SLChat
 				if(message!="")
 				{
 					//If we haven't recieved a blank message
-					if(name != firstname + " " + lastname)
+					if(fromname != firstname + " " + lastname)
 					{
 						//If the name and first name is not ours
 						//so we don't get our own talkback with our name.
-						output = newline + name + ": " + message;
-						winChat.ReturnData(output,3,name,id.ToString());
+						output = newline + fromname + ": " + message;
+						winChat.ReturnData(output,3,fromname,sourceid.ToString());
 					}else{
 						//Now if it IS our text, we want to replace
 						//the name with "You", this makes it easier
 						//to distinguish our own text.
-						name = "You";
-						output = newline + name + ": " + message;
-						winChat.ReturnData(output,3,name,id.ToString());
+						fromname = "You";
+						output = newline + fromname + ": " + message;
+						winChat.ReturnData(output,3,fromname,sourceid.ToString());
 					}
 				}
 			}
@@ -136,11 +233,10 @@ namespace SLChat
 			//Double checking on name.
 			if(firstname != "" & lastname != "" & password != "")
 			{
-				client.Network.RegisterCallback("ChatFromSimulator", new PacketCallback(ChatIncoming));
 				
 				Hashtable loginParams = NetworkManager.DefaultLoginValues(firstname, lastname, password,
-					"00:00:00:00:00:00", "last", 1, 11, 11, 11, "Win", "0", "SLChat", "ozspade@slinked.net");
-
+					"00:00:00:00:00:00", loginLocation, 1, 11, 11, 11, "Win", "0", "SLChat", "ozspade@slinked.net");
+				//uri:Ahern&amp;195&amp;233&amp;30
 
 				// An example of how to pass additional options to the login server
 				// Request information on the Root Inventory Folder, and Inventory Skeleton

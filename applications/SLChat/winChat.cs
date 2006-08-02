@@ -18,7 +18,7 @@ using System.Xml.XPath;
 using System.IO;
 using System.Threading;
 using libsecondlife;
-using libsecondlife.InventorySystem;
+//using libsecondlife.InventorySystem;
 
 namespace SLChat
 {
@@ -33,9 +33,10 @@ namespace SLChat
 	{
 		public static winLogin winLog; //Login Window.
 		public static NetCom net; //NetCom calls.
-		public static winInventory winInv; //Inventory window.
+		//public static winInventory winInv; //Inventory window.
 		public static winAbout winAboot; //About window.
-		public static Thread loginthread;
+		public static ChatScreen winCht;
+		//public static Thread loginthread;
 		public bool aboutVisible; //Is the about window visible?
 		public bool loginVisible; //Is the login window visible? Probably a better way of checking this.
 		public bool loggedin; //Are we logged in? false and true
@@ -47,14 +48,17 @@ namespace SLChat
 		int ChatLeng; //Length of rChatHistory, used for buggy ChatEffects.
 		//Used to toggle auto-scrolling, making it easier to
 		//copy text and such from rChatHistory.
-		bool chatAutoScroll;
+		bool chatAutoScroll = true;
 		//Stores residents who have spoken Name and Key
 		//used for printing key to text (and later things).
 		Hashtable userHash = new Hashtable();
+		IMwin[] arrIM = new IMwin[4];
+		public int tabCount;
 		
 		public ChatScreen(winLogin Load)
 		{
 			winLog = Load;
+			winCht = this;
 			//
 			// The InitializeComponent() call is required for Windows Forms designer support.
 			//
@@ -110,12 +114,16 @@ namespace SLChat
 			this.toolStrip = new System.Windows.Forms.ToolStrip();
 			this.toolStripBtnIM = new System.Windows.Forms.ToolStripButton();
 			this.txtChatEntry = new System.Windows.Forms.TextBox();
+			this.tabMain = new System.Windows.Forms.TabControl();
+			this.tabLocalChat = new System.Windows.Forms.TabPage();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
 			this.cntxListNames.SuspendLayout();
 			this.menuStrip1.SuspendLayout();
 			this.toolStrip.SuspendLayout();
+			this.tabMain.SuspendLayout();
+			this.tabLocalChat.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// rChatHistory
@@ -125,10 +133,10 @@ namespace SLChat
 									| System.Windows.Forms.AnchorStyles.Right)));
 			this.rChatHistory.AutoWordSelection = true;
 			this.rChatHistory.BackColor = System.Drawing.Color.White;
-			this.rChatHistory.Location = new System.Drawing.Point(3, 8);
+			this.rChatHistory.Location = new System.Drawing.Point(3, 3);
 			this.rChatHistory.Name = "rChatHistory";
 			this.rChatHistory.ReadOnly = true;
-			this.rChatHistory.Size = new System.Drawing.Size(404, 274);
+			this.rChatHistory.Size = new System.Drawing.Size(421, 329);
 			this.rChatHistory.TabIndex = 3;
 			this.rChatHistory.Text = "";
 			this.rChatHistory.LostFocus += new System.EventHandler(this.rChatHistory_LostFocus);
@@ -140,7 +148,7 @@ namespace SLChat
 			this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
 									| System.Windows.Forms.AnchorStyles.Left) 
 									| System.Windows.Forms.AnchorStyles.Right)));
-			this.splitContainer1.Location = new System.Drawing.Point(6, 52);
+			this.splitContainer1.Location = new System.Drawing.Point(-4, 6);
 			this.splitContainer1.Name = "splitContainer1";
 			// 
 			// splitContainer1.Panel1
@@ -150,8 +158,8 @@ namespace SLChat
 			// splitContainer1.Panel2
 			// 
 			this.splitContainer1.Panel2.Controls.Add(this.listNames);
-			this.splitContainer1.Size = new System.Drawing.Size(564, 285);
-			this.splitContainer1.SplitterDistance = 410;
+			this.splitContainer1.Size = new System.Drawing.Size(589, 340);
+			this.splitContainer1.SplitterDistance = 427;
 			this.splitContainer1.TabIndex = 5;
 			// 
 			// listNames
@@ -161,9 +169,9 @@ namespace SLChat
 									| System.Windows.Forms.AnchorStyles.Right)));
 			this.listNames.ContextMenuStrip = this.cntxListNames;
 			this.listNames.FormattingEnabled = true;
-			this.listNames.Location = new System.Drawing.Point(3, 8);
+			this.listNames.Location = new System.Drawing.Point(2, 3);
 			this.listNames.Name = "listNames";
-			this.listNames.Size = new System.Drawing.Size(144, 264);
+			this.listNames.Size = new System.Drawing.Size(152, 329);
 			this.listNames.TabIndex = 2;
 			// 
 			// cntxListNames
@@ -204,7 +212,7 @@ namespace SLChat
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
 			this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-			this.menuStrip1.Size = new System.Drawing.Size(579, 24);
+			this.menuStrip1.Size = new System.Drawing.Size(589, 24);
 			this.menuStrip1.TabIndex = 4;
 			this.menuStrip1.Text = "menuStrip1";
 			// 
@@ -248,15 +256,14 @@ namespace SLChat
 			// aboutToolStripMenuItem
 			// 
 			this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
 			this.aboutToolStripMenuItem.Text = "&About";
 			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.AboutToolStripMenuItemClick);
 			// 
 			// btnSend
 			// 
-			this.btnSend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnSend.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.btnSend.Location = new System.Drawing.Point(491, 343);
+			this.btnSend.Location = new System.Drawing.Point(505, 352);
 			this.btnSend.Name = "btnSend";
 			this.btnSend.Size = new System.Drawing.Size(73, 29);
 			this.btnSend.TabIndex = 1;
@@ -272,7 +279,7 @@ namespace SLChat
 			this.toolStrip.Location = new System.Drawing.Point(0, 24);
 			this.toolStrip.Name = "toolStrip";
 			this.toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-			this.toolStrip.Size = new System.Drawing.Size(579, 25);
+			this.toolStrip.Size = new System.Drawing.Size(589, 25);
 			this.toolStrip.Stretch = true;
 			this.toolStrip.TabIndex = 6;
 			this.toolStrip.Text = "toolStrip";
@@ -289,24 +296,44 @@ namespace SLChat
 			// 
 			// txtChatEntry
 			// 
-			this.txtChatEntry.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-									| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtChatEntry.Location = new System.Drawing.Point(9, 343);
+			this.txtChatEntry.Location = new System.Drawing.Point(3, 357);
+			this.txtChatEntry.MaxLength = 977;
 			this.txtChatEntry.Name = "txtChatEntry";
-			this.txtChatEntry.Size = new System.Drawing.Size(479, 21);
+			this.txtChatEntry.Size = new System.Drawing.Size(496, 21);
 			this.txtChatEntry.TabIndex = 8;
 			this.txtChatEntry.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtChatEntry_KeyPress);
+			// 
+			// tabMain
+			// 
+			this.tabMain.Appearance = System.Windows.Forms.TabAppearance.Buttons;
+			this.tabMain.Controls.Add(this.tabLocalChat);
+			this.tabMain.Location = new System.Drawing.Point(0, 52);
+			this.tabMain.Name = "tabMain";
+			this.tabMain.SelectedIndex = 0;
+			this.tabMain.Size = new System.Drawing.Size(589, 413);
+			this.tabMain.TabIndex = 9;
+			// 
+			// tabLocalChat
+			// 
+			this.tabLocalChat.Controls.Add(this.splitContainer1);
+			this.tabLocalChat.Controls.Add(this.txtChatEntry);
+			this.tabLocalChat.Controls.Add(this.btnSend);
+			this.tabLocalChat.Location = new System.Drawing.Point(4, 25);
+			this.tabLocalChat.Name = "tabLocalChat";
+			this.tabLocalChat.Padding = new System.Windows.Forms.Padding(3);
+			this.tabLocalChat.Size = new System.Drawing.Size(581, 384);
+			this.tabLocalChat.TabIndex = 0;
+			this.tabLocalChat.Text = "Local Chat";
+			this.tabLocalChat.UseVisualStyleBackColor = true;
 			// 
 			// ChatScreen
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(579, 393);
-			this.Controls.Add(this.txtChatEntry);
+			this.ClientSize = new System.Drawing.Size(589, 462);
 			this.Controls.Add(this.toolStrip);
-			this.Controls.Add(this.btnSend);
-			this.Controls.Add(this.splitContainer1);
 			this.Controls.Add(this.menuStrip1);
+			this.Controls.Add(this.tabMain);
 			this.MainMenuStrip = this.menuStrip1;
 			this.MinimumSize = new System.Drawing.Size(400, 300);
 			this.Name = "ChatScreen";
@@ -320,9 +347,14 @@ namespace SLChat
 			this.menuStrip1.PerformLayout();
 			this.toolStrip.ResumeLayout(false);
 			this.toolStrip.PerformLayout();
+			this.tabMain.ResumeLayout(false);
+			this.tabLocalChat.ResumeLayout(false);
+			this.tabLocalChat.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.TabPage tabLocalChat;
+		public System.Windows.Forms.TabControl tabMain;
 		private System.Windows.Forms.ToolStripButton toolStripBtnIM;
 		private System.Windows.Forms.ToolStrip toolStrip;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
@@ -342,7 +374,7 @@ namespace SLChat
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.SplitContainer splitContainer1;
 		
-		public void callLogin(string firstname, string lastname, string password)
+		public void callLogin(string firstname, string lastname, string password, string logLocation)
 		{
 			this.Text = "SLChat: "+firstname+" "+lastname;
 			fname = firstname;
@@ -353,12 +385,14 @@ namespace SLChat
 			if(firstlog==true)
 			{
 				firstlog = false;
-				net = new NetCom(firstname, lastname, password, this);
-				loginthread = new Thread(new ThreadStart(net.Login));
-				loginthread.Start();
+				net = new NetCom(firstname, lastname, password, logLocation, this);
+				//loginthread = new Thread(new ThreadStart(net.Login));
+				//loginthread.Start();
+				net.Login();
 			}else{
-				loginthread = new Thread(new ThreadStart(net.Login));
-				loginthread.Start();
+				//loginthread = new Thread(new ThreadStart(net.Login));
+				//loginthread.Start();
+				net.Login();
 			}
 		}
 		
@@ -504,10 +538,10 @@ namespace SLChat
 			if(loggedin==false)
 			{
 				//Cleanup thread call just incase.
-				if(loginthread.IsAlive)
-				{
-					loginthread.Abort();
-				}
+				//if(loginthread.IsAlive)
+				//{
+				//	loginthread.Abort();
+				//}
 				Application.Exit();
 			}
 			//System.Windows.Forms.Application.Exit()
@@ -607,29 +641,7 @@ namespace SLChat
 			winIM IM = new winIM();
 			IM.Show();
 		}
-        public delegate void SetStringDel(string s);
-        void SetToolStripMenuItemText(string v)
-        {
-            if (!InvokeRequired)
-            {
-                loginToolStripMenuItem.Text = v;
-            }
-            else
-            {
-                Invoke(new SetStringDel(SetToolStripMenuItemText), new object[] { v });
-            }
-        }
-        void AddToHistory(string v)
-        {
-            if (!InvokeRequired)
-            {
-                rChatHistory.Text += v;
-            }
-            else
-            {
-                Invoke(new SetStringDel(AddToHistory), new object[] { v });
-            }
-        }
+		
 		public void ReturnData(string data, int type, string extra1, string extra2)
 		{
 			//This is how we get data back from our NetCom.cs file
@@ -640,17 +652,17 @@ namespace SLChat
 				//Reply Type: Login
 				if(extra1!="error")
 				{
-                    SetToolStripMenuItemText("Logout");
+					loginToolStripMenuItem.Text = "Logout";
 					//string loginReply = Login(firstname, lastname, password);
 					//string loginReply = "OMG WHATS: ON YUR FACE?! Yes yes yes cabam shamzaameiawml" + newline;
-					AddToHistory(data + newline);
+					rChatHistory.Text += data + newline;
 					//ChatEffects(loginReply,1);
 					//string text2 = "Bob Smith: AHWIWEAM W!";
 					//rChatHistory.Text += text2 + newline;
 					//ChatEffects(18,loginReply.Length,1);
 					loggedin = true;
 				}else if(extra1=="error"){
-                    AddToHistory(data + newline);
+					rChatHistory.Text += data + newline;
 					loggedin = false;
 				}
 			}else if(type==2){
@@ -660,10 +672,10 @@ namespace SLChat
 				rChatHistory.Text += data;
 				loggedin = false;
 				//Cleanup thread call just incase.
-				if(loginthread.IsAlive)
-				{
-					loginthread.Abort();
-				}
+				//if(loginthread.IsAlive)
+				//{
+				//	loginthread.Abort();
+				//}
 			}else if(type==3){
 				//Reply Type: Chat
 				
@@ -678,6 +690,23 @@ namespace SLChat
 				//Printing actual chat.
 				rChatHistory.Text += data;
 				//ChatEffects(name.Length,output.Length,2);
+			}else if(type==4){
+				//Reply Type: IM
+				
+				for(int i=0;i<arrIM.Length;i++)
+				{
+					if(arrIM[i]==null)
+					{
+						
+					}else if(arrIM[i].name==extra1)
+					{
+						arrIM[i].GotText(data);
+						break;
+					}
+					if(i+1==arrIM.Length){
+						CreateTab(extra1,data);
+					}
+				}
 			}
 		}
 		
@@ -689,6 +718,145 @@ namespace SLChat
 				winAboot.Show();
 			}else{
 				winAboot.Show();
+			}
+		}
+		
+		public void CreateTab(string name, string text)
+		{
+			int i = tabCount;
+			arrIM[i] = new IMwin();
+			//arrIM[i].Tabs(name,text);
+		}
+		
+		public class IMwin : System.ComponentModel.Component
+		{
+			public string name;
+			
+			public IMwin()
+			{
+				
+			}
+			//private System.ComponentModel.IContainer components = null;
+			public void Tabs(string nme, string txt)
+			{
+				name = nme;
+				//this.components = new System.ComponentModel.Container();
+				this.tabIM = new System.Windows.Forms.TabPage();
+				this.pnlIM = new System.Windows.Forms.Panel();
+				this.txtIMEntry = new System.Windows.Forms.TextBox();
+				this.btnIMSend = new System.Windows.Forms.Button();
+				this.btnClose = new System.Windows.Forms.Button();
+				this.rIMHistory = new System.Windows.Forms.RichTextBox();
+				this.tabIM.SuspendLayout();
+				this.pnlIM.SuspendLayout();
+				//winCht.tabMain.SuspendLayout();
+				//this.SuspendLayout();
+				//winCht.SuspendLayout();
+				// 
+				// tabIM
+				// 
+				this.tabIM.Controls.Add(this.pnlIM);
+				this.tabIM.Location = new System.Drawing.Point(4, 25);
+				this.tabIM.Name = "tabIM";
+				this.tabIM.Padding = new System.Windows.Forms.Padding(3);
+				this.tabIM.Size = new System.Drawing.Size(581, 384);
+				this.tabIM.TabIndex = 1;
+				this.tabIM.Text = "IM";
+				this.tabIM.UseVisualStyleBackColor = true;
+				// 
+				// pnlIM
+				// 
+				this.pnlIM.Controls.Add(this.txtIMEntry);
+				this.pnlIM.Controls.Add(this.btnIMSend);
+				this.pnlIM.Controls.Add(this.btnClose);
+				this.pnlIM.Controls.Add(this.rIMHistory);
+				this.pnlIM.Location = new System.Drawing.Point(0, 0);
+				this.pnlIM.Name = "pnlIM";
+				this.pnlIM.Size = new System.Drawing.Size(581, 384);
+				this.pnlIM.TabIndex = 0;
+				// 
+				// txtIMEntry
+				// 
+				this.txtIMEntry.Location = new System.Drawing.Point(6, 354);
+				this.txtIMEntry.Name = "txtIMEntry";
+				this.txtIMEntry.Size = new System.Drawing.Size(496, 21);
+				this.txtIMEntry.TabIndex = 3;
+				// 
+				// btnIMSend
+				// 
+				this.btnIMSend.Location = new System.Drawing.Point(508, 349);
+				this.btnIMSend.Name = "btnIMSend";
+				this.btnIMSend.Size = new System.Drawing.Size(67, 29);
+				this.btnIMSend.TabIndex = 2;
+				this.btnIMSend.Text = "Send";
+				this.btnIMSend.UseVisualStyleBackColor = true;
+				// 
+				// btnClose
+				// 
+				this.btnClose.Location = new System.Drawing.Point(496, 6);
+				this.btnClose.Name = "btnClose";
+				this.btnClose.Size = new System.Drawing.Size(79, 29);
+				this.btnClose.TabIndex = 1;
+				this.btnClose.Text = "Close";
+				this.btnClose.UseVisualStyleBackColor = true;
+				// 
+				// rIMHistory
+				// 
+				this.rIMHistory.BackColor = System.Drawing.Color.White;
+				this.rIMHistory.Location = new System.Drawing.Point(3, 35);
+				this.rIMHistory.Name = "rIMHistory";
+				this.rIMHistory.ReadOnly = true;
+				this.rIMHistory.Size = new System.Drawing.Size(575, 308);
+				this.rIMHistory.TabIndex = 0;
+				this.rIMHistory.Text = "";
+				
+				//winCht.tabMain.ResumeLayout(false);
+				winCht.tabMain.Controls.Add(this.tabIM);
+				this.tabIM.ResumeLayout(false);
+				this.pnlIM.ResumeLayout(false);
+				this.pnlIM.PerformLayout();
+				//this.ResumeLayout(false);
+				//this.PerformLayout();
+				//winCht.ResumeLayout(false);
+				//winCht.PerformLayout();
+				winCht.rChatHistory.Text += txt + "TABS5";
+			
+				/*
+				string title = "Oz Spade";
+				TabPage myTabPage = new TabPage(title);
+				tabMain.TabPages.Add(myTabPage);
+				myTabPage.Controls.Add(rChatThing);*/
+				winCht.tabCount++;
+				GotText(txt);
+			}
+			private System.Windows.Forms.RichTextBox rIMHistory;
+			private System.Windows.Forms.Button btnClose;
+			private System.Windows.Forms.Button btnIMSend;
+			private System.Windows.Forms.TextBox txtIMEntry;
+			private System.Windows.Forms.Panel pnlIM;
+			private System.Windows.Forms.TabPage tabIM;
+
+			void BtnSendClick(object sender, System.EventArgs e)
+			{
+				//this.tabNext.Text = name;
+			}
+			
+			void BtnCloseClick(object sender, System.EventArgs e)
+			{
+				winCht.tabMain.Controls.Remove(this.tabIM);
+				Array.Clear(winCht.arrIM,winCht.tabMain.SelectedIndex,1);
+				winCht.tabCount--;
+			}
+			
+			public void GotText(string txt)
+			{
+				rIMHistory.Text += txt;
+				if(!this.tabIM.Visible)
+				{
+					this.tabIM.Text = name + " (N)";
+				}else{
+					this.tabIM.Text = name;
+				}
 			}
 		}
 	}

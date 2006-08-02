@@ -24,41 +24,31 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="libsecondlife, Version=0.0.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libsecondlife-cs\bin\Debug\libsecondlife.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="XmlRpcCS">
-      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\XmlRpcCS.dll</HintPath>
+    <Reference Include="libsecondlife">
+      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\libsecondlife.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Inventory">
-      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\Inventory\Inventory\bin\Debug\Inventory.dll</HintPath>
+    <Reference Include="JSON">
+      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\JSON.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="XmlRpcCS">
+      <HintPath>D:\Oz's Files\Second Life Stuff\libsecondlife\libsecondlife-cs\bin\Debug\XmlRpcCS.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="winLogin.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="winChat.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="winLogin.cs" />
+    <Compile Include="winChat.cs" />
     <Compile Include="NetCom.cs" />
-    <Compile Include="winIM.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="winIM.cs" />
     <Compile Include="winIM.Designer.cs" />
-    <Compile Include="winInventory.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="winInventory.Designer.cs" />
     <EmbeddedResource Include="winLogin.resx">
       <DependentUpon>winLogin.cs</DependentUpon>
     </EmbeddedResource>
@@ -68,15 +58,10 @@
     <EmbeddedResource Include="winIM.resx">
       <DependentUpon>winIM.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="winInventory.resx">
-      <DependentUpon>winInventory.cs</DependentUpon>
-    </EmbeddedResource>
     <Compile Include="winAbout.Designer.cs">
       <DependentUpon>winAbout.cs</DependentUpon>
     </Compile>
-    <Compile Include="winAbout.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="winAbout.cs" />
     <EmbeddedResource Include="winAbout.resx">
       <DependentUpon>winAbout.cs</DependentUpon>
     </EmbeddedResource>
