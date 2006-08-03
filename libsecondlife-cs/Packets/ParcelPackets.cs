@@ -67,5 +67,89 @@ namespace libsecondlife.Packets
 
 			return PacketBuilder.BuildPacket("ParcelBuy", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
+
+		public static Packet ParcelDeedToGroup(ProtocolManager protocol, int localID, LLUUID groupID, 
+			LLUUID agentID, LLUUID sessionID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["LocalID"] = localID;
+			fields["GroupID"] = groupID;
+			blocks[fields] = "Data";
+
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
+
+			return PacketBuilder.BuildPacket("ParcelDeedToGroup", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
+		public static Packet ParcelReclaim(ProtocolManager protocol, int localID,
+			LLUUID agentID, LLUUID sessionID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["LocalID"] = localID;
+			blocks[fields] = "Data";
+
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
+
+			return PacketBuilder.BuildPacket("ParcelReclaim", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
+		public static Packet ParcelRelease(ProtocolManager protocol, int localID,
+			LLUUID agentID, LLUUID sessionID)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["LocalID"] = localID;
+			blocks[fields] = "Data";
+
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields] = "AgentData";
+
+			return PacketBuilder.BuildPacket("ParcelRelease", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
+		public static Packet ParcelPropertiesRequest(ProtocolManager protocol, LLUUID agentID, int sequenceID,
+			float west, float south, float east, float north, bool snapSelection) 
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["AgentID"] = agentID;
+			fields["SequenceID"] = sequenceID;
+			fields["West"] = west;
+			fields["South"] = south;
+			fields["East"] = east;
+			fields["North"] = north;
+			fields["SnapSelection"] = snapSelection;
+
+			blocks[fields] = "ParcelData";	
+			return PacketBuilder.BuildPacket("ParcelPropertiesRequest", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
+		public static Packet ParcelPropertiesRequestByID(ProtocolManager protocol, LLUUID agentID, int sequenceID,
+			int localID) 
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["AgentID"] = agentID;
+			fields["SequenceID"] = sequenceID;
+			fields["LocalID"] = localID;
+
+			blocks[fields] = "ParcelData";	
+			return PacketBuilder.BuildPacket("ParcelPropertiesRequestByID", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
 	}
 }

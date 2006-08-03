@@ -39,6 +39,12 @@ namespace libsecondlife
 		public byte[] ParcelOverlay;
 		public int ParcelOverlaysReceived;
 
+		public int[,] ParcelMarked; // 64x64 Array of parcels which have been successfully downloaded. (and their LocalID's, 0 = Null)
+		public bool ParcelDownloading; // Flag to indicate whether we are downloading a sim's parcels.
+
+		public System.Collections.Hashtable Parcels;
+		public System.Threading.Mutex ParcelsMutex;
+
 		public float TerrainHeightRange00;
 		public float TerrainHeightRange01;
 		public float TerrainHeightRange10;
@@ -73,6 +79,12 @@ namespace libsecondlife
 			ParcelOverlay = new byte[4096];
 			ParcelOverlaysReceived = 0;
 
+			ParcelMarked = new int[64,64];
+			ParcelDownloading = false;
+
+			Parcels = new System.Collections.Hashtable();
+			ParcelsMutex = new System.Threading.Mutex(false,"ParcelsMutex");
+
 			SimOwner = new LLUUID();
 
 			TerrainBase0 = new LLUUID();
@@ -95,6 +107,8 @@ namespace libsecondlife
 			Handle = handle;
 			Name = name;
 			ParcelOverlay = new byte[4096];
+			ParcelMarked = new int[64,64];
+			ParcelDownloading = false;
 
 			TerrainHeightRange00 = heightList[0];
 			TerrainHeightRange01 = heightList[1];
@@ -132,61 +146,14 @@ namespace libsecondlife
 			Client.Network.SendPacket(objectAdd);
 		}
 
-		private static void ParcelOverlayToParcels_bitfill(int x, int y, int[,] Parcels, int index)
+		public void FillParcels() 
 		{
-			if(x < 0 || x >= 128) return;
-			if(y < 0 || y >= 128) return;
+			// Begins filling parcels
+			ParcelDownloading = true;
 
-			if(Parcels[x,y] == 0)
-			{
-				Parcels[x,y] = index;
-				ParcelOverlayToParcels_bitfill(x-1,y,Parcels,index);
-				ParcelOverlayToParcels_bitfill(x+1,y,Parcels,index);
-				ParcelOverlayToParcels_bitfill(x-1,y-1,Parcels,index);
-				ParcelOverlayToParcels_bitfill(x-1,y+1,Parcels,index);
-			}
-		}
-
-		public static int[,] ParcelOverlayToParcels(Region region)
-		{
-			byte[] Overlay = region.ParcelOverlay;
-			int[,] ParcelsHigh = new int[128, 128];
-			int[,] Parcels = new int[64, 64];
-
-			int x, y;
-			int x2, y2;
-			int index;
-
-			for(x = 0; x < 64; x++)
-				for(y = 0; y < 64; y++)
-				{
-					x2 = x * 2;
-					y2 = y * 2;
-					ParcelsHigh[x2,y2] = 0;
-					ParcelsHigh[x2 + 1,y2] = (Overlay[x * 64 + y] & 64) == 64 ? -1 : 0;
-					ParcelsHigh[x2,y2 + 1] = (Overlay[x * 64 + y] & 128) == 128 ? -1 : 0;
-					ParcelsHigh[x2+1,y2+1] = (ParcelsHigh[x2+1,y2] == -1 || ParcelsHigh[x2,y2 + 1] == -1) ? -1 : 0;
-				}
-
-			index = 0;
-			for(x = 0; x < 64; x++)
-				for(y = 0; y < 64; y++)
-				{
-					x2 = x * 2;
-					y2 = y * 2;
-					if(ParcelsHigh[x2,y2] == 0)
-					{
-						ParcelOverlayToParcels_bitfill(x2,y2,ParcelsHigh,index++);
-					}
-				}
-			for(x = 0; x < 64; x++)
-				for(y = 0; y < 64; y++)
-				{
-					x2 = x * 2;
-					y2 = y * 2;
-					Parcels[x,y] = ParcelsHigh[x2,y2];
-				}
-			return Parcels;
+			// TODO: Replace Client.Network with Region.Simulator, or similar?
+			Client.Network.SendPacket(libsecondlife.Packets.Parcel.ParcelPropertiesRequest(Client.Protocol,Client.Avatar.ID, -10000,
+				0.0f,0.0f,4.0f,4.0f, false));
 		}
 
 		public override int GetHashCode()
