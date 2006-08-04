@@ -3,6 +3,15 @@
 system('prj2make SLProxy.sln')
 	and die "*** prj2make failed\n";
 
+if (!-e '../../libsecondlife-cs/bin/Debug/libsecondlife.dll') {
+	die "*** libsecondlife-cs must be built first\n";
+}
+
+if (-e 'bin/Debug/SLProxy.dll' && -M '../../libsecondlife-cs/bin/Debug/libsecondlife.dll' < -M 'bin/Debug/SLProxy.dll') {
+	system('make clean')
+		and die "*** make clean failed\n";
+}
+
 open(MAKEFILE, 'Makefile')
 	or die "*** failed to open Makefile for reading: $!\n";
 

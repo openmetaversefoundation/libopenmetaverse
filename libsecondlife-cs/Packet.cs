@@ -178,7 +178,6 @@ namespace libsecondlife
 		{
 			Protocol = protocol;
 			ushort command;
-			Data = new byte[length];
 
 			if (length < 5)
 			{
@@ -223,10 +222,11 @@ namespace libsecondlife
 				Layout.Blocks = new ArrayList();
 			}
 
-			if (copy)
+			if (copy) {
 				// Copy the network byte array to this packet's byte array
+				Data = new byte[length];
 				Array.Copy(data, 0, Data, 0, length);
-			else
+			} else
 				// Use the buffer we got for Data
 				Data = data;
 		}
