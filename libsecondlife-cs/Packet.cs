@@ -170,7 +170,11 @@ namespace libsecondlife
 			}
 		}
 
-		public Packet(byte[] data, int length, ProtocolManager protocol)
+		public Packet(byte[] data, int length, ProtocolManager protocol) : this(data, length, protocol, true)
+		{
+		}
+
+		public Packet(byte[] data, int length, ProtocolManager protocol, bool copy)
 		{
 			Protocol = protocol;
 			ushort command;
@@ -219,8 +223,12 @@ namespace libsecondlife
 				Layout.Blocks = new ArrayList();
 			}
 
-			// Copy the network byte array to this packet's byte array
-			Array.Copy(data, 0, Data, 0, length);
+			if (copy)
+				// Copy the network byte array to this packet's byte array
+				Array.Copy(data, 0, Data, 0, length);
+			else
+				// Use the buffer we got for Data
+				Data = data;
 		}
 
 		public ArrayList Blocks()
