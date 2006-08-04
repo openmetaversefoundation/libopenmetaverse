@@ -11,22 +11,29 @@ http://subversion.tigris.org/project_packages.html
 $ svn co svn://svn.gna.org/svn/libsecondlife/trunk libsecondlife
 $ cd libsecondlife/libsecondlife-cs
 
-4. Convert libsecondlife.sln to a Makefile using prj2make, which is part
-of the Mono distribution:
+4. Build the project:
 
-$ prj2make libsecondlife.sln
+$ perl build
 
-I got this as an output:
+If you don't have perl, see 'Building without Perl' below.
 
--rw-r--r--    1 bbyer  bbyer   3099 Jun 26 14:43 Makefile
-
-5. Build the project with make:
-
-$ make
-
-6. The examples will be built and installed into bin/Debug:
+5. The examples will be built and installed into bin/Debug:
 
 $ cd bin/Debug
 $ mono name2key.exe <firstname> <lastname> <password> eddy stryker
 Info: Connecting to 72.5.13.170:12035
 UUID: f6ec1e24fd294f4cb21e23b42841c8c7
+
+
+Building without Perl:
+
+If step 4 fails because you don't have perl installed, you can build
+with prj2make instead.  First, type:
+
+$ prj2make libsecondlife.sln
+
+Open Makefile, and change the line 'MCS=mcs' to 'MCS=gmcs'.
+
+You can now build the project by typing:
+
+$ make

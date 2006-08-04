@@ -40,10 +40,9 @@ with subversion:
 The libsecondlife-cs project must be built first; see
 libsecondlife-cs/README for instructions.  Building SLProxy should be
 straightforward with Microsoft Visual Studio.  If you're using Mono,
-you can build the solution with make:
+you can build the solution with the included build script:
 
-  prj2make SLProxy.sln
-  make
+  perl build
 
 The SLProxy library and its example applications will be built in
 bin/Debug.  In order to run the example applications, you must first
