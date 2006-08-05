@@ -18,7 +18,14 @@ namespace SLIRC
                 components.Dispose();
             }
             base.Dispose(disposing);
-            ircclient.Disconnect();
+            try
+            {
+                ircclient.Disconnect();
+            }
+            catch
+            {
+
+            }
         }
 
         #region Windows Form Designer generated code
@@ -47,7 +54,10 @@ namespace SLIRC
             this.btnJoin = new System.Windows.Forms.Button();
             this.txtMessage = new System.Windows.Forms.TextBox();
             this.btnSay = new System.Windows.Forms.Button();
+            this.grpDebug = new System.Windows.Forms.GroupBox();
+            this.btnGetPos = new System.Windows.Forms.Button();
             this.grpLogin.SuspendLayout();
+            this.grpDebug.SuspendLayout();
             this.SuspendLayout();
             // 
             // grpLogin
@@ -209,12 +219,34 @@ namespace SLIRC
             this.btnSay.TabIndex = 59;
             this.btnSay.Text = "Say";
             this.btnSay.UseVisualStyleBackColor = true;
+            this.btnSay.Click += new System.EventHandler(this.btnSay_Click);
+            // 
+            // grpDebug
+            // 
+            this.grpDebug.Controls.Add(this.btnGetPos);
+            this.grpDebug.Location = new System.Drawing.Point(2, 325);
+            this.grpDebug.Name = "grpDebug";
+            this.grpDebug.Size = new System.Drawing.Size(559, 64);
+            this.grpDebug.TabIndex = 60;
+            this.grpDebug.TabStop = false;
+            this.grpDebug.Text = "Debugging";
+            // 
+            // btnGetPos
+            // 
+            this.btnGetPos.Location = new System.Drawing.Point(14, 21);
+            this.btnGetPos.Name = "btnGetPos";
+            this.btnGetPos.Size = new System.Drawing.Size(87, 24);
+            this.btnGetPos.TabIndex = 0;
+            this.btnGetPos.Text = "Get Position";
+            this.btnGetPos.UseVisualStyleBackColor = true;
+            this.btnGetPos.Click += new System.EventHandler(this.btnGetPos_Click);
             // 
             // frmSLIRC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(566, 393);
+            this.Controls.Add(this.grpDebug);
             this.Controls.Add(this.btnSay);
             this.Controls.Add(this.txtMessage);
             this.Controls.Add(this.btnJoin);
@@ -231,6 +263,7 @@ namespace SLIRC
             this.Load += new System.EventHandler(this.frmSLIRC_Load);
             this.grpLogin.ResumeLayout(false);
             this.grpLogin.PerformLayout();
+            this.grpDebug.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -256,6 +289,8 @@ namespace SLIRC
         private System.Windows.Forms.Button btnJoin;
         private System.Windows.Forms.TextBox txtMessage;
         private System.Windows.Forms.Button btnSay;
+        private System.Windows.Forms.GroupBox grpDebug;
+        private System.Windows.Forms.Button btnGetPos;
     }
 }
 

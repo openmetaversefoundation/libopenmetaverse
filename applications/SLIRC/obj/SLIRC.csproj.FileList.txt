@@ -16,8 +16,6 @@ obj\Debug\SLIRC.Properties.Resources.resources
 obj\Debug\SLIRC.csproj.GenerateResource.Cache
 bin\Debug\SLIRC.exe
 bin\Debug\SLIRC.pdb
-bin\Debug\libsecondlife.dll
-bin\Debug\Meebey.SmartIrc4net.dll
 bin\Debug\Meebey.SmartIrc4net.pdb
 bin\Debug\Meebey.SmartIrc4net.xml
 bin\Debug\libsecondlife.pdb

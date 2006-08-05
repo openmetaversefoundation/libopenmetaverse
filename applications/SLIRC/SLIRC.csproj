@@ -28,6 +28,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="libsecondlife, Version=0.0.5.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Meebey.SmartIrc4net, Version=0.3.5.1833, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Desktop\SmartIrc4net-0.3.5\bin\net\debug\Meebey.SmartIrc4net.dll</HintPath>
@@ -70,12 +71,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\libsecondlife-cs\libsecondlife.csproj">
-      <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
-      <Name>libsecondlife</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

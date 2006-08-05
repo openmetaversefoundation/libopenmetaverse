@@ -15,6 +15,7 @@ namespace SLIRC
     {
         private SecondLife client;
         private IrcClient ircclient;
+        private Thread listenthread;
         public frmSLIRC()
         {
             InitializeComponent();
@@ -37,7 +38,7 @@ namespace SLIRC
                 if (client.Network.Login(loginParams))
                 {
                     LogMessage("Logged into Second Life");
-                    lstAllowedUsers.Enabled = lstLog.Enabled = btnJoin.Enabled = btnSay.Enabled = true;
+                    lstAllowedUsers.Enabled = lstLog.Enabled = btnJoin.Enabled = txtMessage.Enabled = btnSay.Enabled = true;
                     ircclient.OnChannelMessage += new IrcEventHandler(ircclient_OnChannelMessage);
                     //Connect to IRC server, yaydey yadah
                     try
@@ -47,19 +48,21 @@ namespace SLIRC
                         ircclient.Login(client.Avatar.FirstName + client.Avatar.LastName, "SLIRC Gateway");
                         ircclient.RfcJoin(txtChannel.Text);
                         LogMessage("Logged in");
-
-                        Thread t = new Thread(Listen);
-                        t.Start();
+                        if(listenthread != null) listenthread.Abort();
+                        listenthread = new Thread(Listen);
+                        listenthread.Start();
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show("OH NOES! " + ex.Message);
+                       
                     }
 
                 }
                 else
                 {
                     MessageBox.Show(this, "Error logging in: " + client.Network.LoginError);
+                    listenthread.Abort();
                     cmdConnect.Text = "Connect";
                     lstAllowedUsers.Enabled = lstLog.Enabled = btnJoin.Enabled = btnSay.Enabled = false;
                     txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
@@ -68,8 +71,10 @@ namespace SLIRC
             else
             {
                 cmdConnect.Text = "Connect";
-                lstAllowedUsers.Enabled = lstLog.Enabled = btnJoin.Enabled = btnSay.Enabled = false;
+                lstAllowedUsers.Enabled = btnJoin.Enabled = txtMessage.Enabled = btnSay.Enabled = false;
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
+                ircclient.RfcQuit("SLIRC Disconnect.");
+                listenthread.Abort();
                 client.Network.Logout();
             }
 
@@ -100,7 +105,8 @@ namespace SLIRC
         {
             if (!this.InvokeRequired)
             {
-                lstLog.Items.Add(msg);
+                int i = lstLog.Items.Add(msg);
+                lstLog.SelectedIndex = i;
             }
             else
             {
@@ -141,5 +147,17 @@ namespace SLIRC
             ircclient.RfcJoin(txtChannel.Text);
             LogMessage("Joining " + txtChannel.Text);
         }
+
+        private void btnGetPos_Click(object sender, EventArgs e)
+        {
+            LogMessage("Position: " + client.Avatar.Position.X.ToString() + " " + client.Avatar.Position.Y.ToString());
+        }
+
+        private void btnSay_Click(object sender, EventArgs e)
+        {
+            client.Avatar.Say(ircclient.Nickname + ": " + txtMessage.Text, 0);
+            ircclient.SendMessage(SendType.Message, txtChannel.Text, txtMessage.Text);
+        }
+
     }
 }
