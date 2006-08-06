@@ -170,48 +170,14 @@ namespace libsecondlife
 			}
 		}
 
-		public Packet(byte[] data, int length, ProtocolManager protocol) : this(data, length, protocol, true)
+		public Packet(byte[] data, int length, ProtocolManager protocol) : this(data, length, protocol, protocol.Command(data), true)
 		{
 		}
 
-		public Packet(byte[] data, int length, ProtocolManager protocol, bool copy)
+		public Packet(byte[] data, int length, ProtocolManager protocol, MapPacket layout, bool copy)
 		{
 			Protocol = protocol;
-			ushort command;
-
-			if (length < 5)
-			{
-				Helpers.Log("Received a packet with less than 5 bytes", Helpers.LogLevel.Warning);
-				
-				// Create an empty MapPacket
-				Layout = new MapPacket();
-				Layout.Blocks = new ArrayList();
-
-				return;
-			}
-
-			if (data[4] == 0xFF)
-			{
-				if ((byte)data[5] == 0xFF)
-				{
-					// Low frequency
-					command = (ushort)(data[6] * 256 + data[7]);
-
-					Layout = protocol.Command(command, PacketFrequency.Low);
-				}
-				else
-				{
-					// Medium frequency
-					command = (ushort)data[5];
-					Layout = protocol.Command(command, PacketFrequency.Medium);
-				}
-			}
-			else
-			{
-				// High frequency
-				command = (ushort)data[4];
-				Layout = protocol.Command(command, PacketFrequency.High);
-			}
+			Layout = layout;
 
 			if (Layout == null)
 			{
@@ -226,9 +192,12 @@ namespace libsecondlife
 				// Copy the network byte array to this packet's byte array
 				Data = new byte[length];
 				Array.Copy(data, 0, Data, 0, length);
-			} else
+			}
+			else
+			{
 				// Use the buffer we got for Data
 				Data = data;
+			}
 		}
 
 		public ArrayList Blocks()

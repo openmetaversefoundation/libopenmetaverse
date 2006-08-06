@@ -254,6 +254,32 @@ namespace libsecondlife
 		}
 
 		/// <summary>
+		/// Decode enough of a byte array to get the packet ID.  Data before and
+		/// after the packet ID is undefined.
+		/// </summary>
+		/// <param name="src">The byte array to decode</param>
+		/// <param name="dest">The output byte array to encode to</param>
+		public static void ZeroDecodeCommand(byte[] src, byte[] dest)
+		{
+			for (int srcPos = 4, destPos = 4; destPos < 8; ++srcPos)
+			{
+				if (src[srcPos] == 0x00)
+				{
+					for (byte j = 0; j < src[srcPos + 1]; ++j)
+					{
+						dest[destPos++] = 0x00;
+					}
+
+					++srcPos;
+				}
+				else
+				{
+					dest[destPos++] = src[srcPos];
+				}
+			}
+		}
+
+		/// <summary>
 		/// Encode a byte array with zerocoding. Used to compress packets marked
 		/// with the zerocoded flag. Any zeroes in the array are compressed down 
 		/// to a single zero byte followed by a count of how many zeroes to expand 

@@ -56,7 +56,7 @@ namespace SLProxy {
 		public IPAddress remoteFacingAddress = IPAddress.Any;
 		// remoteLoginUri: URI for Second Life's login server
 		public Uri remoteLoginUri = new Uri("https://login.agni.lindenlab.com/cgi-bin/login.cgi");
-		// verbose: whether or not to print informative messages and warnings
+		// verbose: whether or not to print informative messages
 		public bool verbose = true;
 
 		// ProxyConfig: construct a default proxy configuration with the specified userAgent, author, and protocol
@@ -170,7 +170,7 @@ namespace SLProxy {
 				displayAddress = IPAddress.Loopback;
 			else
 				displayAddress = endPoint.Address;
-			Log("proxy ready at http://" + displayAddress + ":" + endPoint.Port + "/");
+			Log("proxy ready at http://" + displayAddress + ":" + endPoint.Port + "/", false);
 		}
 
 		// SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
@@ -216,8 +216,8 @@ namespace SLProxy {
 		}
 
 		// Log: write message to the console if in verbose mode
-		private void Log(object message) {
-			if (proxyConfig.verbose)
+		private void Log(object message, bool important) {
+			if (proxyConfig.verbose || important)
 				Console.WriteLine(message);
 		}
 
@@ -241,7 +241,7 @@ namespace SLProxy {
 				Socket client = loginServer.Accept();
 				IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
 
-				Log("handling login request from " + clientEndPoint);
+				Log("handling login request from " + clientEndPoint, false);
 
 				NetworkStream networkStream = new NetworkStream(client);
 				StreamReader networkReader = new StreamReader(networkStream);
@@ -250,7 +250,7 @@ namespace SLProxy {
 				try {
 					ProxyLogin(networkReader, networkWriter);
 				} catch (Exception e) {
-					Log("login failed: " + e.Message);
+					Log("login failed: " + e.Message, false);
 				}
 
 				networkWriter.Close();
@@ -262,11 +262,10 @@ namespace SLProxy {
 				// send any packets queued for injection
 				if (activeCircuit != null) {
 					SimProxy activeProxy = (SimProxy)simProxies[activeCircuit];
-					lock(queuedOutgoingInjections) {
+					lock(queuedOutgoingInjections)
 						foreach (Packet packet in queuedOutgoingInjections)
 							activeProxy.Inject(packet, Direction.Outgoing);
-						queuedOutgoingInjections = new ArrayList();
-					}
+					queuedOutgoingInjections = new ArrayList();
 				}
 			}
 		    } catch (Exception e) {
@@ -307,8 +306,8 @@ namespace SLProxy {
 				try {
 					loginRequestDelegate(request);
 				} catch (Exception e) {
-					Log("exception in login request deligate: " + e.Message);
-					Log(e.StackTrace);
+					Log("exception in login request deligate: " + e.Message, true);
+					Log(e.StackTrace, true);
 				}
 
 			// add our userAgent and author to the request
@@ -340,8 +339,8 @@ namespace SLProxy {
 				try {
 					loginResponseDelegate(response);
 				} catch (Exception e) {
-					Log("exception in login response delegate: " + e.Message);
-					Log(e.StackTrace);
+					Log("exception in login response delegate: " + e.Message, true);
+					Log(e.StackTrace, true);
 				}
 			}
 
@@ -367,7 +366,7 @@ namespace SLProxy {
 		private ArrayList queuedIncomingInjections = new ArrayList();
 		private ArrayList queuedOutgoingInjections = new ArrayList();
 
-		// initialize the sim proxy
+		// InitializeSimProxy: initialize the sim proxy
 		private void InitializeSimProxy() {
 			InitializeAddressCheckers();
 
@@ -386,21 +385,22 @@ namespace SLProxy {
 		private byte[] zeroBuffer = new byte[8192];
 		private EndPoint remoteEndPoint = (EndPoint)new IPEndPoint(IPAddress.Any, 0);
 
-		// start listening for packets from remote sims
+		// RunSimProxy: start listening for packets from remote sims
 		private void RunSimProxy() {
 			simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
 		}
 
-		// packet received from a remote sim
+		// ReceiveFromSim: packet received from a remote sim
 		private void ReceiveFromSim(IAsyncResult ar) {
 		    try {
-			// pause listening and get the length of the packet
+			// pause listening and fetch the packet
+			bool needsZero = false;
 			bool needsCopy = true;
 			int length;
 			lock(simFacingSocket)
 				length = simFacingSocket.EndReceiveFrom(ar, ref remoteEndPoint);
 
-			lock(proxyHandlers)
+			lock(proxyHandlers) lock(zeroBuffer)
 				if (proxyHandlers.Contains(remoteEndPoint)) {
 					// find the proxy responsible for forwarding this packet
 					SimProxy simProxy = (SimProxy)proxyHandlers[remoteEndPoint];
@@ -408,12 +408,12 @@ namespace SLProxy {
 					// interpret the packet according to the SL protocol
 					Packet packet;
 					if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
-						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, false);
-					else
-						lock(zeroBuffer) {
-							length = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
-							packet = new Packet(zeroBuffer, length, proxyConfig.protocol, false);
-						}
+						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(receiveBuffer), false);
+					else {
+						Helpers.ZeroDecodeCommand(receiveBuffer, zeroBuffer);
+						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
+						needsZero = true;
+					}
 
 					// check for ACKs we're waiting for
 					packet = simProxy.CheckAcks(packet, Direction.Incoming, ref length, ref needsCopy);
@@ -429,21 +429,35 @@ namespace SLProxy {
 
 					// check the packet for addresses that need proxying
 					if (incomingCheckers.Contains(packet.Layout.Name)) {
+						if (needsZero) {
+							length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+							packet.Data = zeroBuffer;
+							needsZero = false;
+						}
+
 						Packet newPacket = ((AddressChecker)incomingCheckers[packet.Layout.Name])(packet);
-						SwapPacket(packet, newPacket);
+						SwapPacket(packet, newPacket, length);
 						packet = newPacket;
+						length = packet.Data.Length;
+						needsCopy = false;
 					}
 
 					// pass the packet to any callback delegates
 					lock(incomingDelegates)
 						if (incomingDelegates.Contains(packet.Layout.Name)) {
-							try {
-								if (needsCopy) {
-									byte[] newData = new byte[length];
-									Array.Copy(packet.Data, 0, newData, 0, length);
-									packet.Data = newData;
-								}
+							if (needsZero) {
+								length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+								packet.Data = zeroBuffer;
+								needsCopy = true;
+							}
 
+							if (needsCopy) {
+								byte[] newData = new byte[length];
+								Array.Copy(packet.Data, 0, newData, 0, length);
+								packet.Data = newData;
+							}
+
+							try {
 								Packet newPacket = ((PacketDelegate)incomingDelegates[packet.Layout.Name])(packet, (IPEndPoint)remoteEndPoint);
 								if (newPacket == null) {
 									if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
@@ -461,21 +475,21 @@ namespace SLProxy {
 									else if (!oldReliable && newReliable)
 										simProxy.WaitForAck(packet, Direction.Incoming);
 
-									SwapPacket(packet, newPacket);
+									SwapPacket(packet, newPacket, packet.Data.Length);
 									packet = newPacket;
 								}
 							} catch (Exception e) {
-								Log("exception in incoming delegate: " + e.Message);
-								Log(e.StackTrace);
+								Log("exception in incoming delegate: " + e.Message, true);
+								Log(e.StackTrace, true);
 							}
-						}
 
-					if (packet != null)
-						// forward the packet to the client via the appropriate fake sim endpoint
-						simProxy.SendPacket(packet, length);
+							if (packet != null)
+								simProxy.SendPacket(packet, packet.Data.Length, false);
+						} else
+							simProxy.SendPacket(packet, length, needsZero);
 				} else
 					// ignore packets from unknown peers
-					Log("dropping packet from " + remoteEndPoint);
+					Log("dropping packet from " + remoteEndPoint, false);
 
 			// resume listening
 			lock(simFacingSocket)
@@ -487,9 +501,9 @@ namespace SLProxy {
 		}
 
 		// SendPacket: send a packet to a sim from our fake client endpoint
-		public void SendPacket(Packet packet, IPEndPoint endPoint, int length) {
+		public void SendPacket(Packet packet, IPEndPoint endPoint, int length, bool skipZero) {
 			lock(simFacingSocket)
-				if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+				if (skipZero || (packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
 					simFacingSocket.SendTo(packet.Data, length, SocketFlags.None, endPoint);
 				else
 					lock(zeroBuffer) {
@@ -529,10 +543,10 @@ namespace SLProxy {
 		}
 
 		// SwapPacket: copy the sequence number and appended ACKs from one packet to another
-		public static void SwapPacket(Packet oldPacket, Packet newPacket) {
+		public static void SwapPacket(Packet oldPacket, Packet newPacket, int oldLength) {
 			newPacket.Sequence = oldPacket.Sequence;
 
-			int oldAcks = (oldPacket.Data[0] & Helpers.MSG_APPENDED_ACKS) == 0 ? 0 : (int)oldPacket.Data[oldPacket.Data.Length - 1];
+			int oldAcks = (oldPacket.Data[0] & Helpers.MSG_APPENDED_ACKS) == 0 ? 0 : (int)oldPacket.Data[oldLength - 1];
 			int newAcks = (newPacket.Data[0] & Helpers.MSG_APPENDED_ACKS) == 0 ? 0 : (int)newPacket.Data[newPacket.Data.Length - 1];
 
 			if (oldAcks != 0 || newAcks != 0) {
@@ -547,7 +561,7 @@ namespace SLProxy {
 
 				if (oldAcks != 0) {
 					newData[0] |= Helpers.MSG_APPENDED_ACKS;
-					Array.Copy(oldPacket.Data, oldPacket.Data.Length - oldAckSize, newData, newPacket.Data.Length - newAckSize, oldAckSize);
+					Array.Copy(oldPacket.Data, oldLength - oldAckSize, newData, newPacket.Data.Length - newAckSize, oldAckSize);
 				}
 
 				newPacket.Data = newData;
@@ -564,7 +578,7 @@ namespace SLProxy {
 					// return a new proxy
 					SimProxy simProxy = new SimProxy(proxyConfig, simEndPoint, this);
 					IPEndPoint fakeSim = simProxy.LocalEndPoint();
-					Log("creating proxy for " + simEndPoint + " at " + fakeSim);
+					Log("creating proxy for " + simEndPoint + " at " + fakeSim, false);
 					simProxy.Run();
 					proxyEndPoints.Add(simEndPoint, fakeSim);
 					simProxies.Add(simEndPoint, simProxy);
@@ -662,14 +676,14 @@ namespace SLProxy {
 							if (!incomingSeenAcks.Contains(id)) {
 								Packet packet = (Packet)incomingAcks[id];
 								packet.Data[0] |= Helpers.MSG_RESENT;
-								SendPacket(packet, packet.Data.Length);
+								SendPacket(packet, packet.Data.Length, false);
 							}
 
 						foreach (ushort id in outgoingAcks.Keys)
 							if (!outgoingSeenAcks.Contains(id)) {
 								Packet packet = (Packet)outgoingAcks[id];
 								packet.Data[0] |= Helpers.MSG_RESENT;
-								proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length);
+								proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
 							}
 					}
 			    } catch (Exception e) {
@@ -678,7 +692,7 @@ namespace SLProxy {
 			    }
 			}
 
-			// return the endpoint that the client should communicate with
+			// LocalEndPoint: return the endpoint that the client should communicate with
 			public IPEndPoint LocalEndPoint() {
 				lock(socket)
 					return (IPEndPoint)socket.LocalEndPoint;
@@ -699,93 +713,109 @@ namespace SLProxy {
 			private void ReceiveFromClient(IAsyncResult ar) {
 			    try {
 				// pause listening and fetch the packet
+				bool needsZero = false;
 				bool needsCopy = true;
 				int length;
-				lock(clientEndPoint)
-					lock(socket)
-						length = socket.EndReceiveFrom(ar, ref clientEndPoint);
-				Packet packet;
-				if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
-					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, false);
-				else
-					lock(zeroBuffer) {
-						length = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
-						packet = new Packet(zeroBuffer, length, proxyConfig.protocol, false);
+				lock(clientEndPoint) lock(socket)
+					length = socket.EndReceiveFrom(ar, ref clientEndPoint);
+
+				lock(zeroBuffer) {
+					// interpret the packet according to the SL protocol
+					Packet packet;
+					if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
+						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(receiveBuffer), false);
+					else {
+						Helpers.ZeroDecodeCommand(receiveBuffer, zeroBuffer);
+						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
+						needsZero = true;
 					}
 
-				// look for ACKs we're waiting for
-				packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
-				
-				// modify sequence numbers to account for injections
-				ushort oldSequence = packet.Sequence;
-				packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
+					// check for ACKs we're waiting for
+					packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
 
-				// keep track of sequence numbers
-				lock(sequenceLock)
-					if (packet.Sequence > outgoingSequence)
-						outgoingSequence = packet.Sequence;
+					// modify sequence numbers to account for injections
+					ushort oldSequence = packet.Sequence;
+					packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
 
-				// check the packet for addresses that need proxying
-				if (proxy.outgoingCheckers.Contains(packet.Layout.Name)) {
-					Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Layout.Name])(packet);
-					SwapPacket(packet, newPacket);
-					packet = newPacket;
-				}
+					// keep track of sequence numbers
+					lock(sequenceLock)
+						if (packet.Sequence > outgoingSequence)
+							outgoingSequence = packet.Sequence;
 
-				// pass the packet to any callback delegates
-				lock(proxy.outgoingDelegates)
-					if (proxy.outgoingDelegates.Contains(packet.Layout.Name)) {
-						try {
+					// check the packet for addresses that need proxying
+					if (proxy.outgoingCheckers.Contains(packet.Layout.Name)) {
+						if (needsZero) {
+							length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+							packet.Data = zeroBuffer;
+							needsZero = false;
+						}
+
+						Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Layout.Name])(packet);
+						SwapPacket(packet, newPacket, length);
+						packet = newPacket;
+						length = packet.Data.Length;
+						needsCopy = false;
+					}
+
+					// pass the packet to any callback delegates
+					lock(proxy.outgoingDelegates)
+						if (proxy.outgoingDelegates.Contains(packet.Layout.Name)) {
+							if (needsZero) {
+								length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+								packet.Data = zeroBuffer;
+								needsCopy = true;
+							}
+
 							if (needsCopy) {
 								byte[] newData = new byte[length];
 								Array.Copy(packet.Data, 0, newData, 0, length);
 								packet.Data = newData;
 							}
 
-							Packet newPacket = ((PacketDelegate)proxy.outgoingDelegates[packet.Layout.Name])(packet, remoteEndPoint);
-							if (newPacket == null) {
-								if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
-									Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+							try {
+								Packet newPacket = ((PacketDelegate)proxy.outgoingDelegates[packet.Layout.Name])(packet, remoteEndPoint);
+								if (newPacket == null) {
+									if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+										Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+	
+									if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+										packet = proxy.SeparateAck(packet);
+									else
+										packet = null;
+								} else {
+									bool oldReliable = (packet.Data[0] & Helpers.MSG_RELIABLE) != 0;
+									bool newReliable = (newPacket.Data[0] & Helpers.MSG_RELIABLE) != 0;
+									if (oldReliable && !newReliable)
+										Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+									else if (!oldReliable && newReliable)	
+										WaitForAck(packet, Direction.Outgoing);
 
-								if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
-									packet = proxy.SeparateAck(packet);
-								else
-									packet = null;
-							} else {
-								bool oldReliable = (packet.Data[0] & Helpers.MSG_RELIABLE) != 0;
-								bool newReliable = (newPacket.Data[0] & Helpers.MSG_RELIABLE) != 0;
-								if (oldReliable && !newReliable)
-									Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
-								else if (!oldReliable && newReliable)	
-									WaitForAck(packet, Direction.Outgoing);
-
-								SwapPacket(packet, newPacket);
-								packet = newPacket;
+									SwapPacket(packet, newPacket, packet.Data.Length);
+									packet = newPacket;
+								}
+							} catch (Exception e) {
+								proxy.Log("exception in outgoing delegate: " + e.Message, true);
+								proxy.Log(e.StackTrace, true);
 							}
-						} catch (Exception e) {
-							proxy.Log("exception in outgoing delegate: " + e.Message);
-							proxy.Log(e.StackTrace);
-						}
-					}
 
-				if (packet != null)
-					// send the packet
-					proxy.SendPacket(packet, remoteEndPoint, length);
+							if (packet != null)
+								proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
+						} else
+							proxy.SendPacket(packet, remoteEndPoint, length, needsZero);
+				}
 
 				// send any packets queued for injection
 				if (firstReceive) {
 					firstReceive = false;
-					lock(proxy.queuedIncomingInjections) {
+					lock(proxy.queuedIncomingInjections)
 						foreach (Packet queuedPacket in proxy.queuedIncomingInjections)
 							Inject(queuedPacket, Direction.Incoming);
-						proxy.queuedIncomingInjections = new ArrayList();
-					}
+					proxy.queuedIncomingInjections = new ArrayList();
 				}
 
 				// resume listening
-				lock(clientEndPoint)
-					lock(socket)
-						socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
+				lock(clientEndPoint) lock(socket)
+					socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
 			    } catch (Exception e) {
 				Console.WriteLine(e.Message);
 				Console.WriteLine(e.StackTrace);
@@ -793,16 +823,15 @@ namespace SLProxy {
 			}
 
 			// SendPacket: send a packet from the sim to the client via our fake sim endpoint
-			public void SendPacket(Packet packet, int length) {
-				lock(clientEndPoint)
-					lock(socket)
-						if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
-							socket.SendTo(packet.Data, length, SocketFlags.None, clientEndPoint);
-						else
-							lock(zeroBuffer) {
-								int zeroLength = Helpers.ZeroEncode(packet.Data, length, zeroBuffer);
-								socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
-							}
+			public void SendPacket(Packet packet, int length, bool skipZero) {
+				lock(clientEndPoint) lock(socket)
+					if (skipZero || (packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+						socket.SendTo(packet.Data, length, SocketFlags.None, clientEndPoint);
+					else
+						lock(zeroBuffer) {
+							int zeroLength = Helpers.ZeroEncode(packet.Data, length, zeroBuffer);
+							socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+						}
 			}
 
 			// Inject: inject a packet
@@ -827,17 +856,16 @@ namespace SLProxy {
 					WaitForAck(packet, direction);
 
 				if (direction == Direction.Incoming) {
-					lock (clientEndPoint)
-						lock (socket)
-							if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
-								socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
-							else
-								lock(zeroBuffer) {
-									int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-									socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
-								}
+					lock(clientEndPoint) lock(socket)
+						if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+							socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
+						else
+							lock(zeroBuffer) {
+								int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+								socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+							}
 				} else
-					proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length);
+					proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
 			}
 
 			// WaitForAck: take care of resending a packet until it's ACKed
@@ -872,7 +900,7 @@ namespace SLProxy {
 						}
 						if (changed) {
 							Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, newBlocks, packet.Data[0]);
-							SwapPacket(packet, newPacket);
+							SwapPacket(packet, newPacket, length);
 							packet = newPacket;
 							length = packet.Data.Length;
 							needsCopy = false;
@@ -893,12 +921,13 @@ namespace SLProxy {
 								packet.Data = newData;
 								--ackCount;
 								seenAcks.Add(ackID);
+								needsCopy = false;
 							} else
 								++i;
 						}
 						if (ackCount == 0) {
 							byte[] newData = new byte[length -= 1];
-							Array.Copy(packet.Data, 0, newData, 0, length - 1);
+							Array.Copy(packet.Data, 0, newData, 0, length);
 							newData[0] ^= Helpers.MSG_APPENDED_ACKS;
 							packet.Data = newData;
 						}
@@ -949,7 +978,7 @@ namespace SLProxy {
 							}
 						}
 						Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, packet.Data[0]);
-						SwapPacket(packet, newPacket);
+						SwapPacket(packet, newPacket, length);
 						packet = newPacket;
 						length = packet.Data.Length;
 						needsCopy = false;
@@ -960,6 +989,12 @@ namespace SLProxy {
 			}
 		}
 
+		// Checkers swap proxy addresses in for real addresses.  A few constraints:
+		//   - Checkers must not alter the incoming packet.
+		//   - Checkers must return a freshly built packet, even if nothing's changed.
+		//   - The incoming packet's buffer may be longer than the length of the data it contains.
+		//   - The incoming packet's buffer must not be used after the checker returns.
+		// This is all because checkers may be operating on data that's still in a scratch buffer.
 		delegate Packet AddressChecker(Packet packet);
 
 		Hashtable incomingCheckers = new Hashtable();
@@ -967,55 +1002,16 @@ namespace SLProxy {
 
 		// InitializeAddressCheckers: initialize delegates that check packets for addresses that need proxying
 		private void InitializeAddressCheckers() {
-			// TODO: Packets that I've never seen that appear to
-			// require checking are considered unhandled; these
-			// should be checked in a stable release.  Packets that
-			// I've never seen that contain an IP and don't appear
-			// to require checking are considered mystery; these
-			// should be ignored in a stable release.  Packets that
-			// are checked are considered unexpected if they come
-			// in the wrong direction; these should be ignored in a
-			// stable release.
-			AddChecker("SimulatorAssign", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("SimulatorStart", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("SimulatorPresentAtLocation", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("RegionPresenceResponse", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("AgentPresenceResponse", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddMystery("TrackAgentSession");
-			AddMystery("ClearAgentSessions");
-			AddChecker("LogFailedMoneyTransaction", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddMystery("DirFindQueryBackend");
-			AddMystery("DirPeopleQueryBackend");
-			AddMystery("OnlineStatusRequest");
-			AddChecker("SpaceLocationTeleportReply", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("TeleportFinish", Direction.Incoming, new AddressChecker(CheckTeleportFinish));
-			AddMystery("AddModifyAbility");
-			AddMystery("RemoveModifyAbility");
-			//AddMystery("ViewerStats"); IP is 0.0.0.0
-			AddChecker("EnableSimulator", Direction.Incoming, new AddressChecker(CheckEnableSimulator));
-			//AddMystery("KickUser"); IP is 0.0.0.0
-			AddMystery("LogLogin");
-			AddMystery("DataServerLogout");
-			AddMystery("RequestLocationGetAccess");
-			AddMystery("RequestLocationGetAccessReply");
-			//AddMystery("FindAgent"); IP is 0.0.0.0 outgoing or 10.0.0.4 incoming
-			AddMystery("RoutedMoneyBalanceReply");
-			AddChecker("UserLoginLocationReply", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("SpaceLoginLocationReply", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddMystery("RemoveMemeberFromGroup");
-			AddMystery("RpcScriptRequestInboundForward");
-			AddMystery("MailPingBounce");
+			// TODO: what do we do with mysteries and empty IPs?
 			AddMystery("OpenCircuit");
-			AddChecker("ClosestSimulator", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("CrossedRegion", Direction.Incoming, new AddressChecker(CheckCrossedRegion));
-			AddChecker("NeighborList", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-			AddChecker("AgentToNewRegion", Direction.Incoming, new AddressChecker(LogUnhandledPacket));
-		}
-
-		// AddChecker: add a checker delegate
-		private void AddChecker(String name, Direction direction, AddressChecker checker) {
-			(direction == Direction.Incoming ? incomingCheckers : outgoingCheckers).Add(name, checker);
-			(direction == Direction.Incoming ? outgoingCheckers : incomingCheckers).Add(name, new AddressChecker(LogUnexpectedPacket));
+			AddMystery("AgentPresenceResponse");
+			incomingCheckers.Add("TeleportFinish", new AddressChecker(CheckTeleportFinish));
+			// ViewerStats: IP is 0.0.0.0
+			incomingCheckers.Add("AgentToNewRegion", new AddressChecker(CheckAgentToNewRegion));
+			incomingCheckers.Add("CrossedRegion", new AddressChecker(CheckCrossedRegion));
+			incomingCheckers.Add("EnableSimulator", new AddressChecker(CheckEnableSimulator));
+			// KickUser: IP is 0.0.0.0
+			incomingCheckers.Add("UserLoginLocationReply", new AddressChecker(CheckUserLoginLocationReply));
 		}
 
 		// AddMystery: add a checker delegate that logs packets we're watching for development purposes
@@ -1044,32 +1040,32 @@ namespace SLProxy {
 			return GenericCheck(packet, "Info", "SimIP", "SimPort", true);
 		}
 
+		// CheckAgentToNewRegion: check AgentToNewRegion packets
+		private Packet CheckAgentToNewRegion(Packet packet) {
+			return GenericCheck(packet, "RegionData", "IP", "Port", true);
+		}
+
 		// CheckEnableSimulator: check EnableSimulator packets
 		private Packet CheckEnableSimulator(Packet packet) {
 			return GenericCheck(packet, "SimulatorInfo", "IP", "Port", false);
 		}
 
-		// CheckCrossedregion: check CrossedRegion packets
+		// CheckCrossedRegion: check CrossedRegion packets
 		private Packet CheckCrossedRegion(Packet packet) {
 			return GenericCheck(packet, "RegionData", "SimIP", "SimPort", true);
 		}
 
+		// CheckUserLoginLocationReply: check UserLoginLocationReply packets
+		private Packet CheckUserLoginLocationReply(Packet packet) {
+			return GenericCheck(packet, "SimulatorBlock", "IP", "Port", true);
+		}
+
 		// LogPacket: log a packet dump
 		private Packet LogPacket(Packet packet, string type) {
-			Log(type + " packet:");
-			Log(packet);
+			Log(type + " packet:", true);
+			Log(packet, true);
 
-			return packet;
-		}
-
-		// LogUnhandledPacket: log a packet that probably ought to have been checked
-		private Packet LogUnhandledPacket(Packet packet) {
-			return LogPacket(packet, "unhandled");
-		}
-
-		// LogUnexpectedPacket: log a packet that we expected to be going the opposite direction
-		private Packet LogUnexpectedPacket(Packet packet) {
-			return LogPacket(packet, "unexpected");
+			return PacketBuilder.BuildPacket(packet.Layout.Name, proxyConfig.protocol, PacketUtility.Unbuild(packet), packet.Data[0]);
 		}
 
 		// LogIncomingMysteryPacket: log an incoming packet we're watching for development purposes

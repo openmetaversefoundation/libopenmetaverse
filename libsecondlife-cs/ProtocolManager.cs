@@ -194,6 +194,38 @@ namespace libsecondlife
 			throw new Exception("Cannot find map for command \"" + command + "\"");
 		}
 
+		public MapPacket Command(byte[] data)
+		{
+			ushort command;
+
+			if (data.Length < 5)
+			{
+				return null;
+			}
+
+			if (data[4] == 0xFF)
+			{
+				if ((byte)data[5] == 0xFF)
+				{
+					// Low frequency
+					command = (ushort)(data[6] * 256 + data[7]);
+					return Command(command, PacketFrequency.Low);
+				}
+				else
+				{
+					// Medium frequency
+					command = (ushort)data[5];
+					return Command(command, PacketFrequency.Medium);
+				}
+			}
+			else
+			{
+				// High frequency
+				command = (ushort)data[4];
+				return Command(command, PacketFrequency.High);
+			}
+		}
+
 		public MapPacket Command(ushort command, PacketFrequency frequency)
 		{
 			switch (frequency)
