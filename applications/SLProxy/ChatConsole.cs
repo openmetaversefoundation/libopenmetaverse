@@ -81,7 +81,7 @@ public class ChatConsole {
 			Hashtable fields;
 			fields = new Hashtable();
 			fields["Channel"] = (int)0;
-			fields["Message"] = PacketUtility.StringToVariable(message);
+			fields["Message"] = message;
 			fields["Type"] = (byte)1;
 			blocks[fields] = "ChatData";
 			fields = new Hashtable();
@@ -98,8 +98,8 @@ public class ChatConsole {
 	private static Packet ChatFromSimulator(Packet packet, IPEndPoint sim) {
 		// deconstruct the packet
 		Hashtable blocks = PacketUtility.Unbuild(packet);
-		string message = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "Message"));
-		string name = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "FromName"));
+		string message = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "Message"));
+		string name = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "FromName"));
 		byte audible = (byte)PacketUtility.GetField(blocks, "ChatData", "Audible");
 		byte type = (byte)PacketUtility.GetField(blocks, "ChatData", "ChatType");
 

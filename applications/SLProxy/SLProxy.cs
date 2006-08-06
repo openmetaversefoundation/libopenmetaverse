@@ -413,7 +413,6 @@ namespace SLProxy {
 						lock(zeroBuffer) {
 							length = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
 							packet = new Packet(zeroBuffer, length, proxyConfig.protocol, false);
-							needsCopy = false;
 						}
 
 					// check for ACKs we're waiting for
@@ -425,8 +424,8 @@ namespace SLProxy {
 
 					// keep track of sequence numbers
 					lock(simProxy.sequenceLock)
-						if (packet.Sequence > simProxy.outgoingSequence)
-							simProxy.outgoingSequence = packet.Sequence;
+						if (packet.Sequence > simProxy.incomingSequence)
+							simProxy.incomingSequence = packet.Sequence;
 
 					// check the packet for addresses that need proxying
 					if (incomingCheckers.Contains(packet.Layout.Name)) {
@@ -712,7 +711,6 @@ namespace SLProxy {
 					lock(zeroBuffer) {
 						length = Helpers.ZeroDecode(receiveBuffer, length, zeroBuffer);
 						packet = new Packet(zeroBuffer, length, proxyConfig.protocol, false);
-						needsCopy = false;
 					}
 
 				// look for ACKs we're waiting for
@@ -724,8 +722,8 @@ namespace SLProxy {
 
 				// keep track of sequence numbers
 				lock(sequenceLock)
-					if (packet.Sequence > incomingSequence)
-						incomingSequence = packet.Sequence;
+					if (packet.Sequence > outgoingSequence)
+						outgoingSequence = packet.Sequence;
 
 				// check the packet for addresses that need proxying
 				if (proxy.outgoingCheckers.Contains(packet.Layout.Name)) {
@@ -1133,34 +1131,6 @@ namespace SLProxy {
 				if ((string)blocks[fields] == block)
 					if (fields.Contains(field))
 						fields[field] = value;
-		}
-
-		// VariableToString: convert a variable field to a string
-		// Returns an empty string if the field can't be decoded as UTF-8
-		public static string VariableToString(byte[] field) {
-			try {
-				byte[] withoutNull = new byte[field.Length - 1];
-				Array.Copy(field, 0, withoutNull, 0, field.Length - 1);
-				return System.Text.Encoding.UTF8.GetString(withoutNull);
-			} catch {
-				return "";
-			}
-		}
-
-		// StringtoVariable: convert a string to a variable field
-		// Returns an empty field if the string can't be encoded as UTF-8
-		public static byte[] StringToVariable(string str) {
-			try {
-				byte[] bytes = System.Text.Encoding.UTF8.GetBytes(str);
-				byte[] withNull = new byte[bytes.Length + 1];
-				Array.Copy(bytes, 0, withNull, 0, bytes.Length);
-				withNull[withNull.Length - 1] = 0;
-				return withNull;
-			} catch {
-				byte[] empty = new byte[1];
-				empty[0] = 0;
-				return empty;
-			}
 		}
 	}
 }

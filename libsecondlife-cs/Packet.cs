@@ -730,9 +730,8 @@ namespace libsecondlife
 
 												if (fieldMap.Count == 2)
 												{
-													Array.Copy(BitConverter.GetBytes(fieldLength), 0, byteArray, 
-														length, 2);
-													length += 2;
+													byteArray[length++] = (byte)(fieldLength % 256);
+													byteArray[length++] = (byte)(fieldLength / 256);
 												}
 												else
 												{

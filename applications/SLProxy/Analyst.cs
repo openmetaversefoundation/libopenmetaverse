@@ -112,7 +112,8 @@ public class Analyst {
 	private static Packet ChatFromViewerOut(Packet packet, IPEndPoint sim) {
 		// deconstruct the packet
 		Hashtable blocks = PacketUtility.Unbuild(packet);
-		string message = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "Message"));
+//		string message = PacketUtility.VariableToString((byte[])PacketUtility.GetField(blocks, "ChatData", "Message"));
+		string message = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "Message"));
 
 		if (message.Length > 1 && message[0] == '/') {
 			string[] words = message.Split(' ');
@@ -595,7 +596,8 @@ public class Analyst {
 				foreach (Field field in block.Fields) {
 					string value;
 					if (field.Layout.Type == FieldType.Variable)
-						value = PacketUtility.VariableToString((byte[])field.Data);
+//						value = PacketUtility.VariableToString((byte[])field.Data);
+						value = DataConvert.toChoppedString(field.Data);
 					else
 						value = field.Data.ToString();
 					if ((new Regex(logGrep)).Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value).Success)

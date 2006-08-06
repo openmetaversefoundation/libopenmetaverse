@@ -346,17 +346,3 @@ This can be used by a packet delegate method in conjunction with
 PacketUtility.Unbuild and PacketBuilder.BuildPacket to substitute a
 new packet that is a copy of the original packet with certain fields
 modified.
-
-3.4 string VariableToString(byte[] field)
-- - - - - - - - - - - - - - - - - - - - -
-
-The VariableToString method interprets a variable field in a packet as
-a UTF-8 encoded string.  If conversion fails, an empty string is
-returned.
-
-3.5 byte[] StringToVariable(string str)
-- - - - - - - - - - - - - - - - - - - -
-
-The StringToVariable method returns a variable field representing the
-UTF-8 encoding of a string.  If conversion fails, an empty field is
-returned.
