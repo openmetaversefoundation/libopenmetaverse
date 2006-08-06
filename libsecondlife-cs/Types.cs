@@ -43,7 +43,7 @@ namespace libsecondlife
 		public U64(uint left, uint right)
 		{
 			Data = new uint[2];
-			// Backwards... don't ask me, it works
+			// "backwards", due to little-endian ordering
 			Data[0] = right;
 			Data[1] = left;
 		}
@@ -51,7 +51,7 @@ namespace libsecondlife
 		public U64(int left, int right)
 		{
 			Data = new uint[2];
-			// Backwards... don't ask me, it works
+			// "backwards", due to little-endian ordering
 			Data[0] = (uint)right;
 			Data[1] = (uint)left;
 		}
@@ -79,62 +79,20 @@ namespace libsecondlife
 
 		public override bool Equals(object o)
 		{
-			if (!(o is U64))
-			{
-				return false;
-			}
+		        if (!(o is U64)) return false;
 
 			U64 u64 = (U64)o;
 
-			if (u64.Data[0] == Data[0] && u64.Data[1] == Data[1])
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return (u64.Data[0] == Data[0] && u64.Data[1] == Data[1]);
 		}
 
 		public static bool operator==(U64 lhs, U64 rhs)
 		{
-			try
-			{
-				if (lhs.Data[0] == rhs.Data[0] && lhs.Data[1] == rhs.Data[1])
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-			catch (NullReferenceException)
-			{
-				uint test;
-				bool lhsnull = false;
-				bool rhsnull = false;
+			if(object.ReferenceEquals(lhs, rhs))  return true;
+			if(object.ReferenceEquals(lhs, null)) return false;
+			if(object.ReferenceEquals(rhs, null)) return false;
 
-				try
-				{
-					test = lhs.Data[0];
-				}
-				catch (NullReferenceException)
-				{
-					lhsnull = true;
-				}
-
-				try
-				{
-					test = rhs.Data[0];
-				}
-				catch (NullReferenceException)
-				{
-					rhsnull = true;
-				}
-				
-				return (lhsnull == rhsnull);
-			}
+			return (lhs.Data[0] == rhs.Data[0] && lhs.Data[1] == rhs.Data[1]);
 		}
 
 		public static bool operator!=(U64 lhs, U64 rhs)
@@ -144,21 +102,10 @@ namespace libsecondlife
 
 		public static bool operator==(U64 lhs, int rhs)
 		{
-			try
-			{
-				if (lhs.Data[1] == rhs)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-			catch (NullReferenceException)
-			{
-				return (rhs == 0);
-			}
+			if(object.ReferenceEquals(lhs, null)) return (rhs == 0);
+			/* this used to ignore the upper half of the U64, and I don't think
+			   that's correct. */
+			return (lhs.Data[0] == 0 && lhs.Data[1] == rhs);
 		}
 
 		public static bool operator!=(U64 lhs, int rhs)
@@ -190,15 +137,9 @@ namespace libsecondlife
 		{
 			data = new byte[16];
 
-			if (val.Length == 36)
-			{
-				val = val.Replace("-", "");
-			}
+			if (val.Length == 36) val = val.Replace("-", "");
 			
-			if (val.Length != 32)
-			{
-				return;
-			}
+			if (val.Length != 32) return;
 
 			for(int i = 0; i < 16; ++i)
 			{
@@ -222,15 +163,8 @@ namespace libsecondlife
 
 		public LLUUID(bool randomize)
 		{
-			
-			if (randomize)
-			{
-				data = Guid.NewGuid().ToByteArray();
-			}
-			else
-			{
-				data = new byte[16];
-			}
+			if (randomize) data = Guid.NewGuid().ToByteArray();
+			else           data = new byte[16];
 		}
 
 		/// <summary>
@@ -262,19 +196,13 @@ namespace libsecondlife
 
 		public override bool Equals(object o)
 		{
-			if (!(o is LLUUID))
-			{
-				return false;
-			}
+			if (!(o is LLUUID)) return false;
 
 			LLUUID uuid = (LLUUID)o;
 
 			for (int i = 0; i < 16; ++i)
 			{
-				if (Data[i] != uuid.Data[i])
-				{
-					return false;
-				}
+				if (Data[i] != uuid.Data[i]) return false;
 			}
 
 			return true;
@@ -282,41 +210,13 @@ namespace libsecondlife
 
 		public static bool operator==(LLUUID lhs, LLUUID rhs)
 		{
-			try
-			{
-				for (int i = 0; i < 16; ++i)
-				{
-					if (lhs.Data[i] != rhs.Data[i])
-					{
-						return false;
-					}
-				}
-			}
-			catch (NullReferenceException)
-			{
-				byte test;
-				bool lhsnull = false;
-				bool rhsnull = false;
+			if(object.ReferenceEquals(lhs, rhs))  return true;
+			if(object.ReferenceEquals(lhs, null)) return false;
+			if(object.ReferenceEquals(rhs, null)) return false;
 
-				try
-				{
-					test = lhs.Data[0];
-				}
-				catch (NullReferenceException)
-				{
-					lhsnull = true;
-				}
-
-				try
-				{
-					test = rhs.Data[0];
-				}
-				catch (NullReferenceException)
-				{
-					rhsnull = true;
-				}
-				
-				return (lhsnull == rhsnull);
+			for (int i = 0; i < 16; ++i)
+			{
+				if (lhs.Data[i] != rhs.Data[i]) return false;
 			}
 
 			return true;
@@ -404,62 +304,20 @@ namespace libsecondlife
 
 		public override bool Equals(object o)
 		{
-			if (!(o is LLVector3))
-			{
-				return false;
-			}
+			if (!(o is LLVector3)) return false;
 
 			LLVector3 vector = (LLVector3)o;
 
-			if (X == vector.X && Y == vector.Y && Z == vector.Z)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return (X == vector.X && Y == vector.Y && Z == vector.Z);
 		}
 
 		public static bool operator==(LLVector3 lhs, LLVector3 rhs)
 		{
-			try
-			{
-				if (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-			catch (NullReferenceException)
-			{
-				float test;
-				bool lhsnull = false;
-				bool rhsnull = false;
+			if(object.ReferenceEquals(lhs, rhs))  return true;
+			if(object.ReferenceEquals(lhs, null)) return false;
+			if(object.ReferenceEquals(rhs, null)) return false;
 
-				try
-				{
-					test = lhs.X;
-				}
-				catch (NullReferenceException)
-				{
-					lhsnull = true;
-				}
-
-				try
-				{
-					test = rhs.X;
-				}
-				catch (NullReferenceException)
-				{
-					rhsnull = true;
-				}
-				
-				return (lhsnull == rhsnull);
-			}
+			return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
 
 		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)
