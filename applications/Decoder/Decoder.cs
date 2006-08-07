@@ -29,6 +29,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text.RegularExpressions;
 
 using libsecondlife;
@@ -37,18 +38,17 @@ class Decoder {
 	private static int BUFSIZE = 8096;
 
 	private static ProtocolManager protocol = new ProtocolManager("keywords.txt", "protocol.txt");
+	private static string grep = null;
 	private static byte[] data = new byte[BUFSIZE];
 	private static byte[] temp = new byte[BUFSIZE];
 	private static bool boring;
-	private static int direction;
-	private static string sim;
+	private static string endpoints;
 	private static int pos;
 	private static Mode mode = Mode.Generic;
 	private static Regex regex = RegexForMode(mode);
 
 	private enum Mode
 		{Generic
-		,SLConsole
 		,TCPDump
 		};
 
@@ -56,25 +56,24 @@ class Decoder {
 		switch (mode) {
 			case Mode.Generic:
 				return new Regex(@"(?:\s|PD:|^)(?:([0-9a-fA-F][0-9a-fA-F]){1,2}(?:\s|$))+");
-			case Mode.SLConsole:
-				return new Regex(@"PD:(?:([0-9a-f]{2})(?: |$))+");
 			case Mode.TCPDump:
-				return new Regex(@"^\t0x[0-9a-f]{3}0:  (?:([0-9a-f][0-9a-f]){1,2}(?: |$))+");
+				return new Regex(@"^\t0x....:  (?:([0-9a-f][0-9a-f]){1,2}(?: |$))+");
 			default:
 				throw new Exception("RegexForMode broken");
 		}
 	}
 
-	private static Regex _modeRegex_SLConsole	= new Regex(@"^\S+ INFO: Second Life version ");
 	private static Regex _modeRegex_TCPDump		= new Regex(@"^\d\d:\d\d:\d\d\.\d+ IP \S+ > \S+: ");
 	private static void SetMode(string line) {
-		if (_modeRegex_SLConsole.Match(line).Success)
-			regex = RegexForMode(mode = Mode.SLConsole);
-		else if (_modeRegex_TCPDump.Match(line).Success)
+		if (_modeRegex_TCPDump.Match(line).Success)
 			regex = RegexForMode(mode = Mode.TCPDump);
 	}
 
-	public static void Main() {
+	public static void Main(string[] args) {
+		if (args.Length > 0) {
+			grep = String.Join(" ", args);
+		}
+
 		for (Reset();;) {
 			string line = Console.ReadLine();
 			if (line == null) {
@@ -89,6 +88,11 @@ class Decoder {
 
 			Match m = regex.Match(line);
 			if (m.Success) {
+				if (pos == 0 && m.Groups[1].Captures.Count < 4) {
+					boring = true;
+					continue;
+				}
+
 				while (pos + m.Groups[1].Captures.Count >= BUFSIZE) {
 					byte[] newData = new byte[data.Length + BUFSIZE];
 					Array.Copy(data, 0, newData, 0, pos);
@@ -110,29 +114,23 @@ class Decoder {
 		byte[] clear = {0,0,0,0,0,0,0,0};
 		Array.Copy(clear, 0, data, 0, 8);
 		boring = false;
-		direction = 0;
-		sim = "unknown";
+		endpoints = "";
 		pos = 0;
 	}
 
 	private static Regex _prepareRegex_TCPDump_0	= new Regex(@"^\d\d:\d\d:\d\d\.\d+ (.+)");
-	private static Regex _prepareRegex_TCPDump_1	= new Regex(@"^IP (\S+) > (\S+): UDP, ");
-	private static Regex _prepareRegex_TCPDump_2	= new Regex(@"\.lindenlab\.com\.\d+$");
+	private static Regex _prepareRegex_TCPDump_1	= new Regex(@"^IP (\S+ > \S+): UDP, ");
+	private static Regex _prepareRegex_TCPDump_2	= new Regex(@"\.lindenlab\.com\.\d+");
 	private static void Prepare(string line) {
 		Match m;
 		if (mode == Mode.TCPDump && (m = _prepareRegex_TCPDump_0.Match(line)).Success)
 			// packet header
 			if ((m = _prepareRegex_TCPDump_1.Match(m.Groups[1].Captures[0].ToString())).Success)
 				// UDP header
-				if (_prepareRegex_TCPDump_2.Match(m.Groups[1].Captures[0].ToString()).Success) {
-					// incoming SL
-					direction = 1;
-					sim = m.Groups[1].Captures[0].ToString();
-				} else if (_prepareRegex_TCPDump_2.Match(m.Groups[2].Captures[0].ToString()).Success) {
-					// outgoing SL
-					direction = 2;
-					sim = m.Groups[2].Captures[0].ToString();
-				} else
+				if (_prepareRegex_TCPDump_2.Match(m.Groups[1].Captures[0].ToString()).Success)
+					// SL header
+					endpoints = m.Groups[1].Captures[0].ToString();
+				else
 					boring = true;
 			else
 				boring = true;
@@ -141,13 +139,10 @@ class Decoder {
 	private static void Done() {
 		if (!boring) try {
 			byte[] buf;
-			if (mode == Mode.TCPDump) {
-				if ((data[0] & 0x0F) != 0x05) {
-					Console.WriteLine("*** skipping packet with unusual IP header ***");
-					Console.WriteLine();
-					Reset();
-					return;
-				}
+			if ((data[0] & 0xF0) == 0x40) {
+				// strip IP and UDP headers
+				int headerlen = (data[0] & 0x0F) * 4 + 8;
+
 				if ((data[6] & 0x1F) != 0x00 || data[7] != 0x00) {
 					// nonzero fragment offset; we already told them we're truncating the packet
 					Reset();
@@ -157,10 +152,10 @@ class Decoder {
 					Console.WriteLine("*** truncating fragmented packet ***");
 				}
 
-				if (data.Length - 28 > temp.Length)
+				if (data.Length - headerlen > temp.Length)
 					temp = new byte[data.Length];
 
-				Array.Copy(data, 28, temp, 0, pos -= 28);
+				Array.Copy(data, headerlen, temp, 0, pos -= headerlen);
 
 				if ((temp[0] & Helpers.MSG_ZEROCODED) != 0) {
 					pos = Helpers.ZeroDecode(temp, pos, data);
@@ -176,16 +171,42 @@ class Decoder {
 
 			Packet packet = new Packet(buf, pos, protocol);
 
-			if (direction == 0)
-				Console.Write("    ");
-			else if (direction == 1)
-				Console.Write("<-- ");
-			else if (direction == 2)
-				Console.Write("--> ");
-			Console.WriteLine("{0,21} {1,5} {2} "
-					 ,direction == 0 ? "" : sim
+			if (grep != null) {
+				bool match = false;
+				foreach (Block block in packet.Blocks())
+					foreach (Field field in block.Fields) {
+						string value;
+						if (field.Layout.Type == FieldType.Variable)
+							value = DataConvert.toChoppedString(field.Data);
+						else
+							value = field.Data.ToString();
+						if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, grep, RegexOptions.IgnoreCase).Success) {
+							match = true;
+							break;
+						}
+
+						// try matching variable fields in 0x notation
+						if (field.Layout.Type == FieldType.Variable) {
+							StringWriter sw = new StringWriter();
+							sw.Write("0x");
+							foreach (byte b in (byte[])field.Data)
+								sw.Write("{0:x2}", b);
+							if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, grep, RegexOptions.IgnoreCase).Success) {
+								match = true;
+								break;
+							}
+						}
+					}
+				if (!match) {
+					Reset();
+					return;
+				}
+			}
+
+			Console.WriteLine("{0,5} {1} {2}"
 					 ,packet.Sequence
 					 ,InterpretOptions(packet.Data[0])
+					 ,endpoints
 					);
 			Console.WriteLine(packet);
 		} catch (Exception e) {
@@ -199,7 +220,7 @@ class Decoder {
 		return "["
 		     + ((options & Helpers.MSG_APPENDED_ACKS) != 0 ? "Ack" : "   ")
 		     + " "
-		     + ((options & Helpers.MSG_RESENT)        != 0 ? "Res" : "   ")
+		     + ((options & Helpers.MSG_RESENT)	!= 0 ? "Res" : "   ")
 		     + " "
 		     + ((options & Helpers.MSG_RELIABLE)      != 0 ? "Rel" : "   ")
 		     + " "

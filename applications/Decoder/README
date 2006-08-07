@@ -1,8 +1,7 @@
 Decoder is a tool that decodes packet dumps according to the Second
 Life network protocol.  Decoder tries to be semi-intelligent about
-finding packet data in its input, and in particular supports Second
-Life console logs and (properly generated) TCPDump output, as
-described below.
+finding packet data in its input, and for example supports parsing
+Second Life's console output or acting as a filter for tcpdump.
 
 BUILDING
 ========
@@ -27,39 +26,34 @@ variable.  For example, if your libsecondlife-cs directory is
 
   export MONO_PATH=$MONO_PATH:~/libsecondlife/libsecondlife-cs/bin/Debug/
 
-SUPPORTED LOG FORMATS
-=====================
+USAGE
+=====
 
 You can use Decoder by either copying and pasting packet dumps
 directly, or piping it a logfile, as below:
 
   Decoder.exe < some.log
 
-After pasting a packet dump directly into Decoder, you may have to
-press enter a couple times to indicate that the packet dump is
-complete.  Decoder will attempt to automatically detect the format of
-its input:
+Decoder will attempt to automatically extract the packet data from the
+rest of the input.  If you paste the packet dump directly rather than
+piping in a logfile, you may have to press enter a couple times to
+indicate that the packet dump is complete.
 
-1. Generic
-----------
+You can filter packets by providing a regular expression as a
+command-line argument.  In this case, at least one field in the form
+"PacketName.BlockName.FieldName = FieldValue" must match (case
+insensitive) for the packet to be displayed.  In the case of
+variable-length fields, the FieldValue will be rendered as a
+hexadecimal numeral preceeded by 0x, and if that doesn't match,
+as a UTF-8 string if possible.
 
-If Decoder doesn't detect a log format it understands, it will operate
-in Generic mode, in which it will look for hex dumps of packets.
-While operating in generic mode, Decoder assumes that the packet dump
-ONLY contains the packet data, without the UDP header.
+USAGE WITH TCPDUMP
+==================
 
-2. Second Life Console
-----------------------
-
-Decoder understands the console output from Second Life; you can use
-this to parse packets that are dumped prior to a crash.
-
-3. TCPDump
-----------
-
-You can decode an entire Second Life session by giving Decoder a
-properly generated tcpdump log.  You must run tcpdump with the options
-`-x -s0'.  For example, using Mono:
+Decoder has enhanced support for tcpdump output.  Traffic not related
+to SL will be filtered, and the endpoints for each packet will be
+displayed.  To generate output suitable for Decoder, you must run
+tcpdump with the options `-x -s0'.  For example:
 
   $ sudo tcpdump -x -s0 | mono Decoder.exe > ~/sldump
 
