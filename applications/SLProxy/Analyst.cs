@@ -33,6 +33,7 @@ using Nwc.XmlRpc;
 
 using System;
 using System.Collections;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -502,7 +503,15 @@ public class Analyst {
 						case FieldType.IPPORT:
 							return Convert.ToUInt16(value);
 						case FieldType.Variable:
-							return value;
+							Match match = Regex.Match(value, @"^0x([0-9a-fA-F]{2})*", RegexOptions.IgnoreCase);
+							if (match.Success) {
+								byte[] buf = new byte[match.Groups[1].Captures.Count];
+								int i = 0;
+								foreach (Capture capture in match.Groups[1].Captures)
+									buf[i++] = Byte.Parse(capture.ToString(), NumberStyles.AllowHexSpecifier);
+								return buf;
+							} else
+								return value;
 					}
 				} catch {
 					throw new Exception("unable to interpret " + value + " as " + fieldMap.Type);
@@ -598,9 +607,23 @@ public class Analyst {
 						value = DataConvert.toChoppedString(field.Data);
 					else
 						value = field.Data.ToString();
-					if ((new Regex(logGrep)).Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value).Success)
+					if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, logGrep, RegexOptions.IgnoreCase).Success) {
 						match = true;
-}
+						break;
+					}
+
+					// try matching variable fields in 0x notation
+					if (!match && field.Layout.Type == FieldType.Variable) {
+						StringWriter sw = new StringWriter();
+						sw.Write("0x");
+						foreach (byte b in (byte[])field.Data)
+							sw.Write("{0:x2}", b);
+						if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, logGrep, RegexOptions.IgnoreCase).Success) {
+							match = true;
+							break;
+						}
+					}
+				}
 			if (!match)
 				return;
 		}

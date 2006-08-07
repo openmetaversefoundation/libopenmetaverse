@@ -89,14 +89,20 @@ chat:
 
   Only log packets that have a field for which regex matches
   <packet name>.<block name>.<field name> = <value>.  To stop
-  filtering, type /grep without an argument.
+  filtering, type /grep without an argument.  Matches are case
+  insensitive.  In the case of a variable field, Analyst will try to
+  convert it into a string; if that doesn't match, it will try
+  converting it into a hexidecimal numeral preceeded by 0x.
 
 /set <packet name> <block name> <field name> <value>
 
   All forthcoming packets of type <packet name> will have the field
   identified by <block name> and <field name> set to <value>.  For
   example, if you say `/set ChatFromViewer ChatData Type 0',
-  everything you say thereafter will be whispered.
+  everything you say thereafter will be whispered.  Values for
+  variable fields will be interpreted as strings unless they begin
+  with a 0x, in which case they will be treated as hexidecimal
+  numerals representing the contents of the field.
 
 /-set <packet name> <block name> <field name>
 
