@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryDump", "Inventory\
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParcelDownload", "examples\ParcelDownload\ParcelDownload.csproj", "{623B86F7-7753-44B7-A8C8-CBC89FB8AF8E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -61,6 +65,10 @@ Global
 		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Debug.Build.0 = Debug|.NET
 		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.ActiveCfg = Release|.NET
 		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.Build.0 = Release|.NET
+		{623B86F7-7753-44B7-A8C8-CBC89FB8AF8E}.Debug.ActiveCfg = Debug|.NET
+		{623B86F7-7753-44B7-A8C8-CBC89FB8AF8E}.Debug.Build.0 = Debug|.NET
+		{623B86F7-7753-44B7-A8C8-CBC89FB8AF8E}.Release.ActiveCfg = Release|.NET
+		{623B86F7-7753-44B7-A8C8-CBC89FB8AF8E}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
