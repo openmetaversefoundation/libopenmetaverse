@@ -613,7 +613,7 @@ public class Analyst {
 					}
 
 					// try matching variable fields in 0x notation
-					if (!match && field.Layout.Type == FieldType.Variable) {
+					if (field.Layout.Type == FieldType.Variable) {
 						StringWriter sw = new StringWriter();
 						sw.Write("0x");
 						foreach (byte b in (byte[])field.Data)

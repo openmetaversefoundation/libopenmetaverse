@@ -160,7 +160,7 @@ namespace SLProxy {
 		}
 
 		// Start: begin accepting clients
-		public void Start() {
+		public void Start() { lock(this) {
 			RunSimProxy();
 			(new Thread(new ThreadStart(RunLoginProxy))).Start();
 
@@ -171,49 +171,38 @@ namespace SLProxy {
 			else
 				displayAddress = endPoint.Address;
 			Log("proxy ready at http://" + displayAddress + ":" + endPoint.Port + "/", false);
-		}
+		}}
 
 		// SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
-		public void SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate) {
+		public void SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate) { lock(this) {
 			this.loginRequestDelegate = loginRequestDelegate;
-		}
+		}}
 
 		// SetLoginResponseDelegate: specify a callback loginResponseDelegate that will be called when the server responds to login
-		public void SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate) {
+		public void SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate) { lock(this) {
 			this.loginResponseDelegate = loginResponseDelegate;
-		}
+		}}
 
 		// AddDelegate: add callback packetDelegate for packets of type packetName going direction
-		public void AddDelegate(string packetName, Direction direction, PacketDelegate packetDelegate) {
-			Hashtable table = direction == Direction.Incoming ? incomingDelegates : outgoingDelegates;
-			lock(table)
-				table[packetName] = packetDelegate;
-		}
+		public void AddDelegate(string packetName, Direction direction, PacketDelegate packetDelegate) { lock(this) {
+			(direction == Direction.Incoming ? incomingDelegates : outgoingDelegates)[packetName] = packetDelegate;
+		}}
 
 		// RemoveDelegate: remove callback for packets of type packetName going direction
-		public void RemoveDelegate(string packetName, Direction direction) {
-			Hashtable table = direction == Direction.Incoming ? incomingDelegates : outgoingDelegates;
-			lock(table)
-				table.Remove(packetName);
-		}
+		public void RemoveDelegate(string packetName, Direction direction) { lock(this) {
+			(direction == Direction.Incoming ? incomingDelegates : outgoingDelegates).Remove(packetName);
+		}}
 
 		// InjectPacket: send packet to the client or server when direction is Incoming or Outgoing, respectively
-		public void InjectPacket(Packet packet, Direction direction) {
+		public void InjectPacket(Packet packet, Direction direction) { lock(this) {
 			if (activeCircuit == null) {
 				// no active circuit; queue the packet for injection once we have one
 				ArrayList queue = direction == Direction.Incoming ? queuedIncomingInjections : queuedOutgoingInjections;
 				queue.Add(packet);
-			} else {
+			} else
 				// tell the active sim proxy to inject the packet
-				lock(activeCircuit) {
-					SimProxy sim;
-					lock(simProxies)
-						sim = (SimProxy)simProxies[activeCircuit];
-
-					sim.Inject(packet, direction);
-				}
-			}
-		}
+				((SimProxy)simProxies[activeCircuit]).Inject(packet, direction);
+		}}
 
 		// Log: write message to the console if in verbose mode
 		private void Log(object message, bool important) {
@@ -260,11 +249,10 @@ namespace SLProxy {
 				client.Close();
 
 				// send any packets queued for injection
-				if (activeCircuit != null) {
+				if (activeCircuit != null) lock(this) {
 					SimProxy activeProxy = (SimProxy)simProxies[activeCircuit];
-					lock(queuedOutgoingInjections)
-						foreach (Packet packet in queuedOutgoingInjections)
-							activeProxy.Inject(packet, Direction.Outgoing);
+					foreach (Packet packet in queuedOutgoingInjections)
+						activeProxy.Inject(packet, Direction.Outgoing);
 					queuedOutgoingInjections = new ArrayList();
 				}
 			}
@@ -275,7 +263,7 @@ namespace SLProxy {
 		}
 
 		// ProxyLogin: proxy a login request
-		private void ProxyLogin(StreamReader reader, StreamWriter writer) {
+		private void ProxyLogin(StreamReader reader, StreamWriter writer) { lock(this) {
 			string line;
 			int contentLength = 0;
 
@@ -348,7 +336,7 @@ namespace SLProxy {
 			XmlTextWriter responseWriter = new XmlTextWriter(writer);
 			XmlRpcResponseSerializer.Singleton.Serialize(responseWriter, response);
 			responseWriter.Close();
-		}
+		}}
 
 		/*
 		 * Sim Proxy
@@ -391,125 +379,116 @@ namespace SLProxy {
 		}
 
 		// ReceiveFromSim: packet received from a remote sim
-		private void ReceiveFromSim(IAsyncResult ar) {
-		    try {
+		private void ReceiveFromSim(IAsyncResult ar) { lock(this) try {
 			// pause listening and fetch the packet
 			bool needsZero = false;
 			bool needsCopy = true;
 			int length;
-			lock(simFacingSocket)
-				length = simFacingSocket.EndReceiveFrom(ar, ref remoteEndPoint);
+			length = simFacingSocket.EndReceiveFrom(ar, ref remoteEndPoint);
 
-			lock(proxyHandlers) lock(zeroBuffer)
-				if (proxyHandlers.Contains(remoteEndPoint)) {
-					// find the proxy responsible for forwarding this packet
-					SimProxy simProxy = (SimProxy)proxyHandlers[remoteEndPoint];
+			if (proxyHandlers.Contains(remoteEndPoint)) {
+				// find the proxy responsible for forwarding this packet
+				SimProxy simProxy = (SimProxy)proxyHandlers[remoteEndPoint];
 
-					// interpret the packet according to the SL protocol
-					Packet packet;
-					if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
-						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(receiveBuffer), false);
-					else {
-						Helpers.ZeroDecodeCommand(receiveBuffer, zeroBuffer);
-						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
-						needsZero = true;
+				// interpret the packet according to the SL protocol
+				Packet packet;
+				if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
+					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(receiveBuffer), false);
+				else {
+					Helpers.ZeroDecodeCommand(receiveBuffer, zeroBuffer);
+					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
+					needsZero = true;
+				}
+
+				// check for ACKs we're waiting for
+				packet = simProxy.CheckAcks(packet, Direction.Incoming, ref length, ref needsCopy);
+
+				// modify sequence numbers to account for injections
+				ushort oldSequence = packet.Sequence;
+				packet = simProxy.ModifySequence(packet, Direction.Incoming, ref length, ref needsCopy);
+
+				// keep track of sequence numbers
+				if (packet.Sequence > simProxy.incomingSequence)
+					simProxy.incomingSequence = packet.Sequence;
+
+				// check the packet for addresses that need proxying
+				if (incomingCheckers.Contains(packet.Layout.Name)) {
+					if (needsZero) {
+						length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+						packet.Data = zeroBuffer;
+						needsZero = false;
 					}
 
-					// check for ACKs we're waiting for
-					packet = simProxy.CheckAcks(packet, Direction.Incoming, ref length, ref needsCopy);
+					Packet newPacket = ((AddressChecker)incomingCheckers[packet.Layout.Name])(packet);
+					SwapPacket(packet, newPacket, length);
+					packet = newPacket;
+					length = packet.Data.Length;
+					needsCopy = false;
+				}
 
-					// modify sequence numbers to account for injections
-					ushort oldSequence = packet.Sequence;
-					packet = simProxy.ModifySequence(packet, Direction.Incoming, ref length, ref needsCopy);
+				// pass the packet to any callback delegates
+				if (incomingDelegates.Contains(packet.Layout.Name)) {
+					if (needsZero) {
+						length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+						packet.Data = zeroBuffer;
+						needsCopy = true;
+					}
 
-					// keep track of sequence numbers
-					lock(simProxy.sequenceLock)
-						if (packet.Sequence > simProxy.incomingSequence)
-							simProxy.incomingSequence = packet.Sequence;
+					if (needsCopy) {
+						byte[] newData = new byte[length];
+						Array.Copy(packet.Data, 0, newData, 0, length);
+						packet.Data = newData;
+					}
 
-					// check the packet for addresses that need proxying
-					if (incomingCheckers.Contains(packet.Layout.Name)) {
-						if (needsZero) {
-							length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
-							packet.Data = zeroBuffer;
-							needsZero = false;
+					try {
+						Packet newPacket = ((PacketDelegate)incomingDelegates[packet.Layout.Name])(packet, (IPEndPoint)remoteEndPoint);
+						if (newPacket == null) {
+							if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+								simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
+
+							if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+								packet = SeparateAck(packet);
+							else
+								packet = null;
+						} else {
+							bool oldReliable = (packet.Data[0] & Helpers.MSG_RELIABLE) != 0;
+							bool newReliable = (newPacket.Data[0] & Helpers.MSG_RELIABLE) != 0;
+							if (oldReliable && !newReliable)
+								simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
+							else if (!oldReliable && newReliable)
+								simProxy.WaitForAck(packet, Direction.Incoming);
+
+							SwapPacket(packet, newPacket, packet.Data.Length);
+							packet = newPacket;
 						}
-
-						Packet newPacket = ((AddressChecker)incomingCheckers[packet.Layout.Name])(packet);
-						SwapPacket(packet, newPacket, length);
-						packet = newPacket;
-						length = packet.Data.Length;
-						needsCopy = false;
+					} catch (Exception e) {
+						Log("exception in incoming delegate: " + e.Message, true);
+						Log(e.StackTrace, true);
 					}
 
-					// pass the packet to any callback delegates
-					lock(incomingDelegates)
-						if (incomingDelegates.Contains(packet.Layout.Name)) {
-							if (needsZero) {
-								length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
-								packet.Data = zeroBuffer;
-								needsCopy = true;
-							}
-
-							if (needsCopy) {
-								byte[] newData = new byte[length];
-								Array.Copy(packet.Data, 0, newData, 0, length);
-								packet.Data = newData;
-							}
-
-							try {
-								Packet newPacket = ((PacketDelegate)incomingDelegates[packet.Layout.Name])(packet, (IPEndPoint)remoteEndPoint);
-								if (newPacket == null) {
-									if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
-										simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
-	
-									if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
-										packet = SeparateAck(packet);
-									else
-										packet = null;
-								} else {
-									bool oldReliable = (packet.Data[0] & Helpers.MSG_RELIABLE) != 0;
-									bool newReliable = (newPacket.Data[0] & Helpers.MSG_RELIABLE) != 0;
-									if (oldReliable && !newReliable)
-										simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
-									else if (!oldReliable && newReliable)
-										simProxy.WaitForAck(packet, Direction.Incoming);
-
-									SwapPacket(packet, newPacket, packet.Data.Length);
-									packet = newPacket;
-								}
-							} catch (Exception e) {
-								Log("exception in incoming delegate: " + e.Message, true);
-								Log(e.StackTrace, true);
-							}
-
-							if (packet != null)
-								simProxy.SendPacket(packet, packet.Data.Length, false);
-						} else
-							simProxy.SendPacket(packet, length, needsZero);
+					if (packet != null)
+						simProxy.SendPacket(packet, packet.Data.Length, false);
 				} else
-					// ignore packets from unknown peers
-					Log("dropping packet from " + remoteEndPoint, false);
+					simProxy.SendPacket(packet, length, needsZero);
+			} else
+				// ignore packets from unknown peers
+				Log("dropping packet from " + remoteEndPoint, false);
 
 			// resume listening
-			lock(simFacingSocket)
-				simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
-		    } catch (Exception e) {
+			simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
+		} catch (Exception e) {
 			Console.WriteLine(e.Message);
 			Console.WriteLine(e.StackTrace);
-		    }
-		}
+		}}
 
 		// SendPacket: send a packet to a sim from our fake client endpoint
 		public void SendPacket(Packet packet, IPEndPoint endPoint, int length, bool skipZero) {
-			lock(simFacingSocket)
-				if (skipZero || (packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
-					simFacingSocket.SendTo(packet.Data, length, SocketFlags.None, endPoint);
-				else
-					lock(zeroBuffer) {
-						int zeroLength = Helpers.ZeroEncode(packet.Data, length, zeroBuffer);
-						simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
-					}
+			if (skipZero || (packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+				simFacingSocket.SendTo(packet.Data, length, SocketFlags.None, endPoint);
+			else {
+				int zeroLength = Helpers.ZeroEncode(packet.Data, length, zeroBuffer);
+				simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
+			}
 		}
 
 		// SpoofAck: create an ACK for the given packet
@@ -570,26 +549,24 @@ namespace SLProxy {
 
 		// ProxySim: return the proxy for the specified sim, creating it if it doesn't exist
 		private IPEndPoint ProxySim(IPEndPoint simEndPoint) {
-			lock(proxyEndPoints)
-				if (proxyEndPoints.Contains(simEndPoint))
-					// return the existing proxy
-					return (IPEndPoint)proxyEndPoints[simEndPoint];
-				else {
-					// return a new proxy
-					SimProxy simProxy = new SimProxy(proxyConfig, simEndPoint, this);
-					IPEndPoint fakeSim = simProxy.LocalEndPoint();
-					Log("creating proxy for " + simEndPoint + " at " + fakeSim, false);
-					simProxy.Run();
-					proxyEndPoints.Add(simEndPoint, fakeSim);
-					simProxies.Add(simEndPoint, simProxy);
-					return fakeSim;
-				}
+			if (proxyEndPoints.Contains(simEndPoint))
+				// return the existing proxy
+				return (IPEndPoint)proxyEndPoints[simEndPoint];
+			else {
+				// return a new proxy
+				SimProxy simProxy = new SimProxy(proxyConfig, simEndPoint, this);
+				IPEndPoint fakeSim = simProxy.LocalEndPoint();
+				Log("creating proxy for " + simEndPoint + " at " + fakeSim, false);
+				simProxy.Run();
+				proxyEndPoints.Add(simEndPoint, fakeSim);
+				simProxies.Add(simEndPoint, simProxy);
+				return fakeSim;
+			}
 		}
 
 		// AddHandler: remember which sim proxy corresponds to a given sim
 		private void AddHandler(EndPoint endPoint, SimProxy proxy) {
-			lock(proxyHandlers)
-				proxyHandlers.Add(endPoint, proxy);
+			proxyHandlers.Add(endPoint, proxy);
 		}
 
 		// SimProxy: proxy for a single simulator
@@ -598,7 +575,6 @@ namespace SLProxy {
 			private IPEndPoint remoteEndPoint;
 			private Proxy proxy;
 			private Socket socket;
-			public object sequenceLock = new Object();
 			public ushort incomingSequence;
 			public ushort outgoingSequence;
 			private ArrayList incomingInjections;
@@ -623,79 +599,73 @@ namespace SLProxy {
 
 			// Reset: start a new session
 			public void Reset() {
-				lock(sequenceLock) {
-					incomingSequence = 0;
-					outgoingSequence = 0;
-					incomingInjections = new ArrayList();
-					outgoingInjections = new ArrayList();
-					incomingAcks = new Hashtable();
-					outgoingAcks = new Hashtable();
-					incomingSeenAcks = new ArrayList();
-					outgoingSeenAcks = new ArrayList();
-				}
+				incomingSequence = 0;
+				outgoingSequence = 0;
+				incomingInjections = new ArrayList();
+				outgoingInjections = new ArrayList();
+				incomingAcks = new Hashtable();
+				outgoingAcks = new Hashtable();
+				incomingSeenAcks = new ArrayList();
+				outgoingSeenAcks = new ArrayList();
 			}
 
 			// BackgroundTasks: resend unacknowledged packets and keep data structures clean
-			private void BackgroundTasks() {
+			private void BackgroundTasks() { try {
 				int tick = 1;
 				int incomingInjectionsPoint = 0;
 				int outgoingInjectionsPoint = 0;
 				int incomingSeenAcksPoint = 0;
 				int outgoingSeenAcksPoint = 0;
 
-			    try {
-				for (;; Thread.Sleep(1000))
-					lock(sequenceLock) {
-						if ((tick = (tick + 1) % 60) == 0) {
-							for (int i = 0; i < incomingInjectionsPoint; ++i) {
-								incomingInjections.RemoveAt(0);
-								++incomingOffset;
-							}
-							incomingInjectionsPoint = incomingInjections.Count;
+				for (;; Thread.Sleep(1000)) lock(proxy) {
+					if ((tick = (tick + 1) % 60) == 0) {
+						for (int i = 0; i < incomingInjectionsPoint; ++i) {
+							incomingInjections.RemoveAt(0);
+							++incomingOffset;
+						}
+						incomingInjectionsPoint = incomingInjections.Count;
 
-							for (int i = 0; i < outgoingInjectionsPoint; ++i) {
-								outgoingInjections.RemoveAt(0);
-								++outgoingOffset;
-							}
-							outgoingInjectionsPoint = outgoingInjections.Count;
+						for (int i = 0; i < outgoingInjectionsPoint; ++i) {
+							outgoingInjections.RemoveAt(0);
+							++outgoingOffset;
+						}
+						outgoingInjectionsPoint = outgoingInjections.Count;
 
-							for (int i = 0; i < incomingSeenAcksPoint; ++i) {
-								incomingAcks.Remove(incomingSeenAcks[0]);
-								incomingSeenAcks.RemoveAt(0);
-							}
-							incomingSeenAcksPoint = incomingSeenAcks.Count;
+						for (int i = 0; i < incomingSeenAcksPoint; ++i) {
+							incomingAcks.Remove(incomingSeenAcks[0]);
+							incomingSeenAcks.RemoveAt(0);
+						}
+						incomingSeenAcksPoint = incomingSeenAcks.Count;
 
-							for (int i = 0; i < outgoingSeenAcksPoint; ++i) {
-								outgoingAcks.Remove(outgoingSeenAcks[0]);
-								outgoingSeenAcks.RemoveAt(0);
-							}
-							outgoingSeenAcksPoint = outgoingSeenAcks.Count;
+						for (int i = 0; i < outgoingSeenAcksPoint; ++i) {
+							outgoingAcks.Remove(outgoingSeenAcks[0]);
+							outgoingSeenAcks.RemoveAt(0);
+						}
+						outgoingSeenAcksPoint = outgoingSeenAcks.Count;
+					}
+
+					foreach (ushort id in incomingAcks.Keys)
+						if (!incomingSeenAcks.Contains(id)) {
+							Packet packet = (Packet)incomingAcks[id];
+							packet.Data[0] |= Helpers.MSG_RESENT;
+							SendPacket(packet, packet.Data.Length, false);
 						}
 
-						foreach (ushort id in incomingAcks.Keys)
-							if (!incomingSeenAcks.Contains(id)) {
-								Packet packet = (Packet)incomingAcks[id];
-								packet.Data[0] |= Helpers.MSG_RESENT;
-								SendPacket(packet, packet.Data.Length, false);
-							}
-
-						foreach (ushort id in outgoingAcks.Keys)
-							if (!outgoingSeenAcks.Contains(id)) {
-								Packet packet = (Packet)outgoingAcks[id];
-								packet.Data[0] |= Helpers.MSG_RESENT;
-								proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
-							}
-					}
-			    } catch (Exception e) {
+					foreach (ushort id in outgoingAcks.Keys)
+						if (!outgoingSeenAcks.Contains(id)) {
+							Packet packet = (Packet)outgoingAcks[id];
+							packet.Data[0] |= Helpers.MSG_RESENT;
+							proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
+						}
+				}
+			} catch (Exception e) {
 				Console.WriteLine(e.Message);
 				Console.WriteLine(e.StackTrace);
-			    }
-			}
+			}}
 
 			// LocalEndPoint: return the endpoint that the client should communicate with
 			public IPEndPoint LocalEndPoint() {
-				lock(socket)
-					return (IPEndPoint)socket.LocalEndPoint;
+				return (IPEndPoint)socket.LocalEndPoint;
 			}
 
 			private byte[] receiveBuffer = new byte[8192];
@@ -710,227 +680,207 @@ namespace SLProxy {
 			}
 
 			// ReceiveFromClient: packet received from the client
-			private void ReceiveFromClient(IAsyncResult ar) {
-			    try {
+			private void ReceiveFromClient(IAsyncResult ar) { lock(proxy) try {
 				// pause listening and fetch the packet
 				bool needsZero = false;
 				bool needsCopy = true;
 				int length;
-				lock(clientEndPoint) lock(socket)
-					length = socket.EndReceiveFrom(ar, ref clientEndPoint);
+				length = socket.EndReceiveFrom(ar, ref clientEndPoint);
 
-				lock(zeroBuffer) {
-					// interpret the packet according to the SL protocol
-					Packet packet;
-					if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
-						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(receiveBuffer), false);
-					else {
-						Helpers.ZeroDecodeCommand(receiveBuffer, zeroBuffer);
-						packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
-						needsZero = true;
-					}
-
-					// check for ACKs we're waiting for
-					packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
-
-					// modify sequence numbers to account for injections
-					ushort oldSequence = packet.Sequence;
-					packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
-
-					// keep track of sequence numbers
-					lock(sequenceLock)
-						if (packet.Sequence > outgoingSequence)
-							outgoingSequence = packet.Sequence;
-
-					// check the packet for addresses that need proxying
-					if (proxy.outgoingCheckers.Contains(packet.Layout.Name)) {
-						if (needsZero) {
-							length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
-							packet.Data = zeroBuffer;
-							needsZero = false;
-						}
-
-						Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Layout.Name])(packet);
-						SwapPacket(packet, newPacket, length);
-						packet = newPacket;
-						length = packet.Data.Length;
-						needsCopy = false;
-					}
-
-					// pass the packet to any callback delegates
-					lock(proxy.outgoingDelegates)
-						if (proxy.outgoingDelegates.Contains(packet.Layout.Name)) {
-							if (needsZero) {
-								length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
-								packet.Data = zeroBuffer;
-								needsCopy = true;
-							}
-
-							if (needsCopy) {
-								byte[] newData = new byte[length];
-								Array.Copy(packet.Data, 0, newData, 0, length);
-								packet.Data = newData;
-							}
-
-							try {
-								Packet newPacket = ((PacketDelegate)proxy.outgoingDelegates[packet.Layout.Name])(packet, remoteEndPoint);
-								if (newPacket == null) {
-									if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
-										Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
-	
-									if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
-										packet = proxy.SeparateAck(packet);
-									else
-										packet = null;
-								} else {
-									bool oldReliable = (packet.Data[0] & Helpers.MSG_RELIABLE) != 0;
-									bool newReliable = (newPacket.Data[0] & Helpers.MSG_RELIABLE) != 0;
-									if (oldReliable && !newReliable)
-										Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
-									else if (!oldReliable && newReliable)	
-										WaitForAck(packet, Direction.Outgoing);
-
-									SwapPacket(packet, newPacket, packet.Data.Length);
-									packet = newPacket;
-								}
-							} catch (Exception e) {
-								proxy.Log("exception in outgoing delegate: " + e.Message, true);
-								proxy.Log(e.StackTrace, true);
-							}
-
-							if (packet != null)
-								proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
-						} else
-							proxy.SendPacket(packet, remoteEndPoint, length, needsZero);
+				// interpret the packet according to the SL protocol
+				Packet packet;
+				if ((receiveBuffer[0] & Helpers.MSG_ZEROCODED) == 0)
+					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(receiveBuffer), false);
+				else {
+					Helpers.ZeroDecodeCommand(receiveBuffer, zeroBuffer);
+					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
+					needsZero = true;
 				}
+
+				// check for ACKs we're waiting for
+				packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
+
+				// modify sequence numbers to account for injections
+				ushort oldSequence = packet.Sequence;
+				packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
+
+				// keep track of sequence numbers
+				if (packet.Sequence > outgoingSequence)
+					outgoingSequence = packet.Sequence;
+
+				// check the packet for addresses that need proxying
+				if (proxy.outgoingCheckers.Contains(packet.Layout.Name)) {
+					if (needsZero) {
+						length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+						packet.Data = zeroBuffer;
+						needsZero = false;
+					}
+
+					Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Layout.Name])(packet);
+					SwapPacket(packet, newPacket, length);
+					packet = newPacket;
+					length = packet.Data.Length;
+					needsCopy = false;
+				}
+
+				// pass the packet to any callback delegates
+				if (proxy.outgoingDelegates.Contains(packet.Layout.Name)) {
+					if (needsZero) {
+						length = Helpers.ZeroDecode(packet.Data, length, zeroBuffer);
+						packet.Data = zeroBuffer;
+						needsCopy = true;
+					}
+
+					if (needsCopy) {
+						byte[] newData = new byte[length];
+						Array.Copy(packet.Data, 0, newData, 0, length);
+						packet.Data = newData;
+					}
+
+					try {
+						Packet newPacket = ((PacketDelegate)proxy.outgoingDelegates[packet.Layout.Name])(packet, remoteEndPoint);
+						if (newPacket == null) {
+							if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+								Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+
+							if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+								packet = proxy.SeparateAck(packet);
+							else
+								packet = null;
+						} else {
+							bool oldReliable = (packet.Data[0] & Helpers.MSG_RELIABLE) != 0;
+							bool newReliable = (newPacket.Data[0] & Helpers.MSG_RELIABLE) != 0;
+							if (oldReliable && !newReliable)
+								Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
+							else if (!oldReliable && newReliable)	
+								WaitForAck(packet, Direction.Outgoing);
+
+							SwapPacket(packet, newPacket, packet.Data.Length);
+							packet = newPacket;
+						}
+					} catch (Exception e) {
+						proxy.Log("exception in outgoing delegate: " + e.Message, true);
+						proxy.Log(e.StackTrace, true);
+					}
+
+					if (packet != null)
+						proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
+				} else
+					proxy.SendPacket(packet, remoteEndPoint, length, needsZero);
 
 				// send any packets queued for injection
 				if (firstReceive) {
 					firstReceive = false;
-					lock(proxy.queuedIncomingInjections)
-						foreach (Packet queuedPacket in proxy.queuedIncomingInjections)
-							Inject(queuedPacket, Direction.Incoming);
+					foreach (Packet queuedPacket in proxy.queuedIncomingInjections)
+						Inject(queuedPacket, Direction.Incoming);
 					proxy.queuedIncomingInjections = new ArrayList();
 				}
 
 				// resume listening
-				lock(clientEndPoint) lock(socket)
-					socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
-			    } catch (Exception e) {
+				socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
+			} catch (Exception e) {
 				Console.WriteLine(e.Message);
 				Console.WriteLine(e.StackTrace);
-			    }
-			}
+			}}
 
 			// SendPacket: send a packet from the sim to the client via our fake sim endpoint
 			public void SendPacket(Packet packet, int length, bool skipZero) {
-				lock(clientEndPoint) lock(socket)
-					if (skipZero || (packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
-						socket.SendTo(packet.Data, length, SocketFlags.None, clientEndPoint);
-					else
-						lock(zeroBuffer) {
-							int zeroLength = Helpers.ZeroEncode(packet.Data, length, zeroBuffer);
-							socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
-						}
+				if (skipZero || (packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+					socket.SendTo(packet.Data, length, SocketFlags.None, clientEndPoint);
+				else {
+					int zeroLength = Helpers.ZeroEncode(packet.Data, length, zeroBuffer);
+					socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+				}
 			}
 
 			// Inject: inject a packet
 			public void Inject(Packet packet, Direction direction) {
-				lock(sequenceLock) {
-					if (direction == Direction.Incoming) {
-						if (firstReceive) {
-							lock(proxy.queuedIncomingInjections)
-								proxy.queuedIncomingInjections.Add(packet);
-							return;
-						}
-
-						incomingInjections.Add(++incomingSequence);
-						packet.Sequence = incomingSequence;
-					} else {
-						outgoingInjections.Add(++outgoingSequence);
-						packet.Sequence = outgoingSequence;
+				if (direction == Direction.Incoming) {
+					if (firstReceive) {
+						proxy.queuedIncomingInjections.Add(packet);
+						return;
 					}
+
+					incomingInjections.Add(++incomingSequence);
+					packet.Sequence = incomingSequence;
+				} else {
+					outgoingInjections.Add(++outgoingSequence);
+					packet.Sequence = outgoingSequence;
 				}
 
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 					WaitForAck(packet, direction);
 
-				if (direction == Direction.Incoming) {
-					lock(clientEndPoint) lock(socket)
-						if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
-							socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
-						else
-							lock(zeroBuffer) {
-								int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-								socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
-							}
-				} else
+				if (direction == Direction.Incoming)
+					if ((packet.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+						socket.SendTo(packet.Data, packet.Data.Length, SocketFlags.None, clientEndPoint);
+					else {
+						int zeroLength = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+						socket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, clientEndPoint);
+					}
+				else
 					proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
 			}
 
 			// WaitForAck: take care of resending a packet until it's ACKed
 			public void WaitForAck(Packet packet, Direction direction) {
-				lock(sequenceLock) {
-					Hashtable table = direction == Direction.Incoming ? incomingAcks : outgoingAcks;
-					table.Add(packet.Sequence, packet);
-				}
+				Hashtable table = direction == Direction.Incoming ? incomingAcks : outgoingAcks;
+				table.Add(packet.Sequence, packet);
 			}
 
 			// CheckAcks: check for and remove ACKs of packets we've injected
 			public Packet CheckAcks(Packet packet, Direction direction, ref int length, ref bool needsCopy) {
-				lock(sequenceLock) {
-					Hashtable acks = direction == Direction.Incoming ? outgoingAcks : incomingAcks;
-					ArrayList seenAcks = direction == Direction.Incoming ? outgoingSeenAcks : incomingSeenAcks;
+				Hashtable acks = direction == Direction.Incoming ? outgoingAcks : incomingAcks;
+				ArrayList seenAcks = direction == Direction.Incoming ? outgoingSeenAcks : incomingSeenAcks;
 
-					if (acks.Count == 0)
-						return packet;
+				if (acks.Count == 0)
+					return packet;
 
-					// check for embedded ACKs
-					if (packet.Layout.Name == "PacketAck") {
-						bool changed = false;
-						Hashtable blocks = PacketUtility.Unbuild(packet);
-						Hashtable newBlocks = new Hashtable();
-						foreach (Hashtable fields in blocks.Keys) {
-							ushort id = (ushort)((uint)fields["ID"]);
-							if (acks.Contains(id)) {
-								seenAcks.Add(id);
-								changed = true;
-							} else
-								newBlocks.Add(fields, blocks[fields]);
-						}
-						if (changed) {
-							Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, newBlocks, packet.Data[0]);
-							SwapPacket(packet, newPacket, length);
-							packet = newPacket;
-							length = packet.Data.Length;
-							needsCopy = false;
-						}
+				// check for embedded ACKs
+				if (packet.Layout.Name == "PacketAck") {
+					bool changed = false;
+					Hashtable blocks = PacketUtility.Unbuild(packet);
+					Hashtable newBlocks = new Hashtable();
+					foreach (Hashtable fields in blocks.Keys) {
+						ushort id = (ushort)((uint)fields["ID"]);
+						if (acks.Contains(id)) {
+							seenAcks.Add(id);
+							changed = true;
+						} else
+							newBlocks.Add(fields, blocks[fields]);
 					}
+					if (changed) {
+						Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, newBlocks, packet.Data[0]);
+						SwapPacket(packet, newPacket, length);
+						packet = newPacket;
+						length = packet.Data.Length;
+						needsCopy = false;
+					}
+				}
 
-					// check for appended ACKs
-					if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0) {
-						byte ackCount = packet.Data[length - 1];
-						for (int i = 0; i < ackCount;) {
-							int offset = length - (ackCount - i) * 4 - 1;
-							ushort ackID = (ushort)(packet.Data[offset] + (packet.Data[offset + 1] << 8));
-							if (acks.Contains(ackID)) {
-								byte[] newData = new byte[length -= 4];
-								Array.Copy(packet.Data, 0, newData, 0, offset);
-								Array.Copy(packet.Data, offset + 4, newData, offset, length - offset - 4);
-								--newData[newData.Length - 1];
-								packet.Data = newData;
-								--ackCount;
-								seenAcks.Add(ackID);
-								needsCopy = false;
-							} else
-								++i;
-						}
-						if (ackCount == 0) {
-							byte[] newData = new byte[length -= 1];
-							Array.Copy(packet.Data, 0, newData, 0, length);
-							newData[0] ^= Helpers.MSG_APPENDED_ACKS;
+				// check for appended ACKs
+				if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0) {
+					byte ackCount = packet.Data[length - 1];
+					for (int i = 0; i < ackCount;) {
+						int offset = length - (ackCount - i) * 4 - 1;
+						ushort ackID = (ushort)(packet.Data[offset] + (packet.Data[offset + 1] << 8));
+						if (acks.Contains(ackID)) {
+							byte[] newData = new byte[length -= 4];
+							Array.Copy(packet.Data, 0, newData, 0, offset);
+							Array.Copy(packet.Data, offset + 4, newData, offset, length - offset - 4);
+							--newData[newData.Length - 1];
 							packet.Data = newData;
-						}
+							--ackCount;
+							seenAcks.Add(ackID);
+							needsCopy = false;
+						} else
+							++i;
+					}
+					if (ackCount == 0) {
+						byte[] newData = new byte[length -= 1];
+						Array.Copy(packet.Data, 0, newData, 0, length);
+						newData[0] ^= Helpers.MSG_APPENDED_ACKS;
+						packet.Data = newData;
 					}
 				}
 
@@ -939,50 +889,48 @@ namespace SLProxy {
 
 			// ModifySequence: modify a packet's sequence number and ACK IDs to account for injections
 			public Packet ModifySequence(Packet packet, Direction direction, ref int length, ref bool needsCopy) {
-				lock(sequenceLock) {
-					ArrayList ourInjections = direction == Direction.Outgoing ? outgoingInjections : incomingInjections;
-					ArrayList theirInjections = direction == Direction.Incoming ? outgoingInjections : incomingInjections;
-					ushort ourOffset = direction == Direction.Outgoing ? outgoingOffset : incomingOffset;
-					ushort theirOffset = direction == Direction.Incoming ? outgoingOffset : incomingOffset;
+				ArrayList ourInjections = direction == Direction.Outgoing ? outgoingInjections : incomingInjections;
+				ArrayList theirInjections = direction == Direction.Incoming ? outgoingInjections : incomingInjections;
+				ushort ourOffset = direction == Direction.Outgoing ? outgoingOffset : incomingOffset;
+				ushort theirOffset = direction == Direction.Incoming ? outgoingOffset : incomingOffset;
 
-					ushort newSequence = (ushort)(packet.Sequence + ourOffset);
-					foreach (ushort injection in ourInjections)
-						if (newSequence >= injection)
-							++newSequence;
-					packet.Sequence = newSequence;
+				ushort newSequence = (ushort)(packet.Sequence + ourOffset);
+				foreach (ushort injection in ourInjections)
+					if (newSequence >= injection)
+						++newSequence;
+				packet.Sequence = newSequence;
 
-					if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0) {
-						int ackCount = packet.Data[length - 1];
-						for (int i = 0; i < ackCount; ++i) {
-							int offset = length - (ackCount - i) * 4 - 2;
-							uint ackID = (uint)(packet.Data[offset] + (packet.Data[offset + 1] << 8)) - theirOffset;
-							for (int j = theirInjections.Count - 1; j >= 0; --j)
-								if (ackID >= (ushort)theirInjections[j])
+				if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0) {
+					int ackCount = packet.Data[length - 1];
+					for (int i = 0; i < ackCount; ++i) {
+						int offset = length - (ackCount - i) * 4 - 2;
+						uint ackID = (uint)(packet.Data[offset] + (packet.Data[offset + 1] << 8)) - theirOffset;
+						for (int j = theirInjections.Count - 1; j >= 0; --j)
+							if (ackID >= (ushort)theirInjections[j])
+								--ackID;
+						packet.Data[offset + 0] = (byte)(ackID % 256); ackID >>= 8;
+						packet.Data[offset + 1] = (byte)(ackID % 256); ackID >>= 8;
+						packet.Data[offset + 2] = (byte)(ackID % 256); ackID >>= 8;
+						packet.Data[offset + 3] = (byte)(ackID % 256); ackID >>= 8;
+					}
+				}
+
+				if (packet.Layout.Name == "PacketAck") {
+					Hashtable blocks = PacketUtility.Unbuild(packet);
+					foreach (Hashtable fields in blocks.Keys) {
+						if ((string)blocks[fields] == "Packets") {
+							uint ackID = (uint)fields["ID"] - theirOffset;
+							for (int i = theirInjections.Count - 1; i >= 0; --i)
+								if (ackID >= (ushort)theirInjections[i])
 									--ackID;
-							packet.Data[offset + 0] = (byte)(ackID % 256); ackID >>= 8;
-							packet.Data[offset + 1] = (byte)(ackID % 256); ackID >>= 8;
-							packet.Data[offset + 2] = (byte)(ackID % 256); ackID >>= 8;
-							packet.Data[offset + 3] = (byte)(ackID % 256); ackID >>= 8;
+							fields["ID"] = ackID;
 						}
 					}
-
-					if (packet.Layout.Name == "PacketAck") {
-						Hashtable blocks = PacketUtility.Unbuild(packet);
-						foreach (Hashtable fields in blocks.Keys) {
-							if ((string)blocks[fields] == "Packets") {
-								uint ackID = (uint)fields["ID"] - theirOffset;
-								for (int i = theirInjections.Count - 1; i >= 0; --i)
-									if (ackID >= (ushort)theirInjections[i])
-										--ackID;
-								fields["ID"] = ackID;
-							}
-						}
-						Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, packet.Data[0]);
-						SwapPacket(packet, newPacket, length);
-						packet = newPacket;
-						length = packet.Data.Length;
-						needsCopy = false;
-					}
+					Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, blocks, packet.Data[0]);
+					SwapPacket(packet, newPacket, length);
+					packet = newPacket;
+					length = packet.Data.Length;
+					needsCopy = false;
 				}
 
 				return packet;
