@@ -1256,26 +1256,40 @@ int decomm()
 	fseek(fpComm, 0, SEEK_SET);
 
 	BYTE buffer[2048];
+	BYTE stripped[2048];
 	LPBYTE lpTemplate = (LPBYTE)malloc(lTemplateSize);
 	DWORD dwTemplateWrote = 0;
 
 	if (!lpTemplate)
 		return -1;
 
+	bool bComment = false;
+
 	while (!feof(fpComm))
 	{
 		size_t stRead = fread(&buffer, 1, sizeof(buffer), fpComm);
+		size_t stStripped = 0;
 
 		for (size_t stCount = 0; stCount < stRead; stCount++)
 		{
 			buffer[stCount] ^= ucMagicKey;
+
+			if (!bComment && buffer[stCount] != '/')
+				stripped[stStripped++] = buffer[stCount];
+
+			if (bComment && buffer[stCount] == '\n')
+				bComment = false;
+
+			if (!bComment && buffer[stCount] == '/')
+				bComment = true;
+
 			ucMagicKey += 43;
 		}
 
-		memcpy(lpTemplate + dwTemplateWrote, &buffer, stRead);
-		dwTemplateWrote += (DWORD)stRead;
+		memcpy(lpTemplate + dwTemplateWrote, &stripped, stStripped);
+		dwTemplateWrote += (DWORD)stStripped;
 		
-		size_t stWrote = fwrite(&buffer, 1, stRead, fpMsg);
+		size_t stWrote = fwrite(&stripped, 1, stStripped, fpMsg);
 
 		printf(".");
 		fflush(stdout);
