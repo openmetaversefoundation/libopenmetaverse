@@ -1,3 +1,4 @@
+SeedCapability
 X
 Y
 Z
@@ -56,7 +57,6 @@ MapLayerReply
 CompoundMsgID
 CameraConstraint
 DownloadTotals
-ChatMessage
 ErrorValue
 GenCounter
 FrozenData
@@ -193,6 +193,7 @@ AgentPresenceResponse
 CharterMember
 EdgeData
 NameData
+RegionPushOverride
 SimName
 UserReport
 DownloadPriority
@@ -229,7 +230,6 @@ Arc
 NewFolderID
 RegionX
 RegionY
-UUIDSoundTriggerFar
 RequestData
 Msg
 Top
@@ -469,9 +469,6 @@ ObjectCount
 RegionPresenceRequestByHandle
 RezSingleAttachmentFromInv
 ChildAgentUpdate
-XPos
-YPos
-ZPos
 ToID
 ViewerPort
 IsOwnerGroup
@@ -634,12 +631,14 @@ TransferPriority
 EventID
 FromAgentId
 Type
+ChatType
 ReportData
 LeaderBoardData
 RequestBlock
 GrantData
 DetachAttachmentIntoInv
 ParcelDisableObjects
+Sections
 GodLevel
 StartGroupIM
 PayPriceReply
@@ -828,17 +827,16 @@ ClassifiedInfoRequest
 ParcelInfoRequest
 ParcelObjectOwnersRequest
 TeleportLandmarkRequest
-CommandID
+EventInfoRequest
 MovedIntoSimulator
 ChatFromSimulator
-EventInfoRequest
 PickInfoRequest
-DirPeopleQuery
 MoneyBalanceRequest
+DirPeopleQuery
 GroupElectionInfoRequest
 GroupMembersRequest
-TextureID
 GroupOfficersAndMembersRequest
+TextureID
 OldFolderID
 UserInfoRequest
 LandCollidersRequest
@@ -968,7 +966,6 @@ BodyRotation
 StartGroupElection
 SearchRegions
 Ignore
-ConversationData
 AnimationData
 StatID
 ItemID
@@ -1143,6 +1140,7 @@ VoteItem
 ObjectRotation
 SitRotation
 SnapSelection
+SoundTrigger
 TerrainRaiseLimit
 Quorum
 TokenBlock
@@ -1252,6 +1250,7 @@ ObjectSelect
 ForceObjectSelect
 Price
 SunDirection
+FromName
 ChangeInventoryItemFlags
 Force
 TransactionBlock
@@ -1276,6 +1275,7 @@ SysOS
 Notes
 AvatarID
 FounderID
+EndPointID
 StipendEstimate
 LocationLookAt
 Sound
@@ -1296,6 +1296,7 @@ Count
 South
 Entry
 ObjectUpdateCompressed
+MuteFlags
 Group
 AgentPause
 InternalScriptMail
@@ -1492,6 +1493,7 @@ DeRezAck
 TakeControls
 DirLandReply
 SpaceLocationTeleportReply
+MuteType
 IMViaEMail
 StartExpungeProcessAck
 RentPrice
