@@ -59,8 +59,6 @@ void myprintf(TCHAR *format, ...);
 #define myprintf
 #endif
 
-void pktsave(char *buf, int len, int extra = 0);
-
 extern FILE *fpLog;
 
 // Bitmasks

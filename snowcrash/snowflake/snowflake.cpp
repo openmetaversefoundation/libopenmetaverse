@@ -9,6 +9,7 @@
 #include ".\Message.h"
 #include ".\Block.h"
 #include ".\Var.h"
+#include ".\Config.h"
 #include <tlhelp32.h>
 #include <wininet.h>
 #include <wincrypt.h>
@@ -18,13 +19,6 @@
 #include <winuser.h>
 #include <time.h>
 #include ".\keywords.h"
-
-// Relative paths are nice, but it makes continually recompiling and copying a pain
-//#define PATH_COMM_DAT			".\\app_settings\\comm.dat"
-//#define PATH_MESSAGE_TEMPLATE	".\\app_settings\\comm.txt"
-
-#define PATH_COMM_DAT			"C:\\Program Files\\SecondLife\\app_settings\\comm.dat"
-#define PATH_MESSAGE_TEMPLATE "C:\\Program Files\\SecondLife\\app_settings\\message_template.msg"
 
 #pragma pack(1)
 
@@ -88,12 +82,11 @@ HHOOK h_hCBTHook = NULL;
 
 HINSTANCE g_hinstDLL = NULL;
 HMODULE g_hOpenGL = NULL;
-CMainFrame* mainFrm = NULL;
+CMainFrame* g_pMainFrm = NULL;
 CAppModule _Module;
-CMessageLoop theLoop;
+CMessageLoop g_msgLoop;
+CConfig* g_pConfig = NULL;
 BOOL g_bAllowSub = TRUE;
-int nOnlineAgents = 0;
-int nOnlineTime = 0;
 
 CServerList servers;
 
@@ -1231,23 +1224,23 @@ int decomm()
 	FILE *fpComm;
 	FILE *fpMsg;
 
-	fpComm = fopen(PATH_COMM_DAT, "rb");
+	fpComm = fopen(g_pConfig->m_pCommDatPath, "rb");
 
 	if (!fpComm)
 	{
-		printf("Couldn't open %s for reading, aborting...\n", PATH_COMM_DAT);
+		printf("Couldn't open %s for reading, aborting...\n", g_pConfig->m_pCommDatPath);
 		return -1;
 	}
 
-	fpMsg = fopen(PATH_MESSAGE_TEMPLATE, "wb");
+	fpMsg = fopen(g_pConfig->m_pMessageTemplatePath, "wb");
 
 	if (!fpMsg)
 	{
-		printf("Couldn't open %s for writing, aborting...\n", PATH_MESSAGE_TEMPLATE);
+		printf("Couldn't open %s for writing, aborting...\n", g_pConfig->m_pMessageTemplatePath);
 		return -1;
 	}
 
-	printf("Decrypting %s to %s\n", PATH_COMM_DAT, PATH_MESSAGE_TEMPLATE);
+	printf("Decrypting %s to %s\n", g_pConfig->m_pCommDatPath, g_pConfig->m_pMessageTemplatePath);
 	static unsigned char ucMagicKey = 0;
 	long lTemplateSize = 0;
 
@@ -1920,7 +1913,7 @@ LONG WINAPI new_SetWindowLongA(
 {
 	LONG nRes = 0;
 
-	if (nIndex == GWL_WNDPROC && mainFrm && hWnd == mainFrm->m_hWnd)
+	if (nIndex == GWL_WNDPROC && g_pMainFrm && hWnd == g_pMainFrm->m_hWnd)
 	{
 		dprintf(_T("[SetWindowLongA] %08x [%x] = "), hWnd, dwNewLong);
 
@@ -2044,10 +2037,10 @@ BOOL WINAPI new_PeekMessageA(
 		if (uiAntiIdle > 4)
 		{
 			//dprintf(_T("idle.. %d\n"), uiAntiIdle);
-			if (mainFrm)
+			if (g_pMainFrm)
 			{
 				//dprintf(_T("sending anti.. idle...\n"));
-				PostMessage(mainFrm->m_hWnd, WM_MOUSEMOVE, 0, MAKEWORD(10, 10));
+				PostMessage(g_pMainFrm->m_hWnd, WM_MOUSEMOVE, 0, MAKEWORD(10, 10));
 			}
 
 			uiAntiIdle = 0;
@@ -2056,7 +2049,7 @@ BOOL WINAPI new_PeekMessageA(
 
 	static UINT uiAutoPilot = 0;
 
-	if (mainFrm)
+	if (g_pMainFrm)
 	{
 		//uiAutoPilot++;
 
@@ -2070,18 +2063,18 @@ BOOL WINAPI new_PeekMessageA(
 			lParam |= 1 << 30;
 			lParam |= 0 << 31;
 
-			//PostMessage(mainFrm->m_hWnd, WM_KEYDOWN, VK_UP, lParam);
+			//PostMessage(g_pMainFrm->m_hWnd, WM_KEYDOWN, VK_UP, lParam);
 
 			lParam |= 0 << 24;
-			//PostMessage(mainFrm->m_hWnd, WM_KEYDOWN, 'E', 0);
+			//PostMessage(g_pMainFrm->m_hWnd, WM_KEYDOWN, 'E', 0);
 			
 			char sc = 0;
 			sc = MapVirtualKey('E', 0);
 				
 			for (int k = 0; k < 90; k++)
-				PostMessage(mainFrm->m_hWnd, WM_KEYDOWN, 'E', 1 | (1 << 30) | (sc << 16));
+				PostMessage(g_pMainFrm->m_hWnd, WM_KEYDOWN, 'E', 1 | (1 << 30) | (sc << 16));
 
-			//PostMessage(mainFrm->m_hWnd, WM_KEYUP, 'E', 1 | (3 << 30) | (sc << 16));
+			//PostMessage(g_pMainFrm->m_hWnd, WM_KEYUP, 'E', 1 | (3 << 30) | (sc << 16));
 
 			uiAutoPilot = 0;
 		}
@@ -2799,13 +2792,14 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 			if (_tcsstr(szPath, _T("\\SECONDLIFE.EXE")))
 			{
+				if (!g_pConfig)
+					g_pConfig = new CConfig();
+
 #ifdef ECHO
 				AllocConsole();
 				
 				if (!fpLog)
-				{
-					fpLog = fopen("c:\\snowcrash.txt", "w");
-				}
+					fpLog = fopen(g_pConfig->m_pSnowcrashTxtPath, "w");
 #endif
 				dprintf(_T("[snowflake] %s\n"), szPath);
 
@@ -2840,7 +2834,7 @@ LRESULT CALLBACK CBTHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
 		case HCBT_ACTIVATE:
 			{
-				if (!mainFrm)
+				if (!g_pMainFrm)
 				{
 					TCHAR szClass[128];
 					HWND hwnd = (HWND)wParam;
@@ -2890,7 +2884,7 @@ LRESULT CALLBACK CBTHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 				if (GetClassName(hwnd, szClass, sizeof(szClass)))
 				{
-					if (mainFrm && mainFrm->m_hWnd == hwnd)
+					if (g_pMainFrm && g_pMainFrm->m_hWnd == hwnd)
 					{
 						dprintf(_T("[snowflake] SL window destroyed\n"));
 						RemoveSLHooks();
@@ -2933,13 +2927,13 @@ SNOWFLAKE_API BOOL RemoveSystemHook()
 
 bool InstallSLHooks(HWND hwnd)
 {
-	_Module.AddMessageLoop(&theLoop);
+	_Module.AddMessageLoop(&g_msgLoop);
 
-	if (mainFrm == NULL)
+	if (g_pMainFrm == NULL)
 	{
-		mainFrm = new CMainFrame();
+		g_pMainFrm = new CMainFrame();
 
-		if (mainFrm->SubclassWindow(hwnd))
+		if (g_pMainFrm->SubclassWindow(hwnd))
 		{
 			return true;
 		}
@@ -2950,18 +2944,18 @@ bool InstallSLHooks(HWND hwnd)
 
 bool RemoveSLHooks()
 {
-	if (mainFrm != NULL)
+	if (g_pMainFrm != NULL)
 	{
 		dprintf(_T("RemoveSLHooks MainFrm\n"));
-		if (mainFrm->m_hWnd != NULL && ::IsWindow(*mainFrm))
+		if (g_pMainFrm->m_hWnd != NULL && ::IsWindow(*g_pMainFrm))
 		{
 			dprintf(_T("RemoveSLHooks MainFrm Unsub\n"));
-			mainFrm->UnsubclassWindow(TRUE);
-			mainFrm->m_hWnd = NULL;
+			g_pMainFrm->UnsubclassWindow(TRUE);
+			g_pMainFrm->m_hWnd = NULL;
 		} else
-			mainFrm->m_hWnd = NULL;
-		delete(mainFrm);
-		mainFrm = NULL;
+			g_pMainFrm->m_hWnd = NULL;
+		delete(g_pMainFrm);
+		g_pMainFrm = NULL;
 
 		return true;
 	}

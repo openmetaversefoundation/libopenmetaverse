@@ -124,6 +124,9 @@
 				RelativePath=".\BlockList.cpp">
 			</File>
 			<File
+				RelativePath=".\Config.cpp">
+			</File>
+			<File
 				RelativePath=".\keywords.cpp">
 			</File>
 			<File
@@ -175,6 +178,9 @@
 			</File>
 			<File
 				RelativePath=".\BlockList.h">
+			</File>
+			<File
+				RelativePath=".\Config.h">
 			</File>
 			<File
 				RelativePath=".\keywords.h">
