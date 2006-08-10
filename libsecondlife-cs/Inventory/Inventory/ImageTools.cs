@@ -13,6 +13,30 @@ namespace libsecondlife
 		{
 		}
 
+		public static bool Check4Tools()
+		{
+			bool status = true;
+			if( File.Exists("kdu_expand.exe") == false )
+			{
+				status = false;
+				Console.WriteLine("You need kdu_expand.exe to save SL images.");
+			}
+
+			if( File.Exists("kdu_compress.exe") == false )
+			{
+				status = false;
+				Console.WriteLine("You need kdu_compress.exe to load images into SL.");
+			}
+
+			if( File.Exists("kdu_v51R.dll") == false )
+			{
+				status = false;
+				Console.WriteLine("You need kdu_v51R.dll for kdu_expand.exe and kdu_compress.exe.");
+			}
+			
+			return status;
+		}
+
 		public static void WriteJ2CToFile( string j2c_filename, byte[] J2CData )
 		{
 			FileStream fs = System.IO.File.OpenWrite( j2c_filename );
