@@ -80,13 +80,13 @@
                     HintPath = "..\..\..\..\WINDOWS\Microsoft.NET\Framework\v1.1.4322\System.XML.dll"
                 />
                 <Reference
-                    Name = "libsecondlife"
-                    Project = "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
+                    Name = "Inventory"
+                    Project = "{F6297392-3422-42EB-977A-F86C50CD557F}"
                     Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
                 />
                 <Reference
-                    Name = "Inventory"
-                    Project = "{F6297392-3422-42EB-977A-F86C50CD557F}"
+                    Name = "libsecondlife"
+                    Project = "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
                     Package = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
                 />
             </References>

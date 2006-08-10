@@ -34,6 +34,7 @@ using libsecondlife.InventorySystem.PacketHelpers;
 
 namespace libsecondlife.InventorySystem
 {
+
 	/// <summary>
 	/// Summary description for Inventory.
 	/// </summary>
@@ -43,7 +44,7 @@ namespace libsecondlife.InventorySystem
 		private SecondLife slClient;
 
 		// Reference to the Asset Manager
-		private AssetManager slAssetManager;
+		private static AssetManager slAssetManager;
 		internal AssetManager AssetManager
 		{
 			get{ return slAssetManager; }
@@ -58,16 +59,46 @@ namespace libsecondlife.InventorySystem
 	
 		// Setup a Hashtable to track download progress
 		private Hashtable htFolderDownloadStatus;
-		private Queue qFolderRequestQueue;
+		private ArrayList alFolderRequestQueue;
 
 		private int iLastPacketRecieved;
+
+		private class DescendentRequest
+		{
+			public LLUUID FolderID;
+
+			public int Expected		= int.MaxValue;
+			public int Received		= 0;
+			public int LastReceived = 0;
+
+			public bool FetchFolders = true;
+			public bool FetchItems   = true;
+
+			public DescendentRequest( LLUUID folderID )
+			{
+				FolderID = folderID;
+				LastReceived = InventoryManager.getUnixtime();
+			}
+
+			public DescendentRequest( LLUUID folderID, bool fetchFolders, bool fetchItems )
+			{
+				FolderID = folderID;
+				FetchFolders = fetchFolders;
+				FetchItems   = fetchItems;
+				LastReceived = InventoryManager.getUnixtime();
+			}
+
+		}
 
 		// Each InventorySystem needs to be initialized with a client (for network access to SL)
 		// and root folder.  The root folder can be the root folder of an object OR an agent.
 		public InventoryManager( SecondLife client, LLUUID rootFolder )
 		{
 			slClient = client;
-			slAssetManager = new AssetManager( slClient );
+			if( slAssetManager == null )
+			{
+				slAssetManager = new AssetManager( slClient );
+			}
 
 			uuidRootFolder = rootFolder;
 			
@@ -76,6 +107,13 @@ namespace libsecondlife.InventorySystem
 			// Setup the callback
 			PacketCallback InventoryDescendentsCallback = new PacketCallback(InventoryDescendentsHandler);
 			slClient.Network.RegisterCallback("InventoryDescendents", InventoryDescendentsCallback);
+		}
+
+
+		public AssetManager getAssetManager()
+		{
+			Console.WriteLine("It is not recommended that you access the asset manager directly");
+			return AssetManager;
 		}
 
 		private void resetFoldersByUUID()
@@ -142,33 +180,19 @@ namespace libsecondlife.InventorySystem
 			return null;
 		}
 
-
-		private void RequestFolder( LLUUID dlFolder )
+		private void RequestFolder( DescendentRequest dr )
 		{
-			LLUUID ownerID = slClient.Network.AgentID;
-			RequestFolder( dlFolder, ownerID );
-		}
+			Packet packet = InventoryPackets.FetchInventoryDescendents(slClient.Protocol
+							, slClient.Network.AgentID
+							, dr.FolderID
+							, slClient.Network.AgentID
+							, dr.FetchFolders
+							, dr.FetchItems);
 
-		private void RequestFolder( LLUUID dlFolder, LLUUID ownerID )
-		{
-			/*
-			Packet packet = FetchInventoryDescendents.BuildPacket(slClient.Protocol 
-				, ownerID
-				, dlFolder
-				, slClient.Network.AgentID
-				);
-			*/
-			Packet packet = libsecondlife.Packets.Inventory.FetchInventoryDescendents(slClient.Protocol, ownerID, dlFolder, slClient.Network.AgentID);
-
-			int[] iStatus = new int[3];
-			iStatus[0] = int.MaxValue;
-			iStatus[1] = 0;
-			iStatus[2] = getUnixtime();
-			htFolderDownloadStatus[dlFolder] = iStatus;
+			htFolderDownloadStatus[dr.FolderID] = dr;
 
 			slClient.Network.SendPacket(packet);
 
-//			Console.WriteLine( "Requesting Download of : " + dlFolder );
 		}
 
 		internal InventoryFolder FolderCreate( String name, LLUUID parentid )
@@ -234,6 +258,24 @@ namespace libsecondlife.InventorySystem
 			slClient.Network.SendPacket(packet);
 		}
 
+		internal void ItemGiveTo( InventoryItem iitem, LLUUID ToAgentID )
+		{
+
+			LLUUID MessageID = LLUUID.GenerateUUID();
+
+			Packet packet = InventoryPackets.ImprovedInstantMessage( slClient.Protocol
+				, MessageID
+				, ToAgentID
+				, slClient.Network.AgentID
+				, slClient.Avatar.FirstName + " " + slClient.Avatar.LastName
+				, new LLVector3(slClient.Avatar.Position)
+				, iitem
+				);
+
+			slClient.Network.SendPacket(packet);
+
+		}
+
 		internal void ItemRemove( InventoryItem iitem )
 		{
 			InventoryFolder ifolder = getFolder( iitem.FolderID );
@@ -259,6 +301,22 @@ namespace libsecondlife.InventorySystem
 			return iNotecard;
 		}
 
+		internal InventoryImage NewImage( string Name, string Description, byte[] j2cdata, LLUUID FolderID )
+		{
+			LLUUID ItemID = LLUUID.GenerateUUID();
+			InventoryImage iImage = new InventoryImage( this, Name, Description, ItemID, FolderID, slClient.Network.AgentID );
+
+			// Create this notecard on the server.
+			ItemUpdate( iImage );
+
+			if( (j2cdata != null) && (j2cdata.Length != 0) )
+			{
+				iImage.J2CData = j2cdata;
+			}
+
+			return iImage;
+		}
+
 		public void DownloadInventory()
 		{
 			resetFoldersByUUID();
@@ -274,9 +332,9 @@ namespace libsecondlife.InventorySystem
 				}
 			}
 
-			if( qFolderRequestQueue == null )
+			if( alFolderRequestQueue == null )
 			{
-				qFolderRequestQueue = new Queue();
+				alFolderRequestQueue = new ArrayList();
 			}
 
 			// Set last packet received to now, just so out time-out timer works
@@ -284,13 +342,15 @@ namespace libsecondlife.InventorySystem
 
 			// Send Packet requesting the root Folder, 
 			// this should recurse through all folders
-			RequestFolder( uuidRootFolder );
+			RequestFolder( new DescendentRequest(uuidRootFolder) );
 
-			while ( (htFolderDownloadStatus.Count > 0) || (qFolderRequestQueue.Count > 0) )
+			while ( (htFolderDownloadStatus.Count > 0) || (alFolderRequestQueue.Count > 0) )
 			{
 				if( htFolderDownloadStatus.Count == 0 )
 				{
-					RequestFolder( (LLUUID)qFolderRequestQueue.Dequeue() );
+					DescendentRequest dr = (DescendentRequest)alFolderRequestQueue[0];
+					alFolderRequestQueue.RemoveAt(0);
+					RequestFolder( dr );
 				}
 
 				if( (getUnixtime() - iLastPacketRecieved) > 10 )
@@ -302,18 +362,18 @@ namespace libsecondlife.InventorySystem
 					// while still enumerating it.
 					ArrayList alRestartList = new ArrayList();
 
-					foreach( LLUUID folderID in htFolderDownloadStatus.Keys )
+					Console.WriteLine( htFolderDownloadStatus[0].GetType() );
+					foreach( DescendentRequest dr in htFolderDownloadStatus )
 					{
-						int[] iStatus = (int[])htFolderDownloadStatus[folderID];
-						Console.WriteLine( folderID + " " + iStatus[0] + " / " + iStatus[1] + " / " + iStatus[2] );
+						Console.WriteLine( dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceived );
 						
-						alRestartList.Add( folderID );
+						alRestartList.Add( dr );
 					}
 
 					iLastPacketRecieved = getUnixtime();
-					foreach( LLUUID folderID in alRestartList )
+					foreach( DescendentRequest dr in alRestartList )
 					{
-						RequestFolder( folderID );
+						RequestFolder( dr );
 					}
 
 				}
@@ -373,7 +433,6 @@ namespace libsecondlife.InventorySystem
 			InventoryFolder invFolder;
 
 			LLUUID uuidFolderID = new LLUUID();
-			int[] iStatus;
 
 			int iDescendentsExpected = int.MaxValue;
 			int iDescendentsReceivedThisBlock = 0;
@@ -394,6 +453,7 @@ namespace libsecondlife.InventorySystem
 								break;
 							case "Description":
 								invItem._Description = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
+								invItem._Description = invItem.Description.Substring(0,invItem.Description.Length-1);
 								break;
 
 							case "InvType":
@@ -480,6 +540,13 @@ namespace libsecondlife.InventorySystem
 								InventoryItem temp = new InventoryNotecard( this, invItem );
 								invItem = temp;
 							}
+
+							if( (invItem.InvType == 0) && (invItem.Type == Asset.ASSET_TYPE_IMAGE) )
+							{
+								InventoryItem temp = new InventoryImage( this, invItem );
+								invItem = temp;
+							}
+
 							ifolder.alContents.Add(invItem);
 						}
 					}
@@ -538,10 +605,19 @@ namespace libsecondlife.InventorySystem
 						// It's not the root, should be safe to "recurse"
 						if( !invFolder.FolderID.Equals( uuidRootFolder ) )
 						{
-							// Try to sleep a little so we don't starve the ACK handling threads.
-							if( qFolderRequestQueue.Contains( invFolder.FolderID ) == false )
+							bool alreadyQueued = false;
+							foreach( DescendentRequest dr in alFolderRequestQueue )
 							{
-								qFolderRequestQueue.Enqueue( invFolder.FolderID );
+								if( dr.FolderID == invFolder.FolderID )
+								{
+									alreadyQueued = true;
+									break;
+								}
+							}
+							
+							if( !alreadyQueued )
+							{
+								alFolderRequestQueue.Add( new DescendentRequest( invFolder.FolderID ) );
 							}
 						}
 					}
@@ -562,7 +638,6 @@ namespace libsecondlife.InventorySystem
 //							Console.WriteLine("Recieved a packet for : " + uuidFolderID);
 						}
 					}
-
 				}
 			}
 
@@ -578,12 +653,12 @@ namespace libsecondlife.InventorySystem
 
 				// This one packet didn't have all the descendents we're expecting
 				// so update the total we're expecting, and update the total downloaded
-				iStatus = (int[])htFolderDownloadStatus[uuidFolderID];
-				iStatus[0]  = iDescendentsExpected;
-				iStatus[1] += iDescendentsReceivedThisBlock;
-				iStatus[2]  = getUnixtime();
+				DescendentRequest dr = (DescendentRequest)htFolderDownloadStatus[uuidFolderID];
+				dr.Expected  = iDescendentsExpected;
+				dr.Received += iDescendentsReceivedThisBlock;
+				dr.LastReceived = getUnixtime();
 
-				if( iStatus[1] >= iStatus[0] )
+				if( dr.Received >= dr.Expected )
 				{
 					// Looks like after updating, we have all the descendents, 
 					// remove from folder status.
@@ -591,7 +666,7 @@ namespace libsecondlife.InventorySystem
 				} 
 				else 
 				{
-					htFolderDownloadStatus[uuidFolderID] = iStatus;
+					htFolderDownloadStatus[uuidFolderID] = dr;
 //					Console.WriteLine( uuidFolderID + " is expecting " + (iDescendentsExpected - iStatus[1]) + " more packets." );
 				}
 			}

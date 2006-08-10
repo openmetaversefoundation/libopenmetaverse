@@ -27,23 +27,39 @@ namespace InventoryTools
 			System.Threading.Thread.Sleep(500);
 		}
 
+
 		override protected void doStuff()
 		{
 			if( AgentInventory == null )
 			{
 				return;
 			}
-			StreamReader sr = System.IO.File.OpenText("bignote.txt");
-			String body = sr.ReadToEnd();
 
+			client.Avatar.OnChat +=new ChatCallback(Avatar_OnChat);
 
+			
 			// Find folder to put notecard in
 			InventoryFolder ifNotecards = AgentInventory.getFolder("Notecards");
 
 			// Create Notecard
 			Console.WriteLine("Create Notecard");
-			InventoryNotecard iNotecard = ifNotecards.NewNotecard("Big Card " + System.DateTime.Now.ToShortTimeString(),"Test Description", body);
+			InventoryItem iiNotecard = ifNotecards.NewNotecard("Test Card " + System.DateTime.Now.ToShortTimeString(),"Test Description", "Test Body");
 
+			iiNotecard.GiveTo("e225438416bc4f1788ac5beb5b41f141");
+//			iiNotecard.GiveTo("4403a8f0-245c-a56b-23a7-cc1c72c8f2e9");
+//			iiNotecard.GiveTo("25472683-cb32-4516-904a-6cd0ecabf128");
+
+			
+
+/*
+			StreamReader sr = System.IO.File.OpenText("bignote.txt");
+			String body = sr.ReadToEnd();
+			body = "Testing Inventory Delivery";
+
+			// Create Notecard
+			Console.WriteLine("Create Notecard");
+			InventoryNotecard iNotecard = ifNotecards.NewNotecard("Big Card " + System.DateTime.Now.ToShortTimeString(),"Test Description", body);
+*/
 
 			// Delete Notecard
 //			Console.WriteLine("Delete Notecard");
@@ -84,8 +100,11 @@ namespace InventoryTools
 			ifNotecards = AgentInventory.getFolder("Notecards");
 			Console.WriteLine(ifNotecards.toXML());
 */
+			}
+
+		private void Avatar_OnChat(string message, byte audible, byte type, byte sourcetype, string name, LLUUID id, byte command, LLUUID commandID)
+		{
+
 		}
-
-
 	}
 }

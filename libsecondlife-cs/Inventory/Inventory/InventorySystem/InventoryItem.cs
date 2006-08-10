@@ -103,6 +103,25 @@ namespace libsecondlife.InventorySystem
 		}
 
 		internal Asset  _Asset;
+		public   Asset  Asset
+		{
+			get { 
+				if( _Asset != null )
+				{
+					return _Asset;
+				} 
+				else 
+				{
+					if( (AssetID != null) && (AssetID != new LLUUID()) )
+					{
+						base.iManager.AssetManager.GetInventoryAsset( this );
+						return Asset;
+					}
+				}
+				return null;
+			}
+		}
+
 		internal LLUUID _AssetID = new LLUUID();
 		public   LLUUID AssetID
 		{
@@ -304,11 +323,21 @@ namespace libsecondlife.InventorySystem
 			base.iManager.ItemCopy( this.ItemID, targetFolder );
 		}
 
+		public void GiveTo( LLUUID ToAgentID )
+		{
+			base.iManager.ItemGiveTo( this, ToAgentID );
+		}
+
 		public void Delete()
 		{
 			base.iManager.getFolder( this.FolderID ).alContents.Remove( this );
 			base.iManager.ItemRemove( this );
 
+		}
+
+		public void ClearAssetTest()
+		{
+			_Asset = null;
 		}
 
 		virtual internal void SetAssetData( byte[] assetData )
@@ -327,7 +356,7 @@ namespace libsecondlife.InventorySystem
 			}
 		}
 
-		override public string toXML()
+		override public string toXML( bool outputAssets )
 		{
 			string output = "<item ";
 

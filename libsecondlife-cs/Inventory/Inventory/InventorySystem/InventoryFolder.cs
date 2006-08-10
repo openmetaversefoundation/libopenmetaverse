@@ -111,6 +111,11 @@ namespace libsecondlife.InventorySystem
 			return base.iManager.NewNotecard( name, description, body, this.FolderID );
 		}
 
+		public InventoryImage NewImage( string name, string description, byte[] j2cdata )
+		{
+			return base.iManager.NewImage( name, description, j2cdata, this.FolderID );
+		}
+
 		public ArrayList GetItemByName( string name )
 		{
 			ArrayList items = new ArrayList();
@@ -130,7 +135,7 @@ namespace libsecondlife.InventorySystem
 			return items;
 		}
 
-		override public string toXML()
+		override public string toXML( bool outputAssets )
 		{
 			string output = "<folder ";
 
@@ -142,7 +147,7 @@ namespace libsecondlife.InventorySystem
 
 			foreach( Object oContent in alContents )
 			{
-				output += ((InventoryBase)oContent).toXML();
+				output += ((InventoryBase)oContent).toXML( outputAssets );
 			}
 
 			output += "</folder>\n";

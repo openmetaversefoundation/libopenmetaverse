@@ -14,6 +14,8 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
+		public const int SINK_FEE_IMAGE = 1;
+
 		private SecondLife slClient;
 
 		private Hashtable htUploadRequests = new Hashtable();
@@ -31,7 +33,7 @@ namespace libsecondlife.AssetSystem
 			public byte[] AssetData;
 		}
 
-		public AssetManager( SecondLife client )
+		internal AssetManager( SecondLife client )
 		{
 			slClient = client;
 
@@ -56,6 +58,33 @@ namespace libsecondlife.AssetSystem
 		}
 
 		
+		/*
+				----- MoneyTransferRequest -----
+				MoneyData
+					AggregatePermInventory: 0
+					AggregatePermNextOwner: 0
+					DestID: 00000000000000000000000000000000
+					Amount: 10
+					Flags: 0
+					SourceID: 25472683cb324516904a6cd0ecabf128
+					TransactionType: 1101
+				AgentData
+					AgentID: 25472683cb324516904a6cd0ecabf128
+					SessionID: 7395ab89cadf4f638c5f28630c0e75d2
+
+		 */
+		public void SinkFee( int sinkType )
+		{
+			switch( sinkType )
+			{
+				case SINK_FEE_IMAGE:
+					slClient.Avatar.GiveMoney( new LLUUID(), 10, "Image Upload" );
+					break;
+				default:
+					throw new Exception("AssetManager: Unknown sinktype (" + sinkType + ")");
+			}
+		}
+
 		public void UploadAsset( Asset asset )
 		{
 			Packet packet;
@@ -84,6 +113,11 @@ namespace libsecondlife.AssetSystem
 			if( tr.Status == false )
 			{
 				throw new Exception( tr.StatusMsg );
+			} else {
+				if( asset.Type == Asset.ASSET_TYPE_IMAGE )
+				{
+					SinkFee( SINK_FEE_IMAGE );
+				}
 			}
 		}
 
@@ -98,7 +132,6 @@ namespace libsecondlife.AssetSystem
 			tr.LastPacket = getUnixtime(); // last time we recevied a packet for this request
 
 			htDownloadRequests[TransferID] = tr;
-
 
 			Packet packet = AssetPackets.TransferRequest(slClient.Protocol, slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item );
 			slClient.Network.SendPacket(packet);
@@ -205,6 +238,10 @@ namespace libsecondlife.AssetSystem
 			}
 
 			TransferRequest tr = (TransferRequest)htDownloadRequests[TransferID];
+			if( tr == null )
+			{
+				return;
+			}
 
 			if( Status == -2 )
 			{
@@ -271,6 +308,11 @@ namespace libsecondlife.AssetSystem
 
 			// Append data to data received.
 			TransferRequest tr = (TransferRequest)htDownloadRequests[TransferID];
+			if( tr == null )
+			{
+				return;
+			}
+
 			Array.Copy(Data, 0, tr.AssetData, tr.Received, Data.Length);
 			tr.Received += Data.Length;
 

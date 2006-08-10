@@ -8,20 +8,23 @@ namespace libsecondlife.InventorySystem
 	/// <summary>
 	/// Summary description for InventoryNotecard.
 	/// </summary>
-	public class InventoryNotecard : InventoryItem
+	public class InventoryImage : InventoryItem
 	{
-		public string Body
+
+		public byte[] J2CData
 		{
 			get
 			{
 				if( Asset != null ) 
 				{
-					return ((AssetNotecard)Asset).Body;
-				} else {
+					return ((AssetImage)Asset).J2CData;
+				} 
+				else 
+				{
 					if( (AssetID != null) && (AssetID != new LLUUID()) )
 					{
 						base.iManager.AssetManager.GetInventoryAsset( this );
-						return ((AssetNotecard)Asset).Body;
+						return ((AssetImage)Asset).J2CData;
 					}
 				}
 
@@ -30,26 +33,25 @@ namespace libsecondlife.InventorySystem
 
 			set
 			{
-				base._Asset = new AssetNotecard( LLUUID.GenerateUUID(), value );
+				base._Asset = new AssetImage( LLUUID.GenerateUUID(), value );
 				base.iManager.AssetManager.UploadAsset( Asset );
 				this.AssetID = Asset.AssetID;
-				
 			}
+
 		}
 
-
-		internal InventoryNotecard( InventoryManager manager, string name, string description, LLUUID id, LLUUID folderID, LLUUID uuidOwnerCreater ) 
-			: base(manager, name, description, id, folderID, 7, 7, uuidOwnerCreater)
+		internal InventoryImage( InventoryManager manager, string name, string description, LLUUID id, LLUUID folderID, LLUUID uuidOwnerCreater ) 
+			: base(manager, name, description, id, folderID, 0, 0, uuidOwnerCreater)
 		{
 
 		}
 
-		internal InventoryNotecard( InventoryManager manager, InventoryItem ii )
+		internal InventoryImage( InventoryManager manager, InventoryItem ii )
 			: base( manager, ii._Name, ii._Description, ii._ItemID, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
 		{
-			if( (ii.InvType != 7) || (ii.Type != Asset.ASSET_TYPE_NOTECARD) )
+			if( (ii.InvType != 0) || (ii.Type != Asset.ASSET_TYPE_IMAGE) )
 			{
-				throw new Exception("The InventoryItem cannot be converted to a Notecard, wrong InvType/Type.");
+				throw new Exception("The InventoryItem cannot be converted to a Image/Texture, wrong InvType/Type.");
 			}
 
 			this.iManager = manager;
@@ -72,30 +74,31 @@ namespace libsecondlife.InventorySystem
 			this._Type = ii._Type;
 		}
 
+
 		override internal void SetAssetData( byte[] assetData )
 		{
-			if( _Asset == null )
+			if( Asset == null )
 			{
 				if( AssetID != null )
 				{
-					_Asset = new AssetNotecard( AssetID, assetData );
+					_Asset = new AssetImage( AssetID, assetData );
 				} 
 				else 
 				{
-					_Asset = new AssetNotecard( LLUUID.GenerateUUID(), assetData );
+					_Asset = new AssetImage( LLUUID.GenerateUUID(), assetData );
 					AssetID = _Asset.AssetID;
 				}
 			} 
 			else 
 			{
-				_Asset.AssetData = assetData;
+				Asset.AssetData = assetData;
 			}
 
 		}
 
 		override public string toXML( bool outputAssets )
 		{
-			string output = "<notecard ";
+			string output = "<image ";
 
 			output += "name = '" + xmlSafe(Name) + "' ";
 			output += "uuid = '" + ItemID + "' ";
@@ -125,14 +128,14 @@ namespace libsecondlife.InventorySystem
 			output += "groupmask = '" + GroupMask + "' ";
 			output += "ownermask = '" + OwnerMask + "' ";
 
-			output += ">";
+			output += ">\n";
 
 			if( outputAssets )
 			{
-				output += xmlSafe(Body);
+				output += xmlSafe(base.Asset.AssetDataToString());
 			}
 
-			output += "</notecard>";
+			output += "</image>";
 
 
 			return output;

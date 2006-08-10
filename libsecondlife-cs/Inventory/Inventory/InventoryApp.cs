@@ -14,16 +14,10 @@ namespace libsecondlife
 		protected SecondLife client;
 		protected InventoryManager AgentInventory;
 
+		protected bool DownloadInventoryOnConnect = true;
 
-
-		protected void Connect(string[] args)
+		protected InventoryApp()
 		{
-			if (args.Length < 3)
-			{
-				Console.WriteLine("Usage: InventoryDump [loginfirstname] [loginlastname] [password]");
-				return;
-			}
-
 			try
 			{
 				client = new SecondLife("keywords.txt", "protocol.txt");
@@ -34,10 +28,19 @@ namespace libsecondlife
 				Console.WriteLine(e.ToString());
 				return;
 			}
+		}
+
+		protected void Connect(string[] args)
+		{
+			if (args.Length < 3)
+			{
+				Console.WriteLine("Usage: InventoryDump [loginfirstname] [loginlastname] [password]");
+				return;
+			}
 
 			// Setup Login to Second Life
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 10, 10, 10, "Win", "0", "createnotecard", "static.sprocket@gmail.com");
+				"last", 1, 12, 12, 12, "Win", "0", "createnotecard", "static.sprocket@gmail.com");
 			Hashtable loginReply = new Hashtable();
 
 			// Request information on the Root Inventory Folder, and Inventory Skeleton
@@ -65,9 +68,11 @@ namespace libsecondlife
 			// Initialize Inventory Manager object
 			AgentInventory = new InventoryManager(client, agentRootFolderID);
 
-			// and request an inventory download
-			AgentInventory.DownloadInventory();
-
+			if( DownloadInventoryOnConnect )
+			{
+				// and request an inventory download
+				AgentInventory.DownloadInventory();
+			}
 
 		}
 

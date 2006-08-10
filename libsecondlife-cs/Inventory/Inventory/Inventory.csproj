@@ -94,7 +94,17 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "ImageTools.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "InventoryApp.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Utils.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -104,17 +114,32 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "AssetSystem\AssetImage.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "AssetSystem\AssetManager.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "AssetSystem\NotecardAsset.cs"
+                    RelPath = "AssetSystem\AssetNotecard.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "AssetSystem\ImageManager.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
                 <File
                     RelPath = "AssetSystem\PacketHelpers\AssetPackets.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "AssetSystem\PacketHelpers\ImagePackets.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -125,6 +150,11 @@
                 />
                 <File
                     RelPath = "InventorySystem\InventoryFolder.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "InventorySystem\InventoryImage.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

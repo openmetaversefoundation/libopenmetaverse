@@ -23,7 +23,7 @@ namespace libsecondlife.InventorySystem
 			iManager = manager;
 		}
 
-		abstract public string toXML();
+		abstract public string toXML( bool outputAssets );
 
 		protected string xmlSafe ( string str )
 		{

@@ -10,6 +10,7 @@ namespace libsecondlife.AssetSystem
 	public class Asset
 	{
 		public const sbyte ASSET_TYPE_NOTECARD = 7;
+		public const sbyte ASSET_TYPE_IMAGE    = 0;
 
 		public LLUUID AssetID;
 
@@ -42,6 +43,12 @@ namespace libsecondlife.AssetSystem
 			Type		= (sbyte)type;
 			Tempfile	= false;
 			AssetData	= assetData;
+		}
+
+
+		public string AssetDataToString()
+		{
+			return libsecondlife.Utils.ByteArrayToString((byte[])AssetData);
 		}
 	}
 }

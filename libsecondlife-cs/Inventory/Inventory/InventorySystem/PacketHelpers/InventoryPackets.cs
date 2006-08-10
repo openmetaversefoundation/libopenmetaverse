@@ -15,6 +15,37 @@ namespace libsecondlife.InventorySystem.PacketHelpers
 			//Prevents this class from being instantiated.
 		}
 
+
+
+		public const int FETCH_INVENTORY_SORT_NAME = 0;
+		public const int FETCH_INVENTORY_SORT_TIME = 1;
+
+		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, 
+			LLUUID folderID, LLUUID agentID)
+		{
+			return FetchInventoryDescendents(protocol, ownerID, folderID, agentID, true, true);
+		}
+
+		public static Packet FetchInventoryDescendents(ProtocolManager protocol, LLUUID ownerID, 
+			LLUUID folderID, LLUUID agentID, bool fetchFolders, bool fetchItems)
+		{
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["OwnerID"] = ownerID;
+			fields["FolderID"] = folderID;
+			fields["SortOrder"] = FETCH_INVENTORY_SORT_NAME;
+			fields["FetchFolders"] = fetchFolders;
+			fields["FetchItems"] = fetchItems;
+			blocks[fields] = "InventoryData";
+
+			fields = new Hashtable();
+			fields["AgentID"] = agentID;
+			blocks[fields] = "AgentData";
+
+			return PacketBuilder.BuildPacket("FetchInventoryDescendents", protocol, blocks, Helpers.MSG_RELIABLE);
+		}
+
 		/*
 			Low 00334 - FetchInventory - Untrusted - Unencoded
 				0065 InventoryData (Variable)
@@ -324,6 +355,78 @@ Low 00323 - MoveInventoryItem - Untrusted - Unencoded
 
 			return PacketBuilder.BuildPacket("RemoveInventoryItem", protocol, blocks, Helpers.MSG_RELIABLE | Helpers.MSG_ZEROCODED);
 		}
+
+		/*
+			----- ImprovedInstantMessage -----
+			MessageBlock
+				ID: 8006f744d08bbad1f941d59ffce4059e
+				ToAgentID: f6ec1e24fd294f4cb21e23b42841c8c7
+				Offline: 0
+				Timestamp: 0
+				Message: Big Card 2:04 PM
+				RegionID: 00000000000000000000000000000000
+				FromAgentID: 25472683cb324516904a6cd0ecabf128
+				Dialog: 4
+				BinaryBucket: 07 9a 31 a7 1a 05 ff 76 4d af 8f ef a0 b3 e7 08 ..1....vM.......
+				BinaryBucket: e6                                              .
+				ParentEstateID: 0
+				FromAgentName: Bot Ringo
+				Position: 25.528299, 214.016006, 1.088448
+				
+			Low 00304 - ImprovedInstantMessage - Untrusted - Unencoded
+				1231 MessageBlock (01)
+					0030 ID (LLUUID / 1)
+					0172 ToAgentID (LLUUID / 1)
+					0248 Offline (U8 / 1)
+					0369 Timestamp (U32 / 1)
+					0389 Message (Variable / 2)
+					0488 RegionID (LLUUID / 1)
+					0597 FromAgentID (LLUUID / 1)
+					0889 Dialog (U8 / 1)
+					1124 BinaryBucket (Variable / 2)
+					1129 ParentEstateID (U32 / 1)
+					1150 FromAgentName (Variable / 1)
+					1389 Position (LLVector3 / 1)
+		
+		 */
+		public static Packet ImprovedInstantMessage(ProtocolManager protocol
+			, LLUUID ID
+			, LLUUID ToAgentID
+			, LLUUID FromAgentID
+			, String FromAgentName
+			, LLVector3 FromAgentLoc
+			, InventoryItem Item
+			)
+		{
+			byte[] BinaryBucket = new byte[17];
+			BinaryBucket[0] = (byte)Item.Type;
+			Array.Copy(Item.ItemID.Data, 0, BinaryBucket, 1, 16);
+
+
+			Hashtable blocks = new Hashtable();
+			Hashtable fields = new Hashtable();
+
+			fields["ID"]			= ID;
+			fields["ToAgentID"]		= ToAgentID;
+			fields["Offline"]		= (byte)0;
+			fields["TimeStamp"]		= (uint)0;
+			fields["Message"]		= Item.Name;
+			fields["RegionID"]		= new LLUUID();
+			fields["FromAgentID"]	= FromAgentID;
+			fields["Dialog"]		= (byte)4;
+			fields["BinaryBucket"]	= BinaryBucket;
+			fields["ParentEstateID"]= (uint)0;
+			fields["FromAgentName"]	= FromAgentName;
+			fields["Position"]		= FromAgentLoc;
+			blocks[fields]			= "MessageBlock";
+
+			return PacketBuilder.BuildPacket("ImprovedInstantMessage", protocol, blocks, Helpers.MSG_RELIABLE );
+		}
+
+
+
+
+
 
 /*
 Low 00322 - UpdateInventoryItemAsset - Untrusted - Unencoded
