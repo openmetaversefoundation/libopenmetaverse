@@ -87,24 +87,38 @@ namespace libsecondlife.Packets
                public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID, float drawDistance,
                        LLVector3 cameraCenter)
                {
-                       Hashtable blocks = new Hashtable();
-                       Hashtable fields = new Hashtable();
+				   
+                   LLVector3 cameraAtAxis    = new LLVector3(0.0F, 1.0F, 0.0F); // Looking straight ahead, north
+                   LLVector3 cameraLeftAxis  = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+                   LLVector3 cameraUpAxis    = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+                   LLQuaternion headRotation = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
 
-                       fields["ID"] = agentID;
-                       fields["ControlFlags"] = (uint)0;
-                       fields["CameraAtAxis"] = new LLVector3(0.0F, 1.0F, 0.0F); // Looking straight ahead, north
-                       fields["Far"] = drawDistance;
-                       fields["CameraCenter"] = cameraCenter;
-                       fields["CameraLeftAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-                       fields["HeadRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
-                       fields["CameraUpAxis"] = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-                       fields["BodyRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
-                       fields["Flags"] = (byte)221; // Why 221?
-                       fields["State"] = (byte)221; // Why 221?
-                       blocks[fields] = "AgentData";
-
-                       return PacketBuilder.BuildPacket("AgentUpdate", protocol, blocks, (byte)0);
+                   return AgentUpdate(protocol, agentID, drawDistance, cameraCenter, cameraAtAxis, cameraLeftAxis, cameraUpAxis, headRotation );
                }
+
+		   public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID, float drawDistance,
+			   LLVector3 cameraCenter, LLVector3 cameraAtAxis, LLVector3 cameraLeftAxis, LLVector3 cameraUpAxis
+			   , LLQuaternion headRotation)
+		   {
+			   Hashtable blocks = new Hashtable();
+			   Hashtable fields = new Hashtable();
+
+			   fields["ID"] = agentID;
+			   fields["ControlFlags"] = (uint)0;
+			   fields["CameraAtAxis"] = cameraAtAxis;
+			   fields["Far"] = drawDistance;
+			   fields["CameraCenter"] = cameraCenter;
+			   fields["CameraLeftAxis"] = cameraLeftAxis;
+			   fields["HeadRotation"] = headRotation;
+			   fields["CameraUpAxis"] = cameraUpAxis;
+			   fields["BodyRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
+			   fields["Flags"] = (byte)221; // Why 221?
+			   fields["State"] = (byte)221; // Why 221?
+			   blocks[fields] = "AgentData";
+
+			   return PacketBuilder.BuildPacket("AgentUpdate", protocol, blocks, (byte)0);
+		   }
+
 
                public static Packet DirFindQuery(ProtocolManager protocol, string query, int queryStart, LLUUID queryID,
                        LLUUID agentID, LLUUID sessionID)
