@@ -544,7 +544,7 @@ namespace libsecondlife
 
 		public static ushort toU16(object Data, int offset)
 		{
-			return ((ushort)(toU8(Data,0)) | ((ushort)toU8(Data,1) << 8))
+			return ((ushort)(toU8(Data,0)) | ((ushort)toU8(Data,1) << 8));
 		}
 
 		public static ushort toU16(object Data)
