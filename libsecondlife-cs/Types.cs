@@ -544,7 +544,7 @@ namespace libsecondlife
 
 		public static ushort toU16(object Data, int offset)
 		{
-			return (ushort)(toU8(Data,0) + toU8(Data,1) * 256);
+			return ((ushort)(toU8(Data,0)) | ((ushort)toU8(Data,1) << 8))
 		}
 
 		public static ushort toU16(object Data)
@@ -554,7 +554,7 @@ namespace libsecondlife
 
 		public static uint toU32(object Data, int offset)
 		{
-			return (uint)(toU16(Data,0) + toU16(Data,2) * 16384);
+			return ((uint)(toU16(Data,0)) | ((uint)(toU16(Data,2) << 16)); 
 		}
 
 		public static uint toU32(object Data)
