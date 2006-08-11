@@ -1,0 +1,55 @@
+Release Notes:
+
+------------------------
+Version 0.0.0.2 (8/11/06)
+------------------------
+
+Features:
+
+	* Feature: Now using Delta Czukor's SLeek code as a base to build off of. This should help things to run better and work more! Appologies for things that are yet commented, I'll get around to commenting more things as I go like the v0.0.0.1 had. Most of my time with v0.0.0.2 was changing things around based on the general idea I (Oz Spade) and I think Baba Yamamoto have for SLChat, some of this is still not complete, but it's mostly at the same point v0.0.0.1 was.
+	* Feature: Can now shout and whisper. You can select the three types of chat to be sent from the drop-down box or you can use the keyboard commands:
+		** Enter = Whatever is selected in drop-down (default is Say)
+		** Ctrl+Enter = Shout (bypasses drop-down)
+		** Ctrl+Shift+Enter = Whisper (bypasses drop-down)
+	* Feature: Profiles! A profile is created upon saving login information, each profile is saved in its own folder in the "Profiles" folder found in the same directory as the .exe, so saving login information results in "Profiles\Bob_Smith\settings.xml" being the home for the settings for that profile. For now to delete a profile just delete the folder (will be added in the future).
+	* Feature: Colored chat (Thanks to Delta Czukor for this! :D )! Chat is now colored based on a few things:
+		** messages from the program are in a blue
+		** messages from the SL system (server messages, etc.) are in a teal (similar to SLs)
+		** messages from objects are green
+		** messages from Lindens are in a Sienna like color (similar to forums)
+	* Feature: Partial IMing! Thanks again to Delta Czukor you can now send and recieve IMs if someone else starts an IM with you. I plan to switch it from defaultly being a seperate window to being built into the main form. Also plan to initiate them in some way.
+	
+Bug Fixes:
+
+	* Fixed bug: Incoming Shout/Whisper and /me are all handled properly now (or should be). Also propper grammar should work, i.e. "You shout" instead of "You shouts".
+	
+Known Bugs:
+
+	* Known bug: Chat scrolls when chat history has focus. The proper behavior should be that it does not scroll so you can easily copy text out. The reason the way I had it before doesn't work is because of using the different way of adding text to the richbox, however this is nessisary for the colors to work in a good way. I have an idea how to fix this but haven't done it yet.
+	* Known bug: Scroll bar for chat history likes to hide untill somethings fiddled with then it fixes itself. Not sure why this does this yet, but I'll figure it out. Probably something to do with that panel seperator.
+	
+In Planning:
+
+	* Planning: To work on adding functionality to the IMs as well as adding stuff onto the main chat.
+	* Planning: Add a way to delete profiles through preferences window along with other preferences.
+
+
+-----------------------
+Version 0.0.0.1 (8/2/06)
+-----------------------
+
+Bug Fixes:
+
+	* Fixed bug: Auto-scroll not working unless Chat History is selected then deselected. (Fix: missed setting default value to true).
+	* Fixed bug: Logging out then logging in causes double chat to be recieved. (Fix: Callback for ChatFromSimulator was being called in Login, causing a new callback to be created on each login)
+	* Fixed bug?: Memory leakage. (Fix?: May have been caused by threading done for Login, this threading has been removed for now untill I can properly figure out how to do threading.)
+	* Fixed Bug: Updated to match changes done in 1.11.1 protocol. Mostly pertaining to ChatFromSimulator.
+
+Features:
+
+	* Feature: Can now choose Login Location on Login screen, options are "Home" and "Last". URL specific locations do not work yet (working on it).
+	* Feature: Can now save Login information. Information will be saved to "settings.xml", located in the same directory as SLChat.exe. Password is not saved (will be in the future when hashes can be sent directly).
+
+In Progress:
+
+	* Progress: Working on sending/recieving IMs, the idea is to have a new tab pop up for each IM recieved in the main chat window, however I can't figure out how to get this to work, so for now it doesn't. 
