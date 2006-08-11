@@ -8569,15 +8569,14 @@ sim -> dataserver
 //-----------------------------------------------------------------------------
 
 // CreateGroupRequest
-// viewer -> simulator
-// simulator -> dataserver
+// viewer -> userserver
+// userserver -> dataserver
 // reliable
 {
 	CreateGroupRequest Low NotTrusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
 	}
 	{
 		GroupData		Single
@@ -8624,16 +8623,15 @@ sim -> dataserver
 	}
 }
 
-// UpdateGroupInfo
-// viewer -> simulator
-// simulator -> dataserver
+// CreateGroupRequest
+// viewer -> userserver
+// userserver -> dataserver
 // reliable
 {
 	UpdateGroupInfo Low NotTrusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
 	}
 	{
 		GroupData		Single
@@ -8664,18 +8662,19 @@ sim -> dataserver
 }
 
 // JoinGroupRequest
-// viewer -> simulator -> dataserver
+// viewer -> userserver -> dataserver
 // reliable
 {
 	JoinGroupRequest Low NotTrusted Zerocoded
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
-		{	SessionID		LLUUID	}
 	}
 	{
 		GroupData	Single
 		{	GroupID		LLUUID	}
+		{	Officer		U8		}
+		{	MembershipFee	S32	}
 	}
 }
 
@@ -8737,7 +8736,6 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
-		{	SessionID	LLUUID	}
 	}
 	{
 		GroupData		Single
@@ -8745,18 +8743,21 @@ sim -> dataserver
 	}
 }
 
-// InviteGroupResponse
-// simulator -> dataserver
+// InviteGroupRequest
+// viewer -> userserver -> dataserver
 // reliable
 {
-	InviteGroupResponse	Low	Trusted	Unencoded
+	InviteGroupRequest Low NotTrusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}	// UUID of inviting agent
+	}
 	{
 		InviteData	Single
-		{	AgentID		LLUUID	}
+		{	AgentName	Variable	1	}	// string
 		{	InviteeID	LLUUID	}
 		{	GroupID		LLUUID	}
-		{	Officer		BOOL	}
-		{	MembershipFee S32	}
+		{	Officer		BOOL	}	// BOOL
 	}
 }
 
