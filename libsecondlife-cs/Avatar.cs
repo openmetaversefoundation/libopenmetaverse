@@ -616,6 +616,7 @@ namespace libsecondlife
                                        // Sleep a little while so we can collect parcel information
                                        System.Threading.Thread.Sleep(1000);
 
+                                       Client.CurrentRegion = Client.Network.CurrentSim.Region;
                                        TeleportStatus = 1;
                                        return;
                                }
