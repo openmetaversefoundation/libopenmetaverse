@@ -159,10 +159,17 @@ namespace SLProxy {
 			InitializeSimProxy();
 		}
 
+		object keepAliveLock = new Object();
+
 		// Start: begin accepting clients
 		public void Start() { lock(this) {
+			System.Threading.Monitor.Enter(keepAliveLock);
+			(new Thread(new ThreadStart(KeepAlive))).Start();
+
 			RunSimProxy();
-			(new Thread(new ThreadStart(RunLoginProxy))).Start();
+			Thread runLoginProxy = new Thread(new ThreadStart(RunLoginProxy));
+			runLoginProxy.IsBackground = true;
+			runLoginProxy.Start();
 
 			IPEndPoint endPoint = (IPEndPoint)loginServer.LocalEndPoint;
 			IPAddress displayAddress;
@@ -172,6 +179,16 @@ namespace SLProxy {
 				displayAddress = endPoint.Address;
 			Log("proxy ready at http://" + displayAddress + ":" + endPoint.Port + "/", false);
 		}}
+
+		// Stop: allow foreground threads to die
+		public void Stop() { lock(this) {
+			System.Threading.Monitor.Exit(keepAliveLock);
+		}}
+
+		// KeepAlive: blocks until the proxy is free to shut down
+		public void KeepAlive() {
+			lock(keepAliveLock);
+		}
 
 		// SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
 		public void SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate) { lock(this) {
@@ -287,7 +304,7 @@ namespace SLProxy {
 			reader.Read(content, 0, contentLength);
 
 			// convert the body into an XML-RPC request
-			XmlRpcRequest request = (XmlRpcRequest)XmlRpcRequestDeserializer.Singleton.Deserialize(new String(content));
+			XmlRpcRequest request = (XmlRpcRequest)(new XmlRpcRequestDeserializer()).Deserialize(new String(content));
 
 			// call the loginRequestDelegate
 			if (loginRequestDelegate != null)
@@ -675,7 +692,9 @@ namespace SLProxy {
 
 			// Run: forward packets from the client to the sim
 			public void Run() {
-				(new Thread(new ThreadStart(BackgroundTasks))).Start();
+				Thread backgroundTasks = new Thread(new ThreadStart(BackgroundTasks));
+				backgroundTasks.IsBackground = true;
+				backgroundTasks.Start();
 				socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
 			}
 
@@ -903,7 +922,7 @@ namespace SLProxy {
 				if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0) {
 					int ackCount = packet.Data[length - 1];
 					for (int i = 0; i < ackCount; ++i) {
-						int offset = length - (ackCount - i) * 4 - 2;
+						int offset = length - (ackCount - i) * 4 - 1;
 						uint ackID = (uint)(packet.Data[offset] + (packet.Data[offset + 1] << 8)) - theirOffset;
 						for (int j = theirInjections.Count - 1; j >= 0; --j)
 							if (ackID >= (ushort)theirInjections[j])

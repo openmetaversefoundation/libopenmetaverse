@@ -302,8 +302,8 @@ Injecting a packet immediately upon (or prior to) connection is not
 recommended, since the client and the server won't have initialized
 their session yet.
 
-2.4 Starting the proxy
-- - - - - - - - - - -
+2.4 Starting and stopping the proxy
+- - - - - - - - - - - - - - - - - -
 
 Once you've constructed a Proxy and added your delegates, you must
 start it with the Start method:
@@ -312,6 +312,15 @@ start it with the Start method:
 
 Once started, the proxy will begin listening for connections.  The
 Start method spawns new threads for the proxy and returns immediately.
+
+When your application is ready to shut down, you must call the Stop
+method:
+
+	void Stop()
+
+Note that this may not actually force the proxy to stop accepting
+connections; it merely guarantees that all foreground threads are
+stopped, allowing the application to exit cleanly.
 
 3. PacketUtility class
 ----------------------
