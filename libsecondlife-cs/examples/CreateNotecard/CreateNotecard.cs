@@ -11,7 +11,7 @@ namespace InventoryTools
 	/// <summary>
 	/// Summary description for Class1.
 	/// </summary>
-	class CreateNotecard : libsecondlife.InventoryApp
+	class CreateNotecard : libsecondlife.Utils.InventoryApp
 	{
 		/// <summary>
 		/// The main entry point for the application.

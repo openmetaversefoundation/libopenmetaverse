@@ -1,14 +1,15 @@
 using System;
 
-namespace libsecondlife
+namespace libsecondlife.Utils
 {
 	/// <summary>
 	/// Summary description for Utils.
 	/// </summary>
-	public class Utils
+	public class ByteArrayStuff
 	{
-		private Utils()
+		private ByteArrayStuff()
 		{
+			// This class isn't intended to be instantiated
 		}
 
 		public static string ByteArrayToString( byte[] byteArray )

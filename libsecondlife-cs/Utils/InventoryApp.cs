@@ -4,7 +4,7 @@ using System.Collections;
 using libsecondlife;
 using libsecondlife.InventorySystem;
 
-namespace libsecondlife
+namespace libsecondlife.Utils
 {
 	/// <summary>
 	/// Summary description for InventoryApp.

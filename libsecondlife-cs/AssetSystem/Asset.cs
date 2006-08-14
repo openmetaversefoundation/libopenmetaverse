@@ -48,7 +48,7 @@ namespace libsecondlife.AssetSystem
 
 		public string AssetDataToString()
 		{
-			return libsecondlife.Utils.ByteArrayToString((byte[])AssetData);
+			return libsecondlife.Utils.ByteArrayStuff.ByteArrayToString((byte[])AssetData);
 		}
 	}
 }

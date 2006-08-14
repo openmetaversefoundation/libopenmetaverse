@@ -7,7 +7,7 @@ using libsecondlife.InventorySystem;
 
 namespace InventoryDump
 {
-	class InventoryDump : libsecondlife.InventoryApp
+	class InventoryDump : libsecondlife.Utils.InventoryApp
 	{
 		private string sOutputFile;
 		private bool   bOutputAssets;

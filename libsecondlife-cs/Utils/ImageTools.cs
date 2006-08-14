@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 
-namespace libsecondlife
+namespace libsecondlife.Utils
 {
 	/// <summary>
 	/// Summary description for ImageTools.

@@ -5,13 +5,14 @@ using System.IO;
 using libsecondlife;
 using libsecondlife.InventorySystem;
 using libsecondlife.AssetSystem;
+using libsecondlife.Utils;
 
 namespace ImageTool
 {
 	/// <summary>
 	/// Summary description for Class1.
 	/// </summary>
-	class ImageTool : libsecondlife.InventoryApp
+	class ImageTool : libsecondlife.Utils.InventoryApp
 	{
 		private LLUUID _ImageID;
 		private string _FileName;
