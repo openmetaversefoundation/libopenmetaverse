@@ -106,7 +106,7 @@ namespace libsecondlife.InventorySystem
 
 			output += "description = '" + xmlSafe(Description) + "' ";
 			output += "crc = '" + CRC + "' ";
-			output += "debug = '" + PacketHelpers.UpdateInventoryItem.BuildCRC(this) + "' ";
+			output += "debug = '" + Packets.InventoryPackets.InventoryUpdateCRC(this) + "' ";
 			output += "ownerid = '" + OwnerID + "' ";
 			output += "creatorid = '" + CreatorID + "' ";
 

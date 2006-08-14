@@ -174,16 +174,6 @@
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "AssetSystem\PacketHelpers\AssetPackets.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "AssetSystem\PacketHelpers\ImagePackets.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
                     RelPath = "InventorySystem\InventoryBase.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -214,21 +204,6 @@
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "InventorySystem\PacketHelpers\InventoryPackets.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "InventorySystem\PacketHelpers\RequestInventoryAsset.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
-                    RelPath = "InventorySystem\PacketHelpers\UpdateInventoryItem.cs"
-                    SubType = "Code"
-                    BuildAction = "Compile"
-                />
-                <File
                     RelPath = "JSON\JSONArray.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -249,7 +224,17 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "Packets\AssetPackets.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "Packets\CommunicationPackets.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Packets\ImagePackets.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -306,7 +306,7 @@ namespace libsecondlife.InventorySystem
 
 		private void UpdateCRC()
 		{
-			_CRC = PacketHelpers.UpdateInventoryItem.BuildCRC(this);
+			_CRC = Packets.InventoryPackets.InventoryUpdateCRC(this);
 		}
 
 		public void MoveTo( InventoryFolder targetFolder )
@@ -369,7 +369,7 @@ namespace libsecondlife.InventorySystem
 
 			output += "description = '" + xmlSafe(Description) + "' ";
 			output += "crc = '" + CRC + "' ";
-			output += "debug = '" + PacketHelpers.UpdateInventoryItem.BuildCRC(this) + "' ";
+			output += "debug = '" + Packets.InventoryPackets.InventoryUpdateCRC(this) + "' ";
 			output += "ownerid = '" + OwnerID + "' ";
 			output += "creatorid = '" + CreatorID + "' ";
 

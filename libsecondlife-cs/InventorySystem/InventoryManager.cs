@@ -248,7 +248,7 @@ namespace libsecondlife.InventorySystem
 
 		internal void ItemUpdate( InventoryItem iitem )
 		{
-			Packet packet = InventorySystem.PacketHelpers.UpdateInventoryItem.BuildPacket( slClient.Protocol, iitem, slClient.Network.AgentID );
+			Packet packet = InventoryPackets.UpdateInventoryItem( slClient.Protocol, iitem, slClient.Network.AgentID );
 			slClient.Network.SendPacket(packet);
 		}
 

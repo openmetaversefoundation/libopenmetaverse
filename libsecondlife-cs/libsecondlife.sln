@@ -31,10 +31,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryDump", "examples\I
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskInventory", "..\..\TaskInventory\TaskInventory.csproj", "{96337025-122D-460F-9AC5-46B6D0BD668E}"
-	ProjectSection(ProjectDependencies) = postProject
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -73,10 +69,6 @@ Global
 		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Debug.Build.0 = Debug|.NET
 		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.ActiveCfg = Release|.NET
 		{6478BE37-9272-4D91-B641-5E2FD0680B27}.Release.Build.0 = Release|.NET
-		{96337025-122D-460F-9AC5-46B6D0BD668E}.Debug.ActiveCfg = Debug|.NET
-		{96337025-122D-460F-9AC5-46B6D0BD668E}.Debug.Build.0 = Debug|.NET
-		{96337025-122D-460F-9AC5-46B6D0BD668E}.Release.ActiveCfg = Release|.NET
-		{96337025-122D-460F-9AC5-46B6D0BD668E}.Release.Build.0 = Release|.NET
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
