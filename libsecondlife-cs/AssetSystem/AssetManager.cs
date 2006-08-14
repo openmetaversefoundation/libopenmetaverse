@@ -5,7 +5,7 @@ using libsecondlife;
 
 using libsecondlife.InventorySystem;
 
-using libsecondlife.AssetSystem.PacketHelpers;
+using libsecondlife.Packets;
 
 namespace libsecondlife.AssetSystem
 {

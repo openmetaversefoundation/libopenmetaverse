@@ -3,7 +3,7 @@ using System.Collections;
 
 using libsecondlife;
           
-namespace libsecondlife.AssetSystem.PacketHelpers
+namespace libsecondlife.Packets
 {
 	/// <summary>
 	/// Summary description for ImagePackets.

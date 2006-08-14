@@ -3,9 +3,9 @@ using System.Collections;
 
 using libsecondlife;
 using libsecondlife.InventorySystem;
-//using libsecondlife.AssetSystem;
+using libsecondlife.AssetSystem;
 
-namespace libsecondlife.AssetSystem.PacketHelpers
+namespace libsecondlife.Packets
 {
 	/// <summary>
 	/// </summary>

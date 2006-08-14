@@ -29,7 +29,7 @@ using System.Collections;
 
 using libsecondlife;
 using libsecondlife.AssetSystem;
-using libsecondlife.InventorySystem.PacketHelpers;
+using libsecondlife.Packets;
 
 
 namespace libsecondlife.InventorySystem

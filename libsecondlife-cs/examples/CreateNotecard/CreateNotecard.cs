@@ -4,7 +4,7 @@ using System.IO;
 
 using libsecondlife;
 using libsecondlife.InventorySystem;
-using libsecondlife.AssetSystem.PacketHelpers;
+using libsecondlife.Packets;
 
 namespace InventoryTools
 {
