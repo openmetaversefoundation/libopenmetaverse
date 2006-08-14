@@ -1,11 +1,14 @@
 #!/usr/bin/perl -w
 
+print "--- building libsecondlife-cs\n";
+
+system('cd ../../libsecondlife-cs && ./build')
+	and die "*** failed to build libsecondlife-cs\n";
+
+print "--- building SLProxy\n";
+
 system('prj2make SLProxy.sln')
 	and die "*** prj2make failed\n";
-
-if (!-e '../../libsecondlife-cs/bin/Debug/libsecondlife.dll') {
-	die "*** libsecondlife-cs must be built first\n";
-}
 
 if (-e 'bin/Debug/SLProxy.dll' && -M '../../libsecondlife-cs/bin/Debug/libsecondlife.dll' < -M 'bin/Debug/SLProxy.dll') {
 	system('make clean')

@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+//#define DEBUG_SEQUENCE
+
 using Nwc.XmlRpc;
 using System;
 using System.Collections;
@@ -416,6 +418,9 @@ namespace SLProxy {
 					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
 					needsZero = true;
 				}
+#if DEBUG_SEQUENCE
+				Console.WriteLine("<- " + packet.Layout.Name + " #" + packet.Sequence);
+#endif
 
 				// check for ACKs we're waiting for
 				packet = simProxy.CheckAcks(packet, Direction.Incoming, ref length, ref needsCopy);
@@ -639,22 +644,34 @@ namespace SLProxy {
 						for (int i = 0; i < incomingInjectionsPoint; ++i) {
 							incomingInjections.RemoveAt(0);
 							++incomingOffset;
+#if DEBUG_SEQUENCE
+							Console.WriteLine("incomingOffset = " + incomingOffset);
+#endif
 						}
 						incomingInjectionsPoint = incomingInjections.Count;
 
 						for (int i = 0; i < outgoingInjectionsPoint; ++i) {
 							outgoingInjections.RemoveAt(0);
 							++outgoingOffset;
+#if DEBUG_SEQUENCE
+							Console.WriteLine("outgoingOffset = " + outgoingOffset);
+#endif
 						}
 						outgoingInjectionsPoint = outgoingInjections.Count;
 
 						for (int i = 0; i < incomingSeenAcksPoint; ++i) {
+#if DEBUG_SEQUENCE
+							Console.WriteLine("incomingAcks.Remove(" + incomingSeenAcks[0] + ")");
+#endif
 							incomingAcks.Remove(incomingSeenAcks[0]);
 							incomingSeenAcks.RemoveAt(0);
 						}
 						incomingSeenAcksPoint = incomingSeenAcks.Count;
 
 						for (int i = 0; i < outgoingSeenAcksPoint; ++i) {
+#if DEBUG_SEQUENCE
+							Console.WriteLine("outgoingAcks.Remove(" + outgoingSeenAcks[0] + ")");
+#endif
 							outgoingAcks.Remove(outgoingSeenAcks[0]);
 							outgoingSeenAcks.RemoveAt(0);
 						}
@@ -665,6 +682,9 @@ namespace SLProxy {
 						if (!incomingSeenAcks.Contains(id)) {
 							Packet packet = (Packet)incomingAcks[id];
 							packet.Data[0] |= Helpers.MSG_RESENT;
+#if DEBUG_SEQUENCE
+							Console.WriteLine("RESEND <- " + packet.Layout.Name + " #" + packet.Sequence);
+#endif
 							SendPacket(packet, packet.Data.Length, false);
 						}
 
@@ -672,6 +692,9 @@ namespace SLProxy {
 						if (!outgoingSeenAcks.Contains(id)) {
 							Packet packet = (Packet)outgoingAcks[id];
 							packet.Data[0] |= Helpers.MSG_RESENT;
+#if DEBUG_SEQUENCE
+							Console.WriteLine("RESEND -> " + packet.Layout.Name + " #" + packet.Sequence);
+#endif
 							proxy.SendPacket(packet, remoteEndPoint, packet.Data.Length, false);
 						}
 				}
@@ -715,6 +738,9 @@ namespace SLProxy {
 					packet = new Packet(receiveBuffer, length, proxyConfig.protocol, proxyConfig.protocol.Command(zeroBuffer), false);
 					needsZero = true;
 				}
+#if DEBUG_SEQUENCE
+				Console.WriteLine("-> " + packet.Layout.Name + " #" + packet.Sequence);
+#endif
 
 				// check for ACKs we're waiting for
 				packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
@@ -827,6 +853,10 @@ namespace SLProxy {
 					packet.Sequence = outgoingSequence;
 				}
 
+#if DEBUG_SEQUENCE
+				Console.WriteLine("INJECT " + (direction == Direction.Incoming ? "<-" : "->") + " " + packet.Layout.Name + " #" + packet.Sequence);
+
+#endif
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
 					WaitForAck(packet, direction);
 
@@ -862,11 +892,20 @@ namespace SLProxy {
 					Hashtable newBlocks = new Hashtable();
 					foreach (Hashtable fields in blocks.Keys) {
 						ushort id = (ushort)((uint)fields["ID"]);
+#if DEBUG_SEQUENCE
+						string hrup = "Check !" + id;
+#endif
 						if (acks.Contains(id)) {
+#if DEBUG_SEQUENCE
+							hrup += " get's";
+#endif
 							seenAcks.Add(id);
 							changed = true;
 						} else
 							newBlocks.Add(fields, blocks[fields]);
+#if DEBUG_SEQUENCE
+						Console.WriteLine(hrup);
+#endif
 					}
 					if (changed) {
 						Packet newPacket = PacketBuilder.BuildPacket("PacketAck", proxyConfig.protocol, newBlocks, packet.Data[0]);
@@ -882,8 +921,14 @@ namespace SLProxy {
 					byte ackCount = packet.Data[length - 1];
 					for (int i = 0; i < ackCount;) {
 						int offset = length - (ackCount - i) * 4 - 1;
-						ushort ackID = (ushort)(packet.Data[offset] + (packet.Data[offset + 1] << 8));
+						ushort ackID = (ushort)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8));
+#if DEBUG_SEQUENCE
+						string hrup = "Check @" + ackID;
+#endif
 						if (acks.Contains(ackID)) {
+#if DEBUG_SEQUENCE
+							hrup += " get's";
+#endif
 							byte[] newData = new byte[length -= 4];
 							Array.Copy(packet.Data, 0, newData, 0, offset);
 							Array.Copy(packet.Data, offset + 4, newData, offset, length - offset - 4);
@@ -894,6 +939,9 @@ namespace SLProxy {
 							needsCopy = false;
 						} else
 							++i;
+#if DEBUG_SEQUENCE
+						Console.WriteLine(hrup);
+#endif
 					}
 					if (ackCount == 0) {
 						byte[] newData = new byte[length -= 1];
@@ -917,20 +965,27 @@ namespace SLProxy {
 				foreach (ushort injection in ourInjections)
 					if (newSequence >= injection)
 						++newSequence;
+#if DEBUG_SEQUENCE
+				Console.WriteLine("Mod #" + packet.Sequence + " = " + newSequence);
+#endif
 				packet.Sequence = newSequence;
 
 				if ((packet.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0) {
 					int ackCount = packet.Data[length - 1];
 					for (int i = 0; i < ackCount; ++i) {
 						int offset = length - (ackCount - i) * 4 - 1;
-						uint ackID = (uint)(packet.Data[offset] + (packet.Data[offset + 1] << 8)) - theirOffset;
+						uint ackID = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8)) - theirOffset;
+#if DEBUG_SEQUENCE
+						uint hrup = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8));
+#endif
 						for (int j = theirInjections.Count - 1; j >= 0; --j)
 							if (ackID >= (ushort)theirInjections[j])
 								--ackID;
-						packet.Data[offset + 0] = (byte)(ackID % 256); ackID >>= 8;
-						packet.Data[offset + 1] = (byte)(ackID % 256); ackID >>= 8;
-						packet.Data[offset + 2] = (byte)(ackID % 256); ackID >>= 8;
-						packet.Data[offset + 3] = (byte)(ackID % 256); ackID >>= 8;
+#if DEBUG_SEQUENCE
+						Console.WriteLine("Mod @" + hrup + " = " + ackID);
+#endif
+						packet.Data[offset + 3] = (byte)(ackID % 256);
+						packet.Data[offset + 2] = (byte)(ackID / 256);
 					}
 				}
 
@@ -939,9 +994,15 @@ namespace SLProxy {
 					foreach (Hashtable fields in blocks.Keys) {
 						if ((string)blocks[fields] == "Packets") {
 							uint ackID = (uint)fields["ID"] - theirOffset;
+#if DEBUG_SEQUENCE
+							uint hrup = (uint)fields["ID"];
+#endif
 							for (int i = theirInjections.Count - 1; i >= 0; --i)
 								if (ackID >= (ushort)theirInjections[i])
 									--ackID;
+#if DEBUG_SEQUENCE
+							Console.WriteLine("Mod !" + hrup + " = " + ackID);
+#endif
 							fields["ID"] = ackID;
 						}
 					}
