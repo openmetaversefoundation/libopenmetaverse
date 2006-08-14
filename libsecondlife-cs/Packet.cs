@@ -181,7 +181,7 @@ namespace libsecondlife
 
 			if (Layout == null)
 			{
-				Helpers.Log("Received a packet with an unknown command ID", Helpers.LogLevel.Warning);
+				Helpers.Log("Received a packet with an unknown command ID:\n" + libsecondlife.Utils.ByteArrayStuff.ByteArrayToString((byte[])data), Helpers.LogLevel.Warning);
 
 				// Create an empty MapPacket
 				Layout = new MapPacket();
