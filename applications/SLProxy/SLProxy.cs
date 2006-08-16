@@ -495,12 +495,12 @@ namespace SLProxy {
 			} else
 				// ignore packets from unknown peers
 				Log("dropping packet from " + remoteEndPoint, false);
-
-			// resume listening
-			simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
 		} catch (Exception e) {
 			Console.WriteLine(e.Message);
 			Console.WriteLine(e.StackTrace);
+		} finally {
+			// resume listening
+			simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
 		}}
 
 		// SendPacket: send a packet to a sim from our fake client endpoint
@@ -820,12 +820,12 @@ namespace SLProxy {
 						Inject(queuedPacket, Direction.Incoming);
 					proxy.queuedIncomingInjections = new ArrayList();
 				}
-
-				// resume listening
-				socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
 			} catch (Exception e) {
 				Console.WriteLine(e.Message);
 				Console.WriteLine(e.StackTrace);
+			} finally {
+				// resume listening
+				socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
 			}}
 
 			// SendPacket: send a packet from the sim to the client via our fake sim endpoint

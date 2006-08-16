@@ -453,7 +453,7 @@ public class Analyst {
 							else
 								throw new Exception();
 						case FieldType.LLVector3:
-							Match vector3Match = (new Regex(@"<\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*>")).Match(value);
+							Match vector3Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
 							if (!vector3Match.Success)
 								throw new Exception();
 							return new LLVector3
@@ -462,7 +462,7 @@ public class Analyst {
 								,Convert.ToSingle(vector3Match.Groups[3].Captures[0].ToString())
 								);
 						case FieldType.LLVector3d:
-							Match vector3dMatch = (new Regex(@"<\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*>")).Match(value);
+							Match vector3dMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
 							if (!vector3dMatch.Success)
 								throw new Exception();
 							return new LLVector3d
@@ -471,7 +471,7 @@ public class Analyst {
 								,Convert.ToDouble(vector3dMatch.Groups[3].Captures[0].ToString())
 								);
 						case FieldType.LLVector4:
-							Match vector4Match = (new Regex(@"<\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*>")).Match(value);
+							Match vector4Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
 							if (!vector4Match.Success)
 								throw new Exception();
 							float vector4X = Convert.ToSingle(vector4Match.Groups[1].Captures[0].ToString());
@@ -485,7 +485,7 @@ public class Analyst {
 							Array.Copy(BitConverter.GetBytes(vector4S), 0, vector4Bytes, 12, 4);
 							return new LLVector4(vector4Bytes, 0);
 						case FieldType.LLQuaternion:
-							Match quaternionMatch = (new Regex(@"<\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)\s*>")).Match(value);
+							Match quaternionMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
 							if (!quaternionMatch.Success)
 								throw new Exception();
 							float quaternionX = Convert.ToSingle(quaternionMatch.Groups[1].Captures[0].ToString());
