@@ -94,6 +94,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "EstateTools.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "GridManager.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
@@ -230,6 +235,11 @@
                 />
                 <File
                     RelPath = "Packets\CommunicationPackets.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Packets\EstatePackets.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -239,6 +239,24 @@ namespace libsecondlife
 
 			return uuid;
 		}
+
+		public string ToStringHyphenated()
+		{
+			string uuid = "";
+
+			for (int i = 0; i < 16; ++i)
+			{
+				uuid += Data[i].ToString("x2");
+
+			}
+			uuid = uuid.Insert(20,"-");
+			uuid = uuid.Insert(16,"-");
+			uuid = uuid.Insert(12,"-");
+			uuid = uuid.Insert(8,"-");
+			
+
+			return uuid;
+		}
 	}
 
 	public class LLVector3

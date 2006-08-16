@@ -71,6 +71,7 @@ namespace libsecondlife
                public LLUUID TerrainDetail3;
 
                public bool IsEstateManager;
+	       public EstateTools Estate;
 
                private SecondLife Client;
 
@@ -78,6 +79,7 @@ namespace libsecondlife
 
                public Region(SecondLife client)
                {
+		       Estate = new EstateTools(client);
                        Client = client;
                        ID = new LLUUID();
                        Handle = new U64();
@@ -110,6 +112,7 @@ namespace libsecondlife
                        LLUUID simOwner, LLUUID[] terrainImages, bool isEstateManager)
                {
                        Client = client;
+		       Estate = new EstateTools(client);
                        ID = id;
                        Handle = handle;
                        Name = name;
