@@ -11,13 +11,13 @@ namespace SLChat
     {
         private ITextPrinter textPrinter;
         private SLNetCom netcom;
+        private PrefsManager prefs;
 
-        private bool showTimestamps = true;
-
-        public IMTextManager(ITextPrinter textPrinter, SLNetCom netcom)
+        public IMTextManager(ITextPrinter textPrinter, SLNetCom netcom, PrefsManager preferences)
         {
             this.textPrinter = textPrinter;
             this.netcom = netcom;
+            this.prefs = preferences;
 
             this.AddNetcomEvents();
         }
@@ -40,10 +40,11 @@ namespace SLChat
 
         public void PrintIM(DateTime timestamp, string fromName, string message)
         {
-            if (showTimestamps)
+            if (prefs.setIMTimestamps)
             {
+            	timestamp = timestamp.AddHours(int.Parse(prefs.setIMTimeZ));
                 textPrinter.ForeColor = Color.Gray;
-                textPrinter.PrintText(timestamp.ToString("[HH:mm] "));
+                textPrinter.PrintText(timestamp.ToString(prefs.setIMStampFormat));
             }
 
             textPrinter.ForeColor = Color.Black;
@@ -57,6 +58,12 @@ namespace SLChat
             textPrinter.PrintTextLine(sb.ToString());
             sb = null;
         }
+        
+        public void PrintProgramMessage(string msg)
+        {
+        	textPrinter.ForeColor = Color.RoyalBlue;
+        	textPrinter.PrintTextLine(msg);
+        }
 
         public void PassIMEvent(InstantMessageEventArgs e)
         {
@@ -67,12 +74,6 @@ namespace SLChat
         {
             get { return textPrinter; }
             set { textPrinter = value; }
-        }
-
-        public bool ShowTimestamps
-        {
-            get { return showTimestamps; }
-            set { showTimestamps = value; }
         }
     }
 }

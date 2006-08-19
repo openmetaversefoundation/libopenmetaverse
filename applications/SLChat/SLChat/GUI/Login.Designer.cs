@@ -161,7 +161,7 @@ namespace SLChat
         	// 
         	// frmLogin
         	// 
-        	this.Closing += new System.ComponentModel.CancelEventHandler(this.OnClosing);
+        	this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmLogin_Closing);
         	this.AcceptButton = this.btnLogin;
         	this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         	this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;

@@ -17,8 +17,11 @@ namespace SLChat
         private LLUUID session;
         private string toName;
         private IMTextManager textManager;
+        private PrefsManager prefs;
+        public frmMain formMain;
+        public frmIMs formIM;
 
-        public IMTabWindow(SLNetCom netcom, LLUUID target, LLUUID session, string toName)
+        public IMTabWindow(SLNetCom netcom, LLUUID target, LLUUID session, string toName, PrefsManager preferences)
         {
             InitializeComponent();
 
@@ -26,8 +29,9 @@ namespace SLChat
             this.target = target;
             this.session = session;
             this.toName = toName;
+            this.prefs = preferences;
 
-            textManager = new IMTextManager(new RichTextBoxPrinter(rtbIMText), this.netcom);
+            textManager = new IMTextManager(new RichTextBoxPrinter(rtbIMText), this.netcom, prefs);
         }
 
         private void btnSend_Click(object sender, EventArgs e)
@@ -48,6 +52,34 @@ namespace SLChat
 
             netcom.SendInstantMessage(cbxInput.Text, target, session);
             this.ClearIMInput();
+        }
+        
+        private void Link_Clicked (object sender, System.Windows.Forms.LinkClickedEventArgs e)
+		{
+   			System.Diagnostics.Process.Start(e.LinkText);
+		}
+        
+        private void BtnCloseClick(object sender, System.EventArgs e)
+        {
+        	if(formMain!=null)
+        	{
+        		formMain.RemoveIMTab(this.toName);
+        	}
+        	
+        	if(formIM!=null)
+        	{
+        		formIM.RemoveIMTab(this.toName);
+        	}
+        }
+        
+        private void BtnPrintKeyClick(object sender, System.EventArgs e)
+        {
+        	string key = target.ToString();
+        	key = key.Insert(8,"-");
+			key = key.Insert(13,"-");
+			key = key.Insert(18,"-");
+			key = key.Insert(23,"-");
+			textManager.PrintProgramMessage("Program: "+ toName + " == " + key);
         }
 
         private void ClearIMInput()

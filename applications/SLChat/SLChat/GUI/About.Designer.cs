@@ -51,6 +51,7 @@
         	this.rtbCredits.Size = new System.Drawing.Size(290, 209);
         	this.rtbCredits.TabIndex = 2;
         	this.rtbCredits.Text = "";
+        	this.rtbCredits.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.Link_Clicked);
         	// 
         	// frmAbout
         	// 

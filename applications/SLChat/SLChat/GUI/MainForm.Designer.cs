@@ -1,4 +1,4 @@
-namespace SLChat
+﻿namespace SLChat
 {
     partial class frmMain
     {
@@ -61,6 +61,8 @@ namespace SLChat
         	this.tbtnInventory = new System.Windows.Forms.ToolStripButton();
         	this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
         	this.sptChat = new System.Windows.Forms.SplitContainer();
+        	this.tabIMs = new System.Windows.Forms.TabControl();
+        	this.tabLocalChat = new System.Windows.Forms.TabPage();
         	this.menuStrip1.SuspendLayout();
         	this.cnxListNames.SuspendLayout();
         	this.pnlInput.SuspendLayout();
@@ -68,6 +70,8 @@ namespace SLChat
         	this.sptChat.Panel1.SuspendLayout();
         	this.sptChat.Panel2.SuspendLayout();
         	this.sptChat.SuspendLayout();
+        	this.tabIMs.SuspendLayout();
+        	this.tabLocalChat.SuspendLayout();
         	this.SuspendLayout();
         	// 
         	// menuStrip1
@@ -110,7 +114,7 @@ namespace SLChat
         	// 
         	this.mnuFileExit.Name = "mnuFileExit";
         	this.mnuFileExit.Size = new System.Drawing.Size(111, 22);
-        	this.mnuFileExit.Text = "&Exit";
+        	this.mnuFileExit.Text = "E&xit";
         	this.mnuFileExit.Click += new System.EventHandler(this.mnuFileExit_Click);
         	// 
         	// mnuEdit
@@ -126,6 +130,7 @@ namespace SLChat
         	this.mnuEditPrefs.Name = "mnuEditPrefs";
         	this.mnuEditPrefs.Size = new System.Drawing.Size(144, 22);
         	this.mnuEditPrefs.Text = "&Preferences...";
+        	this.mnuEditPrefs.Click += new System.EventHandler(this.MnuEditPrefsClick);
         	// 
         	// mnuView
         	// 
@@ -189,9 +194,10 @@ namespace SLChat
         	this.rtbChat.Name = "rtbChat";
         	this.rtbChat.ReadOnly = true;
         	this.rtbChat.ShowSelectionMargin = true;
-        	this.rtbChat.Size = new System.Drawing.Size(405, 333);
+        	this.rtbChat.Size = new System.Drawing.Size(394, 298);
         	this.rtbChat.TabIndex = 4;
         	this.rtbChat.Text = "";
+        	this.rtbChat.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.Link_Clicked);
         	// 
         	// lbxUsers
         	// 
@@ -201,7 +207,7 @@ namespace SLChat
         	this.lbxUsers.IntegralHeight = false;
         	this.lbxUsers.Location = new System.Drawing.Point(0, 0);
         	this.lbxUsers.Name = "lbxUsers";
-        	this.lbxUsers.Size = new System.Drawing.Size(131, 333);
+        	this.lbxUsers.Size = new System.Drawing.Size(128, 298);
         	this.lbxUsers.TabIndex = 3;
         	// 
         	// cnxListNames
@@ -212,7 +218,7 @@ namespace SLChat
         	        	        	this.mnuRemove});
         	this.cnxListNames.Name = "cnxListNames";
         	this.cnxListNames.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-        	this.cnxListNames.Size = new System.Drawing.Size(154, 76);
+        	this.cnxListNames.Size = new System.Drawing.Size(154, 54);
         	// 
         	// mnuKey
         	// 
@@ -239,9 +245,9 @@ namespace SLChat
         	this.pnlInput.Controls.Add(this.txtInput);
         	this.pnlInput.Controls.Add(this.btnSend);
         	this.pnlInput.Dock = System.Windows.Forms.DockStyle.Bottom;
-        	this.pnlInput.Location = new System.Drawing.Point(0, 382);
+        	this.pnlInput.Location = new System.Drawing.Point(3, 301);
         	this.pnlInput.Name = "pnlInput";
-        	this.pnlInput.Size = new System.Drawing.Size(540, 24);
+        	this.pnlInput.Size = new System.Drawing.Size(526, 24);
         	this.pnlInput.TabIndex = 4;
         	// 
         	// cbxChatType
@@ -253,7 +259,7 @@ namespace SLChat
         	        	        	"Say",
         	        	        	"Shout",
         	        	        	"Whisper"});
-        	this.cbxChatType.Location = new System.Drawing.Point(385, 0);
+        	this.cbxChatType.Location = new System.Drawing.Point(371, 0);
         	this.cbxChatType.Name = "cbxChatType";
         	this.cbxChatType.Size = new System.Drawing.Size(73, 21);
         	this.cbxChatType.TabIndex = 1;
@@ -266,7 +272,7 @@ namespace SLChat
         	this.txtInput.Location = new System.Drawing.Point(0, 0);
         	this.txtInput.MaxLength = 977;
         	this.txtInput.Name = "txtInput";
-        	this.txtInput.Size = new System.Drawing.Size(379, 21);
+        	this.txtInput.Size = new System.Drawing.Size(365, 21);
         	this.txtInput.TabIndex = 0;
         	this.txtInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.txtInput_KeyUp);
         	this.txtInput.TextChanged += new System.EventHandler(this.txtInput_TextChanged);
@@ -275,7 +281,7 @@ namespace SLChat
         	// 
         	this.btnSend.Dock = System.Windows.Forms.DockStyle.Right;
         	this.btnSend.Enabled = false;
-        	this.btnSend.Location = new System.Drawing.Point(464, 0);
+        	this.btnSend.Location = new System.Drawing.Point(450, 0);
         	this.btnSend.Name = "btnSend";
         	this.btnSend.Size = new System.Drawing.Size(76, 24);
         	this.btnSend.TabIndex = 2;
@@ -349,7 +355,7 @@ namespace SLChat
         	// sptChat
         	// 
         	this.sptChat.Dock = System.Windows.Forms.DockStyle.Fill;
-        	this.sptChat.Location = new System.Drawing.Point(0, 49);
+        	this.sptChat.Location = new System.Drawing.Point(3, 3);
         	this.sptChat.Name = "sptChat";
         	// 
         	// sptChat.Panel1
@@ -361,25 +367,47 @@ namespace SLChat
         	// 
         	this.sptChat.Panel2.Controls.Add(this.lbxUsers);
         	this.sptChat.Panel2MinSize = 0;
-        	this.sptChat.Size = new System.Drawing.Size(540, 333);
-        	this.sptChat.SplitterDistance = 405;
+        	this.sptChat.Size = new System.Drawing.Size(526, 298);
+        	this.sptChat.SplitterDistance = 394;
         	this.sptChat.TabIndex = 7;
+        	// 
+        	// tabIMs
+        	// 
+        	this.tabIMs.Appearance = System.Windows.Forms.TabAppearance.Buttons;
+        	this.tabIMs.Controls.Add(this.tabLocalChat);
+        	this.tabIMs.Dock = System.Windows.Forms.DockStyle.Fill;
+        	this.tabIMs.Location = new System.Drawing.Point(0, 49);
+        	this.tabIMs.Name = "tabIMs";
+        	this.tabIMs.SelectedIndex = 0;
+        	this.tabIMs.Size = new System.Drawing.Size(540, 357);
+        	this.tabIMs.TabIndex = 5;
+        	// 
+        	// tabLocalChat
+        	// 
+        	this.tabLocalChat.Controls.Add(this.sptChat);
+        	this.tabLocalChat.Controls.Add(this.pnlInput);
+        	this.tabLocalChat.Location = new System.Drawing.Point(4, 25);
+        	this.tabLocalChat.Name = "tabLocalChat";
+        	this.tabLocalChat.Padding = new System.Windows.Forms.Padding(3);
+        	this.tabLocalChat.Size = new System.Drawing.Size(532, 328);
+        	this.tabLocalChat.TabIndex = 0;
+        	this.tabLocalChat.Text = "Local Chat";
+        	this.tabLocalChat.UseVisualStyleBackColor = true;
         	// 
         	// frmMain
         	// 
         	this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         	this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         	this.ClientSize = new System.Drawing.Size(540, 406);
-        	this.Controls.Add(this.sptChat);
-        	this.Controls.Add(this.pnlInput);
+        	this.Controls.Add(this.tabIMs);
         	this.Controls.Add(this.toolStrip1);
         	this.Controls.Add(this.menuStrip1);
         	this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
         	this.MainMenuStrip = this.menuStrip1;
         	this.Name = "frmMain";
         	this.Text = "SLChat";
-        	this.Closing += new System.ComponentModel.CancelEventHandler(this.frmMain_StopClose);
-        	this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
+        	this.VisibleChanged += new System.EventHandler(this.frmMain_VisibleChanged);
+        	this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_Closing);
         	this.menuStrip1.ResumeLayout(false);
         	this.menuStrip1.PerformLayout();
         	this.cnxListNames.ResumeLayout(false);
@@ -390,9 +418,13 @@ namespace SLChat
         	this.sptChat.Panel1.ResumeLayout(false);
         	this.sptChat.Panel2.ResumeLayout(false);
         	this.sptChat.ResumeLayout(false);
+        	this.tabIMs.ResumeLayout(false);
+        	this.tabLocalChat.ResumeLayout(false);
         	this.ResumeLayout(false);
         	this.PerformLayout();
         }
+        private System.Windows.Forms.TabPage tabLocalChat;
+        private System.Windows.Forms.TabControl tabIMs;
         private System.Windows.Forms.ToolStripMenuItem mnuRemove;
         private System.Windows.Forms.ToolStripSeparator tolSeperator;
         private System.Windows.Forms.ToolStripMenuItem mnuKey;

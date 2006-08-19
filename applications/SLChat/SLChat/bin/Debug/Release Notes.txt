@@ -1,5 +1,32 @@
 Release Notes:
 
+
+------------------------
+Version 0.0.0.3
+------------------------
+
+Features:
+
+	* Feature: Timestamps can be customized by adjusting time zone offset and format.
+	* Feature: Can now chat on channels using "/<channel> <text>" and "//<text>".
+	* Feature: Clicking links in richtextboxes should launch default browser with link.
+	* Feature: Ctrl+A now works in chat textbox for local chat.
+	* Feature: Improved names list handling, now done via key, so if an object changes its name, it changes on the list as well, also all objects now have "(Ob)" infront of their names (in the list) to better distinguish them from avatars.
+	* Feature: Preferences can now be saved, current preferences include:
+			** Using "You" or full name for yourself.
+			** Toggling of showing your own name in the names list
+			** Showing/hiding of timestamps for both IMs and/or local chat and other timestamp features.
+			** Profiles can now be deleted through Preferences -> Profiles
+	* Feature: IMs now show up as tabs in the main chat window (will be optional later).
+
+
+Bug Fixes:
+
+	* Fixed bug: Closing certain forms now work as you'd expect. I.e. you can close the Login window while the main chat window is open and the program will not completely exit. You can also Logout, open the login window, close the chat window, and the program will still run until you close the login window. File -> Exit from Chat Window will close the application regardless of what windows are open. If this behavior seems quirky or anti-user-friendly, let me know.
+	* Fixed bug: Objects can no longer show up as "You" in chat by having the same name as you (thanks to Qode for finding this one). Also objects can no longer show up as "You" in the name list either.
+	* Fixed bug: More grammar correction for chat, also fixed case where "s" would be appended to names.
+
+
 ------------------------
 Version 0.0.0.2 (8/11/06)
 ------------------------

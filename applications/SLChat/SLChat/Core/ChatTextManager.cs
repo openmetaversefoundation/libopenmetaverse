@@ -12,6 +12,7 @@ namespace SLChat
     {
         private ITextPrinter textPrinter;
         private SLNetCom netcom;
+        private PrefsManager prefs;
         //Our color set for the different textes.
         private Color colorProgram = Color.RoyalBlue;
         private Color colorSLSystem = Color.Teal;
@@ -19,10 +20,11 @@ namespace SLChat
         private Color colorObjectText = Color.DarkGreen;
         private Color colorLindenText = Color.Chocolate;
 
-        public ChatTextManager(ITextPrinter textPrinter, SLNetCom netcom)
+        public ChatTextManager(ITextPrinter textPrinter, SLNetCom netcom, PrefsManager preferences)
         {
             this.textPrinter = textPrinter;
             this.netcom = netcom;
+            this.prefs = preferences;
 
             this.AddNetcomEvents();
         }
@@ -39,10 +41,23 @@ namespace SLChat
         {
             if (string.IsNullOrEmpty(e.Message)) return;
 
+            if (prefs.setChatTimestamps)
+            {
+            	
+            	TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+                DateTime tr = (new DateTime(1970,1,1)).AddSeconds(t.TotalSeconds);
+                tr = tr.AddHours(int.Parse(prefs.setChatTimeZ));
+                textPrinter.ForeColor = Color.Gray;
+                textPrinter.PrintText(tr.ToString(prefs.setChatStampFormat));
+            }
+            
             StringBuilder sb = new StringBuilder();
 
-            if (e.FromName == netcom.LoginOptions.FullName)
-                sb.Append("You");
+            //If the name is the users, the source is an agent,
+            //and a "/me" command is not being done, then we append "you"
+            //otherwise we append the full name.
+            if (e.FromName == netcom.LoginOptions.FullName & e.SourceType == SLSourceType.Avatar & !e.Message.ToLower().StartsWith("/me ") & !prefs.setUseFullName)
+                	sb.Append("You");
             else
                 sb.Append(e.FromName);
 
@@ -63,7 +78,7 @@ namespace SLChat
             
             //Setting us up for proper grammar, so we don't get "You shouts"
             //but rather "You shout"
-            if(e.FromName != netcom.LoginOptions.FullName)
+            if(e.FromName != netcom.LoginOptions.FullName & e.Type != SLChatType.Say)
             	sb.Append("s");
             
             //Checking for a /me command
@@ -71,14 +86,8 @@ namespace SLChat
             if(!e.Message.ToLower().StartsWith("/me "))
             {
             	sb.Append(": ");
-            }else if(e.Message.StartsWith("/ME ")){
-            	char[] MeChar = {'/','M','E',' '};
-            	Mess = e.Message.TrimStart(MeChar);
-            	sb.Append(" ");
             }else {
-            	char[] MeChar = {'/','m','e',' '};
-            	Mess = e.Message.TrimStart(MeChar);
-            	sb.Append(" ");
+            	Mess = e.Message.Remove(0,3);
             }
 
             sb.Append(Mess);

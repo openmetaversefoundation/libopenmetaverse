@@ -14,13 +14,15 @@ namespace SLChat
     {
         private SLNetCom netcom;
         private Dictionary<string, IMTabWindow> IMTabs;
+        private PrefsManager prefs;
 
-        public frmIMs(SLNetCom netcom)
+        public frmIMs(SLNetCom netcom, PrefsManager preferences)
         {
             InitializeComponent();
 
             this.netcom = netcom;
             IMTabs = new Dictionary<string, IMTabWindow>();
+            prefs = preferences;
 
             this.AddNetcomEvents();
         }
@@ -40,9 +42,10 @@ namespace SLChat
         public IMTabWindow AddIMTab(LLUUID target, LLUUID session, string targetName)
         {
             TabPage tabpage = new TabPage(targetName);
-            IMTabWindow imTab = new IMTabWindow(netcom, target, session, targetName);
+            IMTabWindow imTab = new IMTabWindow(netcom, target, session, targetName, prefs);
             imTab.Dock = DockStyle.Fill;
-
+			imTab.formIM = this;
+            
             tabpage.Controls.Add(imTab);
 
             tabIMs.TabPages.Add(tabpage);

@@ -1,13 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.XPath;
-using System.IO;
 using SLNetworkComm;
 using libsecondlife;
 
@@ -15,26 +13,41 @@ namespace SLChat
 {
     public partial class frmLogin : Form
     {
-    	private bool mainCreated;
-    	public frmMain MainForm;
-    	private SLNetCom netcom;
+    	private bool mainCreated; //Checks if we've created a mainform
+    	public frmMain MainForm; //main form tossing back and forth
+    	private SLNetCom netcom; //Network communication
+    	public PrefsManager prefs; //Our preferences manger.
     	//These are used for our settings loading/saving
 		//to see if we have changed our settings since they were last loaded
 		private string setFirstName;
 		private string setLastName;
 		private string setLLocation; //Login Location
 		private bool setSaveLogin; //Save Login check box
+		private Hashtable settings = new Hashtable(); //Hashtable for our loaded settings.
 
         public frmLogin()
         {
             InitializeComponent();
             
             //Try to load the login settings.
-			//LoadLoginSettings();
-			LoadProfiles(@"Profiles\\");
-
+			prefs = new PrefsManager();
+			prefs.LoadProfiles();
+			//Load the profiles to our combobox.
+			string[] profiles = new string[100];
+			profiles = prefs.profiles;
+			for(int i=0;i<profiles.Length;i++)
+			{
+				if(profiles[i]!=null)
+				{
+					cbxProfiles.Items.Add(profiles[i].ToString());
+				}else{
+					//Exit when we hit a null profile.
+					break;
+				}
+			}
+			
             netcom = new SLNetCom();
-            MainForm = new frmMain(this,netcom);
+            MainForm = new frmMain(this,netcom,prefs);
             this.AddNetcomEvents();
         }
         
@@ -69,6 +82,7 @@ namespace SLChat
 				this.Hide();
 			}else{
 				MainForm.Focus();
+				this.Hide();
 			}
         }
         
@@ -100,12 +114,25 @@ namespace SLChat
 				{
 					//If there have been any changes from when
 					//the settings were last loaded.
-					SaveLoginSettings();
+					//Setting up our child node settings.
+					string strSettings = "<SaveLoginInfo value=\""+chkSaveLogin.Checked.ToString().ToLower()+"\"/>"+
+									"<FirstName value=\""+txtFirstName.Text+"\"/>"+
+									"<LastName value=\""+txtLastName.Text+"\"/>"+
+									"<LoginLocation value=\""+cbxLocation.Text+"\"/>";
+					//Sending off the settings to be saved.
+					prefs.SaveSettings(txtFirstName.Text+"_"+txtLastName.Text,"LoginSettings",strSettings);
+					//Clean up the combo box that lists profiles.
+					if(cbxProfiles.Items.Contains("No profiles found."))
+					{
+						cbxProfiles.Items.Remove("No profiles found.");
+					}
+					cbxProfiles.Items.Add(txtFirstName.Text+"_"+txtLastName.Text);
+					cbxProfiles.SelectedItem = txtFirstName.Text+"_"+txtLastName.Text;
 				}
 			}else{
 				//If unchecked, delete the login settings
 				//no point in having unused information remain.
-				DeleteLoginSettings();
+				prefs.DeleteSettings(cbxProfiles.Text,"LoginSettings");
 			}
 				
             btnLogin.Enabled = false;
@@ -120,196 +147,64 @@ namespace SLChat
            	netcom.Login();
         }
         
-        public void OnClosing(object sender, System.EventArgs e)
-		{
-			//TODO: Fix this. What should it do? This should prevent
-			//the whole application from closing if winChat has
-			//been created and is visible. If winChat hasn't been
-			//created, then the whole applicaiton should be closed.
-			
-			if(mainCreated==true)
+        public void CloseApp()
+        {
+        	this.Dispose();
+        }
+        
+        private void frmLogin_Closing(object sender, FormClosingEventArgs e)
+        {
+        	if(mainCreated==true)
 			{
-				MainForm.loginVisible = false;
-				this.Hide();
+        		if(MainForm.Visible==true)
+        		{
+					MainForm.loginVisible = false;
+					e.Cancel = true;
+					this.Hide();
+        		}else{
+        			this.Dispose();
+        		}
 			}else{
 				this.Dispose();
 			}
-		}
-        
-        public void SaveLoginSettings()
-		{
-			//Saving our login settings
-			//pick whatever filename with .xml extension
-			string filename = @"Profiles\\"+txtFirstName.Text+"_"+txtLastName.Text+"\\settings.xml";
-			SaveDirectory(@"Profiles\\"+txtFirstName.Text+"_"+txtLastName.Text+"\\");
-			
-			XmlDocument xmlDoc = new XmlDocument();
-
-			try
-			{
-				xmlDoc.Load(filename);
-			}
-			catch(System.IO.FileNotFoundException)
-			{
-				//if file is not found, create a new xml file
-				XmlTextWriter xmlWriter = new XmlTextWriter(filename, System.Text.Encoding.UTF8);
-				xmlWriter.Formatting = Formatting.Indented;
-				xmlWriter.WriteProcessingInstruction("xml", "version='1.0' encoding='UTF-8'");
-				xmlWriter.WriteStartElement("SLChatSettings");
-				//If WriteProcessingInstruction is used as above,
-				//Do not use WriteEndElement() here
-				//xmlWriter.WriteEndElement();
-				//it will cause the &ltRoot></Root> to be &ltRoot />
-				xmlWriter.Close();
-				xmlDoc.Load(filename);
-			}
-				
-			XmlNode root = xmlDoc.DocumentElement;
-			XmlNodeList nodeList = xmlDoc.GetElementsByTagName("LoginSettings");
-			if(nodeList.Count!=0){
-				root.RemoveChild(nodeList[0]);
-			}
-			XmlElement loginSettings = xmlDoc.CreateElement("LoginSettings");
-			string strSettings = "<FirstName value=\""+txtFirstName.Text+"\"/>"+
-									"<LastName value=\""+txtLastName.Text+"\"/>"+
-									"<LoginLocation value=\""+cbxLocation.Text+"\"/>"+
-				"<SaveLoginInfo value=\""+chkSaveLogin.Checked.ToString().ToLower()+"\"/>";
-			loginSettings.InnerXml = strSettings;
-			
-			root.AppendChild(loginSettings);
-				
-			xmlDoc.Save(filename);
-			if(cbxProfiles.Items.Contains("No profiles found."))
-			{
-				cbxProfiles.Items.Remove("No profiles found.");
-			}
-			cbxProfiles.Items.Add(txtFirstName.Text+"_"+txtLastName.Text);
-			cbxProfiles.SelectedItem = txtFirstName.Text+"_"+txtLastName.Text;
-		}
-		
-        protected void SaveDirectory(string PathName)
-        {
-        	try
-        	{
-        		DirectoryInfo TheFolder = new DirectoryInfo(PathName);
-                if (TheFolder.Exists)
-                {
-                    return;
-                }
-
-                throw new FileNotFoundException();
-        	}
-        	catch(FileNotFoundException )
-        	{
-        		DirectoryInfo TheDir = new DirectoryInfo(PathName);
-        		TheDir.Create();
-        		return;
-        	}
         }
         
-        protected void LoadProfiles(string PathName)
+        private void CbxProfilesSelectedIndexChanged(object sender, System.EventArgs e)
         {
-            try
-            {
-                DirectoryInfo TheFolder = new DirectoryInfo(PathName);
-                if (TheFolder.Exists)
-                {
-                	DirectoryInfo[] dirs = TheFolder.GetDirectories();
-                	foreach(DirectoryInfo di in dirs)
-                	{
-                		cbxProfiles.Items.Add(di.Name);
-                	}
-                    //ListContentsOfFolder(TheFolder);
-                    return;
-                }
-
-                throw new FileNotFoundException();
-            }
-            catch(FileNotFoundException )
-            {
-                //tbFolder.Text = PathName;
-                cbxProfiles.Items.Add(
-                     "No profiles found.");
-            }
-            catch(Exception e)
-            {
-                //tbFolder.Text = PathName;
-                cbxProfiles.Items.Add("Problem occurred:");
-                cbxProfiles.Items.Add(e.Message);
-            }
-            finally
-            {
-               // ListItems = false;
-            }
-        }
-        
-		public void LoadLoginSettings()
-		{
-			//Load our login settings.
-
-			string filename = @"Profiles\\"+cbxProfiles.Text+"\\settings.xml";
-			
-			XmlDocument xmlDoc = new XmlDocument();
-
-			try
-			{
-				xmlDoc.Load(filename);
-			}
-			catch(System.IO.FileNotFoundException)
-			{
-				return;
-			}
-				
-			XmlNode root = xmlDoc.DocumentElement;
-			XmlNodeList nodeList = xmlDoc.GetElementsByTagName("LoginSettings");
-			if(nodeList.Count!=0){
-				XmlNodeList nodeSLogin = xmlDoc.GetElementsByTagName("SaveLoginInfo");
-				if(nodeSLogin[0].Attributes["value"].InnerText=="true"){
-					//There may be a better way to get the values of each element
-					//but I could not find one. - Oz
-					XmlNodeList nodeFName = xmlDoc.GetElementsByTagName("FirstName");
-					txtFirstName.Text = setFirstName = nodeFName[0].Attributes["value"].InnerText;
-					XmlNodeList nodeLName = xmlDoc.GetElementsByTagName("LastName");
-					txtLastName.Text = setLastName = nodeLName[0].Attributes["value"].InnerText;
-					XmlNodeList nodeLLocation = xmlDoc.GetElementsByTagName("LoginLocation");
-					cbxLocation.Text = setLLocation = nodeLLocation[0].Attributes["value"].InnerText;
-					chkSaveLogin.Checked = setSaveLogin = true;
-				}else{
-					chkSaveLogin.Checked = setSaveLogin = false;
-						
-				}
-			}
-
-		}
-		
-		public void DeleteLoginSettings()
-		{
-			//Delete our login settings.
-			
-			string filename = @"Profiles\\"+cbxProfiles.Text+"\\settings.xml";
-
-			XmlDocument xmlDoc = new XmlDocument();
-
-			try
-			{
-				xmlDoc.Load(filename);
-			}
-			catch(System.IO.FileNotFoundException)
-			{
-				return;
-			}
-			XmlNode root = xmlDoc.DocumentElement;
-			XmlNodeList nodeList = xmlDoc.GetElementsByTagName("LoginSettings");
-			if(nodeList.Count!=0){
-				//Simply remove that NodeList that composes our "LoginSettings"
-				root.RemoveChild(nodeList[0]);
-			}
-			xmlDoc.Save(filename);
-		}
-        
-        void CbxProfilesSelectedIndexChanged(object sender, System.EventArgs e)
-        {
-        	LoadLoginSettings();
+      
+        	//Load login settings based on what profile is selected
+        	prefs.LoadSettings(cbxProfiles.Text,"LoginSettings");
+        	
+        	settings = prefs.settings;
+        	
+        	if(!settings.ContainsKey("Error"))
+        	{
+        		IDictionaryEnumerator myEnum = settings.GetEnumerator();
+      			while (myEnum.MoveNext())
+      			{
+      				if(myEnum.Key.ToString()=="SaveLoginInfo")
+      				{
+      					chkSaveLogin.Checked = setSaveLogin = true;
+      				}else if(myEnum.Key.ToString()=="FirstName"){
+      					txtFirstName.Text = setFirstName = myEnum.Value.ToString();
+      				}else if(myEnum.Key.ToString()=="LastName"){
+      					txtLastName.Text = setLastName = myEnum.Value.ToString();
+      				}else if(myEnum.Key.ToString()=="LoginLocation"){
+      					cbxLocation.Text = setLLocation = myEnum.Value.ToString();
+      				}
+      			}
+        	}else{
+        		IDictionaryEnumerator myEnum = settings.GetEnumerator();
+      			while (myEnum.MoveNext())
+      			{
+      				if(myEnum.Key.ToString()=="Error")
+      				{
+      					rtbStatus.Text = "Error loading settings: "+myEnum.Value.ToString();
+      				}
+      			}
+        	}
+        	settings.Clear();
+        	prefs.settings.Clear();
         }
     }
 }

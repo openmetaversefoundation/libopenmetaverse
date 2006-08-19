@@ -118,6 +118,14 @@
     </Compile>
     <Compile Include="SLNetCom\SLNetComEnums.cs" />
     <Compile Include="SLNetCom\SLNetComEvents.cs" />
+    <Compile Include="GUI\Preferences.Designer.cs">
+      <DependentUpon>Preferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Preferences.cs" />
+    <EmbeddedResource Include="GUI\Preferences.resx">
+      <DependentUpon>Preferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Include="Core\PrefsManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="keywords.txt">
