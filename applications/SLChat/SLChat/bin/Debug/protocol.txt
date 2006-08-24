@@ -1092,7 +1092,7 @@ sim -> dataserver
 
 // DirEventsReply
 {
-	DirEventsReply Low NotTrusted Zerocoded
+	DirEventsReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID		}
@@ -1150,7 +1150,7 @@ sim -> dataserver
 // dataserver -> userserver -> viewer
 // reliable
 {
-	DirGroupsReply Low NotTrusted Zerocoded
+	DirGroupsReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID			}
@@ -1260,6 +1260,7 @@ sim -> dataserver
 	{
 		AgentData        Single
 		{    AgentID        LLUUID		}
+		{    SessionID      LLUUID		}
 	}
 	{
 		Data        Single
@@ -1650,6 +1651,102 @@ sim -> dataserver
 	}
 }
 
+// GroupNoticeListRequest
+// viewer -> simulator -> dataserver
+// reliable
+{
+	GroupNoticesListRequest	Low	NotTrusted	Unencoded
+	{
+		AgentData        Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
+	}
+	{
+		Data        Single
+		{	GroupID			LLUUID		}
+	}
+}
+
+// GroupNoticesListReply
+// dataserver -> simulator -> viewer
+// reliable
+{
+	GroupNoticesListReply	Low	Trusted	Unencoded
+	{
+		AgentData	Single
+		{	AgentID			LLUUID		}
+		{	GroupID			LLUUID		}
+	}
+	{
+		Data		Variable
+		{	NoticeID		LLUUID		}
+		{	Timestamp		U32			}
+		{	FromName		Variable 2	}
+		{	Subject			Variable 2	}
+		{	HasAttachment	BOOL		}
+		{	AssetType		U8			}
+	}
+}
+
+// GroupNoticeRequest
+// viewer -> simulator
+// simulator -> dataserver
+// reliable
+{
+	GroupNoticeRequest Low NotTrusted Unencoded
+	{
+		AgentData        Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
+	}
+	{
+		Data        Single
+		{	GroupNoticeID	LLUUID		}
+	}
+}
+
+// GroupNoticeAdd
+// Add a group notice. 
+// simulator -> dataserver
+// reliable
+{
+	GroupNoticeAdd Low Trusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID			LLUUID		}
+	}
+	{
+		MessageBlock		Single
+		{	ToGroupID		LLUUID	}
+		{	ID				LLUUID	}
+		{	Dialog			U8	}
+		{	FromAgentName	Variable	1	}
+		{	Message			Variable	2	}
+		{	BinaryBucket	Variable	2	}
+	}
+}
+
+
+// GroupNoticeDelete
+// Delete a group notice from the database.
+// viewer -> simulator -> dataserver
+// reliable
+{
+	GroupNoticeDelete Low NotTrusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
+	}
+	{
+		Data	Single
+		{	GroupNoticeID	LLUUID		}
+		{	GroupID			LLUUID		}
+	}
+}
+
+
+
 // ****************************************************************************
 // Teleport messages
 //
@@ -1707,7 +1804,7 @@ sim -> dataserver
 // sim -> viewer reply telling the viewer that we've successfully TP'd
 // to somewhere else within the sim
 {
-	TeleportLocal Low NotTrusted Unencoded
+	TeleportLocal Low Trusted Unencoded
 	{
 		Info		Single
 		{	AgentID			LLUUID			}
@@ -1839,7 +1936,7 @@ sim -> dataserver
 // called when all of the information has been collected and readied for 
 // the agent.
 {
-	TeleportFinish Low NotTrusted Unencoded
+	TeleportFinish Low Trusted Unencoded
 	{
 		Info		Single
 		{	AgentID			LLUUID			}
@@ -1873,21 +1970,6 @@ sim -> dataserver
 		{	LureType 		U8	 			}
 		{	TargetID		LLUUID			}
 		{	Message			Variable	1	}
-	}
-}
-
-// InitializeLure user->space
-// Prepare the spaceserver with destination information for a lure. 
-{
-	InitializeLure	Low	Trusted Unencoded
-	{
-		Info	Single
-		{	LureType 		U8 			}
-		{	AgentID 		LLUUID		}
-		{	LureID			LLUUID		}
-		{	RegionHandle	U64			}
-		{	Position		LLVector3	}
-		{	LookAt			LLVector3	}
 	}
 }
 
@@ -1937,7 +2019,7 @@ sim -> dataserver
 // TeleportStart sim->viewer
 // announce a successful teleport request to the viewer.
 {
-	TeleportStart Low NotTrusted Unencoded
+	TeleportStart Low Trusted Unencoded
 	{
 		Info	Single
 		{	TeleportFlags	U32		}
@@ -1947,7 +2029,7 @@ sim -> dataserver
 // TeleportFailed somehwere->sim->viewer
 // announce failure of teleport request
 {
-	TeleportFailed Low NotTrusted Unencoded
+	TeleportFailed Low Trusted Unencoded
 	{
 		Info		Single
 		{	AgentID		LLUUID			}
@@ -2052,6 +2134,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	GroupID		LLUUID	}
 	}
 	{
@@ -2067,6 +2150,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	GroupID		LLUUID	}
 	}
 	{
@@ -2093,17 +2177,6 @@ sim -> dataserver
 		{	AgentID		LLUUID	}
 	}
 }
-
-//  Transfer energy from agent to an object 
-{
-	TransferEnergy Low NotTrusted Unencoded
-	{
-		Data				Single
-		{  DestID			LLUUID	}	// destination of the transfer
-		{  Amount			S32	}   // amount of the transfer
-	}
-}
-
 
 // MovedIntoSimulator - Sent by simulatorA to simulatorB to tell the
 // simulator that a viewer is moving from A to B
@@ -2355,7 +2428,7 @@ sim -> dataserver
 // ImageNotInDatabase
 // Simulator informs viewer that a requsted image definitely does not exist in the asset database
 {
-	ImageNotInDatabase Low NotTrusted Unencoded
+	ImageNotInDatabase Low Trusted Unencoded
 	{
 		ImageID				Single
 		{	ID				LLUUID	}
@@ -2471,7 +2544,6 @@ sim -> dataserver
 		AgentData		Single
 		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID	}
-		{	GroupID		LLUUID	}
 		{	Force		BOOL	}	// BOOL, god trying to force delete
 	}
 	{
@@ -2489,6 +2561,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	GroupID		LLUUID	}
 	}
 	{
@@ -2512,6 +2585,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID					LLUUID	}
+		{	SessionID				LLUUID	}
 		{	GroupID					LLUUID	}
 		{	RayStart				LLVector3	}	// region local
 		{	RayEnd					LLVector3	}	// region local
@@ -2746,6 +2820,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		HeaderData		Single
@@ -2767,6 +2842,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	GroupID		LLUUID	}
 	}
 	{
@@ -3713,7 +3789,7 @@ sim -> dataserver
 // sim -> viewer
 // reliable
 {
-	RegionHandshake			Low		NotTrusted Zerocoded
+	RegionHandshake			Low		Trusted Zerocoded
 	{
 		RegionInfo	Single
 		{	RegionFlags		U32	}
@@ -4462,7 +4538,7 @@ sim -> dataserver
 // simulator -> dataserver
 // reliable
 {
-	AvatarPropertiesRequestBackend Low NotTrusted Unencoded
+	AvatarPropertiesRequestBackend Low Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
@@ -4514,7 +4590,8 @@ sim -> dataserver
 	}
 	{
 		GroupData			Variable
-		{	GroupOfficer		BOOL		}
+		{	GroupPowers			U64			}
+		{	AcceptNotices		BOOL		}
 		{	GroupTitle			Variable 1	}
 		{	GroupID				LLUUID		}
 		{	GroupName			Variable 1	}
@@ -4636,6 +4713,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		EventData		Single
@@ -4682,7 +4760,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
-	
+		{	SessionID	LLUUID	}
 	}
 	{
 		EventData		Single
@@ -4700,7 +4778,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
-	
+		{	SessionID	LLUUID	}
 	}
 	{
 		EventData		Single
@@ -4743,7 +4821,8 @@ sim -> dataserver
 	PickInfoRequest Low NotTrusted Zerocoded
 	{
 		AgentData        Single
-		{    AgentID        LLUUID		}
+		{	AgentID        LLUUID		}
+		{	SessionID		LLUUID		}
 	}
 	{
 		Data        Single
@@ -4793,6 +4872,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 	}
 	{
 		Data		Single
@@ -4819,6 +4899,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 	}
 	{
 		Data	Single
@@ -4864,7 +4945,7 @@ sim -> dataserver
 // ScriptControlChange
 // reliable
 {
-	ScriptControlChange Low NotTrusted Unencoded
+	ScriptControlChange Low Trusted Unencoded
 	{
 		Data	Variable
 		{	TakeControls	BOOL 	}
@@ -4944,6 +5025,7 @@ sim -> dataserver
 		{	ObjectName		Variable	1	}
 		{	ObjectID		LLUUID			}
 		{	OwnerID			LLUUID			}
+		{	OwnerIsGroup	BOOL			}
 		{	Message			Variable	1	}
 		{	URL				Variable	1	}
 	}
@@ -4952,7 +5034,7 @@ sim -> dataserver
 // ScriptTeleportRequest
 // reliable
 {
-	ScriptTeleportRequest Low NotTrusted Unencoded
+	ScriptTeleportRequest Low Trusted Unencoded
 	{
 		Data	Single
 		{	ObjectName		Variable	1	}
@@ -4994,8 +5076,12 @@ sim -> dataserver
 {
 	ParcelPropertiesRequest Medium NotTrusted Zerocoded
 	{
-		ParcelData			Single
+		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		ParcelData			Single
 		{	SequenceID	S32	}
 		{	West		F32	}
 		{	South		F32	}
@@ -5011,8 +5097,12 @@ sim -> dataserver
 {
 	ParcelPropertiesRequestByID Low NotTrusted Zerocoded
 	{
-		ParcelData		Single
+		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		ParcelData		Single
 		{	SequenceID	S32		}
 		{	LocalID		S32		}
 	}
@@ -5080,6 +5170,9 @@ sim -> dataserver
 		{	UserLookAt		LLVector3		}
 		{	LandingType		U8				}
 		{	RegionPushOverride	BOOL		}
+		{	RegionDenyAnonymous	BOOL		}
+		{	RegionDenyIdentified	BOOL		}
+		{	RegionDenyTransacted	BOOL		}
 	}
 }
 
@@ -5131,8 +5224,7 @@ sim -> dataserver
 	{
 		ParcelData			Single
 		{	LocalID			S32				}
-		{	ReturnType		S32				}
-		{	OtherCleanTime		S32			}
+		{	ReturnType		U32				}
 	}
 	{
 		TaskIDs			Variable
@@ -5143,6 +5235,24 @@ sim -> dataserver
 		{	OwnerID			LLUUID			}
 	}
 }
+
+// ParcelSetOtherCleanTime
+// viewer -> sim
+// reliable
+{
+	ParcelSetOtherCleanTime Low NotTrusted Zerocoded
+	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
+		ParcelData			Single
+		{	LocalID			S32				}
+		{	OtherCleanTime	S32				}
+	}
+}
+
 
 // Disable makes objects nonphysical and turns off their scripts.
 // ParcelDisableObjects
@@ -5158,8 +5268,7 @@ sim -> dataserver
 	{
 		ParcelData			Single
 		{	LocalID			S32				}
-		{	ReturnType		S32				}
-		{	OtherCleanTime		S32			}
+		{	ReturnType		U32				}
 	}
 	{
 		TaskIDs			Variable
@@ -5185,12 +5294,39 @@ sim -> dataserver
 	{
 		ParcelData			Single
 		{	LocalID			S32				}
-		{	ReturnType		S32				}
+		{	ReturnType		U32				}
 	}
 	{
 		ReturnIDs			Variable
 		{	ReturnID		LLUUID	}
 	}
+}
+
+
+// EstateCovenantRequest
+// viewer -> sim
+// reliable
+{
+    EstateCovenantRequest Low NotTrusted Unencoded
+	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+}
+
+// EstateCovenantReply
+// sim -> viewer
+// reliable
+{
+    EstateCovenantReply Low Trusted Unencoded
+	{
+		Data        Single
+		{	CovenantID		    LLUUID		    }
+		{	CovenantTimestamp	U32 		    }
+		{	EstateName		    Variable    1	}   // string
+        {   EstateOwnerID       LLUUID          }
+    }
 }
 
 
@@ -5289,8 +5425,12 @@ sim -> dataserver
 {
 	ParcelJoin Low NotTrusted Unencoded
 	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		ParcelData			Single
-		{	AgentID		LLUUID	}
 		{	West		F32		}
 		{	South		F32		}
 		{	East		F32		}
@@ -5306,8 +5446,12 @@ sim -> dataserver
 {
 	ParcelDivide Low NotTrusted Unencoded
 	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		ParcelData			Single
-		{	AgentID		LLUUID	}
 		{	West		F32		}
 		{	South		F32		}
 		{	East		F32		}
@@ -5373,8 +5517,12 @@ sim -> dataserver
 {
 	ParcelAccessListRequest Low NotTrusted Zerocoded
 	{
-		Data	Single
+		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
+		Data	Single
 		{	SequenceID		S32		}
 		{	Flags			U32		}
 		{	LocalID			S32		}
@@ -5385,7 +5533,7 @@ sim -> dataserver
 // sim -> viewer
 // ParcelAccessListReply
 {
-	ParcelAccessListReply Low NotTrusted Zerocoded
+	ParcelAccessListReply Low Trusted Zerocoded
 	{
 		Data	Single
 		{	AgentID			LLUUID	}
@@ -5434,6 +5582,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID		LLUUID		}
+		{	SessionID	LLUUID		}
 	}
 	{
 		Data		Single
@@ -5876,12 +6025,13 @@ sim -> dataserver
 		{	PreyAgent						LLUUID	}
 		{	AgentAccess		U8	}
 		{	AgentTextures		Variable	2	}
-		{	GroupIndex	        S8	}	// -1 for none
+		{	ActiveGroupID	        LLUUID	}	
 	}
 	{
 		GroupData			Variable
 		{	GroupID				LLUUID	}
-		{	GroupOfficer		BOOL	}	// BOOL
+		{	GroupPowers			U64		}
+		{	AcceptNotices		BOOL	}
 	}
 	{	
 		AnimationData			Variable
@@ -6056,7 +6206,7 @@ sim -> dataserver
 
 
 // GetScriptRunning - asks if a script is running or not. the simulator
-// responds with GetScriptRunningReply
+// responds with ScriptRunningReply
 {
 	GetScriptRunning	Low			NotTrusted Unencoded
 	{
@@ -6343,7 +6493,7 @@ sim -> dataserver
 // This message is sent from the userserver when it does not have
 // trusted connection or known agent on the circuit.
 {
-	ConnectToUserserver Low NotTrusted Unencoded
+	ConnectToUserserver Low Trusted Unencoded
 }
 
 //-----------------------------------------------------------------------------
@@ -6393,7 +6543,7 @@ sim -> dataserver
 // reliable
 // Includes inventory items to update with new asset ids
 {
-	LogoutReply Low NotTrusted Zerocoded
+	LogoutReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -6409,11 +6559,8 @@ sim -> dataserver
 
 
 // LogoutDemand
-// Unreliable, because the viewer quits before it has a chance to retransmit.
-// viewer -> userserver
-// unreliable
 {
-	LogoutDemand Low NotTrusted Unencoded
+	LogoutDemand Low Trusted Unencoded
 	{
 		LogoutBlock			Single
 		{	SessionID		LLUUID	}
@@ -6516,8 +6663,13 @@ sim -> dataserver
 {
 	ImprovedInstantMessage Low NotTrusted Zerocoded
 	{
+		AgentData 		Single
+		{   AgentID     LLUUID  }
+		{	SessionID	LLUUID	}
+	}
+	{
 		MessageBlock		Single
-		{	FromAgentID		LLUUID	}
+		{	FromGroup		BOOL	}
 		{	ToAgentID		LLUUID	}
 		{	ParentEstateID	U32	}
 		{   RegionID		LLUUID	}
@@ -6574,8 +6726,9 @@ sim -> dataserver
 {
 	RetrieveInstantMessages Low NotTrusted Unencoded
 	{
-		AgentBlock			Single
-		{	Agent			LLUUID	}
+		AgentData 		Single
+		{   AgentID     LLUUID  }
+		{	SessionID	LLUUID	}
 	}
 }
 
@@ -6729,8 +6882,12 @@ sim -> dataserver
 {
 	MuteListRequest Low NotTrusted Unencoded
 	{
+		AgentData 		Single
+		{   AgentID     LLUUID  	}
+		{	SessionID	LLUUID		}
+	}
+	{
 		MuteData	Single
-		{	AgentID		LLUUID	}
 		{	MuteCRC		U32		}
 	}
 }
@@ -6739,8 +6896,12 @@ sim -> dataserver
 {
 	UpdateMuteListEntry Low NotTrusted Unencoded
 	{
+		AgentData 		Single
+		{   AgentID     LLUUID  	}
+		{	SessionID	LLUUID		}
+	}
+	{
 		MuteData	Single
-		{	AgentID		LLUUID		}
 		{	MuteID		LLUUID		}
 		{	MuteName	Variable 1	}
 		{	MuteType	S32			}
@@ -6752,8 +6913,12 @@ sim -> dataserver
 {
 	RemoveMuteListEntry Low NotTrusted Unencoded
 	{
+		AgentData 		Single
+		{   AgentID     LLUUID  	}
+		{	SessionID	LLUUID		}
+	}
+	{
 		MuteData	Single
-		{	AgentID		LLUUID		}
 		{	MuteID		LLUUID		}
 		{	MuteName	Variable 1	}
 	}
@@ -6778,6 +6943,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		InventoryData		Variable
@@ -6969,7 +7135,7 @@ sim -> dataserver
 // parent_id for folders and the folder_id for items, but this is
 // reasonable until we heve server side inventory.
 {
-	InventoryDescendents Low NotTrusted Zerocoded
+	InventoryDescendents Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
@@ -7027,7 +7193,7 @@ sim -> dataserver
 
 // response to fetch inventory
 {
-	FetchInventoryReply	Low	NotTrusted	Zerocoded
+	FetchInventoryReply	Low	Trusted	Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -7172,7 +7338,6 @@ sim -> dataserver
 		AgentData	Single
 		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID  }
-		{	GroupID		LLUUID	}
 	}
 	{
 		UpdateData			Single
@@ -7211,7 +7376,6 @@ sim -> dataserver
 		AgentData	Single
 		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID  }
-		{	GroupID		LLUUID	}
 	}
 	{
 		InventoryData		Single
@@ -7226,7 +7390,6 @@ sim -> dataserver
 		AgentData	Single
 		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID  }
-		{	GroupID		LLUUID	}
 		{	FolderID	LLUUID	}
 	}
 	{
@@ -7275,9 +7438,12 @@ sim -> dataserver
 {
 	DeRezObject Low NotTrusted Zerocoded
 	{
-		AgentBlock		Single
+		AgentData		Single
 		{  AgentID			LLUUID  }
 		{  SessionID		LLUUID  }
+	}
+	{
+		AgentBlock		Single
 		{  GroupID			LLUUID  }
 		{  Destination		U8	}
 		{  DestinationID	LLUUID	}	// see above
@@ -7305,6 +7471,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
 		{	GroupID		LLUUID	}
 	}
 	{
@@ -7704,9 +7871,13 @@ sim -> dataserver
 {
 	MoneyBalanceRequest Low NotTrusted Zerocoded
 	{
+		AgentData	Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		MoneyData			Single
 		{	TransactionID	LLUUID	}
-		{	AgentID			LLUUID	}
 	}
 }
 
@@ -7797,8 +7968,12 @@ sim -> dataserver
 {
 	MoneySummaryRequest Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		MoneyData			Single
-		{	AgentID			LLUUID  }
 		{	RequestID		LLUUID	}
 		{	IntervalDays	S32	}
 		{	CurrentInterval	S32	}
@@ -7845,8 +8020,12 @@ sim -> dataserver
 {
 	MoneyDetailsRequest Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		MoneyData			Single
-		{	AgentID			LLUUID  }
 		{	RequestID		LLUUID	}
 		{	IntervalDays	S32	}
 		{	CurrentInterval	S32	}
@@ -7879,8 +8058,12 @@ sim -> dataserver
 {
 	MoneyTransactionsRequest Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		MoneyData			Single
-		{	AgentID			LLUUID  }
 		{	RequestID		LLUUID	}
 		{	IntervalDays	S32	}
 		{	CurrentInterval	S32	}
@@ -8308,7 +8491,7 @@ sim -> dataserver
 
 // Simulator informs Dataserver of new attachment or attachment asset update 
 {
-	UpdateAttachment Low NotTrusted Zerocoded
+	UpdateAttachment Low Trusted Zerocoded
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
@@ -8581,24 +8764,10 @@ sim -> dataserver
 	}
 	{
 		GroupData		Single
-		{	GroupID			LLUUID	}
 		{	Name			Variable	1	}	// string
 		{	Charter			Variable	2	}	// string
-		{	ShowInList		U8	}
-		{	ShowMembersInGroupDir	U8	}
-		{	RequireMask		U32	}	// U32 mask
-		{	ReputationMin	S32	}
-		{	ReputationMax	S32	}
-		{	MoneyMin		S32	}
-		{	MoneyMax		S32	}
-		{	OfficerTitle	Variable	1	}	// string
-		{	MemberTitle		Variable	1	}	// string
-//		{	OfficerMax		U8	}
-//		{	MemberMax		U8	}
-		{	PowersMask		U32	}	// U32 mask
+		{	ShowInList		BOOL	}
 		{	InsigniaID		LLUUID	}
-		{	InviteOfficers	Variable	2	}	// string
-		{	InviteMembers	Variable	2	}	// string
 		{	MembershipFee	S32				}	// S32		
 		{	OpenEnrollment	BOOL			}   // BOOL (U8)
 		{	AllowPublish	BOOL		}	// whether profile is externally visible or not
@@ -8607,11 +8776,11 @@ sim -> dataserver
 }
 
 // CreateGroupReply
-// dataserver -> userserver
-// userserver -> viewer
+// dataserver -> simulator
+// simulator -> viewer
 // reliable
 {
-	CreateGroupReply Low NotTrusted Unencoded
+	CreateGroupReply Low Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
@@ -8619,7 +8788,7 @@ sim -> dataserver
 	{
 		ReplyData		Single
 		{	GroupID			LLUUID	}
-		{	Result			S32	}
+		{	Success			BOOL	}
 		{	Message			Variable	1	}	// string
 	}
 }
@@ -8640,26 +8809,30 @@ sim -> dataserver
 		{	GroupID			LLUUID	}
 		{	Charter			Variable	2	}	// string
 		{	ShowInList		BOOL			}
-		{	ShowMembersInGroupDir		BOOL			}
-		{	OfficerTitle	Variable	1	}	// string
-		{	MemberTitle		Variable	1	}	// string
-//		{	OfficerMax		U8	}
-//		{	MemberMax		U8	}
 		{	InsigniaID		LLUUID	}
 		{	MembershipFee	S32				}
 		{	OpenEnrollment	BOOL			}
-		{	InviteOfficers	Variable	2	}	// string
-		{	InviteMembers	Variable	2	}	// string
 		{	AllowPublish	BOOL	}
 		{	MaturePublish	BOOL	}
 	}
 }
 
+// GroupRoleChanges
+// viewer -> simulator -> dataserver
+// reliable
 {
-	GroupInfoUpdated Low NotTrusted Unencoded
+	GroupRoleChanges	Low	NotTrusted	Unencoded
 	{
 		AgentData	Single
 		{	AgentID	LLUUID	}
+		{	SessionID	LLUUID	}
+		{	GroupID		LLUUID	}
+	}
+	{
+		RoleChange	Variable
+		{	RoleID		LLUUID	}
+		{	MemberID	LLUUID	}
+		{	Change		U32		}
 	}
 }
 
@@ -8680,21 +8853,46 @@ sim -> dataserver
 }
 
 // JoinGroupReply
-// dataserver -> userserver -> viewer
+// dataserver -> simulator -> viewer
 {
-	JoinGroupReply Low NotTrusted Unencoded
+	JoinGroupReply Low Trusted Unencoded
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
+	}
+	{
+		GroupData	Single
+		{	GroupID		LLUUID	}
 		{	Success		BOOL	}
 	}
 }
 
+
 // EjectGroupMemberRequest
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 // reliable
 {
 	EjectGroupMemberRequest Low NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		GroupData		Single
+		{	GroupID		LLUUID	}
+	}
+	{
+		EjectData		Variable
+		{	EjecteeID	LLUUID	}
+	}
+}
+
+// EjectGroupMemberReply
+// dataserver -> simulator -> viewer
+// reliable
+{
+	EjectGroupMemberReply Low Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -8702,35 +8900,15 @@ sim -> dataserver
 	{
 		GroupData		Single
 		{	GroupID		LLUUID	}
-		{	AgentID		LLUUID	}
+	}
+	{
+		EjectData		Single
+		{	Success		BOOL	}
 	}
 }
-
-// This message is sent from the dataserver to the simulator to let
-// AgentID know that they are no longer a member of the group. This
-// message is in response to EjectGroupMemberRequest messages.
-// ROUTED dataserver -> userserver -> spaceserver -> simulator
-// reliable
-{
-	RemoveMemberFromGroup Low Trusted Unencoded
-	{
-		TargetBlock			Single
-		{	TargetIP		IPADDR	}	// U32 encoded IP
-		{	TargetPort		IPPORT	}
-	}
-	{
-		AgentBlock			Single
-		{	AgentID			LLUUID	}
-	}
-	{
-		GroupBlock			Single
-		{	GroupID			LLUUID	}
-	}
-}
-
 
 // LeaveGroupRequest
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 // reliable
 {
 	LeaveGroupRequest Low NotTrusted Unencoded
@@ -8745,6 +8923,42 @@ sim -> dataserver
 	}
 }
 
+// LeaveGroupReply
+// dataserver -> simulator -> viewer
+{
+	LeaveGroupReply Low Trusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+	}
+	{
+		GroupData	Single
+		{	GroupID		LLUUID	}
+		{	Success		BOOL	}
+	}
+}
+
+// InviteGroupRequest
+// viewer -> simulator -> dataserver
+// reliable
+{
+	InviteGroupRequest Low NotTrusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}	// UUID of inviting agent
+		{	SessionID	LLUUID	}
+	}
+	{
+		GroupData	Single
+		{	GroupID		LLUUID	}
+	}
+	{
+		InviteData	Variable
+		{	InviteeID	LLUUID	}
+		{	RoleID		LLUUID	}
+	}
+}
+
 // InviteGroupResponse
 // simulator -> dataserver
 // reliable
@@ -8754,73 +8968,21 @@ sim -> dataserver
 		InviteData	Single
 		{	AgentID		LLUUID	}
 		{	InviteeID	LLUUID	}
-		{	GroupID		LLUUID	}
-		{	Officer		BOOL	}
+		{	GroupID			LLUUID	}
+		{	RoleID		LLUUID	}
 		{	MembershipFee S32	}
 	}
 }
 
-// GroupPropertiesRequest
-// viewer-> userserver -> dataserver
-// reliable
-{
-	GroupPropertiesRequest Low NotTrusted Unencoded
-	{
-		AgentData	Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		GroupData	Single
-		{	GroupID		LLUUID	}
-	}
-}
-
-// GroupPropertiesReply
-// viewer -> userserver -> dataserver
-// reliable
-{
-	GroupPropertiesReply Low Trusted Zerocoded
-	{
-		AgentData	Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		GroupData		Single
-		{	GroupID			LLUUID	}
-		{	Name			Variable	1	}	// string
-		{	Charter			Variable	2	}	// string
-		{	ShowInList		U8	}
-		{	ShowMembersInGroupDir		U8	}
-		{	RequireMask		U32	}	// U32 mask
-		{	ReputationMin	S32	}
-		{	ReputationMax	S32	}
-		{	MoneyMin		S32	}
-		{	MoneyMax		S32	}
-		{	OfficerTitle	Variable	1	}	// string
-		{	MemberTitle		Variable	1	}	// string
-//		{	OfficerMax		U8	}
-//		{	MemberMax		U8	}
-		{	PowersMask		U32	}	// U32 mask
-		{	InsigniaID		LLUUID	}
-		{	FounderID		LLUUID			}
-		{	MembershipFee	S32				}	// S32		
-		{	OpenEnrollment	BOOL			}   // BOOL (U8)
-		{	Money			S32	}
-		{	CurrentElectionID	LLUUID	}
-		{	GroupMembershipCount	S32	}
-		{	AllowPublish	BOOL	}
-		{	MaturePublish	BOOL	}
-	}
-}
-
 // GroupProfileRequest
-// viewer-> userserver -> dataserver
+// viewer-> simulator -> dataserver
 // reliable
 {
 	GroupProfileRequest Low NotTrusted Unencoded
 	{
 		AgentData	Single
 		{	AgentID			LLUUID			}
+		{	SessionID	LLUUID	}
 	}
 	{
 		GroupData	Single
@@ -8829,7 +8991,7 @@ sim -> dataserver
 }
 
 // GroupProfileReply
-// dataserver -> userserver -> viewer
+// dataserver -> simulator -> viewer
 // reliable
 {
 	GroupProfileReply Low Trusted Zerocoded
@@ -8842,66 +9004,36 @@ sim -> dataserver
 		{	GroupID			LLUUID			}
 		{	Name			Variable	1	}	// string
 		{	Charter			Variable	2	}	// string
-		{	ShowInList		U8	}
-		{	ShowMembersInGroupDir		U8	}
-		{	OfficerTitle	Variable	1	}	// string
+		{	ShowInList		BOOL	}
 		{	MemberTitle		Variable	1	}	// string
+		{	PowersMask		U64	}	// U32 mask
 		{	InsigniaID		LLUUID			}
 		{	FounderID		LLUUID			}
-		{	FounderName		Variable    1	}
 		{	MembershipFee	S32				}
-		{	OpenEnrollment	BOOL			}
+		{	OpenEnrollment	BOOL			}   // BOOL (U8)
+		{	Money			S32	}
+		{	GroupMembershipCount	S32	}
+		{	GroupRolesCount			S32	}
+		{	AllowPublish	BOOL	}
+		{	MaturePublish	BOOL	}
+		{	OwnerRole		LLUUID	}
 	}
 }
-
-// GroupMoneyHistoryRequest
-// viewer-> userserver -> dataserver
-// reliable
-{
-	GroupMoneyHistoryRequest Low NotTrusted Unencoded
-	{
-		AgentData	Single
-		{	AgentID			LLUUID			}
-	}
-	{
-		GroupData	Single
-		{	GroupID			LLUUID			}
-	}
-}
-
-// GroupMoneyHistoryReply
-// dataserver -> userserver -> viewer
-// reliable
-{
-	GroupMoneyHistoryReply Low Trusted Zerocoded
-	{
-		AgentData	Single
-		{	AgentID			LLUUID		}
-		{	GroupID			LLUUID		}
-	}
-	{
-		GroupData	Single
-		{	IntervalDays			S32	}
-		{	CurrentInterval			S32	}
-		{	CurrentTaxes			S32	}
-		{	CurrentDividend			S32	}
-		{	EstimatedTaxes			S32	}
-		{	EstimatedDividend		S32	}
-		{	NumberNonExemptMembers	S32 }
-	}
-}
-
 
 // CurrentInterval = 0  =>  this period (week, day, etc.)
 // CurrentInterval = 1  =>  last period
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 // reliable
 {
 	GroupAccountSummaryRequest Low NotTrusted Zerocoded
 	{
+		AgentData	Single
+		{	AgentID			LLUUID			}
+		{	SessionID		LLUUID	}
+		{	GroupID			LLUUID	}
+	}
+	{
 		MoneyData			Single
-		{	AgentID			LLUUID  }
-		{	GroupID			LLUUID		}
 		{	RequestID		LLUUID	}
 		{	IntervalDays	S32	}
 		{	CurrentInterval	S32	}
@@ -8909,10 +9041,10 @@ sim -> dataserver
 }
 
 
-// dataserver -> userserver -> viewer
+// dataserver -> simulator -> viewer
 // Reliable
 {
-	GroupAccountSummaryReply Low NotTrusted Zerocoded
+	GroupAccountSummaryReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
@@ -8948,9 +9080,13 @@ sim -> dataserver
 {
 	GroupAccountDetailsRequest Low NotTrusted Zerocoded
 	{
+		AgentData	Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+		{	GroupID			LLUUID	}
+	}
+	{
 		MoneyData			Single
-		{	AgentID			LLUUID  }
-		{	GroupID			LLUUID		}
 		{	RequestID		LLUUID	}
 		{	IntervalDays	S32	}
 		{	CurrentInterval	S32	}
@@ -8959,7 +9095,7 @@ sim -> dataserver
 
 // Reliable
 {
-	GroupAccountDetailsReply Low NotTrusted Zerocoded
+	GroupAccountDetailsReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
@@ -8984,9 +9120,13 @@ sim -> dataserver
 {
 	GroupAccountTransactionsRequest Low NotTrusted Zerocoded
 	{
-		MoneyData			Single
-		{	AgentID			LLUUID  }
+		AgentData		Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 		{	GroupID			LLUUID		}
+	}
+	{
+		MoneyData			Single
 		{	RequestID		LLUUID	}
 		{	IntervalDays	S32	}
 		{	CurrentInterval	S32	}
@@ -8995,7 +9135,7 @@ sim -> dataserver
 
 // Reliable
 {
-	GroupAccountTransactionsReply Low NotTrusted Zerocoded
+	GroupAccountTransactionsReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
@@ -9018,136 +9158,28 @@ sim -> dataserver
 	}
 }
 
-// GroupElectionInfoRequest
-// viewer -> userserver -> dataserver
-//reliable
-{
-	GroupElectionInfoRequest Low NotTrusted Unencoded
-	{
-		AgentData	Single
-		{	AgentID			LLUUID			}
-	}
-	{
-		GroupData	Single
-		{	GroupID			LLUUID			}
-	}
-}
-
-// GroupElectionInfoReply
-// dataserver -> userserver -> viewer
-// reliable
-{
-	GroupElectionInfoReply Low Trusted Zerocoded
-	{
-		AgentData	Single
-		{	AgentID			LLUUID			}
-	}
-	{
-		ElectionData	Single
-		{	GroupID			LLUUID			}
-		{	ElectionID		LLUUID			}
-		{	ElectionType	Variable	1	}	// string
-		{	StartDateTime	Variable	1	}	// string
-		{	EndDateTime		Variable	1	}	// string
-		{	ElectionInitiator	LLUUID		}
-		{	AlreadyVoted	BOOL			}
-		{	VotedForCandidate	LLUUID		}
-		{	VoteCast		Variable	1	}	// string
-		{	Majority	F32		}
-		{	Quorum		S32		}
-	}
-	{	
-		CandidateData	Variable
-		{	AgentID			LLUUID			}
-	}
-}
-
-// StartGroupElection
-// viewer -> userserver -> dataserver
-// reliable
-{
-	StartGroupElection	Low	NotTrusted Zerocoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		ElectionData	Single
-		{	GroupID		LLUUID	}
-		{	Duration	S32		}
-		{	Majority	F32		}
-		{	Quorum		S32		}
-	}
-}
-
-// GroupElectionBallot
-// viewer -> userserver -> dataserver
-// reliable
-{
-	GroupElectionBallot	Low	NotTrusted Zerocoded
-	{	
-		AgentData	Single
-		{	AgentID			LLUUID			}
-	}
-	{
-		ElectionData	Single
-		{	GroupID			LLUUID			}
-		{	ElectionID		LLUUID			}
-		{	CandidateID		LLUUID			}
-	}
-}
-
-// StartGroupRecall
-// viewer -> userserver -> dataserver
-// reliable
-{
-	StartGroupRecall	Low	NotTrusted Zerocoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		RecallData	Single
-		{	GroupID		LLUUID	}
-		{	Duration	S32		}
-		{	RecallID	LLUUID	}
-	}
-}
-
-// GroupRecallBallot
-// viewer -> userserver -> dataserver
-// reliable
-{
-	GroupRecallBallot	Low	NotTrusted Zerocoded
-	{	
-		AgentData	Single
-		{	AgentID			LLUUID			}
-	}
-	{
-		RecallData	Single
-		{	GroupID			LLUUID			}
-		{	ElectionID		LLUUID			}
-		{	VoteCast		Variable	1	} // string		
-	}
-}
-
 // GroupActiveProposalsRequest
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 //reliable
 {
 	GroupActiveProposalsRequest Low NotTrusted Unencoded
 	{
 		AgentData	Single
 		{	AgentID			LLUUID			}
+		{	SessionID		LLUUID			}
 	}
 	{
 		GroupData	Single
 		{	GroupID			LLUUID			}
 	}
+	{
+		TransactionData Single
+		{	TransactionID	LLUUID	}
+	}
 }
 
 // GroupActiveProposalItemReply
-// dataserver -> userserver -> viewer
+// dataserver -> simulator -> viewer
 // reliable
 {
 	GroupActiveProposalItemReply Low Trusted Zerocoded
@@ -9155,6 +9187,11 @@ sim -> dataserver
 		AgentData	Single
 		{	AgentID			LLUUID			}
 		{	GroupID			LLUUID			}
+	}
+	{
+		TransactionData Single
+		{	TransactionID	LLUUID	}
+		{	TotalNumItems	U32		}
 	}
 	{
 		ProposalData	Variable
@@ -9172,22 +9209,27 @@ sim -> dataserver
 }
 
 // GroupVoteHistoryRequest
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 //reliable
 {
 	GroupVoteHistoryRequest Low NotTrusted Unencoded
 	{
 		AgentData	Single
 		{	AgentID			LLUUID			}
+		{	SessionID		LLUUID			}
 	}
 	{
 		GroupData	Single
 		{	GroupID			LLUUID			}
 	}
+	{
+		TransactionData Single
+		{	TransactionID	LLUUID	}
+	}
 }
 
 // GroupVoteHistoryItemReply
-// dataserver -> userserver -> viewer
+// dataserver -> simulator -> viewer
 // reliable
 {
 	GroupVoteHistoryItemReply Low Trusted Zerocoded
@@ -9197,13 +9239,17 @@ sim -> dataserver
 		{	GroupID			LLUUID			}
 	}
 	{
+		TransactionData Single
+		{	TransactionID	LLUUID	}
+		{	TotalNumItems	U32		}
+	}
+	{
 		HistoryItemData	Single
 		{	VoteID			LLUUID			}
 		{	TerseDateID		Variable	1	} // string
 		{	StartDateTime	Variable	1	}	// string
 		{	EndDateTime		Variable	1	}	// string
 		{	VoteInitiator	LLUUID			}
-		{	RecallID		LLUUID			}
 		{	VoteType		Variable	1	}	// string
 		{	VoteResult		Variable	1	}	// string
 		{	Majority	F32		}
@@ -9219,13 +9265,14 @@ sim -> dataserver
 }
 
 // StartGroupProposal
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 // reliable
 {
 	StartGroupProposal Low NotTrusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ProposalData		Single
@@ -9238,54 +9285,20 @@ sim -> dataserver
 }
 
 // GroupProposalBallot
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 // reliable
 {
 	GroupProposalBallot Low NotTrusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID			}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ProposalData		Single
 		{	ProposalID		LLUUID			}
+		{	GroupID			LLUUID			}
 		{	VoteCast		Variable	1	}	// string
-	}
-}
-
-// CallVote
-// viewer -> userserver -> dataserver
-// reliable
-{
-	CallVote Low NotTrusted Zerocoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		VoteData		Single
-		{	GroupID		LLUUID	}
-		{	VoteType	S32	}
-		{	VoteQuorum	S32	}
-		{	VoteTime	F32	}	// F32, seconds
-		{	VoteText	Variable	1	}	// string
-	}
-}
-
-
-// Vote
-// viewer -> userserver -> dataserver
-// reliable
-{
-	Vote Low NotTrusted Unencoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		VoteData		Single
-		{	VoteID		LLUUID	}
-		{	Response	S32	}	// S32, 0 = no, 1 = yes
 	}
 }
 
@@ -9295,43 +9308,117 @@ sim -> dataserver
 	TallyVotes	Low	Trusted Unencoded
 }
 
+
+
 // GroupMembersRequest
 // get the group members
-// userserver -> dataserver
+// simulator -> dataserver
 // reliable
 {
 	GroupMembersRequest Low NotTrusted Unencoded
 	{
-		RequestData 	Single
-		{	RequestID	LLUUID	}
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		GroupData		Single
 		{	GroupID		LLUUID	}
-		{ 	ActiveOnly	BOOL 	}
+		{   RequestID	LLUUID	}
 	}
 }
 
 // GroupMembersReply
 // list of uuids for the group members
-// dataserver -> userserver
+// dataserver -> simulator
 // reliable
 {
-	GroupMembersReply Low NotTrusted Zerocoded
+	GroupMembersReply Low Trusted Zerocoded
 	{
-		ReplyData		Single
-		{	RequestID	LLUUID	}
-		{	GroupID		LLUUID	}
+		AgentData		Single
+		{	AgentID		LLUUID	}
 	}
 	{
-		AgentData		Variable
+		GroupData		Single
+		{	GroupID		LLUUID	}
+		{   RequestID	LLUUID	}
+		{	MemberCount	S32		}
+	}
+	{
+		MemberData		Variable
 		{	AgentID		LLUUID	}
+		{	Contribution	S32	}
+		{	OnlineStatus	Variable	1	}	// string
+		{	AgentPowers		U64	}
+		{	Title			Variable	1	}	// string
+		{	IsOwner			BOOL	}
 	}
 }
 
-// GroupOfficersAndMembersRequest
-// get the group members
-// userserver -> dataserver
-// reliable
+// used to switch an agent's currently active group.
+// viewer -> simulator -> dataserver -> AgentDataUpdate...
 {
-	GroupOfficersAndMembersRequest Low NotTrusted Unencoded
+	ActivateGroup	Low	NotTrusted Zerocoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+		{	GroupID		LLUUID	}
+	}
+}
+
+// viewer -> simulator -> dataserver
+{
+	SetGroupContribution Low NotTrusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		Data	Single
+		{	GroupID		LLUUID	}
+		{	Contribution	S32	}
+	}
+}
+
+// viewer -> simulator -> dataserver
+{
+	SetGroupAcceptNotices Low NotTrusted Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		Data	Single
+		{	GroupID		LLUUID	}
+		{	AcceptNotices	BOOL	}
+	}
+}
+
+// GroupRoleDataRequest
+// viewer -> simulator -> dataserver
+{
+	GroupRoleDataRequest Low	NotTrusted	Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		GroupData	Single
+		{	GroupID		LLUUID	}
+		{	RequestID	LLUUID	}
+	}
+}
+
+
+// GroupRoleDataReply
+// All role data for this group
+// dataserver -> simulator -> agent
+{
+	GroupRoleDataReply Low	Trusted	Unencoded
 	{
 		AgentData	Single
 		{	AgentID			LLUUID			}
@@ -9339,60 +9426,122 @@ sim -> dataserver
 	{
 		GroupData		Single
 		{	GroupID			LLUUID	}
-		{	IncludeMembers	BOOL	}
+		{	RequestID	LLUUID	}
+		{	RoleCount	S32		}
+	}
+	{
+		RoleData	Variable
+		{	RoleID		LLUUID	}
+		{	Name		Variable	1	}
+		{	Title		Variable	1	}
+		{	Description	Variable	1	}
+		{	Powers		U64		}
+		{	Members		U32		}
 	}
 }
 
-// GroupOfficersAndMembersReply
-// list of uuids for the group officers and members
-// dataserver -> userserver
-// reliable
+// GroupRoleMembersRequest
+// viewer -> simulator -> dataserver
 {
-	GroupOfficersAndMembersReply Low NotTrusted Zerocoded
+	GroupRoleMembersRequest Low	NotTrusted	Unencoded
 	{
 		AgentData	Single
 		{	AgentID			LLUUID			}
-		{   CompoundMsgID	LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		GroupData		Single
 		{	GroupID		LLUUID	}
-	}
-	{
-		OfficerData		Variable
-		{	AgentID		LLUUID	}
-		{	Contribution	S32	}
-		{	OnlineStatus	Variable	1	}	// string
-	}
-	{
-		MemberData		Variable
-		{	AgentID		LLUUID	}
-		{	Contribution	S32	}
-		{	OnlineStatus	Variable	1	}	// string
+		{	RequestID	LLUUID	}
 	}
 }
 
-// used to switch an agent's currently active group.
-// viewer -> userserver -> dataserver -> AgentDataUpdate...
+// GroupRoleMembersReply
+// All role::member pairs for this group.
+// dataserver -> simulator -> agent
 {
-	ActivateGroup	Low	NotTrusted Zerocoded
+	GroupRoleMembersReply Low	Trusted	Unencoded
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
 		{	GroupID		LLUUID	}
+		{	RequestID	LLUUID	}
+		{	TotalPairs	U32		}
+	}
+	{
+		MemberData		Variable
+		{	RoleID		LLUUID	}
+		{	MemberID	LLUUID	}
 	}
 }
 
-// viewer -> userserver -> dataserver
+// GroupTitlesRequest
+// viewer -> simulator -> dataserver
 {
-	SetGroupContribution Low NotTrusted Unencoded
+	GroupTitlesRequest Low	NotTrusted	Unencoded
 	{
-		Data	Single
+		AgentData	Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	GroupID		LLUUID	}
-		{	Contribution	S32	}
+		{	RequestID	LLUUID	}
 	}
 }
+
+
+// GroupTitlesReply
+// dataserver -> simulator -> viewer
+{
+	GroupTitlesReply Low Trusted	Zerocoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	GroupID		LLUUID	}
+		{	RequestID	LLUUID	}
+	}
+	{
+		GroupData	Variable
+		{	Title		Variable	1	} // string
+		{	RoleID		LLUUID			}
+		{	Selected	BOOL			}
+	}
+}
+
+// GroupTitleUpdate
+// viewer -> simulator -> dataserver
+{
+	GroupTitleUpdate	Low	NotTrusted	Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+		{	GroupID		LLUUID	}
+		{	TitleRoleID	LLUUID	}
+	}
+}
+
+// GroupRoleUpdate
+// viewer -> simulator -> dataserver
+{
+	GroupRoleUpdate		Low	NotTrusted	Unencoded
+	{
+		AgentData	Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+		{	GroupID		LLUUID	}
+	}
+	{
+		RoleData	Variable
+		{	RoleID		LLUUID	}
+		{	Name		Variable	1	}
+		{	Description	Variable	1	}
+		{	Title		Variable	1	}
+		{	Powers		U64		}
+		{	UpdateType	U8		}
+	}
+}
+			
+
 
 // Request the members of the live help group needed for requesting agent.
 // userserver -> dataserver
@@ -9479,6 +9628,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 }
 
@@ -9495,15 +9645,59 @@ sim -> dataserver
 		{	FirstName	        Variable	1	}   // string
 		{	LastName	        Variable	1	}   // string
 		{	GroupTitle			Variable	1	}	// string
-		{	GroupIndex	        S8	}	// -1 for none
+		{	ActiveGroupID		LLUUID	}	// active group
+		{	GroupPowers			U64	}
+		{	GroupName			Variable	1	}	// string
+	}
+}
+
+
+// GroupDataUpdate
+// This is a bunch of group data that needs to be appropriatly routed based on presence info.
+// dataserver -> simulator
+{
+	GroupDataUpdate	Low	Trusted	Zerocoded
+	{
+		AgentGroupData		Variable
+		{	AgentID			LLUUID	}
+		{	GroupID			LLUUID	}
+		{	AgentPowers		U64		}
+		{	GroupTitle		Variable	1	}
+	}
+}
+
+// AgentGroupDataUpdate
+// Updates a viewer or simulator's impression of the groups an agent is in. 
+// dataserver -> simulator -> viewer
+// reliable
+{
+	AgentGroupDataUpdate Low Trusted Zerocoded
+	{
+		AgentData			Single
+		{	AgentID				LLUUID	}
 	}
 	{
 		GroupData			Variable
 		{	GroupID				LLUUID	}
-		{	GroupOfficer		BOOL	}	// BOOL
+		{	GroupPowers			U64		}	
+		{	AcceptNotices		BOOL	}
 		{	GroupInsigniaID		LLUUID	}
 		{	Contribution		S32		}
 		{	GroupName			Variable	1	}	// string
+	}
+}
+
+// AgentDropGroup
+// Updates the viewer / simulator that an agent is no longer part of a group
+// dataserver -> simulator -> viewer
+// dataserver -> userserver
+// reliable
+{
+	AgentDropGroup Low Trusted Zerocoded
+	{
+		AgentData			Single
+		{	AgentID				LLUUID	}
+		{	GroupID				LLUUID	}
 	}
 }
 
@@ -10243,3 +10437,4 @@ sim -> dataserver
 		{	OwnerName			Variable	1	}
 	}
 }
+
