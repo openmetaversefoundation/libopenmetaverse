@@ -155,7 +155,7 @@ namespace SLIRC
             this.txtServerName.Name = "txtServerName";
             this.txtServerName.Size = new System.Drawing.Size(130, 20);
             this.txtServerName.TabIndex = 54;
-            this.txtServerName.Text = "irc.freenode.org";
+            this.txtServerName.Text = "irc.efnet.pl";
             // 
             // label4
             // 
@@ -189,7 +189,7 @@ namespace SLIRC
             this.txtChannel.Name = "txtChannel";
             this.txtChannel.Size = new System.Drawing.Size(130, 20);
             this.txtChannel.TabIndex = 54;
-            this.txtChannel.Text = "#secondlifelug";
+            this.txtChannel.Text = "#libsl";
             // 
             // btnJoin
             // 

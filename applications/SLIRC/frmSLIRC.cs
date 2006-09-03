@@ -62,7 +62,7 @@ namespace SLIRC
                 else
                 {
                     MessageBox.Show(this, "Error logging in: " + client.Network.LoginError);
-                    listenthread.Abort();
+                    //if(listenthread) listenthread.Abort();
                     cmdConnect.Text = "Connect";
                     lstAllowedUsers.Enabled = lstLog.Enabled = btnJoin.Enabled = btnSay.Enabled = false;
                     txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
@@ -134,10 +134,10 @@ namespace SLIRC
             }
             else
             {
-                if (lstAllowedUsers.Items.Contains(name) && audible == 1)
+                if (lstAllowedUsers.Items.Contains(name) && audible == 1 && !message.Equals(""))
                 {
                     LogMessage(name + ": " + message);
-                    ircclient.SendMessage(SendType.Message, ircclient.GetChannels()[0], name + " : " + message);
+                    ircclient.SendMessage(SendType.Message, txtChannel.Text, name + " : " + message);
                 }
             }
         }
