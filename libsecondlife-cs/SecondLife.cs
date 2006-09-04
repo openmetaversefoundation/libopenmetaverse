@@ -184,7 +184,24 @@ namespace libsecondlife
 
                        return System.Text.Encoding.ASCII.GetString(byteArray).Replace("\0", "");
                }
-
+               
+               /// <summary>
+               /// Takes a quantized value and its quantization range and returns a float 
+               /// representation of the continuous value. For example, a value of 32767 
+               /// and a range of -128.0 to 128.0 would return approx. -0.0019531548028
+               /// </summary>
+               /// <param name="value">The 16-bit quantized value</param>
+               /// <param name="lower">The lower quantization range</param>
+               /// <param name="upper">The upper quantization range</param>
+               /// <returns></returns>
+               public static float Dequantize(uint value, float lower, float upper)
+               {
+                   decimal QV = (decimal)value;
+                   decimal range = (decimal)(upper - lower);
+                   decimal QF = (range) / 65535.0D;
+                   return (float)(QV * QF - (0.5D * range));
+               }
+               
                /// <summary>
                /// Decode a zerocoded byte array. Used to decompress packets marked
                /// with the zerocoded flag. Any time a zero is encountered, the

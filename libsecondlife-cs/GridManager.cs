@@ -30,7 +30,7 @@ using System.Collections;
 namespace libsecondlife
 {
 	/// <summary>
-	/// Class for regions on the world map/
+	/// Class for regions on the world map
 	/// </summary>
 	public class GridRegion
 	{
@@ -42,7 +42,7 @@ namespace libsecondlife
 		public byte WaterHeight;
 		public byte Agents;
 		public LLUUID MapImageID;
-		public U64 RegionHandle; // Used for teleporting.
+		public U64 RegionHandle; // Used for teleporting
 
 		public GridRegion() 
 		{
