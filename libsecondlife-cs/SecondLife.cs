@@ -198,8 +198,8 @@ namespace libsecondlife
                {
                    decimal QV = (decimal)value;
                    decimal range = (decimal)(upper - lower);
-                   decimal QF = (range) / 65535.0D;
-                   return (float)(QV * QF - (0.5D * range));
+                   decimal QF = (range) / 65535.0m;
+                   return (float)(QV * QF - (0.5m * range));
                }
                
                /// <summary>
