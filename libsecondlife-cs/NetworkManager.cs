@@ -361,6 +361,7 @@ namespace libsecondlife
 							Helpers.LogLevel.Info);
 
 						// Avoid firing a callback twice for the same packet
+                        InboxMutex.ReleaseMutex();
 						return;
 					}
 					else
