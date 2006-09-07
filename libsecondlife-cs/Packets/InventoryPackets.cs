@@ -62,7 +62,7 @@ namespace libsecondlife.Packets
 			packetLength += 16; // ItemID (UUID)
 			packetLength += 16; // AgentID (UUID)
 
-			Packet packet = new Packet("AgentWearablesRequest", protocol, packetLength );
+			Packet packet = new Packet("AgentWearablesRequest", protocol, packetLength);
 
 			int pos = 8; // Leave room for header
 
@@ -103,8 +103,6 @@ namespace libsecondlife.Packets
 
 			return packet;
 		}
-
-
 
 		/*
 			Low 00328 - CreateInventoryFolder - Untrusted - Zerocoded
