@@ -58,6 +58,7 @@ namespace libsecondlife
 
 	public class Simulator
 	{
+        private SecondLife Client;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
 		private Hashtable Callbacks;
@@ -99,6 +100,7 @@ namespace libsecondlife
 		private void Initialize(SecondLife client, Hashtable callbacks, uint circuit, 
 			IPAddress ip, int port)
 		{
+            Client = client;
 			Protocol = client.Protocol;
 			Network = client.Network;
 			Callbacks = callbacks;
@@ -118,7 +120,7 @@ namespace libsecondlife
 			NeedAckMutex = new Mutex(false, "NeedAckMutex");
 			InboxMutex = new Mutex(false, "InboxMutex");
 
-			Helpers.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
+			Client.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
 
 			try
 			{
@@ -155,7 +157,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 
@@ -174,7 +176,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 
@@ -185,7 +187,7 @@ namespace libsecondlife
 
 			if (!connected && packet.Layout.Name != "UseCircuitCode")
 			{
-				Helpers.Log("Trying to send a " + packet.Layout.Name + " packet when the socket is closed",
+				Client.Log("Trying to send a " + packet.Layout.Name + " packet when the socket is closed",
 					Helpers.LogLevel.Warning);
 				
 				throw new NotConnectedException();
@@ -256,7 +258,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 
@@ -276,7 +278,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 
@@ -299,7 +301,7 @@ namespace libsecondlife
 					// Grab the ACKs that are appended to this packet
 					byte numAcks = RecvBuffer[numBytes - 1];
 
-					Helpers.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
+					Client.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
 					NeedAckMutex.WaitOne();
 					for (int i = 1; i <= numAcks; ++i)
@@ -341,8 +343,14 @@ namespace libsecondlife
 
 				// Start listening again since we're done with RecvBuffer
 				Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-
 				RecvBufferMutex.ReleaseMutex();
+
+                if (packet.Layout.Name == "")
+                {
+                    // TODO: Add a packet dump function to Packet and dump the raw data here
+                    Client.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
+                    return;
+                }
 
 				// Track the sequence number for this packet if it's marked as reliable
 				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
@@ -355,7 +363,7 @@ namespace libsecondlife
 					InboxMutex.WaitOne();
 					if (Inbox.Contains(packet.Sequence))
 					{
-						Helpers.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" +
+						Client.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" +
 							packet.Sequence + ", resent=" + 
 							(((packet.Data[0] & Helpers.MSG_RESENT) != 0) ? "Yes" : "No"), 
 							Helpers.LogLevel.Info);
@@ -373,7 +381,7 @@ namespace libsecondlife
 
 				if (packet.Layout.Name == null)
 				{
-					Helpers.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
+					Client.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
 					return;
 				}
 				else if (packet.Layout.Name == "PacketAck")
@@ -432,7 +440,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 	}
@@ -483,7 +491,7 @@ namespace libsecondlife
 		{
 			if (!Callbacks.ContainsKey(packet))
 			{
-				Helpers.Log("Trying to unregister a callback for packet " + packet + 
+				Client.Log("Trying to unregister a callback for packet " + packet + 
 					" when no callbacks are setup for that packet", Helpers.LogLevel.Info);
 				return;
 			}
@@ -496,7 +504,7 @@ namespace libsecondlife
 			}
 			else
 			{
-				Helpers.Log("Trying to unregister a non-existant callback for packet " + packet,
+				Client.Log("Trying to unregister a non-existant callback for packet " + packet,
 					Helpers.LogLevel.Info);
 			}
 		}
@@ -509,7 +517,7 @@ namespace libsecondlife
 			}
 			else
 			{
-				Helpers.Log("Trying to send a packet when there is no current simulator", Helpers.LogLevel.Error);
+				Client.Log("Trying to send a packet when there is no current simulator", Helpers.LogLevel.Error);
 			}
 		}
 
@@ -578,7 +586,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 				LoginError = e.Message;
 				LoginValues = null;
 				return false;
@@ -586,7 +594,7 @@ namespace libsecondlife
 
 			if (result.IsFault)
 			{
-				Helpers.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
+				Client.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
 				LoginError = "Fault " + result.FaultCode + ": " + result.FaultString;
 				LoginValues = null;
 				return false;
@@ -722,7 +730,7 @@ namespace libsecondlife
 			/*
 			if (circuit == CurrentCircuit)
 			{
-				Helpers.Log("Disconnecting simulator " + simulator.IPEndPoint.ToString(), Helpers.LogLevel.Info);
+				Client.Log("Disconnecting simulator " + simulator.IPEndPoint.ToString(), Helpers.LogLevel.Info);
 
 				circuit.CloseCircuit();
 
@@ -731,12 +739,12 @@ namespace libsecondlife
 				if (Circuits.Count > 0)
 				{
 					CurrentCircuit = (Circuit)Circuits[0];
-					Helpers.Log("Switched current simulator to " + CurrentCircuit.ipEndPoint.ToString(), 
+					Client.Log("Switched current simulator to " + CurrentCircuit.ipEndPoint.ToString(), 
 						Helpers.LogLevel.Info);
 				}
 				else
 				{
-					Helpers.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
+					Client.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
 					CurrentCircuit = null;
 				}
 				CircuitsMutex.ReleaseMutex();
@@ -745,7 +753,7 @@ namespace libsecondlife
 			}
 			else
 			{
-				Helpers.Log("Disconnecting circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
+				Client.Log("Disconnecting circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
 
 				circuit.CloseCircuit();
 				CircuitsMutex.WaitOne();
@@ -754,7 +762,7 @@ namespace libsecondlife
 				return;
 			}
 
-			//Helpers.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
+			//Client.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
 			*/
 		}
 
@@ -790,7 +798,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log("Logout error: " + e.ToString(), Helpers.LogLevel.Error);
+				Client.Log("Logout error: " + e.ToString(), Helpers.LogLevel.Error);
 			}
 		}
 
@@ -897,7 +905,7 @@ namespace libsecondlife
 					}
 				}
 
-				Helpers.Log("Received a region handshake for " + simulator.Region.Name, Helpers.LogLevel.Info);
+				Client.Log("Received a region handshake for " + simulator.Region.Name, Helpers.LogLevel.Info);
 
 				// Send a RegionHandshakeReply
 				Packet replyPacket = new Packet("RegionHandshakeReply", Protocol, 12);
@@ -905,7 +913,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Warning);
+				Client.Log(e.ToString(), Helpers.LogLevel.Warning);
 			}
 		}
 
@@ -927,7 +935,7 @@ namespace libsecondlife
 						byteArray = (byte[])field.Data;
 						if (byteArray.Length != 1024)
 						{
-							Helpers.Log("Received a parcel overlay packet with " + byteArray.Length + " bytes", 
+							Client.Log("Received a parcel overlay packet with " + byteArray.Length + " bytes", 
 								Helpers.LogLevel.Error);
 						}
 					}
@@ -942,7 +950,7 @@ namespace libsecondlife
 				if (simulator.Region.ParcelOverlaysReceived > 3)
 				{
 					simulator.Region.ParcelOverlaysReceived = 0;
-					Helpers.Log("Finished building the " + simulator.Region.Name + " parcel overlay", 
+					Client.Log("Finished building the " + simulator.Region.Name + " parcel overlay", 
 						Helpers.LogLevel.Info);
 
 					// The int i = 0; is just there so I could break on it and check the 
@@ -953,7 +961,7 @@ namespace libsecondlife
 			}
 			else
 			{
-				Helpers.Log("Parcel overlay with sequence ID of " + sequenceID + " received from " + 
+				Client.Log("Parcel overlay with sequence ID of " + sequenceID + " received from " + 
 					simulator.Region.Name, Helpers.LogLevel.Error);
 			}
 		}

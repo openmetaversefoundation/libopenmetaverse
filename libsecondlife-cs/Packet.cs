@@ -138,8 +138,13 @@ namespace libsecondlife
 
 			if (Layout == null)
 			{
-				Helpers.Log("Attempting to build a packet with invalid command \"" + command + "\"", 
-					Helpers.LogLevel.Error);
+				//Client.Log("Attempting to build a packet with invalid command \"" + command + "\"", 
+				//	Helpers.LogLevel.Error);
+
+                // Create an empty Layout
+                Layout = new MapPacket();
+                Layout.Blocks = new ArrayList();
+                return;
 			}
 
 			switch (Layout.Frequency)
@@ -181,8 +186,6 @@ namespace libsecondlife
 
 			if (Layout == null)
 			{
-				Helpers.Log("Received a packet with an unknown command ID:\n" + libsecondlife.Utils.ByteArrayStuff.ByteArrayToString((byte[])data), Helpers.LogLevel.Warning);
-
 				// Create an empty MapPacket
 				Layout = new MapPacket();
 				Layout.Blocks = new ArrayList();
@@ -229,9 +232,10 @@ namespace libsecondlife
 						pos++;
 					}
 					else
-
 					{
-						Helpers.Log("Blocks(): end of packet in 1-byte variable block count for " + Layout.Name + "." + blockMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+                        // FIXME: Figure out a sane way to log from this function
+						Console.WriteLine("WARNING: Blocks(): end of packet in 1-byte variable block count for " + 
+                            Layout.Name + "." + blockMap.Name + " (" + pos + "/" + length + ")");
 						goto Done;
 					}
 				}
@@ -261,7 +265,8 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("Blocks(): end of packet in 1-byte variable field count for " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+                                    Console.WriteLine("WARNING: Blocks(): end of packet in 1-byte variable field count for " + 
+                                        Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")");
 									goto BlockDone;
 								}
 							}
@@ -275,7 +280,8 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("Blocks(): end of packet in 2-byte variable field count for " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+                                    Console.WriteLine("WARNING: Blocks(): end of packet in 2-byte variable field count for " + 
+                                        Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")");
 									goto BlockDone;
 								}
 							}
@@ -295,7 +301,9 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte variable field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+                                    Console.WriteLine("WARNING: Blocks(): end of packet in " + fieldSize + 
+                                        "-byte variable field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + 
+                                        " (" + pos + "/" + length + ")");
 									goto BlockDone;
 								}
 							}
@@ -317,7 +325,8 @@ namespace libsecondlife
 							}
 							else
 							{
-								Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte fixed field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+                                Console.WriteLine("WARNING: Blocks(): end of packet in " + fieldSize + "-byte fixed field " + 
+                                    Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")");
 								goto BlockDone;
 							}
 						}
@@ -340,7 +349,9 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("Blocks(): end of packet in " + fieldSize + "-byte " + fieldMap.Type + " field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + " (" + pos + "/" + length + ")", Helpers.LogLevel.Warning);
+                                    Console.WriteLine("WARNING: Blocks(): end of packet in " + fieldSize + "-byte " + 
+                                        fieldMap.Type + " field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + 
+                                        " (" + pos + "/" + length + ")");
 									goto BlockDone;
 								}
 							}
@@ -523,8 +534,7 @@ namespace libsecondlife
 
 					if (blockCount > 255)
 					{
-						Helpers.Log("Trying to put more than 255 blocks in a variable block position, " +
-							"this will not end well", Helpers.LogLevel.Error);
+                        throw new Exception("Trying to put more than 255 blocks in a variable block");
 					}
 
 					// Prepend the blocks with a count
@@ -545,7 +555,7 @@ namespace libsecondlife
 					if ((string)blocksEnum.Value == blockMap.Name)
 					{
 						// Found a match of this block
-						if (blockMap.Count == -1 || blockCount < blockMap.Count)
+						if ((blockMap.Count == -1 && blockCount < 255) || blockCount < blockMap.Count)
 						{
 							blockCount++;
 
@@ -554,11 +564,9 @@ namespace libsecondlife
 							{
 								fields = (Hashtable)blocksEnum.Key;
 							}
-							catch (Exception)
+							catch (Exception e)
 							{
-								Helpers.Log("Something other than a field Hashtable was passed to BuildPacket " +
-									"inside of the block Hashtable", Helpers.LogLevel.Warning);
-								continue;
+                                throw new Exception("A block Hashtable did not contain a fields Hashtable", e);
 							}
 							#endregion TryBlockTypecast
 
@@ -569,187 +577,152 @@ namespace libsecondlife
 									object field = fields[fieldMap.Name];
 
 									#region AddField
-									try
+									switch (fieldMap.Type)
 									{
-										switch (fieldMap.Type)
-										{
-											case FieldType.U8:
-												byteArray[length++] = (byte)field;
-												break;
-											case FieldType.U16:
-												ushort fieldUShort = (ushort)field;
-												byteArray[length++] = (byte)(fieldUShort % 256);
-												fieldUShort >>= 8;
-												byteArray[length++] = (byte)(fieldUShort % 256);
-												break;
-											case FieldType.U32:
-												uint fieldUInt = (uint)field;
-												byteArray[length++] = (byte)(fieldUInt % 256);
-												fieldUInt >>= 8;
-												byteArray[length++] = (byte)(fieldUInt % 256);
-												fieldUInt >>= 8;
-												byteArray[length++] = (byte)(fieldUInt % 256);
-												fieldUInt >>= 8;
-												byteArray[length++] = (byte)(fieldUInt % 256);
-												break;
-											case FieldType.U64:
-												// FIXME: Apply endianness patch
-												Array.Copy(((U64)field).GetBytes(), 0, byteArray, length, 8);
-												length += 8;
-												break;
-											case FieldType.S8:
-												byteArray[length++] = (byte)((sbyte)field);
-												break;
-											case FieldType.S16:
-												// FIXME: Apply endianness patch
-												Array.Copy(BitConverter.GetBytes((short)field), 0, byteArray, length, 2);
-												length += 2;
-												break;
-											case FieldType.S32:
-												// FIXME: Apply endianness patch
-												Array.Copy(BitConverter.GetBytes((int)field), 0, byteArray, length, 4);
-												length += 4;
-												break;
-											case FieldType.S64:
-												// FIXME: Apply endianness patch
-												Array.Copy(BitConverter.GetBytes((long)field), 0, byteArray, length, 8);
-												length += 8;
-												break;
-											case FieldType.F32:
-												Array.Copy(BitConverter.GetBytes((float)field), 0, byteArray, length, 4);
-												length += 4;
-												break;
-											case FieldType.F64:
-												Array.Copy(BitConverter.GetBytes((double)field), 0, byteArray, length, 8);
-												length += 8;
-												break;
-											case FieldType.LLUUID:
-												Array.Copy(((LLUUID)field).Data, 0, byteArray, length, 16);
-												length += 16;
-												break;
-											case FieldType.BOOL:
-												byteArray[length] = (byte)((bool)field == true ? 1 : 0);
+										case FieldType.U8:
+											byteArray[length++] = (byte)field;
+											break;
+										case FieldType.U16:
+											ushort fieldUShort = (ushort)field;
+											byteArray[length++] = (byte)(fieldUShort % 256);
+											fieldUShort >>= 8;
+											byteArray[length++] = (byte)(fieldUShort % 256);
+											break;
+										case FieldType.U32:
+											uint fieldUInt = (uint)field;
+											byteArray[length++] = (byte)(fieldUInt % 256);
+											fieldUInt >>= 8;
+											byteArray[length++] = (byte)(fieldUInt % 256);
+											fieldUInt >>= 8;
+											byteArray[length++] = (byte)(fieldUInt % 256);
+											fieldUInt >>= 8;
+											byteArray[length++] = (byte)(fieldUInt % 256);
+											break;
+										case FieldType.U64:
+											// FIXME: Apply endianness patch
+											Array.Copy(((U64)field).GetBytes(), 0, byteArray, length, 8);
+											length += 8;
+											break;
+										case FieldType.S8:
+											byteArray[length++] = (byte)((sbyte)field);
+											break;
+										case FieldType.S16:
+											// FIXME: Apply endianness patch
+											Array.Copy(BitConverter.GetBytes((short)field), 0, byteArray, length, 2);
+											length += 2;
+											break;
+										case FieldType.S32:
+											// FIXME: Apply endianness patch
+											Array.Copy(BitConverter.GetBytes((int)field), 0, byteArray, length, 4);
+											length += 4;
+											break;
+										case FieldType.S64:
+											// FIXME: Apply endianness patch
+											Array.Copy(BitConverter.GetBytes((long)field), 0, byteArray, length, 8);
+											length += 8;
+											break;
+										case FieldType.F32:
+											Array.Copy(BitConverter.GetBytes((float)field), 0, byteArray, length, 4);
+											length += 4;
+											break;
+										case FieldType.F64:
+											Array.Copy(BitConverter.GetBytes((double)field), 0, byteArray, length, 8);
+											length += 8;
+											break;
+										case FieldType.LLUUID:
+											Array.Copy(((LLUUID)field).Data, 0, byteArray, length, 16);
+											length += 16;
+											break;
+										case FieldType.BOOL:
+											byteArray[length] = (byte)((bool)field == true ? 1 : 0);
+											length++;
+											break;
+										case FieldType.LLVector3:
+											Array.Copy(((LLVector3)field).GetBytes(), 0, byteArray, length, 12);
+											length += 12;
+											break;
+										case FieldType.LLVector3d:
+											Array.Copy(((LLVector3d)field).GetBytes(), 0, byteArray, length, 24);
+											length += 24;
+											break;
+										case FieldType.LLVector4:
+											Array.Copy(((LLVector4)field).GetBytes(), 0, byteArray, length, 16);
+											length += 16;
+											break;
+										case FieldType.LLQuaternion:
+											Array.Copy(((LLQuaternion)field).GetBytes(), 0, byteArray, length, 16);
+											length += 16;
+											break;
+										case FieldType.IPADDR:
+											Array.Copy(((IPAddress)field).GetAddressBytes(), 0, byteArray, length, 4);
+											length += 4;
+											break;
+										case FieldType.IPPORT:
+											ushort fieldIPPort = (ushort)field;
+											byteArray[length + 1] = (byte)(fieldIPPort % 256);
+											fieldIPPort >>= 8;
+											byteArray[length] = (byte)(fieldIPPort % 256);
+											length += 2;
+											break;
+										case FieldType.Variable:
+                                            if (field.GetType().IsArray)
+											{
+												// Assume this is a byte array
+												fieldLength = ((byte[])field).Length;
+											}
+											else
+											{
+												// Assume this is a string, add 1 for the null terminator
+												fieldLength = ((string)field).Length + 1;
+											}
+
+											if (fieldMap.Count == 1)
+											{
+												if (fieldLength > 255)
+												{
+                                                    throw new Exception("Variable byte field longer than 255 characters");
+												}
+
+                                                byteArray[length] = (byte)(fieldLength);
 												length++;
-												break;
-											case FieldType.LLVector3:
-												Array.Copy(((LLVector3)field).GetBytes(), 0, byteArray, length, 12);
-												length += 12;
-												break;
-											case FieldType.LLVector3d:
-												Array.Copy(((LLVector3d)field).GetBytes(), 0, byteArray, length, 24);
-												length += 24;
-												break;
-											case FieldType.LLVector4:
-												Array.Copy(((LLVector4)field).GetBytes(), 0, byteArray, length, 16);
-												length += 16;
-												break;
-											case FieldType.LLQuaternion:
-												Array.Copy(((LLQuaternion)field).GetBytes(), 0, byteArray, length, 16);
-												length += 16;
-												break;
-											case FieldType.IPADDR:
-												Array.Copy(((IPAddress)field).GetAddressBytes(), 0, byteArray, length, 4);
-												length += 4;
-												break;
-											case FieldType.IPPORT:
-												ushort fieldIPPort = (ushort)field;
-												byteArray[length + 1] = (byte)(fieldIPPort % 256);
-												fieldIPPort >>= 8;
-												byteArray[length] = (byte)(fieldIPPort % 256);
-												length += 2;
-												break;
-											case FieldType.Variable:
-												if (fieldMap.Count == 1)
+											}
+											else if (fieldMap.Count == 2)
+											{
+												if (fieldLength > 1024)
 												{
-													if (fieldLength > 255)
-													{
-														Helpers.Log("Truncating variable (byte) field to 255 " +
-															"characters. fieldLength=" + fieldLength + 
-															", fieldMap.Name=" + fieldMap.Name + ", packetMap.Name=" + packetMap.Name, 
-															Helpers.LogLevel.Warning);
-
-														fieldLength = 255;
-													}
-												}
-												else if (fieldMap.Count == 2)
-												{
-													if (fieldLength > 1024)
-													{
-														Helpers.Log("Truncating variable (byte) field to 1024 " +
-															"characters", Helpers.LogLevel.Warning);
-
-														fieldLength = 1024;
-													}
-												}
-												else
-												{
-													Helpers.Log("Variable field with an unknown count", Helpers.LogLevel.Warning);
+                                                    throw new Exception("Variable byte field longer than 1024 characters");
 												}
 
-												if (field.GetType().IsArray)
-												{
-													// Assume this is a byte array
-													fieldLength = ((byte[])field).Length;
-												}
-												else
-												{
-													// Assume this is a string, add 1 for the null terminator
-													fieldLength = ((string)field).Length + 1;
-												}
+                                                byteArray[length++] = (byte)(fieldLength % 256);
+												byteArray[length++] = (byte)(fieldLength / 256);
+											}
+											else
+											{
+                                                throw new Exception("Variable field with an unknown count, protocol map error");
+											}
+											
+											if (field.GetType().IsArray)
+											{
+												// Assume this is a byte array
+												Array.Copy((byte[])field, 0, byteArray, length, fieldLength);
+											}
+											else
+											{
+												// Assume this is a string, add 1 for the null terminator
+												byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)field);
+												Array.Copy(stringBytes, 0, byteArray, length, stringBytes.Length);
+												fieldLength = stringBytes.Length + 1;
+											}
 
-												if (fieldMap.Count == 2)
-												{
-													byteArray[length++] = (byte)(fieldLength % 256);
-													byteArray[length++] = (byte)(fieldLength / 256);
-												}
-												else
-												{
-													if (fieldMap.Count != 1)
-													{
-														Helpers.Log("Variable field " + fieldMap.Name + " has a count of " + 
-															+ fieldMap.Count + ", ignoring and assuming 1", 
-															Helpers.LogLevel.Warning);
-													}
+											length += fieldLength;
 
-													byteArray[length] = (byte)(fieldLength);
-													length++;
-												}
-												
-												if (field.GetType().IsArray)
-												{
-													// Assume this is a byte array
-													Array.Copy((byte[])field, 0, byteArray, length, fieldLength);
-												}
-												else
-												{
-													// Assume this is a string, add 1 for the null terminator
-													byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)field);
-													Array.Copy(stringBytes, 0, byteArray, length, stringBytes.Length);
-													fieldLength = stringBytes.Length + 1;
-												}
-
-												length += fieldLength;
-
-												break;
-											case FieldType.Fixed:
-												Array.Copy((byte[])field, 0, byteArray, length, fieldMap.Count);
-												length += fieldMap.Count;
-												break;
-											default:
-												Helpers.Log("Unhandled field type " + fieldMap.Type + " during " +
-													"packet construction", Helpers.LogLevel.Error);
-												break;
-										}
-									}
-									catch (Exception err)
-									{
-										Helpers.Log("PacketBuilder.BuildPacket(): " + err.ToString(), Helpers.LogLevel.Error);
-										//Data type " + field.GetType().ToString() + " for field " +
-										//	fieldMap.Name + " doesn't match expected type " + fieldMap.Type.ToString(), 
-										//	);
-										// This will fail for fixed or variable type packets, but it's a 
-										// last ditch effort
-										length += (int)protocol.TypeSizes[fieldMap.Type];
+											break;
+										case FieldType.Fixed:
+											Array.Copy((byte[])field, 0, byteArray, length, fieldMap.Count);
+											length += fieldMap.Count;
+											break;
+										default:
+                                            throw new Exception("Unhandled FieldType");
 									}
 									#endregion AddField
 								}
@@ -768,9 +741,7 @@ namespace libsecondlife
 										{
 											if (fieldMap.Count != 1)
 											{
-												Helpers.Log("Variable field " + fieldMap.Name + " has a count of " + 
-													+ fieldMap.Count + ", ignoring and assuming 1", 
-													Helpers.LogLevel.Warning);
+                                                throw new Exception("Variable length field has an invalid Count");
 											}
 
 											length++;
@@ -790,8 +761,7 @@ namespace libsecondlife
 						}
 						else
 						{
-							Helpers.Log("Trying to build a " + packetMap.Name + " packet with too many " + 
-								blockMap.Name + " blocks", Helpers.LogLevel.Warning);
+                            throw new Exception("Too many blocks");
 						}
 					}
 				}

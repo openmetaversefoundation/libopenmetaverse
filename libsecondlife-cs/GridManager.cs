@@ -97,7 +97,7 @@ namespace libsecondlife
 			else 
 			{
 				/* TODO: Put some better handling inplace here with some retry code */
-				Helpers.Log("Error returned sim that didnt exist",Helpers.LogLevel.Warning);
+				Client.Log("Error returned sim that didnt exist",Helpers.LogLevel.Warning);
 				return new GridRegion();
 			}
 		}

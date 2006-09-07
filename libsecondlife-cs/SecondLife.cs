@@ -30,344 +30,358 @@ using System.Threading;
 
 namespace libsecondlife
 {
-       /// <summary>
-       /// Main class to expose Second Life functionality to clients. All of the
-       /// classes are accessible through this class.
-       /// </summary>
-       public class SecondLife
-       {
-               public ProtocolManager Protocol;
-               public NetworkManager Network;
-               public ParcelManager Parcels;
-               public MainAvatar Avatar;
-               public Hashtable Avatars;
-               public Mutex AvatarsMutex;
-               public Inventory Inventory;
-               public Region CurrentRegion;
-               public GridManager Grid;
+    /// <summary>
+    /// Main class to expose Second Life functionality to clients. All of the
+    /// classes are accessible through this class.
+    /// </summary>
+    public class SecondLife
+    {
+        public ProtocolManager Protocol;
+        public NetworkManager Network;
+        public ParcelManager Parcels;
+        public MainAvatar Avatar;
+        public Hashtable Avatars;
+        public Mutex AvatarsMutex;
+        public Inventory Inventory;
+        public Region CurrentRegion;
+        public GridManager Grid;
+        public bool Debug;
 
-               public SecondLife(string keywordFile, string mapFile)
-               {
-                       Protocol = new ProtocolManager(keywordFile, mapFile);
-                       Network = new NetworkManager(this, Protocol);
-                       Parcels = new ParcelManager(this);
-                       Avatar = new MainAvatar(this);
-                       Avatars = new Hashtable();
-                       AvatarsMutex = new Mutex(false, "AvatarsMutex");
-                       Inventory = new Inventory(this);
-                       Grid = new GridManager(this);
-                       CurrentRegion = null;
-               }
+        public SecondLife(string keywordFile, string mapFile)
+        {
+            Protocol = new ProtocolManager(keywordFile, mapFile, this);
+            Network = new NetworkManager(this, Protocol);
+            Parcels = new ParcelManager(this);
+            Avatar = new MainAvatar(this);
+            Avatars = new Hashtable();
+            AvatarsMutex = new Mutex(false, "AvatarsMutex");
+            Inventory = new Inventory(this);
+            Grid = new GridManager(this);
+            CurrentRegion = null;
+            Debug = true;
 
-               public override string ToString()
-               {
-                       return Avatar.FirstName + " " + Avatar.LastName;
-               }
+            Network.RegisterCallback("UUIDNameReply", new PacketCallback(GetAgentNameHandler));
+        }
 
-               public void Tick()
-               {
-                       System.Threading.Thread.Sleep(0);
-               }
+        public override string ToString()
+        {
+            return Avatar.FirstName + " " + Avatar.LastName;
+        }
 
-               public void AddAvatar(LLUUID AgentID)
-               {
-                       // Quick sanity check
-                       if(Avatars.ContainsKey(AgentID))
-                       {
-                               return;
-                       }
+        /// <summary>
+        /// A simple sleep function that will allow pending threads to run
+        /// </summary>
+        public void Tick()
+        {
+            System.Threading.Thread.Sleep(0);
+        }
 
-                       GetAgentDetails(AgentID);
+        /// <summary>
+        /// Send a log message to the debugging output system
+        /// </summary>
+        /// <param name="message">The log message</param>
+        /// <param name="level">From the LogLevel enum, either Info, Warning, or Error</param>
+        public void Log(string message, Helpers.LogLevel level)
+        {
+            if (Debug)
+            {
+                Console.WriteLine(level.ToString() + ": " + message);
+            }
+        }
 
-                       AvatarsMutex.WaitOne();
-                       Avatars[AgentID] = new Avatar();
-                       AvatarsMutex.ReleaseMutex();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="AgentID"></param>
+        public void AddAvatar(LLUUID AgentID)
+        {
+            // Quick sanity check
+            if (Avatars.ContainsKey(AgentID))
+            {
+                return;
+            }
 
-                       return;
-               }
+            GetAgentDetails(AgentID);
 
-               private void GetAgentDetails(LLUUID AgentID)
-               {
-                       PacketCallback callback = new PacketCallback(GetAgentNameHandler);
-                       Network.RegisterCallback("UUIDNameReply", callback);
+            AvatarsMutex.WaitOne();
+            Avatars[AgentID] = new Avatar();
+            AvatarsMutex.ReleaseMutex();
 
-                       Packet packet = Packets.Communication.UUIDNameRequest(Protocol, AgentID);
-                       Network.SendPacket(packet);
-               }
+            return;
+        }
 
-               private void GetAgentNameHandler(Packet packet, Simulator simulator)
-               {
-                       if (packet.Layout.Name == "UUIDNameReply")
-                       {
-                               LLUUID ID                       = new LLUUID();
-                               string Firstname        = "";
-                               string Lastname         = "";
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="AgentID"></param>
+        private void GetAgentDetails(LLUUID AgentID)
+        {
+            Packet packet = Packets.Communication.UUIDNameRequest(Protocol, AgentID);
+            Network.SendPacket(packet);
 
-                               ArrayList blocks;
+            // TODO: Shouldn't this function block?
+        }
 
-                               blocks = packet.Blocks();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void GetAgentNameHandler(Packet packet, Simulator simulator)
+        {
+            if (packet.Layout.Name == "UUIDNameReply")
+            {
+                LLUUID ID = new LLUUID();
+                string Firstname = "";
+                string Lastname = "";
 
-                               foreach (Block block in blocks)
-                               {
-                                       foreach (Field field in block.Fields)
-                                       {
-                                               if(field.Layout.Name == "ID")
-                                               {
-                                                       ID = (LLUUID)field.Data;
-                                               }
-                                               else if(field.Layout.Name == "FirstName")
-                                               {
-                                                       Firstname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                                               }
-                                               else if(field.Layout.Name == "LastName")
-                                               {
-                                                       Lastname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                                               }
-                                       }
-                               }
-                               AvatarsMutex.WaitOne();
-                               ((Avatar)Avatars[ID]).Name = Firstname + " " + Lastname;
-                               AvatarsMutex.ReleaseMutex();
-                       }
-               }
-       }
+                ArrayList blocks;
 
-       /// <summary>
-       /// Static helper functions and global variables
-       /// </summary>
-       public class Helpers
-       {
-               public readonly static string VERSION = "libsecondlife-cs 0.0.5";
+                blocks = packet.Blocks();
 
-               public const byte MSG_APPENDED_ACKS = 0x10;
-               public const byte MSG_RESENT = 0x20;
-               public const byte MSG_RELIABLE = 0x40;
-               public const byte MSG_ZEROCODED = 0x80;
-               public const ushort MSG_FREQ_HIGH = 0x0000;
-               public const ushort MSG_FREQ_MED = 0xFF00;
-               public const ushort MSG_FREQ_LOW = 0xFFFF;
+                foreach (Block block in blocks)
+                {
+                    foreach (Field field in block.Fields)
+                    {
+                        if (field.Layout.Name == "ID")
+                        {
+                            ID = (LLUUID)field.Data;
+                        }
+                        else if (field.Layout.Name == "FirstName")
+                        {
+                            Firstname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+                        }
+                        else if (field.Layout.Name == "LastName")
+                        {
+                            Lastname = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
+                        }
+                    }
+                }
+                AvatarsMutex.WaitOne();
+                ((Avatar)Avatars[ID]).Name = Firstname + " " + Lastname;
+                AvatarsMutex.ReleaseMutex();
+            }
+        }
+    }
 
-               public enum LogLevel
-               {
-                       Info,
-                       Warning,
-                       Error
-               };
+    /// <summary>
+    /// Static helper functions and global variables
+    /// </summary>
+    public class Helpers
+    {
+        public readonly static string VERSION = "libsecondlife-cs 0.0.6";
 
-               /// <summary>
-               /// Send a log message to the debugging output system
-               /// </summary>
-               /// <param name="message">The log message</param>
-               /// <param name="level">From the LogLevel enum, either Info, Warning, or Error</param>
-               public static void Log(string message, LogLevel level)
-               {
-                       Console.WriteLine(level.ToString() + ": " + message);
-               }
+        public const byte MSG_APPENDED_ACKS = 0x10;
+        public const byte MSG_RESENT = 0x20;
+        public const byte MSG_RELIABLE = 0x40;
+        public const byte MSG_ZEROCODED = 0x80;
+        public const ushort MSG_FREQ_HIGH = 0x0000;
+        public const ushort MSG_FREQ_MED = 0xFF00;
+        public const ushort MSG_FREQ_LOW = 0xFFFF;
 
-               /// <summary>
-               /// Converting a variable length field (byte array) to a string
-               /// </summary>
-               /// <param name="data">The Data member of the Field class you are converting</param>
-               public static string FieldToString(object data)
-               {
-                       byte[] byteArray;
+        public enum LogLevel
+        {
+            Info,
+            Warning,
+            Error
+        };
 
-                       try
-                       {
-                               byteArray = (byte[])data;
-                       }
-                       catch (Exception e)
-                       {
-                               Helpers.Log(e.ToString(), Helpers.LogLevel.Warning);
-                               return "";
-                       }
+        /// <summary>
+        /// Converting a variable length field (byte array) to a string
+        /// </summary>
+        /// <param name="data">The Data member of the Field class you are converting</param>
+        public static string FieldToString(object data)
+        {
+            byte[] byteArray;
 
-                       return System.Text.Encoding.ASCII.GetString(byteArray).Replace("\0", "");
-               }
-               
-               /// <summary>
-               /// Takes a quantized value and its quantization range and returns a float 
-               /// representation of the continuous value. For example, a value of 32767 
-               /// and a range of -128.0 to 128.0 would return approx. -0.0019531548028
-               /// </summary>
-               /// <param name="value">The 16-bit quantized value</param>
-               /// <param name="lower">The lower quantization range</param>
-               /// <param name="upper">The upper quantization range</param>
-               /// <returns></returns>
-               public static float Dequantize(uint value, float lower, float upper)
-               {
-                   decimal QV = (decimal)value;
-                   decimal range = (decimal)(upper - lower);
-                   decimal QF = (range) / 65535.0m;
-                   return (float)(QV * QF - (0.5m * range));
-               }
-               
-               /// <summary>
-               /// Decode a zerocoded byte array. Used to decompress packets marked
-               /// with the zerocoded flag. Any time a zero is encountered, the
-               /// next byte is a count of how many zeroes to expand. One zero is
-               /// encoded with 0x00 0x01, two zeroes is 0x00 0x02, three zeroes is
-               /// 0x00 0x03, etc. The first four bytes are copied directly to the
-               /// output buffer.
-               /// </summary>
-               /// <param name="src">The byte array to decode</param>
-               /// <param name="srclen">The length of the byte array to decode</param>
-               /// <param name="dest">The output byte array to decode to</param>
-               /// <returns>The length of the output buffer</returns>
-               public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
-               {
-                       uint zerolen = 0;
+            try
+            {
+                byteArray = (byte[])data;
+            }
+            catch (Exception)
+            {
+                return "[object]";
+            }
 
-                       try
-                       {
-                               Array.Copy(src, 0, dest, 0, 4);
-                               zerolen += 4;
+            return System.Text.Encoding.ASCII.GetString(byteArray).Replace("\0", "");
+        }
 
-                               int bodylen;
-                               if ((src[0] & MSG_APPENDED_ACKS) == 0)
-                               {
-                                       bodylen = srclen;
-                               }
-                               else
-                               {
-                                       bodylen = srclen - src[srclen - 1] * 4 - 1;
-                               }
+        /// <summary>
+        /// Takes a quantized value and its quantization range and returns a float 
+        /// representation of the continuous value. For example, a value of 32767 
+        /// and a range of -128.0 to 128.0 would return approx. -0.0019531548028
+        /// </summary>
+        /// <param name="value">The 16-bit quantized value</param>
+        /// <param name="lower">The lower quantization range</param>
+        /// <param name="upper">The upper quantization range</param>
+        /// <returns></returns>
+        public static float Dequantize(uint value, float lower, float upper)
+        {
+            decimal QV = (decimal)value;
+            decimal range = (decimal)(upper - lower);
+            decimal QF = (range) / 65535.0m;
+            return (float)(QV * QF - (0.5m * range));
+        }
 
-                               uint i;
-                               for (i = zerolen; i < bodylen; i++)
-                               {
-                                       if (src[i] == 0x00)
-                                       {
-                                               for (byte j = 0; j < src[i + 1]; j++)
-                                               {
-                                                       dest[zerolen++] = 0x00;
-                                               }
+        /// <summary>
+        /// Decode a zerocoded byte array. Used to decompress packets marked
+        /// with the zerocoded flag. Any time a zero is encountered, the
+        /// next byte is a count of how many zeroes to expand. One zero is
+        /// encoded with 0x00 0x01, two zeroes is 0x00 0x02, three zeroes is
+        /// 0x00 0x03, etc. The first four bytes are copied directly to the
+        /// output buffer.
+        /// </summary>
+        /// <param name="src">The byte array to decode</param>
+        /// <param name="srclen">The length of the byte array to decode</param>
+        /// <param name="dest">The output byte array to decode to</param>
+        /// <returns>The length of the output buffer</returns>
+        public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
+        {
+            uint zerolen = 0;
 
-                                               i++;
-                                       }
-                                       else
-                                       {
-                                               dest[zerolen++] = src[i];
-                                       }
-                               }
+            Array.Copy(src, 0, dest, 0, 4);
+            zerolen += 4;
 
-                               // HACK: Fix truncated zerocoded messages
-                               for (uint j = zerolen; j < zerolen + 16; j++)
-                               {
-                                       dest[j] = 0;
-                               }
-                               zerolen += 16;
+            int bodylen;
+            if ((src[0] & MSG_APPENDED_ACKS) == 0)
+            {
+                bodylen = srclen;
+            }
+            else
+            {
+                bodylen = srclen - src[srclen - 1] * 4 - 1;
+            }
 
-                               // copy appended ACKs
-                               for (; i < srclen; i++)
-                               {
-                                       dest[zerolen++] = src[i];
-                               }
-                       }
-                       catch (Exception e)
-                       {
-                               Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
-                       }
+            uint i;
+            for (i = zerolen; i < bodylen; i++)
+            {
+                if (src[i] == 0x00)
+                {
+                    for (byte j = 0; j < src[i + 1]; j++)
+                    {
+                        dest[zerolen++] = 0x00;
+                    }
 
-                       return (int)zerolen;
-               }
-               
-               /// <summary>
-               /// Decode enough of a byte array to get the packet ID.  Data before and
-               /// after the packet ID is undefined.
-               /// </summary>
-               /// <param name="src">The byte array to decode</param>
-               /// <param name="dest">The output byte array to encode to</param>
-               public static void ZeroDecodeCommand(byte[] src, byte[] dest)
-               {
-                   for (int srcPos = 4, destPos = 4; destPos < 8; ++srcPos)
-                   {
-                       if (src[srcPos] == 0x00)
-                       {
-                           for (byte j = 0; j < src[srcPos + 1]; ++j)
-                           {
-                               dest[destPos++] = 0x00;
-                           }
+                    i++;
+                }
+                else
+                {
+                    dest[zerolen++] = src[i];
+                }
+            }
 
-                           ++srcPos;
-                       }
-                       else
-                       {
-                           dest[destPos++] = src[srcPos];
-                       }
-                   }
-  	           }
+            // HACK: Fix truncated zerocoded messages
+            for (uint j = zerolen; j < zerolen + 16; j++)
+            {
+                dest[j] = 0;
+            }
+            zerolen += 16;
 
-               /// <summary>
-               /// Encode a byte array with zerocoding. Used to compress packets marked
-               /// with the zerocoded flag. Any zeroes in the array are compressed down
-               /// to a single zero byte followed by a count of how many zeroes to expand
-               /// out. A single zero becomes 0x00 0x01, two zeroes becomes 0x00 0x02,
-               /// three zeroes becomes 0x00 0x03, etc. The first four bytes are copied
-               /// directly to the output buffer.
-               /// </summary>
-               /// <param name="src">The byte array to encode</param>
-               /// <param name="srclen">The length of the byte array to encode</param>
-               /// <param name="dest">The output byte array to encode to</param>
-               /// <returns>The length of the output buffer</returns>
-               public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
-               {
-                       uint zerolen = 0;
-                       byte zerocount = 0;
+            // copy appended ACKs
+            for (; i < srclen; i++)
+            {
+                dest[zerolen++] = src[i];
+            }
 
-                       Array.Copy(src, 0, dest, 0, 4);
-                       zerolen += 4;
+            return (int)zerolen;
+        }
 
-                       int bodylen;
-                       if ((src[0] & MSG_APPENDED_ACKS) == 0)
-                       {
-                               bodylen = srclen;
-                       }
-                       else
-                       {
-                               bodylen = srclen - src[srclen - 1] * 4 - 1;
-                       }
+        /// <summary>
+        /// Decode enough of a byte array to get the packet ID.  Data before and
+        /// after the packet ID is undefined.
+        /// </summary>
+        /// <param name="src">The byte array to decode</param>
+        /// <param name="dest">The output byte array to encode to</param>
+        public static void ZeroDecodeCommand(byte[] src, byte[] dest)
+        {
+            for (int srcPos = 4, destPos = 4; destPos < 8; ++srcPos)
+            {
+                if (src[srcPos] == 0x00)
+                {
+                    for (byte j = 0; j < src[srcPos + 1]; ++j)
+                    {
+                        dest[destPos++] = 0x00;
+                    }
 
-                       uint i;
-                       for (i = zerolen; i < bodylen; i++)
-                       {
-                               if (src[i] == 0x00)
-                               {
-                                       zerocount++;
+                    ++srcPos;
+                }
+                else
+                {
+                    dest[destPos++] = src[srcPos];
+                }
+            }
+        }
 
-                                       if (zerocount == 0)
-                                       {
-                                               dest[zerolen++] = 0x00;
-                                               dest[zerolen++] = 0xff;
-                                               zerocount++;
-                                       }
-                               }
-                               else
-                               {
-                                       if (zerocount != 0)
-                                       {
-                                               dest[zerolen++] = 0x00;
-                                               dest[zerolen++] = (byte)zerocount;
-                                               zerocount = 0;
-                                       }
+        /// <summary>
+        /// Encode a byte array with zerocoding. Used to compress packets marked
+        /// with the zerocoded flag. Any zeroes in the array are compressed down
+        /// to a single zero byte followed by a count of how many zeroes to expand
+        /// out. A single zero becomes 0x00 0x01, two zeroes becomes 0x00 0x02,
+        /// three zeroes becomes 0x00 0x03, etc. The first four bytes are copied
+        /// directly to the output buffer.
+        /// </summary>
+        /// <param name="src">The byte array to encode</param>
+        /// <param name="srclen">The length of the byte array to encode</param>
+        /// <param name="dest">The output byte array to encode to</param>
+        /// <returns>The length of the output buffer</returns>
+        public static int ZeroEncode(byte[] src, int srclen, byte[] dest)
+        {
+            uint zerolen = 0;
+            byte zerocount = 0;
 
-                                       dest[zerolen++] = src[i];
-                               }
-                       }
+            Array.Copy(src, 0, dest, 0, 4);
+            zerolen += 4;
 
-                       if (zerocount != 0)
-                       {
-                               dest[zerolen++] = 0x00;
-                               dest[zerolen++] = (byte)zerocount;
-                       }
+            int bodylen;
+            if ((src[0] & MSG_APPENDED_ACKS) == 0)
+            {
+                bodylen = srclen;
+            }
+            else
+            {
+                bodylen = srclen - src[srclen - 1] * 4 - 1;
+            }
 
-                       // copy appended ACKs
-                       for (; i < srclen; i++)
-                       {
-                               dest[zerolen++] = src[i];
-                       }
+            uint i;
+            for (i = zerolen; i < bodylen; i++)
+            {
+                if (src[i] == 0x00)
+                {
+                    zerocount++;
 
-                       return (int)zerolen;
-               }
-       }
+                    if (zerocount == 0)
+                    {
+                        dest[zerolen++] = 0x00;
+                        dest[zerolen++] = 0xff;
+                        zerocount++;
+                    }
+                }
+                else
+                {
+                    if (zerocount != 0)
+                    {
+                        dest[zerolen++] = 0x00;
+                        dest[zerolen++] = (byte)zerocount;
+                        zerocount = 0;
+                    }
+
+                    dest[zerolen++] = src[i];
+                }
+            }
+
+            if (zerocount != 0)
+            {
+                dest[zerolen++] = 0x00;
+                dest[zerolen++] = (byte)zerocount;
+            }
+
+            // copy appended ACKs
+            for (; i < srclen; i++)
+            {
+                dest[zerolen++] = src[i];
+            }
+
+            return (int)zerolen;
+        }
+    }
 }

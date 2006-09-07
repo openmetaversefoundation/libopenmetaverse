@@ -456,7 +456,7 @@ namespace libsecondlife
                                        else if(field.Layout.Name == "LandingType")
                                                LandingType = (byte)field.Data;
                                        //                                      else
-                                       //                                              Helpers.Log("Unknown field type '" + field.Layout.Name + "' in ParcelProperties",Helpers.LogLevel.Warning);
+                                       //                                              Client.Log("Unknown field type '" + field.Layout.Name + "' in ParcelProperties",Helpers.LogLevel.Warning);
 
                                }
                        }
@@ -597,7 +597,7 @@ namespace libsecondlife
 
                                                        if (!parcelID.Equals(ParcelInfoParcel.ID))
                                                        {
-                                                               Helpers.Log("Received a ParcelInfoReply for " + parcelID.ToString() +
+                                                               Client.Log("Received a ParcelInfoReply for " + parcelID.ToString() +
                                                                        ", looking for " + ParcelInfoParcel.ID.ToString(), Helpers.LogLevel.Warning);
 
                                                                // Build and resend the ParcelInfoRequest packet
@@ -682,7 +682,7 @@ namespace libsecondlife
                        }
                        catch (Exception e)
                        {
-                               Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+                               Client.Log(e.ToString(), Helpers.LogLevel.Error);
                        }
 
                        Finished = true;
@@ -786,7 +786,7 @@ namespace libsecondlife
                                                }
                                                else
                                                {
-                                                       Helpers.Log("Parcel with no ID found in DirLandReply, skipping", Helpers.LogLevel.Warning);
+                                                       Client.Log("Parcel with no ID found in DirLandReply, skipping", Helpers.LogLevel.Warning);
                                                }
                                        }
 

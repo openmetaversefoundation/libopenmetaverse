@@ -112,10 +112,14 @@ namespace libsecondlife
 		public MapPacket[] LowMaps;
 		public MapPacket[] MediumMaps;
 		public MapPacket[] HighMaps;
-		int i = 0;
 
-		public ProtocolManager(string keywordFile, string mapFile)
+        private SecondLife Client;
+        private int i = 0;
+
+		public ProtocolManager(string keywordFile, string mapFile, SecondLife client)
 		{
+            Client = client;
+
 			// Initialize the map arrays
 			LowMaps = new MapPacket[65536];
 			MediumMaps = new MapPacket[256];
@@ -294,7 +298,7 @@ namespace libsecondlife
 			}
 			catch(Exception e)
 			{
-				Helpers.Log("Error opening \"" + keywordFile + "\": " + e.Message, Helpers.LogLevel.Error);
+				Client.Log("Error opening \"" + keywordFile + "\": " + e.Message, Helpers.LogLevel.Error);
 				throw new Exception("Keyword file error", e);
 			}
 
@@ -320,7 +324,6 @@ namespace libsecondlife
 			}
 			catch(Exception e)
 			{
-				Helpers.Log("Error opening \"" + mapFile + "\": " + e.Message, Helpers.LogLevel.Error);
 				throw new Exception("Map file error", e);
 			}
 
@@ -330,7 +333,6 @@ namespace libsecondlife
 			}
 			catch(Exception e)
 			{
-				Helpers.Log("Error opening \"" + outputFile + "\": " + e.Message, Helpers.LogLevel.Error);
 				throw new Exception("Map file error", e);
 			}
 
@@ -363,7 +365,6 @@ namespace libsecondlife
 			}
 			catch(Exception e) 
 			{
-				Helpers.Log("Error opening \"" + mapFile + "\": " + e.Message, Helpers.LogLevel.Error);
 				throw new Exception("Map file error", e);
 			}
 
@@ -490,7 +491,7 @@ namespace libsecondlife
 									}
 									else
 									{
-										Helpers.Log("!!!", Helpers.LogLevel.Error);
+										Client.Log("Unknown packet frequency", Helpers.LogLevel.Error);
 									}
 								}
 
@@ -561,7 +562,7 @@ namespace libsecondlife
 								}
 								else
 								{
-									Helpers.Log("Unknown block frequency!", Helpers.LogLevel.Error);
+									Client.Log("Unknown block frequency", Helpers.LogLevel.Error);
 								}
 
 								#endregion
@@ -577,7 +578,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				Helpers.Log(e.ToString(), Helpers.LogLevel.Error);
+                throw e;
 			}
 		}
 
@@ -589,7 +590,7 @@ namespace libsecondlife
 			} 
 			else 
 			{
-				Helpers.Log("Couldn't find keyword: " + keyword, Helpers.LogLevel.Warning);
+				Client.Log("Couldn't find keyword: " + keyword, Helpers.LogLevel.Warning);
 				return -1;
 			}
 		}
