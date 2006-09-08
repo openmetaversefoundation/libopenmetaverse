@@ -65,6 +65,11 @@ namespace libsecondlife
 			Texture = texture;
 		}
 
+        public PrimObject()
+        {
+            Texture = new LLUUID();
+        }
+
 		public static byte PathScaleByte(float pathScale)
 		{
 			// Y = 100 + 100X
