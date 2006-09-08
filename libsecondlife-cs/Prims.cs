@@ -39,8 +39,8 @@ namespace libsecondlife
 		public uint ProfileCurve = 0;
 		public float PathScaleX = 0;
 		public float PathScaleY = 0;
-		public LLUUID UUID = new LLUUID();
-		public uint ID = 0;
+		public LLUUID ID = new LLUUID();
+		public uint LocalID = 0;
 		public LLUUID GroupID = new LLUUID();
 		public uint Material = 0;
 		public string Name = "";

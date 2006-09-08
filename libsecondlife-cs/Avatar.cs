@@ -45,8 +45,12 @@ namespace libsecondlife
     public class Avatar
     {
         public LLUUID ID;
+        public uint LocalID;
         public string Name;
+        public string GroupName;
         public bool Online;
+        public LLVector3 Position;
+        public Region CurrentRegion;
     }
 
     public class MainAvatar

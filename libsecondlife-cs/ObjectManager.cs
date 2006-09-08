@@ -29,10 +29,10 @@ using System.Collections;
 
 namespace libsecondlife
 {
-    public delegate void NewPrimCallback(Simulator simulator, PrimObject prim);
-    public delegate void NewAvatarCallback(Simulator simulator, Avatar avatar);
-    public delegate void PrimMovedCallback(Simulator simulator, PrimObject prim);
-    public delegate void AvatarMovedCallback(Simulator simulator, Avatar avatar);
+    public delegate void NewPrimCallback(Simulator simulator, PrimObject prim, U64 regionHandle, ushort timeDilation);
+    public delegate void NewAvatarCallback(Simulator simulator, Avatar avatar, U64 regionHandle, ushort timeDilation);
+    public delegate void PrimMovedCallback(Simulator simulator, PrimUpdate prim, U64 regionHandle, ushort timeDilation);
+    public delegate void AvatarMovedCallback(Simulator simulator, AvatarUpdate avatar, U64 regionHandle, ushort timeDilation);
 
     /// <summary>
     /// 
@@ -68,6 +68,11 @@ namespace libsecondlife
 	/// </summary>
 	public class ObjectManager
     {
+        public event NewPrimCallback OnNewPrim;
+        public event NewAvatarCallback OnNewAvatar;
+        public event PrimMovedCallback OnPrimMoved;
+        public event AvatarMovedCallback OnAvatarMoved;
+
         private SecondLife Client;
 
         public ObjectManager(SecondLife client)
@@ -80,10 +85,11 @@ namespace libsecondlife
 
         private void UpdateHandler(Packet packet, Simulator simulator)
         {
-            PrimObject prim = new PrimObject();
+            U64 regionHandle = null;
+            ushort timeDilation = 0;
 
-            // Create a PrimObject or Avatar and fire the callback
-            Client.Log("ObjectUpdate", Helpers.LogLevel.Info);
+            Avatar avatar = null;
+            PrimObject prim = new PrimObject();
 
             foreach (Block block in packet.Blocks())
             {
@@ -92,13 +98,13 @@ namespace libsecondlife
                     switch (field.Layout.Name)
                     {
                         case "ID":
-                            prim.ID = (UInt32)field.Data;
+                            prim.LocalID = (UInt32)field.Data;
                             break;
                         case "State":
                             prim.State = (byte)field.Data;
                             break;
                         case "FullID":
-                            prim.UUID = (LLUUID)field.Data;
+                            prim.ID = (LLUUID)field.Data;
                             break;
                         case "ParentID":
                             //prim.ParentID = (uint)field.Data;
@@ -232,10 +238,10 @@ namespace libsecondlife
                             //
                             break;
                         case "TimeDilation":
-                            //
+                            timeDilation = (ushort)field.Data;
                             break;
                         case "RegionHandle":
-                            //
+                            regionHandle = (U64)field.Data;
                             break;
                         default:
                             Console.WriteLine("Field Not Handled: " + field.Layout.Name + " " + field.Data.GetType().ToString());
@@ -244,7 +250,34 @@ namespace libsecondlife
                 }
             }
 
-            // If an event handler is registered call it
+            // Parse the NameValue to see if this is actually an avatar
+            if (prim.Name.Contains("FirstName"))
+            {
+                avatar = new Avatar();
+                avatar.ID = prim.ID;
+                avatar.LocalID = prim.LocalID;
+                // FIXME: Parse the correct name and group name
+                avatar.Name = prim.Name;
+                avatar.GroupName = prim.Name;
+                avatar.Online = true;
+                avatar.Position = prim.Position;
+                // FIXME: Look up the region by regionHandle instead
+                avatar.CurrentRegion = simulator.Region;
+
+                // If an event handler is registered call it
+                if (OnNewAvatar != null)
+                {
+                    OnNewAvatar(simulator, avatar, regionHandle, timeDilation);
+                }
+            }
+            else
+            {
+                // If an event handler is registered call it
+                if (OnNewPrim != null)
+                {
+                    OnNewPrim(simulator, prim, regionHandle, timeDilation);
+                }
+            }
         }
 
         private void TerseUpdateHandler(Packet packet, Simulator simulator)
