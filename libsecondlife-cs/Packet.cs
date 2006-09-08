@@ -411,7 +411,7 @@ namespace libsecondlife
 					return byteArray[pos];
 				case FieldType.U16:
 				case FieldType.IPPORT:
-					return (ushort)((byteArray[pos] << 8) + byteArray[pos + 1]);
+                    return (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
 				case FieldType.U32:
 					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
 						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
