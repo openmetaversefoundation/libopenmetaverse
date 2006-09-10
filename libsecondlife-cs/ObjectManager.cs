@@ -107,10 +107,10 @@ namespace libsecondlife
                             prim.ID = (LLUUID)field.Data;
                             break;
                         case "ParentID":
-                            //prim.ParentID = (uint)field.Data;
+                            // Linked objects?
                             break;
                         case "OwnerID":
-                            //prim.OwnerID = (LLUUID)field.Data;
+                            // Sound-related
                             break;
                         case "Material":
                             prim.Material = (byte)(field.Data);
@@ -122,46 +122,49 @@ namespace libsecondlife
                             prim.ProfileCurve = (byte)field.Data;
                             break;
                         case "PathBegin":
-                            prim.PathBegin = (byte)field.Data;
+                            prim.PathBegin = PrimObject.PathBeginFloat((byte)field.Data);
                             break;
                         case "PathEnd":
-                            prim.PathEnd = (byte)field.Data;
+                            prim.PathEnd = PrimObject.PathEndFloat((byte)field.Data);
                             break;
                         case "PathScaleX":
-                            prim.PathScaleX = (float)((byte)field.Data);
+                            prim.PathScaleX = PrimObject.PathScaleFloat((byte)field.Data);
                             break;
                         case "PathScaleY":
-                            prim.PathScaleY = (float)((byte)field.Data);
+                            prim.PathScaleY = PrimObject.PathScaleFloat((byte)field.Data);
                             break;
                         case "PathShearX":
-                            prim.PathShearX = (float)((byte)field.Data);
+                            prim.PathShearX = PrimObject.PathShearFloat((byte)field.Data);
                             break;
                         case "PathShearY":
-                            prim.PathShearY = (float)((byte)field.Data);
+                            prim.PathShearY = PrimObject.PathShearFloat((byte)field.Data);
                             break;
                         case "PathTwist":
-                            prim.PathTwist = (sbyte)field.Data;
+                            prim.PathTwist = PrimObject.PathTwistFloat((sbyte)field.Data);
+                            break;
+                        case "PathTwistBegin":
+                            prim.PathTwistBegin = PrimObject.PathTwistFloat((sbyte)field.Data);
                             break;
                         case "PathRadiusOffset":
-                            prim.PathRadiusOffset = (float)((sbyte)field.Data);
+                            prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)field.Data);
                             break;
                         case "PathTaperX":
-                            prim.PathTaperX = (float)((sbyte)field.Data);
+                            prim.PathTaperX = PrimObject.PathScaleFloat((byte)(sbyte)field.Data);
                             break;
                         case "PathTaperY":
-                            prim.PathTaperY = (float)((sbyte)field.Data);
+                            prim.PathTaperY = PrimObject.PathScaleFloat((byte)(sbyte)field.Data);
                             break;
                         case "PathRevolutions":
-                            prim.PathRevolutions = (float)((byte)field.Data);
+                            prim.PathRevolutions = PrimObject.PathRevolutionsFloat((byte)field.Data);
                             break;
                         case "PathSkew":
-                            prim.PathSkew = (float)((sbyte)field.Data);
+                            prim.PathSkew = PrimObject.PathScaleFloat((byte)(sbyte)field.Data);
                             break;
                         case "ProfileBegin":
-                            prim.ProfileBegin = (float)((byte)field.Data);
+                            prim.ProfileBegin = PrimObject.ProfileBeginFloat((byte)field.Data);
                             break;
                         case "ProfileEnd":
-                            prim.ProfileEnd = (float)((byte)field.Data);
+                            prim.ProfileEnd = PrimObject.ProfileEndFloat((byte)field.Data);
                             break;
                         case "ProfileHollow":
                             prim.ProfileHollow = (byte)field.Data;
@@ -171,71 +174,77 @@ namespace libsecondlife
                             prim.Name = Helpers.FieldToString(field.Data);
                             break;
                         case "Data":
-                            //prim.Sound = (LLUUID)field.Data;
+                            // ?
                             break;
                         case "Text":
-                            //
+                            // Hovering text
                             break;
                         case "TextColor":
-                            // LLColor4U
+                            // LLColor4U of the hovering text
                             break;
                         case "MediaURL":
-                            Console.WriteLine("[debug] MediaURL: " + Helpers.FieldToString(field.Data));
-                            //
+                            // Quicktime stream
+                            Client.Log("MediaURL: " + Helpers.FieldToString(field.Data), Helpers.LogLevel.Info);
                             break;
                         case "TextureEntry":
+                            // TODO: Multi-texture support
                             byte[] bytes = (byte[])field.Data;
                             prim.Texture = new LLUUID(bytes, 0);
                             break;
                         case "TextureAnim":
+                            // Not sure how this works
                             break;
                         case "JointType":
-                            //prim.JointType = (byte)field.Data;
+                            // ?
                             break;
                         case "JointPivot":
-                            //
+                            // ?
                             break;
                         case "JointAxisOrAnchor":
-                            //
+                            // ?
                             break;
                         case "PCode":
-                            //prim.PCode = (byte)field.Data;
+                            // ?
                             break;
                         case "PSBlock":
-                            //
+                            // Particle system related
                             break;
                         case "ExtraParams":
-                            //
+                            // ?
                             break;
                         case "Scale":
                             prim.Scale = (LLVector3)field.Data;
                             break;
                         case "Flags":
-                            //prim.Flags = (byte)field.Data;
+                            // ?
                             break;
                         case "UpdateFlags":
-                            //prim.UpdateFlags = (uint)field.Data;
-                            break;
-                        case "PathTwistBegin":
-                            prim.PathTwistBegin = (sbyte)field.Data;
+                            // ?
                             break;
                         case "CRC":
-                            //prim.CRC = (uint)field.Data;
+                            // We could optionally verify this on the client side
                             break;
                         case "ClickAction":
-                            //prim.ClickAction = (byte)field.Data;
+                            //
                             break;
                         case "Gain":
-                            //prim.Gain = (Single)field.Data;
+                            // Sound-related
                             break;
                         case "Sound":
-                            //prim.Sound = (LLUUID)field.Data;
+                            // Sound-related
                             break;
                         case "Radius":
-                            //prim.Radius = (Single)field.Data;
+                            // Sound-related
                             break;
                         case "ObjectData":
-                            //
+                            byte[] data = (byte[])field.Data;
+                            if (data.Length == 60)
+                            {
+                                prim.Position = new LLVector3(data, 0);
+                                prim.Rotation = new LLQuaternion(data, 36);
+                                // TODO: Parse the rest of the fields
+                            }
+                            // TODO: Parse ObjectData for avatars
                             break;
                         case "TimeDilation":
                             timeDilation = (ushort)field.Data;
@@ -244,7 +253,8 @@ namespace libsecondlife
                             regionHandle = (U64)field.Data;
                             break;
                         default:
-                            Console.WriteLine("Field Not Handled: " + field.Layout.Name + " " + field.Data.GetType().ToString());
+                            Client.Log("ObjectUpdate field not handled: " + field.Layout.Name + " " + 
+                                field.Data.GetType().ToString(), Helpers.LogLevel.Info);
                             break;
                     }
                 }
@@ -261,8 +271,10 @@ namespace libsecondlife
                 avatar.GroupName = prim.Name;
                 avatar.Online = true;
                 avatar.Position = prim.Position;
-                // FIXME: Look up the region by regionHandle instead
+                // TODO: Look up the region by regionHandle instead
                 avatar.CurrentRegion = simulator.Region;
+
+                prim = null;
 
                 // If an event handler is registered call it
                 if (OnNewAvatar != null)
@@ -282,6 +294,8 @@ namespace libsecondlife
 
         private void TerseUpdateHandler(Packet packet, Simulator simulator)
         {
+            U64 regionHandle = null;
+            ushort timeDilation = 0;
             bool avatar = false;
             int i;
             byte[] data;
@@ -362,10 +376,10 @@ namespace libsecondlife
 
                             break;
                         case "RegionHandle":
-                            //
+                            regionHandle = (U64)field.Data;
                             break;
                         case "TimeDilation":
-                            //
+                            timeDilation = (ushort)field.Data;
                             break;
                         case "TextureEntry":
                             //
@@ -386,17 +400,22 @@ namespace libsecondlife
                 avupdate.Rotation = Rotation;
                 avupdate.RotationVelocity = RotationVelocity;
 
-                Client.Log("LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() + 
+                Client.Log("AVATAR: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() + 
                     ", CollisionPlane: " + CollisionPlane.ToString() + ", Velocity: " + Velocity.ToString() + 
                     ", Acceleration: " + Acceleration.ToString() + ", Rotation: " + Rotation.ToString() + 
                     ", RotationVelocity: " + RotationVelocity.ToString(), Helpers.LogLevel.Info);
+
+                // If an event handler is registered call it
             }
             else
             {
-                ;
-            }
+                Client.Log("PRIM: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() +
+                    ", Velocity: " + Velocity.ToString() + ", Acceleration: " + Acceleration.ToString() + 
+                    ", Rotation: " + Rotation.ToString() + ", RotationVelocity: " + RotationVelocity.ToString(), 
+                    Helpers.LogLevel.Info);
 
-            // If an event handler is registered call it
+                // If an event handler is registered call it
+            }
         }
 
         /// <summary>
@@ -418,5 +437,59 @@ namespace libsecondlife
             float QF = range / 65536.0F;
             return (float)((QV * QF - (0.5F * range)) + QF);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="lower"></param>
+        /// <param name="upper"></param>
+        /// <param name="quanta"></param>
+        /// <returns></returns>
+        /*public static float Dequantize(byte value, float lower, float upper, float quanta)
+        {
+            float range = upper - lower;
+            return (float)value * quanta;
+        }*/
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        /// <returns></returns>
+        /*public static LLQuaternion EulerToRot(LLVector3 rotation)
+        {
+            const float PIOVER180 = 0.017453292519943295F;
+            const float TOLERANCE = 0.00001F;
+
+            float p = rotation.X * PIOVER180 / 2.0F;
+            float y = rotation.Z * PIOVER180 / 2.0F;
+            float r = rotation.Y * PIOVER180 / 2.0F;
+
+            float sinp = (float)Math.Sin(p);
+            float siny = (float)Math.Sin(y);
+            float sinr = (float)Math.Sin(r);
+            float cosp = (float)Math.Cos(p);
+            float cosy = (float)Math.Cos(y);
+            float cosr = (float)Math.Cos(r);
+
+            float qx = sinr * cosp * cosy - cosr * sinp * siny;
+            float qy = cosr * sinp * cosy + sinr * cosp * siny;
+            float qz = cosr * cosp * siny - sinr * sinp * cosy;
+            float qs = cosr * cosp * cosy + sinr * sinp * siny;
+
+            // Don't normalize if we don't have to
+            float mag2 = qs * qs + qx * qx + qy * qy + qz * qz;
+            if (Math.Abs(mag2 - 1.0F) > TOLERANCE)
+            {
+                float mag = (float)Math.Sqrt(mag2);
+                qs /= mag;
+                qx /= mag;
+                qy /= mag;
+                qz /= mag;
+            }
+
+            return new LLQuaternion(qx, qy, qz, qs);
+        }*/
     }
 }
