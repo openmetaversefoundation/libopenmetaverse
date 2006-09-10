@@ -1,4 +1,4 @@
-<VisualStudioProject>
+﻿<VisualStudioProject>
     <CSHARP
         ProjectType = "Local"
         ProductVersion = "7.10.3077"
@@ -110,6 +110,11 @@
                 />
                 <File
                     RelPath = "NetworkManager.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ObjectManager.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
