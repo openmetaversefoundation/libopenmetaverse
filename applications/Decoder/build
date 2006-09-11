@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 
-if (!-e '../../libsecondlife-cs/bin/Debug/libsecondlife.dll') {
-	die "*** libsecondlife-cs must be built first\n";
-}
+print "--- building libsecondlife-cs\n";
+
+system('cd ../../libsecondlife-cs && ./build')
+	and die "*** failed to build libsecondlife-cs\n";
+
+print "--- building Decoder\n";
 
 if (-e 'Decoder.exe' && -M '../../libsecondlife-cs/bin/Debug/libsecondlife.dll' < -M 'Decoder.exe') {
 	system('make clean')
