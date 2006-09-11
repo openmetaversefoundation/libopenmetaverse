@@ -39,6 +39,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 
 public class Analyst {
+	private static SecondLife client;
 	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
 	private static Hashtable commandDelegates = new Hashtable();
@@ -51,7 +52,8 @@ public class Analyst {
 
 	public static void Main(string[] args) {
 		// configure the proxy
-		protocolManager = new ProtocolManager("keywords.txt", "protocol.txt");
+		client = new SecondLife("keywords.txt", "protocol.txt");
+		protocolManager = client.Protocol;
 		ProxyConfig proxyConfig = new ProxyConfig("Analyst", "austin.jennings@gmail.com", protocolManager, args);
 		proxy = new Proxy(proxyConfig);
 

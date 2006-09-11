@@ -37,6 +37,7 @@ using System.Net;
 using System.Threading;
 
 public class ChatConsole {
+	private static SecondLife client;
 	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
 	private static LLUUID agentID;
@@ -44,7 +45,8 @@ public class ChatConsole {
 
 	public static void Main(string[] args) {
 		// configure the proxy
-		protocolManager = new ProtocolManager("keywords.txt", "protocol.txt");
+		client = new SecondLife("keywords.txt", "protocol.txt");
+		protocolManager = client.Protocol;
 		ProxyConfig proxyConfig = new ProxyConfig("ChatConsole", "austin.jennings@gmail.com", protocolManager, args);
 		proxy = new Proxy(proxyConfig);
 
