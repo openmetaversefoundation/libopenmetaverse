@@ -88,11 +88,11 @@ namespace libsecondlife
             U64 regionHandle = null;
             ushort timeDilation = 0;
 
-            Avatar avatar = null;
-            PrimObject prim = new PrimObject();
-
             foreach (Block block in packet.Blocks())
             {
+                Avatar avatar = null;
+                PrimObject prim = new PrimObject();
+
                 foreach (Field field in block.Fields)
                 {
                     switch (field.Layout.Name)
@@ -149,16 +149,16 @@ namespace libsecondlife
                             prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)field.Data);
                             break;
                         case "PathTaperX":
-                            prim.PathTaperX = PrimObject.PathScaleFloat((byte)(sbyte)field.Data);
+                            prim.PathTaperX = PrimObject.PathTaperFloat((byte)(sbyte)field.Data);
                             break;
                         case "PathTaperY":
-                            prim.PathTaperY = PrimObject.PathScaleFloat((byte)(sbyte)field.Data);
+                            prim.PathTaperY = PrimObject.PathTaperFloat((byte)(sbyte)field.Data);
                             break;
                         case "PathRevolutions":
                             prim.PathRevolutions = PrimObject.PathRevolutionsFloat((byte)field.Data);
                             break;
                         case "PathSkew":
-                            prim.PathSkew = PrimObject.PathScaleFloat((byte)(sbyte)field.Data);
+                            prim.PathSkew = PrimObject.PathSkewFloat((byte)(sbyte)field.Data);
                             break;
                         case "ProfileBegin":
                             prim.ProfileBegin = PrimObject.ProfileBeginFloat((byte)field.Data);
@@ -258,36 +258,39 @@ namespace libsecondlife
                             break;
                     }
                 }
-            }
 
-            // Parse the NameValue to see if this is actually an avatar
-            if (prim.Name.Contains("FirstName"))
-            {
-                avatar = new Avatar();
-                avatar.ID = prim.ID;
-                avatar.LocalID = prim.LocalID;
-                // FIXME: Parse the correct name and group name
-                avatar.Name = prim.Name;
-                avatar.GroupName = prim.Name;
-                avatar.Online = true;
-                avatar.Position = prim.Position;
-                // TODO: Look up the region by regionHandle instead
-                avatar.CurrentRegion = simulator.Region;
-
-                prim = null;
-
-                // If an event handler is registered call it
-                if (OnNewAvatar != null)
+                // Parse the NameValue to see if this is actually an avatar
+                if (prim.LocalID != 0)
                 {
-                    OnNewAvatar(simulator, avatar, regionHandle, timeDilation);
-                }
-            }
-            else
-            {
-                // If an event handler is registered call it
-                if (OnNewPrim != null)
-                {
-                    OnNewPrim(simulator, prim, regionHandle, timeDilation);
+                    if (prim.Name.Contains("FirstName"))
+                    {
+                        avatar = new Avatar();
+                        avatar.ID = prim.ID;
+                        avatar.LocalID = prim.LocalID;
+                        // FIXME: Parse the correct name and group name
+                        avatar.Name = prim.Name;
+                        avatar.GroupName = prim.Name;
+                        avatar.Online = true;
+                        avatar.Position = prim.Position;
+                        // TODO: Look up the region by regionHandle instead
+                        avatar.CurrentRegion = simulator.Region;
+
+                        prim = null;
+
+                        // If an event handler is registered call it
+                        if (OnNewAvatar != null)
+                        {
+                            OnNewAvatar(simulator, avatar, regionHandle, timeDilation);
+                        }
+                    }
+                    else
+                    {
+                        // If an event handler is registered call it
+                        if (OnNewPrim != null)
+                        {
+                            OnNewPrim(simulator, prim, regionHandle, timeDilation);
+                        }
+                    }
                 }
             }
         }
@@ -305,9 +308,6 @@ namespace libsecondlife
             LLVector4 CollisionPlane = null;
             LLVector3 Position = null, Velocity = null, Acceleration = null, RotationVelocity = null;
             LLQuaternion Rotation = null;
-
-            // Create an AvatarUpdate or PrimUpdate and fire the callback
-            Client.Log("ImprovedTerseObjectUpdate", Helpers.LogLevel.Info);
 
             foreach (Block block in packet.Blocks())
             {
@@ -400,28 +400,28 @@ namespace libsecondlife
                 avupdate.Rotation = Rotation;
                 avupdate.RotationVelocity = RotationVelocity;
 
-                Client.Log("AVATAR: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() + 
+                /*Client.Log("AVATAR: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() + 
                     ", CollisionPlane: " + CollisionPlane.ToString() + ", Velocity: " + Velocity.ToString() + 
                     ", Acceleration: " + Acceleration.ToString() + ", Rotation: " + Rotation.ToString() + 
-                    ", RotationVelocity: " + RotationVelocity.ToString(), Helpers.LogLevel.Info);
+                    ", RotationVelocity: " + RotationVelocity.ToString(), Helpers.LogLevel.Info);*/
 
                 // If an event handler is registered call it
             }
             else
             {
-                Client.Log("PRIM: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() +
+                /*Client.Log("PRIM: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() +
                     ", Velocity: " + Velocity.ToString() + ", Acceleration: " + Acceleration.ToString() + 
                     ", Rotation: " + Rotation.ToString() + ", RotationVelocity: " + RotationVelocity.ToString(), 
-                    Helpers.LogLevel.Info);
+                    Helpers.LogLevel.Info);*/
 
                 // If an event handler is registered call it
             }
         }
 
         /// <summary>
-        /// Takes a quantized value and its quantization range and returns a float 
-        /// representation of the continuous value. For example, a value of 32767 
-        /// and a range of -128.0 to 128.0 would return 0.0. The endian conversion 
+        /// Takes a quantized 16-bit value from a byte array and its range and returns 
+        /// a float representation of the continuous value. For example, a value of 
+        /// 32767 and a range of -128.0 to 128.0 would return 0.0. The endian conversion 
         /// from the 16-bit little endian to the native platform will also be handled.
         /// </summary>
         /// <param name="byteArray">The byte array containing the short value</param>

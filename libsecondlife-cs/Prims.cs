@@ -78,8 +78,8 @@ namespace libsecondlife
 
         public static float PathScaleFloat(byte pathScale)
         {
-            // Y = 1 - (X - 100) / 100
-            return 1.0F - (((float)pathScale - 100.0F) / 100.0F);
+            // ???
+            return (float)pathScale / 100.0F - 1.0F;
         }
 
 		public static byte PathTwistByte(float pathTwist)
@@ -187,16 +187,15 @@ namespace libsecondlife
             return 1.0F + (float)pathRevolutions * 0.015F;
         }
 
-		/*public static byte PathScaleByte(float pathSkew)
+		/*public static byte PathSkewByte(float pathSkew)
 		{
 			// Y = 256 + 100X
 			return PathShearByte(pathSkew);
-		}
+		}*/
 
-        public static float PathScaleFloat(byte pathSkew)
+        public static float PathSkewFloat(byte pathSkew)
         {
-            // Y = -1 + 0.01X
-            return -1.0F + (float)pathSkew + 0.01F;
+            return PathTaperFloat(pathSkew);
         }
 
 		public static byte PathTaperByte(float pathTaper)
@@ -207,7 +206,14 @@ namespace libsecondlife
 
         public static float PathTaperFloat(byte pathTaper)
         {
-            // Y = -1 + 0.01X
-        }*/
+            if (pathTaper > 100)
+            {
+                return (float)(256 - pathTaper) * 0.01F;
+            }
+            else
+            {
+                return (float)pathTaper * 0.01F;
+            }
+        }
 	}
 }
