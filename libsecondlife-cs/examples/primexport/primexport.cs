@@ -32,21 +32,20 @@ namespace primexport
 {
 	class primexport
 	{
-        static bool waiting = true;
-
 		//
         static void PrimSeen(Simulator simulator, PrimObject prim, U64 regionHandle, ushort timeDilation)
         {
             uint type = 0;
+            string output = "";
 
-            Console.WriteLine("<primitive name=\"Object\" description=\"\" key=\"Num_000" + prim.LocalID + "\" version=\"2\">");
-            Console.WriteLine("<states>\n" +
+            output += "<primitive name=\"Object\" description=\"\" key=\"Num_000" + prim.LocalID + "\" version=\"2\">\n";
+            output += "<states>\n" +
                 "<physics params=\"\">FALSE</physics>\n" +
                 "<temporary params=\"\">FALSE</temporary>\n" +
                 "<phantom params=\"\">FALSE</phantom>\n" +
-                "</states>");
-            Console.WriteLine("<properties>\n" +
-                "<levelofdetail val=\"9\" />");
+                "</states>\n";
+            output += "<properties>\n" +
+                "<levelofdetail val=\"9\" />\n";
 
             if (prim.ProfileCurve == 1 && prim.PathCurve == 16)
             {
@@ -72,51 +71,55 @@ namespace primexport
             {
                 type = 5;
             }
-            else if (prim.ProfileCurve == 3 && prim.PathCurve == 16)
+            else if (prim.ProfileCurve == 3 && prim.PathCurve == 32)
             {
                 type = 6;
             }
             else
             {
-                Console.WriteLine("Unhandled prim type, ProfileCurve=" + 
+                Console.WriteLine("Unhandled prim type, ProfileCurve=" +
                     prim.ProfileCurve + ", PathCurve=" + prim.PathCurve);
                 type = 0;
             }
 
-            Console.WriteLine("<type val=\"" + type +"\" />");
-            Console.WriteLine("<position x=\"" + prim.Position.X + 
+            output += "<type val=\"" + type + "\" />\n";
+            output += "<position x=\"" + prim.Position.X +
                 "\" y=\"" + prim.Position.Y +
-                "\" z=\"" + prim.Position.Z + "\" />");
-            Console.WriteLine("<rotation x=\"" + prim.Rotation.X + 
-                "\" y=\"" + prim.Rotation.Y + 
-                "\" z=\"" + prim.Rotation.Z + 
-                "\" s=\"" + prim.Rotation.S + "\" />");
-            Console.WriteLine("<size x=\"" + prim.Scale.X + 
-                "\" y=\"" + prim.Scale.Y + 
-                "\" z=\"" + prim.Scale.Z + "\" />");
-            // cut and dimple may be reversed
-            Console.WriteLine("<cut x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />");
-            Console.WriteLine("<dimple x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />");
-            Console.WriteLine("<advancedcut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />");
-            Console.WriteLine("<hollow val=\"" + prim.ProfileHollow + "\" />");
-            Console.WriteLine("<twist x=\"" + prim.PathTwistBegin + "\" y=\"" + prim.PathTwist + "\" />");
-            Console.WriteLine("<topsize x=\"" + prim.PathScaleX + "\" y=\"" + prim.PathScaleY + "\" />");
-            Console.WriteLine("<holesize x=\"" + prim.PathScaleX + "\" y=\"" + prim.PathScaleY + "\" />");
-            Console.WriteLine("<topshear x=\"" + prim.PathShearX + "\" y=\"" + prim.PathShearY + "\" />");
-            Console.WriteLine("<taper x=\"" + prim.PathTaperX + "\" y=\"" + prim.PathTaperY + "\" />");
-            Console.WriteLine("<revolutions val=\"" + prim.PathRevolutions + "\" />");
-            Console.WriteLine("<radiusoffset val=\"" + prim.PathRadiusOffset + "\" />");
-            Console.WriteLine("<skew val=\"" + prim.PathSkew + "\" />");
-            Console.WriteLine("<material val=\"" + prim.Material + "\" />");
+                "\" z=\"" + prim.Position.Z + "\" />\n";
+            output += "<rotation x=\"" + prim.Rotation.X +
+                "\" y=\"" + prim.Rotation.Y +
+                "\" z=\"" + prim.Rotation.Z +
+                "\" s=\"" + /* HACK: libsl doesn't set prim.Rotation.S +*/ "1.0\" />\n";
+            output += "<size x=\"" + prim.Scale.X +
+                "\" y=\"" + prim.Scale.Y +
+                "\" z=\"" + prim.Scale.Z + "\" />\n";
+            output += "<cut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />\n";
+            output += "<dimple x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />\n";
+            output += "<advancedcut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />\n";
+            output += "<hollow val=\"" + prim.ProfileHollow + "\" />\n";
+            output += "<twist x=\"" + prim.PathTwistBegin + "\" y=\"" + prim.PathTwist + "\" />\n";
+            output += "<topsize x=\"" + Math.Abs(prim.PathScaleX - 1.0F) + "\" y=\"" +
+                Math.Abs(prim.PathScaleY - 1.0F) + "\" />\n";
+            output += "<holesize x=\"" + (1.0F - prim.PathScaleX) + "\" y=\"" + (1.0F - prim.PathScaleY) + "\" />\n";
+            output += "<topshear x=\"" + prim.PathShearX + "\" y=\"" + prim.PathShearY + "\" />\n";
+            // prim.blender stores taper values a bit different than the SL network layer
+            output += "<taper x=\"" + Math.Abs(prim.PathScaleX - 1.0F) + "\" y=\"" +
+                Math.Abs(prim.PathScaleY - 1.0F) + "\" />\n";
+            output += "<revolutions val=\"" + prim.PathRevolutions + "\" />\n";
+            output += "<radiusoffset val=\"" + prim.PathRadiusOffset + "\" />\n";
+            output += "<skew val=\"" + prim.PathSkew + "\" />\n";
+            output += "<material val=\"" + prim.Material + "\" />\n";
             // TODO: Hollowshape. 16-21 = circle, 32-37 = square, 48-53 = triangle
-            Console.WriteLine("<hollowshape val=\"0\" />");
+            output += "<hollowshape val=\"0\" />\n";
 
-            Console.WriteLine("<textures params=\"\">\n" +
+            output += "<textures params=\"\">\n" +
                 "</textures>\n" +
                 "<scripts params=\"\">\n" +
                 "</scripts>\n" +
                 "</properties>\n" +
-                "</primitive>\n\n");
+                "</primitive>\n";
+
+            Console.WriteLine(output);
         }
 
 		/// <summary>
@@ -125,45 +128,8 @@ namespace primexport
 		[STAThread]
 		static void Main(string[] args)
 		{
-			SecondLife client;
-
-			if (args.Length < 3)
-			{
-				Console.WriteLine("Usage: primexport [firstname] [lastname] [password]");
-				return;
-			}
-
-			try
-			{
-				client = new SecondLife("keywords.txt", "protocol.txt");
-			}
-			catch (Exception e)
-			{
-				// Error initializing the client, probably missing file(s)
-				Console.WriteLine(e.ToString());
-				return;
-			}
-
-			// Register an event handler for new objects
-            client.Objects.OnNewPrim += new NewPrimCallback(PrimSeen);
-
-			// Setup the login values
-			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 50, 50, 50, "Win", "0", "primexport", "jhurliman@wsu.edu");
-
-			if (!client.Network.Login(loginParams))
-			{
-				// Login failed
-				Console.WriteLine("ERROR: " + client.Network.LoginError);
-				return;
-			}
-
-			while (waiting)
-			{
-				client.Tick();
-			}
-
-			client.Network.Logout();
+            frmPrimExport exportForm = new frmPrimExport();
+            exportForm.ShowDialog();
 		}
 	}
 }
