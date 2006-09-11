@@ -410,8 +410,9 @@ namespace libsecondlife
 				case FieldType.U8:
 					return byteArray[pos];
 				case FieldType.U16:
-				case FieldType.IPPORT:
                     return (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
+				case FieldType.IPPORT:
+                    return (ushort)((byteArray[pos] << 8) + byteArray[pos + 1]);
 				case FieldType.U32:
 					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
 						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
@@ -430,9 +431,9 @@ namespace libsecondlife
 						(byteArray[pos + 4] << 32) + (byteArray[pos + 5] << 40) +
 						(byteArray[pos + 6] << 48) + (byteArray[pos + 7] << 56));
 				case FieldType.F32:
-					return BitConverter.ToSingle(byteArray, pos); // FIXME
+					return BitConverter.ToSingle(byteArray, pos);
 				case FieldType.F64:
-					return BitConverter.ToDouble(byteArray, pos); // FIXME
+					return BitConverter.ToDouble(byteArray, pos);
 				case FieldType.LLUUID:
 					return new LLUUID(byteArray, pos);
 				case FieldType.BOOL:
