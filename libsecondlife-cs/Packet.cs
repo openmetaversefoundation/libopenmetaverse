@@ -286,27 +286,36 @@ namespace libsecondlife
 								}
 							}
 
-							if (fieldSize != 0)
-							{
-								if (pos + fieldSize <= length)
-								{
-									// Create a new field to add to the fields for this block
-									field = new Field();
-									field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
-									field.Layout = fieldMap;
+                            if (fieldSize != 0)
+                            {
+                                if (pos + fieldSize <= length)
+                                {
+                                    // Create a new field to add to the fields for this block
+                                    field = new Field();
+                                    field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+                                    field.Layout = fieldMap;
 
-									block.Fields.Add(field);
+                                    block.Fields.Add(field);
 
-									pos += fieldSize;
-								}
-								else
-								{
-                                    Console.WriteLine("WARNING: Blocks(): end of packet in " + fieldSize + 
-                                        "-byte variable field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name + 
+                                    pos += fieldSize;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("WARNING: Blocks(): end of packet in " + fieldSize +
+                                        "-byte variable field " + Layout.Name + "." + blockMap.Name + "." + fieldMap.Name +
                                         " (" + pos + "/" + length + ")");
-									goto BlockDone;
-								}
-							}
+                                    goto BlockDone;
+                                }
+                            }
+                            else
+                            {
+                                // Create a zero-length byte-array for this field
+                                field = new Field();
+                                field.Data = new byte[0];
+                                field.Layout = fieldMap;
+
+                                block.Fields.Add(field);
+                            }
 						}
 						else if (fieldMap.Type == FieldType.Fixed)
 						{
