@@ -301,7 +301,7 @@ namespace libsecondlife
                 // Parse the NameValue to see if this is actually an avatar
                 if (prim.LocalID != 0)
                 {
-                    if (prim.Name.Contains("FirstName"))
+                    if (prim.Name.IndexOf("FirstName") > -1)
                     {
                         avatar = new Avatar();
                         avatar.ID = prim.ID;
