@@ -35,7 +35,8 @@ namespace libsecondlife
     public delegate void AvatarMovedCallback(Simulator simulator, AvatarUpdate avatar, U64 regionHandle, ushort timeDilation);
 
     /// <summary>
-    /// 
+    /// Contains all of the variables sent in an object update packet for a 
+    /// prim object. Used to track position and movement of prims.
     /// </summary>
     public struct PrimUpdate
     {
@@ -49,7 +50,8 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Contains all of the variables sent in an object update packet for an 
+    /// avatar. Used to track position and movement of avatars.
     /// </summary>
     public struct AvatarUpdate
     {
@@ -64,16 +66,45 @@ namespace libsecondlife
     }
 
 	/// <summary>
-	/// Tracks all the objects (avatars and prims) in a region
+	/// Handles all network traffic related to prims and avatar positions and 
+    /// movement.
 	/// </summary>
 	public class ObjectManager
     {
+        /// <summary>
+        /// This event will be raised for every ObjectUpdate block that 
+        /// contains a new prim. Depending on the circumstances a client could 
+        /// receive two or more of these events for the same object, if you 
+        /// or the object left the current sim and returned for example. Client 
+        /// applications are responsible for tracking and storing objects.
+        /// </summary>
         public event NewPrimCallback OnNewPrim;
+
+        /// <summary>
+        /// This event will be raised for every ObjectUpdate block that 
+        /// contains a new avatar. Depending on the circumstances a client 
+        /// could receive two or more of these events for the same avatar, if 
+        /// you or the other avatar left the current sim and returned for 
+        /// example. Client applications are responsible for tracking and 
+        /// storing objects.
+        /// </summary>
         public event NewAvatarCallback OnNewAvatar;
+
+        /// <summary>
+        /// This event will be raised when a prim movement packet is received, 
+        /// containing the updated position, rotation, and movement-related 
+        /// vectors.
+        /// </summary>
         public event PrimMovedCallback OnPrimMoved;
+
+        /// <summary>
+        /// This event will be raised when an avatar movement packet is 
+        /// received, containing the updated position, rotation, and 
+        /// movement-related vectors.
+        /// </summary>
         public event AvatarMovedCallback OnAvatarMoved;
 
-        private SecondLife Client;
+        protected SecondLife Client;
 
         public ObjectManager(SecondLife client)
         {
@@ -81,6 +112,8 @@ namespace libsecondlife
 
             Client.Network.RegisterCallback("ObjectUpdate", new PacketCallback(UpdateHandler));
             Client.Network.RegisterCallback("ImprovedTerseObjectUpdate", new PacketCallback(TerseUpdateHandler));
+            Client.Network.RegisterCallback("ObjectUpdateCompressed", new PacketCallback(CompressedUpdateHandler));
+            Client.Network.RegisterCallback("ObjectUpdateCached", new PacketCallback(CachedUpdateHandler));
         }
 
         private void UpdateHandler(Packet packet, Simulator simulator)
@@ -242,6 +275,12 @@ namespace libsecondlife
                             {
                                 prim.Position = new LLVector3(data, 0);
                                 prim.Rotation = new LLQuaternion(data, 36);
+                                // Calculate the quaternion W value from the given X/Y/Z
+                                float xyzsum = 1.0F -
+                                    prim.Rotation.X * prim.Rotation.X -
+                                    prim.Rotation.Y * prim.Rotation.Y -
+                                    prim.Rotation.Z * prim.Rotation.Z;
+                                prim.Rotation.S = (xyzsum > 0.0F) ? (float)Math.Sqrt(xyzsum) : 0.0F;
                                 // TODO: Parse the rest of the fields
                             }
                             // TODO: Parse ObjectData for avatars
@@ -418,6 +457,16 @@ namespace libsecondlife
             }
         }
 
+        private void CompressedUpdateHandler(Packet packet, Simulator simulator)
+        {
+            Client.Log("Received an ObjectUpdateCompressed packet, length=" + packet.Data.Length, Helpers.LogLevel.Info);
+        }
+
+        private void CachedUpdateHandler(Packet packet, Simulator simulator)
+        {
+            Client.Log("Received an ObjectUpdateCached packet, length=" + packet.Data.Length, Helpers.LogLevel.Info);
+        }
+
         /// <summary>
         /// Takes a quantized 16-bit value from a byte array and its range and returns 
         /// a float representation of the continuous value. For example, a value of 
@@ -429,7 +478,7 @@ namespace libsecondlife
         /// <param name="lower">The lower quantization range</param>
         /// <param name="upper">The upper quantization range</param>
         /// <returns>A 32-bit floating point representation of the dequantized value</returns>
-        public static float Dequantize(byte[] byteArray, int pos, float lower, float upper)
+        private float Dequantize(byte[] byteArray, int pos, float lower, float upper)
         {
             ushort value = (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
             float QV = (float)value;
@@ -437,59 +486,5 @@ namespace libsecondlife
             float QF = range / 65536.0F;
             return (float)((QV * QF - (0.5F * range)) + QF);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="lower"></param>
-        /// <param name="upper"></param>
-        /// <param name="quanta"></param>
-        /// <returns></returns>
-        /*public static float Dequantize(byte value, float lower, float upper, float quanta)
-        {
-            float range = upper - lower;
-            return (float)value * quanta;
-        }*/
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rotation"></param>
-        /// <returns></returns>
-        /*public static LLQuaternion EulerToRot(LLVector3 rotation)
-        {
-            const float PIOVER180 = 0.017453292519943295F;
-            const float TOLERANCE = 0.00001F;
-
-            float p = rotation.X * PIOVER180 / 2.0F;
-            float y = rotation.Z * PIOVER180 / 2.0F;
-            float r = rotation.Y * PIOVER180 / 2.0F;
-
-            float sinp = (float)Math.Sin(p);
-            float siny = (float)Math.Sin(y);
-            float sinr = (float)Math.Sin(r);
-            float cosp = (float)Math.Cos(p);
-            float cosy = (float)Math.Cos(y);
-            float cosr = (float)Math.Cos(r);
-
-            float qx = sinr * cosp * cosy - cosr * sinp * siny;
-            float qy = cosr * sinp * cosy + sinr * cosp * siny;
-            float qz = cosr * cosp * siny - sinr * sinp * cosy;
-            float qs = cosr * cosp * cosy + sinr * sinp * siny;
-
-            // Don't normalize if we don't have to
-            float mag2 = qs * qs + qx * qx + qy * qy + qz * qz;
-            if (Math.Abs(mag2 - 1.0F) > TOLERANCE)
-            {
-                float mag = (float)Math.Sqrt(mag2);
-                qs /= mag;
-                qx /= mag;
-                qy /= mag;
-                qz /= mag;
-            }
-
-            return new LLQuaternion(qx, qy, qz, qs);
-        }*/
     }
 }
