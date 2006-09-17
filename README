@@ -1,0 +1,12 @@
+<insert real documentation here>
+
+The */*.build files in this tree are nAnt build files; to use them,
+download nAnt from nant.sourceforge.net and then run
+
+nant -projecthelp
+
+in any directory with a .build file to see available targets.
+
+For example, to build a nightly build: 
+
+nant package

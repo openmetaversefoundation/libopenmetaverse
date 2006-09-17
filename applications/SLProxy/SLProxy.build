@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+
+<project name="libsecondlife" default="build">
+
+  <!-- global framework settings -->
+  <property name="target.framework" value="${framework::get-target-framework()}" />
+  <property name="assembly.dir" value="${framework::get-assembly-directory(target.framework)}" />
+
+  <!-- global project settings -->
+  <xmlpeek
+    file="../../libsecondlife.build"
+    xpath="/project/property[@name = 'project.version']/@value"
+    property="project.version" />
+  <property name="build.number"
+     value="${math::abs(math::floor(timespan::get-total-days(datetime::now()
+     - datetime::parse('01/01/2002'))))}" />
+  <property name="assembly" value="SLProxy"/>
+  <property name="bin_dir"  value="../../bin" />
+
+  <!-- default configuration -->
+  <property name="project.config" value="debug" /> <!-- debug|release -->
+
+  <!-- named configurations -->
+  <target name="init" description="Initializes build properties">
+    <call target="${project.config}" />
+  </target>
+
+  <target name="debug" description="configures a debug build">
+    <property name="build.debug" value="true" />
+    <property name="package.name"
+	value="${project::get-name()}-${project.version}-${project.config}" />
+    <property name="assembly.configuration"
+      value="${framework::get-target-framework()}.${platform::get-name()} [${project.config}]" />
+  </target>
+
+  <target name="release" description="configures a release build">
+    <property name="project.config" value="release" />
+    <property name="build.debug" value="false" />
+    <property name="package.name"
+      value="${project::get-name()}-${project.version}" />
+    <property name="assembly.configuration"
+      value="${framework::get-target-framework()}.${platform::get-name()}" />
+  </target>
+
+  <!-- build tasks -->
+  <target name="build" depends="build-analyst build-chatconsole"
+     description="build analyst and chatconsole">
+  </target>
+
+  <target name="build-slproxy" depends="init"
+    description="Builds the binaries for the current configuration">
+    <echo message="Build Directory is ${bin_dir}/" />
+    <mkdir dir="${bin_dir}" failonerror="false" />
+    <csc
+      target="library"
+      debug="${build.debug}"
+      output="${bin_dir}/SLProxy.dll">
+      <sources failonempty="true">
+        <include name="SLProxy.cs" />
+      </sources>
+      <references basedir="${bin_dir}/">
+        <include name="libsecondlife.dll"/>
+      </references>
+    </csc>
+  </target>
+
+  <target name="build-analyst"
+    depends="init build-libsl-dll build-slproxy"
+    description="build SLProxy Analyst">
+    <echo message="Build Directory is ${bin_dir}/" />
+    <mkdir dir="${bin_dir}" failonerror="false" />
+    <csc
+      target="exe"
+      debug="${build.debug}"
+      output="${bin_dir}/Analyst.exe">
+      <sources failonempty="true">
+        <include name="Analyst.cs" />
+      </sources>
+      <references basedir="${bin_dir}/">
+        <include name="libsecondlife.dll"/>
+        <include name="SLProxy.dll"/>
+      </references>
+    </csc>
+  </target>
+
+  <target name="build-chatconsole"
+    depends="init build-libsl-dll build-slproxy"
+    description="build SLProxy ChatConsole">
+    <echo message="Build Directory is ${bin_dir}/" />
+    <mkdir dir="${bin_dir}" failonerror="false" />
+    <csc
+      target="exe"
+      debug="${build.debug}"
+      output="${bin_dir}/ChatConsole.exe">
+      <sources failonempty="true">
+        <include name="ChatConsole.cs" />
+      </sources>
+      <references basedir="${bin_dir}/">
+        <include name="libsecondlife.dll"/>
+        <include name="SLProxy.dll"/>
+      </references>
+    </csc>
+  </target>
+
+  <target name="build-libsl-dll" description="Builds libsecondlife dll">
+    <nant
+      buildfile="../../libsecondlife-cs/libsecondlife.build"
+      target="${project.config} build"/>
+  </target>
+
+  <target name="clean" depends="init"
+    description="Deletes the current configuration">
+    <delete failonerror="false">
+      <fileset basedir="${bin_dir}/">
+        <include name="SLProxy.dll" />
+        <include name="SLProxy.dll.mdb" />
+        <include name="ChatConsole.exe" />
+        <include name="ChatConsole.exe.mdb" />
+        <include name="Analyst.exe" />
+        <include name="Analyst.exe.mdb" />
+      </fileset>
+    </delete>
+  </target>
+
+  <target
+    name="*"
+    description="Handles unknown targets">
+    <echo message="skipping unknown target" />
+  </target>
+</project>
