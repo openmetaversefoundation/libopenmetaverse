@@ -47,7 +47,12 @@
     <echo message="building ${example_name}" />
     <csc target="exe" debug="${build.debug}" output="${bin_dir}/${example_name}.exe">
       <sources failonempty="true"><include name="${example_path}/*.cs"/></sources>
-      <references basedir="${bin_dir}/"> <include name="libsecondlife.dll"/></references>
+      <references basedir="${bin_dir}/"> 
+         <include name="libsecondlife.dll"/>
+         <include name="System.Data.dll" />
+         <include name="System.Drawing.dll" />
+         <include name="System.Windows.Forms.dll" />
+      </references>
     </csc>
   </target>
 
@@ -58,30 +63,27 @@
         </foreach>
   </target>
 
-  <target
-    name="build-dll"
-    description="Builds libsecondlife dll">
-    <nant
-      buildfile="../../libsecondlife.build"
+  <target name="clean" description="Clean all examples">
+    <foreach item="Folder" in="." property="example_path">
+	<call target="clean-examples" unless="${string::contains(example_path,'svn')}"/>
+    </foreach>
+  </target>
+
+  <target name="build-dll" description="Builds libsecondlife dll">
+    <nant buildfile="../../libsecondlife.build"
       target="${project.config} build-lib"/>
   </target>
 
-  <target
-    name="clean"
-    depends="init"
-    description="Deletes the current configuration">
+  <target name="clean-example" description="Deletes files for a given example">
+    <property name="example_name" value="${path::get-file-name(example_path)}" />
     <delete failonerror="false">
       <fileset basedir="${bin_dir}/">
-        <include name="${assembly}.exe" />
-        <include name="${assembly}.pdb" />
-        <include name="**/${assembly}.*.resources" />
+        <include name="${example_name}.*" />
       </fileset>
     </delete>
   </target>
 
-  <target
-    name="*"
-    description="Handles unknown targets">
+  <target name="*" description="Handles unknown targets">
     <echo message="skip" />
   </target>
 </project>

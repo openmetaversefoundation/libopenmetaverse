@@ -42,7 +42,7 @@
   </target>
 
   <!-- build tasks -->
-    <target name="build" description="compiles the source code">
+    <target name="build" depends="init" description="compiles the source code">
 	<mkdir dir="${bin_dir}" failonerror="false"/>
         <csc target="library" output="../bin/libsecondlife.dll" debug="${build.debug}">
             <sources> 

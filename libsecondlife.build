@@ -29,11 +29,12 @@
     <include name="libsecondlife-cs/*.build" />
   </fileset>
   <fileset id="examples">
-    <include name="libsecondlife-cs/examples/*/*.build" />
+    <include name="libsecondlife-cs/examples/examples.build" />
   </fileset>
 
   <!-- named configurations -->
   <target name="init" description="Initializes building properties">
+    <echo message="assembly.dir=${assembly.dir}" />
     <call target="${project.config}" />
   </target>
 
