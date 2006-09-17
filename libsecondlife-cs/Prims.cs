@@ -28,6 +28,9 @@ using System;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
 	public class PrimObject
 	{
 		public float PathTwistBegin = 0;
@@ -78,8 +81,8 @@ namespace libsecondlife
 
         public static float PathScaleFloat(byte pathScale)
         {
-            // ???
-            return (float)pathScale / 100.0F - 1.0F;
+            // Y = -1 + 0.01X
+            return (float)pathScale * 0.01F - 1.0F;
         }
 
 		public static byte PathTwistByte(float pathTwist)
@@ -187,11 +190,10 @@ namespace libsecondlife
             return 1.0F + (float)pathRevolutions * 0.015F;
         }
 
-		/*public static byte PathSkewByte(float pathSkew)
+		public static byte PathSkewByte(float pathSkew)
 		{
-			// Y = 256 + 100X
-			return PathShearByte(pathSkew);
-		}*/
+            return PathTaperByte(pathSkew);
+		}
 
         public static float PathSkewFloat(byte pathSkew)
         {

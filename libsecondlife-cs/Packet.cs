@@ -107,11 +107,32 @@ namespace libsecondlife
 		public MapBlock Layout;
 	}
 
+    /// <summary>
+    /// The Packet class is a wrapper around a raw UDP payload of a Second Life
+    /// message. It is used for both constructing outgoing packets and 
+    /// interpreting incoming packets.
+    /// </summary>
 	public class Packet
 	{
+        /// <summary>
+        /// This is the complete, raw UDP payload of an incoming or outgoing 
+        /// packet.
+        /// </summary>
 		public byte[] Data;
+
+        /// <summary>
+        /// The packet layout is built from the Second Life message template 
+        /// and describes all the blocks and fields of this packet. It is 
+        /// used to serialize and unserialize the packet data.
+        /// </summary>
 		public MapPacket Layout;
 
+        /// <summary>
+        /// Every Second Life message sent has an incremental sequence number 
+        /// that is used for tracking reliable packets and measuring packet 
+        /// loss. For outgoing packets the sequence number will be 
+        /// automatically set by the network layer as the packet is sent out.
+        /// </summary>
 		public ushort Sequence
 		{
 			get
@@ -128,8 +149,22 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// The TickCount is used for internally tracking packet timeouts, 
+        /// please do not use this member.
+        /// </summary>
+        public int TickCount;
+
 		private ProtocolManager Protocol;
 
+        /// <summary>
+        /// Constructor used for building a packet where the length of the data
+        /// is known in advance. This is being phased out in favor of 
+        /// pre-assembling the data or using PacketBuilder.BuildPacket().
+        /// </summary>
+        /// <param name="command">The name of the command in the message template</param>
+        /// <param name="protocol">A reference to the ProtocolManager instance</param>
+        /// <param name="length">The length of the packet data</param>
 		public Packet(string command, ProtocolManager protocol, int length)
 		{
 			Protocol = protocol;
@@ -138,8 +173,7 @@ namespace libsecondlife
 
 			if (Layout == null)
 			{
-				//Client.Log("Attempting to build a packet with invalid command \"" + command + "\"", 
-				//	Helpers.LogLevel.Error);
+				Console.WriteLine("Attempting to build a packet with invalid command \"" + command + "\"");
 
                 // Create an empty Layout
                 Layout = new MapPacket();
@@ -160,13 +194,14 @@ namespace libsecondlife
 
 					break;
 				case PacketFrequency.Medium:
-					// Set the medium frequency identifier bit
+					// Set the medium frequency identifier bits
 					byte[] mediumHeader = {0x00, 0x00, 0x00, 0x00, 0xFF};
 					Array.Copy(mediumHeader, 0, Data, 0, 5);
 					Data[5] = (byte)Layout.ID;
 
 					break;
 				case PacketFrequency.High:
+                    // Set the high frequency identifier bits
 					byte[] highHeader = {0x00, 0x00, 0x00, 0x00};
 					Array.Copy(highHeader, 0, Data, 0, 4);
 					Data[4] = (byte)Layout.ID;
@@ -175,10 +210,26 @@ namespace libsecondlife
 			}
 		}
 
-		public Packet(byte[] data, int length, ProtocolManager protocol) : this(data, length, protocol, protocol.Command(data), true)
-		{
-		}
+        /// <summary>
+        /// Constructor used to build a Packet object from incoming data.
+        /// </summary>
+        /// <param name="data">Byte array containing the full UDP payload</param>
+        /// <param name="length">Length of the actual data in the byte array</param>
+        /// <param name="protocol">A reference to the ProtocolManager instance</param>
+        public Packet(byte[] data, int length, ProtocolManager protocol)
+            : this(data, length, protocol, protocol.Command(data), true)
+        {
+        }
 
+        /// <summary>
+        /// This is a special constructor created specifically for optimizing 
+        /// SLProxy, do not use it under any circumstances.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="length"></param>
+        /// <param name="protocol"></param>
+        /// <param name="layout"></param>
+        /// <param name="copy"></param>
 		public Packet(byte[] data, int length, ProtocolManager protocol, MapPacket layout, bool copy)
 		{
 			Protocol = protocol;
@@ -203,6 +254,12 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// Unserializes packet data in to higher level representations 
+        /// and native C# data types.
+        /// </summary>
+        /// <returns>An ArrayList of all the Block objects in this packet,
+        /// each of which contain Field objects for each data field.</returns>
 		public ArrayList Blocks()
 		{
 			Field field;
@@ -292,7 +349,7 @@ namespace libsecondlife
                                 {
                                     // Create a new field to add to the fields for this block
                                     field = new Field();
-                                    field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+                                    field.Data = GetField(pos, fieldMap.Type, fieldSize);
                                     field.Layout = fieldMap;
 
                                     block.Fields.Add(field);
@@ -325,7 +382,7 @@ namespace libsecondlife
 							{
 								// Create a new field to add to the fields for this block
 								field = new Field();
-								field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+								field.Data = GetField(pos, fieldMap.Type, fieldSize);
 								field.Layout = fieldMap;
 
 								block.Fields.Add(field);
@@ -349,7 +406,7 @@ namespace libsecondlife
 								{
 									// Create a new field to add to the fields for this block
 									field = new Field();
-									field.Data = GetField(Data, pos, fieldMap.Type, fieldSize);
+									field.Data = GetField(pos, fieldMap.Type, fieldSize);
 									field.Layout = fieldMap;
 
 									block.Fields.Add(field);
@@ -376,22 +433,6 @@ namespace libsecondlife
 				return blocks;
 		}
 
-		public object Field(string name)
-		{
-			foreach (Block block in Blocks())
-			{
-				foreach (Field field in block.Fields)
-				{
-					if (field.Layout.Name == name)
-					{
-						return field.Data;
-					}
-				}
-			}
-
-			return null;
-		}
-
 		public override string ToString()
 		{
 			string output = "";
@@ -412,76 +453,76 @@ namespace libsecondlife
 			return output;
 		}
 
-		private object GetField(byte[] byteArray, int pos, FieldType type, int fieldSize)
+        private int HeaderLength()
+        {
+            switch (Layout.Frequency)
+            {
+                case PacketFrequency.High:
+                    return 5;
+                case PacketFrequency.Medium:
+                    return 6;
+                case PacketFrequency.Low:
+                    return 8;
+            }
+
+            return 0;
+        }
+
+		private object GetField(int pos, FieldType type, int fieldSize)
 		{
 			switch (type)
 			{
 				case FieldType.U8:
-					return byteArray[pos];
+					return Data[pos];
 				case FieldType.U16:
-                    return (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
+                    return (ushort)(Data[pos] + (Data[pos + 1] << 8));
 				case FieldType.IPPORT:
-                    return (ushort)((byteArray[pos] << 8) + byteArray[pos + 1]);
+                    return (ushort)((Data[pos] << 8) + Data[pos + 1]);
 				case FieldType.U32:
-					return (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
+					return (uint)(Data[pos] + (Data[pos + 1] << 8) +
+						(Data[pos + 2] << 16) + (Data[pos + 3] << 24));
 				case FieldType.U64:
-					return new U64(byteArray, pos);
+					return new U64(Data, pos);
 				case FieldType.S8:
-					return (sbyte)byteArray[pos];
+					return (sbyte)Data[pos];
 				case FieldType.S16:
-					return (short)(byteArray[pos] + (byteArray[pos + 1] << 8));
+					return (short)(Data[pos] + (Data[pos + 1] << 8));
 				case FieldType.S32:
-					return byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24);
+					return Data[pos] + (Data[pos + 1] << 8) +
+						(Data[pos + 2] << 16) + (Data[pos + 3] << 24);
 				case FieldType.S64:
-					return (long)(byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24) +
-						(byteArray[pos + 4] << 32) + (byteArray[pos + 5] << 40) +
-						(byteArray[pos + 6] << 48) + (byteArray[pos + 7] << 56));
+					return (long)(Data[pos] + (Data[pos + 1] << 8) +
+						(Data[pos + 2] << 16) + (Data[pos + 3] << 24) +
+						(Data[pos + 4] << 32) + (Data[pos + 5] << 40) +
+						(Data[pos + 6] << 48) + (Data[pos + 7] << 56));
 				case FieldType.F32:
-					return BitConverter.ToSingle(byteArray, pos);
+					return BitConverter.ToSingle(Data, pos);
 				case FieldType.F64:
-					return BitConverter.ToDouble(byteArray, pos);
+					return BitConverter.ToDouble(Data, pos);
 				case FieldType.LLUUID:
-					return new LLUUID(byteArray, pos);
+					return new LLUUID(Data, pos);
 				case FieldType.BOOL:
-					return (byteArray[pos] != 0) ? (bool)true : (bool)false;
+					return (Data[pos] != 0) ? (bool)true : (bool)false;
 				case FieldType.LLVector3:
-					return new LLVector3(byteArray, pos);
+					return new LLVector3(Data, pos);
 				case FieldType.LLVector3d:
-					return new LLVector3d(byteArray, pos);
+					return new LLVector3d(Data, pos);
 				case FieldType.LLVector4:
-					return new LLVector4(byteArray, pos);
+					return new LLVector4(Data, pos);
 				case FieldType.LLQuaternion:
-					return new LLQuaternion(byteArray, pos);
+					return new LLQuaternion(Data, pos);
 				case FieldType.IPADDR:
-					uint address = (uint)(byteArray[pos] + (byteArray[pos + 1] << 8) +
-						(byteArray[pos + 2] << 16) + (byteArray[pos + 3] << 24));
+					uint address = (uint)(Data[pos] + (Data[pos + 1] << 8) +
+						(Data[pos + 2] << 16) + (Data[pos + 3] << 24));
 					return new IPAddress(address);
 				case FieldType.Variable:
 				case FieldType.Fixed:
 					byte[] bytes = new byte[fieldSize];
-					Array.Copy(byteArray, pos, bytes, 0, fieldSize);
+					Array.Copy(Data, pos, bytes, 0, fieldSize);
 					return bytes;
 			}
 
 			return null;
-		}
-
-		public int HeaderLength()
-		{
-			switch (Layout.Frequency)
-			{
-				case PacketFrequency.High:
-					return 5;
-				case PacketFrequency.Medium:
-					return 6;
-				case PacketFrequency.Low:
-					return 8;
-			}
-
-			return 0;
 		}
 	}
 

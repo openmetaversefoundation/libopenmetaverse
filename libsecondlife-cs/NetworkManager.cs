@@ -38,7 +38,20 @@ using Nii.JSON;
 namespace libsecondlife
 {
 	public delegate void PacketCallback(Packet packet, Simulator simulator);
+    public delegate void SimDisconnected(Simulator simulator, DisconnectType reason);
+    public delegate void Disconnected(DisconnectType reason, string message);
 
+    public enum DisconnectType
+    {
+        ClientInitiated,
+        ServerInitiated,
+        NetworkTimeout
+    }
+
+    /// <summary>
+    /// This exception is thrown whenever a network operation is attempted 
+    /// without a network connection.
+    /// </summary>
 	public class NotConnectedException : ApplicationException { }
 
 	internal class AcceptAllCertificatePolicy : ICertificatePolicy
@@ -56,8 +69,50 @@ namespace libsecondlife
 		}
 	}
 
+    /// <summary>
+    /// Simulator is a wrapper for a network connection to a simulator and the
+    /// Region class representing the block of land in the metaverse.
+    /// </summary>
 	public class Simulator
 	{
+        /// <summary>
+        /// The Region class that this Simulator wraps
+        /// </summary>
+        public Region Region;
+
+        /// <summary>
+        /// The ID number associated with this particular connection to the 
+        /// simulator, used to emulate TCP connections. This is used 
+        /// internally for packets that have a CircuitCode field.
+        /// </summary>
+        public uint CircuitCode
+        {
+            get { return circuitCode; }
+        }
+
+        /// <summary>
+        /// The IP address and port of the server.
+        /// </summary>
+        public IPEndPoint IPEndPoint
+        {
+            get { return ipEndPoint; }
+        }
+
+        /// <summary>
+        /// A boolean representing whether there is a working connection to the
+        /// simulator or not.
+        /// </summary>
+        public bool Connected
+        {
+            get { return connected; }
+        }
+
+        /// <summary>
+        /// Used internally to track sim disconnections, do not modify this 
+        /// variable.
+        /// </summary>
+        public bool DisconnectCandidate;
+        
         private SecondLife Client;
 		private ProtocolManager Protocol;
 		private NetworkManager Network;
@@ -72,24 +127,9 @@ namespace libsecondlife
 		private SortedList Inbox;
 		private Mutex InboxMutex;
 		private bool connected;
-
 		private uint circuitCode;
 		private IPEndPoint ipEndPoint;
 		private EndPoint endPoint;
-
-		public uint CircuitCode
-		{
-			get { return circuitCode; }
-		}
-		public IPEndPoint IPEndPoint
-		{
-			get { return ipEndPoint; }
-		}
-		public bool Connected
-		{
-			get { return connected; }
-		}
-		public Region Region;
 
 		public Simulator(SecondLife client, Hashtable callbacks, uint circuit, 
 			IPAddress ip, int port)
@@ -110,6 +150,7 @@ namespace libsecondlife
 			RecvBuffer = new byte[2048];
 			Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 			connected = false;
+            DisconnectCandidate = false;
 
 			// Initialize the hashtable for reliable packets waiting on ACKs from the server
 			NeedAck = new Hashtable();
@@ -144,6 +185,7 @@ namespace libsecondlife
 				SendPacket(packet, true);
 
 				// Track the current time for timeout purposes
+                // TODO: Replace the DateTime with Environment.TickCount for uniformity
 				DateTime start = DateTime.Now;
 				TimeSpan timeTaken;
 
@@ -163,21 +205,30 @@ namespace libsecondlife
 
 		public void Disconnect()
 		{
-			try
-			{
-				connected = false;
-
-				// Send the CloseCircuit notice
-				Packet packet = new Packet("CloseCircuit", Protocol, 8);
-				Connection.Send(packet.Data);
-
-				// Shut the socket communication down
-				Connection.Shutdown(SocketShutdown.Both);
+			// Send the CloseCircuit notice
+			Packet packet = new Packet("CloseCircuit", Protocol, 8);
+			
+            try
+            {
+                Connection.Send(packet.Data);
 			}
-			catch (Exception e)
+			catch (SocketException)
 			{
-				Client.Log(e.ToString(), Helpers.LogLevel.Error);
+				// There's a high probability of this failing if the network is
+                // disconnected, so don't even bother logging the error
 			}
+
+            try
+            {
+                // Shut the socket communication down
+                Connection.Shutdown(SocketShutdown.Both);
+            }
+            catch (SocketException e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+
+            connected = false;
 		}
 
 		public void SendPacket(Packet packet, bool incrementSequence)
@@ -193,70 +244,85 @@ namespace libsecondlife
 				throw new NotConnectedException();
 			}
 
-			try
+            // Keep track of when this packet was sent out
+            packet.TickCount = Environment.TickCount;
+
+			if (incrementSequence)
 			{
-				if (incrementSequence)
-				{
-					if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
-					{
-						NeedAckMutex.WaitOne();
-						if (!NeedAck.ContainsKey(packet))
-						{
-							// This packet needs an ACK, keep track of when it was sent out
-							NeedAck.Add(packet, Environment.TickCount);
-						}
-						NeedAckMutex.ReleaseMutex();
-					}
+                // Set the sequence number here since we are manually serializing the packet
+                packet.Sequence = ++Sequence;
 
-					// Set the sequence number here since we are manually serializing the packet
-					packet.Sequence = ++Sequence;
-				}
-
-				// Zerocode if needed
-				if ((packet.Data[0] & Helpers.MSG_ZEROCODED) != 0)
-				{
-					byte[] zeroBuffer = new byte[4096];
-					bytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
-					buffer = zeroBuffer;
-				}
-				else
-				{
-					// Normal packet, no zerocoding required
-					buffer = packet.Data;
-					bytes = buffer.Length;
-				}
-
-				// Append any ACKs that need to be sent out to this packet
-				/*if (AckOutbox.Count != 0 && incrementSequence && 
-					packet.Layout.Name != "PacketAck" && 
-					packet.Layout.Name != "LogoutRequest")
-				{
-					// Claim the mutex on the AckOutbox
-					AckOutboxMutex.WaitOne();
-
-					// Append each ACK needing to be sent out to this packet
-					foreach (uint ack in AckOutbox)
-					{
-						Array.Copy(BitConverter.GetBytes(ack), 0, zeroBuffer, zeroBytes, 4);
-						zeroBytes += 4;
-					}
-
-					// Last byte is the number of ACKs
-					zeroBuffer[zeroBytes] = (byte)AckOutbox.Count;
-					zeroBytes += 1;
-
-					AckOutbox.Clear();
-
-					// Release the mutex
-					AckOutboxMutex.ReleaseMutex();
-
-					// Set the flag that this packet has ACKs appended to it
-					zeroBuffer[0] += Helpers.MSG_APPENDED_ACKS;
-				}*/
-
-				Connection.Send(buffer, bytes, SocketFlags.None);
+				if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+                {
+                    #region NeedAckMutex
+                    NeedAckMutex.WaitOne();
+                    if (!NeedAck.ContainsKey(packet.Sequence))
+                    {
+                        NeedAck.Add(packet.Sequence, packet);
+                    }
+                    else
+                    {
+                        Client.Log("Attempted to add a duplicate sequence number (" + 
+                            packet.Sequence + ") to the NeedAck hashtable for packet type " +
+                            packet.Layout.Name, Helpers.LogLevel.Warning);
+                    }
+					NeedAckMutex.ReleaseMutex();
+                    #endregion NeedAckMutex
+                }
 			}
-			catch (Exception e)
+
+			// Zerocode if needed
+			if ((packet.Data[0] & Helpers.MSG_ZEROCODED) != 0)
+			{
+				byte[] zeroBuffer = new byte[4096];
+				bytes = Helpers.ZeroEncode(packet.Data, packet.Data.Length, zeroBuffer);
+				buffer = zeroBuffer;
+			}
+			else
+			{
+				// Normal packet, no zerocoding required
+				buffer = packet.Data;
+				bytes = buffer.Length;
+            }
+
+            #region AppendACKS
+            // Append any ACKs that need to be sent out to this packet
+            /*if (AckOutbox.Count != 0 && incrementSequence && 
+                packet.Layout.Name != "PacketAck" && 
+                packet.Layout.Name != "LogoutRequest")
+            {
+                // Claim the mutex on the AckOutbox
+                #region AckOutboxMutex
+                AckOutboxMutex.WaitOne();
+
+                // Append each ACK needing to be sent out to this packet
+                foreach (uint ack in AckOutbox)
+                {
+                    // FIXME: The ack must be little-endian, I don't think BitConverter will work
+                    Array.Copy(BitConverter.GetBytes(ack), 0, buffer, bytes, 4);
+                    bytes += 4;
+                }
+                
+                // Last byte is the number of ACKs
+                buffer[bytes] = (byte)AckOutbox.Count;
+                bytes += 1;
+                
+                AckOutbox.Clear();
+                
+                // Release the mutex
+                AckOutboxMutex.ReleaseMutex();
+                #endregion AckOutboxMutex
+                
+                // Set the flag that this packet has ACKs appended to it
+                buffer[0] += Helpers.MSG_APPENDED_ACKS;
+            }*/
+            #endregion AppendACKS
+
+            try
+            {
+                Connection.Send(buffer, bytes, SocketFlags.None);
+			}
+			catch (SocketException e)
 			{
 				Client.Log(e.ToString(), Helpers.LogLevel.Error);
 			}
@@ -286,12 +352,16 @@ namespace libsecondlife
 		{
 			Packet packet;
 
-			try
-			{
-				RecvBufferMutex.WaitOne();
+            // If we're receiving data the sim connection is open
+            connected = true;
 
-				// If we're receiving data the sim connection is open
-				connected = true;
+			try
+            {
+                #region RecvBufferMutex
+                RecvBufferMutex.WaitOne();
+
+                // Update the disconnect flag so this sim doesn't time out
+                DisconnectCandidate = false;
 
 				// Retrieve the incoming packet
 				int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
@@ -303,30 +373,22 @@ namespace libsecondlife
 
 					Client.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
-					NeedAckMutex.WaitOne();
+                    #region NeedAckMutex
+                    NeedAckMutex.WaitOne();
 					for (int i = 1; i <= numAcks; ++i)
 					{
-						ushort ack = (ushort)BitConverter.ToUInt32(RecvBuffer, numBytes - i * 4 - 1);
-
-					Beginning:
-						ICollection reliablePackets = NeedAck.Keys;
-
-						foreach (Packet reliablePacket in reliablePackets)
-						{
-							if (reliablePacket.Sequence == ack)
-							{
-								NeedAck.Remove(reliablePacket);
-								goto Beginning;
-							}
-						}
+						ushort ack = (ushort)BitConverter.ToUInt32(RecvBuffer, (numBytes - i * 4) - 1);
+                        NeedAck.Remove(ack);
 					}
 					NeedAckMutex.ReleaseMutex();
+                    #endregion NeedAckMutex
 
-					// Adjust the packet length
-					numBytes = numBytes - numAcks * 4 - 1;
+                    // Adjust the packet length
+					numBytes = (numBytes - numAcks * 4) - 1;
 				}
 
 				// Zerodecode this packet if necessary
+                // TODO: It would be nice if the Packet constructor transparently handled zerodecoding
 				if ((RecvBuffer[0] & Helpers.MSG_ZEROCODED) != 0)
 				{
 					// Allocate a temporary buffer for the zerocoded packet
@@ -343,7 +405,9 @@ namespace libsecondlife
 
 				// Start listening again since we're done with RecvBuffer
 				Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+
 				RecvBufferMutex.ReleaseMutex();
+                #endregion RecvBufferMutex
 
                 if (packet.Layout.Name == "")
                 {
@@ -359,8 +423,9 @@ namespace libsecondlife
 					// TODO: If we can make it stable, go back to the periodic ACK system
 					SendACK((uint)packet.Sequence);
 
-					// Check if we already received this packet
-					InboxMutex.WaitOne();
+                    // Check if we already received this packet
+                    #region InboxMutex
+                    InboxMutex.WaitOne();
 					if (Inbox.Contains(packet.Sequence))
 					{
 						Client.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" +
@@ -374,9 +439,10 @@ namespace libsecondlife
 					}
 					else
 					{
-						Inbox.Add(packet.Sequence, packet);
-					}
-					InboxMutex.ReleaseMutex();
+                        Inbox.Add(packet.Sequence, packet.Sequence);
+                    }
+                    #endregion InboxMutex
+                    InboxMutex.ReleaseMutex();
 				}
 
 				if (packet.Layout.Name == null)
@@ -390,26 +456,16 @@ namespace libsecondlife
 					// the NeedAck hashtable and its mutex
 					ArrayList blocks = packet.Blocks();
 
-					NeedAckMutex.WaitOne();
+                    #region NeedAckMutex
+                    NeedAckMutex.WaitOne();
 					foreach (Block block in blocks)
 					{
-						foreach (Field field in block.Fields)
-						{
-							ICollection reliablePackets = NeedAck.Keys;
-
-							// Remove this packet if it exists
-							foreach (Packet reliablePacket in reliablePackets)
-							{
-								if ((uint)reliablePacket.Sequence == (uint)field.Data)
-								{
-									NeedAck.Remove(reliablePacket);
-									break;
-								}
-							}
-						}
+                        Field ID = (Field)block.Fields[0];
+                        NeedAck.Remove((ushort)(uint)ID.Data);
 					}
 					NeedAckMutex.ReleaseMutex();
-				}
+                    #endregion NeedAckMutex
+                }
 
 				if (Callbacks.ContainsKey(packet.Layout.Name))
 				{
@@ -437,27 +493,84 @@ namespace libsecondlife
 						}
 					}
 				}
+
+                // Erase this packet from memory
+                packet = null;
 			}
 			catch (Exception e)
 			{
 				Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Client.Log("One or more mutexes may be deadlocked", Helpers.LogLevel.Warning);
 			}
 		}
 	}
 
+    /// <summary>
+    /// NetworkManager is responsible for managing the network layer of 
+    /// libsecondlife. It tracks all the server connections, serializes 
+    /// outgoing traffic and deserializes incoming traffic, and provides
+    /// instances of delegates for network-related events.
+    /// </summary>
 	public class NetworkManager
 	{
+        /// <summary>
+        /// The permanent UUID for the logged in avatar
+        /// </summary>
 		public LLUUID AgentID;
+
+        /// <summary>
+        /// A temporary UUID assigned to this session, used for secure 
+        /// transactions
+        /// </summary>
 		public LLUUID SessionID;
+
+        /// <summary>
+        /// A string holding a descriptive error on login failure, empty
+        /// otherwise
+        /// </summary>
 		public string LoginError;
+
+        /// <summary>
+        /// The simulator that the logged in avatar is currently occupying
+        /// </summary>
 		public Simulator CurrentSim;
+
+        /// <summary>
+        /// The complete hashtable of all the login values returned by the 
+        /// RPC login server, converted to native data types wherever possible
+        /// </summary>
 		public Hashtable LoginValues;
+
+        /// <summary>
+        /// Shows whether the network layer is logged in to the grid or not
+        /// </summary>
+        public bool Connected
+        {
+            get
+            {
+                return connected;
+            }
+        }
+
+        /// <summary>
+        /// An event for the connection to a simulator other than the currently
+        /// occupied one disconnecting
+        /// </summary>
+        public SimDisconnected OnSimDisconnected;
+
+        /// <summary>
+        /// An event for being logged out either through client request, server
+        /// forced, or network error
+        /// </summary>
+        public Disconnected OnDisconnected;
 
 		private Hashtable Callbacks;
 		private SecondLife Client;
 		private ProtocolManager Protocol;
 		private ArrayList Simulators;
 		private Mutex SimulatorsMutex;
+        private System.Timers.Timer DisconnectTimer;
+        private bool connected;
 
 		public NetworkManager(SecondLife client, ProtocolManager protocol)
 		{
@@ -474,6 +587,11 @@ namespace libsecondlife
 			RegisterCallback("StartPingCheck", new PacketCallback(StartPingCheckHandler));
 			RegisterCallback("ParcelOverlay",  new PacketCallback(ParcelOverlayHandler));
 			RegisterCallback("EnableSimulator",  new PacketCallback(EnableSimulatorHandler));
+            RegisterCallback("KickUser", new PacketCallback(KickUserHandler));
+
+            // Disconnect a sim if no network traffic has been received for 15 seconds
+            DisconnectTimer = new System.Timers.Timer(15000);
+            DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
 		}
 
 		public void RegisterCallback(string packet, PacketCallback callback)
@@ -699,114 +817,165 @@ namespace libsecondlife
 			Packet packet = Packets.Sim.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
 			SendPacket(packet, simulator);
 
+            DisconnectTimer.Start();
+            connected = true;
 			return true;
 		}
 
-		public bool Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault)
+		public Simulator Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault)
 		{
-			Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode,
-				ip, (int)port);
+			Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode, ip, (int)port);
 
 			if (!simulator.Connected)
 			{
-				return false;
-			}
+                simulator = null;
+				return null;
+            }
 
-			SimulatorsMutex.WaitOne();
+            #region SimulatorsMutex
+            SimulatorsMutex.WaitOne();
 			Simulators.Add(simulator);
 			SimulatorsMutex.ReleaseMutex();
+            #endregion SimulatorsMutex
 
-			if (setDefault)
+            if (setDefault)
 			{
 				CurrentSim = simulator;
 			}
 
-			return true;
-		}
-
-		public void Disconnect(Simulator simulator)
-		{
-			// FIXME: Properly handle disconnects
-			/*
-			if (circuit == CurrentCircuit)
-			{
-				Client.Log("Disconnecting simulator " + simulator.IPEndPoint.ToString(), Helpers.LogLevel.Info);
-
-				circuit.CloseCircuit();
-
-				CircuitsMutex.WaitOne();
-				Circuits.Remove(circuit);
-				if (Circuits.Count > 0)
-				{
-					CurrentCircuit = (Circuit)Circuits[0];
-					Client.Log("Switched current simulator to " + CurrentCircuit.ipEndPoint.ToString(), 
-						Helpers.LogLevel.Info);
-				}
-				else
-				{
-					Client.Log("Last circuit disconnected, no open connections left", Helpers.LogLevel.Info);
-					CurrentCircuit = null;
-				}
-				CircuitsMutex.ReleaseMutex();
-
-				return;
-			}
-			else
-			{
-				Client.Log("Disconnecting circuit " + circuit.ipEndPoint.ToString(), Helpers.LogLevel.Info);
-
-				circuit.CloseCircuit();
-				CircuitsMutex.WaitOne();
-				Circuits.Remove(circuit);
-				CircuitsMutex.ReleaseMutex();
-				return;
-			}
-
-			//Client.Log("Disconnect called with invalid circuit code " + circuitCode, Helpers.LogLevel.Warning);
-			*/
+            DisconnectTimer.Start();
+            connected = true;
+			return simulator;
 		}
 
 		public void Logout()
-		{
-			try
-			{
-			Beginning:
-				// Disconnect all simulators except the current one
-				SimulatorsMutex.WaitOne();
-				if (Simulators.Count > 1)
-				{
-					foreach (Simulator simulator in Simulators)
-					{
-						if (simulator.CircuitCode != CurrentSim.CircuitCode)
-						{
-							Disconnect(simulator);
-							goto Beginning;
-						}
-					}
-				}
+        {
+            // This will catch a Logout when the client is not logged in
+            if (CurrentSim == null)
+            {
+                throw new NotConnectedException();
+            }
 
-				Packet packet = Packets.Network.LogoutRequest(Protocol, AgentID, SessionID);
-				CurrentSim.SendPacket(packet, true);
+            DisconnectTimer.Stop();
+            connected = false;
 
-				Simulators.Clear();
-				CurrentSim = null;
-				SimulatorsMutex.ReleaseMutex();
+            // Send a logout request to the current sim
+			Packet packet = Packets.Network.LogoutRequest(Protocol, AgentID, SessionID);
+			CurrentSim.SendPacket(packet, true);
 
-				// TODO: We should probably check if the server actually received the logout request
-				// Instead we'll use this silly Sleep() to keep from accidentally flooding the login server
-				System.Threading.Thread.Sleep(1000);
-			}
-			catch (Exception e)
-			{
-				Client.Log("Logout error: " + e.ToString(), Helpers.LogLevel.Error);
-			}
+            // TODO: We should probably check if the server actually received the logout request
+            
+            // Shutdown the network layer
+            Shutdown();
+
+            if (OnDisconnected != null)
+            {
+                OnDisconnected(DisconnectType.ClientInitiated, "");
+            }
 		}
+
+        /// <summary>
+        /// Shutdown will disconnect all the sims except for the current sim
+        /// first, and then kill the connection to CurrentSim.
+        /// </summary>
+        private void Shutdown()
+        {
+            #region SimulatorsMutex
+            SimulatorsMutex.WaitOne();
+
+            // Disconnect all simulators except the current one
+            foreach (Simulator simulator in Simulators)
+            {
+                // Don't disconnect the current sim, we'll use LogoutRequest for that
+                if (simulator != CurrentSim)
+                {
+                    simulator.Disconnect();
+
+                    // Fire the SimDisconnected event if a handler is registered
+                    if (OnSimDisconnected != null)
+                    {
+                        OnSimDisconnected(simulator, DisconnectType.NetworkTimeout);
+                    }
+                }
+            }
+
+            Simulators.Clear();
+            SimulatorsMutex.ReleaseMutex();
+            #endregion SimulatorsMutex
+
+            CurrentSim.Disconnect();
+            CurrentSim = null;
+        }
+
+        private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+        Beginning:
+
+            foreach (Simulator sim in Simulators)
+            {
+                if (sim.DisconnectCandidate == true)
+                {
+                    if (sim == CurrentSim)
+                    {
+                        Client.Log("Network timeout for the current simulator (" +
+                            sim.Region.Name + "), logging out", Helpers.LogLevel.Warning);
+
+                        DisconnectTimer.Stop();
+                        connected = false;
+
+                        // Shutdown the network layer
+                        Shutdown();
+
+                        if (OnDisconnected != null)
+                        {
+                            OnDisconnected(DisconnectType.NetworkTimeout, "");
+                        }
+
+                        // We're completely logged out and shut down, leave this function
+                        return;
+                    }
+                    else
+                    {
+                        // This sim hasn't received any network traffic since the 
+                        // timer last elapsed, consider it disconnected
+                        Client.Log("Network timeout for simulator " + sim.Region.Name +
+                            ", disconnecting", Helpers.LogLevel.Warning);
+                        sim.Disconnect();
+
+                        // Fire the SimDisconnected event if a handler is registered
+                        if (OnSimDisconnected != null)
+                        {
+                            OnSimDisconnected(sim, DisconnectType.NetworkTimeout);
+                        }
+
+                        Simulators.Remove(sim);
+
+                        // Reset the iterator since we removed an element
+                        goto Beginning;
+                    }
+                }
+                else
+                {
+                    sim.DisconnectCandidate = true;
+                }
+            }
+        }
 
 		private void StartPingCheckHandler(Packet packet, Simulator simulator)
 		{
-			// Respond to the ping request
-			Packet pingPacket = Packets.Network.CompletePingCheck(Protocol, (byte)packet.Field("PingID"));
-			SendPacket(pingPacket, simulator);
+            foreach (Block block in packet.Blocks())
+            {
+                foreach (Field field in block.Fields)
+                {
+                    if (field.Layout.Name == "PingID")
+                    {
+                        // Respond to the ping request
+                        Packet pingPacket = Packets.Network.CompletePingCheck(Protocol, (byte)field.Data);
+                        SendPacket(pingPacket, simulator);
+                        return;
+                    }
+                }
+            }
 		}
 
 		private void RegionHandshakeHandler(Packet packet, Simulator simulator)
@@ -949,20 +1118,15 @@ namespace libsecondlife
 
 				if (simulator.Region.ParcelOverlaysReceived > 3)
 				{
-					simulator.Region.ParcelOverlaysReceived = 0;
+					//simulator.Region.ParcelOverlaysReceived = 0;
 					Client.Log("Finished building the " + simulator.Region.Name + " parcel overlay", 
 						Helpers.LogLevel.Info);
-
-					// The int i = 0; is just there so I could break on it and check the 
-					// value of debug
-					//int[,] debug = Region.ParcelOverlayToParcels(Client.CurrentRegion);
-					//int i = 0;
 				}
 			}
 			else
 			{
 				Client.Log("Parcel overlay with sequence ID of " + sequenceID + " received from " + 
-					simulator.Region.Name, Helpers.LogLevel.Error);
+					simulator.Region.Name, Helpers.LogLevel.Warning);
 			}
 		}
 
@@ -976,5 +1140,29 @@ namespace libsecondlife
 			//Packet replyPacket = Packets.Network.ConfirmEnableSimulator(Protocol, AgentID, SessionID);
 			//SendPacket(replyPacket, circuit);
 		}
+
+        private void KickUserHandler(Packet packet, Simulator simulator)
+        {
+            string message = "";
+
+            foreach (Block block in packet.Blocks())
+            {
+                foreach (Field field in block.Fields)
+                {
+                    if (field.Layout.Name == "Reason")
+                    {
+                        message = Helpers.FieldToString(field.Data);
+                    }
+                }
+            }
+
+            // Shutdown the network layer
+            Shutdown();
+
+            if (OnDisconnected != null)
+            {
+                OnDisconnected(DisconnectType.ServerInitiated, message);
+            }
+        }
 	}
 }

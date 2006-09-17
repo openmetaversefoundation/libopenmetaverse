@@ -439,21 +439,28 @@ namespace libsecondlife
                 avupdate.Rotation = Rotation;
                 avupdate.RotationVelocity = RotationVelocity;
 
-                /*Client.Log("AVATAR: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() + 
-                    ", CollisionPlane: " + CollisionPlane.ToString() + ", Velocity: " + Velocity.ToString() + 
-                    ", Acceleration: " + Acceleration.ToString() + ", Rotation: " + Rotation.ToString() + 
-                    ", RotationVelocity: " + RotationVelocity.ToString(), Helpers.LogLevel.Info);*/
-
                 // If an event handler is registered call it
+                if (OnAvatarMoved != null)
+                {
+                    OnAvatarMoved(simulator, avupdate, regionHandle, timeDilation);
+                }
             }
             else
             {
-                /*Client.Log("PRIM: LocalID: " + localid + ", State: " + state + ", Position: " + Position.ToString() +
-                    ", Velocity: " + Velocity.ToString() + ", Acceleration: " + Acceleration.ToString() + 
-                    ", Rotation: " + Rotation.ToString() + ", RotationVelocity: " + RotationVelocity.ToString(), 
-                    Helpers.LogLevel.Info);*/
+                PrimUpdate primupdate = new PrimUpdate();
+                primupdate.LocalID = localid;
+                primupdate.State = state;
+                primupdate.Position = Position;
+                primupdate.Velocity = Velocity;
+                primupdate.Acceleration = Acceleration;
+                primupdate.Rotation = Rotation;
+                primupdate.RotationVelocity = RotationVelocity;
 
                 // If an event handler is registered call it
+                if (OnPrimMoved != null)
+                {
+                    OnPrimMoved(simulator, primupdate, regionHandle, timeDilation);
+                }
             }
         }
 

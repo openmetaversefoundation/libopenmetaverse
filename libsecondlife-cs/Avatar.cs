@@ -604,7 +604,7 @@ namespace libsecondlife
                     }
                 }
 
-                if (Client.Network.Connect(ip, port, Client.Network.CurrentSim.CircuitCode, true))
+                if (Client.Network.Connect(ip, port, Client.Network.CurrentSim.CircuitCode, true) != null)
                 {
                     // Move the avatar in to this sim
                     Packet movePacket = Packets.Sim.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
