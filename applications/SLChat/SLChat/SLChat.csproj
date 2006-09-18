@@ -127,13 +127,5 @@
     </EmbeddedResource>
     <Compile Include="Core\PrefsManager.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="keywords.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="protocol.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

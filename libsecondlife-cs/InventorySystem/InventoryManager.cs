@@ -362,7 +362,11 @@ namespace libsecondlife.InventorySystem
 					// while still enumerating it.
 					ArrayList alRestartList = new ArrayList();
 
-					Console.WriteLine( htFolderDownloadStatus[0].GetType() );
+                    if (htFolderDownloadStatus[0] != null)
+                    {
+                        Console.WriteLine(htFolderDownloadStatus[0].GetType());
+                    }
+
 					foreach( DescendentRequest dr in htFolderDownloadStatus )
 					{
 						Console.WriteLine( dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceived );
@@ -449,11 +453,11 @@ namespace libsecondlife.InventorySystem
 						{
 							case "Name":
 								invItem._Name = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
-								invItem._Name = invItem.Name.Substring(0,invItem.Name.Length-1);
+                                invItem._Name = invItem.Name.Replace("\0", "");
 								break;
 							case "Description":
 								invItem._Description = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
-								invItem._Description = invItem.Description.Substring(0,invItem.Description.Length-1);
+                                invItem._Description = invItem.Description.Replace("\0", "");
 								break;
 
 							case "InvType":
@@ -566,7 +570,7 @@ namespace libsecondlife.InventorySystem
 						{
 							case "Name":
 								name = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
-								name = name.Substring(0,name.Length-1);
+                                name = name.Replace("\0", "");
 								break;
 							case "FolderID":
 								folderid = new LLUUID(field.Data.ToString());

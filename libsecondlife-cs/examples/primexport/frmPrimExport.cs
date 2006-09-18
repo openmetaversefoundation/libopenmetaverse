@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -144,7 +143,6 @@ namespace primexport
             this.cmdCapture.Size = new System.Drawing.Size(560, 49);
             this.cmdCapture.TabIndex = 52;
             this.cmdCapture.Text = "Start Capture";
-            this.cmdCapture.UseVisualStyleBackColor = true;
             this.cmdCapture.Click += new System.EventHandler(this.cmdCapture_Click);
             // 
             // txtLog
@@ -158,8 +156,6 @@ namespace primexport
             // 
             // frmPrimExport
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(587, 299);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.cmdCapture);
@@ -187,7 +183,7 @@ namespace primexport
 
             try
             {
-                client = new SecondLife("keywords.txt", "protocol.txt");
+                client = new SecondLife("keywords.txt", "message_template.msg");
                 grpLogin.Enabled = true;
             }
             catch (Exception error)
@@ -271,12 +267,22 @@ namespace primexport
             output += "<rotation x=\"" + prim.Rotation.X +
                 "\" y=\"" + prim.Rotation.Y +
                 "\" z=\"" + prim.Rotation.Z +
-                "\" s=\"" + /* HACK: libsl doesn't set prim.Rotation.S +*/ "1.0\" />" + Environment.NewLine;
+                "\" s=\"" + prim.Rotation.S + "\" />" + Environment.NewLine;
             output += "<size x=\"" + prim.Scale.X +
                 "\" y=\"" + prim.Scale.Y +
                 "\" z=\"" + prim.Scale.Z + "\" />" + Environment.NewLine;
-            output += "<cut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
-            output += "<dimple x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />" + Environment.NewLine;
+            
+            if (type == 1)
+            {
+                output += "<cut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
+                output += "<dimple x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />" + Environment.NewLine;
+            }
+            else
+            {
+                output += "<cut x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />" + Environment.NewLine;
+                output += "<dimple x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
+            }
+            
             output += "<advancedcut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
             output += "<hollow val=\"" + prim.ProfileHollow + "\" />" + Environment.NewLine;
             output += "<twist x=\"" + prim.PathTwistBegin + "\" y=\"" + prim.PathTwist + "\" />" + Environment.NewLine;
@@ -285,8 +291,8 @@ namespace primexport
             output += "<holesize x=\"" + (1.0F - prim.PathScaleX) + "\" y=\"" + (1.0F - prim.PathScaleY) + "\" />" + Environment.NewLine;
             output += "<topshear x=\"" + prim.PathShearX + "\" y=\"" + prim.PathShearY + "\" />" + Environment.NewLine;
             // prim.blender stores taper values a bit different than the SL network layer
-            output += "<taper x=\"" + Math.Abs(prim.PathScaleX - 1.0F) + "\" y=\"" +
-                Math.Abs(prim.PathScaleY - 1.0F) + "\" />" + Environment.NewLine;
+            output += "<taper x=\"" + /*Math.Abs(prim.PathScaleX - 1.0F)*/ prim.PathTaperX + "\" y=\"" +
+                /*Math.Abs(prim.PathScaleY - 1.0F)*/ prim.PathTaperY + "\" />" + Environment.NewLine;
             output += "<revolutions val=\"" + prim.PathRevolutions + "\" />" + Environment.NewLine;
             output += "<radiusoffset val=\"" + prim.PathRadiusOffset + "\" />" + Environment.NewLine;
             output += "<skew val=\"" + prim.PathSkew + "\" />" + Environment.NewLine;

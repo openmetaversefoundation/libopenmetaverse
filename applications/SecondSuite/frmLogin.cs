@@ -209,7 +209,7 @@ namespace SecondSuite
 
 			try
 			{
-				client = new SecondLife("keywords.txt", "protocol.txt");
+				client = new SecondLife("keywords.txt", "message_template.msg");
 			}
 			catch (Exception error)
 			{

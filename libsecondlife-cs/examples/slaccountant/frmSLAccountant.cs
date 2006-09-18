@@ -471,7 +471,7 @@ namespace SLAccountant
 
 			try
 			{
-				client = new SecondLife("keywords.txt", "protocol.txt");
+				client = new SecondLife("keywords.txt", "message_template.msg");
 
 				// Install our packet handlers
 				client.Network.RegisterCallback("AvatarAppearance", new PacketCallback(AvatarAppearanceHandler));

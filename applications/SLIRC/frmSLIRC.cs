@@ -91,7 +91,7 @@ namespace SLIRC
         {
             try
             {
-                client = new SecondLife("keywords.txt", "protocol.txt");
+                client = new SecondLife("keywords.txt", "message_template.msg");
                 client.Avatar.OnChat += new ChatCallback(Avatar_OnChat);
                 grpLogin.Enabled = true;
             }

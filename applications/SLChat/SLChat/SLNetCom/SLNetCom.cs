@@ -50,7 +50,7 @@ namespace SLNetworkComm
 
         private void InitializeClient()
         {
-            client = new SecondLife("keywords.txt", "protocol.txt");
+            client = new SecondLife("keywords.txt", "message_template.msg");
             client.Network.RegisterCallback("ChatFromSimulator", new PacketCallback(ChatIncoming));
             client.Network.RegisterCallback("ImprovedInstantMessage", new PacketCallback(InstantMessageIncoming));
         }

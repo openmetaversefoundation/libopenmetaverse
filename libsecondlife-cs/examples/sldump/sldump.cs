@@ -35,7 +35,7 @@ namespace sldump
 		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
-			//Console.Write(packet.ToString());
+			Console.Write(packet.ToString());
 		}
 
 		/// <summary>
@@ -69,7 +69,7 @@ namespace sldump
 
 			try
 			{
-				client = new SecondLife("keywords.txt", "protocol.txt");
+				client = new SecondLife("keywords.txt", "message_template.msg");
 			}
 			catch (Exception e)
 			{

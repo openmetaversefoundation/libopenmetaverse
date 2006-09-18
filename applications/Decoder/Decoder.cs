@@ -37,7 +37,7 @@ using libsecondlife;
 class Decoder {
 	private static int BUFSIZE = 8096;
 
-	private static ProtocolManager protocol = new SecondLife("keywords.txt", "protocol.txt").Protocol;
+	private static ProtocolManager protocol = new SecondLife("keywords.txt", "message_template.msg").Protocol;
 	private static string grep = null;
 	private static byte[] data = new byte[BUFSIZE];
 	private static byte[] temp = new byte[BUFSIZE];

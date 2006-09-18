@@ -52,7 +52,7 @@ public class Analyst {
 
 	public static void Main(string[] args) {
 		// configure the proxy
-		client = new SecondLife("keywords.txt", "protocol.txt");
+		client = new SecondLife("keywords.txt", "message_template.msg");
 		protocolManager = client.Protocol;
 		ProxyConfig proxyConfig = new ProxyConfig("Analyst", "austin.jennings@gmail.com", protocolManager, args);
 		proxy = new Proxy(proxyConfig);

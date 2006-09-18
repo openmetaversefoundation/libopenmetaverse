@@ -88,6 +88,12 @@
     <nant target="${project.config} build">
       <buildfiles refid="lib" />
     </nant>
+    <copy todir="bin" overwrite="true">
+		  <fileset basedir="data">
+        <include name="*.txt" />
+        <include name="*.msg" />
+      </fileset>
+    </copy>
   </target>
 
   <target name="build-apps" depends="init"
@@ -135,20 +141,21 @@
       <call target="build" />
       <mkdir dir="${archive.dir}" failonerror="false" />
       <copy todir="${archive.dir}" overwrite="true">
-	<fileset basedir=".">
-	  <include name="LICENSE" />
-	  <include name="README" />
-	</fileset>
+				<fileset basedir=".">
+				  <include name="LICENSE" />
+				  <include name="README" />
+				</fileset>
       </copy>
       <copy todir="${archive.dir}" overwrite="true">
         <fileset basedir="bin">
           <include name="*.exe" />
           <include name="*.dll" />
-	</fileset>
+				</fileset>
       </copy>
       <copy todir="${archive.dir}" overwrite="true">
-	<fileset basedir="data">
+				<fileset basedir="data">
           <include name="*.txt" />
+          <include name="*.msg" />
         </fileset>
       </copy>
     </if>
