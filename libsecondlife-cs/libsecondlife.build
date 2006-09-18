@@ -44,7 +44,7 @@
   <!-- build tasks -->
     <target name="build" depends="init" description="compiles the source code">
 	<mkdir dir="${bin_dir}" failonerror="false"/>
-        <csc target="library" output="../bin/libsecondlife.dll" debug="${build.debug}">
+        <csc target="library" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
             <sources> 
 		<include name="*.cs" /> 
                 <include name="AssetSystem/*.cs" />
