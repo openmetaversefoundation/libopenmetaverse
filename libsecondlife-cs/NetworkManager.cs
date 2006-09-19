@@ -366,21 +366,35 @@ namespace libsecondlife
 
 		private void OnReceivedData(IAsyncResult result)
 		{
-			Packet packet;
+			Packet packet = null;
+            int numBytes;
 
             // If we're receiving data the sim connection is open
             connected = true;
 
+            #region RecvBufferMutex
             try
             {
-                #region RecvBufferMutex
                 RecvBufferMutex.WaitOne();
 
                 // Update the disconnect flag so this sim doesn't time out
                 DisconnectCandidate = false;
 
                 // Retrieve the incoming packet
-                int numBytes = Connection.EndReceiveFrom(result, ref endPoint);
+                try
+                {
+                    numBytes = Connection.EndReceiveFrom(result, ref endPoint);
+                }
+                catch (SocketException)
+                {
+                    Client.Log("Socket error, shutting down the " + this.Region.Name + " sim", Helpers.LogLevel.Warning);
+
+                    connected = false;
+                    RecvBufferMutex.ReleaseMutex();
+                    Network.DisconnectSim(this);
+
+                    return;
+                }
 
                 if ((RecvBuffer[0] & Helpers.MSG_APPENDED_ACKS) != 0)
                 {
@@ -390,13 +404,24 @@ namespace libsecondlife
                     Client.Log("Found " + numAcks + " appended acks", Helpers.LogLevel.Info);
 
                     #region NeedAckMutex
-                    NeedAckMutex.WaitOne();
-                    for (int i = 1; i <= numAcks; ++i)
+                    try
                     {
-                        ushort ack = (ushort)BitConverter.ToUInt32(RecvBuffer, (numBytes - i * 4) - 1);
-                        NeedAck.Remove(ack);
+                        NeedAckMutex.WaitOne();
+
+                        for (int i = 1; i <= numAcks; ++i)
+                        {
+                            ushort ack = (ushort)BitConverter.ToUInt32(RecvBuffer, (numBytes - i * 4) - 1);
+                            NeedAck.Remove(ack);
+                        }
                     }
-                    NeedAckMutex.ReleaseMutex();
+                    catch (Exception e)
+                    {
+                        Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                    }
+                    finally
+                    {
+                        NeedAckMutex.ReleaseMutex();
+                    }
                     #endregion NeedAckMutex
 
                     // Adjust the packet length
@@ -421,27 +446,43 @@ namespace libsecondlife
 
                 // Start listening again since we're done with RecvBuffer
                 Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-
+            }
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+            finally
+            {
                 RecvBufferMutex.ReleaseMutex();
-                #endregion RecvBufferMutex
+            }
+            #endregion RecvBufferMutex
 
-                if (packet.Layout.Name == "")
+            // Fail-safe checks
+            if (packet == null)
+            {
+                Client.Log("OnReceivedData() fail-safe reached, exiting", Helpers.LogLevel.Warning);
+                return;
+            }
+            else if (packet.Layout.Name == "")
+            {
+                // TODO: Add a packet dump function to Packet and dump the raw data here
+                Client.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
+                return;
+            }
+
+            // Track the sequence number for this packet if it's marked as reliable
+            if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
+            {
+                // Send the ACK for this packet
+                // TODO: If we can make it stable, go back to the periodic ACK system
+                SendACK((uint)packet.Sequence);
+
+                // Check if we already received this packet
+                #region InboxMutex
+                try
                 {
-                    // TODO: Add a packet dump function to Packet and dump the raw data here
-                    Client.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
-                    return;
-                }
-
-                // Track the sequence number for this packet if it's marked as reliable
-                if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
-                {
-                    // Send the ACK for this packet
-                    // TODO: If we can make it stable, go back to the periodic ACK system
-                    SendACK((uint)packet.Sequence);
-
-                    // Check if we already received this packet
-                    #region InboxMutex
                     InboxMutex.WaitOne();
+
                     if (Inbox.Contains(packet.Sequence))
                     {
                         Client.Log("Received a duplicate " + packet.Layout.Name + ", sequence=" +
@@ -450,39 +491,53 @@ namespace libsecondlife
                             Helpers.LogLevel.Info);
 
                         // Avoid firing a callback twice for the same packet
-                        InboxMutex.ReleaseMutex();
                         return;
                     }
                     else
                     {
                         Inbox.Add(packet.Sequence, packet.Sequence);
                     }
-                    #endregion InboxMutex
+                }
+                catch (Exception e)
+                {
+                    Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                }
+                finally
+                {
                     InboxMutex.ReleaseMutex();
                 }
+                #endregion InboxMutex
+            }
 
-                if (packet.Layout.Name == null)
-                {
-                    Client.Log("Received an unrecognized packet", Helpers.LogLevel.Warning);
-                    return;
-                }
-                else if (packet.Layout.Name == "PacketAck")
-                {
-                    // PacketAck is handled directly instead of using a callback to simplify access to 
-                    // the NeedAck hashtable and its mutex
-                    ArrayList blocks = packet.Blocks();
+            if (packet.Layout.Name == "PacketAck")
+            {
+                // PacketAck is handled directly instead of using a callback to simplify access to 
+                // the NeedAck hashtable and its mutex
+                ArrayList blocks = packet.Blocks();
 
-                    #region NeedAckMutex
+                #region NeedAckMutex
+                try
+                {
                     NeedAckMutex.WaitOne();
                     foreach (Block block in blocks)
                     {
                         Field ID = (Field)block.Fields[0];
                         NeedAck.Remove((ushort)(uint)ID.Data);
                     }
-                    NeedAckMutex.ReleaseMutex();
-                    #endregion NeedAckMutex
                 }
+                catch (Exception e)
+                {
+                    Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                }
+                finally
+                {
+                    NeedAckMutex.ReleaseMutex();
+                }
+                #endregion NeedAckMutex
+            }
 
+            try
+            {
                 if (Callbacks.ContainsKey(packet.Layout.Name))
                 {
                     ArrayList callbackArray = (ArrayList)Callbacks[packet.Layout.Name];
@@ -509,20 +564,14 @@ namespace libsecondlife
                         }
                     }
                 }
-
-                // Erase this packet from memory
-                packet = null;
-            }
-            catch (SocketException)
-            {
-                Client.Log("Socket error, shutting down the " + this.Region.Name + " sim", Helpers.LogLevel.Warning);
-                Network.DisconnectSim(this);
             }
             catch (Exception e)
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
-                Client.Log("One or more mutexes may be deadlocked", Helpers.LogLevel.Warning);
+                Client.Log("Caught an exception in a packet callback: " + e.ToString(), Helpers.LogLevel.Warning);
             }
+
+            // Erase this packet from memory
+            packet = null;
 		}
 	}
 
@@ -598,7 +647,7 @@ namespace libsecondlife
 			Client = client;
 			Protocol = protocol;
 			Simulators = new ArrayList();
-			SimulatorsMutex = new Mutex(false, "SimulatorsMutex");
+			SimulatorsMutex = new Mutex(true, "SimulatorsMutex");
 			Callbacks = new Hashtable();
 			CurrentSim = null;
 			LoginValues = null;
@@ -839,11 +888,10 @@ namespace libsecondlife
 			// Set the current region
 			Client.CurrentRegion = simulator.Region;
 
-			// Simulator is successfully connected, add it to the list and set it as default
-			SimulatorsMutex.WaitOne();
+            // Simulator is successfully connected, add it to the list and set it as default
 			Simulators.Add(simulator);
-			SimulatorsMutex.ReleaseMutex();
-			CurrentSim = simulator;
+
+            CurrentSim = simulator;
 
 			// Move our agent in to the sim to complete the connection
 			Packet packet = Packets.Sim.CompleteAgentMovement(Protocol, AgentID, SessionID, circuitCode);
@@ -865,9 +913,19 @@ namespace libsecondlife
             }
 
             #region SimulatorsMutex
-            SimulatorsMutex.WaitOne();
-			Simulators.Add(simulator);
-			SimulatorsMutex.ReleaseMutex();
+            try
+            {
+                SimulatorsMutex.WaitOne();
+                Simulators.Add(simulator);
+            }
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+            finally
+            {
+                SimulatorsMutex.ReleaseMutex();
+            }
             #endregion SimulatorsMutex
 
             if (setDefault)
@@ -917,9 +975,19 @@ namespace libsecondlife
             }
 
             #region SimulatorsMutex
-            SimulatorsMutex.WaitOne();
-            Simulators.Remove(sim);
-            SimulatorsMutex.ReleaseMutex();
+            try
+            {
+                SimulatorsMutex.WaitOne();
+                Simulators.Remove(sim);
+            }
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+            finally
+            {
+                SimulatorsMutex.ReleaseMutex();
+            }
             #endregion SimulatorsMutex
         }
 
@@ -930,84 +998,102 @@ namespace libsecondlife
         private void Shutdown()
         {
             #region SimulatorsMutex
-            SimulatorsMutex.WaitOne();
-
-            // Disconnect all simulators except the current one
-            foreach (Simulator simulator in Simulators)
+            try
             {
-                // Don't disconnect the current sim, we'll use LogoutRequest for that
-                if (simulator != CurrentSim)
-                {
-                    simulator.Disconnect();
+                SimulatorsMutex.WaitOne();
 
-                    // Fire the SimDisconnected event if a handler is registered
-                    if (OnSimDisconnected != null)
+                // Disconnect all simulators except the current one
+                foreach (Simulator simulator in Simulators)
+                {
+                    // Don't disconnect the current sim, we'll use LogoutRequest for that
+                    if (simulator != CurrentSim)
                     {
-                        OnSimDisconnected(simulator, DisconnectType.NetworkTimeout);
+                        simulator.Disconnect();
+
+                        // Fire the SimDisconnected event if a handler is registered
+                        if (OnSimDisconnected != null)
+                        {
+                            OnSimDisconnected(simulator, DisconnectType.NetworkTimeout);
+                        }
                     }
                 }
             }
-
-            Simulators.Clear();
-            SimulatorsMutex.ReleaseMutex();
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+            finally
+            {
+                Simulators.Clear();
+                SimulatorsMutex.ReleaseMutex();
+            }
             #endregion SimulatorsMutex
 
             CurrentSim.Disconnect();
             CurrentSim = null;
         }
 
-        private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
             #region SimulatorsMutex
-            SimulatorsMutex.WaitOne();
-
-        Beginning:
-
-            foreach (Simulator sim in Simulators)
+            try
             {
-                if (sim.DisconnectCandidate == true)
+                SimulatorsMutex.WaitOne();
+
+            Beginning:
+
+                foreach (Simulator sim in Simulators)
                 {
-                    if (sim == CurrentSim)
+                    if (sim.DisconnectCandidate == true)
                     {
-                        Client.Log("Network timeout for the current simulator (" +
-                            sim.Region.Name + "), logging out", Helpers.LogLevel.Warning);
-
-                        DisconnectTimer.Stop();
-                        connected = false;
-
-                        // Shutdown the network layer
-                        Shutdown();
-
-                        if (OnDisconnected != null)
+                        if (sim == CurrentSim)
                         {
-                            OnDisconnected(DisconnectType.NetworkTimeout, "");
-                        }
+                            Client.Log("Network timeout for the current simulator (" +
+                                sim.Region.Name + "), logging out", Helpers.LogLevel.Warning);
 
-                        // We're completely logged out and shut down, leave this function
-                        return;
+                            DisconnectTimer.Stop();
+                            connected = false;
+
+                            // Shutdown the network layer
+                            Shutdown();
+
+                            if (OnDisconnected != null)
+                            {
+                                OnDisconnected(DisconnectType.NetworkTimeout, "");
+                            }
+
+                            // We're completely logged out and shut down, leave this function
+                            return;
+                        }
+                        else
+                        {
+                            // This sim hasn't received any network traffic since the 
+                            // timer last elapsed, consider it disconnected
+                            Client.Log("Network timeout for simulator " + sim.Region.Name +
+                                ", disconnecting", Helpers.LogLevel.Warning);
+
+                            SimulatorsMutex.ReleaseMutex();
+                            DisconnectSim(sim);
+                            SimulatorsMutex.WaitOne();
+
+                            // Reset the iterator since we removed an element
+                            goto Beginning;
+                        }
                     }
                     else
                     {
-                        // This sim hasn't received any network traffic since the 
-                        // timer last elapsed, consider it disconnected
-                        Client.Log("Network timeout for simulator " + sim.Region.Name +
-                            ", disconnecting", Helpers.LogLevel.Warning);
-
-                        SimulatorsMutex.ReleaseMutex();
-                        DisconnectSim(sim);
-                        SimulatorsMutex.WaitOne();
-                        
-                        // Reset the iterator since we removed an element
-                        goto Beginning;
+                        sim.DisconnectCandidate = true;
                     }
                 }
-                else
-                {
-                    sim.DisconnectCandidate = true;
-                }
             }
-
-            SimulatorsMutex.ReleaseMutex();
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+            finally
+            {
+                SimulatorsMutex.ReleaseMutex();
+            }
             #endregion SimulatorsMutex
         }
 
