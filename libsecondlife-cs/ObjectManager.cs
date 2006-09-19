@@ -203,7 +203,7 @@ namespace libsecondlife
                             prim.ProfileHollow = (byte)field.Data;
                             break;
                         case "NameValue":
-                            Console.WriteLine("[debug] Name: " + Helpers.FieldToString(field.Data));
+                            //Console.WriteLine("[debug] Name: " + Helpers.FieldToString(field.Data));
                             prim.Name = Helpers.FieldToString(field.Data);
                             break;
                         case "Data":
@@ -217,12 +217,19 @@ namespace libsecondlife
                             break;
                         case "MediaURL":
                             // Quicktime stream
-                            Client.Log("MediaURL: " + Helpers.FieldToString(field.Data), Helpers.LogLevel.Info);
+                            //Client.Log("MediaURL: " + Helpers.FieldToString(field.Data), Helpers.LogLevel.Info);
                             break;
                         case "TextureEntry":
                             // TODO: Multi-texture support
                             byte[] bytes = (byte[])field.Data;
-                            prim.Texture = new LLUUID(bytes, 0);
+                            if (bytes.Length >= 16)
+                            {
+                                prim.Texture = new LLUUID(bytes, 0);
+                            }
+                            else
+                            {
+                                prim.Texture = new LLUUID();
+                            }
                             break;
                         case "TextureAnim":
                             // Not sure how this works
@@ -466,12 +473,12 @@ namespace libsecondlife
 
         private void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
-            Client.Log("Received an ObjectUpdateCompressed packet, length=" + packet.Data.Length, Helpers.LogLevel.Info);
+            //Client.Log("Received an ObjectUpdateCompressed packet, length=" + packet.Data.Length, Helpers.LogLevel.Info);
         }
 
         private void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
-            Client.Log("Received an ObjectUpdateCached packet, length=" + packet.Data.Length, Helpers.LogLevel.Info);
+            //Client.Log("Received an ObjectUpdateCached packet, length=" + packet.Data.Length, Helpers.LogLevel.Info);
         }
 
         /// <summary>
