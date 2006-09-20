@@ -10,7 +10,7 @@
 
   <!-- default configuration -->
   <property name="build.number"
-     value="${string::replace(string::replace(string::substring(datetime::to-string(datetime::now()),0,10),'/20',''),'/','')}" />
+     value="${string::replace(string::replace(string::substring(datetime::to-string(datetime::now()),0,10),'/200','0'),'/','')}" />
   <!-- <property name="project.version" value="0.0.5" /> -->
   <property name="project.version" value="${build.number}" />
   <property name="project.config"  value="debug" /> <!-- debug|release -->
