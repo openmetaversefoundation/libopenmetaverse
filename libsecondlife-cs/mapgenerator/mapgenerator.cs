@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.IO;
 using libsecondlife;
 
 namespace mapgenerator
@@ -223,7 +224,7 @@ namespace mapgenerator
 
         static void WritePacketClass(MapPacket packet)
         {
-            Console.WriteLine("    class " + packet.Name + "Packet\n    {");
+            Console.WriteLine("    class " + packet.Name + "\n    {");
 
             // Write out each block class
             foreach (MapBlock block in packet.Blocks)
@@ -231,14 +232,80 @@ namespace mapgenerator
                 WriteBlockClass(block);
             }
 
-            // public LowHeader Header;
+            // Header member
+            Console.WriteLine("        public " + packet.Frequency.ToString() + "Header Header;");
 
-            Console.WriteLine("        " + packet.Name + "Packet() { }");
+            // Block members
+            foreach (MapBlock block in packet.Blocks)
+            {
+                Console.WriteLine("        public " + block.Name + "Block" + 
+                    ((block.Count != 1) ? "[]" : "") + " " + block.Name + ";");
+            }
 
-            Console.WriteLine("        " + packet.Name + "Packet(byte[] bytes) { }");
+            Console.WriteLine("");
 
+            // Default constructor
+            Console.WriteLine("        " + packet.Name + "()\n        {");
+            Console.WriteLine("            Header = new " + packet.Frequency.ToString() + "Header();");
+            foreach (MapBlock block in packet.Blocks)
+            {
+                if (block.Count == 1)
+                {
+                    // Single count block
+                    Console.WriteLine("            " + block.Name + " = new " + block.Name + "Block();");
+                }
+                else if (block.Count == -1)
+                {
+                    // Variable count block
+                    Console.WriteLine("            " + block.Name + " = new " + block.Name + "Block[0];");
+                }
+                else
+                {
+                    // Multiple count block
+                    Console.WriteLine("            " + block.Name + " = new " + block.Name + 
+                        "Block[" + block.Count + "];");
+                }
+            }
+            Console.WriteLine("        }\n");
+
+            // Constructor that takes a byte array and beginning position only (no prebuilt header)
+            bool seenVariable = false;
+            Console.WriteLine("        " + packet.Name + "(byte[] bytes, ref int i)\n        {");
+            Console.WriteLine("            Header = new " + packet.Frequency.ToString() + "Header(bytes, ref i);");
+            foreach (MapBlock block in packet.Blocks)
+            {
+                if (block.Count == 1)
+                {
+                    // Single count block
+                    Console.WriteLine("            " + block.Name + " = new " + block.Name + "Block(bytes, ref i);");
+                }
+                else if (block.Count == -1)
+                {
+                    // Variable count block
+                    if (!seenVariable) { Console.WriteLine("            int count = (int)bytes[i++];"); }
+                    else { Console.WriteLine("            count = (int)bytes[i++];"); }
+                    Console.WriteLine("            for (int j = 0; j < count; j++)");
+                    Console.WriteLine("            { " + block.Name + "[j] = new " +
+                        block.Name + "Block(bytes, ref i); }");
+                }
+                else
+                {
+                    // Multiple count block
+                    Console.WriteLine("            for (int j = 0; j < " + block.Count + "; j++)");
+                    Console.WriteLine("            { " + block.Name + "[j] = new " + 
+                        block.Name + "Block(bytes, ref i); }");
+                }
+            }
+            Console.WriteLine("        }\n");
+
+            // Constructor that takes a byte array and a prebuilt header
+            Console.WriteLine("        " + packet.Name + "(Header header, byte[] bytes, ref int i)\n        {");
+            Console.WriteLine("        }\n");
+
+            // ToBytes() function
             Console.WriteLine("        public byte[] ToBytes() { return null; }");
 
+            // Closing bracket
             Console.WriteLine("    }\n");
         }
 
@@ -247,7 +314,19 @@ namespace mapgenerator
             SecondLife libsl = new SecondLife("keywords.txt", "message_template.msg");
             int i = 0;
 
-            Console.WriteLine("using System;\nusing libsecondlife;\n\nnamespace libsecondlife\n{");
+            TextReader reader = new StreamReader("template.cs");
+            Console.WriteLine(reader.ReadToEnd());
+            reader.Close();
+
+            Console.WriteLine("    public enum PacketType\n    {");
+            foreach (MapPacket packet in libsl.Protocol.LowMaps)
+            {
+                if (packet != null)
+                {
+                    Console.WriteLine("        " + packet.Name + ",");
+                }
+            }
+            Console.WriteLine("    }\n");
 
             foreach (MapPacket packet in libsl.Protocol.LowMaps)
             {
