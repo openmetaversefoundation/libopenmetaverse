@@ -73,17 +73,17 @@ namespace mapgenerator
             }
             else
             {
-                Console.WriteLine("            private byte[] " + field.Name.ToLower() + ";");
+                Console.WriteLine("            private byte[] _" + field.Name.ToLower() + ";");
                 Console.WriteLine("            public byte[] " + field.Name + "\n            {");
-                Console.WriteLine("                get { return " + field.Name.ToLower() + "; }");
+                Console.WriteLine("                get { return _" + field.Name.ToLower() + "; }");
                 Console.WriteLine("                set\n                {");
-                Console.WriteLine("                    if (value == null) { " + 
+                Console.WriteLine("                    if (value == null) { _" + 
                     field.Name.ToLower() + " = null; return; }");
                 Console.WriteLine("                    if (value.Length > " + 
                     ((field.Count == 1) ? "255" : "1024") + ") { throw new OverflowException(" + 
                     "\"Value exceeds " + ((field.Count == 1) ? "255" : "1024") + " characters\"); }");
-                Console.WriteLine("                    else { " + field.Name.ToLower() + 
-                    "= new byte[value.Length]; Array.Copy(value, " + 
+                Console.WriteLine("                    else { _" + field.Name.ToLower() + 
+                    " = new byte[value.Length]; Array.Copy(value, _" + 
                     field.Name.ToLower() + ", value.Length); }");
                 Console.WriteLine("                }\n            }");
             }
@@ -183,8 +183,8 @@ namespace mapgenerator
                     {
                         Console.WriteLine("                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));");
                     }
-                    Console.WriteLine("                    " + field.Name.ToLower() + " = new byte[length];");
-                    Console.WriteLine("                    Array.Copy(bytes, i, " + field.Name.ToLower() +
+                    Console.WriteLine("                    _" + field.Name.ToLower() + " = new byte[length];");
+                    Console.WriteLine("                    Array.Copy(bytes, i, _" + field.Name.ToLower() +
                         ", 0, length); i += length;");
                     break;
             }
@@ -192,20 +192,32 @@ namespace mapgenerator
 
         static void WriteBlockClass(MapBlock block)
         {
+            bool variableFields = false;
+
             Console.WriteLine("        public class " + block.Name + "Block\n        {");
 
             foreach (MapField field in block.Fields)
             {
                 WriteFieldMember(field);
+
+                if (field.Type == FieldType.Variable) { variableFields = true; }
             }
 
             Console.WriteLine("");
 
-            // Constructors
+            // Default constructor
             Console.WriteLine("            public " + block.Name + "Block() { }");
+
+            //
             Console.WriteLine("            public " + block.Name + "Block(byte[] bytes, ref int i)" +
-                "\n            {\n                int length;\n                \n" +
-                "                try\n                {");
+                "\n            {");
+
+            // Declare a length variable if we need it for variable fields in this constructor
+            if (variableFields)
+            {
+                Console.WriteLine("                int length;");
+            }
+            Console.WriteLine("                try\n                {");
 
             foreach (MapField field in block.Fields)
             {
@@ -224,7 +236,7 @@ namespace mapgenerator
 
         static void WritePacketClass(MapPacket packet)
         {
-            Console.WriteLine("    class " + packet.Name + "\n    {");
+            Console.WriteLine("    class " + packet.Name + "Packet\n    {");
 
             // Write out each block class
             foreach (MapBlock block in packet.Blocks)
@@ -235,17 +247,21 @@ namespace mapgenerator
             // Header member
             Console.WriteLine("        public " + packet.Frequency.ToString() + "Header Header;");
 
+            // PacketType member
+            Console.WriteLine("        public PacketType Type { get { return Type; } set { Type = value; } }");
+
             // Block members
             foreach (MapBlock block in packet.Blocks)
             {
-                Console.WriteLine("        public " + block.Name + "Block" + 
+                Console.WriteLine("        public " + block.Name + "Block" +
                     ((block.Count != 1) ? "[]" : "") + " " + block.Name + ";");
             }
 
             Console.WriteLine("");
 
             // Default constructor
-            Console.WriteLine("        " + packet.Name + "()\n        {");
+            Console.WriteLine("        " + packet.Name + "Packet()\n        {");
+            Console.WriteLine("            Type = PacketType." + packet.Name + ";");
             Console.WriteLine("            Header = new " + packet.Frequency.ToString() + "Header();");
             foreach (MapBlock block in packet.Blocks)
             {
@@ -270,8 +286,11 @@ namespace mapgenerator
 
             // Constructor that takes a byte array and beginning position only (no prebuilt header)
             bool seenVariable = false;
-            Console.WriteLine("        " + packet.Name + "(byte[] bytes, ref int i)\n        {");
-            Console.WriteLine("            Header = new " + packet.Frequency.ToString() + "Header(bytes, ref i);");
+            Console.WriteLine("        " + packet.Name + "Packet(byte[] bytes, ref int i)\n        {");
+            Console.WriteLine("            Type = PacketType." + packet.Name + ";");
+            Console.WriteLine("            int packetEnd = bytes.Length - 1;");
+            Console.WriteLine("            Header = new " + packet.Frequency.ToString() + 
+                "Header(bytes, ref i, ref packetEnd);");
             foreach (MapBlock block in packet.Blocks)
             {
                 if (block.Count == 1)
@@ -282,8 +301,15 @@ namespace mapgenerator
                 else if (block.Count == -1)
                 {
                     // Variable count block
-                    if (!seenVariable) { Console.WriteLine("            int count = (int)bytes[i++];"); }
-                    else { Console.WriteLine("            count = (int)bytes[i++];"); }
+                    if (!seenVariable)
+                    {
+                        Console.WriteLine("            int count = (int)bytes[i++];");
+                        seenVariable = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("            count = (int)bytes[i++];");
+                    }
                     Console.WriteLine("            for (int j = 0; j < count; j++)");
                     Console.WriteLine("            { " + block.Name + "[j] = new " +
                         block.Name + "Block(bytes, ref i); }");
@@ -299,7 +325,11 @@ namespace mapgenerator
             Console.WriteLine("        }\n");
 
             // Constructor that takes a byte array and a prebuilt header
-            Console.WriteLine("        " + packet.Name + "(Header header, byte[] bytes, ref int i)\n        {");
+            Console.WriteLine("        " + packet.Name + "Packet(" + packet.Frequency.ToString() + 
+                "Header header, byte[] bytes, ref int i)\n        {");
+            Console.WriteLine("            Type = PacketType." + packet.Name + ";");
+            Console.WriteLine("            Header = header;");
+            Console.WriteLine("            //FIXME");
             Console.WriteLine("        }\n");
 
             // ToBytes() function
@@ -312,7 +342,6 @@ namespace mapgenerator
         static void Main(string[] args)
         {
             SecondLife libsl = new SecondLife("keywords.txt", "message_template.msg");
-            int i = 0;
 
             TextReader reader = new StreamReader("template.cs");
             Console.WriteLine(reader.ReadToEnd());
@@ -326,15 +355,35 @@ namespace mapgenerator
                     Console.WriteLine("        " + packet.Name + ",");
                 }
             }
+            foreach (MapPacket packet in libsl.Protocol.MediumMaps)
+            {
+                if (packet != null)
+                {
+                    Console.WriteLine("        " + packet.Name + ",");
+                }
+            }
+            foreach (MapPacket packet in libsl.Protocol.HighMaps)
+            {
+                if (packet != null)
+                {
+                    Console.WriteLine("        " + packet.Name + ",");
+                }
+            }
             Console.WriteLine("    }\n");
 
             foreach (MapPacket packet in libsl.Protocol.LowMaps)
             {
-                if (packet != null)
-                {
-                    WritePacketClass(packet);
-                    if (i++ > 10) break;
-                }
+                if (packet != null) { WritePacketClass(packet); }
+            }
+
+            foreach (MapPacket packet in libsl.Protocol.MediumMaps)
+            {
+                if (packet != null) { WritePacketClass(packet); }
+            }
+
+            foreach (MapPacket packet in libsl.Protocol.HighMaps)
+            {
+                if (packet != null) { WritePacketClass(packet); }
             }
 
             Console.WriteLine("}");
