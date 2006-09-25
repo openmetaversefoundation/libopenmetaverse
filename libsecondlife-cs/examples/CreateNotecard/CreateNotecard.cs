@@ -35,8 +35,7 @@ namespace InventoryTools
 				return;
 			}
 
-			client.Avatar.OnChat +=new ChatCallback(Avatar_OnChat);
-
+			Console.WriteLine("This example contains numerous code snippets for inventory management and notecard creation, please see the source code.  The default SVN operation simply creates a single notecard in your Notecards folder.");
 			
 			// Find folder to put notecard in
 			InventoryFolder ifNotecards = AgentInventory.getFolder("Notecards");
@@ -44,8 +43,8 @@ namespace InventoryTools
 			// Create Notecard
 			Console.WriteLine("Create Notecard");
 			InventoryItem iiNotecard = ifNotecards.NewNotecard("Test Card " + System.DateTime.Now.ToShortTimeString(),"Test Description", "Test Body");
-
-			iiNotecard.GiveTo("e225438416bc4f1788ac5beb5b41f141");
+			
+//			iiNotecard.GiveTo("e225438416bc4f1788ac5beb5b41f141");
 //			iiNotecard.GiveTo("4403a8f0-245c-a56b-23a7-cc1c72c8f2e9");
 //			iiNotecard.GiveTo("25472683-cb32-4516-904a-6cd0ecabf128");
 
@@ -96,15 +95,11 @@ namespace InventoryTools
 			ifTestFolderA.Delete();
 
 			// Download inventory and output to visually verify Folder has been deleted
+
 			AgentInventory.DownloadInventory();
 			ifNotecards = AgentInventory.getFolder("Notecards");
-			Console.WriteLine(ifNotecards.toXML());
+			Console.WriteLine(ifNotecards.toXML(false));
 */
-			}
-
-		private void Avatar_OnChat(string message, byte audible, byte type, byte sourcetype, string name, LLUUID id, byte command, LLUUID commandID)
-		{
-
 		}
 	}
 }

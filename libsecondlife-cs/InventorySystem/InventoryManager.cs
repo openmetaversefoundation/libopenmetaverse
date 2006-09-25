@@ -248,7 +248,7 @@ namespace libsecondlife.InventorySystem
 
 		internal void ItemUpdate( InventoryItem iitem )
 		{
-			Packet packet = InventoryPackets.UpdateInventoryItem( slClient.Protocol, iitem, slClient.Network.AgentID );
+			Packet packet = InventoryPackets.UpdateInventoryItem( slClient.Protocol, iitem, slClient.Network.AgentID, slClient.Network.SessionID );
 			slClient.Network.SendPacket(packet);
 		}
 
@@ -288,6 +288,7 @@ namespace libsecondlife.InventorySystem
 		internal InventoryNotecard NewNotecard( string Name, string Description, string Body, LLUUID FolderID )
 		{
 			LLUUID ItemID = LLUUID.GenerateUUID();
+
 			InventoryNotecard iNotecard = new InventoryNotecard( this, Name, Description, ItemID, FolderID, slClient.Network.AgentID );
 
 			// Create this notecard on the server.
@@ -304,9 +305,10 @@ namespace libsecondlife.InventorySystem
 		internal InventoryImage NewImage( string Name, string Description, byte[] j2cdata, LLUUID FolderID )
 		{
 			LLUUID ItemID = LLUUID.GenerateUUID();
+
 			InventoryImage iImage = new InventoryImage( this, Name, Description, ItemID, FolderID, slClient.Network.AgentID );
 
-			// Create this notecard on the server.
+			// Create this image on the server.
 			ItemUpdate( iImage );
 
 			if( (j2cdata != null) && (j2cdata.Length != 0) )

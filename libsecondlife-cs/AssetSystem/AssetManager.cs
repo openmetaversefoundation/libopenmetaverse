@@ -147,6 +147,7 @@ namespace libsecondlife.AssetSystem
 
 		public void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
+
 			ArrayList blocks = packet.Blocks();
 			
 			LLUUID AssetID = "";
@@ -207,6 +208,7 @@ namespace libsecondlife.AssetSystem
 		*/
 		public void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
 		{
+
 			ArrayList blocks = packet.Blocks();
 			
 			LLUUID TransferID = "";
@@ -282,6 +284,7 @@ namespace libsecondlife.AssetSystem
 		 */
 		public void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
 		{
+
 			LLUUID TransferID = "";
 			byte[] Data = null;
 
@@ -339,6 +342,7 @@ namespace libsecondlife.AssetSystem
 
 		public void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
 		{
+
 			U64 XferID = new U64();
 			uint PacketNum = 0;
 
@@ -388,6 +392,7 @@ namespace libsecondlife.AssetSystem
 		*/
 		public void RequestXferCallbackHandler(Packet packet, Simulator simulator)
 		{
+
 			U64 XferID = new U64();
 			LLUUID AssetID = "";
 
