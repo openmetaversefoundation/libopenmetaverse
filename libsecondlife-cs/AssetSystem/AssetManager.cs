@@ -96,13 +96,14 @@ namespace libsecondlife.AssetSystem
 			{
 				packet = AssetPackets.AssetUploadRequestHeaderOnly(slClient.Protocol, asset);
 				slClient.Network.SendPacket(packet);
-
+				Console.WriteLine(packet);
 				tr.AssetData = asset.AssetData;
 			} 
 			else 
 			{
 				packet = AssetPackets.AssetUploadRequest(slClient.Protocol, asset);
 				slClient.Network.SendPacket(packet);
+				Console.WriteLine(packet);
 			}
 
 			while( tr.Completed == false )

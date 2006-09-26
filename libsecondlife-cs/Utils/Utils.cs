@@ -5,12 +5,19 @@ namespace libsecondlife.Utils
 	/// <summary>
 	/// Summary description for Utils.
 	/// </summary>
-	public class ByteArrayStuff
+	public class MiscUtils
 	{
-		private ByteArrayStuff()
+		private MiscUtils()
 		{
 			// This class isn't intended to be instantiated
 		}
+
+		public static int getUnixtime()
+		{
+			TimeSpan ts = (DateTime.UtcNow - new DateTime(1970,1,1,0,0,0));
+			return (int)ts.TotalSeconds;
+		}
+
 
 		public static string ByteArrayToString( byte[] byteArray )
 		{

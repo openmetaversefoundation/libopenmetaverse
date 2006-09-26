@@ -1,6 +1,7 @@
 using System;
 
 using libsecondlife;
+using libsecondlife.Utils;
 
 namespace libsecondlife.AssetSystem
 {
@@ -48,7 +49,7 @@ namespace libsecondlife.AssetSystem
 
 		public string AssetDataToString()
 		{
-			return libsecondlife.Utils.ByteArrayStuff.ByteArrayToString((byte[])AssetData);
+			return MiscUtils.ByteArrayToString((byte[])AssetData);
 		}
 	}
 }

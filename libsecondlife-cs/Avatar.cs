@@ -31,8 +31,8 @@ using System.Collections;
 
 namespace libsecondlife
 {
-    public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
-    string name, LLUUID id, byte command, LLUUID commandID);
+    public delegate void ChatCallback(string message, byte audible, byte chattype, byte sourcetype,
+    string name, LLUUID sourceid, LLUUID ownerid, LLVector3 position);
 
     public delegate void InstantMessageCallback(LLUUID FromAgentID, LLUUID ToAgentID,
     uint ParentEstateID, LLUUID RegionID, LLVector3 Position, byte Offline, byte Dialog,
@@ -291,18 +291,42 @@ namespace libsecondlife
             }
         }
 
+		/**
+		 As of 9/26/2006
+		 ---------------
+			// ChatFromSimulator
+			// Chat text to appear on a user's screen
+			// Position is region local.
+			// Viewer can optionally use position to animate
+			// If audible is CHAT_NOT_AUDIBLE, message will not be valid
+			{
+				ChatFromSimulator Low Trusted Unencoded
+				{
+					ChatData			Single
+					{	FromName		Variable 1	}
+					{	SourceID		LLUUID		}	// agent id or object id
+					{	OwnerID			LLUUID		}	// object's owner
+					{	SourceType		U8			}
+					{	ChatType		U8			}
+					{	Audible			U8			}
+					{	Position		LLVector3	}
+					{	Message			Variable 2	}	// UTF-8 text
+				}
+			}
+		*/
+
         private void ChatHandler(Packet packet, Simulator simulator)
         {
             if (packet.Layout.Name == "ChatFromSimulator")
             {
-                string message = "";
-                byte audible = 0;
-                byte type = 0;
-                byte sourcetype = 0;
-                string name = "";
-                LLUUID id = new LLUUID();
-                byte command = 0;
-                LLUUID commandID = new LLUUID();
+				string name = "";
+				LLUUID sourceID = new LLUUID();
+				LLUUID ownerID = new LLUUID();
+				byte sourcetype = 0;
+				byte chattype = 0;
+				byte audible = 0;
+				LLVector3 position = new LLVector3();
+				string message = "";
 
                 ArrayList blocks;
 
@@ -312,10 +336,15 @@ namespace libsecondlife
                 {
                     foreach (Field field in block.Fields)
                     {
-                        if (field.Layout.Name == "ID")
+                        if (field.Layout.Name == "SourceID")
                         {
-                            id = (LLUUID)field.Data;
+                            sourceID = (LLUUID)field.Data;
                         }
+						else if (field.Layout.Name == "OwnerID")
+						{
+							ownerID = (LLUUID)field.Data;
+						}
+
                         else if (field.Layout.Name == "FromName")
                         {
                             name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
@@ -324,9 +353,9 @@ namespace libsecondlife
                         {
                             sourcetype = (byte)field.Data;
                         }
-                        else if (field.Layout.Name == "Type")
+                        else if (field.Layout.Name == "ChatType")
                         {
-                            type = (byte)field.Data;
+                            chattype = (byte)field.Data;
                         }
                         else if (field.Layout.Name == "Audible")
                         {
@@ -336,21 +365,16 @@ namespace libsecondlife
                         {
                             message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
                         }
-                        else if (field.Layout.Name == "Command")
+                        else if (field.Layout.Name == "Position")
                         {
-                            command = (byte)field.Data;
+                            position = (LLVector3)field.Data;
                         }
-                        else if (field.Layout.Name == "CommandID")
-                        {
-                            commandID = (LLUUID)field.Data;
-                        }
-
                     }
                 }
 
                 if (OnChat != null)
                 {
-                    OnChat(message, audible, type, sourcetype, name, id, command, commandID);
+                    OnChat(message, audible, chattype, sourcetype, name, sourceID, ownerID, position);
                 }
             }
         }

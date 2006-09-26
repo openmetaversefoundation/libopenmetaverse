@@ -40,10 +40,11 @@ namespace libsecondlife.Packets
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();
 
-			fields["UUID"]		= asset.AssetID;
-			fields["Type"]		= asset.Type;
-			fields["Tempfile"]	= asset.Tempfile;
-			fields["AssetData"]	= asset.AssetData;
+			fields["UUID"]		 = asset.AssetID;
+			fields["Type"]		 = asset.Type;
+			fields["Tempfile"]	 = asset.Tempfile;
+			fields["AssetData"]	 = asset.AssetData;
+			fields["StoreLocal"] = false;
 
 			blocks[fields]		= "AssetBlock";
 
@@ -57,6 +58,7 @@ namespace libsecondlife.Packets
 			fields["UUID"]		= asset.AssetID;
 			fields["Type"]		= asset.Type;
 			fields["Tempfile"]	= asset.Tempfile;
+			fields["StoreLocal"] = false;
 			blocks[fields]		= "AssetBlock";
 
 			return PacketBuilder.BuildPacket("AssetUploadRequest", protocol, blocks, Helpers.MSG_RELIABLE | Helpers.MSG_ZEROCODED);

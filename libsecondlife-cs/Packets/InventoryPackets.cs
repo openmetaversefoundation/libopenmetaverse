@@ -395,6 +395,9 @@ namespace libsecondlife.Packets
 			, String FromAgentName
 			, LLVector3 FromAgentLoc
 			, InventoryItem Item
+
+			, LLUUID AgentID
+			, LLUUID SessionID
 			)
 		{
 			byte[] BinaryBucket = new byte[17];
@@ -418,6 +421,11 @@ namespace libsecondlife.Packets
 			fields["FromAgentName"]	= FromAgentName;
 			fields["Position"]		= FromAgentLoc;
 			blocks[fields]			= "MessageBlock";
+
+			fields = new Hashtable();
+			fields["AgentID"]		= AgentID;
+			fields["SessionID"]		= SessionID;
+			blocks[fields]      = "AgentData";
 
 			return PacketBuilder.BuildPacket("ImprovedInstantMessage", protocol, blocks, Helpers.MSG_RELIABLE );
 		}

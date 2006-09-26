@@ -30,6 +30,7 @@ using System.Collections;
 using libsecondlife;
 using libsecondlife.AssetSystem;
 using libsecondlife.Packets;
+using libsecondlife.Utils;
 
 
 namespace libsecondlife.InventorySystem
@@ -77,7 +78,7 @@ namespace libsecondlife.InventorySystem
 			public DescendentRequest( LLUUID folderID )
 			{
 				FolderID = folderID;
-				LastReceived = InventoryManager.getUnixtime();
+				LastReceived = MiscUtils.getUnixtime();
 			}
 
 			public DescendentRequest( LLUUID folderID, bool fetchFolders, bool fetchItems )
@@ -85,7 +86,7 @@ namespace libsecondlife.InventorySystem
 				FolderID = folderID;
 				FetchFolders = fetchFolders;
 				FetchItems   = fetchItems;
-				LastReceived = InventoryManager.getUnixtime();
+				LastReceived = MiscUtils.getUnixtime();
 			}
 
 		}
@@ -109,7 +110,7 @@ namespace libsecondlife.InventorySystem
 			slClient.Network.RegisterCallback("InventoryDescendents", InventoryDescendentsCallback);
 		}
 
-
+		// Used primarily for debugging and testing
 		public AssetManager getAssetManager()
 		{
 			Console.WriteLine("It is not recommended that you access the asset manager directly");
@@ -270,6 +271,8 @@ namespace libsecondlife.InventorySystem
 				, slClient.Avatar.FirstName + " " + slClient.Avatar.LastName
 				, new LLVector3(slClient.Avatar.Position)
 				, iitem
+				, slClient.Network.AgentID
+				, slClient.Network.SessionID
 				);
 
 			slClient.Network.SendPacket(packet);
@@ -340,7 +343,7 @@ namespace libsecondlife.InventorySystem
 			}
 
 			// Set last packet received to now, just so out time-out timer works
-			iLastPacketRecieved = getUnixtime();
+			iLastPacketRecieved = MiscUtils.getUnixtime();
 
 			// Send Packet requesting the root Folder, 
 			// this should recurse through all folders
@@ -355,9 +358,9 @@ namespace libsecondlife.InventorySystem
 					RequestFolder( dr );
 				}
 
-				if( (getUnixtime() - iLastPacketRecieved) > 10 )
+				if( (MiscUtils.getUnixtime() - iLastPacketRecieved) > 10 )
 				{
-					Console.WriteLine("Time-out while waiting for packets (" + (getUnixtime() - iLastPacketRecieved) + " seconds since last packet)");
+					Console.WriteLine("Time-out while waiting for packets (" + (MiscUtils.getUnixtime() - iLastPacketRecieved) + " seconds since last packet)");
 					Console.WriteLine("Current Status:");
 
 					// have to make a seperate list otherwise we run into modifying the original array
@@ -376,7 +379,7 @@ namespace libsecondlife.InventorySystem
 						alRestartList.Add( dr );
 					}
 
-					iLastPacketRecieved = getUnixtime();
+					iLastPacketRecieved = MiscUtils.getUnixtime();
 					foreach( DescendentRequest dr in alRestartList )
 					{
 						RequestFolder( dr );
@@ -431,7 +434,7 @@ namespace libsecondlife.InventorySystem
 		public void InventoryDescendentsHandler(Packet packet, Simulator simulator)
 		{
 //			Console.WriteLine("Status|Queue :: " + htFolderDownloadStatus.Count + "/" + qFolderRequestQueue.Count);
-			iLastPacketRecieved = getUnixtime();
+			iLastPacketRecieved = MiscUtils.getUnixtime();
 
 			ArrayList blocks = packet.Blocks();
 			
@@ -662,7 +665,7 @@ namespace libsecondlife.InventorySystem
 				DescendentRequest dr = (DescendentRequest)htFolderDownloadStatus[uuidFolderID];
 				dr.Expected  = iDescendentsExpected;
 				dr.Received += iDescendentsReceivedThisBlock;
-				dr.LastReceived = getUnixtime();
+				dr.LastReceived = MiscUtils.getUnixtime();
 
 				if( dr.Received >= dr.Expected )
 				{
@@ -676,12 +679,6 @@ namespace libsecondlife.InventorySystem
 //					Console.WriteLine( uuidFolderID + " is expecting " + (iDescendentsExpected - iStatus[1]) + " more packets." );
 				}
 			}
-		}
-
-		public static int getUnixtime()
-		{
-			TimeSpan ts = (DateTime.UtcNow - new DateTime(1970,1,1,0,0,0));
-			return (int)ts.TotalSeconds;
 		}
 	}
 }

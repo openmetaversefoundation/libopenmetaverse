@@ -24,8 +24,20 @@ namespace libsecondlife.Utils
 			}
 			catch (Exception e)
 			{
-				// Error initializing the client, probably missing file(s)
-				Console.WriteLine(e.ToString());
+				if( e.Message.Equals("Keyword file error") )
+				{
+					Console.WriteLine("Keyword file not found, or there was an error reading it.  Please make sure you have a copy of the keyword file in the same directory as this appplication.");
+				} 
+				else if ( e.Message.Equals("Map file error") )
+				{
+					Console.WriteLine("Map file not found, or there was an error reading it.  Please make sure you have a copy of the map file in the same directory as this appplication.");
+				}
+					else 
+				{
+					// Error initializing the client, probably missing file(s)
+					Console.WriteLine();
+					Console.WriteLine(e.ToString());
+				}
 				return;
 			}
 		}
