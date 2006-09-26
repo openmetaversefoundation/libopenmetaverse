@@ -487,7 +487,7 @@ namespace libsecondlife.Packets
 				0219 AgentID (LLUUID / 1)
 		*/
 
-		public static Packet UpdateInventoryItem(ProtocolManager protocol, InventoryItem iitem, LLUUID agentID)
+		public static Packet UpdateInventoryItem(ProtocolManager protocol, InventoryItem iitem, LLUUID agentID, LLUUID sessionID)
 		{
 			return UpdateInventoryItem( protocol
 				, iitem.GroupOwned
@@ -512,7 +512,7 @@ namespace libsecondlife.Packets
 				, iitem.GroupMask
 				, iitem.OwnerMask
 				, agentID
-
+				, sessionID
 				);
 		}
 
@@ -593,6 +593,7 @@ namespace libsecondlife.Packets
 			, uint groupMask
 			, uint ownerMask
 			, LLUUID agentID
+			, LLUUID sessionID
 			)
 		{
 			Hashtable blocks = new Hashtable();
@@ -622,12 +623,42 @@ namespace libsecondlife.Packets
 			blocks[fields]			= "InventoryData";
 
 			fields = new Hashtable();
-			fields["AgentID"] = agentID;
-			blocks[fields] = "AgentData";
+			fields["AgentID"]   = agentID;
+			fields["SessionID"] = sessionID;
+			blocks[fields]      = "AgentData";
+			
 
 			return PacketBuilder.BuildPacket("UpdateInventoryItem", protocol, blocks, Helpers.MSG_RELIABLE);
 		}
 
+/*
+			// Confirm InventoryUpdate CRC
+			uint test = libsecondlife.Packets.InventoryPackets.InventoryUpdateCRC
+				        (
+							(int)1159214416
+							, (byte)0
+							, (sbyte)7
+							, (sbyte)7
+							, (LLUUID)"00000000000000000000000000000000"
+							, (LLUUID)"00000000000000000000000000000000"
+							, (int)10
+							, (LLUUID)"25472683cb324516904a6cd0ecabf128"
+							, (LLUUID)"25472683cb324516904a6cd0ecabf128"
+							, (LLUUID)"77364021f09f13dfb692f036be53b9e2"
+							, (LLUUID)"a4947fc066c247518d9854aaf90097f4"
+							, (uint)0
+							, (uint)0
+							, (uint)2147483647
+							, (uint)0
+							, (uint)2147483647
+				        );
+
+			if( test != (uint)895206313 )
+			{
+				Console.WriteLine("CRC Generation is no longer correct.");
+				return;
+			}
+*/
 
 		public static uint InventoryUpdateCRC(InventoryItem iitem)
 		{
