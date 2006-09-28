@@ -46,7 +46,7 @@ namespace libsecondlife.Packets
 		public static Packet ImprovedInstantMessage(ProtocolManager protocol, LLUUID targetAgentID, 
 			LLUUID myAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte offline, 
 			byte dialog, LLUUID id, uint timestamp, string myAgentName, string message, 
-			byte[] binaryBucket) 
+			byte[] binaryBucket, LLUUID mySessionID) 
 		{
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();
@@ -64,6 +64,13 @@ namespace libsecondlife.Packets
 			fields["Message"] = message;
 			fields["BinaryBucket"] = binaryBucket;
 			blocks[fields] = "MessageBlock";
+
+			// Agent Data Block
+			Hashtable agentData = new Hashtable();
+			agentData["AgentID"] = myAgentID;
+			agentData["SessionID"] = mySessionID;
+			blocks[agentData] = "AgentData";
+
 
 			return PacketBuilder.BuildPacket("ImprovedInstantMessage", protocol, blocks, Helpers.MSG_RELIABLE);
 		}

@@ -32,14 +32,14 @@ namespace libsecondlife.Utils
 				{
 					Console.WriteLine("Map file not found, or there was an error reading it.  Please make sure you have a copy of the map file in the same directory as this appplication.");
 				}
-					else 
+				else 
 				{
 					// Error initializing the client, probably missing file(s)
 					Console.WriteLine();
 					Console.WriteLine(e.ToString());
 				}
 				return;
-			}
+			}		
 		}
 
 		protected void Connect(string[] args)

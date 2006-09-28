@@ -232,7 +232,7 @@ namespace libsecondlife
                 {
                     foreach (Field field in block.Fields)
                     {
-                        if (field.Layout.Name == "FromAgentID")
+                        if (field.Layout.Name == "AgentID")
                         {
                             FromAgentID = (LLUUID)field.Data;
                         }
@@ -381,12 +381,17 @@ namespace libsecondlife
 
         public void InstantMessage(LLUUID target, string message)
         {
-            TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-            uint now = (uint)(t.TotalSeconds);
             string name = FirstName + " " + LastName;
 
             InstantMessage(name, LLUUID.GenerateUUID(), target, message, null);
         }
+
+		public void InstantMessage(LLUUID target, string message, LLUUID converstationID)
+		{
+			string name = FirstName + " " + LastName;
+
+			InstantMessage(name, converstationID, target, message, null);
+		}
 
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
         {
@@ -409,10 +414,15 @@ namespace libsecondlife
                 binaryBucket = new byte[0];
             }
 
+			if( Client.CurrentRegion == null )
+			{
+				throw new Exception("Cannot send instant messages until CurrentRegion is not null.");
+			}
+
             // Build the packet
             Packet packet = Packets.Communication.ImprovedInstantMessage(Client.Protocol, target, Client.Network.AgentID, 0,
                     Client.CurrentRegion.ID, new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z),
-                    0, 0, sessionID, now, fromName, message, binaryBucket);
+                    0, 0, sessionID, now, fromName, message, binaryBucket, Client.Network.SessionID);
 
             // Send the message
             Client.Network.SendPacket(packet);
