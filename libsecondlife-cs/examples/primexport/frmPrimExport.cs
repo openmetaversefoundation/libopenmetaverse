@@ -218,9 +218,9 @@ namespace primexport
 
             output += "<primitive name=\"Object\" description=\"\" key=\"Num_000" + prim.LocalID + "\" version=\"2\">" + Environment.NewLine;
             output += "<states>" + Environment.NewLine +
-                "<physics params=\"\">FALSE</physics>" + Environment.NewLine +
-                "<temporary params=\"\">FALSE</temporary>" + Environment.NewLine +
-                "<phantom params=\"\">FALSE</phantom>" + Environment.NewLine +
+                "<physics params=\"\">false</physics>" + Environment.NewLine +
+                "<temporary params=\"\">false</temporary>" + Environment.NewLine +
+                "<phantom params=\"\">false</phantom>" + Environment.NewLine +
                 "</states>" + Environment.NewLine;
             output += "<properties>" + Environment.NewLine +
                 "<levelofdetail val=\"9\" />" + Environment.NewLine;
@@ -261,16 +261,16 @@ namespace primexport
             }
 
             output += "<type val=\"" + type + "\" />" + Environment.NewLine;
-            output += "<position x=\"" + prim.Position.X +
-                "\" y=\"" + prim.Position.Y +
-                "\" z=\"" + prim.Position.Z + "\" />" + Environment.NewLine;
-            output += "<rotation x=\"" + prim.Rotation.X +
-                "\" y=\"" + prim.Rotation.Y +
-                "\" z=\"" + prim.Rotation.Z +
-                "\" s=\"" + prim.Rotation.S + "\" />" + Environment.NewLine;
-            output += "<size x=\"" + prim.Scale.X +
-                "\" y=\"" + prim.Scale.Y +
-                "\" z=\"" + prim.Scale.Z + "\" />" + Environment.NewLine;
+            output += "<position x=\"" + string.Format("{0:F6}", prim.Position.X) +
+                "\" y=\"" + string.Format("{0:F6}", prim.Position.Y) +
+                "\" z=\"" + string.Format("{0:F6}", prim.Position.Z) + "\" />" + Environment.NewLine;
+            output += "<rotation x=\"" + string.Format("{0:F6}", prim.Rotation.X) +
+                "\" y=\"" + string.Format("{0:F6}", prim.Rotation.Y) +
+                "\" z=\"" + string.Format("{0:F6}", prim.Rotation.Z) +
+                "\" s=\"" + string.Format("{0:F6}", prim.Rotation.S) + "\" />" + Environment.NewLine;
+            output += "<size x=\"" + string.Format("{0:F3}", prim.Scale.X) +
+                "\" y=\"" + string.Format("{0:F3}", prim.Scale.Y) +
+                "\" z=\"" + string.Format("{0:F3}", prim.Scale.Z) + "\" />" + Environment.NewLine;
             
             if (type == 1)
             {
@@ -323,6 +323,10 @@ namespace primexport
                 Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
                     txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 50, 50, 50,
                     "Win", "0", "primexport", "jhurliman@wsu.edu");
+
+                // HAX
+                cmdCapture.Text = "Stop Capture";
+                client.Objects.OnNewPrim += primCallback;
 
                 if (client.Network.Login(loginParams))
                 {

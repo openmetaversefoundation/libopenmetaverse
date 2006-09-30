@@ -32,10 +32,16 @@ namespace sldump
 {
 	class sldump
 	{
+        static int i = 0;
+
 		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
-			Console.Write(packet.ToString());
+            if (i < 10)
+            {
+                Console.Write(packet.ToString());
+            }
+            i++;
 		}
 
 		/// <summary>

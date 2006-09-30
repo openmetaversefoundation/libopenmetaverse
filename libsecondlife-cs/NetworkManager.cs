@@ -387,7 +387,8 @@ namespace libsecondlife
                 }
                 catch (SocketException)
                 {
-                    Client.Log("Socket error, shutting down the " + this.Region.Name + " sim", Helpers.LogLevel.Warning);
+                    Client.Log("Socket error, shutting down " + this.Region.Name + 
+                        " (" + endPoint.ToString() + ")", Helpers.LogLevel.Warning);
 
                     connected = false;
                     RecvBufferMutex.ReleaseMutex();

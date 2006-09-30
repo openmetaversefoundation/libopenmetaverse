@@ -261,7 +261,6 @@ namespace libsecondlife.InventorySystem
 
 		internal void ItemGiveTo( InventoryItem iitem, LLUUID ToAgentID )
 		{
-
 			LLUUID MessageID = LLUUID.GenerateUUID();
 
 			Packet packet = InventoryPackets.ImprovedInstantMessage( slClient.Protocol
@@ -269,7 +268,7 @@ namespace libsecondlife.InventorySystem
 				, ToAgentID
 				, slClient.Network.AgentID
 				, slClient.Avatar.FirstName + " " + slClient.Avatar.LastName
-				, new LLVector3(slClient.Avatar.Position)
+				, slClient.Avatar.Position
 				, iitem
 				, slClient.Network.AgentID
 				, slClient.Network.SessionID

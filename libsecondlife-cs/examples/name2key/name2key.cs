@@ -96,7 +96,7 @@ namespace name2key
 
 			// Setup the login values
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 50, 50, 50, "Win", "0", "name2key", "jhurliman@wsu.edu");
+				"last", 1, 50, 50, 50, "Win", "0", "name2key", "contact@libsecondlife.org");
 
 			if (!client.Network.Login(loginParams))
 			{
@@ -107,7 +107,7 @@ namespace name2key
 
 			// Send the Query
 			string name = args[3] + " " + args[4];
-			LLUUID queryID = new LLUUID("00000000000000000000000000000001");
+            LLUUID queryID = LLUUID.GenerateUUID();
 			Packet packet = libsecondlife.Packets.Sim.DirFindQuery(client.Protocol, name, 0, queryID,
 				client.Network.AgentID, client.Network.SessionID);
 			client.Network.SendPacket(packet);

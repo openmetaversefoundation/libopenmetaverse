@@ -55,10 +55,10 @@ namespace ImageTool
 				if( args.Length == 6 )
 				{
 					filename = args[5];
-				} 
-				else 
+				}
+                else if (!args[4].ToLower().EndsWith(".j2c"))
 				{
-					filename = args[4] + ".tif";
+					filename = args[4] + ".j2c";
 				}
 			}
 
@@ -99,7 +99,8 @@ namespace ImageTool
 				byte[] j2cdata = im.RequestImage( _ImageID );
 
 				Console.WriteLine("Writing to: " + _FileName);
-				ImageTools.WriteJ2CAsTiff( _FileName, j2cdata );
+				//ImageTools.WriteJ2CAsTiff( _FileName, j2cdata );
+                ImageTools.WriteJ2CToFile(_FileName, j2cdata);
 			}
 
 			Console.WriteLine("Done...");

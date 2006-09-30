@@ -85,20 +85,20 @@ namespace libsecondlife.Packets
                }
 
                public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID, float drawDistance,
-                       LLVector3 cameraCenter)
+                       LLVector3 cameraCenter, byte flags, byte state)
                {
-				   
-                   LLVector3 cameraAtAxis    = new LLVector3(0.0F, 1.0F, 0.0F); // Looking straight ahead, north
-                   LLVector3 cameraLeftAxis  = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
-                   LLVector3 cameraUpAxis    = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+                   LLVector3 cameraAtAxis = new LLVector3(0.0F, 1.0F, 0.0F); // Looking straight ahead, north
+                   LLVector3 cameraLeftAxis = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
+                   LLVector3 cameraUpAxis = new LLVector3(0.0F, 0.0F, 0.0F); //FIXME
                    LLQuaternion headRotation = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
 
-                   return AgentUpdate(protocol, agentID, drawDistance, cameraCenter, cameraAtAxis, cameraLeftAxis, cameraUpAxis, headRotation );
+                   return AgentUpdate(protocol, agentID, drawDistance, cameraCenter, 
+                       cameraAtAxis, cameraLeftAxis, cameraUpAxis, headRotation, flags, state);
                }
 
 		   public static Packet AgentUpdate(ProtocolManager protocol, LLUUID agentID, float drawDistance,
-			   LLVector3 cameraCenter, LLVector3 cameraAtAxis, LLVector3 cameraLeftAxis, LLVector3 cameraUpAxis
-			   , LLQuaternion headRotation)
+			   LLVector3 cameraCenter, LLVector3 cameraAtAxis, LLVector3 cameraLeftAxis, LLVector3 cameraUpAxis, 
+               LLQuaternion headRotation, byte flags, byte state)
 		   {
 			   Hashtable blocks = new Hashtable();
 			   Hashtable fields = new Hashtable();
@@ -112,8 +112,8 @@ namespace libsecondlife.Packets
 			   fields["HeadRotation"] = headRotation;
 			   fields["CameraUpAxis"] = cameraUpAxis;
 			   fields["BodyRotation"] = new LLQuaternion(0.0F, 0.0F, 0.0F, 0.0F);
-			   fields["Flags"] = (byte)221; // Why 221?
-			   fields["State"] = (byte)221; // Why 221?
+			   fields["Flags"] = flags;
+			   fields["State"] = state;
 			   blocks[fields] = "AgentData";
 
 			   return PacketBuilder.BuildPacket("AgentUpdate", protocol, blocks, (byte)0);

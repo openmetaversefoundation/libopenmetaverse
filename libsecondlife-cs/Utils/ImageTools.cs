@@ -27,12 +27,6 @@ namespace libsecondlife.Utils
 				status = false;
 				Console.WriteLine("You need kdu_compress.exe to load images into SL.");
 			}
-
-			if( File.Exists("kdu_v51R.dll") == false )
-			{
-				status = false;
-				Console.WriteLine("You need kdu_v51R.dll for kdu_expand.exe and kdu_compress.exe.");
-			}
 			
 			return status;
 		}

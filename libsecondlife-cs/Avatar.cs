@@ -50,16 +50,21 @@ namespace libsecondlife
         public string GroupName;
         public bool Online;
         public LLVector3 Position;
+        public LLQuaternion Rotation;
         public Region CurrentRegion;
     }
 
     public class MainAvatar
     {
         public LLUUID ID;
+        public uint LocalID;
         public string FirstName;
         public string LastName;
         public string TeleportMessage;
-        public LLVector3d Position;
+        public LLVector3 Position;
+        public LLQuaternion Rotation;
+        // Should we even keep LookAt around? It's just for setting the initial
+        // rotation after login AFAIK
         public LLVector3d LookAt;
         public LLVector3d HomePosition;
         public LLVector3d HomeLookAt;
@@ -80,10 +85,12 @@ namespace libsecondlife
             TeleportMessage = "";
 
             // Create emtpy vectors for now
-            HomeLookAt = HomePosition = LookAt = Position = new LLVector3d();
+            HomeLookAt = HomePosition = LookAt = new LLVector3d();
+            Position = new LLVector3();
+            Rotation = new LLQuaternion();
 
-            // Location callback
-            PacketCallback callback = new PacketCallback(LocationHandler);
+            // Coarse location callback
+            PacketCallback callback = new PacketCallback(CoarseLocationHandler);
             Client.Network.RegisterCallback("CoarseLocationUpdate", callback);
 
             // Teleport callbacks
@@ -180,31 +187,55 @@ namespace libsecondlife
             }
         }
 
-        private void LocationHandler(Packet packet, Simulator simulator)
+        private void CoarseLocationHandler(Packet packet, Simulator simulator)
         {
+            LLVector3d position = new LLVector3d();
+
             foreach (Block block in packet.Blocks())
             {
                 foreach (Field field in block.Fields)
                 {
                     if (field.Layout.Name == "X")
                     {
-                        Position.X = Convert.ToDouble((byte)field.Data);
+                        position.X = Convert.ToDouble((byte)field.Data);
                     }
                     else if (field.Layout.Name == "Y")
                     {
-                        Position.Y = Convert.ToDouble((byte)field.Data);
+                        position.Y = Convert.ToDouble((byte)field.Data);
                     }
                     else if (field.Layout.Name == "Z")
                     {
-                        Position.Z = Convert.ToDouble((byte)field.Data);
+                        position.Z = Convert.ToDouble((byte)field.Data);
                     }
                 }
             }
 
-            // Send an AgentUpdate packet with the new camera location
-            packet = Packets.Sim.AgentUpdate(Client.Protocol, Client.Network.AgentID, 56.0F,
-                    new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z));
-            Client.Network.SendPacket(packet);
+            // Check if the avatar position hasn't been updated
+            if (Position.X == 0 && Position.Y == 0 && Position.Z == 0)
+            {
+                Position.X = (float)position.X;
+                Position.Y = (float)position.Y;
+                Position.Z = (float)position.Z;
+
+                // Send an AgentUpdate packet with the new camera location
+                packet = Packets.Sim.AgentUpdate(Client.Protocol, Client.Network.AgentID, 
+                    56.0F, Position, 0, 0);
+                Client.Network.SendPacket(packet);
+
+                Hashtable blocks = new Hashtable();
+                Hashtable fields = new Hashtable();
+
+                fields["ID"] = Client.Avatar.ID;
+                fields["CircuitCode"] = Client.Network.CurrentSim.CircuitCode;
+                fields["GenCounter"] = (uint)0;
+                blocks[fields] = "Sender";
+
+                fields = new Hashtable();
+                fields["VerticalAngle"] = (float)6.28318531F;
+                blocks[fields] = "FOVBlock";
+
+                packet = PacketBuilder.BuildPacket("AgentFOV", Client.Protocol, blocks, Helpers.MSG_RELIABLE);
+            }
         }
 
         private void InstantMessageHandler(Packet packet, Simulator simulator)
@@ -215,7 +246,7 @@ namespace libsecondlife
                 LLUUID ToAgentID = new LLUUID();
                 uint ParentEstateID = 0;
                 LLUUID RegionID = new LLUUID();
-                LLVector3 Position = new LLVector3();
+                LLVector3 position = new LLVector3();
                 byte Offline = 0;
                 byte Dialog = 0;
                 LLUUID ID = new LLUUID();
@@ -250,7 +281,7 @@ namespace libsecondlife
                         }
                         else if (field.Layout.Name == "Position")
                         {
-                            Position = (LLVector3)field.Data;
+                            position = (LLVector3)field.Data;
                         }
                         else if (field.Layout.Name == "Offline")
                         {
@@ -285,7 +316,7 @@ namespace libsecondlife
 
                 if (OnInstantMessage != null)
                 {
-                    OnInstantMessage(FromAgentID, ToAgentID, ParentEstateID, RegionID, Position,
+                    OnInstantMessage(FromAgentID, ToAgentID, ParentEstateID, RegionID, position,
                             Offline, Dialog, ID, Timestamp, AgentName, Message, Bucket);
                 }
             }

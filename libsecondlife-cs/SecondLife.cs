@@ -108,8 +108,17 @@ namespace libsecondlife
             AvatarsMutex.WaitOne();
             Avatars[AgentID] = new Avatar();
             AvatarsMutex.ReleaseMutex();
+        }
 
-            return;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="avatar"></param>
+        public void AddAvatar(Avatar avatar)
+        {
+            AvatarsMutex.WaitOne();
+            Avatars[avatar.ID] = avatar;
+            AvatarsMutex.ReleaseMutex();
         }
 
         /// <summary>
@@ -171,7 +180,7 @@ namespace libsecondlife
     /// </summary>
     public class Helpers
     {
-        public readonly static string VERSION = "libsecondlife-cs 0.0.6";
+        public readonly static string VERSION = "libsecondlife 0.0.9";
 
         public const byte MSG_APPENDED_ACKS = 0x10;
         public const byte MSG_RESENT = 0x20;

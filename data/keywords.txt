@@ -36,7 +36,6 @@ MoneyTransactionsRequest
 GroupAccountTransactionsRequest
 MapNameRequest
 MailTaskSimRequest
-LandStatRequest
 UpdateSimulator
 BillableFactor
 ObjectBonusFactor
@@ -170,7 +169,6 @@ PropertiesData
 ViewerEffect
 FreezeUser
 OwnerPrims
-ScriptTime
 ObjectGrab
 ToAgentID
 SimulatorMapUpdate
@@ -246,6 +244,7 @@ ViewerFrozenMessage
 HealthMessage
 LogTextMessage
 TimeDilation
+RemoveContribution
 Contribution
 SetGroupContribution
 Offline
@@ -334,7 +333,6 @@ LiveHelpGroupRequest
 ServerVersion
 PriceParcelClaimFactor
 BillableArea
-ScriptCount
 ObjectID
 ObjectFlagUpdate
 GroupRoleUpdate
@@ -622,6 +620,7 @@ RoleChange
 Port
 MemberTitle
 LogParcelChanges
+AgentCachedTextureResponse
 DeRezObject
 IsTemporary
 IsComplete
@@ -653,7 +652,6 @@ OnlineNotification
 OfflineNotification
 SendPostcard
 RequestFlags
-ReportType
 MoneyHistoryRequest
 MoneySummaryRequest
 GroupAccountSummaryRequest
@@ -775,6 +773,7 @@ ReporterID
 GranterID
 ButtonLabel
 WantToText
+ReportType
 DataBlock
 SimulatorReady
 AnimationSourceList
@@ -808,6 +807,7 @@ TaskID
 GridsPerEdge
 RayEnd
 Throttles
+RebakeAvatarTextures
 UpAxis
 AgentTextures
 Radius
@@ -972,6 +972,7 @@ RegionIDAndHandleReply
 CameraAtOffset
 VoteID
 ParcelGodForceOwner
+Filter
 InviteData
 PCode
 SearchPos
@@ -1030,7 +1031,6 @@ MapBlockRequest
 LureID
 CopyCenters
 RegisterNewAgent
-TotalObjectCount
 ParamList
 InventorySerial
 EdgeDataPacket
@@ -1085,7 +1085,6 @@ MaturePublish
 UseExistingAsset
 Powers
 ParcelLocalID
-Filter
 TeleportCancel
 UnixTime
 QueryFlags
@@ -1111,6 +1110,7 @@ UserListRequest
 MuteListRequest
 StartPeriod
 RpcChannelRequest
+LandStatRequest
 PlacesQuery
 DirPlacesQuery
 Distance
@@ -1273,6 +1273,7 @@ StipendEstimate
 LocationLookAt
 Sound
 Cover
+TotalObjectCount
 TextureEntry
 SquareMetersCommitted
 ChannelID
@@ -1364,6 +1365,7 @@ ConfirmXferPacket
 StartPingCheck
 SimWideDeletes
 UserListReply
+LandStatReply
 IsPhantom
 AgentList
 RezObject
@@ -1467,7 +1469,6 @@ ObjectExtraParams
 Questions
 TransferAbort
 TransferInventory
-LandStatReply
 RayTargetID
 ClaimPrice
 ObjectProperties

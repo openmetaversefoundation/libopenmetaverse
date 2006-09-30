@@ -116,6 +116,31 @@ namespace libsecondlife
             Client.Network.RegisterCallback("ObjectUpdateCached", new PacketCallback(CachedUpdateHandler));
         }
 
+        private void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
+        {
+            string[] lines = name.Split('\n');
+
+            foreach (string line in lines)
+            {
+                if (line.Substring(0, 19) == "Title STRING RW SV ")
+                {
+                    groupName = line.Substring(19);
+                }
+                else if (line.Substring(0, 23) == "FirstName STRING RW SV ")
+                {
+                    firstName = line.Substring(23);
+                }
+                else if (line.Substring(0, 22) == "LastName STRING RW SV ")
+                {
+                    lastName = line.Substring(22);
+                }
+                else
+                {
+                    Client.Log("Unhandled line in an avatar name: " + line, Helpers.LogLevel.Warning);
+                }
+            }
+        }
+
         private void UpdateHandler(Packet packet, Simulator simulator)
         {
             U64 regionHandle = null;
@@ -290,7 +315,23 @@ namespace libsecondlife
                                 prim.Rotation.S = (xyzsum > 0.0F) ? (float)Math.Sqrt(xyzsum) : 0.0F;
                                 // TODO: Parse the rest of the fields
                             }
-                            // TODO: Parse ObjectData for avatars
+                            else if (data.Length == 76)
+                            {
+                                avatar = new Avatar();
+
+                                //avatar.CollisionPlane = new LLQuaternion(data, 0);
+                                avatar.Position = new LLVector3(data, 16);
+                                avatar.Rotation = new LLQuaternion(data, 52);
+                                float xyzsum = 1.0F -
+                                    avatar.Rotation.X * avatar.Rotation.X -
+                                    avatar.Rotation.Y * avatar.Rotation.Y -
+                                    avatar.Rotation.Z * avatar.Rotation.Z;
+                                avatar.Rotation.S = (xyzsum > 0.0F) ? (float)Math.Sqrt(xyzsum) : 0.0F;
+                            }
+                            else
+                            {
+                                Client.Log("Unhandled ObjectData:\n" + field.ToString(), Helpers.LogLevel.Warning);
+                            }
                             break;
                         case "TimeDilation":
                             timeDilation = (ushort)field.Data;
@@ -308,28 +349,47 @@ namespace libsecondlife
                 // Parse the NameValue to see if this is actually an avatar
                 if (prim.LocalID != 0)
                 {
-                    if (prim.Name.IndexOf("FirstName") > -1)
+                    if (avatar != null)
                     {
-                        avatar = new Avatar();
+                        string FirstName = "";
+                        string LastName = "";
+                        string GroupName = "";
+
+                        // Get the individual components of the avatar name
+                        ParseAvName(prim.Name, ref FirstName, ref LastName, ref GroupName);
+
                         avatar.ID = prim.ID;
                         avatar.LocalID = prim.LocalID;
-                        // FIXME: Parse the correct name and group name
-                        avatar.Name = prim.Name;
-                        avatar.GroupName = prim.Name;
+                        avatar.Name = FirstName + " " + LastName;
+                        avatar.GroupName = GroupName;
                         avatar.Online = true;
                         avatar.Position = prim.Position;
+                        avatar.Rotation = prim.Rotation;
                         // TODO: Look up the region by regionHandle instead
                         avatar.CurrentRegion = simulator.Region;
 
                         prim = null;
 
-                        // If an event handler is registered call it
-                        if (OnNewAvatar != null)
+                        // Is this our avatar? Update the position
+                        if (FirstName == Client.Avatar.FirstName && LastName == Client.Avatar.LastName)
                         {
-                            OnNewAvatar(simulator, avatar, regionHandle, timeDilation);
+                            // Update our avatar
+                            Client.Avatar.LocalID = avatar.LocalID;
+                            Client.Avatar.Position = avatar.Position;
+                            Client.Avatar.Rotation = avatar.Rotation;
+                        }
+                        else
+                        {
+                            Client.AddAvatar(avatar);
+
+                            // If an event handler is registered call it
+                            if (OnNewAvatar != null)
+                            {
+                                OnNewAvatar(simulator, avatar, regionHandle, timeDilation);
+                            }
                         }
                     }
-                    else
+                    else if (prim != null)
                     {
                         // If an event handler is registered call it
                         if (OnNewPrim != null)
@@ -436,20 +496,28 @@ namespace libsecondlife
 
             if (avatar)
             {
-                AvatarUpdate avupdate = new AvatarUpdate();
-                avupdate.LocalID = localid;
-                avupdate.State = state;
-                avupdate.Position = Position;
-                avupdate.CollisionPlane = CollisionPlane;
-                avupdate.Velocity = Velocity;
-                avupdate.Acceleration = Acceleration;
-                avupdate.Rotation = Rotation;
-                avupdate.RotationVelocity = RotationVelocity;
-
-                // If an event handler is registered call it
-                if (OnAvatarMoved != null)
+                if (localid == Client.Avatar.LocalID)
                 {
-                    OnAvatarMoved(simulator, avupdate, regionHandle, timeDilation);
+                    Client.Avatar.Position = Position;
+                    Client.Avatar.Rotation = Rotation;
+                }
+                else
+                {
+                    AvatarUpdate avupdate = new AvatarUpdate();
+                    avupdate.LocalID = localid;
+                    avupdate.State = state;
+                    avupdate.Position = Position;
+                    avupdate.CollisionPlane = CollisionPlane;
+                    avupdate.Velocity = Velocity;
+                    avupdate.Acceleration = Acceleration;
+                    avupdate.Rotation = Rotation;
+                    avupdate.RotationVelocity = RotationVelocity;
+
+                    // If an event handler is registered call it
+                    if (OnAvatarMoved != null)
+                    {
+                        OnAvatarMoved(simulator, avupdate, regionHandle, timeDilation);
+                    }
                 }
             }
             else

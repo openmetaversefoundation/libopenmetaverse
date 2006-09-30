@@ -62,6 +62,7 @@ namespace libsecondlife.Packets
 			packetLength += 16; // ItemID (UUID)
 			packetLength += 16; // AgentID (UUID)
 
+            // FIXME: Convert this function to use BuildPacket
 			Packet packet = new Packet("AgentWearablesRequest", protocol, packetLength);
 
 			int pos = 8; // Leave room for header
@@ -90,6 +91,7 @@ namespace libsecondlife.Packets
 			int packetLength = 8; // header
 			packetLength += 16; // AgentID (UUID)
 
+            // FIXME: Convert this function to use BuildPacket
 			Packet packet = new Packet("AgentWearablesRequest", protocol, packetLength );
 
 			int pos = 8; // Leave room for header
@@ -454,6 +456,7 @@ namespace libsecondlife.Packets
 			packetLength += 16; // OwnerID (UUID)
 			packetLength += 16; // ItemID (UUID)
 
+            // FIXME: Convert this function to use BuildPacket
 			Packet packet = new Packet("RequestInventoryAsset", protocol, packetLength );
 
 			int pos = 8; // Leave room for header
