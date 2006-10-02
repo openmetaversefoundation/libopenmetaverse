@@ -256,7 +256,7 @@
     </Compile>
   </ItemGroup>
   <!-- <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" /> -->
-  <Import Project="$(MSBuildExtensionsPath)\Ovatsus.CSharp.targets" />
+  <Import Project="..\Ovatsus.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>

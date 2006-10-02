@@ -1,0 +1,587 @@
+<!--
+Written by Gustavo Guerra
+Inspired by work of Jomo Fisher, Robert McLaws, Mike Hull and Andy Wadell
+
+Version 1.0, last revised 2005/10/17
+-->
+
+<Project DefaultTargets="Build" InitialTargets="CheckUnsupportedFeatures"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--=======================================================================-->
+  <!--Paths-->
+
+  <PropertyGroup>
+    <NET_1_0_Path>$(SystemRoot)\Microsoft.NET\Framework\v1.0.3705</NET_1_0_Path>
+    <NET_1_1_Path>$(SystemRoot)\Microsoft.NET\Framework\v1.1.4322</NET_1_1_Path>
+    <MonoPath Condition="' $(MonoPath)' != '' ">C:\Program Files\Mono-1.1.9.2</MonoPath>
+    <Mono_1_1_CompilerPath>$(MonoPath)\bin\mcs.bat</Mono_1_1_CompilerPath>
+    <Mono_2_0_CompilerPath>$(MonoPath)\bin\gmcs.bat</Mono_2_0_CompilerPath>
+    <Mono_1_1_LibPath>$(MonoPath)\lib\mono\1.0</Mono_1_1_LibPath>
+    <Mono_2_0_LibPath>$(MonoPath)\lib\mono\2.0</Mono_2_0_LibPath>
+  </PropertyGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--Platforms-->
+
+  <PropertyGroup>
+    <NET_1_0_Platform>.NET 1.0</NET_1_0_Platform>
+    <NET_1_1_Platform>.NET 1.1</NET_1_1_Platform>
+    <NET_2_0_Platform>.NET 2.0</NET_2_0_Platform>
+    <NET_CF_1_0_PocketPC_Platform>.NET CF 1.0 (Pocket PC 2003)</NET_CF_1_0_PocketPC_Platform>
+    <NET_CF_1_0_Smartphone_Platform>.NET CF 1.0 (Smartphone 2003)</NET_CF_1_0_Smartphone_Platform>
+    <NET_CF_2_0_PocketPC_Platform>.NET CF 2.0 (Pocket PC 2003)</NET_CF_2_0_PocketPC_Platform>
+    <NET_CF_2_0_WinCE_Platform>.NET CF 2.0 (Windows CE 5.0)</NET_CF_2_0_WinCE_Platform>
+    <Mono_1_1_Full_Platform>.NET 1.1 (Mono Compiler &amp; Libraries)</Mono_1_1_Full_Platform>
+    <Mono_2_0_Full_Platform>.NET 2.0 (Mono Compiler &amp; Libraries)</Mono_2_0_Full_Platform>
+    <Mono_1_1_LibOnly_Platform>.NET 1.1 (Mono Libraries)</Mono_1_1_LibOnly_Platform>
+    <Mono_2_0_LibOnly_Platform>.NET 2.0 (Mono Libraries)</Mono_2_0_LibOnly_Platform>
+    <BuildAll_Platform>Build All Platforms Simultaneously</BuildAll_Platform>
+    <BuildAll_2_0_Platform>Build All 2.0 Platforms Simultaneously</BuildAll_2_0_Platform>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BuildAll_IncludedPlatforms Include="$(NET_1_0_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(NET_1_1_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(NET_2_0_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(NET_CF_1_0_PocketPC_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(NET_CF_1_0_Smartphone_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(NET_CF_2_0_PocketPC_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(NET_CF_2_0_WinCE_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(Mono_1_1_Full_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(Mono_2_0_Full_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(Mono_1_1_LibOnly_Platform)"/>
+    <BuildAll_IncludedPlatforms Include="$(Mono_2_0_LibOnly_Platform)"/>
+
+    <BuildAll_2_0_IncludedPlatforms Include="$(NET_2_0_Platform)"/>
+    <BuildAll_2_0_IncludedPlatforms Include="$(NET_CF_2_0_PocketPC_Platform)"/>
+    <BuildAll_2_0_IncludedPlatforms Include="$(NET_CF_2_0_WinCE_Platform)"/>
+    <BuildAll_2_0_IncludedPlatforms Include="$(Mono_2_0_Full_Platform)"/>
+    <BuildAll_2_0_IncludedPlatforms Include="$(Mono_2_0_LibOnly_Platform)"/>
+  </ItemGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--Tests-->
+
+  <PropertyGroup>
+    <NET_1_0_Test>false</NET_1_0_Test>
+    <NET_1_0_Test Condition=" '$(Platform)' == '$(NET_1_0_Platform)' ">true</NET_1_0_Test>
+
+    <NET_1_1_Test>false</NET_1_1_Test>
+    <NET_1_1_Test Condition=" '$(Platform)' == '$(NET_1_1_Platform)' ">true</NET_1_1_Test>
+
+    <NET_2_0_Test>false</NET_2_0_Test>
+    <NET_2_0_Test Condition=" '$(Platform)' == '$(NET_2_0_Platform)' ">true</NET_2_0_Test>
+
+    <NET_CF_1_0_PocketPC_Test>false</NET_CF_1_0_PocketPC_Test>
+    <NET_CF_1_0_PocketPC_Test Condition=" '$(Platform)' == '$(NET_CF_1_0_PocketPC_Platform)' ">true</NET_CF_1_0_PocketPC_Test>
+
+    <NET_CF_1_0_Smartphone_Test>false</NET_CF_1_0_Smartphone_Test>
+    <NET_CF_1_0_Smartphone_Test Condition=" '$(Platform)' == '$(NET_CF_1_0_Smartphone_Platform)' ">true</NET_CF_1_0_Smartphone_Test>
+
+    <NET_CF_2_0_PocketPC_Test>false</NET_CF_2_0_PocketPC_Test>
+    <NET_CF_2_0_PocketPC_Test Condition=" '$(Platform)' == '$(NET_CF_2_0_PocketPC_Platform)' ">true</NET_CF_2_0_PocketPC_Test>
+
+    <NET_CF_2_0_WinCE_Test>false</NET_CF_2_0_WinCE_Test>
+    <NET_CF_2_0_WinCE_Test Condition=" '$(Platform)' == '$(NET_CF_2_0_WinCE_Platform)' ">true</NET_CF_2_0_WinCE_Test>
+
+    <All_NET_CF_1_0_Test>false</All_NET_CF_1_0_Test>
+    <All_NET_CF_1_0_Test Condition=" $(NET_CF_1_0_PocketPC_Test) Or $(NET_CF_1_0_Smartphone_Test)">true</All_NET_CF_1_0_Test>
+
+    <All_NET_CF_2_0_Test>false</All_NET_CF_2_0_Test>
+    <All_NET_CF_2_0_Test Condition=" $(NET_CF_2_0_PocketPC_Test) Or $(NET_CF_2_0_WinCE_Test) ">true</All_NET_CF_2_0_Test>
+
+    <All_NET_CF_Test>false</All_NET_CF_Test>
+    <All_NET_CF_Test Condition=" $(All_NET_CF_1_0_Test) Or $(All_NET_CF_2_0_Test) ">true</All_NET_CF_Test>
+
+    <All_PocketPC_Test>false</All_PocketPC_Test>
+    <All_PocketPC_Test Condition=" $(NET_CF_1_0_PocketPC_Test) Or $(NET_CF_2_0_PocketPC_Test)">true</All_PocketPC_Test>
+
+    <All_Smartphone_Test>false</All_Smartphone_Test>
+    <All_Smartphone_Test Condition=" $(NET_CF_1_0_Smartphone_Test) ">true</All_Smartphone_Test>
+
+    <All_WinCE_Test>false</All_WinCE_Test>
+    <All_WinCE_Test Condition=" $(NET_CF_2_0_WinCE_Test) ">true</All_WinCE_Test>
+
+    <NET_1_x_Test>false</NET_1_x_Test>
+    <NET_1_x_Test Condition=" $(NET_1_0_Test) Or $(NET_1_1_Test) ">true</NET_1_x_Test>
+
+    <MS_1_x_Test>false</MS_1_x_Test>
+    <MS_1_x_Test Condition=" $(NET_1_x_Test) Or $(All_NET_CF_1_0_Test) ">true</MS_1_x_Test>
+
+    <Mono_1_1_Full_Test>false</Mono_1_1_Full_Test>
+    <Mono_1_1_Full_Test Condition=" '$(Platform)' == '$(Mono_1_1_Full_Platform)' ">true</Mono_1_1_Full_Test>
+
+    <Mono_1_1_LibOnly_Test>false</Mono_1_1_LibOnly_Test>
+    <Mono_1_1_LibOnly_Test Condition=" '$(Platform)' == '$(Mono_1_1_LibOnly_Platform)' ">true</Mono_1_1_LibOnly_Test>
+
+    <Mono_2_0_Full_Test>false</Mono_2_0_Full_Test>
+    <Mono_2_0_Full_Test Condition=" '$(Platform)' == '$(Mono_2_0_Full_Platform)' ">true</Mono_2_0_Full_Test>
+
+    <Mono_2_0_LibOnly_Test>false</Mono_2_0_LibOnly_Test>
+    <Mono_2_0_LibOnly_Test Condition=" '$(Platform)' == '$(Mono_2_0_LibOnly_Platform)' ">true</Mono_2_0_LibOnly_Test>
+
+    <All_Mono_LibOnly_Test>false</All_Mono_LibOnly_Test>
+    <All_Mono_LibOnly_Test Condition=" $(Mono_1_1_LibOnly_Test) Or $(Mono_2_0_LibOnly_Test) ">true</All_Mono_LibOnly_Test>
+
+    <All_Mono_Full_Test>false</All_Mono_Full_Test>
+    <All_Mono_Full_Test Condition=" $(Mono_1_1_Full_Test) Or $(Mono_2_0_Full_Test) ">true</All_Mono_Full_Test>
+
+    <All_Mono_1_1_Test>false</All_Mono_1_1_Test>
+    <All_Mono_1_1_Test Condition=" $(Mono_1_1_LibOnly_Test) Or $(Mono_1_1_Full_Test) ">true</All_Mono_1_1_Test>
+
+    <All_Mono_2_0_Test>false</All_Mono_2_0_Test>
+    <All_Mono_2_0_Test Condition=" $(Mono_2_0_LibOnly_Test) Or $(Mono_2_0_Full_Test) ">true</All_Mono_2_0_Test>
+
+    <All_Mono_Test>false</All_Mono_Test>
+    <All_Mono_Test Condition=" $(All_Mono_LibOnly_Test) Or $(All_Mono_Full_Test) ">true</All_Mono_Test>
+
+    <BuildAll_Test>false</BuildAll_Test>
+    <BuildAll_Test Condition=" '$(Platform)' == '$(BuildAll_Platform)' ">true</BuildAll_Test>
+
+    <BuildAll_2_0_Test>false</BuildAll_2_0_Test>
+    <BuildAll_2_0_Test Condition=" '$(Platform)' == '$(BuildAll_2_0_Platform)' ">true</BuildAll_2_0_Test>
+
+    <MultiplePlatformsTest>false</MultiplePlatformsTest>
+    <MultiplePlatformsTest Condition=" $(BuildAll_Test) Or $(BuildAll_2_0_Test) ">true</MultiplePlatformsTest>
+
+  </PropertyGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--Constants-->
+
+  <PropertyGroup>
+    <NET_1_0_Constant>NET_1_0</NET_1_0_Constant>
+    <NET_1_1_Constant>NET_1_1</NET_1_1_Constant>
+    <NET_2_0_Constant>NET_2_0</NET_2_0_Constant>
+    <NET_CF_1_0_Constant>NET_CF_1_0</NET_CF_1_0_Constant>
+    <NET_CF_2_0_Constant>NET_CF_2_0</NET_CF_2_0_Constant>
+    <NET_CF_Constant>NET_CF</NET_CF_Constant>
+    <Mono_Constant>Mono</Mono_Constant>
+  </PropertyGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--Configuration Properties-->
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <DebugType Condition=" '$(DebugType)' == '' ">full</DebugType>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    <DefineConstants Condition=" '$(DefineConstants)' == '' ">DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType Condition=" '$(DebugType)' == '' ">pdbonly</DebugType>
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+    <DefineConstants Condition=" '$(DefineConstants)' == '' ">TRACE</DefineConstants>
+  </PropertyGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--Platform Properties-->
+
+  <!--To Prevent Error-->
+  <PropertyGroup Condition=" $(MultiplePlatformsTest) ">
+    <OutputPath>bin</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" !$(MultiplePlatformsTest) ">
+    <OutputPath Condition=" '$(OutputPath)' == '' ">bin\$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" !$(MultiplePlatformsTest) ">
+    <WarningLevel Condition=" '$(WarningLevel)' == '' ">4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" !$(MultiplePlatformsTest) And !$(All_Mono_Test) And !$(MS_1_x_Test)">
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" !$(MultiplePlatformsTest) And !$(NET_2_0_Test) And !$(All_NET_CF_2_0_Test) ">
+    <UseHostCompilerIfAvailable>false</UseHostCompilerIfAvailable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(NET_1_0_Test) ">
+    <DefineConstants>$(DefineConstants);$(NET_1_0_Constant)</DefineConstants>
+    <CscToolPath>$(NET_1_0_Path)</CscToolPath>
+    <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(NET_1_1_Test) Or $(All_Mono_1_1_Test) ">
+    <DefineConstants>$(DefineConstants);$(NET_1_1_Constant)</DefineConstants>
+    <TargetFrameworkVersion>v1.1</TargetFrameworkVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(NET_1_1_Test) Or $(Mono_1_1_LibOnly_Test) ">
+    <CscToolPath>$(NET_1_1_Path)</CscToolPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(NET_2_0_Test) Or $(All_Mono_2_0_Test)">
+    <DefineConstants>$(DefineConstants);$(NET_2_0_Constant)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_NET_CF_1_0_Test) ">
+    <DefineConstants>$(DefineConstants);$(NET_CF_1_0_Constant)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_NET_CF_2_0_Test) ">
+    <DefineConstants>$(DefineConstants);$(NET_CF_2_0_Constant)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_PocketPC_Test) ">
+    <PlatformID>3C41C503-53EF-4c2a-8DD4-A8217CAD115E</PlatformID>
+    <PlatformFamilyName>PocketPC</PlatformFamilyName>
+    <OSVersion>4.20</OSVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_Smartphone_Test) ">
+    <PlatformID>4DE813A2-67E0-4a00-945C-3188240A8243</PlatformID>
+    <PlatformFamilyName>Smartphone</PlatformFamilyName>
+    <OSVersion>4.20</OSVersion>
+  </PropertyGroup >
+
+  <PropertyGroup Condition=" $(All_WinCE_Test) ">
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <OSVersion>5.0</OSVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_NET_CF_Test) ">
+    <DeployDirSuffix>$(AssemblyName)</DeployDirSuffix>
+    <FileAlignment>512</FileAlignment>
+    <DefineConstants>$(DefineConstants);$(PlatformFamilyName)</DefineConstants>
+    <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <DefineConstants>$(DefineConstants);$(NET_CF_Constant)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_Mono_Test) ">
+    <DefineConstants>$(DefineConstants);$(Mono_Constant)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_Mono_Test) Or $(All_NET_CF_Test) " >
+    <NoConfig>true</NoConfig>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" $(All_Mono_LibOnly_Test) Or $(All_NET_CF_Test) " >
+    <NoStdLib>true</NoStdLib>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(All_Mono_LibOnly_Test) Or $(All_NET_CF_Test) ">
+    <Reference Include="mscorlib"/>
+  </ItemGroup>
+
+
+  <!--=======================================================================-->
+  <!--Import the standard C# targets-->
+
+  <Import Condition=" !$(All_NET_CF_Test) " 
+          Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
+
+  <!--Override to stop it from working in the added platforms (except CF)-->
+  <Target Name="GetFrameworkPaths"
+          DependsOnTargets="$(GetFrameworkPathsDependsOn)">
+    <GetFrameworkPath Condition=" $(NET_2_0_Test) ">
+      <Output TaskParameter="Path" PropertyName="TargetFrameworkDirectory"/>
+      <Output TaskParameter="Path" ItemName="TargetFrameworkDirectoryItem"/>
+    </GetFrameworkPath>
+    <GetFrameworkSDKPath Condition=" $(NET_2_0_Test) ">
+      <Output TaskParameter="Path" PropertyName="TargetFrameworkSDKDirectory"/>
+      <Output TaskParameter="Path" ItemName="TargetFrameworkSDKDirectoryItem"/>
+    </GetFrameworkSDKPath>
+  </Target>
+
+  <Import Condition=" $(All_NET_CF_1_0_Test) " 
+          Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
+
+  <Import Condition=" $(All_NET_CF_2_0_Test) " 
+          Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+
+
+
+  <!--=======================================================================-->
+  <!--Redefine TargetFrameworkDirectory and TargetFrameworkDirectoryItem-->
+  <!--TargetFrameworkSDKDirectory[Item] isn't used, so it isn't redefined -->
+
+  <PropertyGroup>
+    <TargetFrameworkDirectory Condition=" $(NET_1_0_Test) ">
+      $(NET_1_0_Path)
+    </TargetFrameworkDirectory>
+
+    <TargetFrameworkDirectory Condition=" $(NET_1_1_Test) ">
+      $(NET_1_1_Path)
+    </TargetFrameworkDirectory>
+
+    <TargetFrameworkDirectory Condition=" $(All_Mono_1_1_Test) ">
+      $(Mono_1_1_LibPath)
+    </TargetFrameworkDirectory>
+
+    <TargetFrameworkDirectory Condition=" $(All_Mono_2_0_Test) ">
+      $(Mono_2_0_LibPath)
+    </TargetFrameworkDirectory>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(NET_1_0_Test) ">
+    <TargetFrameworkDirectoryItem Include="$(Net_1_0_Path)">
+      <InProject>false</InProject>
+    </TargetFrameworkDirectoryItem>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(NET_1_1_Test) ">
+    <TargetFrameworkDirectoryItem Include="$(Net_1_1_Path)">
+      <InProject>false</InProject>
+    </TargetFrameworkDirectoryItem>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(All_Mono_1_1_Test) ">
+    <TargetFrameworkDirectoryItem Include="$(Mono_1_1_LibPath)">
+      <InProject>false</InProject>
+    </TargetFrameworkDirectoryItem>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(All_Mono_2_0_Test) ">
+    <TargetFrameworkDirectoryItem Include="$(Mono_2_0_LibPath)">
+      <InProject>false</InProject>
+    </TargetFrameworkDirectoryItem>
+  </ItemGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--Support .NET 1.x Resource Files-->
+
+  <UsingTask TaskName="CFResGen"
+             AssemblyFile="$(MSBuildBinPath)\Microsoft.CompactFramework.Build.Tasks.dll" />
+
+  <PropertyGroup Condition=" $(NET_1_x_Test) ">
+    <ResGenDependsOn>ResolveAssemblyReferences;BeforeResGen;_CoreResGen_1_x;AfterResGen</ResGenDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_CoreResGen_1_x" DependsOnTargets="$(CoreResGenDependsOn)">
+    <CFResGen Condition = " '@(ResxWithNoCulture)' != '' "
+              Sources = "@(ResxWithNoCulture)"
+              UseSourcePath = "$(UseSourcePath)"
+              StateFile = "$(IntermediateOutputPath)$(MSBuildProjectFile).CrossCompileResGen.Cache"
+              OutputResources = "@(ManifestResourceWithNoCultureName->'$(IntermediateOutputPath)%(Identity).resources')"
+    >
+      <Output TaskParameter="FilesWritten" ItemName="FileWrites"/>
+      <Output TaskParameter="OutputResources" ItemName="ManifestResourceWithNoCulture"/>
+    </CFResGen>
+
+    <CFResGen Condition = " '@(ResxWithCulture)' != '' "
+              Sources = "@(ResxWithCulture)"
+              UseSourcePath = "$(UseSourcePath)"
+              StateFile = "$(IntermediateOutputPath)$(MSBuildProjectFile).CrossCompileResGen.Cache"
+              OutputResources = "@(ManifestResourceWithCultureName->'$(IntermediateOutputPath)%(Identity).resources')"
+    >
+      <Output TaskParameter = "FilesWritten" ItemName="FileWrites"/>
+      <Output TaskParameter = "OutputResources" ItemName="ManifestResourceWithCulture"/>
+    </CFResGen>
+  </Target>
+
+
+
+  <!--=======================================================================-->
+  <!--Check Unsupported Features-->
+
+  <PropertyGroup>
+    <CheckUnsupportedFeaturesDependsOn></CheckUnsupportedFeaturesDependsOn>
+    <CheckUnsupportedFeaturesDependsOn Condition=" $(MS_1_x_Test)">
+      $(CheckUnsupportedFeaturesDependsOn);Check_MS_1_x_UnsupportedFeatures
+    </CheckUnsupportedFeaturesDependsOn>
+    <CheckUnsupportedFeaturesDependsOn Condition=" $(All_Mono_Test)">
+      $(CheckUnsupportedFeaturesDependsOn);Check_All_Mono_UnsupportedFeatures
+    </CheckUnsupportedFeaturesDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CheckUnsupportedFeatures" 
+          DependsOnTargets="$(CheckUnsupportedFeaturesDependsOn)"/>
+
+  <Target Name="Check_MS_1_x_UnsupportedFeatures">
+    <Error Condition=" '$(SignAssembly)' == 'true' "
+           Text="$(Platform) doesn't support strong-name signing within the IDE. Please use the AssemblyKeyFileAttribute instead"/>
+  </Target>
+
+  <Target Name="Check_All_Mono_UnsupportedFeatures">
+    <Error Condition=" '$(BaseAddress)' != '' "
+           Text="The /baseaddress switch is not supported by $(Platform)"/>
+    <Error Condition=" '$(ErrorReport)' != '' "
+           Text="The /errorreport switch is not supported by $(Platform)"/>
+    <Error Condition=" '$(FileAlignment)' != '' "
+           Text="The /filealign switch is not supported by $(Platform)"/>
+    <Error Condition=" '$(GenerateFullPaths)' != '' "
+           Text="The /fullpaths switch is not supported by $(Platform)"/>
+    <Error Condition=" '$(PlatformTarget)' != '' "
+           Text="The /platform switch is not supported by $(Platform)"/>
+    <Error Condition=" '$(Utf8Output)' != '' "
+               Text="The /utf8output switch is not supported by $(Platform)"/>
+    <Error Condition=" '$(WarningsAsErrors)' != '' Or '$(WarningsNotAsErrors)' != '' "
+               Text="The /warnaserror switch in $(Platform) can't specify what warnings to include or excluse"/>
+  </Target>
+
+
+
+  <!--=======================================================================-->
+  <!--CoreCompile Target Override for Mono-->
+
+  <PropertyGroup Condition=" $(All_Mono_Full_Test) ">
+    <CompileDependsOn>
+      ResolveReferences;
+      ResolveKeySource;
+      BeforeCompile;
+      _TimeStampBeforeCompile;
+      MonoCoreCompile;
+      _TimeStampAfterCompile;
+      AfterCompile
+    </CompileDependsOn>
+  </PropertyGroup>
+
+
+
+  <!--=======================================================================-->
+  <!--MonoCoreCompile-->
+
+  <PropertyGroup Condition=" $(All_Mono_Full_Test) ">
+    <MonoCommandLine Condition=" $(Mono_1_1_Full_Test) ">"$(Mono_1_1_CompilerPath)"</MonoCommandLine>
+    <MonoCommandLine Condition=" $(Mono_2_0_Full_Test) ">"$(Mono_2_0_CompilerPath)"</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(AdditionalLibPaths)' != '' ">$(MonoCommandLine) /lib:$(AdditionalLibPaths)</MonoCommandLine>
+    <MonoCommandLine>$(MonoCommandLine)@(AddModules->' /addmodule:"%(Identity)"', '')</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(AllowUnsafeBlocks)' == 'true' ">$(MonoCommandLine) /unsafe+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(CheckForOverflowUnderflow)' == 'true' ">$(MonoCommandLine) /checked+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(CodePage)' != '' ">$(MonoCommandLine) /codepage:$(CodePage)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(DefineConstants)' != '' ">$(MonoCommandLine) /define:$(DefineConstants)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(DelaySign)' == 'true' ">$(MonoCommandLine) /delaysign+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(DocumentationFile)' != '' ">$(MonoCommandLine) /doc:$(DocumentationFile)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(DebugSymbols)' == 'true' ">$(MonoCommandLine) /debug+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(KeyContainerName)' != '' ">$(MonoCommandLine) /keycontainer:$(KeyContainerName)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(KeyOriginatorFile)' != '' ">$(MonoCommandLine) /keyfile:$(KeyContainerName)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(LangVersion)' != '' ">$(MonoCommandLine) /langversion:$(LangVersion)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(StartupObject)' != '' ">$(MonoCommandLine) /main:$(StartupObject)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(NoConfig' == 'true' ">$(MonoCommandLine) /noconfig+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(NoStdLib)' == 'true' ">$(MonoCommandLine) /nostdlib+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(Optimize)' == 'true' ">$(MonoCommandLine) /optimize+</MonoCommandLine>
+    <MonoCommandLine>$(MonoCommandLine) /out:"@(IntermediateAssembly)"</MonoCommandLine>
+    <MonoCommandLine>$(MonoCommandLine)@(ReferencePath->' /reference:"%(Identity)"', '')</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(CompilerResponseFile)' != '' ">$(MonoCommandLine) $(CompilerResponseFile)</MonoCommandLine>
+    <MonoCommandLine>$(MonoCommandLine)@(Compile->' "%(Identity)"', '')</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(TreatWarningsAsErrors)' == 'true' ">$(MonoCommandLine) /waraserror+</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(WarningLevel)' != '' ">$(MonoCommandLine) /warn:$(WarningLevel)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(Win32Icon)' != '' ">$(MonoCommandLine) /win32icon:$(Win32Icon)</MonoCommandLine>
+    <MonoCommandLine Condition=" '$(Win32Resource)' != '' ">$(MonoCommandLine) /win32res:$(Win32Resource)</MonoCommandLine>
+    <MonoTargetType Condition=" '$(OutputType)' == 'Exe' ">exe</MonoTargetType>
+    <MonoTargetType Condition=" '$(OutputType)' == 'WinExe' ">winexe</MonoTargetType>
+    <MonoTargetType Condition=" '$(OutputType)' == 'Library' ">library</MonoTargetType>
+    <MonoTargetType Condition=" '$(OutputType)' == 'Module' ">module</MonoTargetType>
+    <MonoCommandLine>$(MonoCommandLine) /target:$(MonoTargetType)</MonoCommandLine>
+  </PropertyGroup>
+
+  <ItemGroup  Condition=" $(All_Mono_Full_Test) ">
+    <AllResources Include="@(ManifestResourceWithNoCulture);@(ManifestNonResxWithNoCultureOnDisk);@(CompiledLicenseFile)"/>
+  </ItemGroup>
+
+  <Target
+      Name="MonoCoreCompile"
+      Inputs="$(MSBuildAllProjects);
+            @(Compile);
+            @(ManifestResourceWithNoCulture);
+            $(ApplicationIcon);
+            $(AssemblyOriginatorKeyFile);
+            @(ManifestNonResxWithNoCultureOnDisk);
+            @(ReferencePath);
+            @(CompiledLicenseFile);
+            @(EmbeddedDocumentation);                
+            @(CustomAdditionalCompileInputs)"
+      Outputs="@(DocFileItem);
+             @(IntermediateAssembly);
+             $(NonExistentFile);
+             @(CustomAdditionalCompileOutputs)"
+      DependsOnTargets="$(CoreCompileDependsOn)">
+
+    <CreateProperty 
+          Condition=" '%(AllResources.LogicalName)' == '' And '%(AllResources.Access)' == '' " 
+          Value="@(AllResources->' /resource:&quot;%(Identity)&quot;', '')">
+      <Output TaskParameter="Value" PropertyName="SimpleResources" />
+    </CreateProperty>
+
+    <CreateProperty 
+          Condition=" '%(AllResources.LogicalName)' != '' And '%(AllResources.Access)' == '' " 
+          Value="@(AllResources->' /resource:&quot;%(Identity),%(LogicalName)&quot;', '')">
+      <Output TaskParameter="Value" PropertyName="ResourcesWithName" />
+    </CreateProperty>
+
+    <CreateProperty 
+      Condition=" '%(AllResources.LogicalName)' != '' And '%(AllResources.Access)' != '' " 
+      Value="@(AllResources)">
+      <Output TaskParameter="Value" PropertyName="ResourcesWithNameAndAccess" />
+    </CreateProperty>
+
+    <CreateItem Include="$(_DisabledWarnings)">
+      <Output TaskParameter="Include" ItemName="DisabledWarnings"/>
+    </CreateItem>
+
+    <CreateProperty Value="@(DisabledWarnings->'%(Identity)', ',')">
+      <Output TaskParameter="Value" PropertyName="DisabledWarnings"/>
+    </CreateProperty>
+
+    <CreateProperty Condition=" '$(DisabledWarnings)' != '' "
+                    Value="%20/nowarn:$(DisabledWarnings)">
+      <Output TaskParameter="Value" PropertyName="DisabledWarnings"/>
+    </CreateProperty>
+
+    <Error Condition=" '$(ResourceWithNameAndAccess)' != '' "
+           Text="$(Platform) doesn't support specifying the accessibility modifier in the /resource switch"/>
+
+    <Exec Command="$(MonoCommandLine)$(DisabledWarnings)$(SimpleResources)$(ResourcesWithName)"/>
+
+  </Target>
+
+
+
+  <!--=======================================================================-->
+  <!--Build All Platforms-->
+
+  <PropertyGroup Condition=" $(MultiplePlatformsTest) ">
+    <BuildDependsOn>BuildAll</BuildDependsOn>
+    <CleanDependsOn>CleanAll</CleanDependsOn>
+    <PublishOnlyDependsOn>PublishOnlyAll</PublishOnlyDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(BuildAll_Test) ">
+    <AllPlatforms Include="@(BuildAll_IncludedPlatforms)"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" $(BuildAll_2_0_Test) ">
+    <AllPlatforms Include="@(BuildAll_2_0_IncludedPlatforms)"/>
+  </ItemGroup>
+
+  <Target Name="BuildAll">
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Properties="Configuration=$(Configuration);Platform=%(AllPlatforms.Identity)"
+             Targets="Build"
+             ContinueOnError="true"/>
+  </Target>
+
+  <Target Name="CleanAll">
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Properties="Configuration=$(Configuration);Platform=%(AllPlatforms.Identity)"
+             Targets="Clean"
+             ContinueOnError="true"/>
+  </Target>
+
+  <Target Name="PublishOnlyAll">
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Properties="Configuration=$(Configuration);Platform=%(AllPlatforms.Identity)"
+             Targets="PublishOnly"
+             ContinueOnError="true"/>
+  </Target>
+
+</Project>
