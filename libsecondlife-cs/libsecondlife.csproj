@@ -181,7 +181,6 @@
     <Compile Include="Packets\ObjectPackets.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Packets\Packets.cs" />
     <Compile Include="Packets\ParcelPackets.cs">
       <SubType>Code</SubType>
     </Compile>
