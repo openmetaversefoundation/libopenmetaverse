@@ -2,8 +2,8 @@ X
 Y
 Z
 AddFlags
-Everyone
 ReservedNewbie
+FailureInfo
 MapData
 AddItem
 MeanCollision
@@ -24,7 +24,6 @@ DirLandQuery
 TeleportStart
 EmpoweredBlock
 LogMessages
-DropGroupIM
 AboutText
 VisualParam
 GroupPrims
@@ -60,6 +59,8 @@ FrozenData
 URLBlock
 ChildAgentDying
 To
+CopyInventoryFromNotecard
+RezObjectFromNotecard
 ParcelDirFeeCurrent
 SeedCapability
 ObjectDuplicate
@@ -87,7 +88,6 @@ ObjectUpdateCached
 Packets
 FailureType
 UpdateGroupInfo
-InventoryFile
 ObjectPermissions
 RevokePermissions
 UpdateFlags
@@ -142,6 +142,7 @@ TerrainHeightRange01
 TerrainHeightRange10
 TerrainHeightRange11
 UpdateInventoryItem
+UpdateCreateInventoryItem
 MoveInventoryItem
 CopyInventoryItem
 RemoveInventoryItem
@@ -178,8 +179,6 @@ GroupPowers
 OriginalName
 CompletePingCheck
 OnlineStatus
-TrackOnlineStatus
-IgnoreOnlineStatus
 ObjectDrop
 UseBigPackets
 GroupNoticesListReply
@@ -240,6 +239,7 @@ LoadURL
 SetCPURatio
 NameValueData
 AtomicPassObject
+ErrorMessage
 ViewerFrozenMessage
 HealthMessage
 LogTextMessage
@@ -248,6 +248,7 @@ RemoveContribution
 Contribution
 SetGroupContribution
 Offline
+AgentIsNowWearing
 SecPerDay
 Members
 FailedResends
@@ -351,6 +352,7 @@ HeadRotation
 DeleteOnCompletion
 PublicPort
 DirClassifiedQuery
+CallbackID
 RequestParcelTransfer
 RoleCount
 ObjectCapacity
@@ -439,8 +441,8 @@ Direction
 Appearance
 HealthData
 LeftAxis
-PositionBlock
 LocationBlock
+PositionBlock
 ObjectImage
 TerrainStartHeight00
 TerrainStartHeight01
@@ -536,7 +538,6 @@ AgentGroupDataUpdate
 Left
 Mask
 ForceMouselook
-RequestLocationGetAccess
 Success
 ObjectGroup
 SunHour
@@ -614,6 +615,7 @@ MuteListUpdate
 SendPacket
 SendXferPacket
 RegionDenyIdentified
+NotecardItemID
 LastName
 From
 RoleChange
@@ -640,7 +642,6 @@ DetachAttachmentIntoInv
 ParcelDisableObjects
 Sections
 GodLevel
-StartGroupIM
 PayPriceReply
 QueryID
 CameraEyeOffset
@@ -711,10 +712,8 @@ Material
 ObjectDeGrab
 VelocityInterpolateOff
 AuthorizedBuyerID
-GroupIM
 AvatarPropertiesReply
 GroupProfileReply
-Participants
 SimOwner
 SalePrice
 Animation
@@ -725,6 +724,7 @@ PreyAgent
 SimStats
 Options
 LogoutReply
+FeatureDisabled
 ObjectLocalID
 Dropped
 Destination
@@ -777,7 +777,6 @@ ReportType
 DataBlock
 SimulatorReady
 AnimationSourceList
-RefreshViewer
 SubscribeLoad
 UnsubscribeLoad
 Packet
@@ -810,6 +809,7 @@ Throttles
 RebakeAvatarTextures
 UpAxis
 AgentTextures
+NotecardData
 Radius
 OffCircuit
 Access
@@ -836,7 +836,6 @@ TextureID
 UserInfoRequest
 Handle
 StartParcelRenameAck
-StateLoad
 ButtonIndex
 GetScriptRunning
 SetScriptRunning
@@ -886,6 +885,7 @@ GroupTaxEstimate
 Buttons
 Sender
 Dialog
+TargetData
 DestID
 PricePublicObjectDelete
 ObjectDelete
@@ -1054,7 +1054,6 @@ HeightWidthBlock
 RequestObjectPropertiesFamily
 ObjectPropertiesFamily
 UserData
-SessionBlock
 IsReadable
 PathCurve
 Status
@@ -1077,8 +1076,8 @@ LogoutDemand
 HistoryData
 ParamSize
 VoteCast
-EveryoneMask
 CastsShadows
+EveryoneMask
 SetSunPhase
 ObjectSpinUpdate
 MaturePublish
@@ -1095,8 +1094,8 @@ ButtonData
 SoundData
 ViewerStats
 RegionHandshake
-Description
 ObjectDescription
+Description
 ParamType
 UUIDNameReply
 UUIDGroupNameReply
@@ -1106,7 +1105,6 @@ AnimSequenceID
 NVPairs
 GroupNoticesListRequest
 ParcelAccessListRequest
-UserListRequest
 MuteListRequest
 StartPeriod
 RpcChannelRequest
@@ -1154,7 +1152,6 @@ PublicIP
 TeleportFailed
 OnlineStatusReply
 DataAgentAccessReply
-RequestLocationGetAccessReply
 RequestAvatarInfo
 PreloadSound
 ScreenshotID
@@ -1281,7 +1278,6 @@ Dwell
 North
 AgentUpdate
 PickGodDelete
-UpdateInventoryItemAsset
 HostName
 PriceParcelClaim
 ParcelClaim
@@ -1319,8 +1315,6 @@ TeleportLocationRequest
 DataHomeLocationRequest
 EventNotificationAddRequest
 ParcelDwellRequest
-ViewerLoginLocationRequest
-ViewerSimLocationRequest
 EventLocationRequest
 EndPeriod
 SetStartLocationRequest
@@ -1368,6 +1362,7 @@ UserListReply
 LandStatReply
 IsPhantom
 AgentList
+SimApproved
 RezObject
 TaskLocalID
 ClaimDate
@@ -1432,7 +1427,6 @@ TeleportLocal
 LayersPaused
 EjecteeID
 VoteInitiator
-MailPingBounce
 TypeData
 OwnerIDs
 SystemKickUser
@@ -1440,6 +1434,7 @@ TransactionTime
 TimeToLive
 StartParcelRemove
 BulkParcelRemove
+OldAgentID
 DirGroupsQuery
 BonusEstimate
 MusicURL

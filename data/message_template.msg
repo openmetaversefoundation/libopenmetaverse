@@ -119,17 +119,6 @@ version 1.053
 	}
 }
 
-// user->viewer
-// AssignCircuitCode - Tells the recipient's messaging system what it's code is
-//{
-//	AssignCircuitCode Low Trusted Unencoded
-//	{
-//		CircuitCode	Single
-//		{	Code		U32		}
-//		{	SessionID	LLUUID	}
-//	}
-//}
-
 // space->sim
 // sim->sim
 // AddCircuitCode - Tells the recipient's messaging system that this code
@@ -143,17 +132,6 @@ version 1.053
 		{	AgentID		LLUUID	} // WARNING - may be null in valid message
 	}
 }
-
-// sim->space
-// Tells the spaceserver that the simulator is ready to receive an
-// agent with that circuit code.
-//{
-//	AckAddCircuitCode Low Trusted Unencoded
-//	{
-//		CircuitCode Single
-//		{	Code	U32 }
-//	}
-//}
 
 // viewer->sim
 // UseCircuitCode - Attempts to provide the recipient with IP and Port
@@ -297,48 +275,6 @@ version 1.053
 	}
 }
 
-// AgentIDReply
-// dataserver -> simulator
-// reliable
-// Message send from spaceserver to simulator
-// containing agent id for a given session id
-// Also, a list of name value pairs for that agent
-// also tacked on a list of agents that have granted you powers
-//{
-//	AgentIDReply Low Trusted Zerocoded
-//	{
-//		ReplyBlock		Single
-//		{	RequestID		LLUUID	}
-//		{	SessionID		LLUUID	}
-//		{	AgentID			LLUUID	}
-//		{	StartLocation	LLVector3	}	// Vector3, region local
-//		{	StartLookAt		LLVector3	}	// Vector3, normalized
-//		{	GroupID			LLUUID	}
-//		{	GroupOfficer	BOOL	}
-//		{   AgentAccess		U8	}
-//		{	GodLevel		U8	}
-//		{	GroupTitle		Variable	1	}	// string
-//	}
-//	{
-//		TextureData		Variable
-//		{	TextureID		LLUUID	}
-//	}
-//	{
-//		GranterBlock		Variable
-//		{	GranterID		LLUUID	}
-//	}
-//	{
-//		NameValueBlock	Variable
-//		{	NameValue		Variable	2	}
-//	}
-//	{
-//		AttachmentBlock	Variable
-//		{	AttachmentPoint	U8	}
-//		{	ItemID			LLUUID	}
-//		{	AssetID			LLUUID	}
-//	}
-//}
-
 // AvatarTextureUpdate
 // simulator -> dataserver
 // reliable
@@ -348,12 +284,12 @@ version 1.053
 		AgentData		Single
 		{	AgentID			LLUUID	}
 		{	TexturesChanged	BOOL	}
-		{	HostName		Variable	1	}
 	}
 	{
 		WearableData		Variable
 		{	CacheID			LLUUID }
 		{	TextureIndex	U8 }
+		{	HostName		Variable	1	}
 	}
 	{
 		TextureData		Variable
@@ -448,7 +384,7 @@ version 1.053
 // sim -> viewer
 // reliable
 {
-	TelehubInfo	Low	NotTrusted Unencoded
+	TelehubInfo	Low	Trusted Unencoded
 	{
 		TelehubBlock		Single
 		{	ObjectID		LLUUID			}	// null if no telehub
@@ -518,19 +454,6 @@ version 1.053
 	SimulatorShutdownRequest Low Trusted Unencoded
 }
 
-
-// AgentIDRequest
-// Request to report agent ID associated with a session id
-//{
-//	AgentIDRequest Low Trusted Unencoded
-//	{
-//		RequestBlock		Single
-//		{	RequestID		LLUUID	}
-//		{	SessionID		LLUUID	}
-//		{	LocationID		U32	}	// 0 = last location
-//		{	Godlike			BOOL	}
-//	}
-//}
 // ****************************************************************************
 // Presense messages
 // ****************************************************************************
@@ -684,6 +607,18 @@ sim -> dataserver
 		{	RegionY		U32		}
 	}
 }
+
+// Disabled feature response message
+{
+	FeatureDisabled	Low Trusted Unencoded
+	{
+		FailureInfo			Single
+		{	ErrorMessage	Variable	1	}
+		{	AgentID			LLUUID			}
+		{	TransactionID	LLUUID			}
+	}
+}
+
 
 // record lost money transactions.  This message could be generated
 // from either the simulator or the dataserver, depending on how
@@ -894,7 +829,7 @@ sim -> dataserver
 // global x,y,z.  Otherwise, use center of the AABB.
 // reliable
 {
-	PlacesReply Low NotTrusted Zerocoded
+	PlacesReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID		}
@@ -1007,7 +942,7 @@ sim -> dataserver
 // global x,y,z.  Otherwise, use center of the AABB.
 // reliable
 {
-	DirPlacesReply Low NotTrusted Zerocoded
+	DirPlacesReply Low Trusted Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID		}
@@ -1839,11 +1774,10 @@ sim -> dataserver
 // TeleportProgress sim->viewer
 // Tell the agent how the teleport is going.
 {
-	TeleportProgress Low NotTrusted Unencoded
+	TeleportProgress Low Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
-		{	SessionID	LLUUID	}
 	}
 	{
 		Info			Single
@@ -2101,42 +2035,6 @@ sim -> dataserver
 	}
 }
 
-// viewer->sim
-// request a connection to the userserver
-//{
-//	RequestUserserverConnection Low NotTrusted Unencoded
-//	{
-//		AgentInfo		Single
-//		{	AgentID		LLUUID	}
-//		{	SessionID	LLUUID	}
-//	}
-//}
-
-// sim->space->userserver
-//{
-//	UserserverConnectionForAgent Low Trusted Unencoded
-//	{
-//		AgentInfo		Single
-//		{	AgentID		LLUUID	}
-//		{	SessionID	LLUUID	}
-//	}
-//}
-
-// userserver->space->sim->agent
-//{
-//	UserserverReadyForAgent Low Trusted Unencoded
-//	{
-//		AgentInfo		Single
-//		{	AgentID		LLUUID	}
-//		{	SessionID	LLUUID	}
-//	}
-//	{
-//		HostInfo		Single
-//		{	ServerIP	IPADDR	}
-//		{	ServerPort	IPPORT	}
-//	}
-//}
-
 // Undo
 {
 	Undo Low NotTrusted Unencoded
@@ -2174,6 +2072,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 }
 
@@ -2184,6 +2083,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 }
 
@@ -2205,7 +2105,7 @@ sim -> dataserver
 {
 	AgentPause Low NotTrusted Unencoded
 	{
-		Sender			Single
+		AgentData			Single
 		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID	}
 		{	SerialNum	U32		}	// U32, used by both pause and resume. Non-increasing numbers are ignored.
@@ -2216,7 +2116,7 @@ sim -> dataserver
 {
 	AgentResume Low NotTrusted Unencoded
 	{
-		Sender			Single
+		AgentData			Single
 		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID	}
 		{	SerialNum	U32		}	// U32, used by both pause and resume. Non-increasing numbers are ignored.
@@ -2237,7 +2137,8 @@ sim -> dataserver
 	AgentUpdate High NotTrusted Zerocoded
 	{
 		AgentData			Single
-		{	ID				LLUUID	}
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 		{	BodyRotation	LLQuaternion	}
 		{	HeadRotation	LLQuaternion	}
 		{	State			U8	}
@@ -2275,13 +2176,14 @@ sim -> dataserver
 {
 	AgentThrottle Low NotTrusted Zerocoded
 	{
-		Sender				Single
-		{	ID				LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 		{	CircuitCode		U32		}
-		{	GenCounter		U32		}
 	}
 	{
 		Throttle			Single
+		{	GenCounter		U32		}
 		{	Throttles		Variable 1	}
 	}
 }
@@ -2291,13 +2193,14 @@ sim -> dataserver
 {
 	AgentFOV Low NotTrusted Unencoded
 	{
-		Sender				Single
-		{	ID				LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 		{	CircuitCode		U32		}
-		{	GenCounter		U32		}
 	}
 	{
 		FOVBlock			Single
+		{	GenCounter		U32		}
 		{	VerticalAngle	F32	}
 	}
 }
@@ -2308,13 +2211,14 @@ sim -> dataserver
 {
 	AgentHeightWidth Low NotTrusted Unencoded
 	{
-		Sender				Single
-		{	ID				LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 		{	CircuitCode		U32		}
-		{	GenCounter		U32		}
 	}
 	{
 		HeightWidthBlock	Single
+		{	GenCounter		U32		}
 		{	Height			U16	}
 		{	Width			U16	}
 	}
@@ -2325,8 +2229,9 @@ sim -> dataserver
 {
 	AgentSetAppearance Low NotTrusted Zerocoded
 	{
-		Sender				Single
-		{	ID				LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 		{	SerialNum		U32	}	// U32, Increases every time the appearance changes. A value of 0 resets.
 		{ 	Size			LLVector3	}
 	}
@@ -2350,8 +2255,9 @@ sim -> dataserver
 {
 	AgentAnimation High NotTrusted Unencoded
 	{
-		Sender			Single
-		{	ID			LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 	}
 	{
 		AnimationList Variable
@@ -2364,8 +2270,9 @@ sim -> dataserver
 {
 	AgentRequestSit		High  NotTrusted Zerocoded
 	{
-		Sender			Single
-		{	ID			LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 	}
 	{
 		TargetObject	Single
@@ -2378,21 +2285,11 @@ sim -> dataserver
 {
 	AgentSit			High  NotTrusted Unencoded
 	{
-		Sender			Single
-		{	ID			LLUUID	}
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
 	}
 }
-
-// RefreshViewer - sent by viewer when it has missing geometry, etc., due to dropped packets.
-
-{
-	RefreshViewer Low NotTrusted Unencoded
-	{
-		Sender				Single
-		{	ID				LLUUID	}
-	}
-}
-
 
 // AgentQuit - Sent by viewer when viewer exits normally
 // Fuse is used to allow Reset to be passed to neighbors
@@ -2426,11 +2323,17 @@ sim -> dataserver
 {
 	RequestImage High NotTrusted Unencoded
 	{
+		AgentData			Single
+		{	AgentID			LLUUID		}
+		{	SessionID		LLUUID		}
+	}
+	{
 		RequestImage			Variable
 		{	Image				LLUUID	}
-		{	DiscardLevel		S32	}
+		{	DiscardLevel		S8	}
 		{	DownloadPriority	F32	}
 		{	Packet				U32	}
+		{	Type				U8	}
 	}
 }
 
@@ -2460,8 +2363,9 @@ sim -> dataserver
 {
 	SetAlwaysRun Low NotTrusted Unencoded
 	{
-		Sender				Single
-		{	ID				LLUUID	}
+		AgentData				Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 		{	AlwaysRun		BOOL	}
 	}
 }
@@ -2521,37 +2425,7 @@ sim -> dataserver
 		{	Rotation		LLQuaternion	}
 
 		{	TextureEntry	Variable	2	}
-
-		{	NameValue		Variable	2	}
 		{	State			U8	}
-	}
-	{
-		InventoryData		Variable
-		{	ItemID			LLUUID	}
-		{	FolderID		LLUUID	}
-		{	CreatorID		LLUUID	}	// permissions
-		{	OwnerID			LLUUID	}	// permissions
-		{	GroupID			LLUUID	}	// permissions
-		{	BaseMask		U32	}	// permissions
-		{	OwnerMask		U32	}	// permissions
-		{	GroupMask		U32	}	// permissions
-		{	EveryoneMask	U32	}	// permissions
-		{	NextOwnerMask	U32	}	// permissions
-		{	GroupOwned		BOOL	}	// permissions
-		{	AssetID			LLUUID	}
-		{	Type			S8	}
-		{	InvType			S8	}
-		{	Flags			U32	}
-		{	SaleType		U8	}
-		{	SalePrice		S32	}
-		{	Name			Variable	1	}
-		{	Description		Variable	1	}
-		{	CreationDate	S32	}
-		{	CRC				U32	}
-	}
-	{
-		InventoryFile		Single
-		{	Filename		Variable	1	}
 	}
 }
 
@@ -2632,6 +2506,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		ObjectData		Variable 
@@ -2656,6 +2531,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		ObjectData	Variable 
@@ -2740,6 +2616,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3014,6 +2891,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3029,6 +2907,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3043,6 +2922,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	AttachmentPoint	U8	}
 	}
 	{
@@ -3058,6 +2938,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3072,6 +2953,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3086,6 +2968,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3099,6 +2982,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3112,6 +2996,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		JointType		Single
@@ -3130,6 +3015,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData		Variable
@@ -3143,8 +3029,9 @@ sim -> dataserver
 {
 	ObjectGrab Low NotTrusted Zerocoded
 	{
-		Sender		Single
-		{	ID		LLUUID	}
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData			Single
@@ -3162,7 +3049,8 @@ sim -> dataserver
 	ObjectGrabUpdate Low NotTrusted Zerocoded
 	{
 		AgentData	Single
-		{	AgentID	LLUUID	}
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData	Single
@@ -3178,8 +3066,9 @@ sim -> dataserver
 {
 	ObjectDeGrab Low NotTrusted Unencoded
 	{
-		Sender		Single
-		{	ID		LLUUID	}
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		ObjectData			Single
@@ -3194,6 +3083,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		ObjectData			Single
@@ -3208,6 +3098,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		ObjectData			Single
@@ -3223,6 +3114,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		ObjectData			Single
@@ -3231,6 +3123,7 @@ sim -> dataserver
 }
 
 // Export selected objects
+// viewer->sim
 {
 	ObjectExportSelected Low NotTrusted Zerocoded
 	{
@@ -3246,6 +3139,7 @@ sim -> dataserver
 }
 
 // Import an object
+// viewer->sim
 {
 	ObjectImport Low NotTrusted Zerocoded
 	{
@@ -3266,8 +3160,12 @@ sim -> dataserver
 {
 	ModifyLand Low NotTrusted Zerocoded
 	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		ModifyBlock			Single
-		{   AgentID			LLUUID	}
 		{	Action			U8	}
 		{	BrushSize		U8	}
 		{	Seconds			F32	}
@@ -3285,17 +3183,33 @@ sim -> dataserver
 
 
 // VelocityInterpolateOn
+// viewer->sim
+// requires administrative access
 {
 	VelocityInterpolateOn Low NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID		LLUUID	}
+	}
 }
 
 
 // VelocityInterpolateOff
+// viewer->sim
+// requires administrative access
 {
 	VelocityInterpolateOff Low NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID		LLUUID	}
+	}
 }
 
 // Save State
+// viewer->sim
+// requires administrative access
 {
 	StateSave Low NotTrusted Unencoded
 	{
@@ -3309,8 +3223,8 @@ sim -> dataserver
 	}
 }
 
-
 // ReportAutosaveCrash
+// sim->launcher
 {
 	ReportAutosaveCrash Low NotTrusted Unencoded
 	{
@@ -3319,8 +3233,6 @@ sim -> dataserver
 		{	Status	S32 }
 	}
 }
-
-
 
 // SimWideDeletes
 {
@@ -3337,21 +3249,6 @@ sim -> dataserver
 	}
 }
 
-// Load State
-// Not in use \P/hoenix - 2004.07.14
-{
-	StateLoad Low NotTrusted Unencoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-		{	SessionID		LLUUID	}
-	}
-	{
-		DataBlock			Single
-		{	Filename		Variable	1	}
-	}
-}
-
 // RequestObjectPropertiesFamily
 // Ask for extended information, such as creator, permissions, resources, etc.
 // Medium frequency because it is driven by mouse hovering over objects, which
@@ -3359,9 +3256,13 @@ sim -> dataserver
 {
 	RequestObjectPropertiesFamily Medium NotTrusted Zerocoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
 		ObjectData		Single
 		{	RequestFlags		U32	}
-		{	AgentID				LLUUID	}
 		{	ObjectID			LLUUID	}
 	}
 }
@@ -3373,8 +3274,12 @@ sim -> dataserver
 {
 	TrackAgent		Low		NotTrusted Unencoded
 	{
-		AgentBlock		Single
+		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		TargetData		Single
 		{	PreyID		LLUUID	}
 	}
 }
@@ -3547,8 +3452,12 @@ sim -> dataserver
 {
 	ScriptAnswerYes Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}			   
+	{
 		Data	Single
-		{	AgentID			LLUUID	}
 		{	TaskID			LLUUID	}
 		{	ItemID			LLUUID	}
 		{	Questions		S32	}
@@ -3561,10 +3470,14 @@ sim -> dataserver
 {
 	UserReport	Low		NotTrusted Zerocoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
 		ReportData	Single
 		{   ReportType		U8   }   // BUG=1, COMPLAINT=2
 		{   Category		U8   }   // see sequence.user_report_category
-		{   ReporterID		LLUUID  }
 		{	Position		LLVector3	} // screenshot position, region-local
 		{   CheckFlags		U8	} // checkboxflags
 		{   ScreenshotID	LLUUID  }
@@ -3852,6 +3765,11 @@ sim -> dataserver
 // data about objects.
 {
 	RegionHandshakeReply			Low		NotTrusted Zerocoded
+	{
+		AgentData	Single
+		{	AgentID			LLUUID			}
+		{	SessionID		LLUUID			}
+	}
 	{
 		RegionInfo	Single
 		{	Flags			U32		}
@@ -4553,6 +4471,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 		{	AvatarID		LLUUID	}
 	}
 }
@@ -4625,17 +4544,16 @@ sim -> dataserver
 
 // AvatarPropertiesUpdate
 // viewer -> simulator
-// simulator -> dataserver
 // reliable
 {
 	AvatarPropertiesUpdate Low NotTrusted Zerocoded
 	{
 		AgentData		Single
-		{	AgentID			LLUUID	}
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		PropertiesData	Single
-		{	AvatarID		LLUUID			}
 		{	ImageID			LLUUID			}
 		{	FLImageID		LLUUID			}
 		{	AboutText		Variable	2	}	// string, up to 512
@@ -4698,6 +4616,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		Data		Single
@@ -5005,8 +4924,12 @@ sim -> dataserver
 {
 	ScriptDialogReply Low NotTrusted Zerocoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
 		Data	Single
-		{	AgentID		LLUUID			}
 		{	ObjectID	LLUUID			}
 		{	ChatChannel	S32				}
 		{	ButtonIndex	S32				}
@@ -5020,8 +4943,9 @@ sim -> dataserver
 {
 	ForceScriptControlRelease Low NotTrusted Unencoded
 	{
-		Data	Single
-		{	ID					LLUUID	}
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 }
 
@@ -5030,8 +4954,12 @@ sim -> dataserver
 {
 	RevokePermissions Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
 		Data	Single
-		{ AgentID				LLUUID }
 		{ ObjectID				LLUUID }
 		{ ObjectPermissions		U32 }
 	}
@@ -5736,26 +5664,6 @@ sim -> dataserver
 	}
 }
 
-// userserver -> dataserver
-// Used to request all parcel sales in the database
-//{
-//	RequestParcelSales	Low	Trusted Unencoded
-//}
-
-// dataserver -> userserver -> spaceserver
-// response of all (up to max packet size) parcel sales in the database. 
-// each block in the meassage represents a parcel that a human agreed
-// to pay US$.
-//{
-//	BulkParcelSales	Low	Trusted Unencoded
-//	{
-//		ParcelData 		Variable
-//		{	RegionHandle	U64	}
-//		{	ParcelID		LLUUID	}
-//		{	BuyerID			LLUUID	}
-//	}
-//}
-
 // sim -> dataserver
 {
 	CheckParcelSales	Low	Trusted Unencoded
@@ -6375,133 +6283,6 @@ sim -> dataserver
 	}
 }
 
-// LoginRequestSafe
-// Attempt to log into the system with an auth token obtained via a
-// secure out of band mechanism (such as a TLS tunnel)
-// viewer -> userserver
-// unreliable
-//{
-//	LoginRequestSafe Low NotTrusted Unencoded
-//	{
-//		LoginBlock Single
-//		{	AuthToken		LLUUID	} // session id really
-//		{	ViewerDigest	LLUUID	} // MD5 of viewer exe
-//		{	LastExecFroze	BOOL	}
-//	}
-//}
-
-// LoginReply
-// Identifies the session, or sends LLUUID::null if invalid
-// userserver -> viewer
-//{
-//	LoginReply Low Trusted Zerocoded
-//	{
-//		UserData			Single
-//		{	Firstname			Variable	1	}	// string, canonical caps
-//		{	Lastname			Variable	1	}	// string, canonical caps
-//		{	SessionID			LLUUID	}
-//		{	AgentID				LLUUID	}
-//		{	ErrorMessage		Variable	1	}
-//		{	AgentAccess			U8		}
-//		{	GroupOfficer		BOOL	}
-//		{	GroupTitle			Variable	1	}
-//		{	GroupID				LLUUID	}
-//		{	GroupName			Variable	1	}
-//		{	GroupInsigniaID		LLUUID	}
-//		{	LoginFlags			U32		}	// bitfield
-//		{	SunTextureID		LLUUID	}
-//		{	MoonTextureID		LLUUID	}
-//		{	CloudTextureID		LLUUID	}
-//		{	TOSAssetID			LLUUID	}	// Null if TOS agreement is current
-//		{	CriticalMessageAssetID	LLUUID } // Null if message is current
-//		{	TrialDaysLeft		S32		}	// Zero if not trial
-//		{	ServerUTCTime	U32 } // time_t, unix time format
-//	}
-//	{
-//		StartLocationData	Variable
-//		{	LocationID		U32	}
-//		{	LocationRegionX	U32	}	// U32, meters to southwest
-//		{	LocationRegionY	U32	}
-//		{	LocationPos		LLVector3	}	// Vector3, region coords
-//		{	LocationLookAt	LLVector3	}	// Vector3
-//	}
-//}
-
-// DataserverLoginRequestSafe
-// userserver -> dataserver
-//{
-//	DataserverLoginRequestSafe Low Trusted Unencoded
-//	{
-//		UserData Single
-//		{	AuthToken		LLUUID	}  // session id really
-//		{	IP				IPADDR	}
-//		{	Port			IPPORT	}
-//		{	SpaceIP			IPADDR	}
-//		{	ViewerDigest	LLUUID	}
-//		{	LastExecFroze	BOOL	}
-//	}
-//}
-
-// DataServerLoginReply
-// TimeValid is true if user is allowed to log in at this time
-// dataserver -> userserver
-// reliable
-//{
-//	DataServerLoginReply Low Trusted Zerocoded
-//	{
-//		UserData			Single
-//		{	Firstname			Variable	1	}	// string
-//		{	Lastname			Variable	1	}	// string
-//		{	IP		IPADDR	}	// don't think this is valid JC 6/02
-//		{	Port		IPPORT	}	// don't think this is valid JC 6/02
-//		{	LoginValid			BOOL	}
-//		{	TimeValid			BOOL	}
-//		{	ErrorMessage		Variable	1	}	// string
-//		{	AgentID				LLUUID	}
-//		{	SessionID			LLUUID	}
-//		{	LimitedToEstate		U32		}
-//		{	AgentAccess			U8		}
-//		{	GroupOfficer		BOOL	}
-//		{	GroupTitle			Variable	1	}
-//		{	GroupID				LLUUID	}
-//		{	GroupName			Variable	1	}
-//		{	GroupInsigniaID		LLUUID	}
-//		{	LoginFlags			U32		}	// bitfield
-//		{	SunTextureID		LLUUID	}
-//		{	MoonTextureID		LLUUID	}
-//		{	CloudTextureID		LLUUID	}
-//		{	TOSAssetID			LLUUID	}	// Null if TOS agreement is current
-//		{	CriticalMessageAssetID	LLUUID } // Null if message is current
-//		{	TrialDaysLeft		S32		}	// Zero if not trial
-//		{	ServerUTCTime	U32 } // time_t, unix time format
-//		{	SpaceIP				IPADDR	}
-//		{	ViewerDigest		LLUUID	}
-//		{	LastExecFroze		BOOL	}
-//	}
-//	{
-//		StartLocationData	Variable
-//		{	LocationID		U32	}
-//		{	LocationRegionX	U32	}
-//		{	LocationRegionY	U32	}
-//		{	LocationPos		LLVector3	}	// Vector3
-//		{	LocationLookAt	LLVector3	}	// Vector3
-//	}
-//}
-
-// The user agrees to the current Terms of Service
-// or clicks OK on the current critical message
-// type 0 = TOS
-// type 1 = critical message
-// viewer -> userserver -> dataserver
-//{
-//	TOSAgreement Low NotTrusted Unencoded
-//	{
-//		AgentBlock			Single
-//		{	AgentID			LLUUID	}
-//		{	Type			S32		}
-//	}
-//}
-
 // This message is sent from the viewer on login or on demand from the
 // userserver.
 // viewer -> userserver
@@ -6591,86 +6372,6 @@ sim -> dataserver
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// Viewer to UserServer Messages
-//-----------------------------------------------------------------------------
-
-// ViewerLoginLocationRequest
-// viewer -> userserver
-// *NOTE: obsolete
-{
-	ViewerLoginLocationRequest Low NotTrusted Unencoded
-	{
-		AgentData		Single
-		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
-	}
-	{
-		PositionBlock	Single
-		{   ViewerRegion	U64   		}
-		{	ViewerPosition	LLVector3	}
-	}
-	{
-		URLBlock	Single
-		{	SimName		Variable	1	}
-		{	Pos			LLVector3	}
-	}
-}
-
-// ViewerSimLocationRequest
-// viewer -> userserver
-// *NOTE: obsolete
-{
-	ViewerSimLocationRequest Low NotTrusted Unencoded
-	{
-		PositionBlock	Single
-		{	AgentID		LLUUID	}
-		{   SimName		Variable	1   }
-	}
-}
-
-// RequestLocationGetAccess
-// userserver -> dataserver
-// *NOTE: obsolete.
-{
-	RequestLocationGetAccess Low Trusted Unencoded
-	{
-		PositionBlock	Single
-		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
-		{	ViewerIP		IPADDR	}
-		{	ViewerPort		IPPORT	}
-		{   ViewerRegion	U64   	}
-		{	ViewerPosition	LLVector3	}
-	}
-}
-
-// RequestLocationGetAccessReply
-// dataserver -> userserver
-// *NOTE: obsolete.
-{
-	RequestLocationGetAccessReply Low Trusted Unencoded
-	{
-		PositionBlock	Single
-		{	ViewerIP		IPADDR	}
-		{	ViewerPort		IPPORT	}
-		{   ViewerRegion	U64   	}
-		{	ViewerPosition	LLVector3	}
-		{	TravelAccess	U8	}
-	}
-}
-
-
-// UserListRequest
-// Get a list of the current system users
-// viewer -> userserver
-//*NOTE: obsolete
-{
-	UserListRequest Low NotTrusted Unencoded
-}
-
-
 //-----------------------------------------------------------------------------
 // Instant Message
 //-----------------------------------------------------------------------------
@@ -6708,43 +6409,6 @@ sim -> dataserver
 	}
 }
 
-// Start group IM session. If everyone is 1, then offline users also
-// get the messages.
-{
-	StartGroupIM Low NotTrusted Unencoded
-	{
-		SessionBlock		Single
-		{	SessionID		LLUUID	}
-		{	Everyone		U8	}
-	}
-	{
-		Participants		Variable
-		{	AgentID			LLUUID	}
-	}
-}
-
-// drop out from a group instant message
-{
-	DropGroupIM Low NotTrusted Unencoded
-	{
-		SessionBlock		Single
-		{	SessionID		LLUUID	}
-		{	AgentID			LLUUID	}
-	}
-}
-
-// Group instant messaging
-{
-	GroupIM Low NotTrusted Unencoded
-	{
-		MessageBlock		Single
-		{	SessionID		LLUUID	}
-		{	FromID			LLUUID	}
-		{	FromAgentName	Variable	1	}
-		{	Message			Variable	2	}
-	}
-}
-
 // RetrieveInstantMessages - used to get instant messages that
 // were persisted out to the database while the user was offline
 {
@@ -6777,27 +6441,6 @@ sim -> dataserver
 		LocationBlock	Variable
 		{	GlobalX		F64	}
 		{	GlobalY		F64	}
-	}
-}
-
-// This message is sent viewer->userserver to track if other agents
-// come on or off line.
-{
-	TrackOnlineStatus Low NotTrusted Zerocoded
-	{
-		AgentBlock		Variable
-		{	AgentID		LLUUID	}
-	}
-}
-
-// This message is sent viewer->userserver to ignore logon and logoff
-// events for the specified agents. This is typically sent when a
-// calling card is deleted or cancelled.
-{
-	IgnoreOnlineStatus Low NotTrusted Zerocoded
-	{
-		AgentBlock		Variable
-		{	AgentID		LLUUID	}
 	}
 }
 
@@ -6949,18 +6592,32 @@ sim -> dataserver
 }
 
 
-// viewer -> userserver, gimme inventory
-//{
-//	InventoryRequest Low NotTrusted Unencoded
-//	{
-//		InventoryData	Single
-//		{	AgentID		LLUUID	}
-//		{	CacheCRC	U32	}
-//	}
-//}
-
 // 
 // Inventory update messages 
+//
+
+{
+	CopyInventoryFromNotecard Low NotTrusted Zerocoded
+	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
+		NotecardData		Single
+		{	NotecardItemID	LLUUID	}
+		{	ObjectID		LLUUID	}
+	}
+	{
+		InventoryData		Variable
+		{	ItemID			LLUUID	}
+		{	FolderID		LLUUID	}
+	}
+}
+
+//
+// This is used bi-directionally between sim, dataserver, and viewer.
+// THIS MESSAGE CAN NOT CREATE NEW INVENTORY ITEMS.
 //
 {
 	UpdateInventoryItem Low NotTrusted Zerocoded
@@ -6973,6 +6630,47 @@ sim -> dataserver
 		InventoryData		Variable
 		{	ItemID			LLUUID	}
 		{	FolderID		LLUUID	}
+		{	CallbackID		U32		} // Async Response
+		
+		{	CreatorID		LLUUID	}	// permissions
+		{	OwnerID			LLUUID	}	// permissions
+		{	GroupID			LLUUID	}	// permissions
+		{	BaseMask		U32	}	// permissions
+		{	OwnerMask		U32	}	// permissions
+		{	GroupMask		U32	}	// permissions
+		{	EveryoneMask	U32	}	// permissions
+		{	NextOwnerMask	U32	}	// permissions
+		{	GroupOwned		BOOL	}	// permissions
+
+		{	TransactionID	LLUUID	} // TransactionID: new assets only
+		{	Type			S8	}
+		{	InvType			S8	}
+		{	Flags			U32	}
+		{	SaleType		U8	}
+		{	SalePrice		S32	}
+		{	Name			Variable	1	}
+		{	Description		Variable	1	}
+		{	CreationDate	S32	}
+		{	CRC				U32	}
+	}
+}
+
+//
+// For sim to request update/create.
+// DO NOT ALLOW THIS FROM THE VIEWER.
+//
+{
+	UpdateCreateInventoryItem Low Trusted Zerocoded
+	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SimApproved		BOOL	}
+	}
+	{
+		InventoryData		Variable
+		{	ItemID			LLUUID	}
+		{	FolderID		LLUUID	}
+		{	CallbackID		U32		} // Async Response
 
 		{	CreatorID		LLUUID	}	// permissions
 		{	OwnerID			LLUUID	}	// permissions
@@ -6997,25 +6695,12 @@ sim -> dataserver
 	}
 }
 
-// When all that has updated is the asset, we can crunch this down.
-{
-	UpdateInventoryItemAsset Low NotTrusted Zerocoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-	}
-	{
-		InventoryData		Variable
-		{	ItemID			LLUUID	}
-		{	AssetID			LLUUID	}
-	}
-}
-
 {
 	MoveInventoryItem	Low	NotTrusted	Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	Stamp		BOOL	} // should the server re-timestamp?
 	}
 	{
@@ -7027,16 +6712,21 @@ sim -> dataserver
 
 // copy inventory item by item id to specified destination folder, 
 // send out bulk inventory update when done.
-// currently only sim->data, but it is general enough to be
-// a viewer request.
+//
+// Inventory items are only unique for {agent, inv_id} pairs;
+// the OldItemID needs to be paired with the OldAgentID to
+// produce a unique inventory item.
 {
 	CopyInventoryItem	Low	NotTrusted	Zerocoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		InventoryData		Variable
+		{	CallbackID	U32			} // Async response
+		{	OldAgentID		LLUUID	}
 		{	OldItemID		LLUUID	}
 		{	NewFolderID		LLUUID	}
 	}
@@ -7047,6 +6737,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		InventoryData	Variable
@@ -7059,6 +6750,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		InventoryData	Variable
@@ -7067,7 +6759,9 @@ sim -> dataserver
 	}
 }
 
-
+//
+// Sim outgoing only (to dataserver, to viewer)
+// NOT viewer to sim, sim should not have handler, ever
 {
 	SaveAssetIntoInventory Low NotTrusted Unencoded
 	{
@@ -7086,6 +6780,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		FolderData			Single
@@ -7101,6 +6796,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		FolderData			Variable
@@ -7116,6 +6812,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	Stamp		BOOL	} // should the server re-timestamp children
 	}
 	{
@@ -7130,6 +6827,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		FolderData			Variable
@@ -7143,6 +6841,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		InventoryData	Single
@@ -7207,6 +6906,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		InventoryData	Variable
@@ -7252,6 +6952,7 @@ sim -> dataserver
 
 // Can only fit around 7 items per packet - that's the way it goes. At
 // least many bulk updates can be packed.
+// Only from dataserver->sim->viewer
 {
 	BulkUpdateInventory Low Trusted Zerocoded
 	{
@@ -7269,6 +6970,7 @@ sim -> dataserver
 	{
 		ItemData		Variable
 		{	ItemID			LLUUID	}
+		{	CallbackID		U32		}	// Async Response
 		{	FolderID		LLUUID	}
 		{	CreatorID		LLUUID	}	// permissions
 		{	OwnerID			LLUUID	}	// permissions
@@ -7327,6 +7029,7 @@ sim -> dataserver
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 	}
 	{
 		FolderData			Variable
@@ -7381,7 +7084,7 @@ sim -> dataserver
 		{	EveryoneMask	U32	}	// permissions
 		{	NextOwnerMask	U32	}	// permissions
 		{	GroupOwned		BOOL	}	// permissions
-		{	AssetID			LLUUID	}
+		{	TransactionID	LLUUID	}
 		{	Type			S8	}
 		{	InvType			S8	}
 		{	Flags			U32	}
@@ -7526,7 +7229,7 @@ sim -> dataserver
 		{	EveryoneMask		U32	}	// permissions
 		{	NextOwnerMask		U32	}	// permissions
 		{	GroupOwned			BOOL	}	// permissions
-		{	AssetID				LLUUID	}
+		{	TransactionID		LLUUID	}
 		{	Type				S8	}
 		{	InvType				S8	}
 		{	Flags				U32	}
@@ -7536,6 +7239,42 @@ sim -> dataserver
 		{	Description			Variable	1	}
 		{	CreationDate		S32	}
 		{	CRC				U32	}
+	}
+}
+
+// This message is sent from viewer -> simulator when the viewer wants
+// to rez an object from a notecard.
+{
+	RezObjectFromNotecard Low NotTrusted Zerocoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+		{	GroupID		LLUUID	}
+	}
+	{
+		RezData			Single
+		{	FromTaskID				LLUUID	}
+		{	BypassRaycast			U8	}
+		{	RayStart				LLVector3	}
+		{	RayEnd					LLVector3	}
+		{	RayTargetID				LLUUID	}
+		{	RayEndIsIntersection	BOOL }
+		{   RezSelected				BOOL }
+		{	RemoveItem				BOOL }
+		{	ItemFlags				U32 }
+		{	GroupMask				U32 }
+		{	EveryoneMask			U32 }
+		{	NextOwnerMask			U32	}
+	}
+	{
+		NotecardData		Single
+		{	NotecardItemID	LLUUID	}
+		{	ObjectID		LLUUID	}
+	}
+	{
+		InventoryData		Variable
+		{	ItemID			LLUUID	}
 	}
 }
 
@@ -7549,7 +7288,7 @@ sim -> dataserver
 	}
 }
 
-// userserver -> dataserver
+// sim -> dataserver
 // sent during agent to agent inventory transfers
 {
 	TransferInventory Low Trusted Zerocoded
@@ -7566,7 +7305,7 @@ sim -> dataserver
 	}
 }
 
-// dataserver -> userserver
+// dataserver -> sim
 // InventoryID is the id of the inventory object that the end user
 // should discard if they deny the transfer.
 {
@@ -7583,8 +7322,12 @@ sim -> dataserver
 {
 	RequestFriendship Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+	}
+	{
 		AgentBlock			Single
-		{	SourceID		LLUUID	}
 		{	FolderID		LLUUID	} // source ID's calling card folder 
 		{	DestID			LLUUID	}
 		{	TransactionID	LLUUID	}
@@ -7593,6 +7336,11 @@ sim -> dataserver
 
 {
 	AcceptFriendship Low NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+	}
 	{
 		TransactionBlock	Single
 		{	TransactionID	LLUUID	}
@@ -7606,21 +7354,15 @@ sim -> dataserver
 {
 	DeclineFriendship Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+	}
+	{
 		TransactionBlock	Single
 		{	TransactionID	LLUUID	}
 	}
 }
-
-
-//{
-//	AddCallingCard Low NotTrusted Unencoded
-//	{
-//		CardBlock		Variable
-//		{ SourceUUID	LLUUID	}
-//		{ DestUUID		LLUUID	}
-//		{ Name			Variable	1	}
-//	}
-//}
 
 {
 	FormFriendship	Low	Trusted	Unencoded
@@ -7653,8 +7395,12 @@ sim -> dataserver
 {
 	OfferCallingCard Low NotTrusted Unencoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+	}
+	{
 		AgentBlock			Single
-		{	SourceID		LLUUID	}
 		{	DestID			LLUUID	}
 		{	TransactionID	LLUUID	}
 	}
@@ -7662,6 +7408,11 @@ sim -> dataserver
 
 {
 	AcceptCallingCard Low NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+	}
 	{
 		TransactionBlock	Single
 		{	TransactionID	LLUUID	}
@@ -7674,6 +7425,11 @@ sim -> dataserver
 
 {
 	DeclineCallingCard Low NotTrusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID  }
+		{	SessionID	LLUUID  }
+	}
 	{
 		TransactionBlock	Single
 		{	TransactionID	LLUUID	}
@@ -7708,7 +7464,7 @@ sim -> dataserver
 		{	EveryoneMask	U32	}	// permissions
 		{	NextOwnerMask	U32	}	// permissions
 		{	GroupOwned		BOOL	}	// permissions
-		{	AssetID			LLUUID	}
+		{	TransactionID	LLUUID	}
 		{	Type			S8	}
 		{	InvType			S8	}
 		{	Flags			U32	}
@@ -7731,10 +7487,13 @@ sim -> dataserver
 	}
 	{	
 		InventoryBlock		Single
+		{	CallbackID	U32			} // Async Response
 		{	FolderID		LLUUID	}
+		{	TransactionID			LLUUID	} // Going to become TransactionID
 		{	NextOwnerMask	U32	}
 		{	Type			S8	}
 		{	InvType			S8	}
+		{	WearableType	U8	}
 		{	Name			Variable	1	}
 		{	Description		Variable	1	}
 	}
@@ -7794,14 +7553,6 @@ sim -> dataserver
 		{	RegionID		LLUUID	}
 	}
 }
-
-//{
-//	RegionIDRequest Low NotTrusted Unencoded
-//	{
-//		RequestBlock		Single
-//		{	RegionHandle	U64	}
-//	}
-//}
 
 {
 	RegionIDAndHandleReply Low Trusted Unencoded
@@ -8151,6 +7902,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 		{	Flags			U32		}
 	}
 	{
@@ -8168,6 +7920,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
 		{	Flags			U32		}
 	}
 	{
@@ -8196,15 +7949,6 @@ sim -> dataserver
 		{	Filename	Variable	1	}
 	}
 }
-
-// possible alternate to InventoryUpdate - tells viewer to load cached inventory
-//{
-//	UseCachedInventory Low Trusted Unencoded
-//	{
-//		InventoryData	Single
-//		{	AgentID		LLUUID	}
-//	}
-//}
 
 // dataserver-> userserver -> viewer to move around the mute list
 {
@@ -8308,8 +8052,12 @@ sim -> dataserver
 {
 	SetStartLocationRequest Low NotTrusted Zerocoded
 	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
 		StartLocationData	Single
-		{	AgentID			LLUUID	}
 		{	SimName			Variable	1	}	// string
 		{	LocationID		U32	}
 		{	LocationPos		LLVector3	}		// region coords
@@ -8512,8 +8260,10 @@ sim -> dataserver
 // Add/Remove Attachment messages
 // ***************************************************************************
 
-
+//
 // Simulator informs Dataserver of new attachment or attachment asset update 
+// DO NOT ALLOW THIS FROM THE VIEWER
+//
 {
 	UpdateAttachment Low Trusted Zerocoded
 	{
@@ -8650,7 +8400,7 @@ sim -> dataserver
 	AssetUploadRequest Low NotTrusted Unencoded
 	{
 		AssetBlock		Single
-		{	UUID		LLUUID	}
+		{	TransactionID LLUUID	}
 		{	Type		S8	}
 		{	Tempfile	BOOL	}
 		{	StoreLocal	BOOL	}
@@ -9597,26 +9347,28 @@ sim -> dataserver
 
 // AgentWearablesRequest
 // (a.k.a. "Tell me what the avatar is wearing.")
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 // reliable
 {
 	AgentWearablesRequest Low NotTrusted Unencoded
 	{
 		AgentData	Single
-		{	AgentID		LLUUID	}	// UUID	
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 }
 
 // AgentWearablesUpdate
-// (a.k.a. "Here's what the avatar is wearing now.")
-// viewer -> userserver -> dataserver
+// (a.k.a. "Here's what your avatar should be wearing now.")
 // dataserver -> userserver -> viewer
 // reliable
+// NEVER from viewer to sim
 {
-	AgentWearablesUpdate Low NotTrusted Zerocoded
+	AgentWearablesUpdate Low Trusted Zerocoded
 	{
 		AgentData	Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	SerialNum	U32	}	// U32, Increases every time the wearables change for a given agent.  Used to avoid processing out of order packets.
 	}
 	{
@@ -9626,6 +9378,26 @@ sim -> dataserver
 		{	WearableType U8	}	// U8, LLWearable::EWearType
 	}
 }
+
+//
+// AgentIsNowWearing
+// (a.k.a. "Here's what I'm wearing now.")
+// viewer->sim->dataserver
+// reliable
+{
+	AgentIsNowWearing	Low	NotTrusted	Zerocoded
+	{
+		AgentData Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		WearableData	Variable
+		{	ItemID		LLUUID	}
+		{	WearableType	U8	}
+	}
+}
+		
 
 // AgentCachedTexture
 // viewer queries for cached textures on dataserver (via simulator)
@@ -9821,33 +9593,41 @@ sim -> dataserver
 {
 	RezSingleAttachmentFromInv Low NotTrusted Zerocoded
 	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}
+	{
 		ObjectData			Single
-		{	AgentID					LLUUID  }
-		{	AssetID					LLUUID	}   // asset id in inventory
-		{	ItemID					LLUUID	}	// inventory item id
-		{	AttachmentPt			U8	}	// 0 for default
-		{	ItemFlags				U32 }
-		{	GroupMask				U32 }
-		{	EveryoneMask			U32 }
-		{	NextOwnerMask			U32	}
-		{	Name					Variable	1	}
-		{	Description				Variable	1	}
+		{	ItemID			LLUUID	}
+		{	OwnerID			LLUUID	}
+		{	AttachmentPt	U8		}	// 0 for default
+		{	ItemFlags		U32		}
+		{	GroupMask		U32		}
+		{	EveryoneMask	U32		}
+		{	NextOwnerMask	U32		}
+		{	Name			Variable	1	}
+		{	Description		Variable	1	}
 	}
 }
 
 {
 	RezMultipleAttachmentsFromInv Low NotTrusted Zerocoded
 	{
+		AgentData			Single
+		{	AgentID			LLUUID	}
+		{	SessionID		LLUUID	}
+	}	
+	{
 		HeaderData			Single
 		{	CompoundMsgID			LLUUID  }	// All messages a single "compound msg" must have the same id
 		{	TotalObjects			U8	}
-		{	AgentID					LLUUID  }
-		{	FirstDetachAll			U8	}
+		{	FirstDetachAll			BOOL	}
 	}
 	{
-		ObjectData			Variable					// 1 to 4 of these per packet
-		{	AssetID					LLUUID	}   // asset id in inventory
-		{	ItemID					LLUUID	}	// inventory item id
+		ObjectData			Variable		// 1 to 4 of these per packet
+		{	ItemID					LLUUID	}
+		{	OwnerID					LLUUID	}
 		{	AttachmentPt			U8	}	// 0 for default
 		{	ItemFlags				U32 }
 		{	GroupMask				U32 }
@@ -9898,6 +9678,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID	LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 }
 
@@ -9919,6 +9700,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{	AgentID	LLUUID	}
+		{	SessionID	LLUUID	}
 	}
 	{
 		UserData	Single
@@ -10094,6 +9876,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	Flags		U32		}
 		{	EstateID	U32		}	// filled in on sim
 		{	Godlike		BOOL	}	// filled in on sim
@@ -10102,7 +9885,7 @@ sim -> dataserver
 
 // sim -> viewer
 {
-	MapLayerReply Low	NotTrusted Unencoded
+	MapLayerReply Low	Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -10127,6 +9910,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	Flags		U32		}
 		{	EstateID	U32		}	// filled in on sim
 		{	Godlike		BOOL	}	// filled in on sim
@@ -10149,6 +9933,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	Flags		U32		}
 		{	EstateID	U32		}	// filled in on sim
 		{	Godlike		BOOL	}	// filled in on sim
@@ -10161,7 +9946,7 @@ sim -> dataserver
 
 // sim -> viewer
 {
-	MapBlockReply Low	NotTrusted Unencoded
+	MapBlockReply Low	Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -10190,6 +9975,7 @@ sim -> dataserver
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
 		{	Flags		U32		}
 		{	EstateID	U32		}	// filled in on sim
 		{	Godlike		BOOL	}	// filled in on sim
@@ -10203,7 +9989,7 @@ sim -> dataserver
 
 // sim -> viewer
 {
-	MapItemReply Low	NotTrusted Unencoded
+	MapItemReply Low	Trusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID	}
@@ -10233,6 +10019,7 @@ sim -> dataserver
 	{
 		AgentData	Single
 		{   AgentID		LLUUID		}
+		{	SessionID	LLUUID		}
 		{	AssetID		LLUUID		}
 		{	PosGlobal	LLVector3d	}	// Where snapshot was taken
 		{	To			Variable 1	}   // dest email address(es)
@@ -10324,8 +10111,9 @@ sim -> dataserver
 
 // Simulator asks for what sim a script lives on (intersim object->object email delivery)
 // simulator -> dataserver
+// *NOTE: Not in use. Phoenix 2006-08-16
 {
-	MailTaskSimRequest Low NotTrusted Unencoded
+	MailTaskSimRequest Low Trusted Unencoded
 	{
 		DataBlock Single
 		{	TaskID		LLUUID }
@@ -10334,8 +10122,9 @@ sim -> dataserver
 
 // Reply from dataserver to simulator about where a mailping needs to go.
 // Same as below, but needs to be different as it has different routing.
+// *NOTE: Not in use. Phoenix 2006-08-16
 {
-	MailTaskSimReply Low NotTrusted Unencoded
+	MailTaskSimReply Low Trusted Unencoded
 	{
 		TargetBlock			Single
 		{	TargetIP		Variable 1	}	// String IP
@@ -10350,7 +10139,7 @@ sim -> dataserver
 // ScriptMailRegistration
 // Simulator -> dataserver
 {
-	ScriptMailRegistration Low NotTrusted Unencoded
+	ScriptMailRegistration Low Trusted Unencoded
 	{
 		DataBlock Single
 		{	TargetIP		Variable 1	}	// String IP
@@ -10360,27 +10149,10 @@ sim -> dataserver
 	}
 }
 
-
-// MailPingBounce
-// This is sent to the RPC server when the sim can not be found.
-// Not currently used.
-// Spaceserver -> RPC server
-{
-	MailPingBounce Low NotTrusted Unencoded
-	{
-		DataBlock Single
-		{	TargetIP		IPADDR	}
-		{	TargetPort		IPPORT	}
-		{	TaskID			LLUUID	}
-		{	Flags			U32	}
-	}
-}
-
-
 // ParcelMediaCommandMessage
 // Sends a parcel media command
 {
-	ParcelMediaCommandMessage Low NotTrusted Unencoded
+	ParcelMediaCommandMessage Low Trusted Unencoded
 	{
 		CommandBlock Single
 		{	Flags		U32	}
@@ -10393,7 +10165,7 @@ sim -> dataserver
 // Sends a parcel media update to a single user
 // For global updates use the parcel manager.
 {
-	ParcelMediaUpdate Low NotTrusted Unencoded
+	ParcelMediaUpdate Low Trusted Unencoded
 	{
 		DataBlock Single
 		{	MediaURL		Variable	1	}	// string
@@ -10421,9 +10193,9 @@ sim -> dataserver
 }
 
 // LandStatReply
-// Sent by the simulator in response to LandCollidersRequest
+// Sent by the simulator in response to LandStatRequest
 {
-	LandStatReply Low NotTrusted Unencoded
+	LandStatReply Low Trusted Unencoded
 	{
 		RequestData	Single
 		{	ReportType			U32				}
@@ -10442,7 +10214,3 @@ sim -> dataserver
 		{	OwnerName			Variable	1	}
 	}
 }
-
-	
-
-
