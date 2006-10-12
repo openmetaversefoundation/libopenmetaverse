@@ -352,6 +352,10 @@ namespace SLProxy {
 			}
 
 			// forward the XML-RPC response to the client
+            writer.WriteLine("HTTP/1.0 200 OK");
+            writer.WriteLine("Content-type: text/xml");
+            writer.WriteLine();
+
 			XmlTextWriter responseWriter = new XmlTextWriter(writer);
 			XmlRpcResponseSerializer.Singleton.Serialize(responseWriter, response);
 			responseWriter.Close();
