@@ -1,0 +1,24 @@
+#!/usr/bin/perl -w
+
+system('prj2make libsecondlife.sln')
+	and die "*** prj2make failed\n";
+
+open(MAKEFILE, 'Makefile')
+	or die "*** failed to open Makefile for reading: $!\n";
+
+while (<MAKEFILE>) {
+	s/^MCS=mcs$/MCS=gmcs/;
+	push @patched, $_;
+}
+
+close(MAKEFILE);
+
+open(MAKEFILE, '>Makefile')
+	or die "*** failed to open Makefile for writing: $!\n";
+
+print MAKEFILE $_ foreach @patched;
+
+close(MAKEFILE);
+
+system('make', @ARGV)
+	and die "*** make failed\n";

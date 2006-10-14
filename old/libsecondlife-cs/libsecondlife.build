@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<project name="libsecondlife" default="build">
+  <sysinfo />
+
+  <!-- global framework settings -->
+  <property name="target.framework" value="${framework::get-target-framework()}" />
+  <property name="assembly.dir" value="${framework::get-assembly-directory(target.framework)}" />
+
+  <!-- global project settings -->
+  <xmlpeek verbose="false"
+    file="../libsecondlife.build"
+    xpath="/project/property[@name = 'project.version']/@value"
+    property="project.version" />
+  <property name="build.number"
+     value="${math::abs(math::floor(timespan::get-total-days(datetime::now()
+     - datetime::parse('01/01/2002'))))}" />
+  <property name="assembly" value="libsecondlife" />
+  <property name="bin_dir" value="../bin" />
+
+  <!-- default configuration -->
+  <property name="project.config" value="debug" /> <!-- debug|release -->
+
+  <!-- named configurations -->
+  <target name="init" description="Initializes build properties">
+    <call target="${project.config}" />
+  </target>
+
+  <target name="debug" description="configures a debug build">
+    <property name="build.debug" value="true" />
+    <property name="package.name"
+      value="${project::get-name()}-${project.version}-${project.config}" />
+    <property name="assembly.configuration"
+      value="${framework::get-target-framework()}.${platform::get-name()} [${project.config}]" />
+  </target>
+
+  <target name="release" description="configures a release build">
+    <property name="project.config" value="release" />
+    <property name="build.debug"    value="false" />
+    <property name="package.name"   value="${project::get-name()}-${project.version}" />
+    <property name="assembly.configuration"
+      value="${framework::get-target-framework()}.${platform::get-name()}" />
+  </target>
+
+  <!-- build tasks -->
+    <target name="build" depends="init" description="compiles the source code">
+	<mkdir dir="${bin_dir}" failonerror="false"/>
+        <csc target="library" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
+            <sources> 
+		<include name="*.cs" /> 
+                <include name="AssetSystem/*.cs" />
+                <include name="InventorySystem/*.cs" />
+                <include name="JSON/*.cs" />
+                <include name="Packets/*.cs" />
+                <include name="Utils/*.cs" />
+                <include name="XmlRpcCS/*.cs" />
+	     </sources>
+        </csc>
+    </target>
+
+    <target name="clean" description="remove build output">
+	<delete failonerror="false">
+	   <fileset basedir="${bin_dir}/">
+             <include name="libsecondlife.dll" />
+             <include name="libsecondlife.dll.mdb" />
+           </fileset>
+        </delete>
+    </target>
+</project>
