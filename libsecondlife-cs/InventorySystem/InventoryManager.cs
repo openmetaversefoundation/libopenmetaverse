@@ -30,7 +30,6 @@ using System.Collections;
 using libsecondlife;
 using libsecondlife.AssetSystem;
 using libsecondlife.Packets;
-using libsecondlife.Utils;
 
 
 namespace libsecondlife.InventorySystem
@@ -41,6 +40,9 @@ namespace libsecondlife.InventorySystem
 	/// </summary>
 	public class InventoryManager
 	{
+        private const bool DEBUG_PACKETS = true;
+
+
 		// Reference to the SLClient Library
 		private SecondLife slClient;
 
@@ -51,6 +53,7 @@ namespace libsecondlife.InventorySystem
 			get{ return slAssetManager; }
 		}
 
+        public InventoryPacketHelper InvPacketHelper = null;
 
 		// UUID of Root Inventory Folder
 		private LLUUID uuidRootFolder;
@@ -62,37 +65,13 @@ namespace libsecondlife.InventorySystem
 		private Hashtable htFolderDownloadStatus;
 		private ArrayList alFolderRequestQueue;
 
-		private int iLastPacketRecieved;
+        // Used to track current item being created
+        private InventoryItem iiCreationInProgress;
+        private bool ItemCreationInProgress;
 
-		private class DescendentRequest
-		{
-			public LLUUID FolderID;
+		private uint LastPacketRecieved;
 
-			public int Expected		= int.MaxValue;
-			public int Received		= 0;
-			public int LastReceived = 0;
-
-			public bool FetchFolders = true;
-			public bool FetchItems   = true;
-
-			public DescendentRequest( LLUUID folderID )
-			{
-				FolderID = folderID;
-				LastReceived = MiscUtils.getUnixtime();
-			}
-
-			public DescendentRequest( LLUUID folderID, bool fetchFolders, bool fetchItems )
-			{
-				FolderID = folderID;
-				FetchFolders = fetchFolders;
-				FetchItems   = fetchItems;
-				LastReceived = MiscUtils.getUnixtime();
-			}
-
-		}
-
-		// Each InventorySystem needs to be initialized with a client (for network access to SL)
-		// and root folder.  The root folder can be the root folder of an object OR an agent.
+		// Each InventorySystem needs to be initialized with a client and root folder.
 		public InventoryManager( SecondLife client, LLUUID rootFolder )
 		{
 			slClient = client;
@@ -101,13 +80,20 @@ namespace libsecondlife.InventorySystem
 				slAssetManager = new AssetManager( slClient );
 			}
 
+            InvPacketHelper = new InventoryPacketHelper(slClient.Network.AgentID, slClient.Network.SessionID);
+
 			uuidRootFolder = rootFolder;
 			
 			resetFoldersByUUID();
 			
-			// Setup the callback
+			// Setup the callback for Inventory Downloads
 			PacketCallback InventoryDescendentsCallback = new PacketCallback(InventoryDescendentsHandler);
-			slClient.Network.RegisterCallback("InventoryDescendents", InventoryDescendentsCallback);
+			slClient.Network.RegisterCallback(PacketType.InventoryDescendents, InventoryDescendentsCallback);
+
+            // Setup the callback for Inventory Creation Update
+            PacketCallback UpdateCreateInventoryItemCallback = new PacketCallback(UpdateCreateInventoryItemHandler);
+            slClient.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, UpdateCreateInventoryItemCallback);
+            
 		}
 
 		// Used primarily for debugging and testing
@@ -141,15 +127,27 @@ namespace libsecondlife.InventorySystem
 			string sSecretConst = "+@#%$#$%^%^%$^$%SV$#%FR$G";
 			sFolderPath = sFolderPath.Replace("//",sSecretConst);
 
-			char[] seperators = new char[1];
-			seperators[0] = '/';
+            if (sFolderPath.StartsWith("/"))
+            {
+                sFolderPath = sFolderPath.Remove(0, 1);
+            }
+
+            if (sFolderPath.Length == 0)
+            {
+                return getRootFolder();
+            }
+
+            char[] seperators = { '/' };
 			string[] sFolderPathParts = sFolderPath.Split(seperators);
+
 			for( int i = 0; i<sFolderPathParts.Length; i++ )
 			{
 				sFolderPathParts[i] = sFolderPathParts[i].Replace(sSecretConst,"/");
 			}
 
-			return getFolder(new Queue(sFolderPathParts));
+            Queue pathParts = new Queue(sFolderPathParts);
+
+            return getFolder(pathParts);
 		}
 		private InventoryFolder getFolder( Queue qFolderPath )
 		{
@@ -183,17 +181,14 @@ namespace libsecondlife.InventorySystem
 
 		private void RequestFolder( DescendentRequest dr )
 		{
-			Packet packet = InventoryPackets.FetchInventoryDescendents(slClient.Protocol
-							, slClient.Network.AgentID
-							, dr.FolderID
-							, slClient.Network.AgentID
+			Packet packet = InvPacketHelper.FetchInventoryDescendents(
+							dr.FolderID
 							, dr.FetchFolders
 							, dr.FetchItems);
 
 			htFolderDownloadStatus[dr.FolderID] = dr;
 
 			slClient.Network.SendPacket(packet);
-
 		}
 
 		internal InventoryFolder FolderCreate( String name, LLUUID parentid )
@@ -217,7 +212,7 @@ namespace libsecondlife.InventorySystem
 				htFoldersByUUID[ifolder.FolderID] = ifolder;
 			}
 
-			Packet packet = InventoryPackets.CreateInventoryFolder( slClient.Protocol, slClient.Network.AgentID, ifolder.Name, ifolder.ParentID, ifolder.Type, ifolder.FolderID );
+            Packet packet = InvPacketHelper.CreateInventoryFolder(ifolder.Name, ifolder.ParentID, ifolder.Type, ifolder.FolderID);
 			slClient.Network.SendPacket(packet);
 
 			return ifolder;
@@ -231,31 +226,53 @@ namespace libsecondlife.InventorySystem
 		internal void FolderRemove( LLUUID folderID )
 		{
 			htFoldersByUUID.Remove( folderID );
-			Packet packet = InventoryPackets.RemoveInventoryFolder( slClient.Protocol, slClient.Network.AgentID, folderID );
+            Packet packet = InvPacketHelper.RemoveInventoryFolder(folderID);
 			slClient.Network.SendPacket(packet);
 		}
 
 		internal void FolderMove( InventoryFolder iFolder, LLUUID newParentID )
 		{
-			Packet packet = InventoryPackets.MoveInventoryFolder( slClient.Protocol, slClient.Network.AgentID, newParentID, iFolder.FolderID );
+            Packet packet = InvPacketHelper.MoveInventoryFolder(newParentID, iFolder.FolderID);
 			slClient.Network.SendPacket(packet);
 		}
 
 		internal void FolderRename( InventoryFolder ifolder )
 		{
-			Packet packet = InventoryPackets.UpdateInventoryFolder( slClient.Protocol, slClient.Network.AgentID, ifolder.Name, ifolder.ParentID, ifolder.Type, ifolder.FolderID );
+            Packet packet = InvPacketHelper.UpdateInventoryFolder(ifolder.Name, ifolder.ParentID, ifolder.Type, ifolder.FolderID);
 			slClient.Network.SendPacket(packet);
 		}
 
+        internal void ItemCreate(InventoryItem iitem)
+        {
+            if (ItemCreationInProgress)
+            {
+                throw new Exception("Can only create one item at a time, and an item creation is already in progress.");
+            }
+            else
+            {
+                ItemCreationInProgress = true;
+                iiCreationInProgress   = iitem;
+            }
+
+            Packet packet = InvPacketHelper.CreateInventoryItem(iitem);
+            slClient.Network.SendPacket(packet);
+            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+            while (ItemCreationInProgress)
+            {
+                slClient.Tick();
+            }
+        }
+
 		internal void ItemUpdate( InventoryItem iitem )
 		{
-			Packet packet = InventoryPackets.UpdateInventoryItem( slClient.Protocol, iitem, slClient.Network.AgentID, slClient.Network.SessionID );
+            Packet packet = InvPacketHelper.UpdateInventoryItem(iitem);
 			slClient.Network.SendPacket(packet);
 		}
 
 		internal void ItemCopy( LLUUID ItemID, LLUUID TargetFolderID )
 		{
-			Packet packet = InventoryPackets.CopyInventoryItem( slClient.Protocol, slClient.Network.AgentID, ItemID, TargetFolderID );
+            Packet packet = InvPacketHelper.CopyInventoryItem(ItemID, TargetFolderID);
 			slClient.Network.SendPacket(packet);
 		}
 
@@ -263,15 +280,12 @@ namespace libsecondlife.InventorySystem
 		{
 			LLUUID MessageID = LLUUID.GenerateUUID();
 
-			Packet packet = InventoryPackets.ImprovedInstantMessage( slClient.Protocol
-				, MessageID
+            Packet packet = InvPacketHelper.ImprovedInstantMessage( 
+				MessageID
 				, ToAgentID
-				, slClient.Network.AgentID
 				, slClient.Avatar.FirstName + " " + slClient.Avatar.LastName
 				, slClient.Avatar.Position
 				, iitem
-				, slClient.Network.AgentID
-				, slClient.Network.SessionID
 				);
 
 			slClient.Network.SendPacket(packet);
@@ -283,18 +297,16 @@ namespace libsecondlife.InventorySystem
 			InventoryFolder ifolder = getFolder( iitem.FolderID );
 			ifolder.alContents.Remove( iitem );
 
-			Packet packet = InventoryPackets.RemoveInventoryItem( slClient.Protocol, slClient.Network.AgentID, iitem.ItemID );
+            Packet packet = InvPacketHelper.RemoveInventoryItem(iitem.ItemID);
 			slClient.Network.SendPacket(packet);
 		}
 
 		internal InventoryNotecard NewNotecard( string Name, string Description, string Body, LLUUID FolderID )
 		{
-			LLUUID ItemID = LLUUID.GenerateUUID();
-
-			InventoryNotecard iNotecard = new InventoryNotecard( this, Name, Description, ItemID, FolderID, slClient.Network.AgentID );
+			InventoryNotecard iNotecard = new InventoryNotecard( this, Name, Description, FolderID, slClient.Network.AgentID );
 
 			// Create this notecard on the server.
-			ItemUpdate( iNotecard );
+            ItemCreate(iNotecard );
 
 			if( (Body != null) && (Body.Equals("") != true) )
 			{
@@ -306,12 +318,10 @@ namespace libsecondlife.InventorySystem
 
 		internal InventoryImage NewImage( string Name, string Description, byte[] j2cdata, LLUUID FolderID )
 		{
-			LLUUID ItemID = LLUUID.GenerateUUID();
-
-			InventoryImage iImage = new InventoryImage( this, Name, Description, ItemID, FolderID, slClient.Network.AgentID );
+			InventoryImage iImage = new InventoryImage( this, Name, Description, FolderID, slClient.Network.AgentID );
 
 			// Create this image on the server.
-			ItemUpdate( iImage );
+            ItemCreate(iImage);
 
 			if( (j2cdata != null) && (j2cdata.Length != 0) )
 			{
@@ -342,7 +352,7 @@ namespace libsecondlife.InventorySystem
 			}
 
 			// Set last packet received to now, just so out time-out timer works
-			iLastPacketRecieved = MiscUtils.getUnixtime();
+            LastPacketRecieved = Helpers.GetUnixTime();
 
 			// Send Packet requesting the root Folder, 
 			// this should recurse through all folders
@@ -357,9 +367,9 @@ namespace libsecondlife.InventorySystem
 					RequestFolder( dr );
 				}
 
-				if( (MiscUtils.getUnixtime() - iLastPacketRecieved) > 10 )
+                if ((Helpers.GetUnixTime() - LastPacketRecieved) > 10)
 				{
-					Console.WriteLine("Time-out while waiting for packets (" + (MiscUtils.getUnixtime() - iLastPacketRecieved) + " seconds since last packet)");
+                    Console.WriteLine("Time-out while waiting for packets (" + (Helpers.GetUnixTime() - LastPacketRecieved) + " seconds since last packet)");
 					Console.WriteLine("Current Status:");
 
 					// have to make a seperate list otherwise we run into modifying the original array
@@ -371,14 +381,14 @@ namespace libsecondlife.InventorySystem
                         Console.WriteLine(htFolderDownloadStatus[0].GetType());
                     }
 
-					foreach( DescendentRequest dr in htFolderDownloadStatus )
+					foreach( DescendentRequest dr in htFolderDownloadStatus.Values )
 					{
 						Console.WriteLine( dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceived );
 						
 						alRestartList.Add( dr );
 					}
 
-					iLastPacketRecieved = MiscUtils.getUnixtime();
+                    LastPacketRecieved = Helpers.GetUnixTime();
 					foreach( DescendentRequest dr in alRestartList )
 					{
 						RequestFolder( dr );
@@ -392,51 +402,57 @@ namespace libsecondlife.InventorySystem
 
 
 
+        public void UpdateCreateInventoryItemHandler(Packet packet, Simulator simulator)
+        {
+            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+            if (ItemCreationInProgress)
+            {
+                UpdateCreateInventoryItemPacket reply = (UpdateCreateInventoryItemPacket)packet;
+
+                // User internal variable references, so we don't fire off any update code by using the public accessors
+                
+                iiCreationInProgress._ItemID   = reply.InventoryData[0].ItemID;
+
+                iiCreationInProgress._GroupOwned = reply.InventoryData[0].GroupOwned;
+                iiCreationInProgress._SaleType = reply.InventoryData[0].SaleType;
+                iiCreationInProgress._CreationDate = reply.InventoryData[0].CreationDate;
+                iiCreationInProgress._BaseMask = reply.InventoryData[0].BaseMask;
+
+                iiCreationInProgress._Name = Helpers.FieldToString(reply.InventoryData[0].Name);
+                iiCreationInProgress._InvType = reply.InventoryData[0].InvType;
+                iiCreationInProgress._Type = reply.InventoryData[0].Type;
+                iiCreationInProgress._AssetID = reply.InventoryData[0].AssetID;
+                iiCreationInProgress._GroupID = reply.InventoryData[0].GroupID;
+                iiCreationInProgress._SalePrice = reply.InventoryData[0].SalePrice;
+                iiCreationInProgress._OwnerID = reply.InventoryData[0].OwnerID;
+                iiCreationInProgress._CreatorID = reply.InventoryData[0].CreatorID;
+                iiCreationInProgress._ItemID = reply.InventoryData[0].ItemID;
+                iiCreationInProgress._FolderID = reply.InventoryData[0].FolderID;
+                iiCreationInProgress._EveryoneMask = reply.InventoryData[0].EveryoneMask;
+                iiCreationInProgress._Description = Helpers.FieldToString(reply.InventoryData[0].Description);
+                iiCreationInProgress._NextOwnerMask = reply.InventoryData[0].NextOwnerMask;
+                iiCreationInProgress._GroupMask = reply.InventoryData[0].GroupMask;
+                iiCreationInProgress._OwnerMask = reply.InventoryData[0].OwnerMask;
+
+                // NOT USED YET: iiCreationInProgress._CallbackID = reply.InventoryData[0].CallbackID;
+
+                ItemCreationInProgress = false;
+            }
+            else
+            {
+                Console.WriteLine(packet);
+                throw new Exception("Received a packet for item creation, but no such response was expected.  This is probably a bad thing...");
+            }
+        }
 
 
-		/*
-		Low 00333 - InventoryDescendents - Untrusted - Unencoded
-			1044 ItemData (Variable)
-				0047 GroupOwned (BOOL / 1)
-				0149 CRC (U32 / 1)
-				0159 CreationDate (S32 / 1)
-				0345 SaleType (U8 / 1)
-				0395 BaseMask (U32 / 1)
-				0506 Name (Variable / 1)
-				0562 InvType (S8 / 1)
-				0630 Type (S8 / 1)
-				0680 AssetID (LLUUID / 1)
-				0699 GroupID (LLUUID / 1)
-				0716 SalePrice (S32 / 1)
-				0719 OwnerID (LLUUID / 1)
-				0736 CreatorID (LLUUID / 1)
-				0968 ItemID (LLUUID / 1)
-				1025 FolderID (LLUUID / 1)
-				1084 EveryoneMask (U32 / 1)
-				1101 Description (Variable / 1)
-				1189 Flags (U32 / 1)
-				1348 NextOwnerMask (U32 / 1)
-				1452 GroupMask (U32 / 1)
-				1505 OwnerMask (U32 / 1)
-			1297 AgentData (01)
-				0219 AgentID (LLUUID / 1)
-				0366 Descendents (S32 / 1)
-				0418 Version (S32 / 1)
-				0719 OwnerID (LLUUID / 1)
-				1025 FolderID (LLUUID / 1)
-			1298 FolderData (Variable)
-				0506 Name (Variable / 1)
-				0558 ParentID (LLUUID / 1)
-				0630 Type (S8 / 1)
-				1025 FolderID (LLUUID / 1)
-		*/
 		public void InventoryDescendentsHandler(Packet packet, Simulator simulator)
 		{
-//			Console.WriteLine("Status|Queue :: " + htFolderDownloadStatus.Count + "/" + qFolderRequestQueue.Count);
-			iLastPacketRecieved = MiscUtils.getUnixtime();
+            InventoryDescendentsPacket reply = (InventoryDescendentsPacket)packet;
 
-			ArrayList blocks = packet.Blocks();
-			
+            LastPacketRecieved = Helpers.GetUnixTime();
+
 			InventoryItem   invItem;
 			InventoryFolder invFolder;
 
@@ -445,209 +461,91 @@ namespace libsecondlife.InventorySystem
 			int iDescendentsExpected = int.MaxValue;
 			int iDescendentsReceivedThisBlock = 0;
 
-			foreach (Block block in blocks)
-			{
-				if( block.Layout.Name.Equals("ItemData") )
-				{
-					invItem = new InventoryItem(this);
+            foreach (InventoryDescendentsPacket.ItemDataBlock itemBlock in reply.ItemData)
+            {
+				// There is always an item block, even if there isn't any items
+				// the "filler" block will not have a name
+                if (itemBlock.Name.Length != 0)
+                {
+                    iDescendentsReceivedThisBlock++;
 
-					foreach (Field field in block.Fields )
-					{
-						switch( field.Layout.Name )
-						{
-							case "Name":
-								invItem._Name = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
-                                invItem._Name = invItem.Name.Replace("\0", "");
-								break;
-							case "Description":
-								invItem._Description = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
-                                invItem._Description = invItem.Description.Replace("\0", "");
-								break;
+                    invItem = new InventoryItem(this, itemBlock);
+                    
+                    InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
 
-							case "InvType":
-								invItem._InvType = sbyte.Parse(field.Data.ToString());
-								break;
-							case "Type":
-								invItem._Type = sbyte.Parse(field.Data.ToString());
-								break;
+                    if (ifolder.alContents.Contains(invItem) == false)
+                    {
+                        if ((invItem.InvType == 7) && (invItem.Type == Asset.ASSET_TYPE_NOTECARD))
+                        {
+                            InventoryItem temp = new InventoryNotecard(this, invItem);
+                            invItem = temp;
+                        }
 
-							case "SaleType":
-								invItem._SaleType = byte.Parse(field.Data.ToString());
-								break;
-						
-							case "GroupOwned":
-								invItem._GroupOwned = bool.Parse(field.Data.ToString());
-								break;
-						
-							case "FolderID":
-								invItem._FolderID = new LLUUID(field.Data.ToString());
-								break;
-							case "ItemID":
-								invItem._ItemID = new LLUUID(field.Data.ToString());
-								break;
-							case "AssetID":
-								invItem._AssetID = new LLUUID(field.Data.ToString());
-								break;
-							case "GroupID":
-								invItem._GroupID = new LLUUID(field.Data.ToString());
-								break;
-							case "OwnerID":
-								invItem._OwnerID = new LLUUID(field.Data.ToString());
-								break;
-							case "CreatorID":
-								invItem._CreatorID = new LLUUID(field.Data.ToString());
-								break;
+                        if ((invItem.InvType == 0) && (invItem.Type == Asset.ASSET_TYPE_IMAGE))
+                        {
+                            InventoryItem temp = new InventoryImage(this, invItem);
+                            invItem = temp;
+                        }
 
-							case "CRC":
-								invItem._CRC = uint.Parse(field.Data.ToString());
-								break;
-							case "Flags":
-								invItem._Flags = uint.Parse(field.Data.ToString());
-								break;
+                        ifolder.alContents.Add(invItem);
+                    }
 
-							case "BaseMask":
-								invItem._BaseMask = uint.Parse(field.Data.ToString());
-								break;
-							case "EveryoneMask":
-								invItem._EveryoneMask = uint.Parse(field.Data.ToString());
-								break;
-							case "NextOwnerMask":
-								invItem._NextOwnerMask = uint.Parse(field.Data.ToString());
-								break;
-							case "GroupMask":
-								invItem._GroupMask = uint.Parse(field.Data.ToString());
-								break;
-							case "OwnerMask":
-								invItem._OwnerMask = uint.Parse(field.Data.ToString());
-								break;
+                }
+            }
 
-							case "CreationDate":
-								invItem._CreationDate = int.Parse(field.Data.ToString());
-								break;
-							case "SalePrice":
-								invItem._SalePrice = int.Parse(field.Data.ToString());
-								break;
 
-							default:
-								break;
-						}
-					}
+            foreach (InventoryDescendentsPacket.FolderDataBlock folderBlock in reply.FolderData)
+            {
+				String name		= System.Text.Encoding.UTF8.GetString(folderBlock.Name).Trim().Replace("\0", "");
+				LLUUID folderid = folderBlock.FolderID;
+				LLUUID parentid = folderBlock.ParentID;
+				sbyte  type		= folderBlock.Type;
 
-					// There is always an item block, even if there isn't any items
-					// the "filler" block will not have a name
-					if( (invItem.Name != null) && !invItem.Name.Equals("") )
-					{
-						iDescendentsReceivedThisBlock++;
-
-						InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
-						
-						if( ifolder.alContents.Contains( invItem ) == false )
-						{
-							if( (invItem.InvType == 7) && (invItem.Type == Asset.ASSET_TYPE_NOTECARD) )
-							{
-								InventoryItem temp = new InventoryNotecard( this, invItem );
-								invItem = temp;
-							}
-
-							if( (invItem.InvType == 0) && (invItem.Type == Asset.ASSET_TYPE_IMAGE) )
-							{
-								InventoryItem temp = new InventoryImage( this, invItem );
-								invItem = temp;
-							}
-
-							ifolder.alContents.Add(invItem);
-						}
-					}
-				}
-
-				// Count number of folder descendents received
-				if( block.Layout.Name.Equals("FolderData") )
-				{
-					String name		= "";
-					LLUUID folderid = new LLUUID();
-					LLUUID parentid = new LLUUID();
-					sbyte  type		= 0;
-
-					foreach (Field field in block.Fields )
-					{
-						switch( field.Layout.Name )
-						{
-							case "Name":
-								name = System.Text.Encoding.UTF8.GetString( (byte[])field.Data).Trim();
-                                name = name.Replace("\0", "");
-								break;
-							case "FolderID":
-								folderid = new LLUUID(field.Data.ToString());
-								break;
-							case "ParentID":
-								parentid = new LLUUID(field.Data.ToString());
-								break;
-							case "Type":
-								type = sbyte.Parse(field.Data.ToString());
-								break;
-							default:
-								break;
-						}
-					}
-
+				// There is always an folder block, even if there isn't any folders
+				// the "filler" block will not have a name
+                if (folderBlock.Name.Length != 0)
+                {
 					invFolder = new InventoryFolder(this, name, folderid, parentid);
 
-					// There is always an folder block, even if there isn't any folders
-					// the "filler" block will not have a name
-					if( (invFolder.Name != null) && !invFolder.Name.Equals("") )
+					iDescendentsReceivedThisBlock++;
+
+					// Add folder to Parent
+					InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invFolder.ParentID];
+					if( ifolder.alContents.Contains(invFolder) == false )
 					{
-						iDescendentsReceivedThisBlock++;
-
-						// Add folder to Parent
-						InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invFolder.ParentID];
-						if( ifolder.alContents.Contains(invFolder) == false )
-						{
-							ifolder.alContents.Add(invFolder);
-						}
-
-
-						// Add folder to UUID Lookup
-						htFoldersByUUID[invFolder.FolderID] = invFolder;
-						
-
-						// It's not the root, should be safe to "recurse"
-						if( !invFolder.FolderID.Equals( uuidRootFolder ) )
-						{
-							bool alreadyQueued = false;
-							foreach( DescendentRequest dr in alFolderRequestQueue )
-							{
-								if( dr.FolderID == invFolder.FolderID )
-								{
-									alreadyQueued = true;
-									break;
-								}
-							}
-							
-							if( !alreadyQueued )
-							{
-								alFolderRequestQueue.Add( new DescendentRequest( invFolder.FolderID ) );
-							}
-						}
+						ifolder.alContents.Add(invFolder);
 					}
-				}
 
-				// Check how many descendents we're actually supposed to receive
-				if( block.Layout.Name.Equals("AgentData") )
-				{
-					foreach (Field field in block.Fields )
+
+					// Add folder to UUID Lookup
+					htFoldersByUUID[invFolder.FolderID] = invFolder;
+					
+
+					// It's not the root, should be safe to "recurse"
+					if( !invFolder.FolderID.Equals( uuidRootFolder ) )
 					{
-						if( field.Layout.Name.Equals("Descendents") )
+						bool alreadyQueued = false;
+						foreach( DescendentRequest dr in alFolderRequestQueue )
 						{
-							iDescendentsExpected    = int.Parse(field.Data.ToString());
+							if( dr.FolderID == invFolder.FolderID )
+							{
+								alreadyQueued = true;
+								break;
+							}
 						}
-						if( field.Layout.Name.Equals("FolderID") )
+						
+						if( !alreadyQueued )
 						{
-							uuidFolderID = field.Data.ToString();
-//							Console.WriteLine("Recieved a packet for : " + uuidFolderID);
+							alFolderRequestQueue.Add( new DescendentRequest( invFolder.FolderID ) );
 						}
 					}
 				}
 			}
+
+
+            // Check how many descendents we're actually supposed to receive
+            iDescendentsExpected = reply.AgentData.Descendents;
+            uuidFolderID = reply.AgentData.FolderID;
 
 			// Update download status for this folder
 			if( iDescendentsReceivedThisBlock >= iDescendentsExpected )
@@ -661,10 +559,11 @@ namespace libsecondlife.InventorySystem
 
 				// This one packet didn't have all the descendents we're expecting
 				// so update the total we're expecting, and update the total downloaded
+
 				DescendentRequest dr = (DescendentRequest)htFolderDownloadStatus[uuidFolderID];
 				dr.Expected  = iDescendentsExpected;
 				dr.Received += iDescendentsReceivedThisBlock;
-				dr.LastReceived = MiscUtils.getUnixtime();
+                dr.LastReceived = Helpers.GetUnixTime();
 
 				if( dr.Received >= dr.Expected )
 				{
@@ -679,5 +578,32 @@ namespace libsecondlife.InventorySystem
 				}
 			}
 		}
-	}
+
+        private class DescendentRequest
+        {
+            public LLUUID FolderID;
+
+            public int Expected = int.MaxValue;
+            public int Received = 0;
+            public uint LastReceived = 0;
+
+            public bool FetchFolders = true;
+            public bool FetchItems = true;
+
+            public DescendentRequest(LLUUID folderID)
+            {
+                FolderID = folderID;
+                LastReceived = Helpers.GetUnixTime();
+            }
+
+            public DescendentRequest(LLUUID folderID, bool fetchFolders, bool fetchItems)
+            {
+                FolderID = folderID;
+                FetchFolders = fetchFolders;
+                FetchItems = fetchItems;
+                LastReceived = Helpers.GetUnixTime();
+            }
+
+        }
+    }
 }

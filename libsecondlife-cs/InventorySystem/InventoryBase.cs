@@ -6,7 +6,7 @@ using libsecondlife.AssetSystem;
 namespace libsecondlife.InventorySystem
 {
 	/// <summary>
-	/// Summary description for Class1.
+	/// Base class for Inventory items
 	/// </summary>
 	abstract public class InventoryBase
 	{
@@ -14,7 +14,10 @@ namespace libsecondlife.InventorySystem
 
 		internal string _Name;
 
-		internal InventoryBase(InventoryManager manager)
+        /// <summary>
+        /// </summary>
+        /// <param name="manager"></param>
+        internal InventoryBase(InventoryManager manager)
 		{
 			if( manager == null )
 			{
@@ -23,9 +26,17 @@ namespace libsecondlife.InventorySystem
 			iManager = manager;
 		}
 
-		abstract public string toXML( bool outputAssets );
+        /// <summary>
+        /// Output this item as XML
+        /// </summary>
+        /// <param name="outputAssets">Include an asset data as well, TRUE/FALSE</param>
+        abstract public string toXML(bool outputAssets);
 
-		protected string xmlSafe ( string str )
+        /// <summary>
+        /// Utility function to simply making text XML safe
+        /// </summary>
+        /// <param name="str"></param>
+        protected string xmlSafe(string str)
 		{
 			if( str != null )
 			{

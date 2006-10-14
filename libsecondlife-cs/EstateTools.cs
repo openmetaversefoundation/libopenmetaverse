@@ -24,6 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 using System;
+using libsecondlife.Packets;
 
 namespace libsecondlife
 {
@@ -34,29 +35,61 @@ namespace libsecondlife
 	{
 		private SecondLife Client;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
 		public EstateTools(SecondLife client)
 		{
 			Client = client;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prey"></param>
 		public void KickUser(LLUUID prey) 
 		{
-			Client.Network.SendPacket(Packets.Estate.EstateKick(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));	
+            EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
+            estate.AgentData.AgentID = Client.Network.AgentID;
+            estate.AgentData.SessionID = Client.Network.SessionID;
+            estate.MethodData.Invoice = LLUUID.GenerateUUID();
+            estate.MethodData.Method = Helpers.StringToField("kick");
+            estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[2];
+            estate.ParamList[0].Parameter = Helpers.StringToField(Client.Network.AgentID.ToStringHyphenated());
+            estate.ParamList[1].Parameter = Helpers.StringToField(prey.ToStringHyphenated());
+
+            Client.Network.SendPacket((Packet)estate);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prey"></param>
 		public void BanUser(LLUUID prey) 
 		{
-			Client.Network.SendPacket(Packets.Estate.EstateBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
+            // FIXME:
+			//Client.Network.SendPacket(Packets.Estate.EstateBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prey"></param>
 		public void UnBanUser(LLUUID prey) 
 		{
-			Client.Network.SendPacket(Packets.Estate.EstateUnBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
+            // FIXME:
+			//Client.Network.SendPacket(Packets.Estate.EstateUnBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prey"></param>
 		public void TeleportHomeUser(LLUUID prey) 
 		{
-			Client.Network.SendPacket(Packets.Estate.EstateTeleportUser(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
+            // FIXME:
+			//Client.Network.SendPacket(Packets.Estate.EstateTeleportUser(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
 		}
 	}
 }

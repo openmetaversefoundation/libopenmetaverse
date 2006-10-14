@@ -29,7 +29,7 @@ using System.Net;
 
 namespace libsecondlife
 {
-	public class U64
+	/*public class U64
 	{
 		public uint[] Data;
 
@@ -106,8 +106,6 @@ namespace libsecondlife
 		public static bool operator==(U64 lhs, int rhs)
 		{
 			if(object.ReferenceEquals(lhs, null)) return (rhs == 0);
-			/* this used to ignore the upper half of the U64, and I don't think
-			   that's correct. */
 			return (lhs.Data[0] == 0 && lhs.Data[1] == rhs);
 		}
 
@@ -121,21 +119,33 @@ namespace libsecondlife
 			ulong u64 = (Data[1] << 32) + Data[0];
 			return u64.ToString();
 		}
-	}
+	}*/
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class LLUUID
 	{
-		private byte[] data = null;
+        /// <summary></summary>
 		public byte[] Data
 		{
 			get { return data; }
 		}
 
+        private byte[] data = null;
+
+        /// <summary>
+        /// 
+        /// </summary>
 		public LLUUID()
 		{
 			data = new byte[16];
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
 		public LLUUID(string val)
 		{
 			data = new byte[16];
@@ -150,6 +160,11 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
 		public LLUUID(byte[] byteArray, int pos)
 		{
 			data = new byte[16];
@@ -157,16 +172,28 @@ namespace libsecondlife
 			Array.Copy(byteArray, pos, data, 0, 16);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="randomize"></param>
 		public LLUUID(bool randomize)
 		{
 			if (randomize) data = Guid.NewGuid().ToByteArray();
 			else           data = new byte[16];
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetBytes()
+        {
+            return Data;
+        }
+
 		/// <summary>
-		/// Calculate an LLCRC for the given LLUUID
+		/// Calculate an LLCRC (cyclic redundancy check) for this LLUUID
 		/// </summary>
-		/// <param name="uuid">The LLUUID to calculate the CRC value for</param>
 		/// <returns>The CRC checksum for this LLUUID</returns>
 		public uint CRC() 
 		{
@@ -180,16 +207,29 @@ namespace libsecondlife
 			return retval;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public static LLUUID GenerateUUID()
 		{
 			return new LLUUID(Guid.NewGuid().ToByteArray(), 0);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override int GetHashCode()
 		{
 			return ToString().GetHashCode();
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
 		public override bool Equals(object o)
 		{
 			if (!(o is LLUUID)) return false;
@@ -204,6 +244,12 @@ namespace libsecondlife
 			return true;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
 		public static bool operator==(LLUUID lhs, LLUUID rhs)
 		{
 			if(object.ReferenceEquals(lhs, rhs))  return true;
@@ -218,16 +264,31 @@ namespace libsecondlife
 			return true;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
 		public static bool operator!=(LLUUID lhs, LLUUID rhs)
 		{
 			return !(lhs == rhs);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
 		public static implicit operator LLUUID(string val)
 		{
 			return new LLUUID(val);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override string ToString()
 		{
 			string uuid = "";
@@ -240,6 +301,10 @@ namespace libsecondlife
 			return uuid;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public string ToStringHyphenated()
 		{
 			string uuid = "";
@@ -259,17 +324,30 @@ namespace libsecondlife
 		}
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class LLVector3
 	{
+        /// <summary></summary>
 		public float X;
+        /// <summary></summary>
 		public float Y;
+        /// <summary></summary>
 		public float Z;
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public LLVector3()
 		{
 			X = Y = Z = 0.0F;
 		}
 		
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vector"></param>
 		public LLVector3(LLVector3d vector)
 		{
 			X = (float)vector.X;
@@ -277,6 +355,11 @@ namespace libsecondlife
 			Z = (float)vector.Z;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
 		public LLVector3(byte[] byteArray, int pos)
 		{
 			if(!BitConverter.IsLittleEndian) 
@@ -291,6 +374,12 @@ namespace libsecondlife
 			Z = BitConverter.ToSingle(byteArray, pos + 8);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
 		public LLVector3(float x, float y, float z)
 		{
 			X = x;
@@ -298,6 +387,10 @@ namespace libsecondlife
 			Z = z;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public byte[] GetBytes()
 		{
 			byte[] byteArray = new byte[12];
@@ -315,11 +408,19 @@ namespace libsecondlife
 			return byteArray;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override string ToString()
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override int GetHashCode()
 		{
 			int x = (int)X;
@@ -329,6 +430,11 @@ namespace libsecondlife
 			return (x ^ y ^ z);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
 		public override bool Equals(object o)
 		{
 			if (!(o is LLVector3)) return false;
@@ -338,6 +444,12 @@ namespace libsecondlife
 			return (X == vector.X && Y == vector.Y && Z == vector.Z);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
 		public static bool operator==(LLVector3 lhs, LLVector3 rhs)
 		{
 			if(object.ReferenceEquals(lhs, rhs))  return true;
@@ -347,23 +459,44 @@ namespace libsecondlife
 			return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
 		public static bool operator!=(LLVector3 lhs, LLVector3 rhs)
 		{
 			return !(lhs == rhs);
 		}
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class LLVector3d
 	{
+        /// <summary></summary>
 		public double X;
+        /// <summary></summary>
 		public double Y;
+        /// <summary></summary>
 		public double Z;
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public LLVector3d()
 		{
 			X = Y = Z = 0.0D;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
 		public LLVector3d(double x, double y, double z)
 		{
 			X = x;
@@ -371,6 +504,11 @@ namespace libsecondlife
 			Z = z;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
 		public LLVector3d(byte[] byteArray, int pos)
 		{
 			if(!BitConverter.IsLittleEndian) {
@@ -384,6 +522,10 @@ namespace libsecondlife
 			Z = BitConverter.ToDouble(byteArray, pos + 16);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public byte[] GetBytes()
 		{
 			byte[] byteArray = new byte[24];
@@ -401,24 +543,43 @@ namespace libsecondlife
 			return byteArray;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override string ToString()
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
 		}
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class LLVector4
 	{
+        /// <summary></summary>
 		public float X;
+        /// <summary></summary>
 		public float Y;
+        /// <summary></summary>
 		public float Z;
+        /// <summary></summary>
 		public float S;
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public LLVector4()
 		{
 			X = Y = Z = S = 0.0F;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
 		public LLVector4(byte[] byteArray, int pos)
 		{
 			if(!BitConverter.IsLittleEndian) {
@@ -434,6 +595,10 @@ namespace libsecondlife
 			S = BitConverter.ToSingle(byteArray, pos + 12);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public byte[] GetBytes()
 		{
 			byte[] byteArray = new byte[16];
@@ -453,166 +618,152 @@ namespace libsecondlife
 			return byteArray;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override string ToString()
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
 		}
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class LLQuaternion
 	{
+        /// <summary></summary>
 		public float X;
+        /// <summary></summary>
 		public float Y;
+        /// <summary></summary>
 		public float Z;
-		public float S;
+        /// <summary></summary>
+		public float W;
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public LLQuaternion()
 		{
-			X = Y = Z = S = 0.0F;
+			X = Y = Z = 0.0f;
+            W = 1.0f;
 		}
 
-		public LLQuaternion(byte[] byteArray, int pos)
-		{
-			if(!BitConverter.IsLittleEndian) {
-				Array.Reverse(byteArray, pos,4);
-				Array.Reverse(byteArray, pos + 4, 4);
-				Array.Reverse(byteArray, pos + 8, 4);
-				Array.Reverse(byteArray, pos + 12, 4);
-			}
+        /// <summary>
+        /// Build a quaternion object from a byte array
+        /// </summary>
+        /// <param name="byteArray">The source byte array</param>
+        /// <param name="pos">Offset in the byte array to start reading at</param>
+        /// <param name="normalized">Whether the source data is normalized or
+        /// not. If this is true 12 bytes will be read, otherwise 16 bytes will
+        /// be read.</param>
+        public LLQuaternion(byte[] byteArray, int pos, bool normalized)
+        {
+            if (!normalized)
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(byteArray, pos, 4);
+                    Array.Reverse(byteArray, pos + 4, 4);
+                    Array.Reverse(byteArray, pos + 8, 4);
+                    Array.Reverse(byteArray, pos + 12, 4);
+                }
 
-			X = BitConverter.ToSingle(byteArray, pos);
-			Y = BitConverter.ToSingle(byteArray, pos + 4);
-			Z = BitConverter.ToSingle(byteArray, pos + 8);
-			S = BitConverter.ToSingle(byteArray, pos + 12);
-		}
+                X = BitConverter.ToSingle(byteArray, pos);
+                Y = BitConverter.ToSingle(byteArray, pos + 4);
+                Z = BitConverter.ToSingle(byteArray, pos + 8);
+                W = BitConverter.ToSingle(byteArray, pos + 12);
+            }
+            else
+            {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(byteArray, pos, 4);
+                    Array.Reverse(byteArray, pos + 4, 4);
+                    Array.Reverse(byteArray, pos + 8, 4);
+                }
 
-		public LLQuaternion(float x, float y, float z, float s)
+                X = BitConverter.ToSingle(byteArray, pos);
+                Y = BitConverter.ToSingle(byteArray, pos + 4);
+                Z = BitConverter.ToSingle(byteArray, pos + 8);
+
+                float xyzsum = 1 - X * X - Y * Y - Z * Z;
+                W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <param name="w"></param>
+		public LLQuaternion(float x, float y, float z, float w)
 		{
 			X = x;
 			Y = y;
 			Z = z;
-			S = s;
+			W = w;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public byte[] GetBytes()
 		{
-			byte[] byteArray = new byte[16];
+            //byte[] byteArray = new byte[16];
 
-			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
-			Array.Copy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
+            //Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+            //Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+            //Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
+            //Array.Copy(BitConverter.GetBytes(W), 0, byteArray, 12, 4);
 
-			if(!BitConverter.IsLittleEndian) {
-				Array.Reverse(byteArray, 0, 4);
-				Array.Reverse(byteArray, 4, 4);
-				Array.Reverse(byteArray, 8, 4);
-				Array.Reverse(byteArray, 12, 4);
-			}
+            //if(!BitConverter.IsLittleEndian) {
+            //    Array.Reverse(byteArray, 0, 4);
+            //    Array.Reverse(byteArray, 4, 4);
+            //    Array.Reverse(byteArray, 8, 4);
+            //    Array.Reverse(byteArray, 12, 4);
+            //}
 
-			return byteArray;
+            byte[] bytes = new byte[12];
+            float norm;
+
+            norm = (float)Math.Sqrt(X*X + Y*Y + Z*Z + W*W);
+
+            if (norm != 0)
+            {
+                norm = 1 / norm;
+
+                Array.Copy(BitConverter.GetBytes(norm * X), 0, bytes, 0, 4);
+                Array.Copy(BitConverter.GetBytes(norm * Y), 0, bytes, 4, 4);
+                Array.Copy(BitConverter.GetBytes(norm * Z), 0, bytes, 8, 4);
+
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(bytes, 0, 4);
+                    Array.Reverse(bytes, 4, 4);
+                    Array.Reverse(bytes, 8, 4);
+                }
+            }
+            else
+            {
+                throw new Exception("Quaternion <" + X + "," + Y + "," + Z + "," + W + "> normalized to zero");
+            }
+
+			return bytes;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
 		public override string ToString()
 		{
-			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
+			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + W.ToString();
 		}
-	}
-
-	public class DataConvert
-	{
-		private static byte[] ba;
-
-		public static float toFloat(object Data, int offset)
-		{
-			ba = (byte[])Data;
-			if(!BitConverter.IsLittleEndian) 
-				Array.Reverse(ba, offset, 4);
-			return BitConverter.ToSingle(ba, offset);
-		}
-
-		public static float toFloat(object Data)
-		{
-			return toFloat(Data, 0);
-		}
-
-		public static double toDouble(object Data, int offset)
-		{
-			ba = (byte[])Data;
-			if(!BitConverter.IsLittleEndian) 
-				Array.Reverse(ba, offset, 8);
-			return BitConverter.ToDouble(ba, offset);
-		}
-
-		public static double toDouble(object Data)
-		{
-			return toDouble(Data, 0);
-		}
-
-		public static byte toU8(object Data, int offset)
-		{
-			ba = (byte[])Data;
-			return ba[offset];
-		}
-
-		public static byte toU8(object Data)
-		{
-			return toU8(Data,0);
-		}
-
-		public static ushort toU16(object Data, int offset)
-		{
-			return (ushort)(toU8(Data,0) | (ushort)toU8(Data,1) << 8);
-		}
-
-		public static ushort toU16(object Data)
-		{
-			return toU16(Data, 0);
-		}
-
-		public static uint toU32(object Data, int offset)
-		{
-			return ((uint)(toU16(Data,0)) | ((uint)(toU16(Data,2) << 16))); 
-		}
-
-		public static uint toU32(object Data)
-		{
-			return toU32(Data, 0);
-		}
-
-		public static String toChoppedString(object Data)
-		{
-			return System.Text.Encoding.UTF8.GetString((byte[])Data).Replace("\0", "");
-		}
-
-		public static byte[] from(byte data) {
-			return new byte[1]{data};
-		}
-
-		public static byte[] from(ushort data) {
-			return new byte[2]{(byte)(data%256),(byte)(data>>8)};
-		}
-
-		public static byte[] from(uint data) {
-			return new byte[4] {(byte)      (data%256),(byte)((data>> 8)%256),
-					    (byte)((data>>16)%256),(byte)((data>>24)%256)};
-		}
-			
-		public static byte[] from(float data) 
-		{
-			ba = BitConverter.GetBytes(data);
-			if(!BitConverter.IsLittleEndian) 
-				Array.Reverse(ba, 0, 4);
-			return ba;
-		}
-
-		public static byte[] from(double data) 
-		{
-			ba = BitConverter.GetBytes(data);
-			if(!BitConverter.IsLittleEndian) 
-				Array.Reverse(ba, 0, 8);
-			return ba;
-		}
-
 	}
 }

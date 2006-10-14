@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Net;
 using libsecondlife;
+using libsecondlife.Packets;
 using NUnit.Framework;
 
 namespace libsecondlife.Tests
@@ -17,17 +18,9 @@ namespace libsecondlife.Tests
         [SetUp]
         public void Init()
         {
-            try
-            {
-                Client = new SecondLife("keywords.txt", "message_template.msg");
-                Client.Network.AgentID = LLUUID.GenerateUUID();
-                Client.Network.SessionID = LLUUID.GenerateUUID();
-            }
-            catch (Exception)
-            {
-                Assert.IsTrue(false, "Failed to initialize the client, " + 
-                    "keywords.txt or message_template.msg missing?");
-            }
+            Client = new SecondLife();
+            Client.Network.AgentID = LLUUID.GenerateUUID();
+            Client.Network.SessionID = LLUUID.GenerateUUID();
 
             Server = new DebugServer("keywords.txt", "message_template.msg", 8338);
             Assert.IsTrue(Server.Initialized, "Failed to initialize the server, couldn't bind to port 8338?");
@@ -35,7 +28,7 @@ namespace libsecondlife.Tests
             Simulator debugSim = Client.Network.Connect(IPAddress.Loopback, 8338, 1, true);
             Assert.IsNotNull(debugSim, "Failed to connect to the debugging simulator");
 
-            Client.Network.RegisterCallback("SimulatorAssign", new PacketCallback(SimulatorAssignHandler));
+            Client.Network.RegisterCallback(PacketType.SimulatorAssign, new PacketCallback(SimulatorAssignHandler));
         }
 
         [Test]

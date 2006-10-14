@@ -2140,7 +2140,7 @@ sim -> dataserver
 		{	AgentID			LLUUID	}
 		{	SessionID		LLUUID	}
 		{	BodyRotation	LLQuaternion	}
-		{	HeadRotation	LLQuaternion	}
+		{	HeadRotation	LLVector3	} //LLQuaternion
 		{	State			U8	}
 		{	CameraCenter	LLVector3	}
 		{	CameraAtAxis	LLVector3	}

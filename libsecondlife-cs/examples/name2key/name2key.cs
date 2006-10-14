@@ -27,6 +27,7 @@
 using System;
 using System.Collections;
 using libsecondlife;
+using libsecondlife.Packets;
 
 namespace name2key
 {
@@ -34,36 +35,25 @@ namespace name2key
 	{
 		static bool waiting = true;
 
-		//
 		public static void QueryHandler(Packet packet, Simulator simulator)
 		{
-			if (packet.Layout.Name.IndexOf("Dir") > -1)
-			{
-				ArrayList blocks = packet.Blocks();
+            DirPeopleReplyPacket reply = (DirPeopleReplyPacket)packet;
 
-				if (blocks.Count > 3)
-				{
-					Console.WriteLine("ERROR: Ambiguous name. Returning first match");
-				}
+            if (reply.QueryReplies.Length < 1)
+            {
+                Console.WriteLine("ERROR: Got an empty reply");
+            }
+            else
+            {
+                if (reply.QueryReplies.Length > 1)
+                {
+                    Console.WriteLine("ERROR: Ambiguous name. Returning first match");
+                }
 
-				foreach (Block block in blocks)
-				{
-					if (block.Layout.Name == "QueryReplies")
-					{
-						foreach (Field field in block.Fields)
-						{
-							if (field.Layout.Name == "AgentID")
-							{
-								Console.WriteLine("UUID: " + field.Data.ToString());
-								goto Done;
-							}
-						}
-					}
-				}
+                Console.WriteLine("UUID: " + reply.QueryReplies[0].AgentID.ToString());
+            }
 
-			Done:
-				waiting = false;
-			}
+			waiting = false;
 		}
 
 		/// <summary>
@@ -80,23 +70,14 @@ namespace name2key
 				return;
 			}
 
-			try
-			{
-				client = new SecondLife("keywords.txt", "message_template.msg");
-			}
-			catch (Exception e)
-			{
-				// Error initializing the client, probably missing file(s)
-				Console.WriteLine(e.ToString());
-				return;
-			}
+			client = new SecondLife();
 
 			// Setup the callback
-			client.Network.RegisterCallback("DirPeopleReply", new PacketCallback(QueryHandler));
+			client.Network.RegisterCallback(PacketType.DirPeopleReply, new PacketCallback(QueryHandler));
 
 			// Setup the login values
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 50, 50, 50, "Win", "0", "name2key", "contact@libsecondlife.org");
+				"last", 1, 50, 50, 50, "Win", "0", "name2key", "jhurliman@wsu.edu");
 
 			if (!client.Network.Login(loginParams))
 			{
@@ -106,11 +87,15 @@ namespace name2key
 			}
 
 			// Send the Query
-			string name = args[3] + " " + args[4];
-            LLUUID queryID = LLUUID.GenerateUUID();
-			Packet packet = libsecondlife.Packets.Sim.DirFindQuery(client.Protocol, name, 0, queryID,
-				client.Network.AgentID, client.Network.SessionID);
-			client.Network.SendPacket(packet);
+            DirFindQueryPacket find = new DirFindQueryPacket();
+            find.AgentData.AgentID = client.Network.AgentID;
+            find.AgentData.SessionID = client.Network.SessionID;
+            find.QueryData.QueryFlags = 1;
+            find.QueryData.QueryText = Helpers.StringToField(args[3] + " " + args[4]);
+            find.QueryData.QueryID = new LLUUID("00000000000000000000000000000001");
+            find.QueryData.QueryStart = 0;
+            
+			client.Network.SendPacket((Packet)find);
 
 			while (waiting)
 			{

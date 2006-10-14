@@ -4,11 +4,12 @@ using System.Xml;
 
 using libsecondlife;
 using libsecondlife.AssetSystem;
+using libsecondlife.Packets;
 
 namespace libsecondlife.InventorySystem
 {
 	/// <summary>
-	/// Summary description for InventoryFolder.
+	/// Base class for most inventory items, providing a lot of general inventory management functions.
 	/// </summary>
 	public class InventoryItem : InventoryBase
 	{
@@ -44,10 +45,20 @@ namespace libsecondlife.InventorySystem
 			}
 		}
 
-		internal LLUUID _ItemID = new LLUUID();
+		internal LLUUID _ItemID = null;
 		public   LLUUID ItemID
 		{
-			get{ return _ItemID; }
+            set {
+                if (_ItemID == null)
+                {
+                    _ItemID = value;
+                }
+                else
+                {
+                    throw new Exception("You can not change an item's ID once it's been set.");
+                }
+            }
+			get { return _ItemID; }
 		}
 
 		internal sbyte _InvType = 0;
@@ -122,15 +133,16 @@ namespace libsecondlife.InventorySystem
 			}
 		}
 
+        internal LLUUID _TransactionID = new LLUUID();
+        public LLUUID TransactionID
+        {
+            get { return _TransactionID; }
+        }
+
 		internal LLUUID _AssetID = new LLUUID();
 		public   LLUUID AssetID
 		{
 			get { return _AssetID; }
-			set
-			{
-				_AssetID = value;
-				UpdateItem();
-			}
 		}
 
 
@@ -246,10 +258,42 @@ namespace libsecondlife.InventorySystem
 		{
 		}
 
-		internal InventoryItem( InventoryManager manager, string name, LLUUID id, LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater ) : base(manager)
+        internal InventoryItem(InventoryManager manager, InventoryDescendentsPacket.ItemDataBlock itemData)
+            : base(manager)
+        {
+            _Name         = System.Text.Encoding.UTF8.GetString(itemData.Name).Trim().Replace("\0", "");
+            _Description  = System.Text.Encoding.UTF8.GetString(itemData.Description).Trim().Replace("\0", "");
+            _CreationDate = itemData.CreationDate;
+    
+            _InvType = itemData.InvType;
+            _Type    = itemData.Type;
+
+            _AssetID  = itemData.AssetID;
+            _FolderID = itemData.FolderID;
+
+            _GroupOwned = itemData.GroupOwned;
+            _GroupID    = itemData.GroupID;
+            _GroupMask  = itemData.GroupMask;
+
+            _CreatorID = itemData.CreatorID;
+            _OwnerID   = itemData.OwnerID;
+            _OwnerMask = itemData.OwnerMask;
+            
+
+			_Flags         = itemData.Flags;
+            _BaseMask      = itemData.BaseMask;
+            _EveryoneMask  = itemData.EveryoneMask;
+            _NextOwnerMask = itemData.NextOwnerMask;
+
+            _SaleType  = itemData.SaleType;
+            _SalePrice = itemData.SalePrice;
+
+            _CRC = itemData.CRC;
+        }
+
+		internal InventoryItem( InventoryManager manager, string name,  LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater ) : base(manager)
 		{
 			_Name			= name;
-			_ItemID			= id;
 			_FolderID		= folderID;
 			_InvType		= invType;
 			_Type			= type;
@@ -259,11 +303,10 @@ namespace libsecondlife.InventorySystem
 			UpdateCRC();
 		}
 
-		internal InventoryItem( InventoryManager manager, string name, string description, LLUUID id, LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater ) : base(manager)
+		internal InventoryItem( InventoryManager manager, string name, string description, LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater ) : base(manager)
 		{
 			_Name			= name;
 			_Description    = description;
-			_ItemID			= id;
 			_FolderID		= folderID;
 			_InvType		= invType;
 			_Type			= type;
@@ -273,7 +316,19 @@ namespace libsecondlife.InventorySystem
 			UpdateCRC();
 		}
 
-		public override bool Equals(object o)
+        /// <summary></summary>
+        /// 
+        protected void SetAssetTransactionIDs(LLUUID assetID, LLUUID transactionID)
+        {
+            _AssetID       = assetID;
+            _TransactionID = transactionID;
+            UpdateItem();
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="o"></param>
+        public override bool Equals(object o)
 		{
 			if( (o is InventoryItem) == false )
 			{
@@ -283,12 +338,18 @@ namespace libsecondlife.InventorySystem
 			return this._ItemID == ((InventoryItem)o)._ItemID;
 		}
 
-		public override int GetHashCode()
+        /// <summary>
+        /// </summary>
+        public override int GetHashCode()
 		{
 			return this._ItemID.GetHashCode();
 		}
 
-		public int CompareTo(object obj) 
+        /// <summary>
+        /// CompareTo provided so that items can be sorted by name
+        /// </summary>
+        /// <param name="obj"></param>
+        public int CompareTo(object obj) 
 		{
 			if(obj is InventoryBase) 
 			{
@@ -306,41 +367,59 @@ namespace libsecondlife.InventorySystem
 
 		private void UpdateCRC()
 		{
-			_CRC = Packets.InventoryPackets.InventoryUpdateCRC(this);
+			_CRC = InventoryPacketHelper.InventoryUpdateCRC(this);
 		}
 
-		public void MoveTo( InventoryFolder targetFolder )
+        /// <summary>
+        /// Move this item to the target folder
+        /// </summary>
+        /// <param name="targetFolder"></param>
+        public void MoveTo(InventoryFolder targetFolder)
 		{
 			this.FolderID = targetFolder.FolderID;
 		}
-		public void MoveTo( LLUUID targetFolderID )
+
+        /// <summary>
+        /// Move this item to the target folder
+        /// </summary>
+        /// <param name="targetFolderID"></param>
+        public void MoveTo(LLUUID targetFolderID)
 		{
 			this.FolderID = targetFolderID;
 		}
 
-		public void CopyTo( LLUUID targetFolder )
+        /// <summary>
+        /// If you have Copy permission, a copy is placed in the target folder
+        /// </summary>
+        /// <param name="targetFolder"></param>
+        public void CopyTo(LLUUID targetFolder)
 		{
 			base.iManager.ItemCopy( this.ItemID, targetFolder );
 		}
 
-		public void GiveTo( LLUUID ToAgentID )
+        /// <summary>
+        /// Give this item to another agent.  If you have Copy permission, a copy will be given
+        /// </summary>
+        /// <param name="ToAgentID"></param>
+        public void GiveTo(LLUUID ToAgentID)
 		{
 			base.iManager.ItemGiveTo( this, ToAgentID );
 		}
 
-		public void Delete()
+        /// <summary>
+        /// Delete this item from Second Life
+        /// </summary>
+        public void Delete()
 		{
 			base.iManager.getFolder( this.FolderID ).alContents.Remove( this );
 			base.iManager.ItemRemove( this );
 
 		}
 
-		public void ClearAssetTest()
-		{
-			_Asset = null;
-		}
-
-		virtual internal void SetAssetData( byte[] assetData )
+        /// <summary>
+        /// </summary>
+        /// <param name="assetData"></param>
+        virtual internal void SetAssetData(byte[] assetData)
 		{
 			if( _Asset == null )
 			{
@@ -348,15 +427,19 @@ namespace libsecondlife.InventorySystem
 				{
 					_Asset = new Asset( AssetID, Type, assetData );
 				} else {
-					_Asset = new Asset( LLUUID.GenerateUUID(), Type, assetData );
-					AssetID = _Asset.AssetID;
+					_Asset   = new Asset( LLUUID.GenerateUUID(), Type, assetData );
+					_AssetID = _Asset.AssetID;
 				}
 			} else {
 				_Asset.AssetData = assetData;
 			}
 		}
 
-		override public string toXML( bool outputAssets )
+        /// <summary>
+        /// Output this item as XML
+        /// </summary>
+        /// <param name="outputAssets">Include an asset data as well, TRUE/FALSE</param>
+        override public string toXML(bool outputAssets)
 		{
 			string output = "<item ";
 
@@ -369,7 +452,7 @@ namespace libsecondlife.InventorySystem
 
 			output += "description = '" + xmlSafe(Description) + "' ";
 			output += "crc = '" + CRC + "' ";
-			output += "debug = '" + Packets.InventoryPackets.InventoryUpdateCRC(this) + "' ";
+			output += "debug = '" + InventoryPacketHelper.InventoryUpdateCRC(this) + "' ";
 			output += "ownerid = '" + OwnerID + "' ";
 			output += "creatorid = '" + CreatorID + "' ";
 

@@ -4,46 +4,87 @@ using System.IO;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
 	public enum PacketFrequency
 	{
+        /// <summary></summary>
 		Low,
+        /// <summary></summary>
 		Medium,
+        /// <summary></summary>
 		High
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public enum FieldType
 	{
+        /// <summary></summary>
 		U8,
+        /// <summary></summary>
 		U16,
+        /// <summary></summary>
 		U32,
+        /// <summary></summary>
 		U64,
+        /// <summary></summary>
 		S8,
+        /// <summary></summary>
 		S16,
+        /// <summary></summary>
 		S32,
-		S64,
+        /// <summary></summary>
 		F32,
+        /// <summary></summary>
 		F64,
+        /// <summary></summary>
 		LLUUID,
+        /// <summary></summary>
 		BOOL,
+        /// <summary></summary>
 		LLVector3,
+        /// <summary></summary>
 		LLVector3d,
+        /// <summary></summary>
 		LLVector4,
+        /// <summary></summary>
 		LLQuaternion,
+        /// <summary></summary>
 		IPADDR,
+        /// <summary></summary>
 		IPPORT,
+        /// <summary></summary>
 		Variable,
+        /// <summary></summary>
 		Fixed,
+        /// <summary></summary>
 		Single,
+        /// <summary></summary>
 		Multiple
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class MapField : IComparable
 	{
+        /// <summary></summary>
 		public int KeywordPosition;
+        /// <summary></summary>
 		public string Name;
+        /// <summary></summary>
 		public FieldType Type;
+        /// <summary></summary>
 		public int Count;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
 		public int CompareTo(object obj)
 		{
 			MapField temp = (MapField)obj;
@@ -66,13 +107,25 @@ namespace libsecondlife
 		}
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class MapBlock : IComparable
 	{
+        /// <summary></summary>
 		public int KeywordPosition;
+        /// <summary></summary>
 		public string Name;
+        /// <summary></summary>
 		public int Count;
+        /// <summary></summary>
 		public ArrayList Fields;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
 		public int CompareTo(object obj)
 		{
 			MapBlock temp = (MapBlock)obj;
@@ -95,27 +148,50 @@ namespace libsecondlife
 		}
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class MapPacket
 	{
+        /// <summary></summary>
 		public ushort ID;
+        /// <summary></summary>
 		public string Name;
+        /// <summary></summary>
 		public PacketFrequency Frequency;
+        /// <summary></summary>
 		public bool Trusted;
+        /// <summary></summary>
 		public bool Encoded;
+        /// <summary></summary>
 		public ArrayList Blocks;
 	}
 
+    /// <summary>
+    /// 
+    /// </summary>
 	public class ProtocolManager
 	{
+        /// <summary></summary>
 		public Hashtable TypeSizes;
+        /// <summary></summary>
 		public Hashtable KeywordPositions;
+        /// <summary></summary>
 		public MapPacket[] LowMaps;
+        /// <summary></summary>
 		public MapPacket[] MediumMaps;
+        /// <summary></summary>
 		public MapPacket[] HighMaps;
 
         private SecondLife Client;
         private int i = 0;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keywordFile"></param>
+        /// <param name="mapFile"></param>
+        /// <param name="client"></param>
 		public ProtocolManager(string keywordFile, string mapFile, SecondLife client)
 		{
             Client = client;
@@ -134,7 +210,6 @@ namespace libsecondlife
 			TypeSizes.Add(FieldType.S8, 1);
 			TypeSizes.Add(FieldType.S16, 2);
 			TypeSizes.Add(FieldType.S32, 4);
-			TypeSizes.Add(FieldType.S64, 8);
 			TypeSizes.Add(FieldType.F32, 4);
 			TypeSizes.Add(FieldType.F64, 8);
 			TypeSizes.Add(FieldType.LLUUID, 16);
@@ -152,10 +227,13 @@ namespace libsecondlife
 			LoadMapFile(mapFile);
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
 		public MapPacket Command(string command)
 		{
-			//TODO: Get a hashtable in here quick!
-
 			foreach (MapPacket map in HighMaps)
 			{
 				if (map != null)
@@ -178,12 +256,6 @@ namespace libsecondlife
 				}
 			}
 
-			// This will speed things up for now
-			if (command == LowMaps[65531].Name)
-			{
-				return LowMaps[65531];
-			}
-
 			foreach (MapPacket map in LowMaps)
 			{
 				if (map != null)
@@ -198,6 +270,11 @@ namespace libsecondlife
 			throw new Exception("Cannot find map for command \"" + command + "\"");
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
 		public MapPacket Command(byte[] data)
 		{
 			ushort command;
@@ -230,6 +307,12 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="frequency"></param>
+        /// <returns></returns>
 		public MapPacket Command(ushort command, PacketFrequency frequency)
 		{
 			switch (frequency)
@@ -245,6 +328,9 @@ namespace libsecondlife
 			throw new Exception("Cannot find map for command \"" + command + "\" with frequency \"" + frequency + "\"");
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
 		public void PrintMap()
 		{
 			PrintOneMap(LowMaps,    "Low   ");
@@ -252,6 +338,11 @@ namespace libsecondlife
 			PrintOneMap(HighMaps,   "High  ");
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="frequency"></param>
 		private void PrintOneMap(MapPacket[] map, string frequency) {
 			int i;
 
@@ -284,6 +375,10 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="keywordFile"></param>
 		private void LoadKeywordFile(string keywordFile)
 		{
 			string line;
@@ -310,6 +405,11 @@ namespace libsecondlife
 			file.Close();
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mapFile"></param>
+        /// <param name="outputFile"></param>
 		public static void DecodeMapFile(string mapFile, string outputFile)
 		{
 			byte magicKey = 0;
@@ -351,6 +451,10 @@ namespace libsecondlife
 			output.Close();
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mapFile"></param>
 		private void LoadMapFile(string mapFile)
 		{
 			FileStream map;

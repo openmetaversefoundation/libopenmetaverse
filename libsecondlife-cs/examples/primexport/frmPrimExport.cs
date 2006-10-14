@@ -181,15 +181,8 @@ namespace primexport
 
             primCallback = new NewPrimCallback(PrimSeen);
 
-            try
-            {
-                client = new SecondLife("keywords.txt", "message_template.msg");
-                grpLogin.Enabled = true;
-            }
-            catch (Exception error)
-            {
-                MessageBox.Show(this, error.ToString());
-            }
+            client = new SecondLife();
+            grpLogin.Enabled = true;
         }
 
         private void Log(string text)
@@ -211,7 +204,7 @@ namespace primexport
             txtLog.Text += currentText + Environment.NewLine;
         }
 
-        private void PrimSeen(Simulator simulator, PrimObject prim, U64 regionHandle, ushort timeDilation)
+        private void PrimSeen(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
         {
             uint type = 0;
             string output = "";
@@ -227,30 +220,37 @@ namespace primexport
 
             if (prim.ProfileCurve == 1 && prim.PathCurve == 16)
             {
+                // PRIM_TYPE_BOX
                 type = 0;
             }
             else if (prim.ProfileCurve == 0 && prim.PathCurve == 16)
             {
+                // PRIM_TYPE_CYLINDER
                 type = 1;
             }
             else if (prim.ProfileCurve == 3 && prim.PathCurve == 16)
             {
+                // PRIM_TYPE_PRISM
                 type = 2;
             }
             else if (prim.ProfileCurve == 5 && prim.PathCurve == 32)
             {
+                // PRIM_TYPE_SPHERE
                 type = 3;
             }
             else if (prim.ProfileCurve == 0 && prim.PathCurve == 32)
             {
+                // PRIM_TYPE_TORUS
                 type = 4;
             }
             else if (prim.ProfileCurve == 1 && prim.PathCurve == 32)
             {
+                // PRIM_TYPE_TUBE
                 type = 5;
             }
             else if (prim.ProfileCurve == 3 && prim.PathCurve == 32)
             {
+                // PRIM_TYPE_RING
                 type = 6;
             }
             else
@@ -267,7 +267,7 @@ namespace primexport
             output += "<rotation x=\"" + string.Format("{0:F6}", prim.Rotation.X) +
                 "\" y=\"" + string.Format("{0:F6}", prim.Rotation.Y) +
                 "\" z=\"" + string.Format("{0:F6}", prim.Rotation.Z) +
-                "\" s=\"" + string.Format("{0:F6}", prim.Rotation.S) + "\" />" + Environment.NewLine;
+                "\" s=\"" + string.Format("{0:F6}", prim.Rotation.W) + "\" />" + Environment.NewLine;
             output += "<size x=\"" + string.Format("{0:F3}", prim.Scale.X) +
                 "\" y=\"" + string.Format("{0:F3}", prim.Scale.Y) +
                 "\" z=\"" + string.Format("{0:F3}", prim.Scale.Z) + "\" />" + Environment.NewLine;

@@ -28,513 +28,374 @@ using System;
 using System.Timers;
 using System.Net;
 using System.Collections;
+using libsecondlife.Packets;
 
 namespace libsecondlife
 {
-    public delegate void ChatCallback(string message, byte audible, byte chattype, byte sourcetype,
-    string name, LLUUID sourceid, LLUUID ownerid, LLVector3 position);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="Message"></param>
+    /// <param name="Audible"></param>
+    /// <param name="Type"></param>
+    /// <param name="Sourcetype"></param>
+    /// <param name="FromName"></param>
+    /// <param name="ID"></param>
+    public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
+        string fromName, LLUUID id);
 
-    public delegate void InstantMessageCallback(LLUUID FromAgentID, LLUUID ToAgentID,
-    uint ParentEstateID, LLUUID RegionID, LLVector3 Position, byte Offline, byte Dialog,
-    LLUUID ID, uint Timestamp, string AgentName, string Message, string Bucket);
+    /// <summary>
+    /// Event is triggered when the L$ account balance for this avatar changes.
+    /// </summary>
+    /// <param name="balance">The new account balance</param>
+    public delegate void BalanceUpdated(int balance);
 
-    public delegate void FriendNotificationCallback(LLUUID AgentID, bool Online);
+    /// <summary>
+    /// Triggered whenever an instant message is received.
+    /// </summary>
+    /// <param name="FromAgentID"></param>
+    /// <param name="FromAgentName"></param>
+    /// <param name="ToAgentID"></param>
+    /// <param name="ParentEstateID"></param>
+    /// <param name="RegionID"></param>
+    /// <param name="Position"></param>
+    /// <param name="Dialog"></param>
+    /// <param name="GroupIM"></param>
+    /// <param name="IMSessionID"></param>
+    /// <param name="Timestamp"></param>
+    /// <param name="Message"></param>
+    public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName, 
+        LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, 
+        bool dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
+        byte offline, byte[] binaryBucket);
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="AgentID"></param>
+    /// <param name="Online"></param>
+    public delegate void FriendNotificationCallback(LLUUID agentID, bool online);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="message"></param>
     public delegate void TeleportCallback(string message);
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class Avatar
     {
+        /// <summary></summary>
         public LLUUID ID;
+        /// <summary></summary>
         public uint LocalID;
+        /// <summary></summary>
         public string Name;
+        /// <summary></summary>
         public string GroupName;
+        /// <summary></summary>
         public bool Online;
+        /// <summary></summary>
         public LLVector3 Position;
+        /// <summary></summary>
         public LLQuaternion Rotation;
+        /// <summary></summary>
         public Region CurrentRegion;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class MainAvatar
     {
+        /// <summary></summary>
+        public event ChatCallback OnChat;
+        /// <summary></summary>
+        public event InstantMessageCallback OnInstantMessage;
+        /// <summary></summary>
+        public event FriendNotificationCallback OnFriendNotification;
+        /// <summary></summary>
+        public event TeleportCallback OnTeleport;
+
+        /// <summary></summary>
         public LLUUID ID;
+        /// <summary></summary>
         public uint LocalID;
+        /// <summary></summary>
         public string FirstName;
+        /// <summary></summary>
         public string LastName;
+        /// <summary></summary>
         public string TeleportMessage;
+        /// <summary></summary>
         public LLVector3 Position;
+        /// <summary>Current rotation of the avatar</summary>
         public LLQuaternion Rotation;
-        // Should we even keep LookAt around? It's just for setting the initial
-        // rotation after login AFAIK
-        public LLVector3d LookAt;
-        public LLVector3d HomePosition;
-        public LLVector3d HomeLookAt;
+        /// <summary>The point the avatar is currently looking at
+        /// (may not stay updated)</summary>
+        public LLVector3 LookAt;
+        /// <summary></summary>
+        public LLVector3 HomePosition;
+        /// <summary></summary>
+        public LLVector3 HomeLookAt;
+        /// <summary>Gets the health of the current agent</summary>
+        public float Health
+        {
+            get { return Health; }
+        }
 
         private SecondLife Client;
         private int TeleportStatus;
         private Timer TeleportTimer;
         private bool TeleportTimeout;
+        private uint HeightWidthGenCounter;
+        private float health;
 
-        public event ChatCallback OnChat;
-        public event InstantMessageCallback OnInstantMessage;
-        public event FriendNotificationCallback OnFriendNotification;
-        public event TeleportCallback OnTeleport;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
         public MainAvatar(SecondLife client)
         {
+            PacketCallback callback;
             Client = client;
             TeleportMessage = "";
 
             // Create emtpy vectors for now
-            HomeLookAt = HomePosition = LookAt = new LLVector3d();
-            Position = new LLVector3();
+            HomeLookAt = HomePosition = Position = LookAt = new LLVector3();
             Rotation = new LLQuaternion();
 
             // Coarse location callback
-            PacketCallback callback = new PacketCallback(CoarseLocationHandler);
-            Client.Network.RegisterCallback("CoarseLocationUpdate", callback);
+            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new PacketCallback(CoarseLocationHandler));
 
             // Teleport callbacks
             callback = new PacketCallback(TeleportHandler);
-            Client.Network.RegisterCallback("TeleportStart", callback);
-            Client.Network.RegisterCallback("TeleportProgress", callback);
-            Client.Network.RegisterCallback("TeleportFailed", callback);
-            Client.Network.RegisterCallback("TeleportFinish", callback);
+            Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
+            Client.Network.RegisterCallback(PacketType.TeleportProgress, callback);
+            Client.Network.RegisterCallback(PacketType.TeleportFailed, callback);
+            Client.Network.RegisterCallback(PacketType.TeleportFinish, callback);
 
             // Instant Message callback
-            callback = new PacketCallback(InstantMessageHandler);
-            Client.Network.RegisterCallback("ImprovedInstantMessage", callback);
+            Client.Network.RegisterCallback(PacketType.ImprovedInstantMessage, new PacketCallback(InstantMessageHandler));
 
             // Chat callback
-            callback = new PacketCallback(ChatHandler);
-            Client.Network.RegisterCallback("ChatFromSimulator", callback);
+            Client.Network.RegisterCallback(PacketType.ChatFromSimulator, new PacketCallback(ChatHandler));
 
             // Friend notification callback
             callback = new PacketCallback(FriendNotificationHandler);
-            Client.Network.RegisterCallback("OnlineNotification", callback);
-            Client.Network.RegisterCallback("OfflineNotification", callback);
+            Client.Network.RegisterCallback(PacketType.OnlineNotification, callback);
+            Client.Network.RegisterCallback(PacketType.OfflineNotification, callback);
 
-            TeleportTimer = new Timer(8000);
+            TeleportTimer = new Timer(18000);
             TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
             TeleportTimeout = false;
+
+            // Movement complete callback
+            Client.Network.RegisterCallback(PacketType.AgentMovementComplete, new PacketCallback(MovementCompleteHandler));
+
+            // Health callback
+            Client.Network.RegisterCallback(PacketType.HealthMessage, new PacketCallback(HealthHandler));
         }
 
-        private void FriendNotificationHandler(Packet packet, Simulator simulator)
-        {
-            // If the agent is online...
-            if (packet.Layout.Name == "OnlineNotification")
-            {
-                LLUUID AgentID = new LLUUID();
-
-                ArrayList blocks;
-
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
-                {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "AgentID")
-                        {
-                            AgentID = (LLUUID)field.Data;
-
-                            Client.AddAvatar(AgentID);
-                            Client.AvatarsMutex.WaitOne();
-                            ((Avatar)Client.Avatars[AgentID]).Online = true;
-                            Client.AvatarsMutex.ReleaseMutex();
-
-                            if (OnFriendNotification != null)
-                            {
-                                OnFriendNotification(AgentID, true);
-                            }
-                        }
-                    }
-                }
-
-                return;
-            }
-
-            // If the agent is Offline...
-            if (packet.Layout.Name == "OfflineNotification")
-            {
-                LLUUID AgentID = new LLUUID();
-
-                ArrayList blocks;
-
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
-                {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "AgentID")
-                        {
-                            AgentID = (LLUUID)field.Data;
-
-                            Client.AddAvatar(AgentID);
-                            Client.AvatarsMutex.WaitOne();
-                            ((Avatar)Client.Avatars[AgentID]).Online = false;
-                            Client.AvatarsMutex.ReleaseMutex();
-
-                            if (OnFriendNotification != null)
-                            {
-                                OnFriendNotification(AgentID, false);
-                            }
-                        }
-                    }
-                }
-
-                return;
-            }
-        }
-
-        private void CoarseLocationHandler(Packet packet, Simulator simulator)
-        {
-            LLVector3d position = new LLVector3d();
-
-            foreach (Block block in packet.Blocks())
-            {
-                foreach (Field field in block.Fields)
-                {
-                    if (field.Layout.Name == "X")
-                    {
-                        position.X = Convert.ToDouble((byte)field.Data);
-                    }
-                    else if (field.Layout.Name == "Y")
-                    {
-                        position.Y = Convert.ToDouble((byte)field.Data);
-                    }
-                    else if (field.Layout.Name == "Z")
-                    {
-                        position.Z = Convert.ToDouble((byte)field.Data);
-                    }
-                }
-            }
-
-            // Check if the avatar position hasn't been updated
-            if (Position.X == 0 && Position.Y == 0 && Position.Z == 0)
-            {
-                Position.X = (float)position.X;
-                Position.Y = (float)position.Y;
-                Position.Z = (float)position.Z;
-
-                // Send an AgentUpdate packet with the new camera location
-                packet = Packets.Sim.AgentUpdate(Client.Protocol, Client.Network.AgentID, 
-                    56.0F, Position, 0, 0);
-                Client.Network.SendPacket(packet);
-
-                Hashtable blocks = new Hashtable();
-                Hashtable fields = new Hashtable();
-
-                fields["ID"] = Client.Avatar.ID;
-                fields["CircuitCode"] = Client.Network.CurrentSim.CircuitCode;
-                fields["GenCounter"] = (uint)0;
-                blocks[fields] = "Sender";
-
-                fields = new Hashtable();
-                fields["VerticalAngle"] = (float)6.28318531F;
-                blocks[fields] = "FOVBlock";
-
-                packet = PacketBuilder.BuildPacket("AgentFOV", Client.Protocol, blocks, Helpers.MSG_RELIABLE);
-            }
-        }
-
-        private void InstantMessageHandler(Packet packet, Simulator simulator)
-        {
-            if (packet.Layout.Name == "ImprovedInstantMessage")
-            {
-                LLUUID FromAgentID = new LLUUID();
-                LLUUID ToAgentID = new LLUUID();
-                uint ParentEstateID = 0;
-                LLUUID RegionID = new LLUUID();
-                LLVector3 position = new LLVector3();
-                byte Offline = 0;
-                byte Dialog = 0;
-                LLUUID ID = new LLUUID();
-                uint Timestamp = 0;
-                string AgentName = "";
-                string Message = "";
-                string Bucket = "";
-
-                ArrayList blocks;
-
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
-                {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "AgentID")
-                        {
-                            FromAgentID = (LLUUID)field.Data;
-                        }
-                        else if (field.Layout.Name == "ToAgentID")
-                        {
-                            ToAgentID = (LLUUID)field.Data;
-                        }
-                        else if (field.Layout.Name == "ParentEstateID")
-                        {
-                            ParentEstateID = (uint)field.Data;
-                        }
-                        else if (field.Layout.Name == "RegionID")
-                        {
-                            RegionID = (LLUUID)field.Data;
-                        }
-                        else if (field.Layout.Name == "Position")
-                        {
-                            position = (LLVector3)field.Data;
-                        }
-                        else if (field.Layout.Name == "Offline")
-                        {
-                            Offline = (byte)field.Data;
-                        }
-                        else if (field.Layout.Name == "Dialog")
-                        {
-                            Dialog = (byte)field.Data;
-                        }
-                        else if (field.Layout.Name == "ID")
-                        {
-                            ID = (LLUUID)field.Data;
-                        }
-                        else if (field.Layout.Name == "Timestamp")
-                        {
-                            Timestamp = (uint)field.Data;
-                        }
-                        else if (field.Layout.Name == "FromAgentName")
-                        {
-                            AgentName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                        }
-                        else if (field.Layout.Name == "Message")
-                        {
-                            Message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                        }
-                        else if (field.Layout.Name == "BinaryBucket")
-                        {
-                            Bucket = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                        }
-                    }
-                }
-
-                if (OnInstantMessage != null)
-                {
-                    OnInstantMessage(FromAgentID, ToAgentID, ParentEstateID, RegionID, position,
-                            Offline, Dialog, ID, Timestamp, AgentName, Message, Bucket);
-                }
-            }
-        }
-
-		/**
-		 As of 9/26/2006
-		 ---------------
-			// ChatFromSimulator
-			// Chat text to appear on a user's screen
-			// Position is region local.
-			// Viewer can optionally use position to animate
-			// If audible is CHAT_NOT_AUDIBLE, message will not be valid
-			{
-				ChatFromSimulator Low Trusted Unencoded
-				{
-					ChatData			Single
-					{	FromName		Variable 1	}
-					{	SourceID		LLUUID		}	// agent id or object id
-					{	OwnerID			LLUUID		}	// object's owner
-					{	SourceType		U8			}
-					{	ChatType		U8			}
-					{	Audible			U8			}
-					{	Position		LLVector3	}
-					{	Message			Variable 2	}	// UTF-8 text
-				}
-			}
-		*/
-
-        private void ChatHandler(Packet packet, Simulator simulator)
-        {
-            if (packet.Layout.Name == "ChatFromSimulator")
-            {
-				string name = "";
-				LLUUID sourceID = new LLUUID();
-				LLUUID ownerID = new LLUUID();
-				byte sourcetype = 0;
-				byte chattype = 0;
-				byte audible = 0;
-				LLVector3 position = new LLVector3();
-				string message = "";
-
-                ArrayList blocks;
-
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
-                {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "SourceID")
-                        {
-                            sourceID = (LLUUID)field.Data;
-                        }
-						else if (field.Layout.Name == "OwnerID")
-						{
-							ownerID = (LLUUID)field.Data;
-						}
-
-                        else if (field.Layout.Name == "FromName")
-                        {
-                            name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                        }
-                        else if (field.Layout.Name == "SourceType")
-                        {
-                            sourcetype = (byte)field.Data;
-                        }
-                        else if (field.Layout.Name == "ChatType")
-                        {
-                            chattype = (byte)field.Data;
-                        }
-                        else if (field.Layout.Name == "Audible")
-                        {
-                            audible = (byte)field.Data;
-                        }
-                        else if (field.Layout.Name == "Message")
-                        {
-                            message = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                        }
-                        else if (field.Layout.Name == "Position")
-                        {
-                            position = (LLVector3)field.Data;
-                        }
-                    }
-                }
-
-                if (OnChat != null)
-                {
-                    OnChat(message, audible, chattype, sourcetype, name, sourceID, ownerID, position);
-                }
-            }
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="message"></param>
         public void InstantMessage(LLUUID target, string message)
         {
-            string name = FirstName + " " + LastName;
-
-            InstantMessage(name, LLUUID.GenerateUUID(), target, message, null);
+            InstantMessage(FirstName + " " + LastName, LLUUID.GenerateUUID(), target, message, null, LLUUID.GenerateUUID());
         }
 
-		public void InstantMessage(LLUUID target, string message, LLUUID converstationID)
-		{
-			string name = FirstName + " " + LastName;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="message"></param>
+        /// <param name="ID"></param>
+        public void InstantMessage(LLUUID target, string message, LLUUID IMSessionID)
+        {
+            InstantMessage(FirstName + " " + LastName, LLUUID.GenerateUUID(), target, message, null, IMSessionID);
+        }
 
-			InstantMessage(name, converstationID, target, message, null);
-		}
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fromName"></param>
+        /// <param name="sessionID"></param>
+        /// <param name="target"></param>
+        /// <param name="message"></param>
+        /// <param name="conferenceIDs"></param>
+        /// <param name="ID"></param>
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
         {
-            TimeSpan t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-            uint now = (uint)(t.TotalSeconds);
+            InstantMessage(fromName, sessionID, target, message, conferenceIDs, LLUUID.GenerateUUID());
+        }
 
-            byte[] binaryBucket;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fromName"></param>
+        /// <param name="sessionID"></param>
+        /// <param name="target"></param>
+        /// <param name="message"></param>
+        /// <param name="conferenceIDs"></param>
+        /// <param name="ID"></param>
+        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs, LLUUID IMSessionID)
+        {
+            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+            im.AgentData.AgentID = this.ID;
+            im.AgentData.SessionID = Client.Network.SessionID;
+            im.MessageBlock.Dialog = 0;
+            im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+            im.MessageBlock.FromGroup = false;
+            im.MessageBlock.ID = IMSessionID;
+            im.MessageBlock.Message = Helpers.StringToField(message);
+            im.MessageBlock.Offline = 1;
+            im.MessageBlock.ToAgentID = target;
             if (conferenceIDs != null && conferenceIDs.Length > 0)
             {
-                binaryBucket = new byte[16 * conferenceIDs.Length];
+                im.MessageBlock.BinaryBucket = new byte[16 * conferenceIDs.Length];
 
                 for (int i = 0; i < conferenceIDs.Length; ++i)
                 {
-                    Array.Copy(conferenceIDs[i].Data, 0, binaryBucket, 16 * i, 16);
+                    Array.Copy(conferenceIDs[i].Data, 0, im.MessageBlock.BinaryBucket, i * 16, 16);
                 }
             }
             else
             {
-                binaryBucket = new byte[0];
+                im.MessageBlock.BinaryBucket = new byte[0];
             }
 
-			if( Client.CurrentRegion == null )
-			{
-				throw new Exception("Cannot send instant messages until CurrentRegion is not null.");
-			}
+            // These fields are mandatory, even if we don't have valid values for them
+            im.MessageBlock.Position = new LLVector3();
+            im.MessageBlock.RegionID = new LLUUID(); //TODO: Allow region id to be correctly set by caller or fetched from Client.*
 
-            // Build the packet
-            Packet packet = Packets.Communication.ImprovedInstantMessage(Client.Protocol, target, Client.Network.AgentID, 0,
-                    Client.CurrentRegion.ID, new LLVector3((float)Position.X, (float)Position.Y, (float)Position.Z),
-                    0, 0, sessionID, now, fromName, message, binaryBucket, Client.Network.SessionID);
 
             // Send the message
-            Client.Network.SendPacket(packet);
+            Client.Network.SendPacket((Packet)im);
         }
 
-        public void Say(string message, int channel)
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ChatType
         {
-            LLUUID CommandID = new LLUUID();
-            LLVector3 Position = new LLVector3(0.0F, 0.0F, 0.0F);
-
-            Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol, Client.Avatar.ID, Client.Network.SessionID,
-                    message, (byte)1, channel, 0, CommandID, 20, Position);
-
-            Client.Network.SendPacket(packet);
+            /// <summary></summary>
+            Whisper = 0,
+            /// <summary></summary>
+            Normal = 1,
+            /// <summary></summary>
+            Shout = 2,
+            /// <summary></summary>
+            Say = 3,
+            /// <summary></summary>
+            StartTyping = 4,
+            /// <summary></summary>
+            StopTyping = 5
         }
 
-        public void Shout(string message, int channel)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="channel"></param>
+        /// <param name="type"></param>
+        public void Chat(string message, int channel, ChatType type)
         {
-            LLUUID CommandID = new LLUUID();
-            LLVector3 Position = new LLVector3(0.0F, 0.0F, 0.0F);
+            ChatFromViewerPacket chat = new ChatFromViewerPacket();
+            chat.AgentData.AgentID = this.ID;
+            chat.AgentData.SessionID = Client.Network.SessionID;
+            chat.ChatData.Channel = channel;
+            chat.ChatData.Message = Helpers.StringToField(message);
+            chat.ChatData.Type = (byte)type;
 
-            Packet packet = Packets.Communication.ChatFromViewer(Client.Protocol, Client.Avatar.ID, Client.Network.SessionID,
-                    message, (byte)2, channel, 0, CommandID, 100, Position);
-
-            Client.Network.SendPacket(packet);
+            Client.Network.SendPacket((Packet)chat);
         }
 
+        /// <summary>
+        /// Set the height and the width of your avatar. This is used to scale
+        /// the avatar mesh.
+        /// </summary>
+        /// <param name="height">New height of the avatar</param>
+        /// <param name="width">New width of the avatar</param>
+        public void SetHeightWidth(ushort height, ushort width)
+        {
+            AgentHeightWidthPacket heightwidth = new AgentHeightWidthPacket();
+            heightwidth.AgentData.AgentID = Client.Network.AgentID;
+            heightwidth.AgentData.SessionID = Client.Network.SessionID;
+            heightwidth.AgentData.CircuitCode = Client.Network.CurrentSim.CircuitCode;
+            heightwidth.HeightWidthBlock.Height = height;
+            heightwidth.HeightWidthBlock.Width = width;
+            heightwidth.HeightWidthBlock.GenCounter = HeightWidthGenCounter++;
+
+            Client.Network.SendPacket((Packet)heightwidth);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="amount"></param>
+        /// <param name="description"></param>
         public void GiveMoney(LLUUID target, int amount, string description)
         {
             // 5001 - transaction type for av to av money transfers
             GiveMoney(target, amount, description, 5001);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="amount"></param>
+        /// <param name="description"></param>
+        /// <param name="transactiontype"></param>
         public void GiveMoney(LLUUID target, int amount, string description, int transactiontype)
         {
-            Hashtable blocks = new Hashtable();
-            Hashtable fields = new Hashtable();
+            MoneyTransferRequestPacket money = new MoneyTransferRequestPacket();
+            money.AgentData.AgentID = this.ID;
+            money.AgentData.SessionID = Client.Network.SessionID;
+            money.MoneyData.Description = Helpers.StringToField(description);
+            money.MoneyData.DestID = target;
+            money.MoneyData.SourceID = this.ID;
+            money.MoneyData.TransactionType = transactiontype;
 
-            fields["AggregatePermInventory"] = (byte)0;
-            fields["AggregatePermNextOwner"] = (byte)0;
-            fields["DestID"] = target;
-            fields["Amount"] = amount;
-            fields["Description"] = description;
-            fields["Flags"] = (byte)0;
-            fields["SourceID"] = Client.Network.AgentID;
-            fields["TransactionType"] = transactiontype;
-            blocks[fields] = "MoneyData";
-
-            fields = new Hashtable();
-            fields["AgentID"] = Client.Network.AgentID;
-            fields["SessionID"] = Client.Network.SessionID;
-            blocks[fields] = "AgentData";
-
-            Packet packet = PacketBuilder.BuildPacket("MoneyTransferRequest", Client.Protocol, blocks,
-                    Helpers.MSG_RELIABLE);
-
-            Client.Network.SendPacket(packet);
+            Client.Network.SendPacket((Packet)money);
         }
 
-        public bool Teleport(U64 regionHandle, LLVector3 position)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        public bool Teleport(ulong regionHandle, LLVector3 position)
         {
             return Teleport(regionHandle, position, new LLVector3(position.X + 1.0F, position.Y, position.Z));
         }
 
-        public bool Teleport(U64 regionHandle, LLVector3 position, LLVector3 lookAt)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position"></param>
+        /// <param name="lookAt"></param>
+        /// <returns></returns>
+        public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
             TeleportStatus = 0;
-            //                      LLVector3 lookAt = new LLVector3(position.X + 1.0F, position.Y, position.Z);
 
-            Hashtable blocks = new Hashtable();
-            Hashtable fields = new Hashtable();
-            fields["RegionHandle"] = regionHandle;
-            fields["LookAt"] = lookAt;
-            fields["Position"] = position;
-            blocks[fields] = "Info";
-            fields = new Hashtable();
-            fields["AgentID"] = Client.Network.AgentID;
-            fields["SessionID"] = Client.Network.SessionID;
-            blocks[fields] = "AgentData";
-            Packet packet = PacketBuilder.BuildPacket("TeleportLocationRequest", Client.Protocol, blocks,
-                    Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
+            TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
+            teleport.AgentData.AgentID = Client.Network.AgentID;
+            teleport.AgentData.SessionID = Client.Network.SessionID;
+            teleport.Info.LookAt = lookAt;
+            teleport.Info.Position = position;
+            
+            teleport.Info.RegionHandle = regionHandle;
+            teleport.Header.Reliable = true;
 
             Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
 
@@ -542,7 +403,7 @@ namespace libsecondlife
             TeleportTimeout = false;
             TeleportTimer.Start();
 
-            Client.Network.SendPacket(packet);
+            Client.Network.SendPacket((Packet)teleport);
 
             while (TeleportStatus == 0 && !TeleportTimeout)
             {
@@ -553,27 +414,35 @@ namespace libsecondlife
 
             if (TeleportTimeout)
             {
-                if (OnTeleport != null)
-                {
-                    OnTeleport("Teleport timed out.");
-                }
+                if (OnTeleport != null) { OnTeleport("Teleport timed out."); }
             }
             else
             {
-                if (OnTeleport != null)
-                {
-                    OnTeleport(TeleportMessage);
-                }
+                if (OnTeleport != null) { OnTeleport(TeleportMessage); }
             }
 
             return (TeleportStatus == 1);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simName"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position)
         {
-            return Teleport(simName, position, new LLVector3(position.X + 1.0F, position.Y, position.Z));
+            position.Z = 0;
+            return Teleport(simName, position, new LLVector3(0, 1.0F, 0));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simName"></param>
+        /// <param name="position"></param>
+        /// <param name="lookAt"></param>
+        /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position, LLVector3 lookAt)
         {
             Client.Grid.AddSim(simName);
@@ -581,7 +450,7 @@ namespace libsecondlife
 
             while (attempts++ < 5)
             {
-                if (Client.Grid.Regions.ContainsKey(simName))
+                if (Client.Grid.Regions.ContainsKey(simName.ToLower()))
                 {
                     return Teleport(((GridRegion)Client.Grid.Regions[simName]).RegionHandle, position, lookAt);
                 }
@@ -599,97 +468,201 @@ namespace libsecondlife
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        public void CompleteAgentMovement(Simulator simulator)
+        {
+            CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
+            move.AgentData.AgentID = Client.Network.AgentID;
+            move.AgentData.SessionID = Client.Network.SessionID;
+            move.AgentData.CircuitCode = simulator.CircuitCode;
+
+            Client.Network.SendPacket(move, simulator);
+        }
+
+        public void UpdateCamera(bool reliable)
+        {
+            AgentUpdatePacket update = new AgentUpdatePacket();
+            update.AgentData.AgentID = Client.Network.AgentID;
+            update.AgentData.SessionID = Client.Network.SessionID;
+            update.AgentData.State = 0;
+            update.AgentData.BodyRotation = new LLQuaternion(0, 0.6519076f, 0, 0);
+            update.AgentData.HeadRotation = new LLVector3();
+            // Semi-sane default values
+            update.AgentData.CameraCenter = new LLVector3(9.549901f, 7.033957f, 11.75f);
+            update.AgentData.CameraAtAxis = new LLVector3(0.7f, 0.7f, 0);
+            update.AgentData.CameraLeftAxis = new LLVector3(-0.7f, 0.7f, 0);
+            update.AgentData.CameraUpAxis = new LLVector3(0.1822026f, 0.9828722f, 0);
+            update.AgentData.Far = 384;
+            update.AgentData.ControlFlags = 0; // TODO: What is this?
+            update.AgentData.Flags = 0;
+            update.Header.Reliable = reliable;
+
+            Client.Network.SendPacket(update);
+
+            // Send an AgentFOV packet widening our field of vision
+            /*AgentFOVPacket fovPacket = new AgentFOVPacket();
+            fovPacket.AgentData.AgentID = this.ID;
+            fovPacket.AgentData.SessionID = Client.Network.SessionID;
+            fovPacket.AgentData.CircuitCode = simulator.CircuitCode;
+            fovPacket.FOVBlock.GenCounter = 0;
+            fovPacket.FOVBlock.VerticalAngle = 6.28318531f;
+            fovPacket.Header.Reliable = true;
+            Client.Network.SendPacket((Packet)fovPacket);*/
+        }
+
+        private void FriendNotificationHandler(Packet packet, Simulator simulator)
+        {
+            // If the agent is online...
+            if (packet.Type == PacketType.OnlineNotification)
+            {
+                foreach (OnlineNotificationPacket.AgentBlockBlock block in ((OnlineNotificationPacket)packet).AgentBlock)
+                {
+                    Client.AddAvatar(block.AgentID);
+                    #region AvatarsMutex
+                    Client.AvatarsMutex.WaitOne();
+                    ((Avatar)Client.Avatars[block.AgentID]).Online = true;
+                    Client.AvatarsMutex.ReleaseMutex();
+                    #endregion AvatarsMutex
+
+                    if (OnFriendNotification != null)
+                    {
+                        OnFriendNotification(block.AgentID, true);
+                    }
+                }
+            }
+
+            // If the agent is Offline...
+            if (packet.Type == PacketType.OfflineNotification)
+            {
+                foreach (OfflineNotificationPacket.AgentBlockBlock block in ((OfflineNotificationPacket)packet).AgentBlock)
+                {
+                    Client.AddAvatar(block.AgentID);
+                    #region AvatarsMutex
+                    Client.AvatarsMutex.WaitOne();
+                    ((Avatar)Client.Avatars[block.AgentID]).Online = false;
+                    Client.AvatarsMutex.ReleaseMutex();
+                    #endregion AvatarsMutex
+
+                    if (OnFriendNotification != null)
+                    {
+                        OnFriendNotification(block.AgentID, true);
+                    }
+                }
+            }
+        }
+
+        private void CoarseLocationHandler(Packet packet, Simulator simulator)
+        {
+            // TODO: This will be useful one day
+        }
+
+        private void InstantMessageHandler(Packet packet, Simulator simulator)
+        {
+            if (packet.Type == PacketType.ImprovedInstantMessage)
+            {
+                ImprovedInstantMessagePacket im = (ImprovedInstantMessagePacket)packet;
+                
+                if (OnInstantMessage != null)
+                {
+                    OnInstantMessage(
+                        im.AgentData.AgentID
+                        , Helpers.FieldToString(im.MessageBlock.FromAgentName),
+                        im.MessageBlock.ToAgentID
+                        , im.MessageBlock.ParentEstateID
+                        , im.MessageBlock.RegionID
+                        , im.MessageBlock.Position
+                        , Convert.ToBoolean(im.MessageBlock.Dialog)
+                        , im.MessageBlock.FromGroup
+                        , im.MessageBlock.ID
+                        , new DateTime(im.MessageBlock.Timestamp)
+                        , Helpers.FieldToString(im.MessageBlock.Message)
+                        , im.MessageBlock.Offline
+                        , im.MessageBlock.BinaryBucket
+                        );
+                }
+            }
+        }
+
+        private void ChatHandler(Packet packet, Simulator simulator)
+        {
+            if (packet.Type == PacketType.ChatFromSimulator)
+            {
+                ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
+
+                if (OnChat != null)
+                {
+                    OnChat(Helpers.FieldToString(chat.ChatData.Message), chat.ChatData.Audible, 
+                        chat.ChatData.ChatType, chat.ChatData.SourceType, 
+                        Helpers.FieldToString(chat.ChatData.FromName), chat.ChatData.SourceID);
+                }
+            }
+        }
+
+        private void MovementCompleteHandler(Packet packet, Simulator simulator)
+        {
+            AgentMovementCompletePacket movement = (AgentMovementCompletePacket)packet;
+
+            this.Position = movement.Data.Position;
+            this.LookAt = movement.Data.LookAt;
+        }
+
+        private void HealthHandler(Packet packet, Simulator simulator)
+        {
+            health = ((HealthMessagePacket)packet).HealthData.Health;
+        }
+
         private void TeleportHandler(Packet packet, Simulator simulator)
         {
-            ArrayList blocks;
-
-            if (packet.Layout.Name == "TeleportStart")
+            if (packet.Type == PacketType.TeleportStart)
             {
                 TeleportMessage = "Teleport started";
             }
-            else if (packet.Layout.Name == "TeleportProgress")
+            else if (packet.Type == PacketType.TeleportProgress)
             {
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
-                {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "Message")
-                        {
-                            TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                            return;
-                        }
-                    }
-                }
+                TeleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
             }
-            else if (packet.Layout.Name == "TeleportFailed")
+            else if (packet.Type == PacketType.TeleportFailed)
             {
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
-                {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "Reason")
-                        {
-                            TeleportMessage = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-                            TeleportStatus = -1;
-                            return;
-                        }
-                    }
-                }
+                TeleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
+                TeleportStatus = -1;
             }
-            else if (packet.Layout.Name == "TeleportFinish")
+            else if (packet.Type == PacketType.TeleportFinish)
             {
+                TeleportFinishPacket finish = (TeleportFinishPacket)packet;
                 TeleportMessage = "Teleport finished";
 
-                ushort port = 0;
-                IPAddress ip = null;
-                U64 regionHandle;
-
-                blocks = packet.Blocks();
-
-                foreach (Block block in blocks)
+                Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort, 
+                    simulator.CircuitCode, true);
+                        
+                if ( sim != null)
                 {
-                    foreach (Field field in block.Fields)
-                    {
-                        if (field.Layout.Name == "SimPort")
-                        {
-                            port = (ushort)field.Data;
-                        }
-                        else if (field.Layout.Name == "SimIP")
-                        {
-                            ip = (IPAddress)field.Data;
-                        }
-                        else if (field.Layout.Name == "RegionHandle")
-                        {
-                            regionHandle = (U64)field.Data;
-                        }
-                    }
-                }
+                    // Sync the current region and current simulator
+                    Client.CurrentRegion = Client.Network.CurrentSim.Region;
 
-                if (Client.Network.Connect(ip, port, Client.Network.CurrentSim.CircuitCode, true) != null)
-                {
                     // Move the avatar in to this sim
-                    Packet movePacket = Packets.Sim.CompleteAgentMovement(Client.Protocol, Client.Network.AgentID,
-                            Client.Network.SessionID, Client.Network.CurrentSim.CircuitCode);
-                    Client.Network.SendPacket(movePacket);
+                    CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
+                    move.AgentData.AgentID = this.ID;
+                    move.AgentData.SessionID = Client.Network.SessionID;
+                    move.AgentData.CircuitCode = simulator.CircuitCode;
+                    Client.Network.SendPacket((Packet)move);
 
-                    Client.Log("Connected to new sim " + Client.Network.CurrentSim.IPEndPoint.ToString(),
-                            Helpers.LogLevel.Info);
+                    Console.WriteLine(move);
+
+                    Client.Log("Moved to new sim " + Client.Network.CurrentSim.Region.Name + "(" + 
+                        Client.Network.CurrentSim.IPEndPoint.ToString() + ")",
+                        Helpers.LogLevel.Info);
 
                     // Sleep a little while so we can collect parcel information
                     System.Threading.Thread.Sleep(1000);
 
-                    Client.CurrentRegion = Client.Network.CurrentSim.Region;
                     TeleportStatus = 1;
-                    return;
                 }
                 else
                 {
                     TeleportStatus = -1;
-                    return;
                 }
             }
         }

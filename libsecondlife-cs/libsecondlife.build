@@ -50,8 +50,6 @@
                 <include name="AssetSystem/*.cs" />
                 <include name="InventorySystem/*.cs" />
                 <include name="JSON/*.cs" />
-                <include name="Packets/*.cs" />
-                <include name="Utils/*.cs" />
                 <include name="XmlRpcCS/*.cs" />
 	     </sources>
         </csc>

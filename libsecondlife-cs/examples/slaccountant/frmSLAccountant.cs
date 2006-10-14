@@ -32,6 +32,7 @@ using System.Windows.Forms;
 using System.Data;
 using System.Threading;
 using libsecondlife;
+using libsecondlife.Packets;
 
 namespace SLAccountant
 {
@@ -352,138 +353,44 @@ namespace SLAccountant
 		[STAThread]
 		static void Main() 
 		{
-			Application.Run(new frmSLAccountant());
+            frmSLAccountant frm = new frmSLAccountant();
+            frm.ShowDialog();
 		}
 
 		private void BalanceHandler(Packet packet, Simulator simulator)
 		{
-			if (packet.Layout.Name == "MoneyBalanceReply")
-			{
-				int balance = 0;
-				int squareMetersCredit = 0;
-				string description = "";
-				LLUUID transactionID = null;
-				bool transactionSuccess = false;
-
-				foreach (Block block in packet.Blocks())
-				{
-					foreach (Field field in block.Fields)
-					{
-						if (field.Layout.Name == "MoneyBalance")
-						{
-							balance = (int)field.Data;
-						}
-						else if (field.Layout.Name == "SquareMetersCredit")
-						{
-							squareMetersCredit = (int)field.Data;
-						}
-						else if (field.Layout.Name == "Description")
-						{
-							byte[] byteArray = (byte[])field.Data;
-							description = System.Text.Encoding.ASCII.GetString(byteArray).Replace("\0", "");
-						}
-						else if (field.Layout.Name == "TransactionID")
-						{
-							transactionID = (LLUUID)field.Data;
-						}
-						else if (field.Layout.Name == "TransactionSuccess")
-						{
-							transactionSuccess = (bool)field.Data;
-						}
-					}
-				}
-
-				lblBalance.Text = balance.ToString();
-			}
+            lblBalance.Text = ((MoneyBalanceReplyPacket)packet).MoneyData.MoneyBalance.ToString();
 		}
 
 		private void DirPeopleHandler(Packet packet, Simulator simulator)
 		{
+            DirPeopleReplyPacket reply = (DirPeopleReplyPacket)packet;
+
 			lstFindMutex.WaitOne();
 
-			foreach (Block block in packet.Blocks())
-			{
-				if (block.Layout.Name == "QueryReplies")
-				{
-					LLUUID id = null;
-					string firstName = "";
-					string lastName = "";
-					bool online = false;
-					
-					foreach (Field field in block.Fields)
-					{
-						if (field.Layout.Name == "AgentID")
-						{
-							id = (LLUUID)field.Data;
-						}
-						else if (field.Layout.Name == "LastName")
-						{
-							lastName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-						}
-						else if (field.Layout.Name == "FirstName")
-						{
-							firstName = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-						}
-						else if (field.Layout.Name == "Online")
-						{
-							online = (bool)field.Data;
-						}
-					}
-
-					if (id != null)
-					{
-						ListViewItem listItem = new ListViewItem(new string[] 
-						{ firstName + " " + lastName, (online ? "Yes" : "No"), id.ToString() });
-						lstFind.Items.Add(listItem);
-					}
-				}
-			}
+            foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
+            {
+                ListViewItem listItem = new ListViewItem(new string[] { 
+                    Helpers.FieldToString(block.FirstName) + " " + Helpers.FieldToString(block.LastName), 
+                    (block.Online ? "Yes" : "No"), block.AgentID.ToString() });
+                lstFind.Items.Add(listItem);
+            }
 
 			lstFindMutex.ReleaseMutex();
-		}
-
-		private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
-		{
-			LLUUID id = null;
-			bool trial = false;
-
-			foreach (Block block in packet.Blocks())
-			{
-				foreach (Field field in block.Fields)
-				{
-					if (field.Layout.Name == "ID")
-					{
-						id = (LLUUID)field.Data;
-					}
-					else if (field.Layout.Name == "IsTrial")
-					{
-						trial = (bool)field.Data;
-					}
-				}
-			}
-
-			//txtLog.AppendText("AvatarAppearance: " + id.ToString() + " (Trial: " + ((trial) ? "Yes" : "No") + ")\n");
 		}
 
 		private void frmSLAccountant_Load(object sender, System.EventArgs e)
 		{
 			lstFindMutex = new Mutex(false, "lstFindMutex");
 
-			try
-			{
-				client = new SecondLife("keywords.txt", "message_template.msg");
+			client = new SecondLife();
 
-				// Install our packet handlers
-				client.Network.RegisterCallback("AvatarAppearance", new PacketCallback(AvatarAppearanceHandler));
-				client.Network.RegisterCallback("MoneyBalanceReply", new PacketCallback(BalanceHandler));
-				client.Network.RegisterCallback("DirPeopleReply", new PacketCallback(DirPeopleHandler));
+			// Install our packet handlers
+			//client.Network.RegisterCallback(PacketType.AvatarAppearance, new PacketCallback(AvatarAppearanceHandler));
+			client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new PacketCallback(BalanceHandler));
+            client.Network.RegisterCallback(PacketType.DirPeopleReply, new PacketCallback(DirPeopleHandler));
 
-				grpLogin.Enabled = true;
-			}
-			catch (Exception error)
-			{
-				MessageBox.Show(this, error.ToString());
-			}
+			grpLogin.Enabled = true;
 		}
 
 		private void cmdConnect_Click(object sender, System.EventArgs e)
@@ -504,68 +411,33 @@ namespace SLAccountant
 					lblName.Text = client.Network.LoginValues["first_name"] + " " + 
 						client.Network.LoginValues["last_name"];
 
-					// AgentHeightWidth
-					Hashtable blocks = new Hashtable();
-					Hashtable fields = new Hashtable();
-					fields["ID"] = client.Network.AgentID;
-					fields["GenCounter"] = (uint)0;
-					fields["CircuitCode"] = client.Network.CurrentSim.CircuitCode;
-					blocks[fields] = "Sender";
-					fields = new Hashtable();
-					fields["Height"] = (ushort)rand.Next(0, 65535);
-					fields["Width"] = (ushort)rand.Next(0, 65535);
-					blocks[fields] = "HeightWidthBlock";
-					Packet packet = PacketBuilder.BuildPacket("AgentHeightWidth", client.Protocol, blocks,
-						Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
-
-					client.Network.SendPacket(packet);
-
-					// ConnectAgentToUserserver
-					blocks = new Hashtable();
-					fields = new Hashtable();
-					fields["AgentID"] = client.Network.AgentID;
-					fields["SessionID"] = client.Network.SessionID;
-					blocks[fields] = "AgentData";
-					packet = PacketBuilder.BuildPacket("ConnectAgentToUserserver", client.Protocol, blocks,
-						Helpers.MSG_RELIABLE + Helpers.MSG_ZEROCODED);
-
-					client.Network.SendPacket(packet);
+                    client.Avatar.SetHeightWidth((ushort)rand.Next(0, 65535), (ushort)rand.Next(0, 65535));
 
 					// MoneyBalanceRequest
-					blocks = new Hashtable();
-					fields = new Hashtable();
-					fields["AgentID"] = client.Network.AgentID;
-					fields["TransactionID"] = LLUUID.GenerateUUID();
-					blocks[fields] = "MoneyData";
-					packet = PacketBuilder.BuildPacket("MoneyBalanceRequest", client.Protocol, blocks,
-						Helpers.MSG_RELIABLE);
+                    MoneyBalanceRequestPacket request = new MoneyBalanceRequestPacket();
+                    request.AgentData.AgentID = client.Network.AgentID;
+                    request.AgentData.SessionID = client.Network.SessionID;
+                    request.AgentData.SessionID = client.Network.SessionID;
+                    request.MoneyData.TransactionID = LLUUID.GenerateUUID();
 
-					client.Network.SendPacket(packet);
+					client.Network.SendPacket((Packet)request);
 
-					// AgentSetAppearance
-					blocks = new Hashtable();
-					// Setup some random appearance values
-					for (int i = 0; i < 218; ++i)
-					{
-						fields = new Hashtable();
-						fields["ParamValue"] = (byte)rand.Next(255);
-						blocks[fields] = "VisualParam";
-					}
-					fields = new Hashtable();
-					byte[] byteArray = new byte[400];
-					fields["TextureEntry"] = byteArray;
-					blocks[fields] = "ObjectData";
-					fields = new Hashtable();
-					fields["SerialNum"] = (uint)1;
-					fields["ID"] = client.Network.AgentID;
-					// Setup a random avatar size
-					LLVector3 sizeVector = new LLVector3(0.45F, 0.6F, 1.831094F);
-					fields["Size"] = sizeVector;
-					blocks[fields] = "Sender";
-					packet = PacketBuilder.BuildPacket("AgentSetAppearance", client.Protocol, blocks,
-						Helpers.MSG_RELIABLE);
+                    // AgentSetAppearance
+                    AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
+                    appearance.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
+                    // Setup some random appearance values
+                    for (int i = 0; i < 218; i++)
+                    {
+                        appearance.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
+                        appearance.VisualParam[i].ParamValue = (byte)rand.Next(255);
+                    }
+                    appearance.AgentData.AgentID = client.Network.AgentID;
+                    appearance.AgentData.SessionID = client.Network.SessionID;
+                    appearance.AgentData.SerialNum = 1;
+                    appearance.AgentData.Size = new LLVector3(0.45F, 0.6F, 1.831094F);
+                    appearance.ObjectData.TextureEntry = new byte[0];
 
-					client.Network.SendPacket(packet);
+                    client.Network.SendPacket(appearance);
 
 					txtFind.Enabled = cmdFind.Enabled = true;
 					txtTransfer.Enabled = cmdTransfer.Enabled = true;
@@ -595,23 +467,16 @@ namespace SLAccountant
 		{
 			lstFind.Items.Clear();
 
-			Hashtable blocks = new Hashtable();
-			Hashtable fields = new Hashtable();
-			fields["QueryID"] = LLUUID.GenerateUUID();
-			fields["QueryFlags"] = (uint)1;
-			fields["QueryStart"] = (int)0;
-			fields["QueryText"] = txtFind.Text;
-			blocks[fields] = "QueryData";
+            DirFindQueryPacket query = new DirFindQueryPacket();
+            query.AgentData.AgentID = client.Network.AgentID;
+            query.AgentData.SessionID = client.Network.SessionID;
+            query.QueryData.QueryFlags = 1;
+            query.QueryData.QueryID = LLUUID.GenerateUUID();
+            query.QueryData.QueryStart = 0;
+            query.QueryData.QueryText = Helpers.StringToField(txtFind.Text);
+            query.Header.Reliable = true;
 
-			fields = new Hashtable();
-			fields["AgentID"] = client.Network.AgentID;
-			fields["SessionID"] = client.Network.SessionID;
-			blocks[fields] = "AgentData";
-
-			Packet packet = PacketBuilder.BuildPacket("DirFindQuery", client.Protocol, blocks,
-				Helpers.MSG_RELIABLE);
-
-			client.Network.SendPacket(packet);
+            client.Network.SendPacket((Packet)query);
 		}
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)

@@ -29,6 +29,7 @@
 
 using SLProxy;
 using libsecondlife;
+using libsecondlife.Packets;
 using Nwc.XmlRpc;
 
 using System;
@@ -52,9 +53,9 @@ public class Analyst {
 
 	public static void Main(string[] args) {
 		// configure the proxy
-		client = new SecondLife("keywords.txt", "message_template.msg");
-		protocolManager = client.Protocol;
-		ProxyConfig proxyConfig = new ProxyConfig("Analyst", "austin.jennings@gmail.com", protocolManager, args);
+		client = new SecondLife();
+		protocolManager = new ProtocolManager("keywords.txt", "message_template.msg", client);
+		ProxyConfig proxyConfig = new ProxyConfig("Analyst", "contact@libsecondlife.org", protocolManager, args);
 		proxy = new Proxy(proxyConfig);
 
 		// build the table of /command delegates
@@ -65,8 +66,8 @@ public class Analyst {
 		proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
 
 		// add a delegate for outgoing chat
-		proxy.AddDelegate("ChatFromViewer", Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
-		proxy.AddDelegate("ChatFromViewer", Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
+		proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
+        proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
 
 		//  handle command line arguments
 		foreach (string arg in args)
@@ -113,9 +114,7 @@ public class Analyst {
 
 	// ChatFromViewerOut: outgoing ChatFromViewer delegate; check for Analyst commands
 	private static Packet ChatFromViewerOut(Packet packet, IPEndPoint sim) {
-		// deconstruct the packet
-		Hashtable blocks = PacketUtility.Unbuild(packet);
-		string message = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "Message"));
+        string message = Helpers.FieldToString(((ChatFromViewerPacket)packet).ChatData.Message);
 
 		if (message.Length > 1 && message[0] == '/') {
 			string[] words = message.Split(' ');
@@ -158,8 +157,15 @@ public class Analyst {
 		} else {
 			loggedPackets[words[1]] = null;
 			if (words[1] != "ChatFromViewer") {
-				proxy.AddDelegate(words[1], Direction.Incoming, new PacketDelegate(AnalyzeIn));
-				proxy.AddDelegate(words[1], Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+                try
+                {
+                    PacketType type = (PacketType)Enum.Parse(typeof(PacketType), words[1]);
+                    proxy.AddDelegate(type, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+                    proxy.AddDelegate(type, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+                }
+                catch (Exception)
+                {
+                }
 			}
 			SayToUser("logging " + words[1]);
 		}
@@ -177,8 +183,15 @@ public class Analyst {
 
 			if (!modifiedPackets.Contains(words[1])) {
 				if (words[1] != "ChatFromViewer") {
-					proxy.RemoveDelegate(words[1], Direction.Incoming);
-					proxy.RemoveDelegate(words[1], Direction.Outgoing);
+                    try
+                    {
+                        PacketType type = (PacketType)Enum.Parse(typeof(PacketType), words[1]);
+                        proxy.RemoveDelegate(type, Direction.Incoming);
+                        proxy.RemoveDelegate(type, Direction.Outgoing);
+                    }
+                    catch (Exception)
+                    {
+                    }
 				}
 			}
 
@@ -225,8 +238,15 @@ public class Analyst {
 			modifiedPackets[words[1]] = fields;
 
 			if (words[1] != "ChatFromViewer") {
-				proxy.AddDelegate(words[1], Direction.Incoming, new PacketDelegate(AnalyzeIn));
-				proxy.AddDelegate(words[1], Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+                try
+                {
+                    PacketType type = (PacketType)Enum.Parse(typeof(PacketType), words[1]);
+                    proxy.AddDelegate(type, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+                    proxy.AddDelegate(type, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+                }
+                catch (Exception)
+                {
+                }
 			}
 
 			SayToUser("setting " + words[1] + "." + words[2] + "." + words[3] + " = " + valueString);
@@ -238,8 +258,15 @@ public class Analyst {
 		if (words.Length == 2 && words[1] == "*") {
 			foreach (string name in modifiedPackets.Keys)
 				if (!loggedPackets.Contains(name) && name != "ChatFromViewer") {
-					proxy.RemoveDelegate(name, Direction.Incoming);
-					proxy.RemoveDelegate(name, Direction.Outgoing);
+                    try
+                    {
+                        PacketType type = (PacketType)Enum.Parse(typeof(PacketType), name);
+                        proxy.RemoveDelegate(type, Direction.Incoming);
+                        proxy.RemoveDelegate(type, Direction.Outgoing);
+                    }
+                    catch (Exception)
+                    {
+                    }
 				}
 			modifiedPackets = new Hashtable();
 
@@ -254,8 +281,15 @@ public class Analyst {
 
 					if (!loggedPackets.Contains(words[1])) {
 						if (words[1] != "ChatFromViewer") {
-							proxy.RemoveDelegate(words[1], Direction.Incoming);
-							proxy.RemoveDelegate(words[1], Direction.Outgoing);
+                            try
+                            {
+                                PacketType type = (PacketType)Enum.Parse(typeof(PacketType), words[1]);
+                                proxy.RemoveDelegate(type, Direction.Incoming);
+                                proxy.RemoveDelegate(type, Direction.Outgoing);
+                            }
+                            catch (Exception)
+                            {
+                            }
 						}
 					}
 				}
@@ -361,10 +395,11 @@ public class Analyst {
 				byte flags = Helpers.MSG_RELIABLE;
 				if (protocolManager.Command(name).Encoded)
 					flags |= Helpers.MSG_ZEROCODED;
-				Packet packet = PacketBuilder.BuildPacket(name, protocolManager, blocks, flags);
-				proxy.InjectPacket(packet, direction);
+                // FIXME:
+				//Packet packet = PacketBuilder.BuildPacket(name, protocolManager, blocks, flags);
+				//proxy.InjectPacket(packet, direction);
 
-				SayToUser("injected " + words[1]);
+				SayToUser("FIXME: didn't inject " + words[1]);
 			} catch (Exception e) {
 				SayToUser("failed to inject " + words[1] + ": " + e.Message);
 			} finally {
@@ -378,20 +413,17 @@ public class Analyst {
 
 	// SayToUser: send a message to the user as in-world chat
 	private static void SayToUser(string message) {
-		Hashtable blocks = new Hashtable();
-		Hashtable fields;
-		fields = new Hashtable();
-		fields["FromName"] = "Analyst";
-		fields["SourceID"] = new LLUUID(true);
-		fields["OwnerID"] = agentID;
-		fields["SourceType"] = (byte)2;
-		fields["ChatType"] = (byte)1;
-		fields["Audible"] = (byte)1;
-		fields["Position"] = new LLVector3(0, 0, 0);
-		fields["Message"] = message;
-		blocks[fields] = "ChatData";
-		Packet packet = PacketBuilder.BuildPacket("ChatFromSimulator", protocolManager, blocks, Helpers.MSG_RELIABLE);
-		proxy.InjectPacket(packet, Direction.Incoming);
+        ChatFromSimulatorPacket chat = new ChatFromSimulatorPacket();
+        chat.ChatData.FromName = Helpers.StringToField("Analyst");
+        chat.ChatData.SourceID = LLUUID.GenerateUUID();
+        chat.ChatData.OwnerID = agentID;
+        chat.ChatData.SourceType = 2;
+        chat.ChatData.ChatType = 1;
+        chat.ChatData.Audible = 1;
+        chat.ChatData.Position = new LLVector3();
+        chat.ChatData.Message = Helpers.StringToField(message);
+
+		proxy.InjectPacket(chat, Direction.Incoming);
 	}
 
 	// BlockField: product type for a block name and field name
@@ -430,17 +462,14 @@ public class Analyst {
 							return Convert.ToUInt16(value);
 						case FieldType.U32:
 							return Convert.ToUInt32(value);
-						case FieldType.U64: // XXX: verify endianness
-							ulong ulongVal = Convert.ToUInt64(value);
-							return new U64((uint)((ulongVal >> 32) % 4294967296), (uint)(ulongVal % 4294967296));
+						case FieldType.U64:
+							return Convert.ToUInt64(value);
 						case FieldType.S8:
 							return Convert.ToSByte(value);
 						case FieldType.S16:
 							return Convert.ToInt16(value);
 						case FieldType.S32:
 							return Convert.ToInt32(value);
-						case FieldType.S64:
-							return Convert.ToInt64(value);
 						case FieldType.F32:
 							return Convert.ToSingle(value);
 						case FieldType.F64:
@@ -540,19 +569,21 @@ public class Analyst {
 
 	// Analyze: modify and/or log a pocket
 	private static Packet Analyze(Packet packet, IPEndPoint endPoint, Direction direction) {
-		if (modifiedPackets.Contains(packet.Layout.Name))
+		if (modifiedPackets.Contains(packet.Type))
 			try {
-				Hashtable changes = (Hashtable)modifiedPackets[packet.Layout.Name];
-				Hashtable blocks = PacketUtility.Unbuild(packet);
-				foreach (BlockField blockField in changes.Keys)
-					PacketUtility.SetField(blocks, blockField.block, blockField.field, changes[blockField]);
-				packet = PacketBuilder.BuildPacket(packet.Layout.Name, protocolManager, blocks, packet.Data[0]);
+                Hashtable changes = (Hashtable)modifiedPackets[packet.Type];
+
+                //FIXME:
+				//foreach (BlockField blockField in changes.Keys)
+				//	PacketUtility.SetField(blocks, blockField.block, blockField.field, changes[blockField]);
+				//packet = PacketBuilder.BuildPacket(packet.Layout.Name, protocolManager, blocks, packet.Data[0]);
+                Console.WriteLine("FIXME: didn't modify " + packet.Type.ToString());
 			} catch (Exception e) {
-				Console.WriteLine("failed to modify " + packet.Layout.Name + ": " + e.Message);
+				Console.WriteLine("failed to modify " + packet.Type.ToString() + ": " + e.Message);
 				Console.WriteLine(e.StackTrace);
 			}
 
-		if (loggedPackets.Contains(packet.Layout.Name))
+		if (loggedPackets.Contains(packet.Type))
 			LogPacket(packet, endPoint, direction);
 
 		return packet;
@@ -579,8 +610,15 @@ public class Analyst {
 				loggedPackets[map.Name] = null;
 
 				if (map.Name != "ChatFromViewer") {
-					proxy.AddDelegate(map.Name, Direction.Incoming, new PacketDelegate(AnalyzeIn));
-					proxy.AddDelegate(map.Name, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+                    try
+                    {
+                        PacketType type = (PacketType)Enum.Parse(typeof(PacketType), map.Name);
+                        proxy.AddDelegate(type, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+                        proxy.AddDelegate(type, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+                    }
+                    catch (Exception)
+                    {
+                    }
 				}
 			}
 	}
@@ -592,15 +630,22 @@ public class Analyst {
 				loggedPackets.Remove(map.Name);
 
 				if (map.Name != "ChatFromViewer") {
-					proxy.RemoveDelegate(map.Name, Direction.Incoming);
-					proxy.RemoveDelegate(map.Name, Direction.Outgoing);
+                    try
+                    {
+                        PacketType type = (PacketType)Enum.Parse(typeof(PacketType), map.Name);
+                        proxy.RemoveDelegate(type, Direction.Incoming);
+                        proxy.RemoveDelegate(type, Direction.Outgoing);
+                    }
+                    catch (Exception)
+                    {
+                    }
 				}
 			}
 	}
 
 	// LogPacket: dump a packet to the console
 	private static void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction) {
-		if (logGrep != null) {
+		/*if (logGrep != null) {
 			bool match = false;
 			foreach (Block block in packet.Blocks())
 				foreach (Field field in block.Fields) {
@@ -609,7 +654,7 @@ public class Analyst {
 						value = DataConvert.toChoppedString(field.Data);
 					else
 						value = field.Data.ToString();
-					if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, logGrep, RegexOptions.IgnoreCase).Success) {
+					if (Regex.Match(packet.Type + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, logGrep, RegexOptions.IgnoreCase).Success) {
 						match = true;
 						break;
 					}
@@ -620,7 +665,7 @@ public class Analyst {
 						sw.Write("0x");
 						foreach (byte b in (byte[])field.Data)
 							sw.Write("{0:x2}", b);
-						if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, logGrep, RegexOptions.IgnoreCase).Success) {
+						if (Regex.Match(packet.Type + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, logGrep, RegexOptions.IgnoreCase).Success) {
 							match = true;
 							break;
 						}
@@ -628,15 +673,15 @@ public class Analyst {
 				}
 			if (!match)
 				return;
-		}
+		}*/
 
-		Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
+		Console.WriteLine("{0} {1,21} {2,5} {3}{4}"
 				 ,direction == Direction.Incoming ? "<--" : "-->"
 				 ,endPoint
-				 ,packet.Sequence
-				 ,InterpretOptions(packet.Data[0])
+				 ,packet.Header.Sequence
+				 //,InterpretOptions(packet.Data[0])
 				 ,Environment.NewLine
-				 ,packet
+				 ,packet.ToString()
 				 );
 	}
 

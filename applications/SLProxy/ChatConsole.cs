@@ -29,6 +29,7 @@
 
 using SLProxy;
 using libsecondlife;
+using libsecondlife.Packets;
 using Nwc.XmlRpc;
 
 using System;
@@ -45,8 +46,8 @@ public class ChatConsole {
 
 	public static void Main(string[] args) {
 		// configure the proxy
-		client = new SecondLife("keywords.txt", "message_template.msg");
-		protocolManager = client.Protocol;
+		client = new SecondLife();
+		protocolManager = new ProtocolManager("keywords.txt", "message_template.msg", client);
 		ProxyConfig proxyConfig = new ProxyConfig("ChatConsole", "austin.jennings@gmail.com", protocolManager, args);
 		proxy = new Proxy(proxyConfig);
 

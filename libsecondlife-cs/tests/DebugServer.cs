@@ -8,6 +8,7 @@ using System.Threading;
 using System.Xml;
 using Nwc.XmlRpc;
 using libsecondlife;
+using libsecondlife.Packets;
 
 namespace libsecondlife.Tests
 {
@@ -24,14 +25,7 @@ namespace libsecondlife.Tests
 
         public DebugServer(string keywordFile, string mapFile, int port)
         {
-            try
-            {
-                libsl = new SecondLife(keywordFile, mapFile);
-            }
-            catch (Exception)
-            {
-                return;
-            }
+            libsl = new SecondLife();
 
             BindSocket(port);
         }
@@ -77,39 +71,24 @@ namespace libsecondlife.Tests
 
                 Console.WriteLine("[SERVER] Received a packet from {0}", RemoteEndpoint.ToString());
 
-                if (System.Text.ASCIIEncoding.UTF8.GetString(bytes).Substring(0, 10) == "stopserver")
+                if (Helpers.FieldToString(bytes).StartsWith("stopserver"))
                 {
                     Console.WriteLine("[SERVER] Received a shutdown request, stopping the server");
                     done = true;
                     break;
                 }
 
-                if ((bytes[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+                int packetEnd = length - 1;
+                packet = Packet.BuildPacket(bytes, ref packetEnd);
+
+                if (packet.Header.AppendedAcks)
                 {
-                    byte numAcks = bytes[length - 1];
-
-                    Console.WriteLine("[SERVER] Found " + numAcks + " appended acks");
-
-                    length = (length - numAcks * 4) - 1;
+                    Console.WriteLine("[SERVER] Found " + packet.Header.AckList.Length + " appended acks");
                 }
 
-                if ((bytes[0] & Helpers.MSG_ZEROCODED) != 0)
+                if (packet.Header.Reliable)
                 {
-                    // Allocate a temporary buffer for the zerocoded packet
-                    byte[] zeroBuffer = new byte[4096];
-                    int zeroBytes = Helpers.ZeroDecode(bytes, length, zeroBuffer);
-                    length = zeroBytes;
-                    packet = new Packet(zeroBuffer, length, libsl.Protocol);
-                }
-                else
-                {
-                    // Create the packet object from our byte array
-                    packet = new Packet(bytes, length, libsl.Protocol);
-                }
-
-                if ((packet.Data[0] & Helpers.MSG_RELIABLE) != 0)
-                {
-                    SendACK((uint)packet.Sequence);
+                    SendACK((uint)packet.Header.Sequence);
                 }
 
                 Console.WriteLine(packet.ToString());
@@ -123,14 +102,16 @@ namespace libsecondlife.Tests
         {
             try
             {
-                Packet packet = new Packet("PacketAck", libsl.Protocol, 13);
-                packet.Data[8] = 1;
-                Array.Copy(BitConverter.GetBytes(id), 0, packet.Data, 9, 4);
+                PacketAckPacket ack = new PacketAckPacket();
+                ack.Packets = new PacketAckPacket.PacketsBlock[1];
+                ack.Packets[0].ID = id;
+
+                ack.Header.Reliable = false;
 
                 // Set the sequence number
-                packet.Sequence = ++Sequence;
+                ack.Header.Sequence = ++Sequence;
 
-                Listener.SendTo(packet.Data, RemoteEndpoint);
+                Listener.SendTo(ack.ToBytes(), RemoteEndpoint);
             }
             catch (Exception e)
             {

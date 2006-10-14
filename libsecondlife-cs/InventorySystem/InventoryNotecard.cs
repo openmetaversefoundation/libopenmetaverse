@@ -30,22 +30,34 @@ namespace libsecondlife.InventorySystem
 
 			set
 			{
-				base._Asset = new AssetNotecard( LLUUID.GenerateUUID(), value );
-				base.iManager.AssetManager.UploadAsset( Asset );
-				this.AssetID = Asset.AssetID;
-				
+				base._Asset          = new AssetNotecard( LLUUID.GenerateUUID(), value );
+				LLUUID TransactionID = base.iManager.AssetManager.UploadAsset( Asset );
+                base.SetAssetTransactionIDs(Asset.AssetID, TransactionID);
 			}
 		}
 
 
-		internal InventoryNotecard( InventoryManager manager, string name, string description, LLUUID id, LLUUID folderID, LLUUID uuidOwnerCreater ) 
-			: base(manager, name, description, id, folderID, 7, 7, uuidOwnerCreater)
+        /// <summary>
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="id"></param>
+        /// <param name="folderID"></param>
+        /// <param name="uuidOwnerCreater"></param>
+        /// 
+        internal InventoryNotecard(InventoryManager manager, string name, string description, LLUUID folderID, LLUUID uuidOwnerCreater) 
+			: base(manager, name, description, folderID, 7, 7, uuidOwnerCreater)
 		{
 
 		}
 
-		internal InventoryNotecard( InventoryManager manager, InventoryItem ii )
-			: base( manager, ii._Name, ii._Description, ii._ItemID, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
+        /// <summary>
+        /// </summary>
+        /// <param name="manager"></param>
+        /// <param name="ii"></param>
+        internal InventoryNotecard(InventoryManager manager, InventoryItem ii)
+			: base( manager, ii._Name, ii._Description, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
 		{
 			if( (ii.InvType != 7) || (ii.Type != Asset.ASSET_TYPE_NOTECARD) )
 			{
@@ -72,7 +84,10 @@ namespace libsecondlife.InventorySystem
 			this._Type = ii._Type;
 		}
 
-		override internal void SetAssetData( byte[] assetData )
+        /// <summary>
+        /// </summary>
+        /// <param name="assetData"></param>
+        override internal void SetAssetData(byte[] assetData)
 		{
 			if( _Asset == null )
 			{
@@ -82,8 +97,8 @@ namespace libsecondlife.InventorySystem
 				} 
 				else 
 				{
-					_Asset = new AssetNotecard( LLUUID.GenerateUUID(), assetData );
-					AssetID = _Asset.AssetID;
+					_Asset   = new AssetNotecard( LLUUID.GenerateUUID(), assetData );
+					_AssetID = _Asset.AssetID;
 				}
 			} 
 			else 
@@ -93,7 +108,11 @@ namespace libsecondlife.InventorySystem
 
 		}
 
-		override public string toXML( bool outputAssets )
+        /// <summary>
+        /// Output this item as XML
+        /// </summary>
+        /// <param name="outputAssets">Include an asset data as well, TRUE/FALSE</param>
+        override public string toXML(bool outputAssets)
 		{
 			string output = "<notecard ";
 
@@ -106,7 +125,7 @@ namespace libsecondlife.InventorySystem
 
 			output += "description = '" + xmlSafe(Description) + "' ";
 			output += "crc = '" + CRC + "' ";
-			output += "debug = '" + Packets.InventoryPackets.InventoryUpdateCRC(this) + "' ";
+			output += "debug = '" + InventoryPacketHelper.InventoryUpdateCRC(this) + "' ";
 			output += "ownerid = '" + OwnerID + "' ";
 			output += "creatorid = '" + CreatorID + "' ";
 

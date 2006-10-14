@@ -34,20 +34,20 @@ namespace libsecondlife.InventorySystem
 			set
 			{
 				base._Asset = new AssetImage( LLUUID.GenerateUUID(), value );
-				base.iManager.AssetManager.UploadAsset( Asset );
-				this.AssetID = Asset.AssetID;
+				LLUUID TransactionID = base.iManager.AssetManager.UploadAsset( Asset );
+                base.SetAssetTransactionIDs( Asset.AssetID, TransactionID );
 			}
 
 		}
 
-		internal InventoryImage( InventoryManager manager, string name, string description, LLUUID id, LLUUID folderID, LLUUID uuidOwnerCreater ) 
-			: base(manager, name, description, id, folderID, 0, 0, uuidOwnerCreater)
+		internal InventoryImage( InventoryManager manager, string name, string description,  LLUUID folderID, LLUUID uuidOwnerCreater ) 
+			: base(manager, name, description, folderID, 0, 0, uuidOwnerCreater)
 		{
 
 		}
 
 		internal InventoryImage( InventoryManager manager, InventoryItem ii )
-			: base( manager, ii._Name, ii._Description, ii._ItemID, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
+			: base( manager, ii._Name, ii._Description, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
 		{
 			if( (ii.InvType != 0) || (ii.Type != Asset.ASSET_TYPE_IMAGE) )
 			{
@@ -85,8 +85,8 @@ namespace libsecondlife.InventorySystem
 				} 
 				else 
 				{
-					_Asset = new AssetImage( LLUUID.GenerateUUID(), assetData );
-					AssetID = _Asset.AssetID;
+					_Asset   = new AssetImage( LLUUID.GenerateUUID(), assetData );
+					_AssetID = _Asset.AssetID;
 				}
 			} 
 			else 
@@ -96,7 +96,11 @@ namespace libsecondlife.InventorySystem
 
 		}
 
-		override public string toXML( bool outputAssets )
+        /// <summary>
+        /// Output this image as XML
+        /// </summary>
+        /// <param name="outputAssets">Include an asset data as well, TRUE/FALSE</param>
+        override public string toXML(bool outputAssets)
 		{
 			string output = "<image ";
 
@@ -109,7 +113,7 @@ namespace libsecondlife.InventorySystem
 
 			output += "description = '" + xmlSafe(Description) + "' ";
 			output += "crc = '" + CRC + "' ";
-			output += "debug = '" + Packets.InventoryPackets.InventoryUpdateCRC(this) + "' ";
+			output += "debug = '" + InventoryPacketHelper.InventoryUpdateCRC(this) + "' ";
 			output += "ownerid = '" + OwnerID + "' ";
 			output += "creatorid = '" + CreatorID + "' ";
 

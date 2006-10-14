@@ -27,22 +27,29 @@
 using System;
 using System.Collections;
 using libsecondlife;
+using libsecondlife.Packets;
 
 namespace sldump
 {
 	class sldump
 	{
-        static int i = 0;
-
 		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
-            if (i < 10)
-            {
-                Console.Write(packet.ToString());
-            }
-            i++;
+			Console.WriteLine(packet.ToString());
 		}
+
+        public static void DisconnectHandler(DisconnectType type, string message)
+        {
+            if (type == DisconnectType.NetworkTimeout)
+            {
+                Console.WriteLine("Network connection timed out, disconnected");
+            }
+            else if (type == DisconnectType.ServerInitiated)
+            {
+                Console.WriteLine("Server disconnected us: " + message);
+            }
+        }
 
 		/// <summary>
 		/// The main entry point for the application.
@@ -73,36 +80,40 @@ namespace sldump
 				return;
 			}
 
-			try
-			{
-				client = new SecondLife("keywords.txt", "message_template.msg");
-			}
-			catch (Exception e)
-			{
-				// Error initializing the client, probably missing file(s)
-				Console.WriteLine(e.ToString());
-				return;
-			}
+            client = new SecondLife();
 
 			if (args[0] == "--printmap")
 			{
-				client.Protocol.PrintMap();
+                ProtocolManager protocol;
+
+                try
+                {
+                    protocol = new ProtocolManager("keywords.txt", "message_template.msg", client);
+                }
+                catch (Exception e)
+                {
+                    // Error initializing the client, probably missing file(s)
+                    Console.WriteLine(e.ToString());
+                    return;
+                }
+
+                protocol.PrintMap();
 				return;
 			}
 
-			// Setup the callback
-			client.Network.RegisterCallback("Default", new PacketCallback(DefaultHandler));
+			// Setup the packet callback and disconnect event handler
+			client.Network.RegisterCallback(PacketType.Default, new PacketCallback(DefaultHandler));
+            client.Network.OnDisconnected += new Disconnected(DisconnectHandler);
 
-			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 50, 50, 50, "Win", "0", "sldump", "jhurliman@wsu.edu");
+            Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
+                "b15396fa7ec5f19ff1131800673aa132", "last", 1, 12, 2, 7, "Win", "0", "sldump", 
+                "contact@libsecondlife.org");
 
 			// An example of how to pass additional options to the login server
-			ArrayList optionsArray = new ArrayList();
-			optionsArray.Add("inventory-root");
-			optionsArray.Add("inventory-skeleton");
-			loginParams["options"] = optionsArray;
+            loginParams["id0"] = "65e142a8d3c1ee6632259f111cb168c6";
+            loginParams["viewer_digest"] = "0e63550f-0991-a092-3158-b4206e728ffa";
 
-			if (!client.Network.Login(loginParams))
+			if (!client.Network.Login(loginParams/*, "http://127.0.0.1:8080/"*/))
 			{
 				// Login failed
 				Console.WriteLine("Error logging in: " + client.Network.LoginError);

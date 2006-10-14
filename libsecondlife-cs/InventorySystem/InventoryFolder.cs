@@ -135,7 +135,11 @@ namespace libsecondlife.InventorySystem
 			return items;
 		}
 
-		override public string toXML( bool outputAssets )
+        /// <summary>
+        /// Output this folder as XML
+        /// </summary>
+        /// <param name="outputAssets">Include an asset data as well, TRUE/FALSE</param>
+        override public string toXML(bool outputAssets)
 		{
 			string output = "<folder ";
 
