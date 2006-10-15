@@ -328,11 +328,11 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-		public void PrintMap()
+		public void PrintMap(TextWriter writer)
 		{
-			PrintOneMap(LowMaps,    "Low   ");
-			PrintOneMap(MediumMaps, "Medium");
-			PrintOneMap(HighMaps,   "High  ");
+            PrintOneMap(writer, LowMaps, "Low   ");
+            PrintOneMap(writer, MediumMaps, "Medium");
+            PrintOneMap(writer, HighMaps, "High  ");
 		}
 
         /// <summary>
@@ -340,14 +340,14 @@ namespace libsecondlife
         /// </summary>
         /// <param name="map"></param>
         /// <param name="frequency"></param>
-		private void PrintOneMap(MapPacket[] map, string frequency) {
+		private void PrintOneMap(TextWriter writer, MapPacket[] map, string frequency) {
 			int i;
 
 			for (i = 0; i < map.Length; ++i)
 			{
 				if (map[i] != null)
 				{
-					Console.WriteLine("{0} {1,5} - {2} - {3} - {4}", frequency, i, map[i].Name,
+					writer.WriteLine("{0} {1,5} - {2} - {3} - {4}", frequency, i, map[i].Name,
 						map[i].Trusted ? "Trusted" : "Untrusted",
 						map[i].Encoded ? "Unencoded" : "Zerocoded");
 
@@ -355,16 +355,16 @@ namespace libsecondlife
 					{
 						if (block.Count == -1) 
 						{
-							Console.WriteLine("\t{0,4} {1} (Variable)", block.KeywordPosition, block.Name);
+							writer.WriteLine("\t{0,4} {1} (Variable)", block.KeywordPosition, block.Name);
 						} 
 						else 
 						{
-							Console.WriteLine("\t{0,4} {1} ({2})", block.KeywordPosition, block.Name, block.Count);
+							writer.WriteLine("\t{0,4} {1} ({2})", block.KeywordPosition, block.Name, block.Count);
 						}
 
 						foreach (MapField field in block.Fields)
 						{
-							Console.WriteLine("\t\t{0,4} {1} ({2} / {3})", field.KeywordPosition, field.Name,
+							writer.WriteLine("\t\t{0,4} {1} ({2} / {3})", field.KeywordPosition, field.Name,
 								field.Type, field.Count);
 						}
 					}

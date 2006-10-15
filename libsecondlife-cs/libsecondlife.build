@@ -42,25 +42,43 @@
   </target>
 
   <!-- build tasks -->
-    <target name="build" depends="init" description="compiles the source code">
-	<mkdir dir="${bin_dir}" failonerror="false"/>
+    <target name="map" depends="init" description="generates the packet map source code">
+        <mkdir dir="${bin_dir}" failonerror="false"/>
+        
+        <!-- <copy file="../data/keywords.txt" tofile="../bin/keywords.txt" />
+        <copy file="../data/message_template.msg" tofile="../bin/message_template.msg" />
+        <copy file="mapgenerator/template.cs" tofile="../bin/template.cs" /> -->
+        
+        <csc target="exe" output="../bin/mapgenerator.exe" debug="${build.debug}">
+            <sources>
+                <include name="mapgenerator/mapgenerator.cs" />
+                <include name="mapgenerator/ProtocolManager.cs" />
+            </sources>
+        </csc>
+        <exec program="../bin/mapgenerator.exe" output="_Packets_.cs">
+            <arg line="../data/keywords.txt ../data/message_template.msg mapgenerator/template.cs _Packets_.cs" />
+        </exec>
+    </target>
+    
+    <target name="build" depends="init map" description="compiles the source code">
+    	<mkdir dir="${bin_dir}" failonerror="false"/>
         <csc target="library" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
             <sources> 
-		<include name="*.cs" /> 
+                <include name="*.cs" /> 
                 <include name="AssetSystem/*.cs" />
                 <include name="InventorySystem/*.cs" />
                 <include name="JSON/*.cs" />
                 <include name="XmlRpcCS/*.cs" />
-	     </sources>
+        	</sources>
         </csc>
     </target>
 
     <target name="clean" description="remove build output">
-	<delete failonerror="false">
-	   <fileset basedir="${bin_dir}/">
-             <include name="libsecondlife.dll" />
-             <include name="libsecondlife.dll.mdb" />
-           </fileset>
+	    <delete failonerror="false">
+    	    <fileset basedir="${bin_dir}/">
+                <include name="libsecondlife.dll" />
+                <include name="libsecondlife.dll.mdb" />
+            </fileset>
         </delete>
     </target>
 </project>
