@@ -48,7 +48,7 @@ namespace libsecondlife
     /// Event is triggered when the L$ account balance for this avatar changes.
     /// </summary>
     /// <param name="balance">The new account balance</param>
-    public delegate void BalanceUpdated(int balance);
+    public delegate void BalanceCallback(int balance);
 
     /// <summary>
     /// Triggered whenever an instant message is received.
@@ -118,6 +118,8 @@ namespace libsecondlife
         public event FriendNotificationCallback OnFriendNotification;
         /// <summary></summary>
         public event TeleportCallback OnTeleport;
+        /// <summary></summary>
+        public event BalanceCallback OnBalanceUpdated;
 
         /// <summary></summary>
         public LLUUID ID;

@@ -103,7 +103,7 @@ namespace sldump
 
 			// Setup the packet callback and disconnect event handler
 			client.Network.RegisterCallback(PacketType.Default, new PacketCallback(DefaultHandler));
-            client.Network.OnDisconnected += new Disconnected(DisconnectHandler);
+            client.Network.OnDisconnected += new DisconnectCallback(DisconnectHandler);
 
             Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
                 "b15396fa7ec5f19ff1131800673aa132", "last", 1, 12, 2, 7, "Win", "0", "sldump", 

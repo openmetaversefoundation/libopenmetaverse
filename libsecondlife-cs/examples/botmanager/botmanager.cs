@@ -58,7 +58,7 @@ namespace botmanager
             Password = password;
 
             Client = new SecondLife();
-            Client.Network.OnDisconnected += new Disconnected(DisconnectHandler);
+            Client.Network.OnDisconnected += new DisconnectCallback(DisconnectHandler);
         }
 
         public bool Spawn()

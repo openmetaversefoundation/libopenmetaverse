@@ -49,13 +49,13 @@ namespace libsecondlife
     /// </summary>
     /// <param name="simulator"></param>
     /// <param name="reason"></param>
-    public delegate void SimDisconnected(Simulator simulator, DisconnectType reason);
+    public delegate void SimDisconnectCallback(Simulator simulator, DisconnectType reason);
     /// <summary>
     /// 
     /// </summary>
     /// <param name="reason"></param>
     /// <param name="message"></param>
-    public delegate void Disconnected(DisconnectType reason, string message);
+    public delegate void DisconnectCallback(DisconnectType reason, string message);
 
     /// <summary>
     /// 
@@ -678,12 +678,12 @@ namespace libsecondlife
         /// An event for the connection to a simulator other than the currently
         /// occupied one disconnecting
         /// </summary>
-        public SimDisconnected OnSimDisconnected;
+        public SimDisconnectCallback OnSimDisconnected;
         /// <summary>
         /// An event for being logged out either through client request, server
         /// forced, or network error
         /// </summary>
-        public Disconnected OnDisconnected;
+        public DisconnectCallback OnDisconnected;
 
 		private Hashtable Callbacks;
 		private SecondLife Client;
