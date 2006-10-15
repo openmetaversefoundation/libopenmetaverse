@@ -706,12 +706,21 @@ namespace mapgenerator
 
         static void Main(string[] args)
         {
-            SecondLife libsl = new SecondLife();
-            ProtocolManager protocol = new ProtocolManager("keywords.txt", "message_template.msg", libsl);
+            ProtocolManager protocol;
 
-            TextReader reader = new StreamReader("template.cs");
-            Console.WriteLine(reader.ReadToEnd());
-            reader.Close();
+            try
+            {
+                protocol = new ProtocolManager("keywords.txt", "message_template.msg");
+
+                TextReader reader = new StreamReader("template.cs");
+                Console.WriteLine(reader.ReadToEnd());
+                reader.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return;
+            }
 
             // Write the PacketType enum
             Console.WriteLine("    /// <summary>Used to identify the type of a packet</summary>");
