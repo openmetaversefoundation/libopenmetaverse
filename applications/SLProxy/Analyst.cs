@@ -523,12 +523,12 @@ public class Analyst {
 							float quaternionY = Convert.ToSingle(quaternionMatch.Groups[2].Captures[0].ToString());
 							float quaternionZ = Convert.ToSingle(quaternionMatch.Groups[3].Captures[0].ToString());
 							float quaternionS = Convert.ToSingle(quaternionMatch.Groups[4].Captures[0].ToString());
-							byte[] quaternionBytes = new byte[16];
+							byte[] quaternionBytes = new byte[12];
 							Array.Copy(BitConverter.GetBytes(quaternionX), 0, quaternionBytes,  0, 4);
 							Array.Copy(BitConverter.GetBytes(quaternionY), 0, quaternionBytes,  4, 4);
 							Array.Copy(BitConverter.GetBytes(quaternionZ), 0, quaternionBytes,  8, 4);
-							Array.Copy(BitConverter.GetBytes(quaternionS), 0, quaternionBytes, 12, 4);
-							return new LLQuaternion(quaternionBytes, 0);
+							//Array.Copy(BitConverter.GetBytes(quaternionS), 0, quaternionBytes, 12, 4);
+							return new LLQuaternion(quaternionBytes, 0, true);
 						case FieldType.IPADDR:
 							return IPAddress.Parse(value);
 						case FieldType.IPPORT:
