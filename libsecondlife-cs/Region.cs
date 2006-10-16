@@ -253,12 +253,19 @@ namespace libsecondlife
         /// </summary>
         public void FillParcels()
         {
-            // FIXME:
             // Begins filling parcels
-            //ParcelDownloading = true;
+            ParcelDownloading = true;
 
-            //Client.Network.SendPacket(libsecondlife.Packets.Parcel.ParcelPropertiesRequest(Client.Protocol, Client.Avatar.ID, -10000,
-            //        0.0f, 0.0f, 4.0f, 4.0f, false));
+            ParcelPropertiesRequestPacket tPacket = new ParcelPropertiesRequestPacket();
+            tPacket.AgentData.AgentID = Client.Avatar.ID;
+            tPacket.AgentData.SessionID = Client.Network.SessionID;
+            tPacket.ParcelData.SequenceID = -10000;
+            tPacket.ParcelData.West = 0.0f;
+            tPacket.ParcelData.South = 0.0f;
+            tPacket.ParcelData.East = 0.0f;
+            tPacket.ParcelData.North = 0.0f;
+
+            Client.Network.SendPacket((Packet)tPacket);
         }
 
         /// <summary>

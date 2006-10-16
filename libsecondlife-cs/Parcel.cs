@@ -227,12 +227,21 @@ namespace libsecondlife
         /// <param name="forGroup"></param>
         /// <param name="groupID"></param>
         /// <returns></returns>
-        public bool Buy(SecondLife client, bool forGroup, LLUUID groupID)
+        public bool Buy(SecondLife client, bool forGroup, LLUUID groupID, bool removeContribution)
         {
-            //Packet buyPacket = Packets.Parcel.ParcelBuy(client.Protocol, LocalID, forGroup, groupID, true, client.Avatar.ID, client.Network.SessionID);
-            //Sim.SendPacket(buyPacket, true);
+            ParcelBuyPacket request = new ParcelBuyPacket();
 
-            return false;
+            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.SessionID = client.Network.SessionID;
+
+            request.Data.Final = true;
+            request.Data.GroupID = groupID;
+            request.Data.LocalID = this.LocalID;
+            request.Data.IsGroupOwned = forGroup;
+            request.Data.RemoveContribution = removeContribution;
+
+            Sim.SendPacket((Packet)request, true);
+            return true;
         }
 
         /// <summary>
@@ -441,260 +450,126 @@ namespace libsecondlife
 
         private void ParcelPropertiesHandler(Packet packet, Simulator simulator)
         {
-            //// Marked == Added to Parcel Class specifically for this Packet
-            //// -> XYZ == Equivilent to property XYZ in Packet.
-            //int RequestResult = 0;
-            //int SequenceID = 0;
-            //bool SnapSelection = false;
-            //int SelfCount = 0;
-            //int OtherCount = 0;
-            //int PublicCount = 0;
-            //int LocalID = 0;                                            // Marked
-            //LLUUID OwnerID = new LLUUID();                         // -> OwnerID
-            //bool IsGroupOwned = false;                                        // Marked
-            //uint AuctionID = 0;
-            //bool ReservedNewbie = false;                                        // Marked -> FirstLand
-            //int ClaimDate = 0;                                            // Marked
-            //int ClaimPrice = 0;
-            //int RentPrice = 0;
-            //LLVector3 AABBMin = new LLVector3();
-            //LLVector3 AABBMax = new LLVector3();
-            //byte[] Bitmap = new byte[512];                        // Marked
-            //int Area = 0;                                            // -> ActualArea
-            //byte Status = 0;
-            //int SimWideMaxObjects = 0;
-            //int SimWideTotalObjects = 0;
-            //int MaxObjects = 0;
-            //int TotalObjects = 0;
-            //int OwnerObjects = 0;
-            //int GroupObjects = 0;
-            //int OtherObjects = 0;
-            //float ParcelObjectBonus = 0.0f;
-            //int OtherCleanTime = 0;
-            //uint ParcelFlags = 0;
-            //int SalePrice = 0;                                            // -> SalePrice
-            //string Name = "";
-            //string Desc = "";
-            //string MusicURL = "";
-            //string MediaURL = "";
-            //LLUUID MediaID = new LLUUID();
-            //byte MediaAutoScale = 0;
-            //LLUUID GroupID = new LLUUID();
-            //int PassPrice = 0;
-            //float PassHours = 0.0f;
-            //byte Category = 0;
-            //LLUUID AuthBuyerID = new LLUUID();                         // Marked
-            //LLUUID SnapshotID = new LLUUID();                         // -> SnapshotID
-            //LLVector3 UserLocation = new LLVector3();
-            //LLVector3 UserLookAt = new LLVector3();
-            //byte LandingType = 0;
+            ParcelPropertiesPacket properties = (ParcelPropertiesPacket)packet;
 
-            //foreach (Block block in packet.Blocks())
-            //{
-            //    foreach (Field field in block.Fields)
-            //    {
-            //        if (field.Layout.Name == "RequestResult")
-            //            RequestResult = (int)field.Data;
-            //        else if (field.Layout.Name == "SequenceID")
-            //            SequenceID = (int)field.Data;
-            //        else if (field.Layout.Name == "SnapSelection")
-            //            SnapSelection = (bool)field.Data;
-            //        else if (field.Layout.Name == "SelfCount")
-            //            SelfCount = (int)field.Data;
-            //        else if (field.Layout.Name == "OtherCount")
-            //            OtherCount = (int)field.Data;
-            //        else if (field.Layout.Name == "PublicCount")
-            //            PublicCount = (int)field.Data;
-            //        else if (field.Layout.Name == "LocalID")
-            //            LocalID = (int)field.Data;
-            //        else if (field.Layout.Name == "OwnerID")
-            //            OwnerID = (LLUUID)field.Data;
-            //        else if (field.Layout.Name == "IsGroupOwned")
-            //            IsGroupOwned = (bool)field.Data;
-            //        else if (field.Layout.Name == "AuctionID")
-            //            AuctionID = (uint)field.Data;
-            //        else if (field.Layout.Name == "ReservedNewbie")
-            //            ReservedNewbie = (bool)field.Data;
-            //        else if (field.Layout.Name == "ClaimDate")
-            //            ClaimDate = (int)field.Data;
-            //        else if (field.Layout.Name == "ClaimPrice")
-            //            ClaimPrice = (int)field.Data;
-            //        else if (field.Layout.Name == "RentPrice")
-            //            RentPrice = (int)field.Data;
-            //        else if (field.Layout.Name == "AABBMin")
-            //            AABBMin = (LLVector3)field.Data;
-            //        else if (field.Layout.Name == "AABBMax")
-            //            AABBMax = (LLVector3)field.Data;
-            //        else if (field.Layout.Name == "Bitmap")
-            //            Bitmap = (byte[])field.Data;
-            //        else if (field.Layout.Name == "Area")
-            //            Area = (int)field.Data;
-            //        else if (field.Layout.Name == "Status")
-            //            Status = (byte)field.Data;
-            //        else if (field.Layout.Name == "SimWideMaxObjects")
-            //            SimWideMaxObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "SimWideTotalObjects")
-            //            SimWideTotalObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "MaxObjects")
-            //            MaxObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "TotalObjects")
-            //            TotalObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "OwnerObjects")
-            //            OwnerObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "GroupObjects")
-            //            GroupObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "OtherObjects")
-            //            OtherObjects = (int)field.Data;
-            //        else if (field.Layout.Name == "ParcelObjectBonus")
-            //            ParcelObjectBonus = (float)field.Data;
-            //        else if (field.Layout.Name == "OtherCleanTime")
-            //            OtherCleanTime = (int)field.Data;
-            //        else if (field.Layout.Name == "ParcelFlags")
-            //            ParcelFlags = (uint)field.Data;
-            //        else if (field.Layout.Name == "SalePrice")
-            //            SalePrice = (int)field.Data;
-            //        else if (field.Layout.Name == "Name")
-            //            Name = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-            //        else if (field.Layout.Name == "Desc")
-            //            Desc = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-            //        else if (field.Layout.Name == "MusicURL")
-            //            MusicURL = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-            //        else if (field.Layout.Name == "MediaURL")
-            //            MediaURL = System.Text.Encoding.UTF8.GetString((byte[])field.Data).Replace("\0", "");
-            //        else if (field.Layout.Name == "MediaID")
-            //            MediaID = (LLUUID)field.Data;
-            //        else if (field.Layout.Name == "MediaAutoScale")
-            //            MediaAutoScale = (byte)field.Data;
-            //        else if (field.Layout.Name == "GroupID")
-            //            GroupID = (LLUUID)field.Data;
-            //        else if (field.Layout.Name == "PassPrice")
-            //            PassPrice = (int)field.Data;
-            //        else if (field.Layout.Name == "PassHours")
-            //            PassHours = (float)field.Data;
-            //        else if (field.Layout.Name == "Category")
-            //            Category = (byte)field.Data;
-            //        else if (field.Layout.Name == "AuthBuyerID")
-            //            AuthBuyerID = (LLUUID)field.Data;
-            //        else if (field.Layout.Name == "SnapshotID")
-            //            SnapshotID = (LLUUID)field.Data;
-            //        else if (field.Layout.Name == "UserLocation")
-            //            UserLocation = (LLVector3)field.Data;
-            //        else if (field.Layout.Name == "UserLookAt")
-            //            UserLookAt = (LLVector3)field.Data;
-            //        else if (field.Layout.Name == "LandingType")
-            //            LandingType = (byte)field.Data;
-            //        //                                      else
-            //        //                                              Client.Log("Unknown field type '" + field.Layout.Name + "' in ParcelProperties",Helpers.LogLevel.Warning);
+            byte[] Bitmap = properties.ParcelData.Bitmap;
+            int LocalID = properties.ParcelData.LocalID;
 
-            //    }
-            //}
+            // Mark this area as downloaded
+            int x, y, index, subindex;
+            byte val;
 
-            //// Mark this area as downloaded
-            //int x, y, index, subindex;
-            //byte val;
+            for (x = 0; x < 64; x++)
+            {
+                for (y = 0; y < 64; y++)
+                {
+                    if (simulator.Region.ParcelMarked[y, x] == 0)
+                    {
+                        index = ((x * 64) + y);
+                        subindex = index % 8;
+                        index /= 8;
 
-            //for (x = 0; x < 64; x++)
-            //{
-            //    for (y = 0; y < 64; y++)
-            //    {
-            //        if (simulator.Region.ParcelMarked[y, x] == 0)
-            //        {
-            //            index = ((x * 64) + y);
-            //            subindex = index % 8;
-            //            index /= 8;
+                        val = Bitmap[index];
 
-            //            val = Bitmap[index];
+                        simulator.Region.ParcelMarked[y, x] = ((val >> subindex) & 1) == 1 ? LocalID : 0;
+                    }
+                }
+            }
 
-            //            simulator.Region.ParcelMarked[y, x] = ((val >> subindex) & 1) == 1 ? LocalID : 0;
-            //        }
-            //    }
-            //}
+            // Fire off the next request, if we are downloading the whole sim
+            bool hasTriggered = false;
+            if (simulator.Region.ParcelDownloading == true)
+            {
+                for (x = 0; x < 64; x++)
+                {
+                    for (y = 0; y < 64; y++)
+                    {
+                        if (simulator.Region.ParcelMarked[x, y] == 0)
+                        {
+                            ParcelPropertiesRequestPacket tPacket = new ParcelPropertiesRequestPacket();
+                            tPacket.AgentData.AgentID = Client.Avatar.ID;
+                            tPacket.AgentData.SessionID = Client.Network.SessionID;
+                            tPacket.ParcelData.SequenceID = -10000;
+                            tPacket.ParcelData.West = (x * 4.0f);
+                            tPacket.ParcelData.South = (y * 4.0f);
+                            tPacket.ParcelData.East = (x * 4.0f) + 4.0f;
+                            tPacket.ParcelData.North = (y * 4.0f) + 4.0f;
 
-            //// Fire off the next request, if we are downloading the whole sim
-            //bool hasTriggered = false;
-            //if (simulator.Region.ParcelDownloading == true)
-            //{
-            //    for (x = 0; x < 64; x++)
-            //    {
-            //        for (y = 0; y < 64; y++)
-            //        {
-            //            if (simulator.Region.ParcelMarked[x, y] == 0)
-            //            {
-            //                Client.Network.SendPacket(libsecondlife.Packets.Parcel.ParcelPropertiesRequest(Client.Protocol, Client.Avatar.ID, -10000 - (x * 64) - y,
-            //                        (x * 4.0f), (y * 4.0f), (x * 4.0f) + 4.0f, (y * 4.0f) + 4.0f, false));
-            //                hasTriggered = true;
+                            simulator.SendPacket((Packet)tPacket, true);
 
-            //                goto exit;
-            //            }
-            //        }
-            //    }
-            //exit:
-            //    ;
-            //}
+                            hasTriggered = true;
 
-            //// This map is complete, fire callback
-            //if (hasTriggered == false)
-            //{
-            //    simulator.Region.FilledParcels();
-            //}
+                            goto exit;
+                        }
+                    }
+                }
+            exit:
+                ;
+            }
 
-            //// Save this parcels data
-            //// TODO: Lots of values are not being stored, Parcel needs to be expanded to take all the data.
-            //simulator.Region.ParcelsMutex.WaitOne();
+            // This map is complete, fire callback
+            if (hasTriggered == false)
+            {
+                simulator.Region.FilledParcels();
+            }
 
-            //if (!simulator.Region.Parcels.ContainsKey(LocalID))
-            //{
-            //    simulator.Region.Parcels[LocalID] = new Parcel(simulator);
-            //}
+            // Save this parcels data
+            // TODO: Lots of values are not being stored, Parcel needs to be expanded to take all the data.
+            simulator.Region.ParcelsMutex.WaitOne();
+
+            if (!simulator.Region.Parcels.ContainsKey(LocalID))
+            {
+                simulator.Region.Parcels[LocalID] = new Parcel(simulator);
+            }
 
             //// God help me should I have to type this out again... argh.
-            //((Parcel)simulator.Region.Parcels[LocalID]).RequestResult = RequestResult;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SequenceID = SequenceID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SnapSelection = SnapSelection;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SelfCount = SelfCount;
-            //((Parcel)simulator.Region.Parcels[LocalID]).OtherCount = OtherCount;
-            //((Parcel)simulator.Region.Parcels[LocalID]).PublicCount = PublicCount;
-            //((Parcel)simulator.Region.Parcels[LocalID]).LocalID = LocalID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).OwnerID = OwnerID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).IsGroupOwned = IsGroupOwned;
-            //((Parcel)simulator.Region.Parcels[LocalID]).AuctionID = AuctionID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).ReservedNewbie = ReservedNewbie;
-            //((Parcel)simulator.Region.Parcels[LocalID]).ClaimDate = ClaimDate;
-            //((Parcel)simulator.Region.Parcels[LocalID]).ClaimPrice = ClaimPrice;
-            //((Parcel)simulator.Region.Parcels[LocalID]).RentPrice = RentPrice;
-            //((Parcel)simulator.Region.Parcels[LocalID]).AABBMin = AABBMin;
-            //((Parcel)simulator.Region.Parcels[LocalID]).AABBMax = AABBMax;
-            //((Parcel)simulator.Region.Parcels[LocalID]).Bitmap = Bitmap;
-            //((Parcel)simulator.Region.Parcels[LocalID]).Area = Area;
-            //((Parcel)simulator.Region.Parcels[LocalID]).Status = Status;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SimWideMaxObjects = SimWideMaxObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SimWideTotalObjects = SimWideTotalObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).MaxObjects = MaxObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).TotalObjects = TotalObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).OwnerObjects = OwnerObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).GroupObjects = GroupObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).OtherObjects = OtherObjects;
-            //((Parcel)simulator.Region.Parcels[LocalID]).ParcelObjectBonus = ParcelObjectBonus;
-            //((Parcel)simulator.Region.Parcels[LocalID]).OtherCleanTime = OtherCleanTime;
-            //((Parcel)simulator.Region.Parcels[LocalID]).ParcelFlags = ParcelFlags;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SalePrice = SalePrice;
-            //((Parcel)simulator.Region.Parcels[LocalID]).Name = Name;
-            //((Parcel)simulator.Region.Parcels[LocalID]).Desc = Desc;
-            //((Parcel)simulator.Region.Parcels[LocalID]).MusicURL = MusicURL;
-            //((Parcel)simulator.Region.Parcels[LocalID]).MediaURL = MediaURL;
-            //((Parcel)simulator.Region.Parcels[LocalID]).MediaID = MediaID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).MediaAutoScale = MediaAutoScale;
-            //((Parcel)simulator.Region.Parcels[LocalID]).GroupID = GroupID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).PassPrice = PassPrice;
-            //((Parcel)simulator.Region.Parcels[LocalID]).PassHours = PassHours;
-            //((Parcel)simulator.Region.Parcels[LocalID]).Category = Category;
-            //((Parcel)simulator.Region.Parcels[LocalID]).AuthBuyerID = AuthBuyerID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).SnapshotID = SnapshotID;
-            //((Parcel)simulator.Region.Parcels[LocalID]).UserLocation = UserLocation;
-            //((Parcel)simulator.Region.Parcels[LocalID]).UserLookAt = UserLookAt;
-            //((Parcel)simulator.Region.Parcels[LocalID]).LandingType = LandingType;
+            ((Parcel)simulator.Region.Parcels[LocalID]).RequestResult = properties.ParcelData.RequestResult;
+            ((Parcel)simulator.Region.Parcels[LocalID]).SequenceID = properties.ParcelData.SequenceID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).SnapSelection = properties.ParcelData.SnapSelection;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).SelfCount = properties.ParcelData.SelfCount;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).OtherCount = properties.ParcelData.OtherCount;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).PublicCount = properties.ParcelData.PublicCount;
+            ((Parcel)simulator.Region.Parcels[LocalID]).LocalID = LocalID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).OwnerID = properties.ParcelData.OwnerID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).IsGroupOwned = properties.ParcelData.IsGroupOwned;
+            ((Parcel)simulator.Region.Parcels[LocalID]).AuctionID = properties.ParcelData.AuctionID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).ReservedNewbie = properties.ParcelData.ReservedNewbie;
+            ((Parcel)simulator.Region.Parcels[LocalID]).ClaimDate = properties.ParcelData.ClaimDate;
+            ((Parcel)simulator.Region.Parcels[LocalID]).ClaimPrice = properties.ParcelData.ClaimPrice;
+            ((Parcel)simulator.Region.Parcels[LocalID]).RentPrice = properties.ParcelData.RentPrice;
+            ((Parcel)simulator.Region.Parcels[LocalID]).AABBMin = properties.ParcelData.AABBMin;
+            ((Parcel)simulator.Region.Parcels[LocalID]).AABBMax = properties.ParcelData.AABBMax;
+            ((Parcel)simulator.Region.Parcels[LocalID]).Bitmap = properties.ParcelData.Bitmap;
+            ((Parcel)simulator.Region.Parcels[LocalID]).Area = properties.ParcelData.Area;
+            ((Parcel)simulator.Region.Parcels[LocalID]).Status = properties.ParcelData.Status;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).SimWideMaxObjects = properties.ParcelData.SimWideMaxObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).SimWideTotalObjects = properties.ParcelData.SimWideTotalObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).MaxObjects = properties.ParcelData.MaxObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).TotalObjects = properties.ParcelData.TotalObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).OwnerObjects = properties.ParcelData.OwnerObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).GroupObjects = properties.ParcelData.GroupObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).OtherObjects = properties.ParcelData.OtherObjects;
+//            ((Parcel)simulator.Region.Parcels[LocalID]).ParcelObjectBonus = properties.ParcelData.ParcelObjectBonus;
+            ((Parcel)simulator.Region.Parcels[LocalID]).OtherCleanTime = properties.ParcelData.OtherCleanTime;
+            ((Parcel)simulator.Region.Parcels[LocalID]).ParcelFlags = properties.ParcelData.ParcelFlags;
+            ((Parcel)simulator.Region.Parcels[LocalID]).SalePrice = properties.ParcelData.SalePrice;
+            ((Parcel)simulator.Region.Parcels[LocalID]).Name = Helpers.FieldToString(properties.ParcelData.Name);
+            ((Parcel)simulator.Region.Parcels[LocalID]).Desc = Helpers.FieldToString(properties.ParcelData.Desc);
+            ((Parcel)simulator.Region.Parcels[LocalID]).MusicURL = Helpers.FieldToString(properties.ParcelData.MusicURL);
+            ((Parcel)simulator.Region.Parcels[LocalID]).MediaURL = Helpers.FieldToString(properties.ParcelData.MediaURL);
+            ((Parcel)simulator.Region.Parcels[LocalID]).MediaID = properties.ParcelData.MediaID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).MediaAutoScale = properties.ParcelData.MediaAutoScale;
+            ((Parcel)simulator.Region.Parcels[LocalID]).GroupID = properties.ParcelData.GroupID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).PassPrice = properties.ParcelData.PassPrice;
+            ((Parcel)simulator.Region.Parcels[LocalID]).PassHours = properties.ParcelData.PassHours;
+            ((Parcel)simulator.Region.Parcels[LocalID]).Category = properties.ParcelData.Category;
+            ((Parcel)simulator.Region.Parcels[LocalID]).AuthBuyerID = properties.ParcelData.AuthBuyerID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).SnapshotID = properties.ParcelData.SnapshotID;
+            ((Parcel)simulator.Region.Parcels[LocalID]).UserLocation = properties.ParcelData.UserLocation;
+            ((Parcel)simulator.Region.Parcels[LocalID]).UserLookAt = properties.ParcelData.UserLookAt;
+            ((Parcel)simulator.Region.Parcels[LocalID]).LandingType = properties.ParcelData.LandingType;
 
-            //simulator.Region.ParcelsMutex.ReleaseMutex();
+            simulator.Region.ParcelsMutex.ReleaseMutex();
         }
 
         private void ParcelInfoReplyHandler(Packet packet, Simulator simulator)
