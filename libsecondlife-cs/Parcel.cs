@@ -293,16 +293,16 @@ namespace libsecondlife
 
             request.ParcelData.AuthBuyerID = this.AuthBuyerID;
             request.ParcelData.Category = this.Category;
-            request.ParcelData.Desc = this.Desc;
+            request.ParcelData.Desc = Helpers.StringToField(this.Desc);
             request.ParcelData.Flags = 0; // TODO: Probably very important
             request.ParcelData.GroupID = this.GroupID;
             request.ParcelData.LandingType = this.LandingType;
             request.ParcelData.LocalID = this.LocalID;
             request.ParcelData.MediaAutoScale = this.MediaAutoScale;
             request.ParcelData.MediaID = this.MediaID;
-            request.ParcelData.MediaURL = this.MediaURL;
-            request.ParcelData.MusicURL = this.MusicURL;
-            request.ParcelData.Name = this.Name;
+            request.ParcelData.MediaURL = Helpers.StringToField(this.MediaURL);
+            request.ParcelData.MusicURL = Helpers.StringToField(this.MusicURL);
+            request.ParcelData.Name = Helpers.StringToField(this.Name);
             request.ParcelData.ParcelFlags = this.ParcelFlags;
             request.ParcelData.PassHours = this.PassHours;
             request.ParcelData.PassPrice = this.PassPrice;
