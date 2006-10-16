@@ -143,9 +143,10 @@ namespace libsecondlife
         /// <summary></summary>
         public LLVector3 HomeLookAt;
         /// <summary>Gets the health of the current agent</summary>
+        protected float health;
         public float Health
         {
-            get { return Health; }
+            get { return health; }
         }
 
         private SecondLife Client;
@@ -153,7 +154,6 @@ namespace libsecondlife
         private Timer TeleportTimer;
         private bool TeleportTimeout;
         private uint HeightWidthGenCounter;
-        private float health;
 
         /// <summary>
         /// 
@@ -216,7 +216,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="target"></param>
         /// <param name="message"></param>
-        /// <param name="ID"></param>
+        /// <param name="IMSessionID"></param>
         public void InstantMessage(LLUUID target, string message, LLUUID IMSessionID)
         {
             InstantMessage(FirstName + " " + LastName, LLUUID.GenerateUUID(), target, message, null, IMSessionID);
@@ -230,7 +230,6 @@ namespace libsecondlife
         /// <param name="target"></param>
         /// <param name="message"></param>
         /// <param name="conferenceIDs"></param>
-        /// <param name="ID"></param>
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
         {
             InstantMessage(fromName, sessionID, target, message, conferenceIDs, LLUUID.GenerateUUID());
@@ -244,8 +243,9 @@ namespace libsecondlife
         /// <param name="target"></param>
         /// <param name="message"></param>
         /// <param name="conferenceIDs"></param>
-        /// <param name="ID"></param>
-        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs, LLUUID IMSessionID)
+        /// <param name="IMSessionID"></param>
+        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, 
+            LLUUID[] conferenceIDs, LLUUID IMSessionID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
             im.AgentData.AgentID = this.ID;
