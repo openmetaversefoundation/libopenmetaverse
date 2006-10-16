@@ -73,6 +73,17 @@
         </csc>
     </target>
 
+    <target name="test-dll" depends="init build" description="makes the test dll">
+	<csc target="library" output="tests/tests.dll"> 
+	   <sources>
+    	     <include name="tests/*.cs" />
+	   </sources>
+	   <references>
+	     <include name="NUnit.dll" />
+	   </references>
+	</csc>
+    </target>
+
     <target name="clean" description="remove build output">
 	    <delete failonerror="false">
     	    <fileset basedir="${bin_dir}/">
