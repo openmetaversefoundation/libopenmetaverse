@@ -30,7 +30,7 @@ using System.Net;
 using System.Collections;
 using libsecondlife.Packets;
 
-namespace libsecondlife
+amespace libsecondlife
 {
     /// <summary>
     /// 
