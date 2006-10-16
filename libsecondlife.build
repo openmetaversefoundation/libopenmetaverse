@@ -154,14 +154,14 @@
         <fileset basedir="bin">
           <include name="*.exe" />
           <include name="*.dll" />
-				</fileset>
+		</fileset>
       </copy>
-      <copy todir="${archive.dir}" overwrite="true">
-				<fileset basedir="data">
+      <!-- <copy todir="${archive.dir}" overwrite="true">
+		<fileset basedir="data">
           <include name="*.txt" />
           <include name="*.msg" />
         </fileset>
-      </copy>
+      </copy> -->
     </if>
     <zip zipfile="${archive.name}">
       <fileset refid="archive.set" />
