@@ -43,7 +43,7 @@
 
   <!-- build tasks -->
     <target name="map" depends="init" description="generates the packet map source code">
-        <mkdir dir="${bin_dir}" failonerror="false"/>
+        <mkdir dir="${bin_dir}" failonerror="true"/>
         
         <!-- <copy file="../data/keywords.txt" tofile="../bin/keywords.txt" />
         <copy file="../data/message_template.msg" tofile="../bin/message_template.msg" />
@@ -61,7 +61,7 @@
     </target>
     
     <target name="build" depends="init map" description="compiles the source code">
-    	<mkdir dir="${bin_dir}" failonerror="false"/>
+    	<mkdir dir="${bin_dir}" failonerror="true"/>
         <csc target="library" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
             <sources> 
                 <include name="*.cs" /> 
