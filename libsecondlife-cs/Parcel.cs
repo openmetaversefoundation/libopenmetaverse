@@ -217,7 +217,7 @@ namespace libsecondlife
             request.Data.LocalID = LocalID;
             request.Data.ParcelID = new LLUUID();
 
-            Sim.SendPacket((Packet)request, true);
+            client.Network.SendPacket((Packet)request, Sim);
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace libsecondlife
             request.Data.IsGroupOwned = forGroup;
             request.Data.RemoveContribution = removeContribution;
 
-            Sim.SendPacket((Packet)request, true);
+            client.Network.SendPacket((Packet)request, Sim);
             return true;
         }
 
@@ -257,7 +257,7 @@ namespace libsecondlife
 
             request.Data.LocalID = this.LocalID;
 
-            Sim.SendPacket((Packet)request, true);
+            client.Network.SendPacket((Packet)request, Sim);
             return true;
         }
 
@@ -276,7 +276,7 @@ namespace libsecondlife
             request.Data.LocalID = this.LocalID;
             request.Data.GroupID = groupID;
 
-            Sim.SendPacket((Packet)request, true);
+            client.Network.SendPacket((Packet)request, Sim);
             return true;
         }
 
@@ -286,6 +286,32 @@ namespace libsecondlife
         /// <param name="client"></param>
         public void Update(SecondLife client)
         {
+            ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
+
+            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.SessionID = client.Network.SessionID;
+
+            request.ParcelData.AuthBuyerID = this.AuthBuyerID;
+            request.ParcelData.Category = this.Category;
+            request.ParcelData.Desc = this.Desc;
+            request.ParcelData.Flags = 0; // TODO: Probably very important
+            request.ParcelData.GroupID = this.GroupID;
+            request.ParcelData.LandingType = this.LandingType;
+            request.ParcelData.LocalID = this.LocalID;
+            request.ParcelData.MediaAutoScale = this.MediaAutoScale;
+            request.ParcelData.MediaID = this.MediaID;
+            request.ParcelData.MediaURL = this.MediaURL;
+            request.ParcelData.MusicURL = this.MusicURL;
+            request.ParcelData.Name = this.Name;
+            request.ParcelData.ParcelFlags = this.ParcelFlags;
+            request.ParcelData.PassHours = this.PassHours;
+            request.ParcelData.PassPrice = this.PassPrice;
+            request.ParcelData.SalePrice = this.SalePrice;
+            request.ParcelData.SnapshotID = this.SnapshotID;
+            request.ParcelData.UserLocation = this.UserLocation;
+            request.ParcelData.UserLookAt = this.UserLookAt;
+
+            client.Network.SendPacket((Packet)request, Sim);
             //Packet updatePacket = Packets.Parcel.ParcelPropertiesUpdate(client.Protocol, client.Avatar.ID, client.Network.SessionID, this);
             //Sim.SendPacket(updatePacket, true);
         }
@@ -308,22 +334,10 @@ namespace libsecondlife
             request.ParcelData.ReturnType = returnType;
 
             // TODO: Handling of TaskIDs and OwnerIDs
+            request.OwnerIDs = new ParcelReturnObjectsPacket.OwnerIDsBlock[0];
+            request.TaskIDs = new ParcelReturnObjectsPacket.TaskIDsBlock[1];
 
-            Sim.SendPacket((Packet)request, true);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="returnType"></param>
-        /// <param name="otherCleanTime"></param>
-        /// <param name="ownerID"></param>
-        public void ReturnObjects(SecondLife client, int returnType, int otherCleanTime, LLUUID ownerID)
-        {
-            //Packet returnPacket = Packets.Parcel.ParcelReturnObjects(client.Protocol, client.Avatar.ID, client.Network.SessionID, LocalID,
-            //        returnType, otherCleanTime, ownerID);
-            //Sim.SendPacket(returnPacket, true);
+            client.Network.SendPacket((Packet)request, Sim);
         }
     }
 
