@@ -532,7 +532,6 @@ namespace libsecondlife
                         {
                             if (NeedAck.ContainsKey(ack))
                             {
-                                Client.Log("Appended ACK " + ack, Helpers.LogLevel.Info);
                                 NeedAck.Remove(ack);
                             }
                             else
