@@ -491,7 +491,7 @@ namespace libsecondlife
             update.AgentData.SessionID = Client.Network.SessionID;
             update.AgentData.State = 0;
             update.AgentData.BodyRotation = new LLQuaternion(0, 0.6519076f, 0, 0);
-            update.AgentData.HeadRotation = new LLVector3();
+            update.AgentData.HeadRotation = new LLQuaternion();
             // Semi-sane default values
             update.AgentData.CameraCenter = new LLVector3(9.549901f, 7.033957f, 11.75f);
             update.AgentData.CameraAtAxis = new LLVector3(0.7f, 0.7f, 0);
