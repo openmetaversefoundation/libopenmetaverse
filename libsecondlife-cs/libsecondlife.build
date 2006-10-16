@@ -78,6 +78,7 @@
     	    <fileset basedir="${bin_dir}/">
                 <include name="libsecondlife.dll" />
                 <include name="libsecondlife.dll.mdb" />
+                <include name="mapgenerator.exe" />
             </fileset>
         </delete>
     </target>

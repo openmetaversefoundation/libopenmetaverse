@@ -704,7 +704,7 @@ namespace mapgenerator
             writer.WriteLine("    }\n");
         }
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             ProtocolManager protocol;
             TextWriter writer;
@@ -713,7 +713,8 @@ namespace mapgenerator
             {
                 if (args.Length < 4)
                 {
-                    throw new Exception("Invalid arguments, need [keywords.txt] [message_template.msg] [template.cs] [_Packets_.cs]");
+                    Console.WriteLine("Invalid arguments, need [keywords.txt] [message_template.msg] [template.cs] [_Packets_.cs]");
+                    return -1;
                 }
 
                 writer = new StreamWriter(args[3]);
@@ -726,7 +727,7 @@ namespace mapgenerator
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-                return;
+                return -2;
             }
 
             // Write the PacketType enum
@@ -885,6 +886,8 @@ namespace mapgenerator
             writer.WriteLine("}");
 
             writer.Close();
+
+            return 0;
         }
     }
 }
