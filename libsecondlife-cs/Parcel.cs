@@ -251,10 +251,14 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Reclaim(SecondLife client)
         {
-            //Packet reclaimPacket = Packets.Parcel.ParcelReclaim(client.Protocol, LocalID, client.Avatar.ID, client.Network.SessionID);
-            //Sim.SendPacket(reclaimPacket, true);
+            ParcelReclaimPacket request = new ParcelReclaimPacket();
+            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.SessionID = client.Network.SessionID;
 
-            return false;
+            request.Data.LocalID = this.LocalID;
+
+            Sim.SendPacket((Packet)request, true);
+            return true;
         }
 
         /// <summary>
@@ -265,10 +269,15 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Deed(SecondLife client, LLUUID groupID)
         {
-            //Packet deedPacket = Packets.Parcel.ParcelDeedToGroup(client.Protocol, LocalID, groupID, client.Avatar.ID, client.Network.SessionID);
-            //Sim.SendPacket(deedPacket, true);
+            ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
+            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.SessionID = client.Network.SessionID;
 
-            return false;
+            request.Data.LocalID = this.LocalID;
+            request.Data.GroupID = groupID;
+
+            Sim.SendPacket((Packet)request, true);
+            return true;
         }
 
         /// <summary>
@@ -287,11 +296,20 @@ namespace libsecondlife
         /// <param name="client"></param>
         /// <param name="returnType"></param>
         /// <param name="otherCleanTime"></param>
-        public void ReturnObjects(SecondLife client, int returnType, int otherCleanTime)
+        public void ReturnObjects(SecondLife client, uint returnType)
         {
-            //Packet returnPacket = Packets.Parcel.ParcelReturnObjects(client.Protocol, client.Avatar.ID, client.Network.SessionID, LocalID,
-            //        returnType, otherCleanTime);
-            //Sim.SendPacket(returnPacket, true);
+            // TODO: ENUM for returnType
+
+            ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();
+            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.SessionID = client.Network.SessionID;
+
+            request.ParcelData.LocalID = this.LocalID;
+            request.ParcelData.ReturnType = returnType;
+
+            // TODO: Handling of TaskIDs and OwnerIDs
+
+            Sim.SendPacket((Packet)request, true);
         }
 
         /// <summary>
@@ -522,7 +540,8 @@ namespace libsecondlife
                 simulator.Region.Parcels[LocalID] = new Parcel(simulator);
             }
 
-            //// God help me should I have to type this out again... argh.
+            // August2006:  God help me should I have to type this out again... argh.
+            // October2006: I really shouldnt have typed that.
             ((Parcel)simulator.Region.Parcels[LocalID]).RequestResult = properties.ParcelData.RequestResult;
             ((Parcel)simulator.Region.Parcels[LocalID]).SequenceID = properties.ParcelData.SequenceID;
             ((Parcel)simulator.Region.Parcels[LocalID]).SnapSelection = properties.ParcelData.SnapSelection;
