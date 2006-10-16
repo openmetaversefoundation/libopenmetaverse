@@ -24,18 +24,20 @@ namespace sceneviewer
         // Variables describing the shapes being drawn
         private VertexDeclaration vertexDeclaration;
 
-        // Matrices
-        //private Matrix WorldViewProjection;
-        //private Matrix World, Projection;
         private Camera Camera;
+        private Matrix World;
+        //private WaterSurface Water;
 
         // Variables for keeping track of the state of the mouse
         private ButtonState PreviousLeftButton;
         private Vector2 PreviousMousePosition;
 
+        //
+        private Timer CameraUpdateTimer;
+
         public Viewer()
         {
-            this.AllowUserResizing = true;
+            //this.AllowUserResizing = true;
             this.IsMouseVisible = true;
 
             Window.ClientSizeChanged += new EventHandler(Window_ClientSizeChanged);
@@ -47,7 +49,7 @@ namespace sceneviewer
             Prims = new Dictionary<uint, PrimVisual>();
 
             Hashtable loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
-                "weneedaloginscreen", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+                "radishman", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             Client = new SecondLife();
@@ -65,6 +67,10 @@ namespace sceneviewer
             InitializeTransform();
             InitializeEffect();
             InitializeScene();
+
+            // Start the timer
+            CameraUpdateTimer = new Timer(new TimerCallback(SendCameraUpdate), null, 0,
+                500);
         }
 
         void Viewer_Exiting(object sender, GameEventArgs e)
@@ -74,7 +80,12 @@ namespace sceneviewer
 
         void Window_ClientSizeChanged(object sender, EventArgs e)
         {
-            Camera.UpdateProjection();
+            Camera.UpdateProjection(this.Window);
+        }
+
+        void SendCameraUpdate(object obj)
+        {
+            Client.Avatar.UpdateCamera(false);
         }
 
         void OnNewPrim(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
@@ -112,10 +123,7 @@ namespace sceneviewer
 
         private void InitializeTransform()
         {
-            // set the World matrix to something
-            //World = Matrix.CreateTranslation(Vector3.Zero);
-
-            //WorldViewProjection = World * Camera.ViewMatrix * Projection;
+            World = Matrix.CreateTranslation(Vector3.Zero);
         }
 
         private void InitializeEffect()
@@ -135,6 +143,8 @@ namespace sceneviewer
         {
             vertexDeclaration = new VertexDeclaration(
                 graphics.GraphicsDevice, VertexPositionColor.VertexElements);
+
+            //Water = new WaterSurface(graphics.GraphicsDevice, Camera, new Vector3(0, 0, 1), 0, 128, 256);
         }
 
         protected override void Update()
@@ -182,20 +192,26 @@ namespace sceneviewer
             // Let the GameComponents draw
             DrawComponents();
 
-            Matrix World = Matrix.CreateTranslation(Vector3.Zero);
-            effect.Parameters["WorldViewProj"].SetValue(World * ViewProjectionMatrix);
-            effect.CurrentTechnique = effect.Techniques["TransformTechnique"];
-            effect.CommitChanges();
+            //effect.Parameters["WorldViewProj"].SetValue(World * ViewProjectionMatrix);
+            //effect.CurrentTechnique = effect.Techniques["TransformTechnique"];
+            //effect.CommitChanges();
 
             graphics.GraphicsDevice.VertexDeclaration = vertexDeclaration;
             graphics.GraphicsDevice.RenderState.CullMode = CullMode.None;
-            graphics.GraphicsDevice.RenderState.FillMode = FillMode.Solid;
-            graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
+            graphics.GraphicsDevice.RenderState.FillMode = FillMode.WireFrame;
+            //graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
 
             effect.Begin(EffectStateOptions.Default);
             foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Begin();
+
+                //Water.Prepare();
+                //Water.RenderCutter();
+
+                //pass.End();
+
+                //pass.Begin();
 
                 lock (Prims)
                 {
@@ -225,7 +241,7 @@ namespace sceneviewer
                                 effect.Parameters["WorldViewProj"].SetValue(prim.Matrix * rootRotation * worldOffset * ViewProjectionMatrix);
                                 effect.CommitChanges();
 
-                                graphics.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.TriangleList, 
+                                graphics.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.TriangleList,
                                     prim.VertexArray.Length / 3, prim.VertexArray);
                             }
                         }

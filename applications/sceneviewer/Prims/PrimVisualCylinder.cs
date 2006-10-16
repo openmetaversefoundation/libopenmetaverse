@@ -10,7 +10,21 @@ namespace sceneviewer.Prims
     {
         public PrimVisualCylinder(PrimObject prim) : base(prim)
         {
-            ;
+            NumberFaces = 1;
+            FirstOuterFace = 0;
+            LastOuterFace = 0;
+
+            //if (prim.ProfileBegin != 0 || prim.ProfileEnd != 1)
+            //{
+            //    cut = true;
+            //    CutFaces = new CrossSection[2];
+            //    for (int i = 0; i < 2; i++)
+            //    {
+            //        CutFaces[i] = new CrossSection();
+            //    }
+            //}
+
+            BuildFaces();
         }
 
         protected override void AssignFaces()

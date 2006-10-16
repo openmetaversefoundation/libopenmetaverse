@@ -69,14 +69,13 @@
     <Compile Include="Viewer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Water\NoiseMaker.cs" />
-    <Compile Include="Water\WaterSurface.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReallySimpleEffect.fx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Terrain\" />
+    <Folder Include="Water\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

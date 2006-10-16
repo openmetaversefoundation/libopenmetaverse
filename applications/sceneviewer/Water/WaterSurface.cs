@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace sceneviewer.Water
+namespace sceneviewer
 {
     class WaterSurface
     {
@@ -14,6 +14,7 @@ namespace sceneviewer.Water
 
         public bool Initialized;
         public Color WaterColor;
+        public Matrix Range;
 
         GraphicsDevice Device;
         Plane Plane, UpperBound, LowerBound;
@@ -38,7 +39,7 @@ namespace sceneviewer.Water
             Normal = normal;
             Position = position;
             Plane = new Plane(normal, position);
-            NoiseMaker = new NoiseMaker(Device, Vertices, GridSizeX, GridSizeY);
+            NoiseMaker = new NoiseMaker(Device, GridSizeX, GridSizeY);
             PlaneWithinFrustum = false;
 
             // Set the initial water color
@@ -108,14 +109,23 @@ namespace sceneviewer.Water
             if (!Initialized) return false;
 
             // Check if the water plane is within the viewing frustum
-            BoundingFrustum frustum = new BoundingFrustum(Camera.ViewProjectionMatrix);
+            //BoundingFrustum frustum = new BoundingFrustum(Camera.ViewProjectionMatrix);
 
-            if ((frustum.Intersects(UpperBound) == PlaneIntersectionType.Intersecting) || 
-                (frustum.Intersects(LowerBound) == PlaneIntersectionType.Intersecting))
+            //if ((frustum.Intersects(UpperBound) == PlaneIntersectionType.Intersecting) || 
+            //    (frustum.Intersects(LowerBound) == PlaneIntersectionType.Intersecting))
+            //{
+            //    PlaneWithinFrustum = true;
+
+            //    NoiseMaker.RenderGeometry(out Range);
+            //}
+
+            PlaneWithinFrustum = GetMinMax(out Range);
+
+            if (PlaneWithinFrustum)
             {
-                PlaneWithinFrustum = true;
+                NoiseMaker.RenderGeometry(Range);
 
-                NoiseMaker.RenderGeometry();
+                Vertices.SetData<VertexPositionNormalTexture>(NoiseMaker.Vertices);
             }
 
             return true;
@@ -217,6 +227,13 @@ namespace sceneviewer.Water
             }
 
             return true;
+        }
+
+        private bool GetMinMax(out Matrix range)
+        {
+            // FIXME:
+            range = new Matrix();
+            return false;
         }
 
         /*private bool GetMinMax(out Matrix range)

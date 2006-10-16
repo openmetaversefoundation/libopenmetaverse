@@ -20,7 +20,6 @@ namespace sceneviewer
         private Vector3 _cameraPosition;
         private Vector3 _lookatPosition;
         private Matrix _projection;
-        private GameWindow _window;
 
         private float _theta;
         private float _phi;
@@ -35,11 +34,10 @@ namespace sceneviewer
         /// <param name="lookAt"></param>
         public Camera(GameWindow window, Vector3 pos, Vector3 lookAt)
         {
-            _window = window;
             _cameraPosition = pos;
             _lookatPosition = lookAt;
 
-            UpdateProjection();
+            UpdateProjection(window);
         }
         #endregion Constructors
 
@@ -160,10 +158,10 @@ namespace sceneviewer
         /// <summary>
         /// Call this method any time the client window changes.
         /// </summary>
-        public void UpdateProjection()
+        public void UpdateProjection(GameWindow window)
         {
             _projection = Matrix.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f,
-                (float)_window.ClientWidth / (float)_window.ClientHeight,
+                (float)window.ClientWidth / (float)window.ClientHeight,
                 1.0f, 512.0f);
         }
 
