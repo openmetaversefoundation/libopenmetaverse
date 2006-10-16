@@ -33,11 +33,13 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 using libsecondlife;
+using libsecondlife.Packets;
 
 class Decoder {
 	private static int BUFSIZE = 8096;
 
-	private static ProtocolManager protocol = new SecondLife("keywords.txt", "message_template.msg").Protocol;
+    private static SecondLife client = new SecondLife();
+	private static ProtocolManager protocol = new ProtocolManager("keywords.txt", "message_template.msg", client);
 	private static string grep = null;
 	private static byte[] data = new byte[BUFSIZE];
 	private static byte[] temp = new byte[BUFSIZE];
@@ -169,34 +171,45 @@ class Decoder {
 				} else
 					buf = data;
 
-			Packet packet = new Packet(buf, pos, protocol);
+			//Packet packet = new Packet(buf, pos, protocol);
+            // FIXME: Is this right? I haven't really looked at this code at all
+            Packet packet = Packet.BuildPacket(buf, ref pos);
 
 			if (grep != null) {
 				bool match = false;
-				foreach (Block block in packet.Blocks())
-					foreach (Field field in block.Fields) {
-						string value;
-						if (field.Layout.Type == FieldType.Variable)
-							value = DataConvert.toChoppedString(field.Data);
-						else
-							value = field.Data.ToString();
-						if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, grep, RegexOptions.IgnoreCase).Success) {
-							match = true;
-							break;
-						}
 
-						// try matching variable fields in 0x notation
-						if (field.Layout.Type == FieldType.Variable) {
-							StringWriter sw = new StringWriter();
-							sw.Write("0x");
-							foreach (byte b in (byte[])field.Data)
-								sw.Write("{0:x2}", b);
-							if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, grep, RegexOptions.IgnoreCase).Success) {
-								match = true;
-								break;
-							}
-						}
-					}
+                //FIXME: This needs to be updated for the new libsecondlife API
+                //foreach (Block block in packet.Blocks())
+                //{
+                //    foreach (Field field in block.Fields)
+                //    {
+                //        string value;
+                //        if (field.Layout.Type == FieldType.Variable)
+                //            value = DataConvert.toChoppedString(field.Data);
+                //        else
+                //            value = field.Data.ToString();
+                //        if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, grep, RegexOptions.IgnoreCase).Success)
+                //        {
+                //            match = true;
+                //            break;
+                //        }
+
+                //        // try matching variable fields in 0x notation
+                //        if (field.Layout.Type == FieldType.Variable)
+                //        {
+                //            StringWriter sw = new StringWriter();
+                //            sw.Write("0x");
+                //            foreach (byte b in (byte[])field.Data)
+                //                sw.Write("{0:x2}", b);
+                //            if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, grep, RegexOptions.IgnoreCase).Success)
+                //            {
+                //                match = true;
+                //                break;
+                //            }
+                //        }
+                //    }
+                //}
+
 				if (!match) {
 					Reset();
 					return;
@@ -204,8 +217,8 @@ class Decoder {
 			}
 
 			Console.WriteLine("{0,5} {1} {2}"
-					 ,packet.Sequence
-					 ,InterpretOptions(packet.Data[0])
+					 ,packet.Header.Sequence
+					 ,InterpretOptions(packet.Header.Data[0])
 					 ,endpoints
 					);
 			Console.WriteLine(packet);
@@ -216,6 +229,7 @@ class Decoder {
 		Reset();
 	}
 
+    // FIXME: Would be much easier to pass packet.Header and use the existing properties
 	private static string InterpretOptions(byte options) {
 		return "["
 		     + ((options & Helpers.MSG_APPENDED_ACKS) != 0 ? "Ack" : "   ")

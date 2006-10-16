@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_NotecardTool", "examples
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teleport", "examples\Teleport\Teleport.csproj", "{B5AC6795-E426-4BC3-950F-D7B2970E2394}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decoder", "..\applications\Decoder\Decoder.csproj", "{7AE16AC1-E64C-4FDC-9B85-4BB6145D511C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,10 @@ Global
 		{B5AC6795-E426-4BC3-950F-D7B2970E2394}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5AC6795-E426-4BC3-950F-D7B2970E2394}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5AC6795-E426-4BC3-950F-D7B2970E2394}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AE16AC1-E64C-4FDC-9B85-4BB6145D511C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AE16AC1-E64C-4FDC-9B85-4BB6145D511C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AE16AC1-E64C-4FDC-9B85-4BB6145D511C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AE16AC1-E64C-4FDC-9B85-4BB6145D511C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
