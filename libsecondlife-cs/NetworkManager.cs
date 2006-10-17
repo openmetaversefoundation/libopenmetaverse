@@ -388,28 +388,6 @@ namespace libsecondlife
             }
         }
 
-		private void SendACK(uint id)
-		{
-			try
-			{
-                PacketAckPacket ack = new PacketAckPacket();
-                ack.Packets = new PacketAckPacket.PacketsBlock[1];
-                ack.Packets[0] = new PacketAckPacket.PacketsBlock();
-                ack.Packets[0].ID = id;
-                ack.Header.Reliable = false;
-
-				// Set the sequence number
-				ack.Header.Sequence = ++Sequence;
-
-				// Bypass SendPacket() and send the ACK directly
-				Connection.Send(ack.ToBytes());
-			}
-			catch (Exception e)
-			{
-				Client.Log(e.ToString(), Helpers.LogLevel.Error);
-			}
-		}
-
 		private void OnReceivedData(IAsyncResult result)
 		{
             Packet packet = null;

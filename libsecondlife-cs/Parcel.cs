@@ -321,7 +321,6 @@ namespace libsecondlife
         /// </summary>
         /// <param name="client"></param>
         /// <param name="returnType"></param>
-        /// <param name="otherCleanTime"></param>
         public void ReturnObjects(SecondLife client, uint returnType)
         {
             // TODO: ENUM for returnType

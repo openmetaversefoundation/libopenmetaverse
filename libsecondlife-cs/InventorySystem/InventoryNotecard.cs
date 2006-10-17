@@ -38,14 +38,13 @@ namespace libsecondlife.InventorySystem
 
 
         /// <summary>
+        /// 
         /// </summary>
         /// <param name="manager"></param>
         /// <param name="name"></param>
         /// <param name="description"></param>
-        /// <param name="id"></param>
         /// <param name="folderID"></param>
         /// <param name="uuidOwnerCreater"></param>
-        /// 
         internal InventoryNotecard(InventoryManager manager, string name, string description, LLUUID folderID, LLUUID uuidOwnerCreater) 
 			: base(manager, name, description, folderID, 7, 7, uuidOwnerCreater)
 		{

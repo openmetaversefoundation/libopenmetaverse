@@ -111,17 +111,16 @@ namespace libsecondlife.AssetSystem
 		}
 
         /// <summary>
-        /// Upload an asset to SecondLife
+        /// Upload an asset to Second Life
         /// </summary>
-        /// <param name="sinkType"></param>
+        /// <param name="asset">The asset to be uploaded</param>
+        /// <returns>The Asset ID of the completed upload</returns>
         public LLUUID UploadAsset(Asset asset)
 		{
             if (curUploadRequest != null)
             {
                 throw new Exception("An existing asset upload is currently in-progress.");
             }
-
-            
 
 			Packet packet;
             curUploadRequest = new TransferRequest();
@@ -158,7 +157,7 @@ namespace libsecondlife.AssetSystem
 
                 asset.AssetID = curUploadRequest.AssetID;
 
-                return curUploadRequest.TransactionID;
+                return asset.AssetID;
 			}
 		}
 
@@ -190,13 +189,7 @@ namespace libsecondlife.AssetSystem
 			item.SetAssetData( tr.AssetData );
 		}
 
-
-        /// <summary>
-        /// Uploads
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        public void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
+        private void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
@@ -218,12 +211,7 @@ namespace libsecondlife.AssetSystem
 			}
 		}
 
-        /// <summary>
-        /// Uploads
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        public void RequestXferCallbackHandler(Packet packet, Simulator simulator)
+        private void RequestXferCallbackHandler(Packet packet, Simulator simulator)
 		{
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
             RequestXferPacket reply = (RequestXferPacket)packet;
@@ -246,12 +234,7 @@ namespace libsecondlife.AssetSystem
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
         }
 
-        /// <summary>
-        /// Confirms SL's receipt of a Xfer upload packet
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        public void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
+        private void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
             ConfirmXferPacketPacket reply = (ConfirmXferPacketPacket)packet;
@@ -292,17 +275,7 @@ namespace libsecondlife.AssetSystem
             }
         }
 
-
-
-
-
-
-        /// <summary>
-        /// Downloads
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        public void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
+        private void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
         {
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
             TransferInfoPacket reply = (TransferInfoPacket)packet;
@@ -336,12 +309,7 @@ namespace libsecondlife.AssetSystem
             }
         }
 
-        /// <summary>
-        /// Downloads
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        public void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
+        private void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
             TransferPacketPacket reply = (TransferPacketPacket)packet;
@@ -365,7 +333,6 @@ namespace libsecondlife.AssetSystem
             {
                 tr.Completed = true;
             }
-
         }
 	}
 }
