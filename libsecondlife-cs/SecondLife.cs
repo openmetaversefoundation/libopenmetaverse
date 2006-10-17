@@ -201,10 +201,27 @@ namespace libsecondlife
             Error
         };
 
-        /// <summary></summary>
+        /// <summary>
+        /// Packs to 32-bit unsigned integers in to a 64-bit unsigned integer
+        /// </summary>
+        /// <param name="a">The left-hand (or X) value</param>
+        /// <param name="b">The right-hand (or Y) value</param>
+        /// <returns>A 64-bit integer containing the two 32-bit input values</returns>
         public static ulong UIntsToLong(uint a, uint b)
         {
             return (ulong)(((ulong)a << 32) + (ulong)b);
+        }
+
+        /// <summary>
+        /// Unpacks two 32-bit unsigned integers from a 64-bit unsigned integer
+        /// </summary>
+        /// <param name="a">The 64-bit input integer</param>
+        /// <param name="b">The left-hand (or X) output value</param>
+        /// <param name="c">The right-hand (or Y) output value</param>
+        public static void LongToUInts(ulong a, out uint b, out uint c)
+        {
+            b = (uint)(a >> 32);
+            c = (uint)(a & 0x00000000FFFFFFFF);
         }
 
         /// <summary>
