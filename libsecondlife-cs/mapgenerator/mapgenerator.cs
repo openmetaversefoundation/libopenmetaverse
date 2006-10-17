@@ -421,13 +421,9 @@ namespace mapgenerator
 
             foreach (MapField field in block.Fields)
             {
-                if (field.Type == FieldType.Variable)
+                if (field.Type == FieldType.Variable || field.Type == FieldType.Fixed)
                 {
-                    writer.WriteLine("                output += \"" + field.Name + ": \" + Helpers.FieldToString(" + field.Name + ", \"" + field.Name + "\") + \"\\n\";");
-                }
-                else if (field.Type == FieldType.Fixed)
-                {
-                    writer.WriteLine("                output += \"" + field.Name + ": \" + Helpers.FieldToString(" + field.Name + ", \"" + field.Name + "\") + \"\\n\";");
+                    writer.WriteLine("                output += Helpers.FieldToString(" + field.Name + ", \"" + field.Name + "\") + \"\\n\";");
                 }
                 else
                 {

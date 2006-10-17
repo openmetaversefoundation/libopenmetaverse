@@ -1000,12 +1000,10 @@ namespace libsecondlife
 
                     // Create the regionhandle
                     array = (JSONArray)jsonObject["region_handle"];
-                    // FIXME: Helpers function needed
-                    //regionHandle = new U64((int)array[0], (int)array[1]);
+                    regionHandle = Helpers.UIntsToLong((uint)(int)array[0], (uint)(int)array[1]);
 
                     Client.Avatar.Position = posVector;
                     Client.Avatar.LookAt = lookatVector;
-                    //Client.CurrentRegion.RegionHandle = regionHandle;
 
                     // Create a hashtable to hold the home values
                     home = new Hashtable();
@@ -1032,6 +1030,8 @@ namespace libsecondlife
                     return false;
                 }
 
+                simulator.Region.Handle = regionHandle;
+
                 // Set the current region
                 Client.CurrentRegion = simulator.Region;
 
@@ -1043,23 +1043,7 @@ namespace libsecondlife
                 // Move our agent in to the sim to complete the connection
                 Client.Avatar.CompleteAgentMovement(simulator);
 
-                // Request the economy data
-                SendPacket(new EconomyDataRequestPacket());
-
-                // FIXME: Hack
-                ViewerEffectPacket effect = new ViewerEffectPacket();
-                effect.Effect = new ViewerEffectPacket.EffectBlock[1];
-                effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
-                effect.Effect[0].Color = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
-                effect.Effect[0].Duration = 0.5f;
-                effect.Effect[0].ID = new LLUUID("c696075e53c6153f3d8e0c3e24541936");
-                effect.Effect[0].Type = 9;
-                effect.Effect[0].TypeData = new byte[56];
-                Array.Copy(new byte[] { 0x28, 0xF0, 0x10, 0x41 }, 0, effect.Effect[0].TypeData, 36, 4);
-                Array.Copy(new byte[] { 0x50, 0xD0, 0x0E, 0x41 }, 0, effect.Effect[0].TypeData, 44, 4);
-                Array.Copy(new byte[] { 0x24, 0x40 }, 0, effect.Effect[0].TypeData, 54, 2);
-                effect.Header.Reliable = false;
-                SendPacket(effect);
+                SendInitialPackets();
 
                 DisconnectTimer.Start();
                 connected = true;
@@ -1221,6 +1205,87 @@ namespace libsecondlife
             CurrentSim = null;
         }
 
+        private void SendInitialPackets()
+        {
+            // Request the economy data
+            SendPacket(new EconomyDataRequestPacket());
+
+            // TODO: The client sends this early in the login sequence, should we?
+            //ViewerEffectPacket effect = new ViewerEffectPacket();
+            //effect.Effect = new ViewerEffectPacket.EffectBlock[1];
+            //effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
+            //effect.Effect[0].Color = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
+            //effect.Effect[0].Duration = 0.5f;
+            //effect.Effect[0].ID = new LLUUID("c696075e53c6153f3d8e0c3e24541936");
+            //effect.Effect[0].Type = 9;
+            //effect.Effect[0].TypeData = new byte[56];
+            //Array.Copy(new byte[] { 0x28, 0xF0, 0x10, 0x41 }, 0, effect.Effect[0].TypeData, 36, 4);
+            //Array.Copy(new byte[] { 0x50, 0xD0, 0x0E, 0x41 }, 0, effect.Effect[0].TypeData, 44, 4);
+            //Array.Copy(new byte[] { 0x24, 0x40 }, 0, effect.Effect[0].TypeData, 54, 2);
+            //effect.Header.Reliable = false;
+            //SendPacket(effect);
+
+            // TODO: Is this throttle necessary/good, and what does it do?
+            AgentThrottlePacket throttle = new AgentThrottlePacket();
+            throttle.AgentData.AgentID = this.AgentID;
+            throttle.AgentData.SessionID = this.SessionID;
+            throttle.AgentData.CircuitCode = this.CurrentSim.CircuitCode;
+            throttle.Throttle.GenCounter = 0;
+            throttle.Throttle.Throttles = new byte[] 
+                { 0x00, 0x00, 0x96, 0x47, 0x00, 0x00, 0xAA, 0x47, 0x00, 0x00, 0x88, 0x46, 0x00, 0x00, 0x88, 0x46, 
+                  0x00, 0x00, 0x5F, 0x48, 0x00, 0x00, 0x5F, 0x48, 0x00, 0x00, 0xDC, 0x47 };
+            SendPacket(throttle);
+
+            // TODO: We should be setting the initial avatar height/width around here 
+            //Client.Avatar.SetHeightWidth(676, 909);
+
+            // Set the initial avatar camera position
+            Client.Avatar.UpdateCamera(true);
+
+            // TODO: What animation are we stopping here?
+            AgentAnimationPacket animation = new AgentAnimationPacket();
+            animation.AgentData.AgentID = AgentID;
+            animation.AgentData.SessionID = SessionID;
+            animation.AnimationList = new AgentAnimationPacket.AnimationListBlock[1];
+            animation.AnimationList[0] = new AgentAnimationPacket.AnimationListBlock();
+            animation.AnimationList[0].AnimID = new LLUUID("efcf670c2d188128973a034ebc806b67");
+            animation.AnimationList[0].StartAnim = false;
+            SendPacket(animation);
+
+            // TODO: Do we ever want to set this to true?
+            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
+            run.AgentData.AgentID = AgentID;
+            run.AgentData.SessionID = SessionID;
+            run.AgentData.AlwaysRun = false;
+            SendPacket(run);
+
+            // TODO: This information is currently unused
+            MuteListRequestPacket mute = new MuteListRequestPacket();
+            mute.AgentData.AgentID = AgentID;
+            mute.AgentData.SessionID = SessionID;
+            mute.MuteData.MuteCRC = 0;
+            SendPacket(mute);
+
+            // Get the current avatar balance
+            MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
+            money.AgentData.AgentID = AgentID;
+            money.AgentData.SessionID = SessionID;
+            money.MoneyData.TransactionID = new LLUUID();
+            SendPacket(money);
+
+            // Request info about our avatar
+            AgentDataUpdateRequestPacket update = new AgentDataUpdateRequestPacket();
+            update.AgentData.AgentID = AgentID;
+            update.AgentData.SessionID = SessionID;
+            SendPacket(update);
+
+            // TODO: What is the purpose of this? Information is currently unused
+            RequestGrantedProxiesPacket proxies = new RequestGrantedProxiesPacket();
+            proxies.AgentData.AgentID = AgentID;
+            proxies.AgentData.SessionID = SessionID;
+            SendPacket(proxies);
+        }
+
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
             #region SimulatorsMutex
@@ -1321,52 +1386,9 @@ namespace libsecondlife
             reply.AgentData.AgentID = AgentID;
             reply.AgentData.SessionID = SessionID;
             reply.RegionInfo.Flags = 0;
-
             SendPacket(reply, simulator);
 
-            // FIXME: What a hack!
-            AgentThrottlePacket throttle = new AgentThrottlePacket();
-            throttle.AgentData.AgentID = this.AgentID;
-            throttle.AgentData.SessionID = this.SessionID;
-            throttle.AgentData.CircuitCode = simulator.CircuitCode;
-            throttle.Throttle.GenCounter = 0;
-            throttle.Throttle.Throttles = new byte[] 
-                { 0x00, 0x00, 0x96, 0x47, 0x00, 0x00, 0xAA, 0x47, 0x00, 0x00, 0x88, 0x46, 0x00, 0x00, 0x88, 0x46, 
-                  0x00, 0x00, 0x5F, 0x48, 0x00, 0x00, 0x5F, 0x48, 0x00, 0x00, 0xDC, 0x47 };
-            SendPacket(throttle, simulator);
-            Client.Avatar.SetHeightWidth(676, 909);
-            Client.Avatar.UpdateCamera(true);
-            AgentAnimationPacket animation = new AgentAnimationPacket();
-            animation.AgentData.AgentID = AgentID;
-            animation.AgentData.SessionID = SessionID;
-            animation.AnimationList = new AgentAnimationPacket.AnimationListBlock[1];
-            animation.AnimationList[0] = new AgentAnimationPacket.AnimationListBlock();
-            animation.AnimationList[0].AnimID = new LLUUID("efcf670c2d188128973a034ebc806b67");
-            animation.AnimationList[0].StartAnim = false;
-            SendPacket(animation);
-            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
-            run.AgentData.AgentID = AgentID;
-            run.AgentData.SessionID = SessionID;
-            run.AgentData.AlwaysRun = false;
-            SendPacket(run);
-            MuteListRequestPacket mute = new MuteListRequestPacket();
-            mute.AgentData.AgentID = AgentID;
-            mute.AgentData.SessionID = SessionID;
-            mute.MuteData.MuteCRC = 0;
-            SendPacket(mute);
-            MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
-            money.AgentData.AgentID = AgentID;
-            money.AgentData.SessionID = SessionID;
-            money.MoneyData.TransactionID = new LLUUID();
-            SendPacket(money);
-            AgentDataUpdateRequestPacket update = new AgentDataUpdateRequestPacket();
-            update.AgentData.AgentID = AgentID;
-            update.AgentData.SessionID = SessionID;
-            SendPacket(update);
-            RequestGrantedProxiesPacket proxies = new RequestGrantedProxiesPacket();
-            proxies.AgentData.AgentID = AgentID;
-            proxies.AgentData.SessionID = SessionID;
-            SendPacket(proxies);
+            // TODO: Do we need to send an AgentUpdate to each sim upon connection?
 
             RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
 

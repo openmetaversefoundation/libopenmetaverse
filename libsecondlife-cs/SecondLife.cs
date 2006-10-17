@@ -245,7 +245,7 @@ namespace libsecondlife
 
             if (printable)
             {
-                return System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
+                return fieldName + ": " + System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
             }
             else
             {

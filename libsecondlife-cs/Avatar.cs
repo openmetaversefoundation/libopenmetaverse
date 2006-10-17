@@ -142,11 +142,17 @@ namespace libsecondlife
         public LLVector3 HomePosition;
         /// <summary></summary>
         public LLVector3 HomeLookAt;
-        /// <summary>Gets the health of the current agent</summary>
+        /// <summary>Gets the health of the agent</summary>
         protected float health;
         public float Health
         {
             get { return health; }
+        }
+        /// <summary>Gets the current balance of the agent</summary>
+        protected int balance;
+        public int Balance
+        {
+            get { return balance; }
         }
 
         private SecondLife Client;
@@ -199,6 +205,12 @@ namespace libsecondlife
 
             // Health callback
             Client.Network.RegisterCallback(PacketType.HealthMessage, new PacketCallback(HealthHandler));
+
+            // Money callbacks
+            callback = new PacketCallback(BalanceHandler);
+            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, callback);
+            Client.Network.RegisterCallback(PacketType.MoneySummaryReply, callback);
+            Client.Network.RegisterCallback(PacketType.AdjustBalance, callback);
         }
 
         /// <summary>
@@ -614,6 +626,27 @@ namespace libsecondlife
         private void HealthHandler(Packet packet, Simulator simulator)
         {
             health = ((HealthMessagePacket)packet).HealthData.Health;
+        }
+
+        private void BalanceHandler(Packet packet, Simulator simulator)
+        {
+            if (packet.Type == PacketType.MoneyBalanceReply)
+            {
+                balance = ((MoneyBalanceReplyPacket)packet).MoneyData.MoneyBalance;
+            }
+            else if (packet.Type == PacketType.MoneySummaryReply)
+            {
+                balance = ((MoneySummaryReplyPacket)packet).MoneyData.Balance;
+            }
+            else if (packet.Type == PacketType.AdjustBalance)
+            {
+                balance += ((AdjustBalancePacket)packet).AgentData.Delta;
+            }
+
+            if (OnBalanceUpdated != null)
+            {
+                OnBalanceUpdated(balance);
+            }
         }
 
         private void TeleportHandler(Packet packet, Simulator simulator)
