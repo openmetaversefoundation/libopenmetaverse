@@ -205,9 +205,9 @@ namespace sceneviewer.Prims
 
             // CutVectorPerp is perpendicular to the radius vector
             Vector3 cutVectorPerp = new Vector3((float)-Math.Sin(angle), (float)Math.Cos(angle), 0);
-            
-            // From http://softsurfer.com/Archive/algorithm_0104/algorithm_0104B.htm
             Vector3 delta = lineend - linestart;
+
+            // From http://softsurfer.com/Archive/algorithm_0104/algorithm_0104B.htm
             Vector3 result = linestart - delta * Vector3.Dot(cutVectorPerp, linestart) / Vector3.Dot(cutVectorPerp, delta);
 
             return result;

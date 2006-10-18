@@ -138,6 +138,11 @@ namespace sceneviewer.Prims
                 BuildSideVertexes(InnerFaces, transforms);
             }
 
+            if (cut)
+            {
+                BuildSideVertexes(CutFaces, transforms);
+            }
+
             VertexArray = Vertexes.ToArray();
         }
 
