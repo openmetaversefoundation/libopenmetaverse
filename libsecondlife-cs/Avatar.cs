@@ -608,9 +608,8 @@ namespace libsecondlife
 
                 if (OnChat != null)
                 {
-                    OnChat(Helpers.FieldToString(chat.ChatData.Message), chat.ChatData.Audible, 
-                        chat.ChatData.ChatType, chat.ChatData.SourceType, 
-                        Helpers.FieldToString(chat.ChatData.FromName), chat.ChatData.SourceID);
+                    OnChat(Helpers.FieldToString(chat.ChatData.Message), chat.ChatData.Audible, chat.ChatData.ChatType, 
+                        chat.ChatData.SourceType, Helpers.FieldToString(chat.ChatData.FromName), chat.ChatData.SourceID);
                 }
             }
         }

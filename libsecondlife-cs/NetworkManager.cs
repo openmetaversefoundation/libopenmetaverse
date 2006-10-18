@@ -1379,8 +1379,6 @@ namespace libsecondlife
 
             simulator.Region.IsEstateManager = handshake.RegionInfo.IsEstateManager;
             simulator.Region.Name = Helpers.FieldToString(handshake.RegionInfo.SimName);
-            // What's the deal with these colons?
-            simulator.Region.Name = simulator.Region.Name.Substring(2);
             simulator.Region.SimOwner = handshake.RegionInfo.SimOwner;
             simulator.Region.TerrainBase0 = handshake.RegionInfo.TerrainBase0;
             simulator.Region.TerrainBase1 = handshake.RegionInfo.TerrainBase1;

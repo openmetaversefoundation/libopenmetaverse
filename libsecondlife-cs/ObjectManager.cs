@@ -202,9 +202,9 @@ namespace libsecondlife
                 {
                     firstName = line.Substring(23);
                 }
-                else if (line.Substring(0, 24) == ": LastName STRING RW SV ")
+                else if (line.Substring(0, 22) == "LastName STRING RW SV ")
                 {
-                    lastName = line.Substring(24);
+                    lastName = line.Substring(22);
                 }
                 else
                 {

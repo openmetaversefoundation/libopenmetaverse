@@ -247,6 +247,7 @@ namespace libsecondlife
         /// <returns>A UTF8 string, minus the null terminator</returns>
         public static string FieldToString(byte[] bytes, string fieldName)
         {
+            string output = "";
             bool printable = true;
 
             for (int i = 0; i < bytes.Length; ++i)
@@ -262,12 +263,15 @@ namespace libsecondlife
 
             if (printable)
             {
-                return fieldName + ": " + System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
+                if (fieldName.Length > 0)
+                {
+                    output += fieldName + ": ";
+                }
+
+                output += System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
             }
             else
             {
-                string output = "";
-
                 for (int i = 0; i < bytes.Length; i += 16)
                 {
                     if (i != 0) { output += "\n"; }
@@ -303,9 +307,9 @@ namespace libsecondlife
                         }
                     }
                 }
-
-                return output;
             }
+
+            return output;
         }
 
         /// <summary>
