@@ -14,15 +14,25 @@ namespace sceneviewer.Prims
             FirstOuterFace = 0;
             LastOuterFace = 0;
 
-            //if (prim.ProfileBegin != 0 || prim.ProfileEnd != 1)
-            //{
-            //    cut = true;
-            //    CutFaces = new CrossSection[2];
-            //    for (int i = 0; i < 2; i++)
-            //    {
-            //        CutFaces[i] = new CrossSection();
-            //    }
-            //}
+            if (prim.ProfileHollow != 0)
+            {
+                hollow = true;
+                //InnerFaces = new CrossSection[4];
+                //for (int i = 0; i < 4; i++)
+                //{
+                //    InnerFaces[i] = new CrossSection();
+                //}
+            }
+
+            if (prim.ProfileBegin != 0 || prim.ProfileEnd != 1)
+            {
+                cut = true;
+                //CutFaces = new CrossSection[2];
+                //for (int i = 0; i < 2; i++)
+                //{
+                //    CutFaces[i] = new CrossSection();
+                //}
+            }
 
             BuildFaces();
         }
@@ -39,6 +49,11 @@ namespace sceneviewer.Prims
         protected override int GetCutQuadrant(float cut)
         {
             return 0;
+        }
+
+        protected override void BuildFaces()
+        {
+            ;
         }
     }
 }

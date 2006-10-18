@@ -198,7 +198,7 @@ namespace sceneviewer
 
             graphics.GraphicsDevice.VertexDeclaration = vertexDeclaration;
             graphics.GraphicsDevice.RenderState.CullMode = CullMode.None;
-            graphics.GraphicsDevice.RenderState.FillMode = FillMode.WireFrame;
+            graphics.GraphicsDevice.RenderState.FillMode = FillMode.Solid;
             //graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
 
             effect.Begin(EffectStateOptions.Default);
