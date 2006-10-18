@@ -202,9 +202,9 @@ namespace libsecondlife
                 {
                     firstName = line.Substring(23);
                 }
-                else if (line.Substring(0, 22) == "LastName STRING RW SV ")
+                else if (line.Substring(0, 24) == ": LastName STRING RW SV ")
                 {
-                    lastName = line.Substring(22);
+                    lastName = line.Substring(24);
                 }
                 else
                 {
@@ -450,14 +450,32 @@ namespace libsecondlife
         private void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
             ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
-
-            Client.Log("Received an ObjectUpdateCompressed packet, data block count=" + update.ObjectData.Length, 
-                Helpers.LogLevel.Info);
+            PrimObject prim;
 
             foreach (ObjectUpdateCompressedPacket.ObjectDataBlock block in update.ObjectData)
             {
-                Client.Log("CompressedData UpdateFlags=" + block.UpdateFlags + ", length=" + block.Data.Length, 
-                    Helpers.LogLevel.Info);
+                int i = 0;
+                prim = new PrimObject();
+
+                prim.ID = new LLUUID(block.Data, 0);
+                i += 16;
+                prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                prim.Scale = new LLVector3(block.Data, i);
+                i += 12;
+                prim.Position = new LLVector3(block.Data, i);
+                i += 12;
+                prim.Rotation = new LLQuaternion(block.Data, i, true);
+                i += 12;
+
+                // FIXME: Fill in the rest of these fields
+                prim.PathCurve = (uint)block.Data[69];
+                prim.ProfileCurve = (uint)block.Data[83];
+
+                if (OnNewPrim != null)
+                {
+                    OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                }
             }
         }
 
