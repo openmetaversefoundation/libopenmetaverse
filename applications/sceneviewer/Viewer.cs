@@ -49,7 +49,7 @@ namespace sceneviewer
             Prims = new Dictionary<uint, PrimVisual>();
 
             Hashtable loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
-                "radishman", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+                "weneedaloginscreen", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             Client = new SecondLife();
@@ -92,10 +92,15 @@ namespace sceneviewer
         {
             PrimVisual primVisual = PrimVisual.BuildPrimVisual(prim);
 
-            if (primVisual.GetType() == typeof(PrimVisualBox))
+            if (primVisual.GetType() == typeof(PrimVisualBox) || primVisual.GetType() == typeof(PrimVisualCylinder))
             {
                 lock (Prims)
                 {
+                    if (Prims.ContainsKey(prim.LocalID))
+                    {
+                        Prims.Remove(prim.LocalID);
+                    }
+
                     Prims.Add(prim.LocalID, primVisual);
                 }
             }
@@ -198,7 +203,7 @@ namespace sceneviewer
 
             graphics.GraphicsDevice.VertexDeclaration = vertexDeclaration;
             graphics.GraphicsDevice.RenderState.CullMode = CullMode.None;
-            graphics.GraphicsDevice.RenderState.FillMode = FillMode.Solid;
+            graphics.GraphicsDevice.RenderState.FillMode = FillMode.WireFrame;
             //graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
 
             effect.Begin(EffectStateOptions.Default);

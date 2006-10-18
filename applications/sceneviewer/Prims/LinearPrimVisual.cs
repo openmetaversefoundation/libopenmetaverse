@@ -350,29 +350,28 @@ namespace sceneviewer.Prims
 
         private void BuildSideVertexes(CrossSection[] crossSection, int transforms)
         {
-            float transformOffset;
+            float transformOffset = 1.0f / (float)transforms;
+            float currentOffset = -0.5f;
 
             for (int i = 0; i < transforms; i++)
             {
-                transformOffset = (float)(i + 1) / (float)transforms;
-
                 for (int j = 0; j < crossSection.Length; j++)
                 {
                     int pointCount = crossSection[j].GetNumPoints();
 
                     if (pointCount > 0)
                     {
-                        // Initialize the current height to the lowest point
-                        float height = -0.5f;
-
                         Vector3 lower1 = crossSection[j].GetRawVertex(0);
-                        lower1.Z = height;
                         Vector3 lower2 = crossSection[j].GetRawVertex(1);
-                        lower2.Z = height;
+
+                        lower1.Z = currentOffset;
+                        lower2.Z = currentOffset;
+
                         Vector3 upper1 = lower1;
-                        upper1.Z += transformOffset;
                         Vector3 upper2 = lower2;
-                        upper2.Z += transformOffset;
+
+                        upper1.Z += currentOffset + transformOffset;
+                        upper2.Z += currentOffset + transformOffset;
 
                         // FIXME: Perform skew, taper and twist transformations here
                         //lower1 = Vector3.Transform(lower1, lowerTransform);
@@ -387,10 +386,10 @@ namespace sceneviewer.Prims
                         Vertexes.Add(new VertexPositionColor(lower1, color));
                         Vertexes.Add(new VertexPositionColor(upper2, color));
                         Vertexes.Add(new VertexPositionColor(upper1, color));
-
-                        height += transformOffset;
                     }
                 }
+
+                currentOffset += transformOffset;
             }
         }
 

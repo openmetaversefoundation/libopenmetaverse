@@ -18,10 +18,10 @@ namespace sceneviewer.Prims
         public Vector3 Acceleration;
         public Vector3 Velocity;
         public Vector3 RotationVelocity;
+        public int LevelOfDetail = 16;
 
         // Accessors
         public abstract int TriangleCount { get; }
-        //public abstract int LevelOfDetail { set; }
         //public abstract int Twist { set; get; }
         //public abstract double Shear { set; get; }
         //public abstract double TopSizeX { set; get;}
@@ -34,7 +34,6 @@ namespace sceneviewer.Prims
 
         protected const int MaxFaces = 9;
 
-        //protected int levelOfDetail = 16; // Current LOD
         protected bool hollow;
         protected bool cut;
 
