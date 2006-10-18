@@ -30,6 +30,8 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    public delegate void AddRegionCallback(GridRegion region);
+
 	/// <summary>
 	/// Class for regions on the world map
 	/// </summary>
@@ -41,7 +43,7 @@ namespace libsecondlife
 		public int Y;
         /// <summary></summary>
 		public string Name;
-        /// <summary></summary>
+        /// <summary></summary> 
 		public byte Access;
         /// <summary></summary>
 		public uint RegionFlags;
@@ -67,6 +69,8 @@ namespace libsecondlife
 	/// </summary>
 	public class GridManager
 	{
+        public event AddRegionCallback OnRegionAdd;
+
         /// <summary>A hashtable of all the regions, indexed by region ID</summary>
 		public Hashtable Regions;
         /// <summary>Current direction of the sun</summary>
@@ -106,11 +110,20 @@ namespace libsecondlife
 			}
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-		public void AddAllSims() 
-		{
+        public void AddEstateSims()
+        {
+            MapLayerRequestPacket request = new MapLayerRequestPacket();
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.Godlike = true;
+            request.AgentData.Flags = 0;
+            request.AgentData.EstateID = 0; // TODO get a better value here.
+
+            Client.Network.SendPacket((Packet)request);
+        }
+
+        public void AddLindenSims()
+        {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
@@ -122,6 +135,15 @@ namespace libsecondlife
             request.PositionData.MinY = 0;
 
             Client.Network.SendPacket((Packet)request);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+		public void AddAllSims() 
+		{
+            AddLindenSims();
+            AddEstateSims();
 		}
 
         /// <summary>
@@ -170,6 +192,8 @@ namespace libsecondlife
                 {
                     Regions[region.Name.ToLower()] = region;
                 }
+
+                OnRegionAdd(region);
             }
 		}
 

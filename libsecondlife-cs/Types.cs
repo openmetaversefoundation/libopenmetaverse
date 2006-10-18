@@ -469,6 +469,17 @@ namespace libsecondlife
 		{
 			return !(lhs == rhs);
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector3 operator -(LLVector3 lhs, LLVector3 rhs)
+        {
+            return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+        }
 	}
 
     /// <summary>
