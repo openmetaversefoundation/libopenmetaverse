@@ -673,9 +673,6 @@ namespace libsecondlife
                         
                 if ( sim != null)
                 {
-                    // Sync the current region and current simulator
-                    Client.CurrentRegion = Client.Network.CurrentSim.Region;
-
                     // Move the avatar in to this sim
                     CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
                     move.AgentData.AgentID = this.ID;
