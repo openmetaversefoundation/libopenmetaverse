@@ -93,7 +93,7 @@ namespace Teleport
             // and hope for the best?
             client.Grid.AddEstateSims();
 
-            System.Threading.Thread.Sleep(6000);
+            System.Threading.Thread.Sleep(3000);
             Console.WriteLine();
             Console.WriteLine("Okay, hopefully all the initial connect stuff is done, trying now...");
 

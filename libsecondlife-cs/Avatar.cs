@@ -426,37 +426,6 @@ namespace libsecondlife
 
             TeleportTimer.Stop();
 
-
-            Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort,
-                simulator.CircuitCode, true);
-
-            if (sim != null)
-            {
-                // Move the avatar in to this sim
-                CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
-                move.AgentData.AgentID = this.ID;
-                move.AgentData.SessionID = Client.Network.SessionID;
-                move.AgentData.CircuitCode = simulator.CircuitCode;
-                Client.Network.SendPacket((Packet)move);
-
-                Console.WriteLine(move);
-
-                Client.Log("Moved to new sim " + Client.Network.CurrentSim.Region.Name + "(" +
-                    Client.Network.CurrentSim.IPEndPoint.ToString() + ")",
-                    Helpers.LogLevel.Info);
-
-                // Sleep a little while so we can collect parcel information
-                System.Threading.Thread.Sleep(1000);
-
-                TeleportStatus = 1;
-            }
-            else
-            {
-                TeleportStatus = -1;
-            }
-
-
-
             if (TeleportTimeout)
             {
                 if (OnTeleport != null) { OnTeleport("Teleport timed out."); }
@@ -698,7 +667,34 @@ namespace libsecondlife
             {
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
                 TeleportMessage = "Teleport finished";
-                TeleportStatus = 1;
+
+                Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort, 
+                    simulator.CircuitCode, true);
+                        
+                if ( sim != null)
+                {
+                    // Move the avatar in to this sim
+                    CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
+                    move.AgentData.AgentID = this.ID;
+                    move.AgentData.SessionID = Client.Network.SessionID;
+                    move.AgentData.CircuitCode = simulator.CircuitCode;
+                    Client.Network.SendPacket((Packet)move);
+
+                    Console.WriteLine(move);
+
+                    Client.Log("Moved to new sim " + Client.Network.CurrentSim.Region.Name + "(" + 
+                        Client.Network.CurrentSim.IPEndPoint.ToString() + ")",
+                        Helpers.LogLevel.Info);
+
+                    // Sleep a little while so we can collect parcel information
+                    System.Threading.Thread.Sleep(1000);
+
+                    TeleportStatus = 1;
+                }
+                else
+                {
+                    TeleportStatus = -1;
+                }
             }
         }
 
