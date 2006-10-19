@@ -193,7 +193,10 @@ namespace libsecondlife
                     Regions[region.Name.ToLower()] = region;
                 }
 
-                OnRegionAdd(region);
+                if (OnRegionAdd != null)
+                {
+                    OnRegionAdd(region);
+                }
             }
 		}
 

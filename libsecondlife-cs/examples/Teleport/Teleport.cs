@@ -9,6 +9,7 @@ namespace Teleport
     class Teleport
     {
         protected SecondLife client;
+        protected bool DoneTeleporting = false;
 
         static void Main(string[] args)
         {
@@ -87,24 +88,33 @@ namespace Teleport
 
         protected void doStuff(string sim, LLVector3 coords)
         {
-            System.Threading.Thread.Sleep(5000);
+            // Load up the list of estate simulators, incase we get a request to teleport to one.
+            // This doesn't block, and there's no easy way to know when it's done, so we'll wait a bit
+            // and hope for the best?
+            client.Grid.AddEstateSims();
+
+            System.Threading.Thread.Sleep(6000);
             Console.WriteLine();
             Console.WriteLine("Okay, hopefully all the initial connect stuff is done, trying now...");
 
             client.Avatar.OnTeleport += new TeleportCallback(Avatar_OnTeleportMessage);
 
-
+            DoneTeleporting = false;
             client.Avatar.Teleport(sim, coords);
 
-            System.Threading.Thread.Sleep(15000);
-
-            Console.WriteLine("Press Enter to finish");
-            Console.ReadLine();
+            while (!DoneTeleporting)
+            {
+                client.Tick();
+            }
         }
 
         protected void Avatar_OnTeleportMessage(string message)
         {
             Console.WriteLine(message);
+            if (!message.Equals("Teleport started"))
+            {
+                DoneTeleporting = true;
+            }
         }
     }
 }
