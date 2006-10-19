@@ -16,10 +16,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Tests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapgenerator", "mapgenerator\mapgenerator.csproj", "{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLProxy", "..\applications\SLProxy\SLProxy.csproj", "{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Analyst", "..\applications\SLProxy\Analyst.csproj", "{6222B134-AE5F-489A-8A77-423A721B7C62}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_SimpleInventory", "examples\IA_SimpleInventory\IA_SimpleInventory.csproj", "{E464B963-46E3-4E1A-A36F-9C640C880E68}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "botmanager", "examples\botmanager\botmanager.csproj", "{3E891B97-7267-47D4-AAF1-7DCD2F6D60AB}"
@@ -74,14 +70,6 @@ Global
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6222B134-AE5F-489A-8A77-423A721B7C62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6222B134-AE5F-489A-8A77-423A721B7C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6222B134-AE5F-489A-8A77-423A721B7C62}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6222B134-AE5F-489A-8A77-423A721B7C62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
