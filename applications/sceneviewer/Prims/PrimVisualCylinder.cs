@@ -110,7 +110,8 @@ namespace sceneviewer.Prims
 
             if (hollow)
             {
-                for (int facePoint = LevelOfDetail; facePoint >= 0; facePoint--)
+                //for (int facePoint = LevelOfDetail; facePoint >= 0; facePoint--)
+                for (int facePoint = 0; facePoint <= LevelOfDetail; facePoint++)
                 {
                     angle = startAngle + ((double)facePoint / (double)LevelOfDetail) * (endAngle - startAngle);
 
@@ -129,6 +130,34 @@ namespace sceneviewer.Prims
 
         protected override void BuildEndCapHollow(bool top)
         {
+            float z = top ? 0.5f : -0.5f;
+
+            // We assume the innerfaces and outerfaces point counts are the same
+            int pointCount = OuterFaces[0].GetNumPoints();
+
+            for (int j = 0; j < pointCount - 1; j++)
+            {
+                Vector3 p1 = OuterFaces[0].GetRawVertex(j);
+                Vector3 p2 = OuterFaces[0].GetRawVertex(j + 1);
+                Vector3 p3 = InnerFaces[0].GetRawVertex(j);
+                Vector3 p4 = InnerFaces[0].GetRawVertex(j + 1);
+
+                p1.Z = p2.Z = p3.Z = p4.Z = z;
+
+                // TODO: Texturemapping
+                //Vector2 t1 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r1.x + 0.5), r1.y + 0.5));
+                //Vector2 t2 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r2.x + 0.5), r2.y + 0.5));
+                //Vector2 t3 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r3.x + 0.5), r3.y + 0.5));
+                //Vector2 t4 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r4.x + 0.5), r4.y + 0.5));
+
+                Vertexes.Add(new VertexPositionColor(p4, color));
+                Vertexes.Add(new VertexPositionColor(p3, color));
+                Vertexes.Add(new VertexPositionColor(p2, color));
+
+                Vertexes.Add(new VertexPositionColor(p3, color));
+                Vertexes.Add(new VertexPositionColor(p2, color));
+                Vertexes.Add(new VertexPositionColor(p1, color));
+            }
         }
     }
 }
