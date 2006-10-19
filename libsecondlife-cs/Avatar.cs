@@ -70,7 +70,7 @@ namespace libsecondlife
         byte offline, byte[] binaryBucket);
 
     /// <summary>
-    /// 
+    /// Triggered after friend request packet is sent out.
     /// </summary>
     /// <param name="AgentID"></param>
     /// <param name="Online"></param>
@@ -83,30 +83,30 @@ namespace libsecondlife
     public delegate void TeleportCallback(string message);
 
     /// <summary>
-    /// 
+    /// Basic class to hold other Avatar's data.
     /// </summary>
     public class Avatar
     {
-        /// <summary></summary>
+        /// <summary>The Avatar's UUID, asset server</summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Avatar ID in Region (sim) it is in</summary>
         public uint LocalID;
-        /// <summary></summary>
+        /// <summary>Full Name of Avatar</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Active Group of Avatar</summary>
         public string GroupName;
-        /// <summary></summary>
+        /// <summary>Online Status of Avatar</summary>
         public bool Online;
-        /// <summary></summary>
+        /// <summary>Location of Avatar (x,y,z probably)</summary>
         public LLVector3 Position;
-        /// <summary></summary>
+        /// <summary>Rotational Position of Avatar</summary>
         public LLQuaternion Rotation;
-        /// <summary></summary>
+        /// <summary>Region (aka sim) the Avatar is in</summary>
         public Region CurrentRegion;
     }
 
     /// <summary>
-    /// 
+    /// Class to hold Client Avatar's data
     /// </summary>
     public class MainAvatar
     {
@@ -121,26 +121,27 @@ namespace libsecondlife
         /// <summary></summary>
         public event BalanceCallback OnBalanceUpdated;
 
-        /// <summary></summary>
+        /// <summary>Your (client) Avatar UUID, asset server</summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Your (client) Avatar ID, local to Region/sim</summary>
         public uint LocalID;
-        /// <summary></summary>
+        /// <summary>Avatar First Name (i.e. Philip)</summary>
         public string FirstName;
-        /// <summary></summary>
+        /// <summary>Avatar Last Name (i.e. Linden)</summary>
         public string LastName;
         /// <summary></summary>
         public string TeleportMessage;
-        /// <summary></summary>
+        /// <summary>Current position of avatar</summary>
         public LLVector3 Position;
-        /// <summary>Current rotation of the avatar</summary>
+        /// <summary>Current rotation of avatar</summary>
         public LLQuaternion Rotation;
         /// <summary>The point the avatar is currently looking at
         /// (may not stay updated)</summary>
         public LLVector3 LookAt;
-        /// <summary></summary>
+        /// <summary>Position avatar client will goto when login to 'home' or during
+        /// teleport request to 'home' region.</summary>
         public LLVector3 HomePosition;
-        /// <summary></summary>
+        /// <summary>LookAt point saved/restored with HomePosition</summary>
         public LLVector3 HomeLookAt;
         /// <summary>Gets the health of the agent</summary>
         protected float health;
@@ -293,30 +294,31 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Convertion type to denote Chat Packet types in an easier-to-understand format
         /// </summary>
         public enum ChatType
         {
-            /// <summary></summary>
+            /// <summary>Whispers (5m radius)</summary>
             Whisper = 0,
-            /// <summary></summary>
+            /// <summary>Normal chat (10/20m radius) - Why is this here twice?</summary>
             Normal = 1,
-            /// <summary></summary>
+            /// <summary>Shouting! (100m radius)</summary>
             Shout = 2,
-            /// <summary></summary>
+            /// <summary>Normal chat (10/20m radius) - Why is this here twice?</summary>
             Say = 3,
-            /// <summary></summary>
+            /// <summary>Event message when an Avatar has begun to type</summary>
             StartTyping = 4,
-            /// <summary></summary>
+            /// <summary>Event message when an Avatar has stopped typing</summary>
             StopTyping = 5
         }
 
         /// <summary>
-        /// 
+        /// Send a Chat message.
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="channel"></param>
-        /// <param name="type"></param>
+        /// <param name="message">The Message you're sending out.</param>
+        /// <param name="channel">Channel number (0 would be default 'Say' message, other numbers 
+        /// denote the equivalent of /# in normal client).</param>
+        /// <param name="type">Chat Type, see above.</param>
         public void Chat(string message, int channel, ChatType type)
         {
             ChatFromViewerPacket chat = new ChatFromViewerPacket();
@@ -349,11 +351,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Give Money to destination Avatar
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="amount"></param>
-        /// <param name="description"></param>
+        /// <param name="target">UUID of the Target Avatar</param>
+        /// <param name="amount">Amount in L$</param>
+        /// <param name="description">Reason (optional normally)</param>
         public void GiveMoney(LLUUID target, int amount, string description)
         {
             // 5001 - transaction type for av to av money transfers
@@ -361,12 +363,13 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Give Money to destionation Object or Avatar
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="amount"></param>
-        /// <param name="description"></param>
-        /// <param name="transactiontype"></param>
+        /// <param name="target">UUID of the Target Object/Avatar</param>
+        /// <param name="amount">Amount in L$</param>
+        /// <param name="description">Reason (Optional normally)</param>
+        /// <param name="transactiontype">The type of transaction.  Currently only 5001 is
+        /// documented for Av->Av money transfers.</param>
         public void GiveMoney(LLUUID target, int amount, string description, int transactiontype)
         {
             MoneyTransferRequestPacket money = new MoneyTransferRequestPacket();
@@ -466,7 +469,7 @@ namespace libsecondlife
             {
                 if (Client.Grid.Regions.ContainsKey(simName.ToLower()))
                 {
-                    return Teleport(((GridRegion)Client.Grid.Regions[simName]).RegionHandle, position, lookAt);
+                    return Teleport(((GridRegion)Client.Grid.Regions[simName.ToLower()]).RegionHandle, position, lookAt);
                 }
                 else
                 {
