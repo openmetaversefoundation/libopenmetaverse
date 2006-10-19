@@ -27,5 +27,9 @@ namespace sceneviewer.Prims
         {
             return cut * 2 * (float)Math.PI;
         }
+
+        protected override void BuildEndCapHollow(bool top)
+        {
+        }
     }
 }

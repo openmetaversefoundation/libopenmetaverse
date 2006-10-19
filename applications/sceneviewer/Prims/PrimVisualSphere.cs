@@ -29,5 +29,9 @@ namespace sceneviewer.Prims
             // FIXME: Is this correct?
             return (cut - 0.125f) * 2 * (float)Math.PI;
         }
+
+        protected override void BuildEndCapHollow(bool top)
+        {
+        }
     }
 }

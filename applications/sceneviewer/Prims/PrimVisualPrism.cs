@@ -30,5 +30,9 @@ namespace sceneviewer.Prims
         {
             return (cut - (30f / 360f)) * 2 * (float)Math.PI;
         }
+
+        protected override void BuildEndCapHollow(bool top)
+        {
+        }
     }
 }

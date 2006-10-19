@@ -32,6 +32,14 @@ namespace sceneviewer
         private ButtonState PreviousLeftButton;
         private Vector2 PreviousMousePosition;
 
+        // Keyboard stuff
+        Keys[] KeysHeldDown;
+        List<Keys> KeysPressedThisFrame = new List<Keys>();
+        List<Keys> KeysReleasedThisFrame = new List<Keys>();
+
+        // State tracking
+        bool Wireframe = false;
+
         //
         private Timer CameraUpdateTimer;
 
@@ -39,6 +47,8 @@ namespace sceneviewer
         {
             //this.AllowUserResizing = true;
             this.IsMouseVisible = true;
+
+            KeysHeldDown = Keyboard.GetState().GetPressedKeys();
 
             Window.ClientSizeChanged += new EventHandler(Window_ClientSizeChanged);
             this.Exiting += new EventHandler<GameEventArgs>(Viewer_Exiting);
@@ -49,7 +59,7 @@ namespace sceneviewer
             Prims = new Dictionary<uint, PrimVisual>();
 
             Hashtable loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
-                "weneedaloginscreen", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+                "radishman", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             Client = new SecondLife();
@@ -71,6 +81,29 @@ namespace sceneviewer
             // Start the timer
             CameraUpdateTimer = new Timer(new TimerCallback(SendCameraUpdate), null, 0,
                 500);
+        }
+
+        bool KeyPressedThisFrame(Keys key)
+        {
+            if (KeysPressedThisFrame.Contains(key))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        bool KeyReleasedThisFrame(Keys key)
+        {
+            if (KeysReleasedThisFrame.Contains(key))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        Keys[] KeysHeldDownThisFrame()
+        {
+            return KeysHeldDown;
         }
 
         void Viewer_Exiting(object sender, GameEventArgs e)
@@ -152,6 +185,61 @@ namespace sceneviewer
             //Water = new WaterSurface(graphics.GraphicsDevice, Camera, new Vector3(0, 0, 1), 0, 128, 256);
         }
 
+        void UpdateInput()
+        {
+            // Clear our pressed and released lists.
+            KeysPressedThisFrame.Clear();
+            KeysReleasedThisFrame.Clear();
+
+            // Interpret pressed key data between arrays to
+            // figure out just-pressed and just-released keys.
+            KeyboardState currentState = Keyboard.GetState();
+            Keys[] currentKeys = currentState.GetPressedKeys();
+
+            // First loop, looking for keys just pressed.
+            for (int currentKey = 0; currentKey < currentKeys.Length; currentKey++)
+            {
+                bool found = false;
+                for (int previousKey = 0; previousKey < KeysHeldDown.Length; previousKey++)
+                {
+                    if (currentKeys[currentKey] == KeysHeldDown[previousKey])
+                    {
+                        // The key was pressed both this frame and last; ignore.
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    // The key was pressed this frame, but not last frame; it was just pressed.
+                    KeysPressedThisFrame.Add(currentKeys[currentKey]);
+                }
+            }
+
+            // Second loop, looking for keys just released.
+            for (int previousKey = 0; previousKey < KeysHeldDown.Length; previousKey++)
+            {
+                bool found = false;
+                for (int currentKey = 0; currentKey < currentKeys.Length; currentKey++)
+                {
+                    if (KeysHeldDown[previousKey] == currentKeys[currentKey])
+                    {
+                        // The key was pressed both this frame and last; ignore.
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    // The key was pressed last frame, but not this frame; it was just released.
+                    KeysReleasedThisFrame.Add(KeysHeldDown[previousKey]);
+                }
+            }
+
+            // Set the held state to the current state.
+            KeysHeldDown = currentKeys;
+        }
+
         protected override void Update()
         {
             // The time since Update was called last
@@ -179,8 +267,19 @@ namespace sceneviewer
 
             PreviousLeftButton = currentState.LeftButton;
 
+            UpdateInput();
+            CheckGameKeys();
+
             // Let the GameComponents update
             UpdateComponents();
+        }
+
+        void CheckGameKeys()
+        {
+            if (KeyPressedThisFrame(Keys.W))
+            {
+                Wireframe = !Wireframe;
+            }
         }
 
         protected override void Draw()
@@ -203,7 +302,9 @@ namespace sceneviewer
 
             graphics.GraphicsDevice.VertexDeclaration = vertexDeclaration;
             graphics.GraphicsDevice.RenderState.CullMode = CullMode.None;
-            graphics.GraphicsDevice.RenderState.FillMode = FillMode.WireFrame;
+
+            graphics.GraphicsDevice.RenderState.FillMode = (Wireframe) ? FillMode.WireFrame : FillMode.Solid;
+            
             //graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
 
             effect.Begin(EffectStateOptions.Default);
