@@ -413,15 +413,6 @@ namespace SLAccountant
 
                     client.Avatar.SetHeightWidth((ushort)rand.Next(0, 65535), (ushort)rand.Next(0, 65535));
 
-					// MoneyBalanceRequest
-                    MoneyBalanceRequestPacket request = new MoneyBalanceRequestPacket();
-                    request.AgentData.AgentID = client.Network.AgentID;
-                    request.AgentData.SessionID = client.Network.SessionID;
-                    request.AgentData.SessionID = client.Network.SessionID;
-                    request.MoneyData.TransactionID = LLUUID.GenerateUUID();
-
-					client.Network.SendPacket((Packet)request);
-
                     // AgentSetAppearance
                     AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
                     appearance.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];

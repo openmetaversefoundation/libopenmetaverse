@@ -743,13 +743,9 @@ namespace libsecondlife
         /// <param name="packet"></param>
 		public void SendPacket(Packet packet)
 		{
-			if (CurrentSim != null)
+			if (CurrentSim != null && CurrentSim.Connected)
 			{
 				CurrentSim.SendPacket(packet, true);
-			}
-			else
-			{
-                throw new NotConnectedException();
 			}
 		}
 
@@ -760,7 +756,10 @@ namespace libsecondlife
         /// <param name="simulator"></param>
 		public void SendPacket(Packet packet, Simulator simulator)
 		{
-			simulator.SendPacket(packet, true);
+            if (simulator.Connected)
+            {
+                simulator.SendPacket(packet, true);
+            }
 		}
 
         /// <summary>
@@ -1009,14 +1008,10 @@ namespace libsecondlife
                 }
 
                 simulator.Region.Handle = regionHandle;
-
-                // Set the current region
-                Client.CurrentRegion = simulator.Region;
+                CurrentSim = simulator;
 
                 // Simulator is successfully connected, add it to the list and set it as default
                 Simulators.Add(simulator);
-
-                CurrentSim = simulator;
 
                 // Move our agent in to the sim to complete the connection
                 Client.Avatar.CompleteAgentMovement(simulator);
@@ -1150,7 +1145,7 @@ namespace libsecondlife
             #region SimulatorsMutex
             try
             {
-                SimulatorsMutex.WaitOne();
+                SimulatorsMutex.WaitOne(500, true);
 
                 // Disconnect all simulators except the current one
                 foreach (Simulator simulator in Simulators)
@@ -1175,7 +1170,9 @@ namespace libsecondlife
             finally
             {
                 Simulators.Clear();
-                SimulatorsMutex.ReleaseMutex();
+
+                try { SimulatorsMutex.ReleaseMutex(); }
+                catch (Exception) { }
             }
             #endregion SimulatorsMutex
 

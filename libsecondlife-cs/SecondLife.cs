@@ -49,11 +49,11 @@ namespace libsecondlife
         /// <summary></summary>
         public Mutex AvatarsMutex;
         /// <summary></summary>
-        public Region CurrentRegion;
-        /// <summary></summary>
         public GridManager Grid;
         /// <summary></summary>
         public ObjectManager Objects;
+        /// <summary></summary>
+        public GroupManager Groups;
         /// <summary></summary>
         public bool Debug;
 
@@ -69,7 +69,7 @@ namespace libsecondlife
             AvatarsMutex = new Mutex(false, "AvatarsMutex");
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
-            CurrentRegion = null;
+            Groups = new GroupManager(this);
             Debug = true;
 
             Network.RegisterCallback(PacketType.UUIDNameReply, new PacketCallback(GetAgentNameHandler));

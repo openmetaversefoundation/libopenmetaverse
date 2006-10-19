@@ -107,6 +107,7 @@
     <Compile Include="GridManager.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="GroupManager.cs" />
     <Compile Include="InventorySystem\InventoryBase.cs" />
     <Compile Include="InventorySystem\InventoryFolder.cs" />
     <Compile Include="InventorySystem\InventoryImage.cs" />

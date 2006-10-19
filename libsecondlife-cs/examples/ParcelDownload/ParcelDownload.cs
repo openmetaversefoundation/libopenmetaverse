@@ -63,14 +63,14 @@ namespace ParcelDownloader
 			}
 
 			// The magic happens in these three lines
-			client.CurrentRegion.FillParcels();			// Tell libsl to download parcels
+			client.Network.CurrentSim.Region.FillParcels();			// Tell libsl to download parcels
 			System.Threading.Thread.Sleep(10000);		// Give it some time to do it
 			client.Tick();								// Let things happen
 
 			// Dump some info about our parcels
-			foreach(int pkey in client.CurrentRegion.Parcels.Keys) 
+            foreach (int pkey in client.Network.CurrentSim.Region.Parcels.Keys) 
 			{
-				Parcel parcel = (Parcel)client.CurrentRegion.Parcels[pkey];
+                Parcel parcel = (Parcel)client.Network.CurrentSim.Region.Parcels[pkey];
 				// Probably should comment this out :-)
 				//parcel.Buy(client,false,new LLUUID());
 				Console.WriteLine("<Parcel>");
