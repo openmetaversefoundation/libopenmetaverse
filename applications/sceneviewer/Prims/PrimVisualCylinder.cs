@@ -8,7 +8,8 @@ namespace sceneviewer.Prims
 {
     public class PrimVisualCylinder : LinearPrimVisual
     {
-        public PrimVisualCylinder(PrimObject prim) : base(prim)
+        public PrimVisualCylinder(PrimObject prim)
+            : base(prim)
         {
             NumberFaces = 1;
             FirstOuterFace = 0;
@@ -126,68 +127,79 @@ namespace sceneviewer.Prims
             BuildVertexes();
         }
 
-        private void BuildVertexes()
-        {
-            // For prims with a linear extrusion path, we base the number of transformations on the amount of twist
-            int transforms = 1 + Math.Abs((int)((float)(Prim.PathTwist - Prim.PathTwistBegin) / 9f));
+        //private void BuildVertexes()
+        //{
+        //    // For prims with a linear extrusion path, we base the number of transformations on the amount of twist
+        //    int transforms = 1 + Math.Abs((int)((float)(Prim.PathTwist - Prim.PathTwistBegin) / 9f));
 
-            BuildSideVertexes(OuterFaces, transforms);
+        //    BuildSideVertexes(OuterFaces, transforms);
 
-            if (hollow)
-            {
-                BuildSideVertexes(InnerFaces, transforms);
-            }
+        //    if (hollow)
+        //    {
+        //        BuildSideVertexes(InnerFaces, transforms);
+        //    }
 
-            if (cut)
-            {
-                BuildSideVertexes(CutFaces, transforms);
-            }
+        //    if (cut)
+        //    {
+        //        BuildSideVertexes(CutFaces, transforms);
+        //    }
 
-            VertexArray = Vertexes.ToArray();
-        }
+        //    VertexArray = Vertexes.ToArray();
+        //}
 
-        private void BuildSideVertexes(CrossSection[] crossSection, int transforms)
-        {
-            float transformOffset = 1.0f / (float)transforms;
-            float currentOffset = -0.5f;
+        //private void BuildSideVertexes(CrossSection[] crossSection, int transforms)
+        //{
+        //    float transformOffset = 1.0f / (float)transforms;
+        //    float currentOffset = -0.5f;
 
-            for (int i = 0; i < transforms; i++)
-            {
-                int pointCount = crossSection[0].GetNumPoints();
+        //    for (int i = 0; i < transforms; i++)
+        //    {
+        //        for (int j = 0; j < crossSection.Length; j++)
+        //        {
+        //            int pointCount = crossSection[j].GetNumPoints();
 
-                for (int j = 0; j < pointCount - 1; j++)
-                {
-                    Vector3 lower1, lower2, upper1, upper2;
+        //            if (pointCount > 0)
+        //            {
+        //                for (int k = 0; k < pointCount - 1; k++)
+        //                {
+        //                    Vector3 lower1, lower2, upper1, upper2;
 
-                    lower1 = crossSection[0].GetRawVertex(j);
-                    lower2 = crossSection[0].GetRawVertex(j + 1);
+        //                    lower1 = crossSection[j].GetRawVertex(k);
+        //                    lower2 = crossSection[j].GetRawVertex(k + 1);
 
-                    lower1.Z = currentOffset;
-                    lower2.Z = currentOffset;
+        //                    lower1.Z = currentOffset;
+        //                    lower2.Z = currentOffset;
 
-                    upper1 = lower1;
-                    upper2 = lower2;
+        //                    upper1 = lower1;
+        //                    upper2 = lower2;
 
-                    upper1.Z = currentOffset + transformOffset;
-                    upper2.Z = currentOffset + transformOffset;
+        //                    upper1.Z = currentOffset + transformOffset;
+        //                    upper2.Z = currentOffset + transformOffset;
 
-                    // FIXME: Perform skew, taper and twist transformations here
-                    //lower1 = Vector3.Transform(lower1, lowerTransform);
-                    //lower2 = Vector3.Transform(lower2, lowerTransform);
-                    //upper1 = Vector3.Transform(upper1, upperTransform);
-                    //upper2 = Vector3.Transform(upper2, upperTransform);
+        //                    // FIXME: Perform skew, taper and twist transformations here
+        //                    //lower1 = Vector3.Transform(lower1, lowerTransform);
+        //                    //lower2 = Vector3.Transform(lower2, lowerTransform);
+        //                    //upper1 = Vector3.Transform(upper1, upperTransform);
+        //                    //upper2 = Vector3.Transform(upper2, upperTransform);
 
-                    Vertexes.Add(new VertexPositionColor(lower1, color));
-                    Vertexes.Add(new VertexPositionColor(lower2, color));
-                    Vertexes.Add(new VertexPositionColor(upper2, color));
+        //                    Vertexes.Add(new VertexPositionColor(lower1, color));
+        //                    Vertexes.Add(new VertexPositionColor(lower2, color));
+        //                    Vertexes.Add(new VertexPositionColor(upper2, color));
 
-                    Vertexes.Add(new VertexPositionColor(lower1, color));
-                    Vertexes.Add(new VertexPositionColor(upper2, color));
-                    Vertexes.Add(new VertexPositionColor(upper1, color));
-                }
+        //                    Vertexes.Add(new VertexPositionColor(lower1, color));
+        //                    Vertexes.Add(new VertexPositionColor(upper2, color));
+        //                    Vertexes.Add(new VertexPositionColor(upper1, color));
+        //                }
+        //            }
+        //        }
 
-                currentOffset += transformOffset;
-            }
-        }
+        //        currentOffset += transformOffset;
+        //    }
+        //}
+
+        //protected new void BuildEndCapNoCutNoHollow(bool top)
+        //{
+        //    ;
+        //}
     }
 }

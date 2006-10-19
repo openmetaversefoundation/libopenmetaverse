@@ -305,7 +305,7 @@ namespace sceneviewer.Prims
             return 2f * halfCubeWidth;
         }
 
-        private void BuildVertexes()
+        protected void BuildVertexes()
         {
             // For prims with a linear extrusion path, we base the number of transformations on the amount of twist
             int transforms = 1 + Math.Abs((int)((float)(Prim.PathTwist - Prim.PathTwistBegin) / 9f));
@@ -348,7 +348,52 @@ namespace sceneviewer.Prims
             VertexArray = Vertexes.ToArray();
         }
 
-        private void BuildSideVertexes(CrossSection[] crossSection, int transforms)
+        //private void BuildSideVertexes(CrossSection[] crossSection, int transforms)
+        //{
+        //    float transformOffset = 1.0f / (float)transforms;
+        //    float currentOffset = -0.5f;
+
+        //    for (int i = 0; i < transforms; i++)
+        //    {
+        //        for (int j = 0; j < crossSection.Length; j++)
+        //        {
+        //            int pointCount = crossSection[j].GetNumPoints();
+
+        //            if (pointCount > 0)
+        //            {
+        //                Vector3 lower1 = crossSection[j].GetRawVertex(0);
+        //                Vector3 lower2 = crossSection[j].GetRawVertex(1);
+
+        //                lower1.Z = currentOffset;
+        //                lower2.Z = currentOffset;
+
+        //                Vector3 upper1 = lower1;
+        //                Vector3 upper2 = lower2;
+
+        //                upper1.Z = currentOffset + transformOffset;
+        //                upper2.Z = currentOffset + transformOffset;
+
+        //                // FIXME: Perform skew, taper and twist transformations here
+        //                //lower1 = Vector3.Transform(lower1, lowerTransform);
+        //                //lower2 = Vector3.Transform(lower2, lowerTransform);
+        //                //upper1 = Vector3.Transform(upper1, upperTransform);
+        //                //upper2 = Vector3.Transform(upper2, upperTransform);
+
+        //                Vertexes.Add(new VertexPositionColor(lower1, color));
+        //                Vertexes.Add(new VertexPositionColor(lower2, color));
+        //                Vertexes.Add(new VertexPositionColor(upper2, color));
+
+        //                Vertexes.Add(new VertexPositionColor(lower1, color));
+        //                Vertexes.Add(new VertexPositionColor(upper2, color));
+        //                Vertexes.Add(new VertexPositionColor(upper1, color));
+        //            }
+        //        }
+
+        //        currentOffset += transformOffset;
+        //    }
+        //}
+
+        protected void BuildSideVertexes(CrossSection[] crossSection, int transforms)
         {
             float transformOffset = 1.0f / (float)transforms;
             float currentOffset = -0.5f;
@@ -361,31 +406,36 @@ namespace sceneviewer.Prims
 
                     if (pointCount > 0)
                     {
-                        Vector3 lower1 = crossSection[j].GetRawVertex(0);
-                        Vector3 lower2 = crossSection[j].GetRawVertex(1);
+                        for (int k = 0; k < pointCount - 1; k++)
+                        {
+                            Vector3 lower1, lower2, upper1, upper2;
 
-                        lower1.Z = currentOffset;
-                        lower2.Z = currentOffset;
+                            lower1 = crossSection[j].GetRawVertex(k);
+                            lower2 = crossSection[j].GetRawVertex(k + 1);
 
-                        Vector3 upper1 = lower1;
-                        Vector3 upper2 = lower2;
+                            lower1.Z = currentOffset;
+                            lower2.Z = currentOffset;
 
-                        upper1.Z += currentOffset + transformOffset;
-                        upper2.Z += currentOffset + transformOffset;
+                            upper1 = lower1;
+                            upper2 = lower2;
 
-                        // FIXME: Perform skew, taper and twist transformations here
-                        //lower1 = Vector3.Transform(lower1, lowerTransform);
-                        //lower2 = Vector3.Transform(lower2, lowerTransform);
-                        //upper1 = Vector3.Transform(upper1, upperTransform);
-                        //upper2 = Vector3.Transform(upper2, upperTransform);
+                            upper1.Z = currentOffset + transformOffset;
+                            upper2.Z = currentOffset + transformOffset;
 
-                        Vertexes.Add(new VertexPositionColor(lower1, color));
-                        Vertexes.Add(new VertexPositionColor(lower2, color));
-                        Vertexes.Add(new VertexPositionColor(upper2, color));
+                            // FIXME: Perform skew, taper and twist transformations here
+                            //lower1 = Vector3.Transform(lower1, lowerTransform);
+                            //lower2 = Vector3.Transform(lower2, lowerTransform);
+                            //upper1 = Vector3.Transform(upper1, upperTransform);
+                            //upper2 = Vector3.Transform(upper2, upperTransform);
 
-                        Vertexes.Add(new VertexPositionColor(lower1, color));
-                        Vertexes.Add(new VertexPositionColor(upper2, color));
-                        Vertexes.Add(new VertexPositionColor(upper1, color));
+                            Vertexes.Add(new VertexPositionColor(lower1, color));
+                            Vertexes.Add(new VertexPositionColor(lower2, color));
+                            Vertexes.Add(new VertexPositionColor(upper2, color));
+
+                            Vertexes.Add(new VertexPositionColor(lower1, color));
+                            Vertexes.Add(new VertexPositionColor(upper2, color));
+                            Vertexes.Add(new VertexPositionColor(upper1, color));
+                        }
                     }
                 }
 
@@ -393,7 +443,7 @@ namespace sceneviewer.Prims
             }
         }
 
-        private void BuildEndCapNoCutNoHollow(bool top)
+        protected void BuildEndCapNoCutNoHollow(bool top)
         {
             float z = top ? 0.5f : -0.5f;
 
@@ -403,36 +453,115 @@ namespace sceneviewer.Prims
 
                 if (pointCount > 0)
                 {
-                    // FIXME: Perform skew, taper and twist transformations here
-                    if (top)
+                    for (int j = 0; j < pointCount - 1; j++)
                     {
-                        ;
-                    }
-                    else
-                    {
-                        ;
-                    }
+                        Vector3 first = OuterFaces[i].GetRawVertex(j);
+                        first.Z = z;
+                        Vector3 second = OuterFaces[i].GetRawVertex(j + 1);
+                        second.Z = z;
 
-                    Vector3 first = OuterFaces[i].GetRawVertex(0);
-                    first.Z = z;
-                    Vector3 second = OuterFaces[i].GetRawVertex(1);
-                    second.Z = z;
+                        // FIXME: Perform skew, taper and twist transformations here
+                        if (top)
+                        {
+                            ;
+                        }
+                        else
+                        {
+                            ;
+                        }
 
-                    Vertexes.Add(new VertexPositionColor(first, color));
-                    Vertexes.Add(new VertexPositionColor(second, color));
-                    Vertexes.Add(new VertexPositionColor(new Vector3(0, 0, z), color));
+                        Vertexes.Add(new VertexPositionColor(first, color));
+                        Vertexes.Add(new VertexPositionColor(second, color));
+                        Vertexes.Add(new VertexPositionColor(new Vector3(0, 0, z), color));
+                    }
                 }
             }
         }
 
-        private void BuildEndCapCutNoHollow(bool top)
+        protected void BuildEndCapCutNoHollow(bool top)
         {
             float z = top ? 0.5f : -0.5f;
+
+            // FIXME: Apply transformations to the center point
+            Vector3 center = Vector3.Zero;
+
+            for (int i = FirstOuterFace; i <= LastOuterFace; i++)
+            {
+                int pointCount = OuterFaces[i].GetNumPoints();
+
+                for (int j = 0; j < pointCount - 1; j++)
+                {
+                    Vector3 p1 = OuterFaces[i].GetRawVertex(j);
+                    Vector3 p2 = OuterFaces[i].GetRawVertex(j + 1);
+
+                    center.Z = p1.Z = p2.Z = z;
+
+                    // TODO: Texturemapping stuff
+                    //Vector2 t1 = texturemapping.GetTextureCoordinate(new Vector2(1 - (p1.x + 0.5), p1.y + 0.5));
+                    //Vector2 t2 = texturemapping.GetTextureCoordinate(new Vector2(1 - (p2.x + 0.5), p2.y + 0.5));
+
+                    // FIXME: Perform skew, taper and twist transformations here
+                    //p1 = Vector3.Transform(p1, transform);
+                    //p2 = Vector3.Transform(p2, transform);
+
+                    Vertexes.Add(new VertexPositionColor(p2, color));
+                    Vertexes.Add(new VertexPositionColor(p1, color));
+                    Vertexes.Add(new VertexPositionColor(center, color));
+                }
+            }
         }
 
-        private void BuildEndCapHollow(bool top)
+        protected void BuildEndCapHollow(bool top)
         {
             float z = top ? 0.5f : -0.5f;
+
+            for (int i = FirstOuterFace; i <= LastOuterFace; i++)
+            {
+                // We assume the innerfaces and outerfaces point counts are the same
+                int pointCount = OuterFaces[i].GetNumPoints();
+
+                for (int j = 0; j < pointCount - 1; j++)
+                {
+                    Vector3 p1 = OuterFaces[i].GetRawVertex(j);
+                    Vector3 p2 = OuterFaces[i].GetRawVertex(j + 1);
+                    Vector3 p3 = InnerFaces[i].GetRawVertex(j);
+                    Vector3 p4 = InnerFaces[i].GetRawVertex(j + 1);
+
+                    p1.Z = p2.Z = p3.Z = p4.Z = z;
+
+                    // TODO: Texturemapping
+                    //Vector2 t1 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r1.x + 0.5), r1.y + 0.5));
+                    //Vector2 t2 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r2.x + 0.5), r2.y + 0.5));
+                    //Vector2 t3 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r3.x + 0.5), r3.y + 0.5));
+                    //Vector2 t4 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r4.x + 0.5), r4.y + 0.5));
+
+                    if (Prim.ProfileCurve == 1)
+                    {
+                        // PRIM_TYPE_BOX
+                        Vertexes.Add(new VertexPositionColor(p4, color));
+                        Vertexes.Add(new VertexPositionColor(p3, color));
+                        Vertexes.Add(new VertexPositionColor(p2, color));
+
+                        Vertexes.Add(new VertexPositionColor(p4, color));
+                        Vertexes.Add(new VertexPositionColor(p2, color));
+                        Vertexes.Add(new VertexPositionColor(p1, color));
+                    }
+                    else if (Prim.ProfileCurve == 0)
+                    {
+                        // PRIM_TYPE_BOX
+
+                        //FIXME: It seems that cylinders are connecting to opposite points on the
+                        // inner circle. Maybe we should reverse the inner or outer circle access?
+                        Vertexes.Add(new VertexPositionColor(p4, color));
+                        Vertexes.Add(new VertexPositionColor(p3, color));
+                        Vertexes.Add(new VertexPositionColor(p2, color));
+
+                        Vertexes.Add(new VertexPositionColor(p3, color));
+                        Vertexes.Add(new VertexPositionColor(p2, color));
+                        Vertexes.Add(new VertexPositionColor(p1, color));
+                    }
+                }
+            }
         }
 
         private int NormalizeQuadrant(int quadrant)
