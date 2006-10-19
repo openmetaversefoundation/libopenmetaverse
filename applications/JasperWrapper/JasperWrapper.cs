@@ -82,19 +82,21 @@ public struct jas_image_t {
 /* jas_stream_t and jas_image_t are opaque types, therefore we may save ourselves
    a lot of effort by just keeping them as IntPtrs in the functions below. */
 class JasperWrapper {
-	[DllImport("libjasper.dylib")]
+    const string JASPER_LIBRARY = "libjasper.dll";
+
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_init();
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern IntPtr jas_getversion();
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_setdbglevel(int level);
-	
-	[DllImport("libjasper.dylib")]
+
+    [DllImport(JASPER_LIBRARY)]
 	private static extern IntPtr jas_stream_fopen(string filename, string mode);
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern IntPtr jas_stream_memopen(IntPtr buf, int bufsize);
 	
 	public static IntPtr jas_stream_memopen(byte[] buf) {
@@ -104,27 +106,27 @@ class JasperWrapper {
 		return jas_stream_memopen(bufPtr, buf.Length);
 	}
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_stream_flush(IntPtr stream);
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_stream_close(IntPtr stream);
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_image_getfmt(IntPtr stream);
-	
-	[DllImport("libjasper.dylib")]
+
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_image_fmtfromname(string filename);
 
-	[DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern int jas_image_encode(IntPtr image, 
 							IntPtr out_stream, int fmt, string optstr);
-	
-    [DllImport("libjasper.dylib")]
+
+    [DllImport(JASPER_LIBRARY)]
 	private static extern IntPtr jas_image_decode(IntPtr in_stream, int fmt, 
 														string optstr);
 
-    [DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	private static extern IntPtr jas_image_destroy(IntPtr image_ptr);
 
 	private static int jas_image_cmpttype(jas_image_t image, int cmptno) {
@@ -134,8 +136,8 @@ class JasperWrapper {
 		return cmpt.type;
 	}
 
-	
-    [DllImport("libjasper.dylib")]
+
+    [DllImport(JASPER_LIBRARY)]
 	public static extern int jas_image_readcmpt(IntPtr image_ptr, int cmptno,
 		  int x, int y, int width, int height, IntPtr data);
 
@@ -146,7 +148,7 @@ class JasperWrapper {
 		return text;
 	}
 
-    [DllImport("libjasper.dylib")]
+    [DllImport(JASPER_LIBRARY)]
 	public static extern IntPtr jas_matrix_create(int width, int height);
 
 	
