@@ -53,7 +53,7 @@ namespace ParcelDownloader
 			client = new SecondLife();
 
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", 1, 50, 50, 50, "Win", "0", "ParcelDownload", "Adam \"Zaius\" Frisby <adam@gwala.net>");
+				"last", "Win", "0", "ParcelDownload", "Adam \"Zaius\" Frisby <adam@gwala.net>");
 
 			if (!client.Network.Login(loginParams))
 			{

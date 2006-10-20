@@ -321,7 +321,7 @@ namespace primexport
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
                 Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
-                    txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 50, 50, 50,
+                    txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
                     "Win", "0", "primexport", "jhurliman@wsu.edu");
 
                 // HAX

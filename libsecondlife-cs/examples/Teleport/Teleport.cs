@@ -39,7 +39,21 @@ namespace Teleport
             bool success = app.Connect(args[0], args[1], args[2]);
             if (success)
             {
-                app.doStuff(sim, new LLVector3(x, y, z));
+                while (app.client.Network.CurrentSim.Region.Name == null)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+
+                if (sim.ToLower() == app.client.Network.CurrentSim.Region.Name.ToLower())
+                {
+                    Console.WriteLine("TODO: Add the ability to teleport somewhere in the local region. " +
+                        "Exiting for now, please specify a region other than the current one");
+                }
+                else
+                {
+                    app.doStuff(sim, new LLVector3(x, y, z));
+                }
+                
                 app.Disconnect();
             }
         }
@@ -64,7 +78,7 @@ namespace Teleport
 
             // Setup Login to Second Life
             Hashtable loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName, Password, "00:00:00:00:00:00",
-                "last", 1, 12, 12, 12, "Win", "0", "createnotecard", "static.sprocket@gmail.com");
+                "last", "Win", "0", "createnotecard", "static.sprocket@gmail.com");
             Hashtable loginReply = new Hashtable();
 
             // Login

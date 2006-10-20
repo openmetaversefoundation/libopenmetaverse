@@ -106,7 +106,7 @@ namespace sldump
             client.Network.OnDisconnected += new DisconnectCallback(DisconnectHandler);
 
             Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
-                "b15396fa7ec5f19ff1131800673aa132", "last", 1, 50, 50, 50, "Win", "0", "sldump", 
+                "b15396fa7ec5f19ff1131800673aa132", "last", "Win", "0", "sldump", 
                 "contact@libsecondlife.org");
 
 			// An example of how to pass additional options to the login server

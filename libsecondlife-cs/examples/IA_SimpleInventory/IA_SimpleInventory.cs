@@ -77,7 +77,7 @@ namespace IA_SimpleInventory
 
 			// Setup Login to Second Life
 			Hashtable loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName, Password, "00:00:00:00:00:00",
-				"last", 1, 12, 12, 12, "Win", "0", "createnotecard", "static.sprocket@gmail.com");
+				"last", "Win", "0", "createnotecard", "static.sprocket@gmail.com");
 			Hashtable loginReply = new Hashtable();
 
 			// Login

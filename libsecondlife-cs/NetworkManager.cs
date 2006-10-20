@@ -794,6 +794,13 @@ namespace libsecondlife
 				1, 50, 50, 50, "Win", "0", userAgent, author);
 		}
 
+        public static Hashtable DefaultLoginValues(string firstName, string lastName, string password, string mac,
+            string startLocation, string platform, string viewerDigest, string userAgent, string author)
+        {
+            return DefaultLoginValues(firstName, lastName, password, mac, startLocation,
+                1, 50, 50, 50, platform, viewerDigest, userAgent, author);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -1145,7 +1152,7 @@ namespace libsecondlife
             #region SimulatorsMutex
             try
             {
-                SimulatorsMutex.WaitOne(500, true);
+                SimulatorsMutex.WaitOne();
 
                 // Disconnect all simulators except the current one
                 foreach (Simulator simulator in Simulators)
@@ -1170,9 +1177,7 @@ namespace libsecondlife
             finally
             {
                 Simulators.Clear();
-
-                try { SimulatorsMutex.ReleaseMutex(); }
-                catch (Exception) { }
+                SimulatorsMutex.ReleaseMutex();
             }
             #endregion SimulatorsMutex
 
@@ -1267,25 +1272,7 @@ namespace libsecondlife
             try
             {
                 SimulatorsMutex.WaitOne();
-            }
-            catch (Exception)
-            {
-                DisconnectTimer.Stop();
-                connected = false;
 
-                // Shutdown the network layer
-                Shutdown();
-
-                if (OnDisconnected != null)
-                {
-                    OnDisconnected(DisconnectType.NetworkTimeout, "");
-                }
-
-                return;
-            }
-
-            try
-            {
             Beginning:
 
                 foreach (Simulator sim in Simulators)

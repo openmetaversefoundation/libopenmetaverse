@@ -69,7 +69,7 @@ namespace botmanager
             }
             
             Hashtable loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName,
-                Password, "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+                Password, "00:00:00:00:00:00", "last", "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             if (Client.Network.Login(loginParams))
