@@ -163,7 +163,7 @@ namespace libsecondlife
         private uint HeightWidthGenCounter;
 
         /// <summary>
-        /// 
+        /// 'CallBack Central' - Setup callbacks for most of the incoming packets.
         /// </summary>
         /// <param name="client"></param>
         public MainAvatar(SecondLife client)
@@ -251,12 +251,15 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fromName"></param>
+        /// <param name="fromName">Client's Avatar</param>
         /// <param name="sessionID"></param>
-        /// <param name="target"></param>
-        /// <param name="message"></param>
+        /// <param name="target">UUID of target Av.</param>
+        /// <param name="message">Text Message being sent.</param>
         /// <param name="conferenceIDs"></param>
         /// <param name="IMSessionID"></param>
+        /// 
+        /// TODO: Have fromName grabbed from elsewhere and remove argument, to prevent inadvertant spoofing.
+        /// 
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, 
             LLUUID[] conferenceIDs, LLUUID IMSessionID)
         {
@@ -286,7 +289,8 @@ namespace libsecondlife
 
             // These fields are mandatory, even if we don't have valid values for them
             im.MessageBlock.Position = new LLVector3();
-            im.MessageBlock.RegionID = new LLUUID(); //TODO: Allow region id to be correctly set by caller or fetched from Client.*
+                //TODO: Allow region id to be correctly set by caller or fetched from Client.*
+            im.MessageBlock.RegionID = new LLUUID(); 
 
 
             // Send the message
@@ -294,7 +298,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Convertion type to denote Chat Packet types in an easier-to-understand format
+        /// Conversion type to denote Chat Packet types in an easier-to-understand format
         /// </summary>
         public enum ChatType
         {
