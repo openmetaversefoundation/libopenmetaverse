@@ -36,10 +36,12 @@ namespace Teleport
             Console.WriteLine();
 
             Teleport app = new Teleport();
-            app.Connect(args[0], args[1], args[2]);
-            app.doStuff(sim, new LLVector3(x,y,z));
-            app.Disconnect();
-
+            bool success = app.Connect(args[0], args[1], args[2]);
+            if (success)
+            {
+                app.doStuff(sim, new LLVector3(x, y, z));
+                app.Disconnect();
+            }
         }
 
         protected Teleport()
@@ -56,7 +58,7 @@ namespace Teleport
             }		
 		}
 
-        protected void Connect(string FirstName, string LastName, string Password)
+        protected bool Connect(string FirstName, string LastName, string Password)
         {
             Console.WriteLine("Attempting to connect and login to SecondLife.");
 
@@ -70,13 +72,15 @@ namespace Teleport
             {
                 // Login failed
                 Console.WriteLine("Error logging in: " + client.Network.LoginError);
-                return;
+                return false;
             }
 
             // Login was successful
             Console.WriteLine("Login was successful.");
             Console.WriteLine("AgentID:   " + client.Network.AgentID);
             Console.WriteLine("SessionID: " + client.Network.SessionID);
+
+            return true;
         }
 
         protected void Disconnect()
