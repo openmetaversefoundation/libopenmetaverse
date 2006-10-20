@@ -677,7 +677,7 @@ namespace libsecondlife
 		{
 			Client = client;
 			Simulators = new ArrayList();
-			SimulatorsMutex = new Mutex(true, "SimulatorsMutex");
+			SimulatorsMutex = new Mutex(false, "SimulatorsMutex");
 			Callbacks = new Hashtable();
 			CurrentSim = null;
 			LoginValues = null;
@@ -1050,7 +1050,7 @@ namespace libsecondlife
             #region SimulatorsMutex
             try
             {
-//                SimulatorsMutex.WaitOne();
+                SimulatorsMutex.WaitOne();
                 Simulators.Add(simulator);
             }
             catch (Exception e)
@@ -1059,7 +1059,7 @@ namespace libsecondlife
             }
             finally
             {
-//                SimulatorsMutex.ReleaseMutex();
+                SimulatorsMutex.ReleaseMutex();
             }
             #endregion SimulatorsMutex
 
