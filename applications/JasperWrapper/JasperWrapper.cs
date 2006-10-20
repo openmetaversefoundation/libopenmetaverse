@@ -207,7 +207,8 @@ class JasperWrapper {
 			}
 			
 			
-			int[] pixels=get_multiplexed_image_data(image_ptr, new int[4] {0, 1, 2, 3});
+/*			int[] pixels=get_multiplexed_image_data(image_ptr, new int[4] {0, 1, 2, 3}); */
+			int[] pixels=get_multiplexed_image_data(image_ptr, new int[4] {0, 1, 2});
 			jas_image_t image_struct=(jas_image_t)Marshal.PtrToStructure(image_ptr, typeof(jas_image_t));
 			int num_components=image_struct.numcmpts;
 			Console.WriteLine("Image has "+num_components+" components");
