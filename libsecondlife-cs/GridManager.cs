@@ -37,27 +37,27 @@ namespace libsecondlife
 	/// </summary>
 	public class GridRegion
 	{
-        /// <summary></summary>
+        /// <summary>Sim X position on World Map</summary>
 		public int X;
-        /// <summary></summary>
+        /// <summary>Sim Y position on World Map</summary>
 		public int Y;
-        /// <summary></summary>
+        /// <summary>Sim Name (NOTE: In lowercase!)</summary>
 		public string Name;
         /// <summary></summary> 
 		public byte Access;
-        /// <summary></summary>
+        /// <summary>Sim's various flags (presumably things like PG/M)</summary>
 		public uint RegionFlags;
-        /// <summary></summary>
+        /// <summary>Sim's defined Water Height</summary>
 		public byte WaterHeight;
         /// <summary></summary>
 		public byte Agents;
-        /// <summary></summary>
+        /// <summary>UUID of the World Map image</summary>
 		public LLUUID MapImageID;
-        /// <summary>Used for teleporting</summary>
+        /// <summary>Used for teleporting.</summary>
 		public ulong RegionHandle;
 
         /// <summary>
-        /// 
+        /// Constructor.
         /// </summary>
 		public GridRegion() 
 		{
@@ -79,9 +79,9 @@ namespace libsecondlife
 		private SecondLife Client;
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">Instance of type SecondLife to associate with this GridManager instance</param>
 		public GridManager(SecondLife client)
 		{
 			Client = client;
@@ -93,9 +93,10 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Process a request to add region/simulator data to client's info.
+        /// If the client does not have data on this region already, craft and fire off a request packet.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="name">Name of sim/region to add</param>
 		public void AddSim(string name) 
 		{
 			if(!Regions.ContainsKey(name)) 
@@ -110,6 +111,9 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// Fire off packet for Estate/Island sim data request.
+        /// </summary>
         public void AddEstateSims()
         {
             MapLayerRequestPacket request = new MapLayerRequestPacket();
@@ -122,6 +126,9 @@ namespace libsecondlife
             Client.Network.SendPacket((Packet)request);
         }
 
+        /// <summary>
+        /// Fire off packet for Linden/Mainland sim data request.
+        /// </summary>
         public void AddLindenSims()
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
@@ -138,7 +145,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Send Request Packets for lists of Linden ('mainland') and Estate (Island) sims.
+        /// <remarks>
+        /// LL's protocol for some reason uses a different request packet for Estate sims.
+        /// </remarks>
         /// </summary>
 		public void AddAllSims() 
 		{
@@ -147,10 +157,13 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Get sim data from Regions struct
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <example>
+        ///    Simdata = GetSim("Ahern");
+        /// </example>
+        /// <param name="name">Name of sim you're looking for.</param>
+        /// <returns>Region struct of the sim you're looking for, or an empty struct if not available.</returns>
 		public GridRegion GetSim(string name) 
 		{
 			if(Regions.ContainsKey(name)) 
@@ -169,6 +182,11 @@ namespace libsecondlife
 			}
 		}
 
+        /// <summary>
+        /// Add sims from incoming packets to the Regions struct
+        /// </summary>
+        /// <param name="packet">Incoming MapBlockReplyPacket from SL</param>
+        /// <param name="simulator">[UNUSED]</param>
 		private void MapBlockReplyHandler(Packet packet, Simulator simulator) 
 		{
 			GridRegion region;
@@ -200,6 +218,11 @@ namespace libsecondlife
             }
 		}
 
+        /// <summary>
+        /// Get sim time from the appropriate packet
+        /// </summary>
+        /// <param name="packet">Incoming SimulatorViewerTimeMessagePacket from SL</param>
+        /// <param name="simulator">[UNUSED]</param>
         private void TimeMessageHandler(Packet packet, Simulator simulator)
         {
             SunDirection = ((SimulatorViewerTimeMessagePacket)packet).TimeInfo.SunDirection;

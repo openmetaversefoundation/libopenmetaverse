@@ -48,29 +48,29 @@ namespace libsecondlife
     {
         public const string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
 
-        /// <summary></summary>
+        /// <summary>Networking Subsystem</summary>
         public NetworkManager Network;
-        /// <summary></summary>
+        /// <summary>Parcel (subdivided simulator lots) Subsystem</summary>
         public ParcelManager Parcels;
-        /// <summary></summary>
+        /// <summary>'Client's Avatar' Subsystem</summary>
         public MainAvatar Avatar;
-        /// <summary></summary>
+        /// <summary>Avatar (others) Subsystem</summary>
         public Dictionary<LLUUID, Avatar> Avatars;
-        /// <summary></summary>
+        /// <summary>Threading setup (for what?)</summary>
         public Mutex AvatarsMutex;
-        /// <summary></summary>
+        /// <summary>Grid (aka simulator group) Subsystem</summary>
         public GridManager Grid;
-        /// <summary></summary>
+        /// <summary>Object Subsystem</summary>
         public ObjectManager Objects;
-        /// <summary></summary>
+        /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
         /// <summary></summary>
         public LogCallback OnLogMessage;
-        /// <summary></summary>
+        /// <summary>Debug flag</summary>
         public bool Debug;
 
         /// <summary>
-        /// 
+        /// Constructor.
         /// </summary>
         public SecondLife()
         {
@@ -90,7 +90,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Client Avatar's Full Name</returns>
         public override string ToString()
         {
             return Avatar.FirstName + " " + Avatar.LastName;
@@ -144,9 +144,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Add an Avatar into the Avatars Dictionary, by UUID
         /// </summary>
-        /// <param name="AgentID"></param>
+        /// <param name="AgentID">UUID of Avatar to add</param>
         public void AddAvatar(LLUUID AgentID)
         {
             // Quick sanity check
@@ -163,9 +163,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Add an Avatar into the Avatars Dictionary, by avatar struct directly
         /// </summary>
-        /// <param name="avatar"></param>
+        /// <param name="avatar">Filled-out Avatar struct to insert</param>
         public void AddAvatar(Avatar avatar)
         {
             AvatarsMutex.WaitOne();
@@ -174,9 +174,13 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// [NOT WORKING, STUBBED]  Get Info on an Avatar.
+        /// <remarks>
+        /// Ideally a rewrite of this should either spit out an Avatar struct or update
+        /// an existing one.  --TSK
+        /// </remarks>
         /// </summary>
-        /// <param name="AgentID"></param>
+        /// <param name="AgentID">UUID of Avatar</param>
         private void GetAgentDetails(LLUUID AgentID)
         {
             //FIXME:
@@ -187,10 +191,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Process an incoming UUIDNameReply Packet and insert Full Names into the Avatars Dictionary
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
+        /// <param name="packet">Incoming Packet to process</param>
+        /// <param name="simulator">[NOT USED] What is this for? --TSK</param>
         private void GetAgentNameHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.UUIDNameReply)
@@ -215,7 +219,7 @@ namespace libsecondlife
     /// </summary>
     public class Helpers
     {
-        /// <summary></summary>
+        /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
         public readonly static string VERSION = "libsecondlife 0.0.9";
         /// <summary>This header flag signals that ACKs are appended to the packet</summary>
         public const byte MSG_APPENDED_ACKS = 0x10;
