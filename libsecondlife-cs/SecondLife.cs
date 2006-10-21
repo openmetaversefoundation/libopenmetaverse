@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using libsecondlife.Packets;
 
@@ -55,7 +55,7 @@ namespace libsecondlife
         /// <summary></summary>
         public MainAvatar Avatar;
         /// <summary></summary>
-        public Hashtable Avatars;
+        public Dictionary<LLUUID, Avatar> Avatars;
         /// <summary></summary>
         public Mutex AvatarsMutex;
         /// <summary></summary>
@@ -77,7 +77,7 @@ namespace libsecondlife
             Network = new NetworkManager(this);
             Parcels = new ParcelManager(this);
             Avatar = new MainAvatar(this);
-            Avatars = new Hashtable();
+            Avatars = new Dictionary<LLUUID,Avatar>();
             AvatarsMutex = new Mutex(false, "AvatarsMutex");
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);

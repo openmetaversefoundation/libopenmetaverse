@@ -25,24 +25,24 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 using libsecondlife;
 using libsecondlife.InventorySystem;
 
 namespace IA_SimpleInventory
 {
-	/// <summary>
-	/// A simple base application for building console applications that access SL Inventory
-	/// </summary>
-	public class SimpleInventory
-	{
-		protected SecondLife client;
-		protected InventoryManager AgentInventory;
+    /// <summary>
+    /// A simple base application for building console applications that access SL Inventory
+    /// </summary>
+    public class SimpleInventory
+    {
+        protected SecondLife client;
+        protected InventoryManager AgentInventory;
 
-		protected bool DownloadInventoryOnConnect = true;
+        protected bool DownloadInventoryOnConnect = true;
 
-        public static void Main( string[] args )
+        public static void Main(string[] args)
         {
 
             if (args.Length < 3)
@@ -58,7 +58,7 @@ namespace IA_SimpleInventory
         }
 
         protected SimpleInventory()
-		{
+        {
             try
             {
                 client = new SecondLife();
@@ -68,55 +68,55 @@ namespace IA_SimpleInventory
                 // Error initializing the client
                 Console.WriteLine();
                 Console.WriteLine(e.ToString());
-            }		
-		}
+            }
+        }
 
         protected void Connect(string FirstName, string LastName, string Password)
-		{
+        {
             Console.WriteLine("Attempting to connect and login to SecondLife.");
 
-			// Setup Login to Second Life
-			Hashtable loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName, Password, "00:00:00:00:00:00",
-				"last", "Win", "0", "createnotecard", "static.sprocket@gmail.com");
-			Hashtable loginReply = new Hashtable();
+            // Setup Login to Second Life
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName,
+                Password, "00:00:00:00:00:00", "last", "Win", "0", "createnotecard", "static.sprocket@gmail.com");
+            Dictionary<string, object> loginReply = new Dictionary<string, object>();
 
-			// Login
-			if (!client.Network.Login(loginParams))
-			{
-				// Login failed
-				Console.WriteLine("Error logging in: " + client.Network.LoginError);
-				return;
-			}
+            // Login
+            if (!client.Network.Login(loginParams))
+            {
+                // Login failed
+                Console.WriteLine("Error logging in: " + client.Network.LoginError);
+                return;
+            }
 
-			// Login was successful
+            // Login was successful
             Console.WriteLine("Login was successful.");
             Console.WriteLine("AgentID:   " + client.Network.AgentID);
             Console.WriteLine("SessionID: " + client.Network.SessionID);
 
             // Get Root Inventory Folder UUID
             Console.WriteLine("Pulling root folder UUID from login data.");
-            ArrayList alInventoryRoot = (ArrayList)client.Network.LoginValues["inventory-root"];
-            Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
-            LLUUID agentRootFolderID = new LLUUID( (string)htInventoryRoot["folder_id"] );
+            List<object> alInventoryRoot = (List<object>)client.Network.LoginValues["inventory-root"];
+            Dictionary<string, object> htInventoryRoot = (Dictionary<string, object>)alInventoryRoot[0];
+            LLUUID agentRootFolderID = new LLUUID((string)htInventoryRoot["folder_id"]);
 
-			// Initialize Inventory Manager object
+            // Initialize Inventory Manager object
             Console.WriteLine("Initializing Inventory Manager.");
             AgentInventory = new InventoryManager(client, agentRootFolderID);
 
-			if( DownloadInventoryOnConnect )
-			{
-				// and request an inventory download
+            if (DownloadInventoryOnConnect)
+            {
+                // and request an inventory download
                 Console.WriteLine("Downloading Inventory.");
                 AgentInventory.DownloadInventory();
-			}
-		}
+            }
+        }
 
-		protected void Disconnect()
-		{
-			// Logout of Second Life
-			Console.WriteLine("Request logout");
-			client.Network.Logout();
-		}
+        protected void Disconnect()
+        {
+            // Logout of Second Life
+            Console.WriteLine("Request logout");
+            client.Network.Logout();
+        }
 
         protected void doStuff()
         {
@@ -125,5 +125,5 @@ namespace IA_SimpleInventory
 
             Console.WriteLine(AgentInventory.getRootFolder().toXML(false));
         }
-	}
+    }
 }

@@ -27,7 +27,7 @@
 using System;
 using System.Timers;
 using System.Net;
-using System.Collections;
+using System.Collections.Generic;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -473,7 +473,7 @@ namespace libsecondlife
             {
                 if (Client.Grid.Regions.ContainsKey(simName.ToLower()))
                 {
-                    return Teleport(((GridRegion)Client.Grid.Regions[simName.ToLower()]).RegionHandle, position, lookAt);
+                    return Teleport(Client.Grid.Regions[simName.ToLower()].RegionHandle, position, lookAt);
                 }
                 else
                 {

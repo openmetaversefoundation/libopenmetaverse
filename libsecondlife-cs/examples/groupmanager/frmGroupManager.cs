@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -31,7 +31,7 @@ namespace groupmanager
         {
             lstGroups.Items.Clear();
 
-            foreach (Group group in client.Groups.Groups)
+            foreach (Group group in client.Groups.Groups.Values)
             {
                 lstGroups.Items.Add(group);
             }
@@ -54,7 +54,7 @@ namespace groupmanager
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
+                Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
                     txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
                     "Win", "0", "groupmanager", "jhurliman@wsu.edu");
 

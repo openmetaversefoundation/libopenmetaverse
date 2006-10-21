@@ -4,7 +4,7 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using System.Collections;
+using System.Collections.Generic;
 using libsecondlife;
 
 namespace primexport
@@ -320,7 +320,7 @@ namespace primexport
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
+                Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
                     txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
                     "Win", "0", "primexport", "jhurliman@wsu.edu");
 

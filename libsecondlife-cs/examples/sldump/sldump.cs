@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -105,13 +105,12 @@ namespace sldump
 			client.Network.RegisterCallback(PacketType.Default, new PacketCallback(DefaultHandler));
             client.Network.OnDisconnected += new DisconnectCallback(DisconnectHandler);
 
-            Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
-                "b15396fa7ec5f19ff1131800673aa132", "last", "Win", "0", "sldump", 
-                "contact@libsecondlife.org");
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
+                "0", "last", "Win", "0", "sldump", "contact@libsecondlife.org");
 
 			// An example of how to pass additional options to the login server
-            loginParams["id0"] = "65e142a8d3c1ee6632259f111cb168c6";
-            loginParams["viewer_digest"] = "0e63550f-0991-a092-3158-b4206e728ffa";
+            //loginParams["id0"] = "65e142a8d3c1ee6632259f111cb168c9";
+            //loginParams["viewer_digest"] = "0e63550f-0991-a092-3158-b4206e728ffa";
 
 			if (!client.Network.Login(loginParams/*, "http://127.0.0.1:8080/"*/))
 			{

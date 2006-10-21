@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using System;
 using System.Xml;
 
@@ -8,47 +8,48 @@ using libsecondlife.Packets;
 
 namespace libsecondlife.InventorySystem
 {
-	/// <summary>
-	/// Base class for most inventory items, providing a lot of general inventory management functions.
-	/// </summary>
-	public class InventoryItem : InventoryBase
-	{
-		private const uint FULL_MASK_PERMISSIONS = 2147483647;
+    /// <summary>
+    /// Base class for most inventory items, providing a lot of general inventory management functions.
+    /// </summary>
+    public class InventoryItem : InventoryBase
+    {
+        private const uint FULL_MASK_PERMISSIONS = 2147483647;
 
-		public   string Name
-		{
-			get{ return base._Name; }
-			set
-			{
-				_Name = value;
-				UpdateItem();
-			}
-		}
+        public string Name
+        {
+            get { return base._Name; }
+            set
+            {
+                _Name = value;
+                UpdateItem();
+            }
+        }
 
-		internal LLUUID _FolderID = new LLUUID();
-		public   LLUUID FolderID
-		{
-			get{ return _FolderID; }
-			set
-			{
-				InventoryFolder iTargetFolder = base.iManager.getFolder( value );
-				if( iTargetFolder == null )
-				{
-					throw new Exception("Target Folder [" + value + "] does not exist.");
-				}
+        internal LLUUID _FolderID = new LLUUID();
+        public LLUUID FolderID
+        {
+            get { return _FolderID; }
+            set
+            {
+                InventoryFolder iTargetFolder = base.iManager.getFolder(value);
+                if (iTargetFolder == null)
+                {
+                    throw new Exception("Target Folder [" + value + "] does not exist.");
+                }
 
-				base.iManager.getFolder( this.FolderID ).alContents.Remove( this );
-				iTargetFolder.alContents.Add( this );
+                base.iManager.getFolder(this.FolderID).alContents.Remove(this);
+                iTargetFolder.alContents.Add(this);
 
-				_FolderID = value;
-				UpdateItem();
-			}
-		}
+                _FolderID = value;
+                UpdateItem();
+            }
+        }
 
-		internal LLUUID _ItemID = null;
-		public   LLUUID ItemID
-		{
-            set {
+        internal LLUUID _ItemID = null;
+        public LLUUID ItemID
+        {
+            set
+            {
                 if (_ItemID == null)
                 {
                     _ItemID = value;
@@ -58,80 +59,81 @@ namespace libsecondlife.InventorySystem
                     throw new Exception("You can not change an item's ID once it's been set.");
                 }
             }
-			get { return _ItemID; }
-		}
+            get { return _ItemID; }
+        }
 
-		internal sbyte _InvType = 0;
-		public   sbyte InvType
-		{
-			get{ return _InvType; }
-		}
+        internal sbyte _InvType = 0;
+        public sbyte InvType
+        {
+            get { return _InvType; }
+        }
 
-		internal sbyte _Type = 0;
-		public   sbyte Type
-		{
-			get{ return _Type; }
-			set
-			{
-				_Type = value;
-				UpdateItem();
-			}
-		}
-
-		
-		internal string _Description = "";
-		public   string Description
-		{
-			get{ return _Description; }
-			set
-			{
-				_Description = value;
-				UpdateItem();
-			}
-		}
-
-		internal uint _CRC = 0;
-		public   uint CRC
-		{
-			get { return _CRC; }
-			set
-			{
-				_CRC = value;
-			}
-		}
+        internal sbyte _Type = 0;
+        public sbyte Type
+        {
+            get { return _Type; }
+            set
+            {
+                _Type = value;
+                UpdateItem();
+            }
+        }
 
 
-		internal LLUUID _OwnerID = new LLUUID();
-		public   LLUUID OwnerID
-		{
-			get { return _OwnerID; }
-		}
+        internal string _Description = "";
+        public string Description
+        {
+            get { return _Description; }
+            set
+            {
+                _Description = value;
+                UpdateItem();
+            }
+        }
 
-		internal LLUUID _CreatorID = new LLUUID();
-		public   LLUUID CreatorID
-		{
-			get { return _CreatorID; }
-		}
+        internal uint _CRC = 0;
+        public uint CRC
+        {
+            get { return _CRC; }
+            set
+            {
+                _CRC = value;
+            }
+        }
 
-		internal Asset  _Asset;
-		public   Asset  Asset
-		{
-			get { 
-				if( _Asset != null )
-				{
-					return _Asset;
-				} 
-				else 
-				{
-					if( (AssetID != null) && (AssetID != new LLUUID()) )
-					{
-						base.iManager.AssetManager.GetInventoryAsset( this );
-						return Asset;
-					}
-				}
-				return null;
-			}
-		}
+
+        internal LLUUID _OwnerID = new LLUUID();
+        public LLUUID OwnerID
+        {
+            get { return _OwnerID; }
+        }
+
+        internal LLUUID _CreatorID = new LLUUID();
+        public LLUUID CreatorID
+        {
+            get { return _CreatorID; }
+        }
+
+        internal Asset _Asset;
+        public Asset Asset
+        {
+            get
+            {
+                if (_Asset != null)
+                {
+                    return _Asset;
+                }
+                else
+                {
+                    if ((AssetID != null) && (AssetID != new LLUUID()))
+                    {
+                        base.iManager.AssetManager.GetInventoryAsset(this);
+                        return Asset;
+                    }
+                }
+                return null;
+            }
+        }
 
         internal LLUUID _TransactionID = new LLUUID();
         public LLUUID TransactionID
@@ -139,188 +141,191 @@ namespace libsecondlife.InventorySystem
             get { return _TransactionID; }
         }
 
-		internal LLUUID _AssetID = new LLUUID();
-		public   LLUUID AssetID
-		{
-			get { return _AssetID; }
-		}
+        internal LLUUID _AssetID = new LLUUID();
+        public LLUUID AssetID
+        {
+            get { return _AssetID; }
+        }
 
 
-		internal LLUUID _GroupID = new LLUUID();
-		public   LLUUID GroupID
-		{
-			get { return _GroupID; }
-			set
-			{
-				_GroupID = value;
-				UpdateItem();
-			}
-		}
+        internal LLUUID _GroupID = new LLUUID();
+        public LLUUID GroupID
+        {
+            get { return _GroupID; }
+            set
+            {
+                _GroupID = value;
+                UpdateItem();
+            }
+        }
 
-		internal bool _GroupOwned = false;
-		public   bool GroupOwned
-		{
-			get { return _GroupOwned; }
-			set
-			{
-				_GroupOwned = value;
-				UpdateItem();
-			}
-		}
+        internal bool _GroupOwned = false;
+        public bool GroupOwned
+        {
+            get { return _GroupOwned; }
+            set
+            {
+                _GroupOwned = value;
+                UpdateItem();
+            }
+        }
 
-		internal int _CreationDate = (int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds;
-		public   int CreationDate
-		{
-			get { return _CreationDate; }
-		}
+        internal int _CreationDate = (int)((TimeSpan)(DateTime.UtcNow - new DateTime(1970, 1, 1))).TotalSeconds;
+        public int CreationDate
+        {
+            get { return _CreationDate; }
+        }
 
-		internal byte _SaleType = 0;
-		public   byte SaleType
-		{
-			get { return _SaleType; }
-			set
-			{
-				_SaleType = value;
-				UpdateItem();
-			}
-		}
+        internal byte _SaleType = 0;
+        public byte SaleType
+        {
+            get { return _SaleType; }
+            set
+            {
+                _SaleType = value;
+                UpdateItem();
+            }
+        }
 
-		internal uint _BaseMask = FULL_MASK_PERMISSIONS;
-		public   uint BaseMask
-		{
-			get { return _BaseMask; }
-		}
+        internal uint _BaseMask = FULL_MASK_PERMISSIONS;
+        public uint BaseMask
+        {
+            get { return _BaseMask; }
+        }
 
-		internal int _SalePrice = 0;
-		public   int SalePrice
-		{
-			get { return _SalePrice; }
-			set
-			{
-				_SalePrice = value;
-				UpdateItem();
-			}
-		}
+        internal int _SalePrice = 0;
+        public int SalePrice
+        {
+            get { return _SalePrice; }
+            set
+            {
+                _SalePrice = value;
+                UpdateItem();
+            }
+        }
 
-		internal uint _EveryoneMask = 0;
-		public   uint EveryoneMask
-		{
-			get { return _EveryoneMask; }
-			set
-			{
-				_EveryoneMask = value;
-				UpdateItem();
-			}
-		}
+        internal uint _EveryoneMask = 0;
+        public uint EveryoneMask
+        {
+            get { return _EveryoneMask; }
+            set
+            {
+                _EveryoneMask = value;
+                UpdateItem();
+            }
+        }
 
-		internal uint _Flags = 0;
-		public   uint Flags
-		{
-			get { return _Flags; }
-			set
-			{
-				_Flags = value;
-				UpdateItem();
-			}
-		}
+        internal uint _Flags = 0;
+        public uint Flags
+        {
+            get { return _Flags; }
+            set
+            {
+                _Flags = value;
+                UpdateItem();
+            }
+        }
 
-		internal uint _NextOwnerMask = FULL_MASK_PERMISSIONS;
-		public   uint NextOwnerMask
-		{
-			get { return _NextOwnerMask; }
-			set
-			{
-				_NextOwnerMask = value;
-				UpdateItem();
-			}
-		}
+        internal uint _NextOwnerMask = FULL_MASK_PERMISSIONS;
+        public uint NextOwnerMask
+        {
+            get { return _NextOwnerMask; }
+            set
+            {
+                _NextOwnerMask = value;
+                UpdateItem();
+            }
+        }
 
-		internal uint _GroupMask = 0;
-		public   uint GroupMask
-		{
-			get { return _GroupMask; }
-			set
-			{
-				_GroupMask = value;
-				UpdateItem();
-			}
-		}
+        internal uint _GroupMask = 0;
+        public uint GroupMask
+        {
+            get { return _GroupMask; }
+            set
+            {
+                _GroupMask = value;
+                UpdateItem();
+            }
+        }
 
-		internal uint _OwnerMask = FULL_MASK_PERMISSIONS;
-		public   uint OwnerMask
-		{
-			get { return _OwnerMask; }
-		}
+        internal uint _OwnerMask = FULL_MASK_PERMISSIONS;
+        public uint OwnerMask
+        {
+            get { return _OwnerMask; }
+        }
 
 
 
-		internal InventoryItem(InventoryManager manager) : base(manager)
-		{
-		}
+        internal InventoryItem(InventoryManager manager)
+            : base(manager)
+        {
+        }
 
         internal InventoryItem(InventoryManager manager, InventoryDescendentsPacket.ItemDataBlock itemData)
             : base(manager)
         {
-            _Name         = System.Text.Encoding.UTF8.GetString(itemData.Name).Trim().Replace("\0", "");
-            _Description  = System.Text.Encoding.UTF8.GetString(itemData.Description).Trim().Replace("\0", "");
+            _Name = System.Text.Encoding.UTF8.GetString(itemData.Name).Trim().Replace("\0", "");
+            _Description = System.Text.Encoding.UTF8.GetString(itemData.Description).Trim().Replace("\0", "");
             _CreationDate = itemData.CreationDate;
-    
-            _InvType = itemData.InvType;
-            _Type    = itemData.Type;
 
-            _AssetID  = itemData.AssetID;
+            _InvType = itemData.InvType;
+            _Type = itemData.Type;
+
+            _AssetID = itemData.AssetID;
             _FolderID = itemData.FolderID;
 
             _GroupOwned = itemData.GroupOwned;
-            _GroupID    = itemData.GroupID;
-            _GroupMask  = itemData.GroupMask;
+            _GroupID = itemData.GroupID;
+            _GroupMask = itemData.GroupMask;
 
             _CreatorID = itemData.CreatorID;
-            _OwnerID   = itemData.OwnerID;
+            _OwnerID = itemData.OwnerID;
             _OwnerMask = itemData.OwnerMask;
-            
 
-			_Flags         = itemData.Flags;
-            _BaseMask      = itemData.BaseMask;
-            _EveryoneMask  = itemData.EveryoneMask;
+
+            _Flags = itemData.Flags;
+            _BaseMask = itemData.BaseMask;
+            _EveryoneMask = itemData.EveryoneMask;
             _NextOwnerMask = itemData.NextOwnerMask;
 
-            _SaleType  = itemData.SaleType;
+            _SaleType = itemData.SaleType;
             _SalePrice = itemData.SalePrice;
 
             _CRC = itemData.CRC;
         }
 
-		internal InventoryItem( InventoryManager manager, string name,  LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater ) : base(manager)
-		{
-			_Name			= name;
-			_FolderID		= folderID;
-			_InvType		= invType;
-			_Type			= type;
-			_OwnerID		= uuidOwnerCreater;
-			_CreatorID		= uuidOwnerCreater;
+        internal InventoryItem(InventoryManager manager, string name, LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater)
+            : base(manager)
+        {
+            _Name = name;
+            _FolderID = folderID;
+            _InvType = invType;
+            _Type = type;
+            _OwnerID = uuidOwnerCreater;
+            _CreatorID = uuidOwnerCreater;
 
-			UpdateCRC();
-		}
+            UpdateCRC();
+        }
 
-		internal InventoryItem( InventoryManager manager, string name, string description, LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater ) : base(manager)
-		{
-			_Name			= name;
-			_Description    = description;
-			_FolderID		= folderID;
-			_InvType		= invType;
-			_Type			= type;
-			_OwnerID		= uuidOwnerCreater;
-			_CreatorID		= uuidOwnerCreater;
+        internal InventoryItem(InventoryManager manager, string name, string description, LLUUID folderID, sbyte invType, sbyte type, LLUUID uuidOwnerCreater)
+            : base(manager)
+        {
+            _Name = name;
+            _Description = description;
+            _FolderID = folderID;
+            _InvType = invType;
+            _Type = type;
+            _OwnerID = uuidOwnerCreater;
+            _CreatorID = uuidOwnerCreater;
 
-			UpdateCRC();
-		}
+            UpdateCRC();
+        }
 
         /// <summary></summary>
         /// 
         protected void SetAssetTransactionIDs(LLUUID assetID, LLUUID transactionID)
         {
-            _AssetID       = assetID;
+            _AssetID = assetID;
             _TransactionID = transactionID;
             UpdateItem();
         }
@@ -329,153 +334,157 @@ namespace libsecondlife.InventorySystem
         /// </summary>
         /// <param name="o"></param>
         public override bool Equals(object o)
-		{
-			if( (o is InventoryItem) == false )
-			{
-				return false;
-			}
+        {
+            if ((o is InventoryItem) == false)
+            {
+                return false;
+            }
 
-			return this._ItemID == ((InventoryItem)o)._ItemID;
-		}
+            return this._ItemID == ((InventoryItem)o)._ItemID;
+        }
 
         /// <summary>
         /// </summary>
         public override int GetHashCode()
-		{
-			return this._ItemID.GetHashCode();
-		}
+        {
+            return this._ItemID.GetHashCode();
+        }
 
         /// <summary>
         /// CompareTo provided so that items can be sorted by name
         /// </summary>
         /// <param name="obj"></param>
-        public int CompareTo(object obj) 
-		{
-			if(obj is InventoryBase) 
-			{
-				InventoryBase temp = (InventoryBase) obj;
-				return this._Name.CompareTo(temp._Name);
-			}
-			throw new ArgumentException("object is not an InventoryItem");    
-		}
+        public int CompareTo(object obj)
+        {
+            if (obj is InventoryBase)
+            {
+                InventoryBase temp = (InventoryBase)obj;
+                return this._Name.CompareTo(temp._Name);
+            }
+            throw new ArgumentException("object is not an InventoryItem");
+        }
 
-		private void UpdateItem()
-		{
-			UpdateCRC();
-			base.iManager.ItemUpdate( this );
-		}
+        private void UpdateItem()
+        {
+            UpdateCRC();
+            base.iManager.ItemUpdate(this);
+        }
 
-		private void UpdateCRC()
-		{
-			_CRC = InventoryPacketHelper.InventoryUpdateCRC(this);
-		}
+        private void UpdateCRC()
+        {
+            _CRC = InventoryPacketHelper.InventoryUpdateCRC(this);
+        }
 
         /// <summary>
         /// Move this item to the target folder
         /// </summary>
         /// <param name="targetFolder"></param>
         public void MoveTo(InventoryFolder targetFolder)
-		{
-			this.FolderID = targetFolder.FolderID;
-		}
+        {
+            this.FolderID = targetFolder.FolderID;
+        }
 
         /// <summary>
         /// Move this item to the target folder
         /// </summary>
         /// <param name="targetFolderID"></param>
         public void MoveTo(LLUUID targetFolderID)
-		{
-			this.FolderID = targetFolderID;
-		}
+        {
+            this.FolderID = targetFolderID;
+        }
 
         /// <summary>
         /// If you have Copy permission, a copy is placed in the target folder
         /// </summary>
         /// <param name="targetFolder"></param>
         public void CopyTo(LLUUID targetFolder)
-		{
-			base.iManager.ItemCopy( this.ItemID, targetFolder );
-		}
+        {
+            base.iManager.ItemCopy(this.ItemID, targetFolder);
+        }
 
         /// <summary>
         /// Give this item to another agent.  If you have Copy permission, a copy will be given
         /// </summary>
         /// <param name="ToAgentID"></param>
         public void GiveTo(LLUUID ToAgentID)
-		{
-			base.iManager.ItemGiveTo( this, ToAgentID );
-		}
+        {
+            base.iManager.ItemGiveTo(this, ToAgentID);
+        }
 
         /// <summary>
         /// Delete this item from Second Life
         /// </summary>
         public void Delete()
-		{
-			base.iManager.getFolder( this.FolderID ).alContents.Remove( this );
-			base.iManager.ItemRemove( this );
+        {
+            base.iManager.getFolder(this.FolderID).alContents.Remove(this);
+            base.iManager.ItemRemove(this);
 
-		}
+        }
 
         /// <summary>
         /// </summary>
         /// <param name="assetData"></param>
         virtual internal void SetAssetData(byte[] assetData)
-		{
-			if( _Asset == null )
-			{
-				if( AssetID != null )
-				{
-					_Asset = new Asset( AssetID, Type, assetData );
-				} else {
-					_Asset   = new Asset( LLUUID.GenerateUUID(), Type, assetData );
-					_AssetID = _Asset.AssetID;
-				}
-			} else {
-				_Asset.AssetData = assetData;
-			}
-		}
+        {
+            if (_Asset == null)
+            {
+                if (AssetID != null)
+                {
+                    _Asset = new Asset(AssetID, Type, assetData);
+                }
+                else
+                {
+                    _Asset = new Asset(LLUUID.GenerateUUID(), Type, assetData);
+                    _AssetID = _Asset.AssetID;
+                }
+            }
+            else
+            {
+                _Asset.AssetData = assetData;
+            }
+        }
 
         /// <summary>
         /// Output this item as XML
         /// </summary>
         /// <param name="outputAssets">Include an asset data as well, TRUE/FALSE</param>
         override public string toXML(bool outputAssets)
-		{
-			string output = "<item ";
+        {
+            string output = "<item ";
 
-			output += "name = '" + xmlSafe(Name) + "' ";
-			output += "uuid = '" + ItemID + "' ";
-			output += "invtype = '" + InvType + "' ";
-			output += "type = '" + Type + "' ";
+            output += "name = '" + xmlSafe(Name) + "' ";
+            output += "uuid = '" + ItemID + "' ";
+            output += "invtype = '" + InvType + "' ";
+            output += "type = '" + Type + "' ";
 
 
 
-			output += "description = '" + xmlSafe(Description) + "' ";
-			output += "crc = '" + CRC + "' ";
-			output += "debug = '" + InventoryPacketHelper.InventoryUpdateCRC(this) + "' ";
-			output += "ownerid = '" + OwnerID + "' ";
-			output += "creatorid = '" + CreatorID + "' ";
+            output += "description = '" + xmlSafe(Description) + "' ";
+            output += "crc = '" + CRC + "' ";
+            output += "debug = '" + InventoryPacketHelper.InventoryUpdateCRC(this) + "' ";
+            output += "ownerid = '" + OwnerID + "' ";
+            output += "creatorid = '" + CreatorID + "' ";
 
-			output += "assetid = '" + AssetID + "' ";
-			output += "groupid = '" + GroupID + "' ";
+            output += "assetid = '" + AssetID + "' ";
+            output += "groupid = '" + GroupID + "' ";
 
-			output += "groupowned = '" + GroupOwned + "' ";
-			output += "creationdate = '" + CreationDate + "' ";
-			output += "flags = '" + Flags + "' ";
+            output += "groupowned = '" + GroupOwned + "' ";
+            output += "creationdate = '" + CreationDate + "' ";
+            output += "flags = '" + Flags + "' ";
 
-			output += "saletype = '" + SaleType + "' ";
-			output += "saleprice = '" + SalePrice + "' ";
-			output += "basemask = '" + BaseMask + "' ";
-			output += "everyonemask = '" + EveryoneMask + "' ";
-			output += "nextownermask = '" + NextOwnerMask + "' ";
-			output += "groupmask = '" + GroupMask + "' ";
-			output += "ownermask = '" + OwnerMask + "' ";
+            output += "saletype = '" + SaleType + "' ";
+            output += "saleprice = '" + SalePrice + "' ";
+            output += "basemask = '" + BaseMask + "' ";
+            output += "everyonemask = '" + EveryoneMask + "' ";
+            output += "nextownermask = '" + NextOwnerMask + "' ";
+            output += "groupmask = '" + GroupMask + "' ";
+            output += "ownermask = '" + OwnerMask + "' ";
 
-			output += "/>\n";
+            output += "/>\n";
 
-			return output;
-		}
-	}
+            return output;
+        }
+    }
 }
 
 /*

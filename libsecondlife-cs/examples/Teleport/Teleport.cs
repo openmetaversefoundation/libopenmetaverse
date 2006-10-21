@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 using libsecondlife;
 
@@ -77,9 +77,10 @@ namespace Teleport
             Console.WriteLine("Attempting to connect and login to SecondLife.");
 
             // Setup Login to Second Life
-            Hashtable loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName, Password, "00:00:00:00:00:00",
-                "last", "Win", "0", "createnotecard", "static.sprocket@gmail.com");
-            Hashtable loginReply = new Hashtable();
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(FirstName, 
+                LastName, Password, "00:00:00:00:00:00", "last", "Win", "0", "createnotecard", 
+                "static.sprocket@gmail.com");
+            Dictionary<string, object> loginReply = new Dictionary<string,object>();
 
             // Login
             if (!client.Network.Login(loginParams))

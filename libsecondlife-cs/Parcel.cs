@@ -26,7 +26,7 @@
 
 using System;
 using System.Timers;
-using System.Collections;
+using System.Collections.Generic;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -347,7 +347,7 @@ namespace libsecondlife
     public class ParcelManager
     {
         /// <summary></summary>
-        public ArrayList ParcelsForSale;
+        public List<DirectoryParcel> ParcelsForSale;
 
         private SecondLife Client;
         private bool ReservedNewbie;
@@ -366,7 +366,7 @@ namespace libsecondlife
         public ParcelManager(SecondLife client)
         {
             Client = client;
-            ParcelsForSale = new ArrayList();
+            ParcelsForSale = new List<DirectoryParcel>();
 
             // Setup the callbacks
             Client.Network.RegisterCallback(PacketType.DirLandReply, new PacketCallback(DirLandReplyHandler));

@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 using libsecondlife;
 
@@ -48,7 +48,7 @@ namespace libsecondlife.AssetSystem
 		private SecondLife slClient;
 
         private TransferRequest curUploadRequest = null;
-		private Hashtable htDownloadRequests = new Hashtable();
+		private Dictionary<LLUUID, TransferRequest> htDownloadRequests = new Dictionary<LLUUID,TransferRequest>();
 
 		private class TransferRequest
 		{

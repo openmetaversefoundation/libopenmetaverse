@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace libsecondlife
@@ -119,7 +119,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public int Count;
         /// <summary></summary>
-		public ArrayList Fields;
+		public List<MapField> Fields;
 
         /// <summary>
         /// 
@@ -164,7 +164,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public bool Encoded;
         /// <summary></summary>
-		public ArrayList Blocks;
+		public List<MapBlock> Blocks;
 	}
 
     /// <summary>
@@ -173,9 +173,9 @@ namespace libsecondlife
 	public class ProtocolManager
 	{
         /// <summary></summary>
-		public Hashtable TypeSizes;
+		public Dictionary<FieldType, int> TypeSizes;
         /// <summary></summary>
-		public Hashtable KeywordPositions;
+		public Dictionary<string, int> KeywordPositions;
         /// <summary></summary>
 		public MapPacket[] LowMaps;
         /// <summary></summary>
@@ -199,7 +199,7 @@ namespace libsecondlife
 			HighMaps = new MapPacket[256];
 
 			// Build the type size hash table
-			TypeSizes = new Hashtable();
+			TypeSizes = new Dictionary<FieldType,int>();
 			TypeSizes.Add(FieldType.U8, 1);
 			TypeSizes.Add(FieldType.U16, 2);
 			TypeSizes.Add(FieldType.U32, 4);
@@ -381,7 +381,7 @@ namespace libsecondlife
 			string line;
 			StreamReader file;
 
-			KeywordPositions = new Hashtable();
+			KeywordPositions = new Dictionary<string,int>();
 
 			// Load the keyword file
 			try
@@ -544,7 +544,7 @@ namespace libsecondlife
 										LowMaps[fixedID].Name = tokens[0];
 										LowMaps[fixedID].Trusted = (tokens[3] == "Trusted");
 										LowMaps[fixedID].Encoded = (tokens[4] == "Zerocoded");
-										LowMaps[fixedID].Blocks = new ArrayList();
+										LowMaps[fixedID].Blocks = new List<MapBlock>();
 
 										currentPacket = LowMaps[fixedID];
 									}
@@ -556,7 +556,7 @@ namespace libsecondlife
 										LowMaps[low].Name = tokens[0];
 										LowMaps[low].Trusted = (tokens[2] == "Trusted");
 										LowMaps[low].Encoded = (tokens[3] == "Zerocoded");
-										LowMaps[low].Blocks = new ArrayList();
+										LowMaps[low].Blocks = new List<MapBlock>();
 
 										currentPacket = LowMaps[low];
 
@@ -570,7 +570,7 @@ namespace libsecondlife
 										MediumMaps[medium].Name = tokens[0];
 										MediumMaps[medium].Trusted = (tokens[2] == "Trusted");
 										MediumMaps[medium].Encoded = (tokens[3] == "Zerocoded");
-										MediumMaps[medium].Blocks = new ArrayList();
+										MediumMaps[medium].Blocks = new List<MapBlock>();
 
 										currentPacket = MediumMaps[medium];
 
@@ -584,7 +584,7 @@ namespace libsecondlife
 										HighMaps[high].Name = tokens[0];
 										HighMaps[high].Trusted = (tokens[2] == "Trusted");
 										HighMaps[high].Encoded = (tokens[3] == "Zerocoded");
-										HighMaps[high].Blocks = new ArrayList();
+										HighMaps[high].Blocks = new List<MapBlock>();
 
 										currentPacket = HighMaps[high];
 
@@ -647,7 +647,7 @@ namespace libsecondlife
 
 								currentBlock.Name = tokens[0];
 								currentBlock.KeywordPosition = KeywordPosition(currentBlock.Name);
-								currentBlock.Fields = new ArrayList();
+								currentBlock.Fields = new List<MapField>();
 								currentPacket.Blocks.Add(currentBlock);
 
 								if (tokens[1] == "Single")

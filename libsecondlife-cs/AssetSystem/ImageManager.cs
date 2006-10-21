@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 using libsecondlife;
 using libsecondlife.Packets;
@@ -43,7 +43,7 @@ namespace libsecondlife.AssetSystem
 
         private ImagePacketHelpers ImagePacketHelper;
 
-		private Hashtable htDownloadRequests = new Hashtable();
+		private Dictionary<LLUUID, TransferRequest> htDownloadRequests = new Dictionary<LLUUID,TransferRequest>();
 
 		private class TransferRequest
 		{
@@ -210,5 +210,5 @@ namespace libsecondlife.AssetSystem
         {
             Console.WriteLine(packet);
         }
-	}
+    }
 }

@@ -26,7 +26,7 @@
 
 using System;
 using System.Drawing;
-using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
@@ -400,7 +400,7 @@ namespace SLAccountant
 				cmdConnect.Text = "Disconnect";
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-				Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text, 
+                Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text, 
 					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
 					"Win", "0", "accountant", "jhurliman@wsu.edu");
 

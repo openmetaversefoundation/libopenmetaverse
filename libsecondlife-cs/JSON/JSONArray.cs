@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Nii.JSON
@@ -59,7 +59,7 @@ namespace Nii.JSON
 	public class JSONArray
 	{
 		/// <summary>The ArrayList where the JSONArray's properties are kept.</summary>
-		private ArrayList myArrayList;
+		private List<object> myArrayList;
 
 
 		/// <summary>
@@ -67,7 +67,7 @@ namespace Nii.JSON
 		/// </summary>
 		public JSONArray()
 		{
-			myArrayList = new ArrayList();
+			myArrayList = new List<object>();
 		}
 
 		/// <summary>

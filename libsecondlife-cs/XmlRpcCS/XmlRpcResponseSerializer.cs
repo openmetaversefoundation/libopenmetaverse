@@ -1,7 +1,7 @@
 namespace Nwc.XmlRpc
 {
   using System;
-  using System.Collections;
+  using System.Collections.Generic;
   using System.Xml;
 
   /// <summary>Class responsible for serializing an XML-RPC response.</summary>

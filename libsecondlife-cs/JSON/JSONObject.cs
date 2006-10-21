@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using System.Globalization;
@@ -134,10 +134,10 @@ namespace Nii.JSON
         }
 
         ///<summary>The hash map where the JSONObject's properties are kept.</summary>
-        private Hashtable myHashMap;
+        private Dictionary<string, object> myHashMap;
 
         ///<summary>A shadow list of keys to enable access by sequence of insertion</summary>
-        private ArrayList myKeyIndexList;
+        private List<string> myKeyIndexList;
 
         /// <summary>
         /// It is sometimes more convenient and less ambiguous to have a NULL
@@ -152,8 +152,8 @@ namespace Nii.JSON
         /// </summary>
         public JSONObject()
         {
-            myHashMap      = new Hashtable();
-            myKeyIndexList = new ArrayList();
+            myHashMap      = new Dictionary<string,object>();
+            myKeyIndexList = new List<string>();
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Nii.JSON
         /// C# convenience method
         /// </summary>
         /// <returns>The Hashtable</returns>
-        public IDictionary getDictionary()
+        public Dictionary<string, object> getDictionary()
         {
             return myHashMap;
         }

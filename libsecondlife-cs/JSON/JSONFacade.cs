@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Text;
@@ -16,10 +16,10 @@ namespace Nii.JSON
     /// </summary>
     /// <param name="sJSON"></param>
     /// <returns></returns>
-		public static IDictionary fromJSON(string sJSON)
+		public static Dictionary<string, object> fromJSON(string sJSON)
 		{
 			JSONObject jsob = new JSONObject(sJSON);
-			IDictionary idict = jsob.getDictionary();
+			Dictionary<string, object> idict = jsob.getDictionary();
 			return idict;
 		}
 	}

@@ -27,7 +27,7 @@
 using System;
 using System.Text;
 using System.Timers;
-using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -138,16 +138,16 @@ namespace libsecondlife
         
         private SecondLife Client;
 		private NetworkManager Network;
-		private Hashtable Callbacks;
+		private Dictionary<PacketType,List<PacketCallback>> Callbacks;
 		private ushort Sequence;
 		private byte[] RecvBuffer;
 		private Mutex RecvBufferMutex = new Mutex(false, "RecvBufferMutex");
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
-		private Hashtable NeedAck;
+		private Dictionary<int, Packet> NeedAck;
 		private Mutex NeedAckMutex;
-		private SortedList Inbox;
-        private ArrayList PendingAcks;
+		private SortedList<ushort, ushort> Inbox;
+        private List<uint> PendingAcks;
 		private Mutex InboxMutex;
 		private bool connected;
 		private uint circuitCode;
@@ -163,7 +163,7 @@ namespace libsecondlife
         /// <param name="circuit"></param>
         /// <param name="ip"></param>
         /// <param name="port"></param>
-		public Simulator(SecondLife client, Hashtable callbacks, uint circuit, 
+		public Simulator(SecondLife client, Dictionary<PacketType,List<PacketCallback>> callbacks, uint circuit, 
 			IPAddress ip, int port)
 		{
             Client = client;
@@ -180,11 +180,11 @@ namespace libsecondlife
             AckTimer.Elapsed += new ElapsedEventHandler(AckTimer_Elapsed);
 
             // Initialize the hashtable for reliable packets waiting on ACKs from the server
-            NeedAck = new Hashtable();
+            NeedAck = new Dictionary<int, Packet>();
 
             // Initialize the lists of sequence numbers we've received so far
-            Inbox = new SortedList();
-            PendingAcks = new ArrayList();
+            Inbox = new SortedList<ushort, ushort>();
+            PendingAcks = new List<uint>();
 
             NeedAckMutex = new Mutex(false, "NeedAckMutex");
             InboxMutex = new Mutex(false, "InboxMutex");
@@ -458,7 +458,7 @@ namespace libsecondlife
                 {
                     InboxMutex.WaitOne();
 
-                    if (Inbox.Contains(packet.Header.Sequence))
+                    if (Inbox.ContainsKey(packet.Header.Sequence))
                     {
                         Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
                             packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No"),
@@ -536,7 +536,7 @@ namespace libsecondlife
             {
                 if (Callbacks.ContainsKey(packet.Type))
                 {
-                    ArrayList callbackArray = (ArrayList)Callbacks[packet.Type];
+                    List<PacketCallback> callbackArray = Callbacks[packet.Type];
 
                     // Fire any registered callbacks
                     foreach (PacketCallback callback in callbackArray)
@@ -550,7 +550,7 @@ namespace libsecondlife
                 
                 if (Callbacks.ContainsKey(PacketType.Default))
                 {
-                    ArrayList callbackArray = (ArrayList)Callbacks[PacketType.Default];
+                    List<PacketCallback> callbackArray = Callbacks[PacketType.Default];
 
                     // Fire any registered callbacks
                     foreach (PacketCallback callback in callbackArray)
@@ -643,7 +643,7 @@ namespace libsecondlife
         /// The complete hashtable of all the login values returned by the 
         /// RPC login server, converted to native data types wherever possible
         /// </summary>
-		public Hashtable LoginValues;
+		public Dictionary<string, object> LoginValues;
         /// <summary>
         /// Shows whether the network layer is logged in to the grid or not
         /// </summary>
@@ -662,9 +662,9 @@ namespace libsecondlife
         /// </summary>
         public DisconnectCallback OnDisconnected;
 
-		private Hashtable Callbacks;
+		private Dictionary<PacketType,List<PacketCallback>> Callbacks;
 		private SecondLife Client;
-		private ArrayList Simulators;
+		private List<Simulator> Simulators;
 		private Mutex SimulatorsMutex;
         private System.Timers.Timer DisconnectTimer;
         private bool connected;
@@ -676,9 +676,9 @@ namespace libsecondlife
 		public NetworkManager(SecondLife client)
 		{
 			Client = client;
-			Simulators = new ArrayList();
+			Simulators = new List<Simulator>();
 			SimulatorsMutex = new Mutex(false, "SimulatorsMutex");
-			Callbacks = new Hashtable();
+			Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
 			CurrentSim = null;
 			LoginValues = null;
 
@@ -703,10 +703,10 @@ namespace libsecondlife
 		{
 			if (!Callbacks.ContainsKey(type))
 			{
-				Callbacks[type] = new ArrayList();
+				Callbacks[type] = new List<PacketCallback>();
 			}
 
-			ArrayList callbackArray = (ArrayList)Callbacks[type];
+            List<PacketCallback> callbackArray = Callbacks[type];
 			callbackArray.Add(callback);
 		}
 
@@ -724,7 +724,7 @@ namespace libsecondlife
 				return;
 			}
 
-            ArrayList callbackArray = (ArrayList)Callbacks[type];
+            List<PacketCallback> callbackArray = Callbacks[type];
 
 			if (callbackArray.Contains(callback))
 			{
@@ -787,15 +787,16 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-		public static Hashtable DefaultLoginValues(string firstName, string lastName, string password,
-			string userAgent, string author)
+        public static Dictionary<string, object> DefaultLoginValues(
+            string firstName, string lastName, string password, string userAgent, string author)
 		{
 			return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last", 
 				1, 50, 50, 50, "Win", "0", userAgent, author);
 		}
 
-        public static Hashtable DefaultLoginValues(string firstName, string lastName, string password, string mac,
-            string startLocation, string platform, string viewerDigest, string userAgent, string author)
+        public static Dictionary<string, object> DefaultLoginValues(string firstName, 
+            string lastName, string password, string mac, string startLocation, string platform, 
+            string viewerDigest, string userAgent, string author)
         {
             return DefaultLoginValues(firstName, lastName, password, mac, startLocation,
                 1, 50, 50, 50, platform, viewerDigest, userAgent, author);
@@ -818,11 +819,11 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-		public static Hashtable DefaultLoginValues(string firstName, string lastName, string password, string mac,
-			string startLocation, int major, int minor, int patch, int build, string platform, string viewerDigest, 
-			string userAgent, string author)
+        public static Dictionary<string, object> DefaultLoginValues(string firstName, 
+            string lastName, string password, string mac, string startLocation, int major, int minor, 
+            int patch, int build, string platform, string viewerDigest, string userAgent, string author)
 		{
-			Hashtable values = new Hashtable();
+            Dictionary<string, object> values = new Dictionary<string, object>();
 
 			// Generate an MD5 hash of the password
 			MD5 md5 = new MD5CryptoServiceProvider();
@@ -850,7 +851,7 @@ namespace libsecondlife
 			values["author"] = author;
 
             // Build the options array
-            ArrayList optionsArray = new ArrayList();
+            List<object> optionsArray = new List<object>();
             optionsArray.Add("inventory-root");
             optionsArray.Add("inventory-skeleton");
             optionsArray.Add("inventory-lib-root");
@@ -876,7 +877,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="loginParams"></param>
         /// <returns></returns>
-		public bool Login(Hashtable loginParams)
+        public bool Login(Dictionary<string, object> loginParams)
 		{
 			return Login(loginParams, "https://login.agni.lindenlab.com/cgi-bin/login.cgi");
 		}
@@ -887,7 +888,7 @@ namespace libsecondlife
         /// <param name="loginParams"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-		public bool Login(Hashtable loginParams, string url)
+        public bool Login(Dictionary<string, object> loginParams, string url)
 		{
 			XmlRpcResponse result;
 			XmlRpcRequest xmlrpc = new XmlRpcRequest();
@@ -914,7 +915,7 @@ namespace libsecondlife
 				return false;
 			}
 
-			LoginValues = (Hashtable)result.Value;
+			LoginValues = (Dictionary<string, object>)result.Value;
 
             if ((string)LoginValues["login"] == "indeterminate")
             {
@@ -936,7 +937,7 @@ namespace libsecondlife
 			System.Text.RegularExpressions.Regex LLSDtoJSON = 
 				new System.Text.RegularExpressions.Regex(@"('|r([0-9])|r(\-))");
 			string json;
-			IDictionary jsonObject = null;
+			Dictionary<string, object> jsonObject = null;
 			LLVector3 vector = null;
 			LLVector3 posVector = null;
 			LLVector3 lookatVector = null;
@@ -944,7 +945,7 @@ namespace libsecondlife
 
             try
             {
-                if (LoginValues.Contains("look_at"))
+                if (LoginValues.ContainsKey("look_at"))
                 {
                     // Replace LLSD variables with object representations
 
@@ -962,9 +963,9 @@ namespace libsecondlife
                     LoginValues["look_at"] = vector;
                 }
 
-                if (LoginValues.Contains("home"))
+                if (LoginValues.ContainsKey("home"))
                 {
-                    Hashtable home;
+                    Dictionary<string, object> home;
 
                     // Convert LLSD string to JSON
                     json = LLSDtoJSON.Replace((string)LoginValues["home"], "$2");
@@ -990,7 +991,7 @@ namespace libsecondlife
                     Client.Avatar.LookAt = lookatVector;
 
                     // Create a hashtable to hold the home values
-                    home = new Hashtable();
+                    home = new Dictionary<string,object>();
                     home["position"] = posVector;
                     home["look_at"] = lookatVector;
                     home["region_handle"] = regionHandle;

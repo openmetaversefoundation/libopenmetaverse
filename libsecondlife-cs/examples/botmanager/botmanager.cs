@@ -25,7 +25,6 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using libsecondlife;
@@ -67,8 +66,8 @@ namespace botmanager
             {
                 Kill();
             }
-            
-            Hashtable loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName,
+
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName,
                 Password, "00:00:00:00:00:00", "last", "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 

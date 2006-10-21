@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using libsecondlife.Packets;
 
@@ -53,14 +53,13 @@ namespace libsecondlife
         public string Title;
         public string Description;
         public ulong Powers;
-        /// <summary>(LLUUID,GroupMember) Contains all the group members
-        /// belonging to this role</summary>
-        public Hashtable Members;
+        /// <summary>Contains all the group members belonging to this role</summary>
+        public Dictionary<LLUUID,GroupMember> Members;
 
         public GroupRole(LLUUID id)
         {
             ID = id;
-            Members = new Hashtable();
+            Members = new Dictionary<LLUUID,GroupMember>();
         }
     }
 
@@ -87,12 +86,12 @@ namespace libsecondlife
         public int Contribution;
         public int GroupMembershipCount;
         public int GroupRolesCount;
-        /// <summary>(LLUUID,?)</summary>
-        public Hashtable Titles;
-        /// <summary>(LLUUID,GroupRole) List of all the roles in this group</summary>
-        public Hashtable Roles;
-        /// <summary>(LLUUID,GroupMember) List of all the members in this group</summary>
-        public Hashtable Members;
+        /// <summary></summary>
+        public Dictionary<LLUUID,LLUUID> Titles;
+        /// <summary>List of all the roles in this group</summary>
+        public Dictionary<LLUUID,GroupRole> Roles;
+        /// <summary>List of all the members in this group</summary>
+        public Dictionary<LLUUID,GroupMember> Members;
         /// <summary>Used for internal state tracking</summary>
         public LLUUID TitlesRequestID;
         /// <summary>Used for internal state tracking</summary>
@@ -105,9 +104,9 @@ namespace libsecondlife
             ID = id;
             InsigniaID = new LLUUID();
 
-            Titles = new Hashtable();
-            Roles = new Hashtable();
-            Members = new Hashtable();
+            Titles = new Dictionary<LLUUID,LLUUID>();
+            Roles = new Dictionary<LLUUID,GroupRole>();
+            Members = new Dictionary<LLUUID,GroupMember>();
 
             TitlesRequestID = new LLUUID();
             RolesRequestID = new LLUUID();
@@ -129,7 +128,7 @@ namespace libsecondlife
         public delegate void GroupsUpdatedCallback();
 
         /// <summary></summary>
-        public Hashtable Groups;
+        public Dictionary<LLUUID,Group> Groups;
         private Mutex GroupsMutex;
 
         /// <summary>Called whenever the group membership list is updated</summary>
@@ -139,7 +138,7 @@ namespace libsecondlife
         
         public GroupManager(SecondLife client)
         {
-            Groups = new Hashtable();
+            Groups = new Dictionary<LLUUID,Group>();
             GroupsMutex = new Mutex(false, "GroupsMutex");
             Client = client;
 
@@ -202,7 +201,7 @@ namespace libsecondlife
             // Attempt to locate the group that these titles belong to
             if (Groups.ContainsKey(titles.AgentData.GroupID))
             {
-                thisGroup = (Group)Groups[titles.AgentData.GroupID];
+                thisGroup = Groups[titles.AgentData.GroupID];
             }
             else
             {
@@ -236,7 +235,7 @@ namespace libsecondlife
             // Attempt to locate the group that these titles belong to
             if (Groups.ContainsKey(profile.GroupData.GroupID))
             {
-                thisGroup = (Group)Groups[profile.GroupData.GroupID];
+                thisGroup = Groups[profile.GroupData.GroupID];
             }
             else
             {
@@ -274,7 +273,7 @@ namespace libsecondlife
 
             if (Groups.ContainsKey(members.GroupData.GroupID))
             {
-                thisGroup = (Group)Groups[members.GroupData.GroupID];
+                thisGroup = Groups[members.GroupData.GroupID];
             }
             else
             {
@@ -314,7 +313,7 @@ namespace libsecondlife
 
             if (Groups.ContainsKey(roles.GroupData.GroupID))
             {
-                thisGroup = (Group)Groups[roles.GroupData.GroupID];
+                thisGroup = Groups[roles.GroupData.GroupID];
             }
             else
             {
@@ -326,7 +325,7 @@ namespace libsecondlife
             {
                 if (thisGroup.Roles.ContainsKey(block.RoleID))
                 {
-                    thisRole = (GroupRole)thisGroup.Roles[block.RoleID];
+                    thisRole = thisGroup.Roles[block.RoleID];
                 }
                 else
                 {
@@ -356,7 +355,7 @@ namespace libsecondlife
 
             if (Groups.ContainsKey(members.AgentData.GroupID))
             {
-                thisGroup = (Group)Groups[members.AgentData.GroupID];
+                thisGroup = Groups[members.AgentData.GroupID];
             }
             else
             {
@@ -368,7 +367,7 @@ namespace libsecondlife
             {
                 if (thisGroup.Roles.ContainsKey(block.RoleID))
                 {
-                    thisRole = (GroupRole)thisGroup.Roles[block.RoleID];
+                    thisRole = thisGroup.Roles[block.RoleID];
                 }
                 else
                 {
@@ -378,7 +377,7 @@ namespace libsecondlife
 
                 if (thisGroup.Members.ContainsKey(block.MemberID))
                 {
-                    thisMember = (GroupMember)thisGroup.Members[block.MemberID];
+                    thisMember = thisGroup.Members[block.MemberID];
                 }
                 else
                 {

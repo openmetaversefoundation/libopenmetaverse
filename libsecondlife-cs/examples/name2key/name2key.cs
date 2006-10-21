@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -76,8 +76,8 @@ namespace name2key
 			client.Network.RegisterCallback(PacketType.DirPeopleReply, new PacketCallback(QueryHandler));
 
 			// Setup the login values
-			Hashtable loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "00:00:00:00:00:00",
-				"last", "Win", "0", "name2key", "jhurliman@wsu.edu");
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
+                "00:00:00:00:00:00", "last", "Win", "0", "name2key", "jhurliman@wsu.edu");
 
 			if (!client.Network.Login(loginParams))
 			{

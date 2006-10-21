@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -72,7 +72,7 @@ namespace libsecondlife
         public event AddRegionCallback OnRegionAdd;
 
         /// <summary>A hashtable of all the regions, indexed by region ID</summary>
-		public Hashtable Regions;
+		public Dictionary<LLUUID,GridRegion> Regions;
         /// <summary>Current direction of the sun</summary>
         public LLVector3 SunDirection;
 
@@ -85,7 +85,7 @@ namespace libsecondlife
 		public GridManager(SecondLife client)
 		{
 			Client = client;
-			Regions = new Hashtable();
+			Regions = new Dictionary<LLUUID,GridRegion>();
             SunDirection = new LLVector3();
 
 			Client.Network.RegisterCallback(PacketType.MapBlockReply, new PacketCallback(MapBlockReplyHandler));
@@ -154,13 +154,13 @@ namespace libsecondlife
 		public GridRegion GetSim(string name) 
 		{
 			if(Regions.ContainsKey(name)) 
-				return (GridRegion)Regions[name];
+				return Regions[name];
 
 			AddSim(name);
 			System.Threading.Thread.Sleep(1000);
 
 			if(Regions.ContainsKey(name)) 
-				return (GridRegion)Regions[name];
+				return Regions[name];
 			else 
 			{
 				//TODO: Put some better handling inplace here with some retry code
