@@ -192,7 +192,7 @@ namespace groupmanager
             this.MinimumSize = new System.Drawing.Size(453, 378);
             this.Name = "frmGroupManager";
             this.Text = "Group Manager";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmGroupManager_FormClosing);
+            //this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmGroupManager_FormClosing);
             this.groupBox.ResumeLayout(false);
             this.grpLogin.ResumeLayout(false);
             this.grpLogin.PerformLayout();
