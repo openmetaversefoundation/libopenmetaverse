@@ -8,6 +8,21 @@ namespace Nwc.XmlRpc
     using System.Text;
     using System.Reflection;
 
+    internal class AcceptAllCertificatePolicy : ICertificatePolicy
+    {
+        public AcceptAllCertificatePolicy()
+        {
+        }
+
+        public bool CheckValidationResult(ServicePoint sPoint,
+            System.Security.Cryptography.X509Certificates.X509Certificate cert,
+            WebRequest wRequest, int certProb)
+        {
+            // Always accept
+            return true;
+        }
+    }
+
     /// <summary>Class supporting the request side of an XML-RPC transaction.</summary>
     public class XmlRpcRequest
     {
@@ -44,9 +59,9 @@ namespace Nwc.XmlRpc
         public XmlRpcResponse Send(String url)
         {
             // Override SSL authentication mechanisms
-            //ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-            ServicePointManager.ServerCertificateValidationCallback +=
-                new System.Net.Security.RemoteCertificateValidationCallback(CheckValidationResult);
+            ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+            //ServicePointManager.ServerCertificateValidationCallback +=
+            //    new System.Net.Security.RemoteCertificateValidationCallback(CheckValidationResult);
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             if (request == null)
