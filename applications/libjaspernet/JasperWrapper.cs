@@ -95,7 +95,7 @@ class JasperWrapper {
     public static extern IntPtr jas_stream_fopen(string filename, string mode);
   
   [DllImport(JASPER_LIBRARY)]
-    public static extern IntPtr jas_stream_memopen(IntPtr buf, int bufsize);
+    private static extern IntPtr jas_stream_memopen(IntPtr buf, int bufsize);
   
   public static IntPtr jas_stream_memopen(byte[] buf) {
     IntPtr bufPtr = Marshal.AllocHGlobal(buf.Length);
@@ -132,11 +132,9 @@ class JasperWrapper {
     return cmpt.type;
   }
   
-  
   [DllImport(JASPER_LIBRARY)]
     public static extern int jas_image_readcmpt(IntPtr image_ptr, int cmptno,
 						int x, int y, int width, int height, IntPtr data);
-  
   
   public static string get_jasper_version() {
     string text = Marshal.PtrToStringAuto(jas_getversion());
@@ -176,6 +174,35 @@ class JasperWrapper {
     get { return get_jasper_version(); }
   }
   
+  public static int[] jasper_decode_j2c(byte[] input) {
+    IntPtr input_stream_ptr=jas_stream_memopen(input);
+    int format=jas_image_getfmt(input_stream_ptr);
+      
+    Console.WriteLine("file is format # "+format);
+      
+    IntPtr image_ptr=jas_image_decode(input_stream_ptr, format, "");
+    if(image_ptr==IntPtr.Zero) throw new Exception("Error decoding image");
+      
+    jas_image_t image_struct=(jas_image_t)Marshal.PtrToStructure(image_ptr, typeof(jas_image_t));
+    
+    Console.WriteLine("image has "+image_struct.numcmpts+" components");
+    int[] mux_order=null;	
+    switch(image_struct.numcmpts) {
+        case 4: mux_order=new int[] {0, 1, 2, 3}; break; /* ARGB? */
+        case 3: mux_order=new int[] {0, 1, 2};    break; /* RGB? */
+        case 2: mux_order=new int[] {0, 1};       break; /* ??? */
+        case 1: mux_order=new int[] {0};          break; /* grayscale */
+	default: throw new Exception("Unhandled number of components:" + image_struct.numcmpts);
+    }
+      
+    int[] pixels=get_multiplexed_image_data(image_ptr, mux_order);
+
+    Console.WriteLine("Image dimensions: "+image_struct.width	+ " x " + image_struct.height);
+    jas_stream_close(input_stream_ptr);
+    jas_image_destroy(image_ptr);
+    return pixels;
+  }
+
   public static void Main(string[] args) {
     jas_init();
     Console.WriteLine("get_jasper_version="+get_jasper_version());
