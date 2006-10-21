@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_InventoryManager", "exam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "groupmanager", "examples\groupmanager\groupmanager.csproj", "{F460FAB3-0D12-4873-89EB-2696818764B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimationSample", "examples\AnimationSample\AnimationSample.csproj", "{4EF98AD4-B3B3-42B0-9273-13A614A823F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,10 @@ Global
 		{F460FAB3-0D12-4873-89EB-2696818764B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F460FAB3-0D12-4873-89EB-2696818764B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F460FAB3-0D12-4873-89EB-2696818764B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
