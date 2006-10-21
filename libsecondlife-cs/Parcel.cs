@@ -322,7 +322,6 @@ namespace libsecondlife
         /// </summary>
         /// <param name="client"></param>
         /// <param name="returnType"></param>
-        /// <param name="otherCleanTime"></param>
         public void ReturnObjects(SecondLife client, uint returnType)
         {
             // TODO: ENUM for returnType
@@ -654,10 +653,10 @@ namespace libsecondlife
             Finished = true;
         }
 
-        private void ParcelInfoTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
-        {
-            ParcelInfoTimeout = true;
-        }
+        //private void ParcelInfoTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
+        //{
+        //    ParcelInfoTimeout = true;
+        //}
 
         private void DirLandReplyHandler(Packet packet, Simulator simulator)
         {

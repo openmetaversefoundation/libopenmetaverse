@@ -32,12 +32,22 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
+    /// Callback used for client apps to receive log messages from
+    /// libsecondlife
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="level"></param>
+    public delegate void LogCallback(string message, Helpers.LogLevel level);
+
+    /// <summary>
     /// Main class to expose Second Life functionality to clients. All of the
     /// classes needed for sending and receiving data are accessible through 
     /// this class.
     /// </summary>
     public class SecondLife
     {
+        public const string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+
         /// <summary></summary>
         public NetworkManager Network;
         /// <summary></summary>
@@ -54,6 +64,8 @@ namespace libsecondlife
         public ObjectManager Objects;
         /// <summary></summary>
         public GroupManager Groups;
+        /// <summary></summary>
+        public LogCallback OnLogMessage;
         /// <summary></summary>
         public bool Debug;
 
@@ -99,9 +111,35 @@ namespace libsecondlife
         /// <param name="level">From the LogLevel enum, either Info, Warning, or Error</param>
         public void Log(string message, Helpers.LogLevel level)
         {
+            if (OnLogMessage != null)
+            {
+                ;
+            }
+            else
+            {
+                Console.WriteLine(level.ToString().ToUpper() + ": " + message);
+            }
+        }
+
+        /// <summary>
+        /// If the library is compiled with DEBUG defined, and SecondLife.Debug
+        /// is true, either an event will be fired for the debug message or 
+        /// it will be written to the console
+        /// </summary>
+        /// <param name="message">The debug message</param>
+        [System.Diagnostics.Conditional("DEBUG")]
+        public void DebugLog(string message)
+        {
             if (Debug)
             {
-                Console.WriteLine(level.ToString() + ": " + message);
+                if (OnLogMessage != null)
+                {
+                    ;
+                }
+                else
+                {
+                    Console.WriteLine("DEBUG: " + message);
+                }
             }
         }
 
@@ -189,15 +227,20 @@ namespace libsecondlife
         public const byte MSG_ZEROCODED = 0x80;
 
         /// <summary>
-        /// 
+        /// Passed to SecondLife.Log() to identify the severity of a log entry
         /// </summary>
         public enum LogLevel
         {
-            /// <summary></summary>
+            /// <summary>Non-noisy useful information, may be helpful in 
+            /// debugging a problem</summary>
             Info,
-            /// <summary></summary>
+            /// <summary>A non-critical error occurred. A warning will not 
+            /// prevent the rest of libsecondlife from operating as usual, 
+            /// although it may be indicative of an underlying issue</summary>
             Warning,
-            /// <summary></summary>
+            /// <summary>A critical error has occurred. Generally this will 
+            /// be followed by the network layer shutting down, although the 
+            /// stability of libsecondlife after an error is uncertain</summary>
             Error
         };
 
