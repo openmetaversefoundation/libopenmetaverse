@@ -51,7 +51,7 @@ namespace AnimationSample
         private void btnLogin_Click(object sender, EventArgs e)
         {
             //Login information
-            Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirst.Text, txtLast.Text, txtPassword.Text, "00:00:00:00:00:00",
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirst.Text, txtLast.Text, txtPassword.Text, "00:00:00:00:00:00",
                 "last", 1, 12, 12, 12, "Win", "0", "animationsample", "jessemalthus@gmail.com");
             Hashtable loginReply = new Hashtable();
 

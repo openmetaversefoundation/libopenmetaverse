@@ -68,7 +68,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\libsecondlife-cs\libsecondlife.csproj">
+    <ProjectReference Include="..\..\libsecondlife.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Name>libsecondlife</Name>
     </ProjectReference>
