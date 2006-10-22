@@ -125,6 +125,10 @@ public class JasperWrapper
     [DllImport(JASPER_LIBRARY)]
     public static extern int jas_image_getfmt(IntPtr stream);
 
+    /* Get the ID for the image format with the specified name. */
+    [DllImport(JASPER_LIBRARY)]
+    private static extern int jas_image_strtofmt(string name);
+
     [DllImport(JASPER_LIBRARY)]
     public static extern int jas_image_fmtfromname(string filename);
 
@@ -194,6 +198,38 @@ public class JasperWrapper
     public static String version
     {
         get { return get_jasper_version(); }
+    }
+
+    public static byte[] jasper_decode_j2c_to_tiff(byte[] input)
+    {
+	int header_size=1024;  // a guess
+        IntPtr input_stream_ptr = jas_stream_memopen(input);
+        int format = jas_image_getfmt(input_stream_ptr);
+
+        Console.WriteLine("file is format # " + format);
+
+        IntPtr image_ptr = jas_image_decode(input_stream_ptr, format, "");
+        if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
+        jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
+	
+	int output_buffer_size=image_struct.width*image_struct.height*4+header_size;
+        IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
+        IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
+
+        int retval = jas_image_encode(image_ptr, output_stream_ptr, 
+				      jas_image_strtofmt("tif"), "");
+
+        if (retval != 0) throw new Exception("Error encoding image: " + retval);
+
+        byte[] buf = new byte[output_buffer_size];
+        Marshal.Copy(bufPtr, buf, 0, output_buffer_size);
+        Marshal.FreeHGlobal(bufPtr);
+
+        jas_image_destroy(image_ptr);
+        jas_stream_close(output_stream_ptr);
+        jas_stream_close(input_stream_ptr);
+
+        return buf;
     }
 
     public static byte[] jasper_decode_j2c_to_tga(byte[] input)
@@ -271,11 +307,19 @@ public class JasperWrapper
             binary_reader.Close();
             read_stream.Close();
 
-            byte[] tga_data = jasper_decode_j2c_to_tga(j2c_data);
+/*            byte[] tga_data = jasper_decode_j2c_to_tga(j2c_data);
             Console.WriteLine("Writing output to output.tga");
             FileStream write_stream = new FileStream("output.tga", FileMode.Create);
             write_stream.Write(tga_data, 0, tga_data.Length);
+            write_stream.Close(); */
+
+
+            byte[] tiff_data = jasper_decode_j2c_to_tiff(j2c_data);
+            Console.WriteLine("Writing output to output.tif");
+            FileStream write_stream = new FileStream("output.tif", FileMode.Create);
+            write_stream.Write(tiff_data, 0, tiff_data.Length);
             write_stream.Close();
+
             return;
         }
     }
