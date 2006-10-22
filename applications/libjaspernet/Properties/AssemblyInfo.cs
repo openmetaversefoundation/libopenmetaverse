@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("libjaspernet")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A wrapper for libjasper")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("libsecondlife")]
 [assembly: AssemblyProduct("libjaspernet")]
 [assembly: AssemblyCopyright("Copyright © libsecondlife 2006")]
 [assembly: AssemblyTrademark("")]
