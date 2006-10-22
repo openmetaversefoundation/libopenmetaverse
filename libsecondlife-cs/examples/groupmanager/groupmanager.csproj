@@ -73,6 +73,7 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="libjaspernet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -113,6 +114,10 @@
     <Content Include="App.ico" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="frmGroupInfo.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmGroupInfo.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmGroupManager.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmGroupManager.cs</DependentUpon>

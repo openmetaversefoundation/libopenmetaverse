@@ -76,21 +76,6 @@ namespace libsecondlife
     /// </summary>
 	public class NotConnectedException : ApplicationException { }
 
-	internal class AcceptAllCertificatePolicy : ICertificatePolicy
-	{
-		public AcceptAllCertificatePolicy()
-		{
-		}
-
-		public bool CheckValidationResult(ServicePoint sPoint, 
-			System.Security.Cryptography.X509Certificates.X509Certificate cert, 
-			WebRequest wRequest,int certProb)
-		{
-			// Always accept
-			return true;
-		}
-	}
-
     /// <summary>
     /// Simulator is a wrapper for a network connection to a simulator and the
     /// Region class representing the block of land in the metaverse.

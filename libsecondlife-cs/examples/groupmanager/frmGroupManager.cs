@@ -99,7 +99,7 @@ namespace groupmanager
             {
                 Group group = (Group)lstGroups.Items[lstGroups.SelectedIndex];
 
-                frmGroupInfo frm = new frmGroupInfo(group);
+                frmGroupInfo frm = new frmGroupInfo(group, client);
                 frm.ShowDialog();
             }
         }
