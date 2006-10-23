@@ -63,6 +63,12 @@ namespace libsecondlife
         }
     }
 
+    public class GroupTitle
+    {
+        public string Title;
+        public bool Selected;
+    }
+
     /// <summary>
     /// Represents a group in Second Life
     /// </summary>
@@ -86,31 +92,11 @@ namespace libsecondlife
         public int Contribution;
         public int GroupMembershipCount;
         public int GroupRolesCount;
-        /// <summary></summary>
-        public Dictionary<LLUUID,LLUUID> Titles;
-        /// <summary>List of all the roles in this group</summary>
-        public Dictionary<LLUUID,GroupRole> Roles;
-        /// <summary>List of all the members in this group</summary>
-        public Dictionary<LLUUID,GroupMember> Members;
-        /// <summary>Used for internal state tracking</summary>
-        public LLUUID TitlesRequestID;
-        /// <summary>Used for internal state tracking</summary>
-        public LLUUID RolesRequestID;
-        /// <summary>Used for internal state tracking</summary>
-        public LLUUID MembersRequestID;
 
         public Group(LLUUID id)
         {
             ID = id;
             InsigniaID = new LLUUID();
-
-            Titles = new Dictionary<LLUUID,LLUUID>();
-            Roles = new Dictionary<LLUUID,GroupRole>();
-            Members = new Dictionary<LLUUID,GroupMember>();
-
-            TitlesRequestID = new LLUUID();
-            RolesRequestID = new LLUUID();
-            MembersRequestID = new LLUUID();
         }
 
         public override string ToString()
@@ -119,28 +105,91 @@ namespace libsecondlife
         }
     }
 
+    public class GroupProfile
+    {
+        public LLUUID ID;
+        public LLUUID InsigniaID;
+        public LLUUID FounderID;
+        public LLUUID OwnerRole;
+        public string Name;
+        public string Charter;
+        public string MemberTitle;
+        public bool OpenEnrollment;
+        public bool ShowInList;
+        public ulong Powers;
+        public bool AcceptNotices;
+        public bool AllowPublish;
+        public bool MaturePublish;
+        public int MembershipFee;
+        public int Money;
+        public int Contribution;
+        public int GroupMembershipCount;
+        public int GroupRolesCount;
+    }
+
+    /// <summary>
+    /// Handles all network traffic related to reading and writing group
+    /// information
+    /// </summary>
     public class GroupManager
     {
         /// <summary>
-        /// Called whenever the group membership list is updated
+        /// Callback for the list of groups the avatar is currently a member of
         /// </summary>
         /// <param name="groups"></param>
-        public delegate void GroupsUpdatedCallback();
-
-        /// <summary></summary>
-        public Dictionary<LLUUID,Group> Groups;
-        private Mutex GroupsMutex;
-
-        /// <summary>Called whenever the group membership list is updated</summary>
-        public event GroupsUpdatedCallback OnGroupsUpdated;
+        public delegate void CurrentGroupsCallback(Dictionary<LLUUID,Group> groups);
+        /// <summary>
+        /// Callback for the profile of a group
+        /// </summary>
+        /// <param name="group"></param>
+        public delegate void GroupProfileCallback(GroupProfile group);
+        /// <summary>
+        /// Callback for the member list of a group
+        /// </summary>
+        /// <param name="members"></param>
+        public delegate void GroupMembersCallback(Dictionary<LLUUID, GroupMember> members);
+        /// <summary>
+        /// Callback for the role list of a group
+        /// </summary>
+        /// <param name="roles"></param>
+        public delegate void GroupRolesCallback(Dictionary<LLUUID, GroupRole> roles);
+        /// <summary>
+        /// Callback for the title list of a group
+        /// </summary>
+        /// <param name="titles"></param>
+        public delegate void GroupTitlesCallback(Dictionary<LLUUID, GroupTitle> titles);
 
         private SecondLife Client;
-        
+        // No need for concurrency with the current group list request
+        private CurrentGroupsCallback OnCurrentGroups;
+        private Dictionary<LLUUID, GroupProfileCallback> GroupProfileCallbacks;
+        private Dictionary<LLUUID, GroupMembersCallback> GroupMembersCallbacks;
+        private Dictionary<LLUUID, GroupRolesCallback> GroupRolesCallbacks;
+        private Dictionary<LLUUID, GroupTitlesCallback> GroupTitlesCallbacks;
+        /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
+        private Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>> GroupMembersCaches;
+        private Mutex GroupMembersCachesMutex;
+        /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
+        private Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>> GroupRolesCaches;
+        private Mutex GroupRolesCachesMutex;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
         public GroupManager(SecondLife client)
         {
-            Groups = new Dictionary<LLUUID,Group>();
-            GroupsMutex = new Mutex(false, "GroupsMutex");
             Client = client;
+
+            GroupProfileCallbacks = new Dictionary<LLUUID, GroupProfileCallback>();
+            GroupMembersCallbacks = new Dictionary<LLUUID, GroupMembersCallback>();
+            GroupRolesCallbacks = new Dictionary<LLUUID, GroupRolesCallback>();
+            GroupTitlesCallbacks = new Dictionary<LLUUID, GroupTitlesCallback>();
+
+            GroupMembersCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>>();
+            GroupMembersCachesMutex = new Mutex(false, "GroupMembersCachesMutex");
+            GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();
+            GroupRolesCachesMutex = new Mutex(false, "GroupRolesCachesMutex");
 
             Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new PacketCallback(GroupDataHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new PacketCallback(GroupTitlesHandler));
@@ -155,245 +204,227 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.GroupAccountTransactionsReply, new PacketCallback(GroupAccountTransactionsHandler));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cgc"></param>
+        public void BeginGetCurrentGroups(CurrentGroupsCallback cgc)
+        {
+            OnCurrentGroups = cgc;
+
+            AgentDataUpdateRequestPacket request = new AgentDataUpdateRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+
+            Client.Network.SendPacket(request);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="gpc"></param>
+        public void BeginGetGroupProfile(LLUUID group, GroupProfileCallback gpc)
+        {
+            GroupProfileCallbacks[group] = gpc;
+
+            GroupProfileRequestPacket request = new GroupProfileRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.GroupData.GroupID = group;
+
+            Client.Network.SendPacket(request);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="gmc"></param>
+        public void BeginGetGroupMembers(LLUUID group, GroupMembersCallback gmc)
+        {
+            LLUUID requestID = LLUUID.GenerateUUID();
+
+            #region GroupMembersCachesMutex
+            GroupMembersCachesMutex.WaitOne();
+            GroupMembersCaches[requestID] = new Dictionary<LLUUID,GroupMember>();
+            GroupMembersCachesMutex.ReleaseMutex();
+            #endregion GroupMembersCachesMutex
+
+            GroupMembersCallbacks[group] = gmc;
+
+            GroupMembersRequestPacket request = new GroupMembersRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.GroupData.GroupID = group;
+            request.GroupData.RequestID = requestID;
+
+            Client.Network.SendPacket(request);
+        }
+
+        public void BeginGetGroupRoles(LLUUID group, GroupRolesCallback grc)
+        {
+            LLUUID requestID = LLUUID.GenerateUUID();
+
+            #region GroupRolesCachesMutex
+            GroupRolesCachesMutex.WaitOne();
+            GroupRolesCaches[requestID] = new Dictionary<LLUUID, GroupRole>();
+            GroupRolesCachesMutex.ReleaseMutex();
+            #endregion GroupRolesCachesMutex
+
+            GroupRolesCallbacks[group] = grc;
+
+            GroupRoleDataRequestPacket request = new GroupRoleDataRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.GroupData.GroupID = group;
+            request.GroupData.RequestID = requestID;
+
+            Client.Network.SendPacket(request);
+        }
+
+        public void BeginGetGroupTitles(LLUUID group, GroupTitlesCallback gtc)
+        {
+            LLUUID requestID = LLUUID.GenerateUUID();
+
+            GroupTitlesCallbacks[group] = gtc;
+
+            GroupTitlesRequestPacket request = new GroupTitlesRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.GroupID = group;
+            request.AgentData.RequestID = requestID;
+
+            Client.Network.SendPacket(request);
+        }
+
         private void GroupDataHandler(Packet packet, Simulator simulator)
         {
-            // FIXME: Add an additional list, such as MyGroups that will distinguish the groups we are
-            // actually in versus the ones we are just collecting data on. Or should there be a better 
-            // way to temporarily collect data for transient requests?
-            AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
-
-            #region GroupsMutex
-            GroupsMutex.WaitOne();
-
-            // Flush out the groups list
-            Groups.Clear();
-
-            foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
+            if (OnCurrentGroups != null)
             {
-                Group group = new Group(block.GroupID);
+                AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
 
-                group.InsigniaID = block.GroupInsigniaID;
-                group.Name = Helpers.FieldToString(block.GroupName);
-                group.Powers = block.GroupPowers;
-                group.Contribution = block.Contribution;
-                group.AcceptNotices = block.AcceptNotices;
+                Dictionary<LLUUID, Group> currentGroups = new Dictionary<LLUUID, Group>();
 
-                Groups[group.ID] = group;
+                foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
+                {
+                    Group group = new Group(block.GroupID);
+
+                    group.InsigniaID = block.GroupInsigniaID;
+                    group.Name = Helpers.FieldToString(block.GroupName);
+                    group.Powers = block.GroupPowers;
+                    group.Contribution = block.Contribution;
+                    group.AcceptNotices = block.AcceptNotices;
+
+                    currentGroups[block.GroupID] = group;
+                }
+
+                OnCurrentGroups(currentGroups);
             }
+        }
 
-            GroupsMutex.ReleaseMutex();
-            #endregion GroupsMutex
+        private void GroupProfileHandler(Packet packet, Simulator simulator)
+        {
+            GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
 
-            if (OnGroupsUpdated != null)
+            if (GroupProfileCallbacks.ContainsKey(profile.GroupData.GroupID))
             {
-                OnGroupsUpdated();
+                GroupProfile group = new GroupProfile();
+
+                group.AllowPublish = profile.GroupData.AllowPublish;
+                group.Charter = Helpers.FieldToString(profile.GroupData.Charter);
+                group.FounderID = profile.GroupData.FounderID;
+                group.GroupMembershipCount = profile.GroupData.GroupMembershipCount;
+                group.GroupRolesCount = profile.GroupData.GroupRolesCount;
+                group.InsigniaID = profile.GroupData.InsigniaID;
+                group.MaturePublish = profile.GroupData.MaturePublish;
+                group.MembershipFee = profile.GroupData.MembershipFee;
+                group.MemberTitle = Helpers.FieldToString(profile.GroupData.MemberTitle);
+                group.Money = profile.GroupData.Money;
+                group.Name = Helpers.FieldToString(profile.GroupData.Name);
+                group.OpenEnrollment = profile.GroupData.OpenEnrollment;
+                group.OwnerRole = profile.GroupData.OwnerRole;
+                group.Powers = profile.GroupData.PowersMask;
+                group.ShowInList = profile.GroupData.ShowInList;
+
+                GroupProfileCallbacks[profile.GroupData.GroupID](group);
             }
         }
 
         private void GroupTitlesHandler(Packet packet, Simulator simulator)
         {
-            Group thisGroup;
             GroupTitlesReplyPacket titles = (GroupTitlesReplyPacket)packet;
 
-            #region GroupsMutex
-            GroupsMutex.WaitOne();
+            Dictionary<LLUUID, GroupTitle> groupTitleCache = new Dictionary<LLUUID, GroupTitle>();
 
-            // Attempt to locate the group that these titles belong to
-            if (Groups.ContainsKey(titles.AgentData.GroupID))
+            foreach (GroupTitlesReplyPacket.GroupDataBlock block in titles.GroupData)
             {
-                thisGroup = Groups[titles.AgentData.GroupID];
-            }
-            else
-            {
-                // Avoid throwing this data away by creating a new group
-                thisGroup = new Group(titles.AgentData.GroupID);
-                thisGroup.TitlesRequestID = titles.AgentData.RequestID;
-                Groups[titles.AgentData.GroupID] = thisGroup;
+                GroupTitle groupTitle = new GroupTitle();
+
+                groupTitle.Title = Helpers.FieldToString(block.Title);
+                groupTitle.Selected = block.Selected;
+
+                groupTitleCache[block.RoleID] = groupTitle;
             }
 
-            if (titles.AgentData.RequestID == thisGroup.TitlesRequestID)
-            {
-                foreach (GroupTitlesReplyPacket.GroupDataBlock block in titles.GroupData)
-                {
-                    thisGroup.Titles[Helpers.FieldToString(block.Title)] = block.RoleID;
-                    // TODO: Do something with block.Selected
-                }
-            }
-
-            GroupsMutex.ReleaseMutex();
-            #endregion
-        }
-
-        private void GroupProfileHandler(Packet packet, Simulator simulator)
-        {
-            Group thisGroup;
-            GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
-            
-            #region GroupsMutex
-            GroupsMutex.WaitOne();
-
-            // Attempt to locate the group that these titles belong to
-            if (Groups.ContainsKey(profile.GroupData.GroupID))
-            {
-                thisGroup = Groups[profile.GroupData.GroupID];
-            }
-            else
-            {
-                thisGroup = new Group(profile.GroupData.GroupID);
-                Groups[profile.GroupData.GroupID] = thisGroup;
-            }
-
-            thisGroup.AllowPublish = profile.GroupData.AllowPublish;
-            thisGroup.Charter = Helpers.FieldToString(profile.GroupData.Charter);
-            thisGroup.FounderID = profile.GroupData.FounderID;
-            thisGroup.GroupMembershipCount = profile.GroupData.GroupMembershipCount;
-            thisGroup.GroupRolesCount = profile.GroupData.GroupRolesCount;
-            thisGroup.InsigniaID = profile.GroupData.InsigniaID;
-            thisGroup.MaturePublish = profile.GroupData.MaturePublish;
-            thisGroup.MembershipFee = profile.GroupData.MembershipFee;
-            thisGroup.MemberTitle = Helpers.FieldToString(profile.GroupData.MemberTitle);
-            thisGroup.Money = profile.GroupData.Money;
-            thisGroup.Name = Helpers.FieldToString(profile.GroupData.Name);
-            thisGroup.OpenEnrollment = profile.GroupData.OpenEnrollment;
-            thisGroup.OwnerRole = profile.GroupData.OwnerRole;
-            thisGroup.Powers = profile.GroupData.PowersMask;
-            thisGroup.ShowInList = profile.GroupData.ShowInList;
-
-            GroupsMutex.ReleaseMutex();
-            #endregion
+            GroupTitlesCallbacks[titles.AgentData.GroupID](groupTitleCache);
         }
 
         private void GroupMembersHandler(Packet packet, Simulator simulator)
         {
-            Group thisGroup;
             GroupMembersReplyPacket members = (GroupMembersReplyPacket)packet;
 
-            #region GroupsMutex
-            GroupsMutex.WaitOne();
+            #region GroupMembersCachesMutex
+            GroupMembersCachesMutex.WaitOne();
 
-            if (Groups.ContainsKey(members.GroupData.GroupID))
+            // If nothing is registered to receive this RequestID drop the data
+            if (GroupMembersCaches.ContainsKey(members.GroupData.RequestID))
             {
-                thisGroup = Groups[members.GroupData.GroupID];
+                Dictionary<LLUUID, GroupMember> groupMemberCache = GroupMembersCaches[members.GroupData.RequestID];
+
+                foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                {
+                    GroupMember groupMember = new GroupMember(block.AgentID);
+
+                    groupMember.Contribution = block.Contribution;
+                    groupMember.IsOwner = block.IsOwner;
+                    groupMember.OnlineStatus = Helpers.FieldToString(block.OnlineStatus);
+                    groupMember.Powers = block.AgentPowers;
+                    groupMember.Title = Helpers.FieldToString(block.Title);
+
+                    groupMemberCache[block.AgentID] = groupMember;
+                }
+
+                // Release the mutex before the callback
+                GroupMembersCachesMutex.ReleaseMutex();
+
+                // Check if we've received all the group members that are showing up
+                if (groupMemberCache.Count >= members.GroupData.MemberCount)
+                {
+                    GroupMembersCallbacks[members.GroupData.GroupID](groupMemberCache);
+                }
             }
             else
             {
-                thisGroup = new Group(members.GroupData.GroupID);
-                Groups[members.GroupData.GroupID] = thisGroup;
+                GroupMembersCachesMutex.ReleaseMutex();
             }
 
-            if (members.GroupData.RequestID == thisGroup.MembersRequestID)
-            {
-                foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
-                {
-                    GroupMember member = new GroupMember(block.AgentID);
-
-                    member.Contribution = block.Contribution;
-                    member.ID = block.AgentID;
-                    member.IsOwner = block.IsOwner;
-                    member.OnlineStatus = Helpers.FieldToString(block.OnlineStatus);
-                    member.Powers = block.AgentPowers;
-                    member.Title = Helpers.FieldToString(block.Title);
-
-                    thisGroup.Members[member.ID] = member;
-                }
-            }
-
-            GroupsMutex.ReleaseMutex();
-            #endregion
+            #endregion GroupMembersCachesMutex
         }
 
         private void GroupRoleDataHandler(Packet packet, Simulator simulator)
         {
-            Group thisGroup;
-            GroupRole thisRole;
             GroupRoleDataReplyPacket roles = (GroupRoleDataReplyPacket)packet;
-
-            #region GroupsMutex
-            GroupsMutex.WaitOne();
-
-            if (Groups.ContainsKey(roles.GroupData.GroupID))
-            {
-                thisGroup = Groups[roles.GroupData.GroupID];
-            }
-            else
-            {
-                thisGroup = new Group(roles.GroupData.GroupID);
-                Groups[roles.GroupData.GroupID] = thisGroup;
-            }
-
-            foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
-            {
-                if (thisGroup.Roles.ContainsKey(block.RoleID))
-                {
-                    thisRole = thisGroup.Roles[block.RoleID];
-                }
-                else
-                {
-                    thisRole = new GroupRole(block.RoleID);
-                    thisGroup.Roles[block.RoleID] = thisRole;
-                }
-
-                thisRole.Description = Helpers.FieldToString(block.Description);
-                thisRole.Name = Helpers.FieldToString(block.Name);
-                thisRole.Powers = block.Powers;
-                thisRole.Title = Helpers.FieldToString(block.Title);
-            }
-
-            GroupsMutex.ReleaseMutex();
-            #endregion
         }
 
         private void GroupRoleMembersHandler(Packet packet, Simulator simulator)
         {
-            Group thisGroup;
-            GroupRole thisRole;
-            GroupMember thisMember;
             GroupRoleMembersReplyPacket members = (GroupRoleMembersReplyPacket)packet;
-
-            #region GroupsMutex
-            GroupsMutex.WaitOne();
-
-            if (Groups.ContainsKey(members.AgentData.GroupID))
-            {
-                thisGroup = Groups[members.AgentData.GroupID];
-            }
-            else
-            {
-                thisGroup = new Group(members.AgentData.GroupID);
-                Groups[members.AgentData.GroupID] = thisGroup;
-            }
-
-            foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
-            {
-                if (thisGroup.Roles.ContainsKey(block.RoleID))
-                {
-                    thisRole = thisGroup.Roles[block.RoleID];
-                }
-                else
-                {
-                    thisRole = new GroupRole(block.RoleID);
-                    thisGroup.Roles[block.RoleID] = thisRole;
-                }
-
-                if (thisGroup.Members.ContainsKey(block.MemberID))
-                {
-                    thisMember = thisGroup.Members[block.MemberID];
-                }
-                else
-                {
-                    thisMember = new GroupMember(block.MemberID);
-                    thisGroup.Members[block.MemberID] = thisMember;
-                }
-
-                // Add this member to this block if it doesn't already exist there
-                if (!thisRole.Members.ContainsKey(block.MemberID))
-                {
-                    thisRole.Members[block.MemberID] = thisMember;
-                }
-            }
-
-            GroupsMutex.ReleaseMutex();
-            #endregion
         }
 
         private void GroupActiveProposalItemHandler(Packet packet, Simulator simulator)

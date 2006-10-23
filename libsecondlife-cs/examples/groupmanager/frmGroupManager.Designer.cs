@@ -29,6 +29,10 @@ namespace groupmanager
         private void InitializeComponent()
         {
             this.groupBox = new System.Windows.Forms.GroupBox();
+            this.cmdInfo = new System.Windows.Forms.Button();
+            this.cmdActivate = new System.Windows.Forms.Button();
+            this.cmdCreate = new System.Windows.Forms.Button();
+            this.cmdLeave = new System.Windows.Forms.Button();
             this.lstGroups = new System.Windows.Forms.ListBox();
             this.grpLogin = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -38,10 +42,6 @@ namespace groupmanager
             this.txtLastName = new System.Windows.Forms.TextBox();
             this.cmdConnect = new System.Windows.Forms.Button();
             this.txtFirstName = new System.Windows.Forms.TextBox();
-            this.cmdLeave = new System.Windows.Forms.Button();
-            this.cmdCreate = new System.Windows.Forms.Button();
-            this.cmdActivate = new System.Windows.Forms.Button();
-            this.cmdInfo = new System.Windows.Forms.Button();
             this.groupBox.SuspendLayout();
             this.grpLogin.SuspendLayout();
             this.SuspendLayout();
@@ -60,6 +60,46 @@ namespace groupmanager
             this.groupBox.TabIndex = 0;
             this.groupBox.TabStop = false;
             this.groupBox.Text = "Groups";
+            // 
+            // cmdInfo
+            // 
+            this.cmdInfo.Enabled = false;
+            this.cmdInfo.Location = new System.Drawing.Point(216, 174);
+            this.cmdInfo.Name = "cmdInfo";
+            this.cmdInfo.Size = new System.Drawing.Size(90, 23);
+            this.cmdInfo.TabIndex = 10;
+            this.cmdInfo.Text = "Info";
+            this.cmdInfo.UseVisualStyleBackColor = true;
+            this.cmdInfo.Click += new System.EventHandler(this.cmdInfo_Click);
+            // 
+            // cmdActivate
+            // 
+            this.cmdActivate.Enabled = false;
+            this.cmdActivate.Location = new System.Drawing.Point(116, 174);
+            this.cmdActivate.Name = "cmdActivate";
+            this.cmdActivate.Size = new System.Drawing.Size(90, 23);
+            this.cmdActivate.TabIndex = 9;
+            this.cmdActivate.Text = "Activate";
+            this.cmdActivate.UseVisualStyleBackColor = true;
+            // 
+            // cmdCreate
+            // 
+            this.cmdCreate.Location = new System.Drawing.Point(19, 174);
+            this.cmdCreate.Name = "cmdCreate";
+            this.cmdCreate.Size = new System.Drawing.Size(90, 23);
+            this.cmdCreate.TabIndex = 8;
+            this.cmdCreate.Text = "Create";
+            this.cmdCreate.UseVisualStyleBackColor = true;
+            // 
+            // cmdLeave
+            // 
+            this.cmdLeave.Enabled = false;
+            this.cmdLeave.Location = new System.Drawing.Point(313, 174);
+            this.cmdLeave.Name = "cmdLeave";
+            this.cmdLeave.Size = new System.Drawing.Size(90, 23);
+            this.cmdLeave.TabIndex = 7;
+            this.cmdLeave.Text = "Leave";
+            this.cmdLeave.UseVisualStyleBackColor = true;
             // 
             // lstGroups
             // 
@@ -140,46 +180,6 @@ namespace groupmanager
             this.txtFirstName.Size = new System.Drawing.Size(120, 20);
             this.txtFirstName.TabIndex = 0;
             // 
-            // cmdLeave
-            // 
-            this.cmdLeave.Enabled = false;
-            this.cmdLeave.Location = new System.Drawing.Point(313, 174);
-            this.cmdLeave.Name = "cmdLeave";
-            this.cmdLeave.Size = new System.Drawing.Size(90, 23);
-            this.cmdLeave.TabIndex = 7;
-            this.cmdLeave.Text = "Leave";
-            this.cmdLeave.UseVisualStyleBackColor = true;
-            // 
-            // cmdCreate
-            // 
-            this.cmdCreate.Location = new System.Drawing.Point(19, 174);
-            this.cmdCreate.Name = "cmdCreate";
-            this.cmdCreate.Size = new System.Drawing.Size(90, 23);
-            this.cmdCreate.TabIndex = 8;
-            this.cmdCreate.Text = "Create";
-            this.cmdCreate.UseVisualStyleBackColor = true;
-            // 
-            // cmdActivate
-            // 
-            this.cmdActivate.Enabled = false;
-            this.cmdActivate.Location = new System.Drawing.Point(116, 174);
-            this.cmdActivate.Name = "cmdActivate";
-            this.cmdActivate.Size = new System.Drawing.Size(90, 23);
-            this.cmdActivate.TabIndex = 9;
-            this.cmdActivate.Text = "Activate";
-            this.cmdActivate.UseVisualStyleBackColor = true;
-            // 
-            // cmdInfo
-            // 
-            this.cmdInfo.Enabled = false;
-            this.cmdInfo.Location = new System.Drawing.Point(216, 174);
-            this.cmdInfo.Name = "cmdInfo";
-            this.cmdInfo.Size = new System.Drawing.Size(90, 23);
-            this.cmdInfo.TabIndex = 10;
-            this.cmdInfo.Text = "Info";
-            this.cmdInfo.UseVisualStyleBackColor = true;
-            this.cmdInfo.Click += new System.EventHandler(this.cmdInfo_Click);
-            // 
             // frmGroupManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -191,8 +191,8 @@ namespace groupmanager
             this.MaximumSize = new System.Drawing.Size(453, 378);
             this.MinimumSize = new System.Drawing.Size(453, 378);
             this.Name = "frmGroupManager";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Group Manager";
-            //this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmGroupManager_FormClosing);
             this.groupBox.ResumeLayout(false);
             this.grpLogin.ResumeLayout(false);
             this.grpLogin.PerformLayout();

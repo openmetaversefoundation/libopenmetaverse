@@ -12,28 +12,33 @@ namespace groupmanager
 {
     public partial class frmGroupManager : Form
     {
-        SecondLife client;
+        SecondLife Client;
+        Dictionary<LLUUID, Group> Groups;
 
         public frmGroupManager()
         {
-            client = new SecondLife();
-            client.Groups.OnGroupsUpdated += new GroupManager.GroupsUpdatedCallback(GroupsUpdatedHandler);
-
+            Client = new SecondLife();
+            
             InitializeComponent();
         }
 
-        void GroupsUpdatedHandler()
+        void GroupsUpdatedHandler(Dictionary<LLUUID, Group> groups)
         {
+            Groups = groups;
+
             Invoke(new MethodInvoker(UpdateGroups));
         }
 
         void UpdateGroups()
         {
-            lstGroups.Items.Clear();
-
-            foreach (Group group in client.Groups.Groups.Values)
+            lock (lstGroups)
             {
-                lstGroups.Items.Add(group);
+                lstGroups.Items.Clear();
+
+                foreach (Group group in Groups.Values)
+                {
+                    lstGroups.Items.Add(group);
+                }
             }
         }
 
@@ -58,13 +63,15 @@ namespace groupmanager
                     txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
                     "Win", "0", "groupmanager", "jhurliman@wsu.edu");
 
-                if (client.Network.Login(loginParams))
+                if (Client.Network.Login(loginParams))
                 {
                     groupBox.Enabled = true;
+
+                    Client.Groups.BeginGetCurrentGroups(new GroupManager.CurrentGroupsCallback(GroupsUpdatedHandler));
                 }
                 else
                 {
-                    MessageBox.Show(this, "Error logging in: " + client.Network.LoginError);
+                    MessageBox.Show(this, "Error logging in: " + Client.Network.LoginError);
                     cmdConnect.Text = "Connect";
                     txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                     groupBox.Enabled = false;
@@ -73,7 +80,7 @@ namespace groupmanager
             }
 			else
 			{
-				client.Network.Logout();
+				Client.Network.Logout();
 				cmdConnect.Text = "Connect";
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                 groupBox.Enabled = false;
@@ -99,16 +106,16 @@ namespace groupmanager
             {
                 Group group = (Group)lstGroups.Items[lstGroups.SelectedIndex];
 
-                frmGroupInfo frm = new frmGroupInfo(group, client);
+                frmGroupInfo frm = new frmGroupInfo(group, Client);
                 frm.ShowDialog();
             }
         }
 
         private void frmGroupManager_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (client.Network.Connected)
+            if (Client.Network.Connected)
             {
-                client.Network.Logout();
+                Client.Network.Logout();
             }
         }
     }
