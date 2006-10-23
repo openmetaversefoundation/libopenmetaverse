@@ -1,9 +1,10 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices; // For DllImport().
+using System.Runtime.InteropServices; // For DllImport()
 
 public struct jas_matrix_t
-{            /* A matrix of pixels (one matrix per component) */
+{
+    /* A matrix of pixels (one matrix per component) */
     public int flags;    		/* Additional state information. */
     public int xstart;  		/* The starting horizontal index. */
     public int ystart;			/* The starting vertical index. */
@@ -211,9 +212,9 @@ public class JasperWrapper
 
     public static byte[] jasper_decode_j2c_to_tiff(byte[] input)
     {
-	int header_size=1024;  // a guess
+        int header_size = 1024;  // a guess
         IntPtr input_stream_ptr = jas_stream_memopen(input);
-	IntPtr temp_stream_ptr = jas_stream_tmpfile();
+        IntPtr temp_stream_ptr = jas_stream_tmpfile();
 
         int format = jas_image_getfmt(input_stream_ptr);
 
@@ -222,21 +223,21 @@ public class JasperWrapper
         IntPtr image_ptr = jas_image_decode(input_stream_ptr, format, "");
         if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
         jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
-	
-	int output_buffer_size=image_struct.width*image_struct.height*4+header_size;
+
+        int output_buffer_size = image_struct.width * image_struct.height * 4 + header_size;
         IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
         IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
 
-	Console.WriteLine("Ready to encode");
-	Console.WriteLine("jas_image_strtofmt(j2c)="+jas_image_strtofmt("j2c"));
-	Console.WriteLine("jas_image_strtofmt(tif)="+jas_image_strtofmt("tif"));
+        Console.WriteLine("Ready to encode");
+        Console.WriteLine("jas_image_strtofmt(j2c)=" + jas_image_strtofmt("j2c"));
+        Console.WriteLine("jas_image_strtofmt(tif)=" + jas_image_strtofmt("tif"));
         int retval = jas_image_encode(image_ptr, temp_stream_ptr,
-				      jas_image_strtofmt("tif"), "");
+                      jas_image_strtofmt("tif"), "");
 
-	jas_stream_flush(temp_stream_ptr);
-	jas_stream_rewind(temp_stream_ptr);
-	jas_stream_copy(output_stream_ptr, temp_stream_ptr, -1);
-	jas_stream_flush(output_stream_ptr);
+        jas_stream_flush(temp_stream_ptr);
+        jas_stream_rewind(temp_stream_ptr);
+        jas_stream_copy(output_stream_ptr, temp_stream_ptr, -1);
+        jas_stream_flush(output_stream_ptr);
         if (retval != 0) throw new Exception("Error encoding image: " + retval);
 
         byte[] buf = new byte[output_buffer_size];
@@ -244,8 +245,8 @@ public class JasperWrapper
         Marshal.FreeHGlobal(bufPtr);
 
         jas_image_destroy(image_ptr);
-	
-//        jas_stream_close(output_stream_ptr);
+
+        //        jas_stream_close(output_stream_ptr);
         jas_stream_close(temp_stream_ptr);
         jas_stream_close(input_stream_ptr);
 
@@ -327,11 +328,11 @@ public class JasperWrapper
             binary_reader.Close();
             read_stream.Close();
 
-/*            byte[] tga_data = jasper_decode_j2c_to_tga(j2c_data);
-            Console.WriteLine("Writing output to output.tga");
-            FileStream write_stream = new FileStream("output.tga", FileMode.Create);
-            write_stream.Write(tga_data, 0, tga_data.Length);
-            write_stream.Close(); */
+            /*            byte[] tga_data = jasper_decode_j2c_to_tga(j2c_data);
+                        Console.WriteLine("Writing output to output.tga");
+                        FileStream write_stream = new FileStream("output.tga", FileMode.Create);
+                        write_stream.Write(tga_data, 0, tga_data.Length);
+                        write_stream.Close(); */
 
 
             byte[] tiff_data = jasper_decode_j2c_to_tiff(j2c_data);
