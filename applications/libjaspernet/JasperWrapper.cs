@@ -108,6 +108,15 @@ public class JasperWrapper
     [DllImport(JASPER_LIBRARY)]
     private static extern IntPtr jas_stream_memopen(IntPtr buf, int bufsize);
 
+    [DllImport(JASPER_LIBRARY)]
+    private static extern IntPtr jas_stream_tmpfile();
+
+    [DllImport(JASPER_LIBRARY)]
+    private static extern int jas_stream_rewind(IntPtr stream);
+
+    [DllImport(JASPER_LIBRARY)]
+    private static extern int jas_stream_copy(IntPtr out_stream, IntPtr in_stream, int all);
+
     public static IntPtr jas_stream_memopen(byte[] buf)
     {
         IntPtr bufPtr = Marshal.AllocHGlobal(buf.Length);
@@ -204,6 +213,8 @@ public class JasperWrapper
     {
 	int header_size=1024;  // a guess
         IntPtr input_stream_ptr = jas_stream_memopen(input);
+	IntPtr temp_stream_ptr = jas_stream_tmpfile();
+
         int format = jas_image_getfmt(input_stream_ptr);
 
         Console.WriteLine("file is format # " + format);
@@ -216,9 +227,16 @@ public class JasperWrapper
         IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
         IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
 
-        int retval = jas_image_encode(image_ptr, output_stream_ptr, 
+	Console.WriteLine("Ready to encode");
+	Console.WriteLine("jas_image_strtofmt(j2c)="+jas_image_strtofmt("j2c"));
+	Console.WriteLine("jas_image_strtofmt(tif)="+jas_image_strtofmt("tif"));
+        int retval = jas_image_encode(image_ptr, temp_stream_ptr,
 				      jas_image_strtofmt("tif"), "");
 
+	jas_stream_flush(temp_stream_ptr);
+	jas_stream_rewind(temp_stream_ptr);
+	jas_stream_copy(output_stream_ptr, temp_stream_ptr, -1);
+	jas_stream_flush(output_stream_ptr);
         if (retval != 0) throw new Exception("Error encoding image: " + retval);
 
         byte[] buf = new byte[output_buffer_size];
@@ -226,7 +244,9 @@ public class JasperWrapper
         Marshal.FreeHGlobal(bufPtr);
 
         jas_image_destroy(image_ptr);
-        jas_stream_close(output_stream_ptr);
+	
+//        jas_stream_close(output_stream_ptr);
+        jas_stream_close(temp_stream_ptr);
         jas_stream_close(input_stream_ptr);
 
         return buf;
@@ -296,7 +316,7 @@ public class JasperWrapper
     {
         jas_init();
         Console.WriteLine("get_jasper_version=" + get_jasper_version());
-        //jas_setdbglevel(1000);
+        jas_setdbglevel(1000);
 
         if (args.Length == 1)
         {
