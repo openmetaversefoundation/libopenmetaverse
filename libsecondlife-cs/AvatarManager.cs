@@ -166,7 +166,7 @@ namespace libsecondlife
                 }
             }
 
-            if (havenames.Count > 0)
+            if (havenames.Count > 0 && OnAgentNames != null)
             {
                 OnAgentNames(havenames);
             }

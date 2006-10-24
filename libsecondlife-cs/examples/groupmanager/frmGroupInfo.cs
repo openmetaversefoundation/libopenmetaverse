@@ -11,16 +11,6 @@ using libsecondlife.AssetSystem;
 
 namespace groupmanager
 {
-    public class GroupMemberData
-    {
-        public LLUUID ID;
-        public string Name;
-        public string Title;
-        public string LastOnline;
-        public ulong Powers;
-        public bool IsOwner;
-    }
-
     public partial class frmGroupInfo : Form
     {
         Group Group;
@@ -42,7 +32,7 @@ namespace groupmanager
             InitializeComponent();
         }
 
-        private void frmGroupInfo_Load(object sender, EventArgs e)
+        private void frmGroupInfo_Shown(object sender, EventArgs e)
         {
             Client.Groups.BeginGetGroupProfile(Group.ID,
                 new GroupManager.GroupProfileCallback(GroupProfileHandler));
@@ -209,5 +199,15 @@ namespace groupmanager
         //    writer.Close();
         //    filestream.Close();
         //}
+    }
+
+    public class GroupMemberData
+    {
+        public LLUUID ID;
+        public string Name;
+        public string Title;
+        public string LastOnline;
+        public ulong Powers;
+        public bool IsOwner;
     }
 }

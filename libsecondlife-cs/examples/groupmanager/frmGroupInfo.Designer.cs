@@ -225,7 +225,7 @@ namespace groupmanager
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Group Information";
-            this.Load += new System.EventHandler(this.frmGroupInfo_Load);
+            this.Shown += new System.EventHandler(this.frmGroupInfo_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.picInsignia)).EndInit();
             this.grpPreferences.ResumeLayout(false);
             this.grpPreferences.PerformLayout();
