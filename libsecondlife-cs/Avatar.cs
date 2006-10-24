@@ -103,6 +103,42 @@ namespace libsecondlife
         public LLQuaternion Rotation;
         /// <summary>Region (aka sim) the Avatar is in</summary>
         public Region CurrentRegion;
+
+        public string BornOn;
+        
+        public LLUUID ProfileImage;
+
+        public LLUUID PartnerID;
+
+        public string AboutText;
+
+        public uint WantToMask;
+
+        public string WantToText;
+        
+        public uint SkillsMask;
+
+        public string SkillsText;
+
+        public string FirstLifeText;
+
+        public LLUUID FirstLifeImage;
+
+        public bool Identified;
+
+        public bool Transacted;
+
+        public bool AllowPublish;
+
+        public bool MaturePublish;
+
+        public string CharterMember;
+
+        public float Behavior;
+
+        public float Appearance;
+
+        public float Building;
     }
 
     /// <summary>

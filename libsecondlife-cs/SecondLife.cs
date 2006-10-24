@@ -205,7 +205,12 @@ namespace libsecondlife
                 AvatarsMutex.WaitOne();
                 foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
                 {
-                    ((Avatar)Avatars[block.ID]).Name = Helpers.FieldToString(block.FirstName) +
+                    if (!Avatars.ContainsKey(block.ID))
+                    {
+                        Avatars[block.ID] = new Avatar();
+                        Avatars[block.ID].ID = block.ID;
+                    }
+                    (Avatars[block.ID]).Name = Helpers.FieldToString(block.FirstName) +
                         " " + Helpers.FieldToString(block.LastName);
                 }
                 AvatarsMutex.ReleaseMutex();
