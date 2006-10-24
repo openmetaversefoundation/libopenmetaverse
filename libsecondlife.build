@@ -30,6 +30,7 @@
     <!-- <include name="applications/SLProxy/*.build" /> -->
   </fileset>
   <fileset id="lib">
+    <include name="libjaspernet/*.build" />
     <include name="libsecondlife-cs/*.build" />
   </fileset>
   <fileset id="examples">
@@ -93,7 +94,7 @@
       <buildfiles refid="lib" />
     </nant>
     <copy todir="bin" overwrite="true">
-		  <fileset basedir="data">
+	  <fileset basedir="data">
         <include name="*.txt" />
         <include name="*.msg" />
       </fileset>
@@ -156,12 +157,6 @@
           <include name="*.dll" />
 		</fileset>
       </copy>
-      <!-- <copy todir="${archive.dir}" overwrite="true">
-		<fileset basedir="data">
-          <include name="*.txt" />
-          <include name="*.msg" />
-        </fileset>
-      </copy> -->
     </if>
     <zip zipfile="${archive.name}">
       <fileset refid="archive.set" />

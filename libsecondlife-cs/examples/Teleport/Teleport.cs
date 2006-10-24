@@ -127,10 +127,11 @@ namespace Teleport
             }
         }
 
-        protected void Avatar_OnTeleportMessage(string message)
+        protected void Avatar_OnTeleportMessage(string message, TeleportStatus status)
         {
             Console.WriteLine(message);
-            if (!message.Equals("Teleport started"))
+
+            if (status == TeleportStatus.Finished || status == TeleportStatus.Failed)
             {
                 DoneTeleporting = true;
             }

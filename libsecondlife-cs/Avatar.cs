@@ -45,13 +45,13 @@ namespace libsecondlife
         string fromName, LLUUID id);
 
     /// <summary>
-    /// Event is triggered when the L$ account balance for this avatar changes.
+    /// Triggered when the L$ account balance for this avatar changes
     /// </summary>
     /// <param name="balance">The new account balance</param>
     public delegate void BalanceCallback(int balance);
 
     /// <summary>
-    /// Triggered whenever an instant message is received.
+    /// Triggered whenever an instant message is received
     /// </summary>
     /// <param name="FromAgentID"></param>
     /// <param name="FromAgentName"></param>
@@ -70,17 +70,26 @@ namespace libsecondlife
         byte offline, byte[] binaryBucket);
 
     /// <summary>
-    /// Triggered after friend request packet is sent out.
+    /// Triggered after friend request packet is sent out
     /// </summary>
     /// <param name="AgentID"></param>
     /// <param name="Online"></param>
     public delegate void FriendNotificationCallback(LLUUID agentID, bool online);
 
     /// <summary>
-    /// 
+    /// Triggered for any status updates of a teleport (progress, failed, succeeded)
     /// </summary>
-    /// <param name="message"></param>
-    public delegate void TeleportCallback(string message);
+    /// <param name="message">A message about the current teleport status</param>
+    public delegate void TeleportCallback(string message, TeleportStatus status);
+
+    public enum TeleportStatus
+    {
+        None,
+        Start,
+        Progress,
+        Failed,
+        Finished
+    }
 
     /// <summary>
     /// Basic class to hold other Avatar's data.
@@ -193,13 +202,14 @@ namespace libsecondlife
         }
 
         private SecondLife Client;
-        private int TeleportStatus;
+        private TeleportCallback OnBeginTeleport;
+        private TeleportStatus TeleportStat;
         private Timer TeleportTimer;
         private bool TeleportTimeout;
         private uint HeightWidthGenCounter;
 
         /// <summary>
-        /// 'CallBack Central' - Setup callbacks for most of the incoming packets.
+        /// 'CallBack Central' - Setup callbacks for packets related to our avatar
         /// </summary>
         /// <param name="client"></param>
         public MainAvatar(SecondLife client)
@@ -423,6 +433,27 @@ namespace libsecondlife
             Client.Network.SendPacket((Packet)money);
         }
 
+        public void BeginTeleport(ulong regionHandle, LLVector3 position, TeleportCallback tc)
+        {
+            BeginTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z), tc);
+        }
+
+        public void BeginTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt, TeleportCallback tc)
+        {
+            OnBeginTeleport = tc;
+
+            TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
+            teleport.AgentData.AgentID = Client.Network.AgentID;
+            teleport.AgentData.SessionID = Client.Network.SessionID;
+            teleport.Info.LookAt = lookAt;
+            teleport.Info.Position = position;
+            teleport.Info.RegionHandle = regionHandle;
+
+            Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
+
+            Client.Network.SendPacket(teleport);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -431,7 +462,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Teleport(ulong regionHandle, LLVector3 position)
         {
-            return Teleport(regionHandle, position, new LLVector3(position.X + 1.0F, position.Y, position.Z));
+            return Teleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
         }
 
         /// <summary>
@@ -443,7 +474,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            TeleportStatus = 0;
+            TeleportStat = TeleportStatus.None;
 
             TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
             teleport.AgentData.AgentID = Client.Network.AgentID;
@@ -452,7 +483,6 @@ namespace libsecondlife
             teleport.Info.Position = position;
             
             teleport.Info.RegionHandle = regionHandle;
-            teleport.Header.Reliable = true;
 
             Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
 
@@ -460,9 +490,9 @@ namespace libsecondlife
             TeleportTimeout = false;
             TeleportTimer.Start();
 
-            Client.Network.SendPacket((Packet)teleport);
+            Client.Network.SendPacket(teleport);
 
-            while (TeleportStatus == 0 && !TeleportTimeout)
+            while (TeleportStat != TeleportStatus.Failed && TeleportStat != TeleportStatus.Finished && !TeleportTimeout)
             {
                 Client.Tick();
             }
@@ -471,14 +501,14 @@ namespace libsecondlife
 
             if (TeleportTimeout)
             {
-                if (OnTeleport != null) { OnTeleport("Teleport timed out."); }
+                if (OnTeleport != null) { OnTeleport("Teleport timed out.", TeleportStat); }
             }
             else
             {
-                if (OnTeleport != null) { OnTeleport(TeleportMessage); }
+                if (OnTeleport != null) { OnTeleport(TeleportMessage, TeleportStat); }
             }
 
-            return (TeleportStatus == 1);
+            return (TeleportStat == TeleportStatus.Finished);
         }
 
         /// <summary>
@@ -502,6 +532,8 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position, LLVector3 lookAt)
         {
+            TeleportStat = TeleportStatus.None;
+
             Client.Grid.AddSim(simName);
             int attempts = 0;
 
@@ -520,7 +552,7 @@ namespace libsecondlife
             }
             if (OnTeleport != null)
             {
-                OnTeleport("Unable to resolve name: " + simName);
+                OnTeleport("Unable to resolve name: " + simName, TeleportStat);
             }
             return false;
         }
@@ -696,48 +728,87 @@ namespace libsecondlife
             if (packet.Type == PacketType.TeleportStart)
             {
                 TeleportMessage = "Teleport started";
+                TeleportStat = TeleportStatus.Start;
+
+                if (OnBeginTeleport != null)
+                {
+                    OnBeginTeleport(TeleportMessage, TeleportStat);
+                }
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
                 TeleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
+                TeleportStat = TeleportStatus.Progress;
+
+                if (OnBeginTeleport != null)
+                {
+                    OnBeginTeleport(TeleportMessage, TeleportStat);
+                }
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
                 TeleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
-                TeleportStatus = -1;
+                TeleportStat = TeleportStatus.Failed;
+
+                if (OnBeginTeleport != null)
+                {
+                    OnBeginTeleport(TeleportMessage, TeleportStat);
+                }
+
+                OnBeginTeleport = null;
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
-                TeleportMessage = "Teleport finished";
 
+                // Connect to the new sim
                 Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort, 
                     simulator.CircuitCode, true);
-                        
+                
                 if ( sim != null)
                 {
-                    // Move the avatar in to this sim
+                    TeleportMessage = "Teleport finished";
+                    TeleportStat = TeleportStatus.Finished;
+
+                    // Move the avatar in to the new sim
                     CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
-                    move.AgentData.AgentID = this.ID;
+
+                    move.AgentData.AgentID = Client.Network.AgentID;
                     move.AgentData.SessionID = Client.Network.SessionID;
                     move.AgentData.CircuitCode = simulator.CircuitCode;
+
                     Client.Network.SendPacket((Packet)move);
 
-                    Console.WriteLine(move);
+                    Client.DebugLog(move.ToString());
 
                     Client.Log("Moved to new sim " + Client.Network.CurrentSim.Region.Name + "(" + 
                         Client.Network.CurrentSim.IPEndPoint.ToString() + ")",
                         Helpers.LogLevel.Info);
 
-                    // Sleep a little while so we can collect parcel information
-                    System.Threading.Thread.Sleep(1000);
-
-                    TeleportStatus = 1;
+                    if (OnBeginTeleport != null)
+                    {
+                        OnBeginTeleport(TeleportMessage, TeleportStat);
+                    }
+                    else
+                    {
+                        // Sleep a little while so we can collect parcel information
+                        System.Threading.Thread.Sleep(1000);
+                    }
                 }
                 else
                 {
-                    TeleportStatus = -1;
+                    TeleportMessage = "Failed to connect to the new sim after a teleport";
+                    TeleportStat = TeleportStatus.Failed;
+
+                    Client.Log(TeleportMessage, Helpers.LogLevel.Warning);
+
+                    if (OnBeginTeleport != null)
+                    {
+                        OnBeginTeleport(TeleportMessage, TeleportStat);
+                    }
                 }
+
+                OnBeginTeleport = null;
             }
         }
 
