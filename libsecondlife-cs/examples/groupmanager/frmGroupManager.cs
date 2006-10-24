@@ -110,13 +110,5 @@ namespace groupmanager
                 frm.ShowDialog();
             }
         }
-
-        private void frmGroupManager_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (Client.Network.Connected)
-            {
-                Client.Network.Logout();
-            }
-        }
     }
 }

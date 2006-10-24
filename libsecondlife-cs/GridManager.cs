@@ -30,7 +30,11 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
-    public delegate void AddRegionCallback(GridRegion region);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="region"></param>
+    public delegate void GridRegionCallback(GridRegion region);
 
 	/// <summary>
 	/// Class for regions on the world map
@@ -69,14 +73,13 @@ namespace libsecondlife
 	/// </summary>
 	public class GridManager
 	{
-        public event AddRegionCallback OnRegionAdd;
-
-        /// <summary>A hashtable of all the regions, indexed by region ID</summary>
-		public Dictionary<LLUUID,GridRegion> Regions;
+        /// <summary>A dictionary of all the regions, indexed by region ID</summary>
+		public Dictionary<LLUUID, GridRegion> Regions;
         /// <summary>Current direction of the sun</summary>
         public LLVector3 SunDirection;
 
 		private SecondLife Client;
+        private GridRegionCallback OnRegionAdd;
 
         /// <summary>
         /// Constructor
@@ -85,7 +88,7 @@ namespace libsecondlife
 		public GridManager(SecondLife client)
 		{
 			Client = client;
-			Regions = new Dictionary<LLUUID,GridRegion>();
+			Regions = new Dictionary<LLUUID, GridRegion>();
             SunDirection = new LLVector3();
 
 			Client.Network.RegisterCallback(PacketType.MapBlockReply, new PacketCallback(MapBlockReplyHandler));
@@ -93,21 +96,22 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Process a request to add region/simulator data to client's info.
-        /// If the client does not have data on this region already, craft and fire off a request packet.
+        /// If the client does not have data on this region already, request the region data for it
         /// </summary>
-        /// <param name="name">Name of sim/region to add</param>
+        /// <param name="name">Name of the region to add</param>
 		public void AddSim(string name) 
 		{
-			if(!Regions.ContainsKey(name)) 
+            name = name.ToLower();
+
+			if(!Regions.ContainsKey(name))
 			{
                 MapNameRequestPacket map = new MapNameRequestPacket();
-                map.AgentData.AgentID   = Client.Network.AgentID;
-                map.AgentData.SessionID = Client.Network.SessionID;
 
+                map.AgentData.AgentID = Client.Network.AgentID;
+                map.AgentData.SessionID = Client.Network.SessionID;
                 map.NameData.Name = Helpers.StringToField(name.ToLower());
 
-                Client.Network.SendPacket((Packet)map);
+                Client.Network.SendPacket(map);
 			}
 		}
 
@@ -117,13 +121,14 @@ namespace libsecondlife
         public void AddEstateSims()
         {
             MapLayerRequestPacket request = new MapLayerRequestPacket();
+
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
             request.AgentData.Godlike = true;
             request.AgentData.Flags = 0;
             request.AgentData.EstateID = 0; // TODO get a better value here.
 
-            Client.Network.SendPacket((Packet)request);
+            Client.Network.SendPacket(request);
         }
 
         /// <summary>
@@ -132,6 +137,7 @@ namespace libsecondlife
         public void AddLindenSims()
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
+
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
             request.AgentData.EstateID = 0;
@@ -141,7 +147,7 @@ namespace libsecondlife
             request.PositionData.MinX = 0;
             request.PositionData.MinY = 0;
 
-            Client.Network.SendPacket((Packet)request);
+            Client.Network.SendPacket(request);
         }
 
         /// <summary>
@@ -157,36 +163,66 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Get sim data from Regions struct
+        /// 
         /// </summary>
-        /// <example>
-        ///    Simdata = GetSim("Ahern");
-        /// </example>
-        /// <param name="name">Name of sim you're looking for.</param>
-        /// <returns>Region struct of the sim you're looking for, or an empty struct if not available.</returns>
-		public GridRegion GetSim(string name) 
-		{
-			if(Regions.ContainsKey(name)) 
-				return Regions[name];
+        /// <param name="name"></param>
+        /// <param name="grc"></param>
+        public void BeginGetGridRegion(string name, GridRegionCallback grc)
+        {
+            OnRegionAdd = grc;
 
-			AddSim(name);
-			System.Threading.Thread.Sleep(1000);
+            name = name.ToLower();
 
-			if(Regions.ContainsKey(name)) 
-				return Regions[name];
-			else 
-			{
-				//TODO: Put some better handling inplace here with some retry code
-				Client.Log("GetSim(): Returned a sim that we aren't tracking",Helpers.LogLevel.Warning);
-				return new GridRegion();
-			}
-		}
+            if (Regions.ContainsKey(name))
+            {
+                OnRegionAdd(Regions[name]);
+            }
+            else
+            {
+                MapNameRequestPacket map = new MapNameRequestPacket();
+
+                map.AgentData.AgentID = Client.Network.AgentID;
+                map.AgentData.SessionID = Client.Network.SessionID;
+                map.NameData.Name = Helpers.StringToField(name);
+
+                Client.Network.SendPacket(map);
+            }
+        }
 
         /// <summary>
-        /// Add sims from incoming packets to the Regions struct
+        /// Get grid region information using the region name
         /// </summary>
-        /// <param name="packet">Incoming MapBlockReplyPacket from SL</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <example>
+        /// regiondata = GetGridRegion("Ahern");
+        /// </example>
+        /// <param name="name">Name of sim you're looking for</param>
+        /// <returns>GridRegion for the sim you're looking for, or null if it's not available</returns>
+		public GridRegion GetGridRegion(string name) 
+		{
+            name = name.ToLower();
+
+            if (Regions.ContainsKey(name))
+            {
+                return Regions[name];
+            }
+            else
+            {
+                AddSim(name);
+
+                System.Threading.Thread.Sleep(1000);
+
+                if (Regions.ContainsKey(name))
+                {
+                    return Regions[name];
+                }
+                else
+                {
+                    Client.Log("Couldn't find region " + name, Helpers.LogLevel.Warning);
+                    return null;
+                }
+            }
+		}
+
 		private void MapBlockReplyHandler(Packet packet, Simulator simulator) 
 		{
 			GridRegion region;
@@ -205,7 +241,7 @@ namespace libsecondlife
                 region.Access = block.Access;
                 region.MapImageID = block.MapImageID;
                 region.RegionHandle = Helpers.UIntsToLong((uint)region.X * (uint)256, (uint)region.Y * (uint)256);
-
+                
                 if (region.Name != "" && region.X != 0 && region.Y != 0)
                 {
                     Regions[region.Name.ToLower()] = region;
