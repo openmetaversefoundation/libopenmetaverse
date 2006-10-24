@@ -32,22 +32,19 @@ namespace groupmanager
             this.lblGroupName = new System.Windows.Forms.Label();
             this.lblFoundedBy = new System.Windows.Forms.Label();
             this.txtCharter = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.lstMembers = new System.Windows.Forms.ListView();
             this.colName = new System.Windows.Forms.ColumnHeader();
             this.colTitle = new System.Windows.Forms.ColumnHeader();
             this.colLasLogin = new System.Windows.Forms.ColumnHeader();
-            this.label3 = new System.Windows.Forms.Label();
             this.grpPreferences = new System.Windows.Forms.GroupBox();
-            this.chkShow = new System.Windows.Forms.CheckBox();
-            this.chkPublish = new System.Windows.Forms.CheckBox();
-            this.chkOpenEnrollment = new System.Windows.Forms.CheckBox();
-            this.chkFee = new System.Windows.Forms.CheckBox();
-            this.chkGroupNotices = new System.Windows.Forms.CheckBox();
-            this.numFee = new System.Windows.Forms.NumericUpDown();
-            this.chkMature = new System.Windows.Forms.CheckBox();
             this.lblMemberTitle = new System.Windows.Forms.Label();
+            this.chkMature = new System.Windows.Forms.CheckBox();
+            this.numFee = new System.Windows.Forms.NumericUpDown();
+            this.chkGroupNotices = new System.Windows.Forms.CheckBox();
+            this.chkFee = new System.Windows.Forms.CheckBox();
+            this.chkOpenEnrollment = new System.Windows.Forms.CheckBox();
+            this.chkPublish = new System.Windows.Forms.CheckBox();
+            this.chkShow = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.picInsignia)).BeginInit();
             this.grpPreferences.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numFee)).BeginInit();
@@ -55,6 +52,7 @@ namespace groupmanager
             // 
             // picInsignia
             // 
+            this.picInsignia.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.picInsignia.Location = new System.Drawing.Point(12, 51);
             this.picInsignia.Name = "picInsignia";
             this.picInsignia.Size = new System.Drawing.Size(150, 150);
@@ -89,24 +87,6 @@ namespace groupmanager
             this.txtCharter.Size = new System.Drawing.Size(316, 221);
             this.txtCharter.TabIndex = 3;
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(420, 31);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(73, 13);
-            this.label1.TabIndex = 4;
-            this.label1.Text = "Group Charter";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 280);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(143, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Owners and Visible Members";
-            // 
             // lstMembers
             // 
             this.lstMembers.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -135,15 +115,6 @@ namespace groupmanager
             this.colLasLogin.Text = "Last Login";
             this.colLasLogin.Width = 121;
             // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 205);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(75, 13);
-            this.label3.TabIndex = 7;
-            this.label3.Text = "Group Insignia";
-            // 
             // grpPreferences
             // 
             this.grpPreferences.Controls.Add(this.lblMemberTitle);
@@ -161,62 +132,14 @@ namespace groupmanager
             this.grpPreferences.TabStop = false;
             this.grpPreferences.Text = "Group Preferences";
             // 
-            // chkShow
+            // lblMemberTitle
             // 
-            this.chkShow.AutoSize = true;
-            this.chkShow.Location = new System.Drawing.Point(16, 19);
-            this.chkShow.Name = "chkShow";
-            this.chkShow.Size = new System.Drawing.Size(116, 17);
-            this.chkShow.TabIndex = 0;
-            this.chkShow.Text = "Show In Group List";
-            this.chkShow.UseVisualStyleBackColor = true;
-            // 
-            // chkPublish
-            // 
-            this.chkPublish.AutoSize = true;
-            this.chkPublish.Location = new System.Drawing.Point(16, 42);
-            this.chkPublish.Name = "chkPublish";
-            this.chkPublish.Size = new System.Drawing.Size(116, 17);
-            this.chkPublish.TabIndex = 1;
-            this.chkPublish.Text = "Publish on the web";
-            this.chkPublish.UseVisualStyleBackColor = true;
-            // 
-            // chkOpenEnrollment
-            // 
-            this.chkOpenEnrollment.AutoSize = true;
-            this.chkOpenEnrollment.Location = new System.Drawing.Point(16, 65);
-            this.chkOpenEnrollment.Name = "chkOpenEnrollment";
-            this.chkOpenEnrollment.Size = new System.Drawing.Size(104, 17);
-            this.chkOpenEnrollment.TabIndex = 2;
-            this.chkOpenEnrollment.Text = "Open Enrollment";
-            this.chkOpenEnrollment.UseVisualStyleBackColor = true;
-            // 
-            // chkFee
-            // 
-            this.chkFee.AutoSize = true;
-            this.chkFee.Location = new System.Drawing.Point(36, 88);
-            this.chkFee.Name = "chkFee";
-            this.chkFee.Size = new System.Drawing.Size(114, 17);
-            this.chkFee.TabIndex = 3;
-            this.chkFee.Text = "Enrollment Fee: L$";
-            this.chkFee.UseVisualStyleBackColor = true;
-            // 
-            // chkGroupNotices
-            // 
-            this.chkGroupNotices.AutoSize = true;
-            this.chkGroupNotices.Location = new System.Drawing.Point(312, 87);
-            this.chkGroupNotices.Name = "chkGroupNotices";
-            this.chkGroupNotices.Size = new System.Drawing.Size(137, 17);
-            this.chkGroupNotices.TabIndex = 4;
-            this.chkGroupNotices.Text = "Receive Group Notices";
-            this.chkGroupNotices.UseVisualStyleBackColor = true;
-            // 
-            // numFee
-            // 
-            this.numFee.Location = new System.Drawing.Point(162, 87);
-            this.numFee.Name = "numFee";
-            this.numFee.Size = new System.Drawing.Size(144, 20);
-            this.numFee.TabIndex = 5;
+            this.lblMemberTitle.AutoSize = true;
+            this.lblMemberTitle.Location = new System.Drawing.Point(162, 43);
+            this.lblMemberTitle.Name = "lblMemberTitle";
+            this.lblMemberTitle.Size = new System.Drawing.Size(68, 13);
+            this.lblMemberTitle.TabIndex = 7;
+            this.lblMemberTitle.Text = "Member Title";
             // 
             // chkMature
             // 
@@ -228,14 +151,62 @@ namespace groupmanager
             this.chkMature.Text = "Mature publish";
             this.chkMature.UseVisualStyleBackColor = true;
             // 
-            // lblMemberTitle
+            // numFee
             // 
-            this.lblMemberTitle.AutoSize = true;
-            this.lblMemberTitle.Location = new System.Drawing.Point(162, 43);
-            this.lblMemberTitle.Name = "lblMemberTitle";
-            this.lblMemberTitle.Size = new System.Drawing.Size(68, 13);
-            this.lblMemberTitle.TabIndex = 7;
-            this.lblMemberTitle.Text = "Member Title";
+            this.numFee.Location = new System.Drawing.Point(162, 87);
+            this.numFee.Name = "numFee";
+            this.numFee.Size = new System.Drawing.Size(144, 20);
+            this.numFee.TabIndex = 5;
+            // 
+            // chkGroupNotices
+            // 
+            this.chkGroupNotices.AutoSize = true;
+            this.chkGroupNotices.Location = new System.Drawing.Point(312, 87);
+            this.chkGroupNotices.Name = "chkGroupNotices";
+            this.chkGroupNotices.Size = new System.Drawing.Size(137, 17);
+            this.chkGroupNotices.TabIndex = 4;
+            this.chkGroupNotices.Text = "Receive Group Notices";
+            this.chkGroupNotices.UseVisualStyleBackColor = true;
+            // 
+            // chkFee
+            // 
+            this.chkFee.AutoSize = true;
+            this.chkFee.Location = new System.Drawing.Point(36, 88);
+            this.chkFee.Name = "chkFee";
+            this.chkFee.Size = new System.Drawing.Size(114, 17);
+            this.chkFee.TabIndex = 3;
+            this.chkFee.Text = "Enrollment Fee: L$";
+            this.chkFee.UseVisualStyleBackColor = true;
+            // 
+            // chkOpenEnrollment
+            // 
+            this.chkOpenEnrollment.AutoSize = true;
+            this.chkOpenEnrollment.Location = new System.Drawing.Point(16, 65);
+            this.chkOpenEnrollment.Name = "chkOpenEnrollment";
+            this.chkOpenEnrollment.Size = new System.Drawing.Size(104, 17);
+            this.chkOpenEnrollment.TabIndex = 2;
+            this.chkOpenEnrollment.Text = "Open Enrollment";
+            this.chkOpenEnrollment.UseVisualStyleBackColor = true;
+            // 
+            // chkPublish
+            // 
+            this.chkPublish.AutoSize = true;
+            this.chkPublish.Location = new System.Drawing.Point(16, 42);
+            this.chkPublish.Name = "chkPublish";
+            this.chkPublish.Size = new System.Drawing.Size(116, 17);
+            this.chkPublish.TabIndex = 1;
+            this.chkPublish.Text = "Publish on the web";
+            this.chkPublish.UseVisualStyleBackColor = true;
+            // 
+            // chkShow
+            // 
+            this.chkShow.AutoSize = true;
+            this.chkShow.Location = new System.Drawing.Point(16, 19);
+            this.chkShow.Name = "chkShow";
+            this.chkShow.Size = new System.Drawing.Size(116, 17);
+            this.chkShow.TabIndex = 0;
+            this.chkShow.Text = "Show In Group List";
+            this.chkShow.UseVisualStyleBackColor = true;
             // 
             // frmGroupInfo
             // 
@@ -243,10 +214,7 @@ namespace groupmanager
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(505, 562);
             this.Controls.Add(this.grpPreferences);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.lstMembers);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.txtCharter);
             this.Controls.Add(this.lblFoundedBy);
             this.Controls.Add(this.lblGroupName);
@@ -273,13 +241,10 @@ namespace groupmanager
         private System.Windows.Forms.Label lblGroupName;
         private System.Windows.Forms.Label lblFoundedBy;
         private System.Windows.Forms.TextBox txtCharter;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListView lstMembers;
         private System.Windows.Forms.ColumnHeader colName;
         private System.Windows.Forms.ColumnHeader colTitle;
         private System.Windows.Forms.ColumnHeader colLasLogin;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox grpPreferences;
         private System.Windows.Forms.CheckBox chkPublish;
         private System.Windows.Forms.CheckBox chkShow;

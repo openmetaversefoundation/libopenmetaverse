@@ -972,8 +972,8 @@ namespace libsecondlife
                     array = (JSONArray)jsonObject["region_handle"];
                     regionHandle = Helpers.UIntsToLong((uint)(int)array[0], (uint)(int)array[1]);
 
-                    Client.Avatar.Position = posVector;
-                    Client.Avatar.LookAt = lookatVector;
+                    Client.Self.Position = posVector;
+                    Client.Self.LookAt = lookatVector;
 
                     // Create a hashtable to hold the home values
                     home = new Dictionary<string,object>();
@@ -985,12 +985,12 @@ namespace libsecondlife
 
                 this.AgentID = new LLUUID((string)LoginValues["agent_id"]);
                 this.SessionID = new LLUUID((string)LoginValues["session_id"]);
-                Client.Avatar.ID = this.AgentID;
-                Client.Avatar.FirstName = (string)LoginValues["first_name"];
-                Client.Avatar.LastName = (string)LoginValues["last_name"];
-                Client.Avatar.LookAt = vector;
-                Client.Avatar.HomePosition = posVector;
-                Client.Avatar.HomeLookAt = lookatVector;
+                Client.Self.ID = this.AgentID;
+                Client.Self.FirstName = (string)LoginValues["first_name"];
+                Client.Self.LastName = (string)LoginValues["last_name"];
+                Client.Self.LookAt = vector;
+                Client.Self.HomePosition = posVector;
+                Client.Self.HomeLookAt = lookatVector;
 
                 // Connect to the sim given in the login reply
                 Simulator simulator = new Simulator(Client, this.Callbacks, (uint)(int)LoginValues["circuit_code"],
@@ -1007,7 +1007,7 @@ namespace libsecondlife
                 Simulators.Add(simulator);
 
                 // Move our agent in to the sim to complete the connection
-                Client.Avatar.CompleteAgentMovement(simulator);
+                Client.Self.CompleteAgentMovement(simulator);
 
                 SendInitialPackets();
 
@@ -1206,7 +1206,7 @@ namespace libsecondlife
             //Client.Avatar.SetHeightWidth(676, 909);
 
             // Set the initial avatar camera position
-            Client.Avatar.UpdateCamera(true);
+            Client.Self.UpdateCamera(true);
 
             // TODO: What animation are we stopping here?
             AgentAnimationPacket animation = new AgentAnimationPacket();

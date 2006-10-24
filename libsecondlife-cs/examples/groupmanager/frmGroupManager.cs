@@ -102,7 +102,7 @@ namespace groupmanager
 
         private void cmdInfo_Click(object sender, EventArgs e)
         {
-            if (lstGroups.Items[lstGroups.SelectedIndex].ToString() != "none")
+            if (lstGroups.SelectedIndex >= 0 && lstGroups.Items[lstGroups.SelectedIndex].ToString() != "none")
             {
                 Group group = (Group)lstGroups.Items[lstGroups.SelectedIndex];
 

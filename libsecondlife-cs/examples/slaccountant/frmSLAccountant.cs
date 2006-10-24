@@ -411,7 +411,7 @@ namespace SLAccountant
 					lblName.Text = client.Network.LoginValues["first_name"] + " " + 
 						client.Network.LoginValues["last_name"];
 
-                    client.Avatar.SetHeightWidth((ushort)rand.Next(0, 65535), (ushort)rand.Next(0, 65535));
+                    client.Self.SetHeightWidth((ushort)rand.Next(0, 65535), (ushort)rand.Next(0, 65535));
 
                     // AgentSetAppearance
                     AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
@@ -491,8 +491,8 @@ namespace SLAccountant
 				return;
 			}
 			
-			client.Avatar.GiveMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
-			                        amount, "SLAccountant payment");
+			client.Self.GiveMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
+			    amount, "SLAccountant payment");
 		}
 	}
 }

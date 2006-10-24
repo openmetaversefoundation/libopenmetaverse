@@ -70,13 +70,6 @@ namespace libsecondlife
         byte offline, byte[] binaryBucket);
 
     /// <summary>
-    /// Triggered after friend request packet is sent out
-    /// </summary>
-    /// <param name="AgentID"></param>
-    /// <param name="Online"></param>
-    public delegate void FriendNotificationCallback(LLUUID agentID, bool online);
-
-    /// <summary>
     /// Triggered for any status updates of a teleport (progress, failed, succeeded)
     /// </summary>
     /// <param name="message">A message about the current teleport status</param>
@@ -160,8 +153,6 @@ namespace libsecondlife
         /// <summary></summary>
         public event InstantMessageCallback OnInstantMessage;
         /// <summary></summary>
-        public event FriendNotificationCallback OnFriendNotification;
-        /// <summary></summary>
         public event TeleportCallback OnTeleport;
         /// <summary></summary>
         public event BalanceCallback OnBalanceUpdated;
@@ -237,11 +228,6 @@ namespace libsecondlife
 
             // Chat callback
             Client.Network.RegisterCallback(PacketType.ChatFromSimulator, new PacketCallback(ChatHandler));
-
-            // Friend notification callback
-            callback = new PacketCallback(FriendNotificationHandler);
-            Client.Network.RegisterCallback(PacketType.OnlineNotification, callback);
-            Client.Network.RegisterCallback(PacketType.OfflineNotification, callback);
 
             TeleportTimer = new Timer(18000);
             TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
@@ -532,28 +518,44 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position, LLVector3 lookAt)
         {
+            int attempts = 0;
             TeleportStat = TeleportStatus.None;
 
-            Client.Grid.AddSim(simName);
-            int attempts = 0;
+            simName = simName.ToLower();
 
-            while (attempts++ < 5)
+            GridRegion region = Client.Grid.GetGridRegion(simName);
+
+            if (region != null)
             {
-                if (Client.Grid.Regions.ContainsKey(simName.ToLower()))
+                return Teleport(region.RegionHandle, position, lookAt);
+            }
+            else
+            {
+                while (attempts++ < 5)
                 {
-                    return Teleport(Client.Grid.Regions[simName.ToLower()].RegionHandle, position, lookAt);
-                }
-                else
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    Client.Grid.AddSim(simName);
-                    Client.Tick();
+                    region = Client.Grid.GetGridRegion(simName);
+
+                    if (region != null)
+                    {
+                        return Teleport(region.RegionHandle, position, lookAt);
+                    }
+                    else
+                    {
+                        // Request the region info again
+                        Client.Grid.AddSim(simName);
+
+                        System.Threading.Thread.Sleep(1000);
+                    }
                 }
             }
+
             if (OnTeleport != null)
             {
-                OnTeleport("Unable to resolve name: " + simName, TeleportStat);
+                TeleportMessage = "Unable to resolve name: " + simName;
+                TeleportStat = TeleportStatus.Failed;
+                OnTeleport(TeleportMessage, TeleportStat);
             }
+
             return false;
         }
 
@@ -564,6 +566,7 @@ namespace libsecondlife
         public void CompleteAgentMovement(Simulator simulator)
         {
             CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
+
             move.AgentData.AgentID = Client.Network.AgentID;
             move.AgentData.SessionID = Client.Network.SessionID;
             move.AgentData.CircuitCode = simulator.CircuitCode;
@@ -600,47 +603,6 @@ namespace libsecondlife
             fovPacket.FOVBlock.VerticalAngle = 6.28318531f;
             fovPacket.Header.Reliable = true;
             Client.Network.SendPacket((Packet)fovPacket);*/
-        }
-
-        private void FriendNotificationHandler(Packet packet, Simulator simulator)
-        {
-            // If the agent is online...
-            if (packet.Type == PacketType.OnlineNotification)
-            {
-                foreach (OnlineNotificationPacket.AgentBlockBlock block in ((OnlineNotificationPacket)packet).AgentBlock)
-                {
-                    Client.AddAvatar(block.AgentID);
-                    #region AvatarsMutex
-                    Client.AvatarsMutex.WaitOne();
-                    ((Avatar)Client.Avatars[block.AgentID]).Online = true;
-                    Client.AvatarsMutex.ReleaseMutex();
-                    #endregion AvatarsMutex
-
-                    if (OnFriendNotification != null)
-                    {
-                        OnFriendNotification(block.AgentID, true);
-                    }
-                }
-            }
-
-            // If the agent is Offline...
-            if (packet.Type == PacketType.OfflineNotification)
-            {
-                foreach (OfflineNotificationPacket.AgentBlockBlock block in ((OfflineNotificationPacket)packet).AgentBlock)
-                {
-                    Client.AddAvatar(block.AgentID);
-                    #region AvatarsMutex
-                    Client.AvatarsMutex.WaitOne();
-                    ((Avatar)Client.Avatars[block.AgentID]).Online = false;
-                    Client.AvatarsMutex.ReleaseMutex();
-                    #endregion AvatarsMutex
-
-                    if (OnFriendNotification != null)
-                    {
-                        OnFriendNotification(block.AgentID, true);
-                    }
-                }
-            }
         }
 
         private void CoarseLocationHandler(Packet packet, Simulator simulator)

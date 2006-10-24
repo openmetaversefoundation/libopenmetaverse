@@ -231,7 +231,7 @@ namespace libsecondlife
         {
             ParcelBuyPacket request = new ParcelBuyPacket();
 
-            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.AgentID = client.Network.AgentID;
             request.AgentData.SessionID = client.Network.SessionID;
 
             request.Data.Final = true;
@@ -252,7 +252,7 @@ namespace libsecondlife
         public bool Reclaim(SecondLife client)
         {
             ParcelReclaimPacket request = new ParcelReclaimPacket();
-            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.AgentID = client.Network.AgentID;
             request.AgentData.SessionID = client.Network.SessionID;
 
             request.Data.LocalID = this.LocalID;
@@ -270,7 +270,7 @@ namespace libsecondlife
         public bool Deed(SecondLife client, LLUUID groupID)
         {
             ParcelDeedToGroupPacket request = new ParcelDeedToGroupPacket();
-            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.AgentID = client.Network.AgentID;
             request.AgentData.SessionID = client.Network.SessionID;
 
             request.Data.LocalID = this.LocalID;
@@ -288,7 +288,7 @@ namespace libsecondlife
         {
             ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
 
-            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.AgentID = client.Network.AgentID;
             request.AgentData.SessionID = client.Network.SessionID;
 
             request.ParcelData.Flags = 0xFFFFFFFF; // TODO: Probably very important
@@ -327,7 +327,7 @@ namespace libsecondlife
             // TODO: ENUM for returnType
 
             ParcelReturnObjectsPacket request = new ParcelReturnObjectsPacket();
-            request.AgentData.AgentID = client.Avatar.ID;
+            request.AgentData.AgentID = client.Network.AgentID;
             request.AgentData.SessionID = client.Network.SessionID;
 
             request.ParcelData.LocalID = this.LocalID;
@@ -519,7 +519,7 @@ namespace libsecondlife
                         if (simulator.Region.ParcelMarked[x, y] == 0)
                         {
                             ParcelPropertiesRequestPacket tPacket = new ParcelPropertiesRequestPacket();
-                            tPacket.AgentData.AgentID = Client.Avatar.ID;
+                            tPacket.AgentData.AgentID = Client.Network.AgentID;
                             tPacket.AgentData.SessionID = Client.Network.SessionID;
                             tPacket.ParcelData.SequenceID = -10000;
                             tPacket.ParcelData.West = (x * 4.0f);

@@ -53,11 +53,9 @@ namespace libsecondlife
         /// <summary>Parcel (subdivided simulator lots) Subsystem</summary>
         public ParcelManager Parcels;
         /// <summary>'Client's Avatar' Subsystem</summary>
-        public MainAvatar Avatar;
-        /// <summary>Avatar (others) Subsystem</summary>
-        public Dictionary<LLUUID, Avatar> Avatars;
-        /// <summary>Threading setup (for what?)</summary>
-        public Mutex AvatarsMutex;
+        public MainAvatar Self;
+        /// <summary>Other Avatars Subsystem</summary>
+        public AvatarManager Avatars;
         /// <summary>Grid (aka simulator group) Subsystem</summary>
         public GridManager Grid;
         /// <summary>Object Subsystem</summary>
@@ -76,15 +74,12 @@ namespace libsecondlife
         {
             Network = new NetworkManager(this);
             Parcels = new ParcelManager(this);
-            Avatar = new MainAvatar(this);
-            Avatars = new Dictionary<LLUUID,Avatar>();
-            AvatarsMutex = new Mutex(false, "AvatarsMutex");
+            Self = new MainAvatar(this);
+            Avatars = new AvatarManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
             Debug = true;
-
-            Network.RegisterCallback(PacketType.UUIDNameReply, new PacketCallback(GetAgentNameHandler));
         }
 
         /// <summary>
@@ -93,7 +88,7 @@ namespace libsecondlife
         /// <returns>Client Avatar's Full Name</returns>
         public override string ToString()
         {
-            return Avatar.FirstName + " " + Avatar.LastName;
+            return Self.FirstName + " " + Self.LastName;
         }
 
         /// <summary>
@@ -140,81 +135,6 @@ namespace libsecondlife
                 {
                     Console.WriteLine("DEBUG: " + message);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Add an Avatar into the Avatars Dictionary, by UUID
-        /// </summary>
-        /// <param name="AgentID">UUID of Avatar to add</param>
-        public void AddAvatar(LLUUID AgentID)
-        {
-            // Quick sanity check
-            if (Avatars.ContainsKey(AgentID))
-            {
-                return;
-            }
-
-            GetAgentDetails(AgentID);
-
-            AvatarsMutex.WaitOne();
-            Avatars[AgentID] = new Avatar();
-            AvatarsMutex.ReleaseMutex();
-        }
-
-        /// <summary>
-        /// Add an Avatar into the Avatars Dictionary, by avatar struct directly
-        /// </summary>
-        /// <param name="avatar">Filled-out Avatar struct to insert</param>
-        public void AddAvatar(Avatar avatar)
-        {
-            AvatarsMutex.WaitOne();
-            Avatars[avatar.ID] = avatar;
-            AvatarsMutex.ReleaseMutex();
-        }
-
-        /// <summary>
-        /// [NOT WORKING, STUBBED]  Get Info on an Avatar.
-        /// <remarks>
-        /// Ideally a rewrite of this should either spit out an Avatar struct or update
-        /// an existing one.  --TSK
-        /// </remarks>
-        /// </summary>
-        /// <param name="AgentID">UUID of Avatar</param>
-        private void GetAgentDetails(LLUUID AgentID)
-        {
-            //FIXME:
-            //Packet packet = Packets.Communication.UUIDNameRequest(Protocol, AgentID);
-            //Network.SendPacket(packet);
-
-            //// TODO: Shouldn't this function block?
-        }
-
-        /// <summary>
-        /// Process an incoming UUIDNameReply Packet and insert Full Names into the Avatars Dictionary
-        /// </summary>
-        /// <param name="packet">Incoming Packet to process</param>
-        /// <param name="simulator">[NOT USED] What is this for? --TSK</param>
-        private void GetAgentNameHandler(Packet packet, Simulator simulator)
-        {
-            if (packet.Type == PacketType.UUIDNameReply)
-            {
-                UUIDNameReplyPacket reply = (UUIDNameReplyPacket)packet;
-
-                #region AvatarsMutex
-                AvatarsMutex.WaitOne();
-                foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
-                {
-                    if (!Avatars.ContainsKey(block.ID))
-                    {
-                        Avatars[block.ID] = new Avatar();
-                        Avatars[block.ID].ID = block.ID;
-                    }
-                    (Avatars[block.ID]).Name = Helpers.FieldToString(block.FirstName) +
-                        " " + Helpers.FieldToString(block.LastName);
-                }
-                AvatarsMutex.ReleaseMutex();
-                #endregion AvatarsMutex
             }
         }
     }

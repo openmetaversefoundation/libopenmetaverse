@@ -285,8 +285,8 @@ namespace libsecondlife.InventorySystem
             Packet packet = InvPacketHelper.ImprovedInstantMessage(
                 MessageID
                 , ToAgentID
-                , slClient.Avatar.FirstName + " " + slClient.Avatar.LastName
-                , slClient.Avatar.Position
+                , slClient.Self.FirstName + " " + slClient.Self.LastName
+                , slClient.Self.Position
                 , iitem
                 );
 

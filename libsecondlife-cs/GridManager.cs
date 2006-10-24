@@ -49,7 +49,7 @@ namespace libsecondlife
 		public string Name;
         /// <summary></summary> 
 		public byte Access;
-        /// <summary>Sim's various flags (presumably things like PG/M)</summary>
+        /// <summary>Various flags for the region (presumably things like PG/Mature)</summary>
 		public uint RegionFlags;
         /// <summary>Sim's defined Water Height</summary>
 		public byte WaterHeight;
@@ -57,11 +57,11 @@ namespace libsecondlife
 		public byte Agents;
         /// <summary>UUID of the World Map image</summary>
 		public LLUUID MapImageID;
-        /// <summary>Used for teleporting.</summary>
+        /// <summary>Used for teleporting</summary>
 		public ulong RegionHandle;
 
         /// <summary>
-        /// Constructor.
+        /// Constructor
         /// </summary>
 		public GridRegion() 
 		{
@@ -109,7 +109,7 @@ namespace libsecondlife
 
                 map.AgentData.AgentID = Client.Network.AgentID;
                 map.AgentData.SessionID = Client.Network.SessionID;
-                map.NameData.Name = Helpers.StringToField(name.ToLower());
+                map.NameData.Name = Helpers.StringToField(name);
 
                 Client.Network.SendPacket(map);
 			}

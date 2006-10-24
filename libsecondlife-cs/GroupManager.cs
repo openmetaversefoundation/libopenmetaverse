@@ -53,13 +53,10 @@ namespace libsecondlife
         public string Title;
         public string Description;
         public ulong Powers;
-        /// <summary>Contains all the group members belonging to this role</summary>
-        public Dictionary<LLUUID,GroupMember> Members;
 
         public GroupRole(LLUUID id)
         {
             ID = id;
-            Members = new Dictionary<LLUUID,GroupMember>();
         }
     }
 
@@ -420,6 +417,43 @@ namespace libsecondlife
         private void GroupRoleDataHandler(Packet packet, Simulator simulator)
         {
             GroupRoleDataReplyPacket roles = (GroupRoleDataReplyPacket)packet;
+
+            #region GroupRolesCachesMutex
+            GroupRolesCachesMutex.WaitOne();
+
+            // If nothing is registered to receive this RequestID drop the data
+            if (GroupRolesCaches.ContainsKey(roles.GroupData.RequestID))
+            {
+                Dictionary<LLUUID, GroupRole> groupRoleCache = GroupRolesCaches[roles.GroupData.RequestID];
+
+                foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
+                {
+                    GroupRole groupRole = new GroupRole(block.RoleID);
+
+                    groupRole.Description = Helpers.FieldToString(block.Description);
+                    groupRole.Name = Helpers.FieldToString(block.Name);
+                    groupRole.Powers = block.Powers;
+                    groupRole.Title = Helpers.FieldToString(block.Title);
+
+                    groupRoleCache[block.RoleID] = groupRole;
+                }
+
+                // Release the mutex before the callback
+                GroupRolesCachesMutex.ReleaseMutex();
+
+                // Check if we've received all the group members that are showing up
+                if (groupRoleCache.Count >= roles.GroupData.RoleCount)
+                {
+                    GroupRolesCallbacks[roles.GroupData.GroupID](groupRoleCache);
+                }
+            }
+            else
+            {
+                GroupRolesCachesMutex.ReleaseMutex();
+            }
+
+            GroupRolesCachesMutex.ReleaseMutex();
+            #endregion GroupRolesCachesMutex
         }
 
         private void GroupRoleMembersHandler(Packet packet, Simulator simulator)

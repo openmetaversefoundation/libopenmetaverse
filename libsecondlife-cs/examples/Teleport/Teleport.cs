@@ -116,10 +116,10 @@ namespace Teleport
             Console.WriteLine();
             Console.WriteLine("Okay, hopefully all the initial connect stuff is done, trying now...");
 
-            client.Avatar.OnTeleport += new TeleportCallback(Avatar_OnTeleportMessage);
+            client.Self.OnTeleport += new TeleportCallback(Avatar_OnTeleportMessage);
 
             DoneTeleporting = false;
-            client.Avatar.Teleport(sim, coords);
+            client.Self.Teleport(sim, coords);
 
             while (!DoneTeleporting)
             {

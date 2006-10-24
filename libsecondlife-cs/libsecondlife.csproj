@@ -101,6 +101,7 @@
     <Compile Include="Avatar.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AvatarManager.cs" />
     <Compile Include="EstateTools.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -257,7 +257,7 @@ namespace libsecondlife
             ParcelDownloading = true;
 
             ParcelPropertiesRequestPacket tPacket = new ParcelPropertiesRequestPacket();
-            tPacket.AgentData.AgentID = Client.Avatar.ID;
+            tPacket.AgentData.AgentID = Client.Self.ID;
             tPacket.AgentData.SessionID = Client.Network.SessionID;
             tPacket.ParcelData.SequenceID = -10000;
             tPacket.ParcelData.West = 0.0f;

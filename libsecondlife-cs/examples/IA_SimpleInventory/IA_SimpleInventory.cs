@@ -120,7 +120,7 @@ namespace IA_SimpleInventory
 
         protected void doStuff()
         {
-            Console.WriteLine("Dumping a copy of " + client.Avatar.FirstName + "'s inventory to the console.");
+            Console.WriteLine("Dumping a copy of " + client.Self.FirstName + "'s inventory to the console.");
             Console.WriteLine();
 
             Console.WriteLine(AgentInventory.getRootFolder().toXML(false));

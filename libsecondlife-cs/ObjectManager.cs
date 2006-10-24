@@ -310,16 +310,16 @@ namespace libsecondlife
                     avatar.Online = true;
                     avatar.CurrentRegion = simulator.Region;
 
-                    if (FirstName == Client.Avatar.FirstName && LastName == Client.Avatar.LastName)
+                    if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
                     {
                         // Update our avatar
-                        Client.Avatar.LocalID = avatar.LocalID;
-                        Client.Avatar.Position = avatar.Position;
-                        Client.Avatar.Rotation = avatar.Rotation;
+                        Client.Self.LocalID = avatar.LocalID;
+                        Client.Self.Position = avatar.Position;
+                        Client.Self.Rotation = avatar.Rotation;
                     }
                     else
                     {
-                        Client.AddAvatar(avatar);
+                        Client.Avatars.AddAvatar(avatar);
 
                         if (OnNewAvatar != null)
                         {
@@ -407,10 +407,10 @@ namespace libsecondlife
 
                 if (avatar)
                 {
-                    if (localid == Client.Avatar.LocalID)
+                    if (localid == Client.Self.LocalID)
                     {
-                        Client.Avatar.Position = Position;
-                        Client.Avatar.Rotation = Rotation;
+                        Client.Self.Position = Position;
+                        Client.Self.Rotation = Rotation;
                     }
 
                     AvatarUpdate avupdate = new AvatarUpdate();
