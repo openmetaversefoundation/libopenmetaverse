@@ -4486,6 +4486,7 @@ sim -> dataserver
 		{	AgentID			LLUUID	}
 		{	AvatarID		LLUUID	}
 		{	GodLevel		U8		}
+		{	WebProfilesDisabled		BOOL	}
 	}
 }
 // AvatarPropertiesReply
@@ -4505,17 +4506,31 @@ sim -> dataserver
 		{	FLImageID		LLUUID		}
 		{	PartnerID		LLUUID		}
 		{	AboutText		Variable 2	}	// string, up to 512
-		{	WantToMask		U32			}
-		{	WantToText		Variable 1	}	// string
-		{	SkillsMask		U32			}
-		{	SkillsText		Variable 1	}	// string
 		{	FLAboutText		Variable 1	}	// string
 		{	BornOn			Variable 1	}	// string
+		{	ProfileURL		Variable 1	}	// string
 		{	CharterMember	Variable 1	}	// special - usually U8
 		{	AllowPublish	BOOL		}	// whether profile is externally visible or not
 		{	MaturePublish	BOOL		}	// profile is "mature"
 		{	Identified		BOOL		}	// whether avatar has provided payment info
 		{	Transacted		BOOL		}	// whether avatar has actively used payment info
+	}
+}
+
+{
+	AvatarInterestsReply Low Trusted Zerocoded
+	{
+		AgentData			Single
+		{	AgentID			LLUUID		}	// your id
+		{	AvatarID		LLUUID		}	// avatar you're asking about
+	}
+	{
+		PropertiesData		Single
+		{	WantToMask		U32			}
+		{	WantToText		Variable 1	}	// string
+		{	SkillsMask		U32			}
+		{	SkillsText		Variable 1	}	// string
+		{	LanguagesText	Variable 1	}	// string
 	}
 }
 
@@ -4558,12 +4573,29 @@ sim -> dataserver
 		{	FLImageID		LLUUID			}
 		{	AboutText		Variable	2	}	// string, up to 512
 		{	FLAboutText		Variable	1	}
+		{	AllowPublish		BOOL			}	// whether profile is externally visible or not
+		{	MaturePublish		BOOL		}	// profile is "mature"
+		{	ProfileURL		Variable	1	}	// string
+	}
+}
+
+// AvatarInterestsUpdate
+// viewer -> simulator
+// reliable
+{
+	AvatarInterestsUpdate Low NotTrusted Zerocoded
+	{
+		AgentData		Single
+		{	AgentID			LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		PropertiesData	Single
 		{	WantToMask		U32				}
 		{	WantToText		Variable	1	}	// string
 		{	SkillsMask		U32				}
 		{	SkillsText		Variable	1	}	// string
-		{	AllowPublish		BOOL			}	// whether profile is externally visible or not
-		{	MaturePublish		BOOL		}	// profile is "mature"
+		{	LanguagesText	Variable	1	}	// string	
 	}
 }
 
@@ -6707,6 +6739,7 @@ sim -> dataserver
 		InventoryData	Variable
 		{	ItemID		LLUUID	}
 		{	FolderID	LLUUID	}
+		{	NewName			Variable	1	}
 	}
 }
 
@@ -6729,6 +6762,7 @@ sim -> dataserver
 		{	OldAgentID		LLUUID	}
 		{	OldItemID		LLUUID	}
 		{	NewFolderID		LLUUID	}
+		{	NewName			Variable	1	}
 	}
 }
 
@@ -9660,12 +9694,12 @@ sim -> dataserver
 	}
 	{
 		HeaderData			Single
-		{	NewFolderID				LLUUID	}
+		{	NewFolderID			LLUUID	}
 	}
 	{
 		ObjectData			Variable
-		{	OldItemID				LLUUID	}
-		{	OldFolderID				LLUUID	}
+		{	OldItemID			LLUUID	}
+		{	OldFolderID			LLUUID	}
 	}
 }
 
