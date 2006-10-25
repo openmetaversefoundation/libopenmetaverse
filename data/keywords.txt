@@ -215,8 +215,8 @@ Seconds
 UpdateUserInfo
 AggregatePermTexturesOwner
 Set
-NewName
 Key
+NewName
 AgentID
 OnlineStatusRequest
 DataAgentAccessRequest
@@ -666,7 +666,6 @@ TeleportProgress
 AgentQuitCopy
 LocationValid
 ToViewer
-AvatarInterestsUpdate
 GroupNoticeID
 ParcelName
 PriceObjectRent
@@ -728,7 +727,6 @@ LogoutReply
 FeatureDisabled
 ObjectLocalID
 Dropped
-WebProfilesDisabled
 Destination
 MasterID
 TransferData
@@ -836,7 +834,6 @@ GroupRoleMembersRequest
 OldFolderID
 TextureID
 UserInfoRequest
-ProfileURL
 Handle
 StartParcelRenameAck
 ButtonIndex
@@ -1014,7 +1011,6 @@ ObjectSpinStop
 FullID
 ActivateGroup
 SysGPU
-AvatarInterestsReply
 StartLure
 SysRAM
 ObjectPosition
@@ -1295,7 +1291,6 @@ ObjectUpdateCompressed
 MuteFlags
 Group
 AgentPause
-LanguagesText
 InternalScriptMail
 FindAgent
 AgentData
