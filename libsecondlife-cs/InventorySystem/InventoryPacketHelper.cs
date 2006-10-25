@@ -147,26 +147,51 @@ namespace libsecondlife.InventorySystem
 			, LLUUID folderID
 			)
 		{
+            Console.WriteLine("WARNING: Using the new MoveInventoryItem packet, without specifying new folder name has unknown results.");
+            return MoveInventoryItem( itemID, folderID, null );
+		}
+
+        public Packet MoveInventoryItem(
+            LLUUID itemID
+            , LLUUID folderID
+            , string newFolderName
+            )
+        {
             MoveInventoryItemPacket p = new MoveInventoryItemPacket();
             p.AgentData.AgentID = AgentID;
             p.AgentData.SessionID = SessionID;
             p.AgentData.Stamp = true;
 
-            p.InventoryData    = new MoveInventoryItemPacket.InventoryDataBlock[1];
+            p.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[1];
             p.InventoryData[0] = new MoveInventoryItemPacket.InventoryDataBlock();
 
             p.InventoryData[0].ItemID = itemID;
             p.InventoryData[0].FolderID = folderID;
 
+            if (newFolderName != null)
+            {
+                p.InventoryData[0].NewName = Helpers.StringToField(newFolderName);
+            }
+
             return p;
 
-		}
+        }
 
-		public Packet CopyInventoryItem(
-			LLUUID itemID
-			, LLUUID folderID
-			)
-		{
+        public Packet CopyInventoryItem(
+            LLUUID itemID
+            , LLUUID folderID
+            )
+        {
+
+            return CopyInventoryItem( itemID, folderID, null );
+        }
+
+        public Packet CopyInventoryItem(
+            LLUUID itemID
+            , LLUUID folderID
+            , string newItemName
+            )
+        {
             CopyInventoryItemPacket p = new CopyInventoryItemPacket();
             p.AgentData.AgentID = AgentID;
             p.AgentData.SessionID = SessionID;
@@ -177,13 +202,18 @@ namespace libsecondlife.InventorySystem
             p.InventoryData[0].CallbackID = 0;
             p.InventoryData[0].OldAgentID = AgentID; //TODO: Find out what this is supposed to be.  Added field 10/11/06, no docs in Message Template
 
-            p.InventoryData[0].OldItemID   = itemID;
+            p.InventoryData[0].OldItemID = itemID;
             p.InventoryData[0].NewFolderID = folderID;
 
-            return p;
-		}
+            if (newItemName != null)
+            {
+                p.InventoryData[0].NewName = Helpers.StringToField(newItemName);
+            }
 
-		public Packet RemoveInventoryItem(
+            return p;
+        }
+
+        public Packet RemoveInventoryItem(
 			LLUUID itemID
 			)
 		{

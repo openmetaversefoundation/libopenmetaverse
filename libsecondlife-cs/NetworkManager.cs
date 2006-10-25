@@ -786,7 +786,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Login(Dictionary<string, object> loginParams)
 		{
-			return Login(loginParams, "https://login.agni.lindenlab.com/cgi-bin/login.cgi");
+            return Login(loginParams, SecondLife.LOGIN_SERVER);
 		}
 
         /// <summary>
