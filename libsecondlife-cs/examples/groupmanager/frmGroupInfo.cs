@@ -32,7 +32,7 @@ namespace groupmanager
             InitializeComponent();
         }
 
-        private void frmGroupInfo_Shown(object sender, EventArgs e)
+        private void frmGroupInfo_Load(object sender, EventArgs e)
         {
             Client.Groups.BeginGetGroupProfile(Group.ID,
                 new GroupManager.GroupProfileCallback(GroupProfileHandler));
