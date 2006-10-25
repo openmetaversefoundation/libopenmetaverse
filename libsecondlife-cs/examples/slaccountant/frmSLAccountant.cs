@@ -30,7 +30,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Data;
-using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -70,8 +69,6 @@ namespace SLAccountant
 
 		// libsecondlife instance
 		private SecondLife client;
-		// Mutex for locking the listview
-		Mutex lstFindMutex;
 
 		public frmSLAccountant()
 		{
@@ -366,23 +363,21 @@ namespace SLAccountant
 		{
             DirPeopleReplyPacket reply = (DirPeopleReplyPacket)packet;
 
-			lstFindMutex.WaitOne();
-
-            foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
+            lock (lstFind)
             {
-                ListViewItem listItem = new ListViewItem(new string[] { 
+
+                foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
+                {
+                    ListViewItem listItem = new ListViewItem(new string[] { 
                     Helpers.FieldToString(block.FirstName) + " " + Helpers.FieldToString(block.LastName), 
                     (block.Online ? "Yes" : "No"), block.AgentID.ToString() });
-                lstFind.Items.Add(listItem);
+                    lstFind.Items.Add(listItem);
+                }
             }
-
-			lstFindMutex.ReleaseMutex();
 		}
 
 		private void frmSLAccountant_Load(object sender, System.EventArgs e)
 		{
-			lstFindMutex = new Mutex(false, "lstFindMutex");
-
 			client = new SecondLife();
 
 			// Install our packet handlers

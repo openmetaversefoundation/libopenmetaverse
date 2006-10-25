@@ -30,7 +30,6 @@ using System.Timers;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Security.Cryptography;
 using Nwc.XmlRpc;
 using Nii.JSON;
@@ -205,7 +204,7 @@ namespace libsecondlife
                     {
                         return;
                     }
-                    Thread.Sleep(10);
+                    System.Threading.Thread.Sleep(10);
                 }
             }
             catch (Exception e)
@@ -380,8 +379,8 @@ namespace libsecondlife
                 }
                 catch (SocketException)
                 {
-                    Client.Log("Socket error, shutting down " + this.Region.Name +
-                        " (" + endPoint.ToString() + ")", Helpers.LogLevel.Error);
+                    Client.Log(endPoint.ToString() + " socket is closed, shutting down " + this.Region.Name, 
+                        Helpers.LogLevel.Info);
 
                     connected = false;
                     Network.DisconnectSim(this);
@@ -988,6 +987,8 @@ namespace libsecondlife
             {
                 return;
             }
+
+            Client.Log("Logging out", Helpers.LogLevel.Info);
 
             DisconnectTimer.Stop();
             connected = false;
