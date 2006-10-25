@@ -224,7 +224,7 @@ namespace Nii.JSON
         /// <summary>
         /// C# convenience method
         /// </summary>
-        /// <returns>The Hashtable</returns>
+        /// <returns>The Dictionary</returns>
         public Dictionary<string, object> getDictionary()
         {
             return myHashMap;

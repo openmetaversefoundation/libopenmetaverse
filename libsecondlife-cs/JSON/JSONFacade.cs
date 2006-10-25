@@ -12,7 +12,7 @@ namespace Nii.JSON
 	public sealed class JsonFacade
 	{
     /// <summary>
-    /// Parse JSON formatted string and return a Hashtable
+    /// Parse JSON formatted string and return a dictionary
     /// </summary>
     /// <param name="sJSON"></param>
     /// <returns></returns>

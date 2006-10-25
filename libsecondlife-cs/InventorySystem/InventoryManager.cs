@@ -58,10 +58,10 @@ namespace libsecondlife.InventorySystem
         // UUID of Root Inventory Folder
         private LLUUID uuidRootFolder;
 
-        // Setup a hashtable to easily lookup folders by UUID
+        // Setup a dictionary to easily lookup folders by UUID
         private Dictionary<LLUUID, InventoryFolder> htFoldersByUUID = new Dictionary<LLUUID, InventoryFolder>();
 
-        // Setup a Hashtable to track download progress
+        // Setup a dictionary to track download progress
         private Dictionary<LLUUID, DescendentRequest> htFolderDownloadStatus;
         private List<DescendentRequest> alFolderRequestQueue;
 

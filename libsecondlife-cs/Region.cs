@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -41,6 +42,17 @@ namespace libsecondlife
     public class Region
     {
         /// <summary></summary>
+        public event ParcelCompleteCallback OnParcelCompletion;
+
+        // FIXME: This whole setup is fscked in a really bad way. We can't be 
+        // locking on a publically accessible container, and we shouldn't have
+        // publically accessible containers anyways because external programs 
+        // might be iterating through them or modifying them when internally 
+        // we are doing the opposite. The best way to fix this will be 
+        // privatizing and adding helper functions to access the dictionary
+        public Dictionary<int, Parcel> Parcels;
+
+        /// <summary></summary>
         public LLUUID ID;
         /// <summary></summary>
         public ulong Handle;
@@ -50,20 +62,13 @@ namespace libsecondlife
         public byte[] ParcelOverlay;
         /// <summary></summary>
         public int ParcelOverlaysReceived;
-
-        /// <summary>64x64 Array of parcels which have been successfully downloaded. 
+        /// <summary>64x64 Array of parcels which have been successfully downloaded 
         /// (and their LocalID's, 0 = Null)</summary>
         public int[,] ParcelMarked;
-        /// <summary>Flag to indicate whether we are downloading a sim's parcels.</summary>
+        /// <summary>Flag to indicate whether we are downloading a sim's parcels</summary>
         public bool ParcelDownloading;
-        /// <summary>Flag to indicate whether to get Dwell values automatically (NOT USED YET). Call Parcel.GetDwell() instead.</summary>
+        /// <summary>Flag to indicate whether to get Dwell values automatically (NOT USED YET). Call Parcel.GetDwell() instead</summary>
         public bool ParcelDwell;
-
-        /// <summary></summary>
-        public System.Collections.Hashtable Parcels;
-        /// <summary></summary>
-        public System.Threading.Mutex ParcelsMutex;
-
         /// <summary></summary>
         public float TerrainHeightRange00;
         /// <summary></summary>
@@ -82,10 +87,8 @@ namespace libsecondlife
         public float TerrainStartHeight11;
         /// <summary></summary>
         public float WaterHeight;
-
         /// <summary></summary>
         public LLUUID SimOwner;
-
         /// <summary></summary>
         public LLUUID TerrainBase0;
         /// <summary></summary>
@@ -102,16 +105,12 @@ namespace libsecondlife
         public LLUUID TerrainDetail2;
         /// <summary></summary>
         public LLUUID TerrainDetail3;
-
         /// <summary></summary>
         public bool IsEstateManager;
         /// <summary></summary>
         public EstateTools Estate;
 
         private SecondLife Client;
-
-        /// <summary></summary>
-        public event ParcelCompleteCallback OnParcelCompletion;
 
         /// <summary>
         /// 
@@ -125,8 +124,7 @@ namespace libsecondlife
             ParcelOverlay = new byte[4096];
             ParcelMarked = new int[64, 64];
 
-            Parcels = new System.Collections.Hashtable();
-            ParcelsMutex = new System.Threading.Mutex(false, "ParcelsMutex");
+            Parcels = new Dictionary<int, Parcel>();
 
             SimOwner = new LLUUID();
             TerrainBase0 = new LLUUID();
@@ -273,7 +271,7 @@ namespace libsecondlife
         /// </summary>
         public void ResetParcelDownload()
         {
-            Parcels = new System.Collections.Hashtable();
+            Parcels = new Dictionary<int, Parcel>();
             ParcelMarked = new int[64, 64];
         }
 

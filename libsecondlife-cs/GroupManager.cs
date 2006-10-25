@@ -165,10 +165,8 @@ namespace libsecondlife
         private Dictionary<LLUUID, GroupTitlesCallback> GroupTitlesCallbacks;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>> GroupMembersCaches;
-        private Mutex GroupMembersCachesMutex;
         /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>> GroupRolesCaches;
-        private Mutex GroupRolesCachesMutex;
 
         /// <summary>
         /// 
@@ -184,9 +182,7 @@ namespace libsecondlife
             GroupTitlesCallbacks = new Dictionary<LLUUID, GroupTitlesCallback>();
 
             GroupMembersCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>>();
-            GroupMembersCachesMutex = new Mutex(false, "GroupMembersCachesMutex");
             GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();
-            GroupRolesCachesMutex = new Mutex(false, "GroupRolesCachesMutex");
 
             Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new PacketCallback(GroupDataHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new PacketCallback(GroupTitlesHandler));
@@ -244,11 +240,10 @@ namespace libsecondlife
         {
             LLUUID requestID = LLUUID.GenerateUUID();
 
-            #region GroupMembersCachesMutex
-            GroupMembersCachesMutex.WaitOne();
-            GroupMembersCaches[requestID] = new Dictionary<LLUUID,GroupMember>();
-            GroupMembersCachesMutex.ReleaseMutex();
-            #endregion GroupMembersCachesMutex
+            lock (GroupMembersCaches)
+            {
+                GroupMembersCaches[requestID] = new Dictionary<LLUUID, GroupMember>();
+            }
 
             GroupMembersCallbacks[group] = gmc;
 
@@ -266,11 +261,10 @@ namespace libsecondlife
         {
             LLUUID requestID = LLUUID.GenerateUUID();
 
-            #region GroupRolesCachesMutex
-            GroupRolesCachesMutex.WaitOne();
-            GroupRolesCaches[requestID] = new Dictionary<LLUUID, GroupRole>();
-            GroupRolesCachesMutex.ReleaseMutex();
-            #endregion GroupRolesCachesMutex
+            lock (GroupRolesCaches)
+            {
+                GroupRolesCaches[requestID] = new Dictionary<LLUUID, GroupRole>();
+            }
 
             GroupRolesCallbacks[group] = grc;
 
@@ -321,7 +315,10 @@ namespace libsecondlife
                     currentGroups[block.GroupID] = group;
                 }
 
-                OnCurrentGroups(currentGroups);
+                if (OnCurrentGroups != null)
+                {
+                    OnCurrentGroups(currentGroups);
+                }
             }
         }
 
@@ -375,85 +372,68 @@ namespace libsecondlife
         private void GroupMembersHandler(Packet packet, Simulator simulator)
         {
             GroupMembersReplyPacket members = (GroupMembersReplyPacket)packet;
+            Dictionary<LLUUID, GroupMember> groupMemberCache = null;
 
-            #region GroupMembersCachesMutex
-            GroupMembersCachesMutex.WaitOne();
-
-            // If nothing is registered to receive this RequestID drop the data
-            if (GroupMembersCaches.ContainsKey(members.GroupData.RequestID))
+            lock (GroupMembersCaches)
             {
-                Dictionary<LLUUID, GroupMember> groupMemberCache = GroupMembersCaches[members.GroupData.RequestID];
-
-                foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                // If nothing is registered to receive this RequestID drop the data
+                if (GroupMembersCaches.ContainsKey(members.GroupData.RequestID))
                 {
-                    GroupMember groupMember = new GroupMember(block.AgentID);
+                    groupMemberCache = GroupMembersCaches[members.GroupData.RequestID];
 
-                    groupMember.Contribution = block.Contribution;
-                    groupMember.IsOwner = block.IsOwner;
-                    groupMember.OnlineStatus = Helpers.FieldToString(block.OnlineStatus);
-                    groupMember.Powers = block.AgentPowers;
-                    groupMember.Title = Helpers.FieldToString(block.Title);
+                    foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                    {
+                        GroupMember groupMember = new GroupMember(block.AgentID);
 
-                    groupMemberCache[block.AgentID] = groupMember;
-                }
+                        groupMember.Contribution = block.Contribution;
+                        groupMember.IsOwner = block.IsOwner;
+                        groupMember.OnlineStatus = Helpers.FieldToString(block.OnlineStatus);
+                        groupMember.Powers = block.AgentPowers;
+                        groupMember.Title = Helpers.FieldToString(block.Title);
 
-                // Release the mutex before the callback
-                GroupMembersCachesMutex.ReleaseMutex();
-
-                // Check if we've received all the group members that are showing up
-                if (groupMemberCache.Count >= members.GroupData.MemberCount)
-                {
-                    GroupMembersCallbacks[members.GroupData.GroupID](groupMemberCache);
+                        groupMemberCache[block.AgentID] = groupMember;
+                    }
                 }
             }
-            else
-            {
-                GroupMembersCachesMutex.ReleaseMutex();
-            }
 
-            #endregion GroupMembersCachesMutex
+            // Check if we've received all the group members that are showing up
+            if (groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
+            {
+                GroupMembersCallbacks[members.GroupData.GroupID](groupMemberCache);
+            }
         }
 
         private void GroupRoleDataHandler(Packet packet, Simulator simulator)
         {
             GroupRoleDataReplyPacket roles = (GroupRoleDataReplyPacket)packet;
+            Dictionary<LLUUID, GroupRole> groupRoleCache = null;
 
-            #region GroupRolesCachesMutex
-            GroupRolesCachesMutex.WaitOne();
-
-            // If nothing is registered to receive this RequestID drop the data
-            if (GroupRolesCaches.ContainsKey(roles.GroupData.RequestID))
+            lock (GroupRolesCaches)
             {
-                Dictionary<LLUUID, GroupRole> groupRoleCache = GroupRolesCaches[roles.GroupData.RequestID];
-
-                foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
+                // If nothing is registered to receive this RequestID drop the data
+                if (GroupRolesCaches.ContainsKey(roles.GroupData.RequestID))
                 {
-                    GroupRole groupRole = new GroupRole(block.RoleID);
+                    groupRoleCache = GroupRolesCaches[roles.GroupData.RequestID];
 
-                    groupRole.Description = Helpers.FieldToString(block.Description);
-                    groupRole.Name = Helpers.FieldToString(block.Name);
-                    groupRole.Powers = block.Powers;
-                    groupRole.Title = Helpers.FieldToString(block.Title);
+                    foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
+                    {
+                        GroupRole groupRole = new GroupRole(block.RoleID);
 
-                    groupRoleCache[block.RoleID] = groupRole;
-                }
+                        groupRole.Description = Helpers.FieldToString(block.Description);
+                        groupRole.Name = Helpers.FieldToString(block.Name);
+                        groupRole.Powers = block.Powers;
+                        groupRole.Title = Helpers.FieldToString(block.Title);
 
-                // Release the mutex before the callback
-                GroupRolesCachesMutex.ReleaseMutex();
-
-                // Check if we've received all the group members that are showing up
-                if (groupRoleCache.Count >= roles.GroupData.RoleCount)
-                {
-                    GroupRolesCallbacks[roles.GroupData.GroupID](groupRoleCache);
+                        groupRoleCache[block.RoleID] = groupRole;
+                    }
                 }
             }
-            else
-            {
-                GroupRolesCachesMutex.ReleaseMutex();
-            }
 
-            GroupRolesCachesMutex.ReleaseMutex();
-            #endregion GroupRolesCachesMutex
+            // Check if we've received all the group members that are showing up
+            if (groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
+            {
+                GroupRolesCallbacks[roles.GroupData.GroupID](groupRoleCache);
+            }
         }
 
         private void GroupRoleMembersHandler(Packet packet, Simulator simulator)
