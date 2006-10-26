@@ -278,9 +278,24 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLUUID operator ^(LLUUID lhs, LLUUID rhs)
+        {
+            LLUUID returnUUID = new LLUUID();
+            for (int count = 0; count < returnUUID.Data.Length; count++)
+                returnUUID.Data[count] = lhs.Data[count] ^ rhs.Data[count];
+
+            return returnUUID;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-		public static implicit operator LLUUID(string val)
+        public static implicit operator LLUUID(string val)
 		{
 			return new LLUUID(val);
 		}
