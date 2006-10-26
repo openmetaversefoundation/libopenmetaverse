@@ -50,7 +50,7 @@ namespace groupmanager
             this.tabsMRA = new System.Windows.Forms.TabControl();
             this.tabMembers = new System.Windows.Forms.TabPage();
             this.cmdEject = new System.Windows.Forms.Button();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.lstMembers2 = new System.Windows.Forms.ListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
@@ -70,6 +70,21 @@ namespace groupmanager
             this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
             this.tabProposals = new System.Windows.Forms.TabPage();
             this.tabLand = new System.Windows.Forms.TabPage();
+            this.tabsMoney = new System.Windows.Forms.TabControl();
+            this.tabPlanning = new System.Windows.Forms.TabPage();
+            this.txtPlanning = new System.Windows.Forms.TextBox();
+            this.tabDetails = new System.Windows.Forms.TabPage();
+            this.txtDetails = new System.Windows.Forms.TextBox();
+            this.tabSales = new System.Windows.Forms.TabPage();
+            this.txtSales = new System.Windows.Forms.TextBox();
+            this.txtContribution = new System.Windows.Forms.TextBox();
+            this.lblLandAvailable = new System.Windows.Forms.Label();
+            this.lblLandInUse = new System.Windows.Forms.Label();
+            this.lblTotalContribution = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.lstLand = new System.Windows.Forms.ListView();
             this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader8 = new System.Windows.Forms.ColumnHeader();
@@ -78,21 +93,6 @@ namespace groupmanager
             this.cmdCancel = new System.Windows.Forms.Button();
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdRefresh = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.lblTotalContribution = new System.Windows.Forms.Label();
-            this.lblLandInUse = new System.Windows.Forms.Label();
-            this.lblLandAvailable = new System.Windows.Forms.Label();
-            this.txtContribution = new System.Windows.Forms.TextBox();
-            this.tabsMoney = new System.Windows.Forms.TabControl();
-            this.tabPlanning = new System.Windows.Forms.TabPage();
-            this.tabDetails = new System.Windows.Forms.TabPage();
-            this.tabSales = new System.Windows.Forms.TabPage();
-            this.txtPlanning = new System.Windows.Forms.TextBox();
-            this.txtDetails = new System.Windows.Forms.TextBox();
-            this.txtSales = new System.Windows.Forms.TextBox();
             this.tabs.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.grpPreferences.SuspendLayout();
@@ -311,7 +311,7 @@ namespace groupmanager
             // tabMembers
             // 
             this.tabMembers.Controls.Add(this.cmdEject);
-            this.tabMembers.Controls.Add(this.listView1);
+            this.tabMembers.Controls.Add(this.lstMembers2);
             this.tabMembers.Controls.Add(this.chkListRoles);
             this.tabMembers.Controls.Add(this.treeAbilities);
             this.tabMembers.Controls.Add(this.label2);
@@ -333,18 +333,18 @@ namespace groupmanager
             this.cmdEject.Text = "Eject From Group";
             this.cmdEject.UseVisualStyleBackColor = true;
             // 
-            // listView1
+            // lstMembers2
             // 
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.lstMembers2.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3});
-            this.listView1.Location = new System.Drawing.Point(6, 6);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(380, 140);
-            this.listView1.TabIndex = 14;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
+            this.lstMembers2.Location = new System.Drawing.Point(6, 6);
+            this.lstMembers2.Name = "lstMembers2";
+            this.lstMembers2.Size = new System.Drawing.Size(380, 140);
+            this.lstMembers2.TabIndex = 14;
+            this.lstMembers2.UseCompatibleStateImageBehavior = false;
+            this.lstMembers2.View = System.Windows.Forms.View.Details;
             // 
             // columnHeader1
             // 
@@ -508,6 +508,150 @@ namespace groupmanager
             this.tabLand.Text = "Land & L$";
             this.tabLand.UseVisualStyleBackColor = true;
             // 
+            // tabsMoney
+            // 
+            this.tabsMoney.Controls.Add(this.tabPlanning);
+            this.tabsMoney.Controls.Add(this.tabDetails);
+            this.tabsMoney.Controls.Add(this.tabSales);
+            this.tabsMoney.Location = new System.Drawing.Point(3, 278);
+            this.tabsMoney.Name = "tabsMoney";
+            this.tabsMoney.SelectedIndex = 0;
+            this.tabsMoney.Size = new System.Drawing.Size(406, 200);
+            this.tabsMoney.TabIndex = 24;
+            // 
+            // tabPlanning
+            // 
+            this.tabPlanning.Controls.Add(this.txtPlanning);
+            this.tabPlanning.Location = new System.Drawing.Point(4, 22);
+            this.tabPlanning.Name = "tabPlanning";
+            this.tabPlanning.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPlanning.Size = new System.Drawing.Size(398, 174);
+            this.tabPlanning.TabIndex = 0;
+            this.tabPlanning.Text = "Planning";
+            this.tabPlanning.UseVisualStyleBackColor = true;
+            // 
+            // txtPlanning
+            // 
+            this.txtPlanning.Location = new System.Drawing.Point(6, 5);
+            this.txtPlanning.Multiline = true;
+            this.txtPlanning.Name = "txtPlanning";
+            this.txtPlanning.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtPlanning.Size = new System.Drawing.Size(386, 163);
+            this.txtPlanning.TabIndex = 13;
+            // 
+            // tabDetails
+            // 
+            this.tabDetails.Controls.Add(this.txtDetails);
+            this.tabDetails.Location = new System.Drawing.Point(4, 22);
+            this.tabDetails.Name = "tabDetails";
+            this.tabDetails.Padding = new System.Windows.Forms.Padding(3);
+            this.tabDetails.Size = new System.Drawing.Size(398, 174);
+            this.tabDetails.TabIndex = 1;
+            this.tabDetails.Text = "Details";
+            this.tabDetails.UseVisualStyleBackColor = true;
+            // 
+            // txtDetails
+            // 
+            this.txtDetails.Location = new System.Drawing.Point(6, 6);
+            this.txtDetails.Multiline = true;
+            this.txtDetails.Name = "txtDetails";
+            this.txtDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtDetails.Size = new System.Drawing.Size(386, 163);
+            this.txtDetails.TabIndex = 14;
+            // 
+            // tabSales
+            // 
+            this.tabSales.Controls.Add(this.txtSales);
+            this.tabSales.Location = new System.Drawing.Point(4, 22);
+            this.tabSales.Name = "tabSales";
+            this.tabSales.Size = new System.Drawing.Size(398, 174);
+            this.tabSales.TabIndex = 2;
+            this.tabSales.Text = "Sales";
+            this.tabSales.UseVisualStyleBackColor = true;
+            // 
+            // txtSales
+            // 
+            this.txtSales.Location = new System.Drawing.Point(6, 6);
+            this.txtSales.Multiline = true;
+            this.txtSales.Name = "txtSales";
+            this.txtSales.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtSales.Size = new System.Drawing.Size(386, 163);
+            this.txtSales.TabIndex = 14;
+            // 
+            // txtContribution
+            // 
+            this.txtContribution.Location = new System.Drawing.Point(157, 237);
+            this.txtContribution.Name = "txtContribution";
+            this.txtContribution.Size = new System.Drawing.Size(94, 20);
+            this.txtContribution.TabIndex = 23;
+            // 
+            // lblLandAvailable
+            // 
+            this.lblLandAvailable.AutoSize = true;
+            this.lblLandAvailable.Location = new System.Drawing.Point(154, 221);
+            this.lblLandAvailable.Name = "lblLandAvailable";
+            this.lblLandAvailable.Size = new System.Drawing.Size(13, 13);
+            this.lblLandAvailable.TabIndex = 22;
+            this.lblLandAvailable.Text = "0";
+            // 
+            // lblLandInUse
+            // 
+            this.lblLandInUse.AutoSize = true;
+            this.lblLandInUse.Location = new System.Drawing.Point(154, 199);
+            this.lblLandInUse.Name = "lblLandInUse";
+            this.lblLandInUse.Size = new System.Drawing.Size(13, 13);
+            this.lblLandInUse.TabIndex = 21;
+            this.lblLandInUse.Text = "0";
+            // 
+            // lblTotalContribution
+            // 
+            this.lblTotalContribution.AutoSize = true;
+            this.lblTotalContribution.Location = new System.Drawing.Point(154, 176);
+            this.lblTotalContribution.Name = "lblTotalContribution";
+            this.lblTotalContribution.Size = new System.Drawing.Size(13, 13);
+            this.lblTotalContribution.TabIndex = 20;
+            this.lblTotalContribution.Text = "0";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(57, 244);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(91, 13);
+            this.label7.TabIndex = 19;
+            this.label7.Text = "Your Contribution:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(68, 221);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(80, 13);
+            this.label6.TabIndex = 18;
+            this.label6.Text = "Land Available:";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(53, 199);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(95, 13);
+            this.label5.TabIndex = 17;
+            this.label5.Text = "Total Land In Use:";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(55, 176);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(93, 13);
+            this.label4.TabIndex = 16;
+            this.label4.Text = "Total Contribution:";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // lstLand
             // 
             this.lstLand.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -571,150 +715,6 @@ namespace groupmanager
             this.cmdRefresh.TabIndex = 13;
             this.cmdRefresh.Text = "Refresh from server";
             this.cmdRefresh.UseVisualStyleBackColor = true;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(55, 176);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(93, 13);
-            this.label4.TabIndex = 16;
-            this.label4.Text = "Total Contribution:";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(53, 199);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(95, 13);
-            this.label5.TabIndex = 17;
-            this.label5.Text = "Total Land In Use:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(68, 221);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(80, 13);
-            this.label6.TabIndex = 18;
-            this.label6.Text = "Land Available:";
-            this.label6.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(57, 244);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(91, 13);
-            this.label7.TabIndex = 19;
-            this.label7.Text = "Your Contribution:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // lblTotalContribution
-            // 
-            this.lblTotalContribution.AutoSize = true;
-            this.lblTotalContribution.Location = new System.Drawing.Point(154, 176);
-            this.lblTotalContribution.Name = "lblTotalContribution";
-            this.lblTotalContribution.Size = new System.Drawing.Size(13, 13);
-            this.lblTotalContribution.TabIndex = 20;
-            this.lblTotalContribution.Text = "0";
-            // 
-            // lblLandInUse
-            // 
-            this.lblLandInUse.AutoSize = true;
-            this.lblLandInUse.Location = new System.Drawing.Point(154, 199);
-            this.lblLandInUse.Name = "lblLandInUse";
-            this.lblLandInUse.Size = new System.Drawing.Size(13, 13);
-            this.lblLandInUse.TabIndex = 21;
-            this.lblLandInUse.Text = "0";
-            // 
-            // lblLandAvailable
-            // 
-            this.lblLandAvailable.AutoSize = true;
-            this.lblLandAvailable.Location = new System.Drawing.Point(154, 221);
-            this.lblLandAvailable.Name = "lblLandAvailable";
-            this.lblLandAvailable.Size = new System.Drawing.Size(13, 13);
-            this.lblLandAvailable.TabIndex = 22;
-            this.lblLandAvailable.Text = "0";
-            // 
-            // txtContribution
-            // 
-            this.txtContribution.Location = new System.Drawing.Point(157, 237);
-            this.txtContribution.Name = "txtContribution";
-            this.txtContribution.Size = new System.Drawing.Size(94, 20);
-            this.txtContribution.TabIndex = 23;
-            // 
-            // tabsMoney
-            // 
-            this.tabsMoney.Controls.Add(this.tabPlanning);
-            this.tabsMoney.Controls.Add(this.tabDetails);
-            this.tabsMoney.Controls.Add(this.tabSales);
-            this.tabsMoney.Location = new System.Drawing.Point(3, 278);
-            this.tabsMoney.Name = "tabsMoney";
-            this.tabsMoney.SelectedIndex = 0;
-            this.tabsMoney.Size = new System.Drawing.Size(406, 200);
-            this.tabsMoney.TabIndex = 24;
-            // 
-            // tabPlanning
-            // 
-            this.tabPlanning.Controls.Add(this.txtPlanning);
-            this.tabPlanning.Location = new System.Drawing.Point(4, 22);
-            this.tabPlanning.Name = "tabPlanning";
-            this.tabPlanning.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPlanning.Size = new System.Drawing.Size(398, 174);
-            this.tabPlanning.TabIndex = 0;
-            this.tabPlanning.Text = "Planning";
-            this.tabPlanning.UseVisualStyleBackColor = true;
-            // 
-            // tabDetails
-            // 
-            this.tabDetails.Controls.Add(this.txtDetails);
-            this.tabDetails.Location = new System.Drawing.Point(4, 22);
-            this.tabDetails.Name = "tabDetails";
-            this.tabDetails.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDetails.Size = new System.Drawing.Size(398, 174);
-            this.tabDetails.TabIndex = 1;
-            this.tabDetails.Text = "Details";
-            this.tabDetails.UseVisualStyleBackColor = true;
-            // 
-            // tabSales
-            // 
-            this.tabSales.Controls.Add(this.txtSales);
-            this.tabSales.Location = new System.Drawing.Point(4, 22);
-            this.tabSales.Name = "tabSales";
-            this.tabSales.Size = new System.Drawing.Size(398, 174);
-            this.tabSales.TabIndex = 2;
-            this.tabSales.Text = "Sales";
-            this.tabSales.UseVisualStyleBackColor = true;
-            // 
-            // txtPlanning
-            // 
-            this.txtPlanning.Location = new System.Drawing.Point(6, 5);
-            this.txtPlanning.Multiline = true;
-            this.txtPlanning.Name = "txtPlanning";
-            this.txtPlanning.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtPlanning.Size = new System.Drawing.Size(386, 163);
-            this.txtPlanning.TabIndex = 13;
-            // 
-            // txtDetails
-            // 
-            this.txtDetails.Location = new System.Drawing.Point(6, 6);
-            this.txtDetails.Multiline = true;
-            this.txtDetails.Name = "txtDetails";
-            this.txtDetails.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtDetails.Size = new System.Drawing.Size(386, 163);
-            this.txtDetails.TabIndex = 14;
-            // 
-            // txtSales
-            // 
-            this.txtSales.Location = new System.Drawing.Point(6, 6);
-            this.txtSales.Multiline = true;
-            this.txtSales.Name = "txtSales";
-            this.txtSales.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtSales.Size = new System.Drawing.Size(386, 163);
-            this.txtSales.TabIndex = 14;
             // 
             // frmGroupInfo
             // 
@@ -790,7 +790,7 @@ namespace groupmanager
         private System.Windows.Forms.TabPage tabMembers;
         private System.Windows.Forms.TabPage tabRoles;
         private System.Windows.Forms.TabPage tabAbilities;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView lstMembers2;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
