@@ -73,7 +73,6 @@ namespace groupmanager
             chkFee.Checked = (Profile.MembershipFee != 0);
             numFee.Value = Profile.MembershipFee;
             chkMature.Checked = Profile.MaturePublish;
-            lblMemberTitle.Text = Profile.MemberTitle;
 
             Client.Avatars.BeginGetAvatarName(Profile.FounderID, new AgentNamesCallback(AgentNamesHandler));
         }

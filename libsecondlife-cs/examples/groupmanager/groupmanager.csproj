@@ -73,7 +73,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="libjaspernet, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -89,6 +88,10 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
+    <ProjectReference Include="..\..\..\libjaspernet\libjaspernet.csproj">
+      <Project>{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}</Project>
+      <Name>libjaspernet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\libsecondlife.csproj">
       <Name>libsecondlife</Name>
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>

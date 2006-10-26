@@ -29,104 +29,13 @@ using System.Net;
 
 namespace libsecondlife
 {
-	/*public class U64
-	{
-		public uint[] Data;
-
-		public U64()
-		{
-			Data = new uint[2];
-			Data[0] = 0;
-			Data[1] = 1;
-		}
-
-		public U64(uint left, uint right)
-		{
-			Data = new uint[2];
-			// "backwards", due to little-endian ordering
-			Data[0] = right;
-			Data[1] = left;
-		}
-
-		public U64(int left, int right)
-		{
-			Data = new uint[2];
-			// "backwards", due to little-endian ordering
-			Data[0] = (uint)right;
-			Data[1] = (uint)left;
-		}
-
-		public U64(byte[] bA, int pos)
-		{
-			Data = new uint[2];
-			Data[0] = (uint)(bA[pos]   + (bA[pos+1]<<8) + (bA[pos+2]<<16) + (bA[pos+3]<<24));
-			Data[1] = (uint)(bA[pos+4] + (bA[pos+5]<<8) + (bA[pos+6]<<16) + (bA[pos+7]<<24));
-		}
-
-		public byte[] GetBytes()
-		{
-			byte[] bA = new byte[8];
-
-			bA[0]=(byte)((Data[0])    %256); bA[1]=(byte)((Data[0]>>8) %256); 
-			bA[2]=(byte)((Data[0]>>16)%256); bA[3]=(byte)((Data[0]>>24)%256); 
-			bA[4]=(byte)((Data[1])    %256); bA[5]=(byte)((Data[1]>>8) %256);
-			bA[6]=(byte)((Data[1]>>16)%256); bA[7]=(byte)((Data[1]>>24)%256); 
-
-			return bA;
-		}
-
-		public override int GetHashCode()
-		{
-			return (int)(Data[0] ^ Data[1]);
-		}
-
-		public override bool Equals(object o)
-		{
-		        if (!(o is U64)) return false;
-
-			U64 u64 = (U64)o;
-
-			return (u64.Data[0] == Data[0] && u64.Data[1] == Data[1]);
-		}
-
-		public static bool operator==(U64 lhs, U64 rhs)
-		{
-			if(object.ReferenceEquals(lhs, rhs))  return true;
-			if(object.ReferenceEquals(lhs, null)) return false;
-			if(object.ReferenceEquals(rhs, null)) return false;
-
-			return (lhs.Data[0] == rhs.Data[0] && lhs.Data[1] == rhs.Data[1]);
-		}
-
-		public static bool operator!=(U64 lhs, U64 rhs)
-		{
-			return !(lhs == rhs);
-		}
-
-		public static bool operator==(U64 lhs, int rhs)
-		{
-			if(object.ReferenceEquals(lhs, null)) return (rhs == 0);
-			return (lhs.Data[0] == 0 && lhs.Data[1] == rhs);
-		}
-
-		public static bool operator!=(U64 lhs, int rhs)
-		{
-			return !(lhs == rhs);
-		}
-
-		public override string ToString()
-		{
-			ulong u64 = (Data[1] << 32) + Data[0];
-			return u64.ToString();
-		}
-	}*/
-
     /// <summary>
-    /// 
+    /// A 128-bit Universally Unique Identifier, used throughout the Second
+    /// Life networking protocol
     /// </summary>
 	public class LLUUID
 	{
-        /// <summary></summary>
+        /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
 		public byte[] Data
 		{
 			get { return data; }
@@ -284,8 +193,11 @@ namespace libsecondlife
         public static LLUUID operator ^(LLUUID lhs, LLUUID rhs)
         {
             LLUUID returnUUID = new LLUUID();
+
             for (int count = 0; count < returnUUID.Data.Length; count++)
-                returnUUID.Data[count] = lhs.Data[count] ^ rhs.Data[count];
+            {
+                returnUUID.Data[count] = (byte)(lhs.Data[count] ^ rhs.Data[count]);
+            }
 
             return returnUUID;
         }
