@@ -1,3 +1,5 @@
+#pragma warning disable 0618
+
 namespace Nwc.XmlRpc
 {
     using System;
@@ -7,6 +9,8 @@ namespace Nwc.XmlRpc
     using System.Net;
     using System.Text;
     using System.Reflection;
+    using System.Net.Security;
+    using System.Security.Cryptography.X509Certificates;
 
     internal class AcceptAllCertificatePolicy : ICertificatePolicy
     {
@@ -60,8 +64,9 @@ namespace Nwc.XmlRpc
         {
             // Override SSL authentication mechanisms
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-            //ServicePointManager.ServerCertificateValidationCallback +=
-            //    new System.Net.Security.RemoteCertificateValidationCallback(CheckValidationResult);
+            //ServicePointManager.ServerCertificateValidationCallback += 
+            //    delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+            //    { return true; };
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             if (request == null)
