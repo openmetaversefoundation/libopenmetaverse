@@ -189,6 +189,27 @@ namespace libsecondlife
             Client.Network.SendPacket(request, simulator);
         }
 
+        public void RequestObjects(Simulator simulator, List<uint> localIDs)
+        {
+            int i = 0;
+
+            RequestMultipleObjectsPacket request = new RequestMultipleObjectsPacket();
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.ObjectData = new RequestMultipleObjectsPacket.ObjectDataBlock[localIDs.Count];
+
+            foreach (uint localID in localIDs)
+            {
+                request.ObjectData[i] = new RequestMultipleObjectsPacket.ObjectDataBlock();
+                request.ObjectData[i].ID = localID;
+                request.ObjectData[i].CacheMissType = 0;
+
+                i++;
+            }
+
+            Client.Network.SendPacket(request, simulator);
+        }
+
         private void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
         {
             string[] lines = name.Split('\n');
@@ -541,27 +562,16 @@ namespace libsecondlife
 
         private void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
-            int i = 0;
-
+            List<uint> ids = new List<uint>();
             ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
 
             // Assume clients aren't caching objects for now, so request updates for all of these objects
-            RequestMultipleObjectsPacket request = new RequestMultipleObjectsPacket();
-            request.AgentData.AgentID = Client.Network.AgentID;
-            request.AgentData.SessionID = Client.Network.AgentID;
-            request.ObjectData = new RequestMultipleObjectsPacket.ObjectDataBlock[update.ObjectData.Length];
-
             foreach (ObjectUpdateCachedPacket.ObjectDataBlock block in update.ObjectData)
             {
-                request.ObjectData[i] = new RequestMultipleObjectsPacket.ObjectDataBlock();
-                request.ObjectData[i].ID = block.ID;
-                i++;
-
-                //Client.Log("CachedData ID=" + block.ID + ", CRC=" + block.CRC + ", UpdateFlags=" + block.UpdateFlags, 
-                //Helpers.LogLevel.Info);
+                ids.Add(block.ID);
             }
 
-            Client.Network.SendPacket(request);
+            RequestObjects(simulator, ids);
         }
 
         private void KillObjectHandler(Packet packet, Simulator simulator)

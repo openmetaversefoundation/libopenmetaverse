@@ -779,6 +779,14 @@ namespace libsecondlife
 			return values;
 		}
 
+        public bool Login(string firstName, string lastName, string password, string userAgent, string author)
+        {
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName, 
+                password, userAgent, author);
+
+            return Login(loginParams);
+        }
+
         /// <summary>
         /// 
         /// </summary>
