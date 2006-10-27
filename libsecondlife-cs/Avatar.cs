@@ -489,7 +489,10 @@ namespace libsecondlife
 
             if (TeleportTimeout)
             {
-                if (OnTeleport != null) { OnTeleport("Teleport timed out.", TeleportStat); }
+                TeleportMessage = "Teleport timed out.";
+                TeleportStat = TeleportStatus.Failed;
+
+                if (OnTeleport != null) { OnTeleport(TeleportMessage, TeleportStat); }
             }
             else
             {

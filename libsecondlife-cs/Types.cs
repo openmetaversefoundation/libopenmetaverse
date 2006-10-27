@@ -61,7 +61,7 @@ namespace libsecondlife
 
 			if (val.Length == 36) val = val.Replace("-", "");
 			
-			if (val.Length != 32) return;
+			if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
 
 			for(int i = 0; i < 16; ++i)
 			{

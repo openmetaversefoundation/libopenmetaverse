@@ -73,13 +73,20 @@ namespace libsecondlife
 	/// </summary>
 	public class GridManager
 	{
+        /// <summary>
+        /// Triggered when a new region is discovered through GridManager
+        /// </summary>
+        public event GridRegionCallback OnRegionAdd;
+
         /// <summary>A dictionary of all the regions, indexed by region ID</summary>
-		public Dictionary<LLUUID, GridRegion> Regions;
+		public Dictionary<string, GridRegion> Regions;
         /// <summary>Current direction of the sun</summary>
         public LLVector3 SunDirection;
 
 		private SecondLife Client;
-        private GridRegionCallback OnRegionAdd;
+        // This is used for BeginGetGridRegion
+        private GridRegionCallback OnRegionAddInternal;
+        private string BeginGetGridRegionName;
 
         /// <summary>
         /// Constructor
@@ -88,7 +95,7 @@ namespace libsecondlife
 		public GridManager(SecondLife client)
 		{
 			Client = client;
-			Regions = new Dictionary<LLUUID, GridRegion>();
+			Regions = new Dictionary<string, GridRegion>();
             SunDirection = new LLVector3();
 
 			Client.Network.RegisterCallback(PacketType.MapBlockReply, new PacketCallback(MapBlockReplyHandler));
@@ -169,13 +176,13 @@ namespace libsecondlife
         /// <param name="grc"></param>
         public void BeginGetGridRegion(string name, GridRegionCallback grc)
         {
-            OnRegionAdd = grc;
+            OnRegionAddInternal = grc;
 
-            name = name.ToLower();
+            BeginGetGridRegionName = name.ToLower();
 
-            if (Regions.ContainsKey(name))
+            if (Regions.ContainsKey(BeginGetGridRegionName))
             {
-                OnRegionAdd(Regions[name]);
+                OnRegionAdd(Regions[BeginGetGridRegionName]);
             }
             else
             {
@@ -183,7 +190,7 @@ namespace libsecondlife
 
                 map.AgentData.AgentID = Client.Network.AgentID;
                 map.AgentData.SessionID = Client.Network.SessionID;
-                map.NameData.Name = Helpers.StringToField(name);
+                map.NameData.Name = Helpers.StringToField(BeginGetGridRegionName);
 
                 Client.Network.SendPacket(map);
             }
@@ -230,26 +237,33 @@ namespace libsecondlife
 
             foreach (MapBlockReplyPacket.DataBlock block in map.Data)
             {
-                region = new GridRegion();
-
-                region.X = block.X;
-                region.Y = block.Y;
-                region.Name = Helpers.FieldToString(block.Name);
-                region.RegionFlags = block.RegionFlags;
-                region.WaterHeight = block.WaterHeight;
-                region.Agents = block.Agents;
-                region.Access = block.Access;
-                region.MapImageID = block.MapImageID;
-                region.RegionHandle = Helpers.UIntsToLong((uint)region.X * (uint)256, (uint)region.Y * (uint)256);
-                
-                if (region.Name != "" && region.X != 0 && region.Y != 0)
+                if (block.X != 0 && block.Y != 0)
                 {
-                    Regions[region.Name.ToLower()] = region;
-                }
+                    region = new GridRegion();
 
-                if (OnRegionAdd != null)
-                {
-                    OnRegionAdd(region);
+                    region.X = block.X;
+                    region.Y = block.Y;
+                    region.Name = Helpers.FieldToString(block.Name);
+                    region.RegionFlags = block.RegionFlags;
+                    region.WaterHeight = block.WaterHeight;
+                    region.Agents = block.Agents;
+                    region.Access = block.Access;
+                    region.MapImageID = block.MapImageID;
+                    region.RegionHandle = Helpers.UIntsToLong((uint)region.X * (uint)256, (uint)region.Y * (uint)256);
+
+                    lock (Regions)
+                    {
+                        Regions[region.Name.ToLower()] = region;
+                    }
+
+                    if (OnRegionAddInternal != null && BeginGetGridRegionName == region.Name.ToLower())
+                    {
+                        OnRegionAddInternal(region);
+                    }
+                    else if (OnRegionAdd != null)
+                    {
+                        OnRegionAdd(region);
+                    }
                 }
             }
 		}

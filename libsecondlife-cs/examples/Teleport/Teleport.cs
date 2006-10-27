@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-
 using libsecondlife;
-
 
 namespace Teleport
 {
     class Teleport
     {
-        protected SecondLife client;
+        protected SecondLife Client;
         protected bool DoneTeleporting = false;
+        protected ulong RegionHandle = 0;
+        protected string Sim = "";
 
         static void Main(string[] args)
         {
@@ -35,16 +35,20 @@ namespace Teleport
             Console.WriteLine("Will attempt a teleport to " + sim + " {" + x + "," + y + "," + z + "}...");
             Console.WriteLine();
 
-            Teleport app = new Teleport();
+            Teleport app = new Teleport(sim);
             bool success = app.Connect(args[0], args[1], args[2]);
+
             if (success)
             {
-                while (app.client.Network.CurrentSim.Region.Name == null)
+                // Get the current sim name
+                while (app.Client.Network.CurrentSim.Region.Name == null)
                 {
                     System.Threading.Thread.Sleep(100);
                 }
 
-                if (sim.ToLower() == app.client.Network.CurrentSim.Region.Name.ToLower())
+                Console.WriteLine("Starting in " + app.Client.Network.CurrentSim.Region.Name);
+
+                if (sim.ToLower() == app.Client.Network.CurrentSim.Region.Name.ToLower())
                 {
                     Console.WriteLine("TODO: Add the ability to teleport somewhere in the local region. " +
                         "Exiting for now, please specify a region other than the current one");
@@ -58,23 +62,25 @@ namespace Teleport
             }
         }
 
-        protected Teleport()
+        protected Teleport(string sim)
 		{
+            Sim = sim;
+
             try
             {
-                client = new SecondLife();
+                Client = new SecondLife();
             }
             catch (Exception e)
             {
                 // Error initializing the client
                 Console.WriteLine();
                 Console.WriteLine(e.ToString());
-            }		
+            }
 		}
 
         protected bool Connect(string FirstName, string LastName, string Password)
         {
-            Console.WriteLine("Attempting to connect and login to SecondLife.");
+            Console.WriteLine("Attempting to connect and login to Second Life.");
 
             // Setup Login to Second Life
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(FirstName, 
@@ -83,17 +89,15 @@ namespace Teleport
             Dictionary<string, object> loginReply = new Dictionary<string,object>();
 
             // Login
-            if (!client.Network.Login(loginParams))
+            if (!Client.Network.Login(loginParams))
             {
                 // Login failed
-                Console.WriteLine("Error logging in: " + client.Network.LoginError);
+                Console.WriteLine("Error logging in: " + Client.Network.LoginError);
                 return false;
             }
 
             // Login was successful
-            Console.WriteLine("Login was successful.");
-            Console.WriteLine("AgentID:   " + client.Network.AgentID);
-            Console.WriteLine("SessionID: " + client.Network.SessionID);
+            Console.WriteLine("Login was successful");
 
             return true;
         }
@@ -101,39 +105,64 @@ namespace Teleport
         protected void Disconnect()
         {
             // Logout of Second Life
-            Console.WriteLine("Request logout");
-            client.Network.Logout();
+            Console.WriteLine("Requesting logout");
+            Client.Network.Logout();
         }
 
         protected void doStuff(string sim, LLVector3 coords)
         {
-            // Load up the list of estate simulators, incase we get a request to teleport to one.
-            // This doesn't block, and there's no easy way to know when it's done, so we'll wait a bit
-            // and hope for the best?
-            client.Grid.AddEstateSims();
+            Client.Grid.OnRegionAdd += new GridRegionCallback(GridRegionHandler);
 
+            Console.WriteLine("Caching estate sims...");
+            Client.Grid.AddEstateSims();
             System.Threading.Thread.Sleep(3000);
-            Console.WriteLine();
-            Console.WriteLine("Okay, hopefully all the initial connect stuff is done, trying now...");
 
-            client.Self.OnTeleport += new TeleportCallback(Avatar_OnTeleportMessage);
+            if (RegionHandle == 0)
+            {
+                Client.Grid.BeginGetGridRegion(sim, new GridRegionCallback(GridRegionHandler));
+
+                int start = Environment.TickCount;
+
+                while (RegionHandle == 0)
+                {
+                    Client.Tick();
+
+                    if (Environment.TickCount - start > 10000)
+                    {
+                        Console.WriteLine("Region handle lookup failed");
+                        Disconnect();
+                        return;
+                    }
+                }
+            }
+
+            Client.Self.OnTeleport += new TeleportCallback(Avatar_OnTeleportMessage);
 
             DoneTeleporting = false;
-            client.Self.Teleport(sim, coords);
+            Client.Self.Teleport(RegionHandle, coords);
 
             while (!DoneTeleporting)
             {
-                client.Tick();
+                Client.Tick();
             }
         }
 
-        protected void Avatar_OnTeleportMessage(string message, TeleportStatus status)
+        private void Avatar_OnTeleportMessage(string message, TeleportStatus status)
         {
             Console.WriteLine(message);
 
             if (status == TeleportStatus.Finished || status == TeleportStatus.Failed)
             {
                 DoneTeleporting = true;
+            }
+        }
+
+        private void GridRegionHandler(GridRegion region)
+        {
+            if (region.Name.ToLower() == Sim.ToLower())
+            {
+                RegionHandle = region.RegionHandle;
+                Console.WriteLine("Resolved " + Sim + " to region handle " + RegionHandle);
             }
         }
     }
