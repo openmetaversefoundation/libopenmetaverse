@@ -182,6 +182,7 @@ namespace libsecondlife
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
             request.ObjectData = new RequestMultipleObjectsPacket.ObjectDataBlock[1];
+            request.ObjectData[0] = new RequestMultipleObjectsPacket.ObjectDataBlock();
             request.ObjectData[0].ID = localID;
             request.ObjectData[0].CacheMissType = 0;
 
@@ -258,14 +259,13 @@ namespace libsecondlife
                     //block.Text Hovering text
                     //block.TextColor LLColor4U of the hovering text
                     //block.MediaURL Quicktime stream
-                    // TODO: Multi-texture support
-                    if (block.TextureEntry.Length >= 16)
+                    if (block.TextureEntry.Length >= 40)
                     {
-                        prim.Texture = new LLUUID(block.TextureEntry, 0);
+                        prim.Textures = new TextureEntry(block.TextureEntry, 0);
                     }
                     else
                     {
-                        prim.Texture = new LLUUID();
+                        prim.Textures = new TextureEntry();
                     }
                     //block.TextureAnim ?
                     //block.JointType ?
@@ -461,6 +461,13 @@ namespace libsecondlife
                 i += 16;
                 prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                     (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                i++; //PCode
+                prim.State = (uint)block.Data[i++];
+                i += 4; //CRC
+                prim.Material = (uint)block.Data[i++];
+                i++; //ClickAction
+
                 prim.Scale = new LLVector3(block.Data, i);
                 i += 12;
                 prim.Position = new LLVector3(block.Data, i);
@@ -468,9 +475,62 @@ namespace libsecondlife
                 prim.Rotation = new LLQuaternion(block.Data, i, true);
                 i += 12;
 
-                // FIXME: Fill in the rest of these fields
-                prim.PathCurve = (uint)block.Data[69];
-                prim.ProfileCurve = (uint)block.Data[83];
+                uint flags = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                if ((flags & 0x20) != 0)
+                {
+                    prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                }
+                else
+                {
+                    prim.ParentID = 0;
+                }
+
+                //Unknown field
+                if ((flags & 0x80) != 0)
+                {
+                    i += 12;
+                }
+
+                //FIXME: read this string
+                while (block.Data[i] != 0)
+                {
+                    i++;
+                }
+                i++;
+
+                //Unknown field, possibly text color.
+                if ((flags & 0x04) != 0)
+                {
+                    i += 5;
+                }
+
+                prim.PathCurve = (uint)block.Data[i++];
+                prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
+                prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
+                prim.PathScaleX = PrimObject.PathScaleFloat(block.Data[i++]);
+                prim.PathScaleY = PrimObject.PathScaleFloat(block.Data[i++]);
+                prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
+                prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
+                prim.PathTwist = (int)block.Data[i++];
+                prim.PathTwistBegin = (int)block.Data[i++];
+                prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
+                prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
+                prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
+                prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
+               
+                prim.ProfileCurve = (uint)block.Data[i++];
+                prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);
+                prim.ProfileEnd = PrimObject.ProfileEndFloat(block.Data[i++]);
+                prim.ProfileHollow = (uint)block.Data[i++];
+
+                //Unknown field
+                i += 4;
+
+                prim.Textures = new TextureEntry(block.Data, i);
 
                 if (OnNewPrim != null)
                 {

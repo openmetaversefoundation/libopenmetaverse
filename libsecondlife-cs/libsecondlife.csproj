@@ -149,6 +149,9 @@
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Textures.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Types.cs">
       <SubType>Code</SubType>
     </Compile>
