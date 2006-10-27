@@ -86,7 +86,8 @@ namespace libsecondlife
         /// <returns></returns>
         public byte[] ToBytes()
         {
-            ;
+            byte[] bytes = new byte[0];
+            return bytes;
         }
 
         private bool ReadFaceBitfield(byte[] data, ref int pos, ref uint faceBits, ref uint bitfieldSize)
