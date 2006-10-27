@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Xna.Framework;
@@ -58,8 +57,8 @@ namespace sceneviewer
 
             Prims = new Dictionary<uint, PrimVisual>();
 
-            Hashtable loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
-                "radishman", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
+                "weneedaloginscreen", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             Client = new SecondLife();
@@ -118,7 +117,7 @@ namespace sceneviewer
 
         void SendCameraUpdate(object obj)
         {
-            Client.Avatar.UpdateCamera(false);
+            Client.Self.UpdateCamera(false);
         }
 
         void OnNewPrim(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
