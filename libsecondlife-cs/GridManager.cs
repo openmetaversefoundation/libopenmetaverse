@@ -172,8 +172,8 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="grc"></param>
+        /// <param name="name">Region Name you're requesting data for</param>
+        /// <param name="grc">CallBack being used to process the response</param>
         public void BeginGetGridRegion(string name, GridRegionCallback grc)
         {
             OnRegionAddInternal = grc;
@@ -230,6 +230,11 @@ namespace libsecondlife
             }
 		}
 
+        /// <summary>
+        /// Populate Grid info based on data from MapBlockReplyPacket
+        /// </summary>
+        /// <param name="packet">Incoming MapBlockReplyPacket packet</param>
+        /// <param name="simulator">[UNUSED]</param>
 		private void MapBlockReplyHandler(Packet packet, Simulator simulator) 
 		{
 			GridRegion region;
