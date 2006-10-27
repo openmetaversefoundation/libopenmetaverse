@@ -141,6 +141,8 @@ namespace libsecondlife
         public float Appearance;
 
         public float Building;
+
+        public string LanguagesText;
     }
 
     /// <summary>

@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -42,7 +43,10 @@ namespace libsecondlife
     /// </summary>
     /// <param name="names"></param>
     public delegate void AgentNamesCallback(Dictionary<LLUUID, string> names);
-
+    public delegate void AvatarPropertiesCallback(Avatar avatar);
+    public delegate void AvatarNameCallback(Avatar avatar);
+    public delegate void AvatarStatisticsCallback(Avatar avatar);
+    public delegate void AvatarIntrestsCallback(Avatar avatar);
     /// <summary>
     /// 
     /// </summary>
@@ -54,18 +58,27 @@ namespace libsecondlife
         private SecondLife Client;
         private Dictionary<LLUUID, Avatar> Avatars;
         private AgentNamesCallback OnAgentNames;
-
+        private Dictionary<LLUUID, AvatarPropertiesCallback> AvatarPropertiesCallbacks;
+	    private Dictionary<LLUUID, AvatarStatisticsCallback> AvatarStatisticsCallbacks;
+        private Dictionary<LLUUID, AvatarIntrestsCallback> AvatarIntrestsCallbacks;
         public AvatarManager(SecondLife client)
         {
             Client = client;
             Avatars = new Dictionary<LLUUID, Avatar>();
-
+            //Callback Dictionaries
+            AvatarPropertiesCallbacks = new Dictionary<LLUUID, AvatarPropertiesCallback>();
+	        AvatarStatisticsCallbacks = new Dictionary<LLUUID, AvatarStatisticsCallback>();
+            AvatarIntrestsCallbacks = new Dictionary<LLUUID, AvatarIntrestsCallback>();
             // Friend notification callback
             PacketCallback callback = new PacketCallback(FriendNotificationHandler);
             Client.Network.RegisterCallback(PacketType.OnlineNotification, callback);
             Client.Network.RegisterCallback(PacketType.OfflineNotification, callback);
             Client.Network.RegisterCallback(PacketType.UUIDNameReply, new PacketCallback(GetAgentNameHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new PacketCallback(AvatarPropertiesHandler));
+	        Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new PacketCallback(AvatarStatisticsHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new PacketCallback(AvatarIntrestsHandler));
         }
+              
 
         /// <summary>
         /// Add an Avatar into the Avatars Dictionary
@@ -258,6 +271,128 @@ namespace libsecondlife
             {
                 BeginGetAvatarNames(requestids, null);
             }
+        }
+
+        private void AvatarStatisticsHandler(Packet packet, Simulator simulator)
+        {
+	    AvatarStatisticsReplyPacket asr = (AvatarStatisticsReplyPacket)packet;
+            lock(Avatars)
+            {
+		Avatar av;
+		if (!Avatars.ContainsKey(asr.AvatarData.AvatarID))
+		{
+			 av = new Avatar();
+			 av.ID = asr.AvatarData.AvatarID;
+		}
+		else
+		{
+			 av = Avatars[asr.AvatarData.AvatarID];
+		}
+
+                foreach(AvatarStatisticsReplyPacket.StatisticsDataBlock b in asr.StatisticsData)
+		{
+			string n = Helpers.FieldToString(b.Name);
+			if(n.Equals("Behavior"))
+			{
+				av.Behavior = b.Positive;
+			}
+			else if(n.Equals("Appearance"))
+			{
+				av.Appearance = b.Positive;
+			}
+			else if(n.Equals("Building"))
+			{
+				av.Building = b.Positive;
+			}
+		}
+		
+		//Call it
+        if (AvatarStatisticsCallbacks.ContainsKey(av.ID) && AvatarStatisticsCallbacks[av.ID] != null)
+	                AvatarStatisticsCallbacks[av.ID](av);
+            }
+        }
+
+        private void AvatarPropertiesHandler(Packet packet, Simulator sim)
+        {
+            Avatar av;
+            AvatarPropertiesReplyPacket reply = (AvatarPropertiesReplyPacket)packet;
+            lock(Avatars)
+            {
+            if (!Avatars.ContainsKey(reply.AgentData.AvatarID))
+            {
+                //not in our "cache", create a new object
+                av = new Avatar();
+            }
+            else
+            {
+                //Cache hit, modify existing avatar
+                av = Avatars[reply.AgentData.AvatarID];
+            }
+            av.ID = reply.AgentData.AvatarID;
+            av.ProfileImage = reply.PropertiesData.ImageID;
+            av.FirstLifeImage = reply.PropertiesData.FLImageID;
+            av.PartnerID = reply.PropertiesData.PartnerID;
+            av.AboutText = Helpers.FieldToString(reply.PropertiesData.AboutText);
+	    
+            av.FirstLifeText = Helpers.FieldToString(reply.PropertiesData.FLAboutText);
+            av.BornOn = Helpers.FieldToString(reply.PropertiesData.BornOn);
+            av.CharterMember = Helpers.FieldToString(reply.PropertiesData.CharterMember);
+            av.AllowPublish = reply.PropertiesData.AllowPublish;
+            av.MaturePublish = reply.PropertiesData.MaturePublish;
+            av.Identified = reply.PropertiesData.Identified;
+            av.Transacted = reply.PropertiesData.Transacted;
+            //reassign in the cache
+            Avatars[av.ID] = av;
+            //Heaven forbid that we actually get a packet we didn't ask for.
+            if (AvatarPropertiesCallbacks.ContainsKey(av.ID) && AvatarPropertiesCallbacks[av.ID] != null)
+                AvatarPropertiesCallbacks[av.ID](av);
+            }
+        }
+
+        public void BeginAvatarPropertiesRequest(LLUUID avatarid, AvatarPropertiesCallback apc, AvatarStatisticsCallback asc, AvatarIntrestsCallback aic)
+        {
+            //Set teh callback!
+            AvatarPropertiesCallbacks[avatarid] = apc;
+	        AvatarStatisticsCallbacks[avatarid] = asc;
+            AvatarIntrestsCallbacks[avatarid] = aic;
+            //Oh noes
+            //Packet construction, good times
+            AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();
+            AvatarPropertiesRequestPacket.AgentDataBlock adb = new AvatarPropertiesRequestPacket.AgentDataBlock();
+            adb.AgentID = Client.Network.AgentID;
+            adb.SessionID = Client.Network.SessionID;
+            adb.AvatarID = avatarid;
+            aprp.AgentData = adb;
+            //send the packet!
+            Client.Network.SendPacket(aprp);
+        }
+
+        public void AvatarIntrestsHandler(Packet packet, Simulator simulator)
+        {
+            AvatarInterestsReplyPacket airp = (AvatarInterestsReplyPacket)packet;
+            Avatar av;
+            lock (Avatars)
+            {
+                if (!Avatars.ContainsKey(airp.AgentData.AvatarID))
+                {
+                    //not in our "cache", create a new object
+                    av = new Avatar();
+                    av.ID = airp.AgentData.AvatarID;
+                }
+                else
+                {
+                    //Cache hit, modify existing avatar
+                    av = Avatars[airp.AgentData.AvatarID];
+                }
+                //The rest of the properties, thanks LL.
+                av.WantToMask = airp.PropertiesData.WantToMask;
+                av.WantToText = Helpers.FieldToString(airp.PropertiesData.WantToText);
+                av.SkillsMask = airp.PropertiesData.SkillsMask;
+                av.SkillsText = Helpers.FieldToString(airp.PropertiesData.SkillsText);
+                av.LanguagesText = Helpers.FieldToString(airp.PropertiesData.LanguagesText);
+            }
+            if (AvatarIntrestsCallbacks.ContainsKey(airp.AgentData.AvatarID) && AvatarIntrestsCallbacks[airp.AgentData.AvatarID] != null)
+                AvatarIntrestsCallbacks[airp.AgentData.AvatarID](av);
         }
     }
 }
