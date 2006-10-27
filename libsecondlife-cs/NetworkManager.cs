@@ -354,6 +354,52 @@ namespace libsecondlife
             }
         }
 
+        private void SendAck(ushort id)
+        {
+            PacketAckPacket ack = new PacketAckPacket();
+
+            ack.Packets = new PacketAckPacket.PacketsBlock[1];
+            ack.Packets[0] = new PacketAckPacket.PacketsBlock();
+            ack.Packets[0].ID = id;
+            ack.Header.Reliable = false;
+
+            lock (PendingAcks)
+            {
+                if (PendingAcks.Contains(id))
+                {
+                    PendingAcks.Remove(id);
+                }
+            }
+
+            SendPacket(ack, true);
+        }
+
+        private void SendAcks()
+        {
+            lock (PendingAcks)
+            {
+                if (PendingAcks.Count > 0)
+                {
+                    int i = 0;
+                    PacketAckPacket acks = new PacketAckPacket();
+                    acks.Packets = new PacketAckPacket.PacketsBlock[PendingAcks.Count];
+
+                    foreach (uint ack in PendingAcks)
+                    {
+                        acks.Packets[i] = new PacketAckPacket.PacketsBlock();
+                        acks.Packets[i].ID = ack;
+                        i++;
+                    }
+
+                    acks.Header.Reliable = false;
+
+                    SendPacket(acks, true);
+
+                    PendingAcks.Clear();
+                }
+            }
+        }
+
 		private void OnReceivedData(IAsyncResult result)
 		{
             Packet packet = null;
@@ -398,6 +444,11 @@ namespace libsecondlife
             // Track the sequence number for this packet if it's marked as reliable
             if (packet.Header.Reliable)
             {
+                if (PendingAcks.Count > 10)
+                {
+                    SendAcks();
+                }
+
                 // Check if we already received this packet
                 lock (Inbox)
                 {
@@ -407,13 +458,20 @@ namespace libsecondlife
                             packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No"),
                             Helpers.LogLevel.Info);
 
+                        // Send an ACK for this packet immediately
+                        SendAck(packet.Header.Sequence);
+
                         // Avoid firing a callback twice for the same packet
                         return;
                     }
                     else
                     {
                         Inbox.Add(packet.Header.Sequence, packet.Header.Sequence);
-                        PendingAcks.Add((uint)packet.Header.Sequence);
+
+                        lock (PendingAcks)
+                        {
+                            PendingAcks.Add((uint)packet.Header.Sequence);
+                        }
                     }
                 }
             }
@@ -498,27 +556,7 @@ namespace libsecondlife
                 return;
             }
 
-            lock (PendingAcks)
-            {
-                if (PendingAcks.Count > 0)
-                {
-                    int i = 0;
-                    PacketAckPacket acks = new PacketAckPacket();
-                    acks.Packets = new PacketAckPacket.PacketsBlock[PendingAcks.Count];
-                    acks.Header.Reliable = false;
-
-                    foreach (uint ack in PendingAcks)
-                    {
-                        acks.Packets[i] = new PacketAckPacket.PacketsBlock();
-                        acks.Packets[i].ID = ack;
-                        i++;
-                    }
-
-                    SendPacket(acks, true);
-
-                    PendingAcks.Clear();
-                }
-            }
+            SendAcks();
         }
 	}
 

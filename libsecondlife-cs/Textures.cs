@@ -30,10 +30,34 @@ using System.Text;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class TextureEntry
     {
-        private Dictionary<uint, TextureEntryFace> Textures;
+        /// <summary></summary>
         public TextureEntryFace DefaultTexture;
+
+        private Dictionary<uint, TextureEntryFace> Textures;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public TextureEntry()
+        {
+            Textures = new Dictionary<uint, TextureEntryFace>();
+            DefaultTexture = new TextureEntryFace(null);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
+        public TextureEntry(byte[] data, int pos)
+        {
+            FromBytes(data, pos);
+        }
 
         public TextureEntryFace GetFace(uint index)
         {
@@ -43,6 +67,11 @@ namespace libsecondlife
                 return DefaultTexture;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public TextureEntryFace SetFace(uint index)
         {
             if (!Textures.ContainsKey(index))
@@ -51,18 +80,16 @@ namespace libsecondlife
             return Textures[index];
         }
 
-        public TextureEntry()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToBytes()
         {
-            Textures = new Dictionary<uint, TextureEntryFace>();
-            DefaultTexture = new TextureEntryFace(null);
+            ;
         }
 
-        public TextureEntry(byte[] data, int pos)
-        {
-            FromByte(data, pos);
-        }
-
-        private bool readFaceBitfield(byte[] data, ref int pos, ref uint faceBits, ref uint bitfieldSize)
+        private bool ReadFaceBitfield(byte[] data, ref int pos, ref uint faceBits, ref uint bitfieldSize)
         {
             faceBits = 0;
             bitfieldSize = 0;
@@ -92,7 +119,7 @@ namespace libsecondlife
             return (float)((QV * QF - (0.5F * range)) + QF);
         }
 
-        private void FromByte(byte[] data, int pos)
+        private void FromBytes(byte[] data, int pos)
         {
             Textures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
@@ -105,7 +132,7 @@ namespace libsecondlife
             DefaultTexture.TextureID = new LLUUID(data, i);
             i += 16;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 LLUUID tmpUUID = new LLUUID(data, i);
                 i += 16;
@@ -118,7 +145,7 @@ namespace libsecondlife
             DefaultTexture.RGBA = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
             i += 4;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 uint tmpUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
                 i += 4;
@@ -131,7 +158,7 @@ namespace libsecondlife
             DefaultTexture.RepeatU = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
             i += 2;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 float tmpFloat = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
                 i += 2;
@@ -144,7 +171,7 @@ namespace libsecondlife
             DefaultTexture.RepeatV = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
             i += 2;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 float tmpFloat = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
                 i += 2;
@@ -157,7 +184,7 @@ namespace libsecondlife
             DefaultTexture.OffsetU = Dequantize(data, i, -1.0F, 1.0F);
             i += 2;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 float tmpFloat = Dequantize(data, i, -1.0F, 1.0F);
                 i += 2;
@@ -170,7 +197,7 @@ namespace libsecondlife
             DefaultTexture.OffsetV = Dequantize(data, i, -1.0F, 1.0F);
             i += 2;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 float tmpFloat = Dequantize(data, i, -1.0F, 1.0F);
                 i += 2;
@@ -183,7 +210,7 @@ namespace libsecondlife
             DefaultTexture.Rotation = Dequantize(data, i, -359.995F, 359.995F);
             i += 2;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 float tmpFloat = Dequantize(data, i, -359.995F, 359.995F);
                 i += 2;
@@ -196,7 +223,7 @@ namespace libsecondlife
             DefaultTexture.Flags1 = data[i];
             i++;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 byte tmpByte = data[i];
                 i++;
@@ -209,7 +236,7 @@ namespace libsecondlife
             DefaultTexture.Flags2 = data[i];
             i++;
 
-            while (readFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
                 byte tmpByte = data[i];
                 i++;
@@ -221,10 +248,13 @@ namespace libsecondlife
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class TextureEntryFace
     {
         [Flags]
-        private enum TextureAttributes : uint
+        public enum TextureAttributes : uint
         {
             None,
             TextureID,
@@ -239,20 +269,10 @@ namespace libsecondlife
             All = 0xFFFFFFFF
         }
 
-        private TextureAttributes hasAttribute;
-
-        private TextureEntryFace DefaultTexture;
-
-        private LLUUID _TextureID;
-        private uint _RGBA;
-        private float _RepeatU;
-        private float _RepeatV;
-        private float _OffsetU;
-        private float _OffsetV;
-        private float _Rotation;
-        private byte _Flags1;
-        private byte _Flags2;
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="defaultTexture"></param>
         public TextureEntryFace(TextureEntryFace defaultTexture)
         {
             DefaultTexture = defaultTexture;
@@ -262,6 +282,9 @@ namespace libsecondlife
                 hasAttribute = TextureAttributes.None;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public LLUUID TextureID
         {
             get
@@ -278,6 +301,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public uint RGBA
         {
             get
@@ -294,6 +320,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public float RepeatU
         {
             get
@@ -310,6 +339,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public float RepeatV
         {
             get
@@ -326,6 +358,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public float OffsetU
         {
             get
@@ -342,6 +377,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public float OffsetV
         {
             get
@@ -358,6 +396,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public float Rotation
         {
             get
@@ -374,6 +415,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public byte Flags1
         {
             get
@@ -390,6 +434,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public byte Flags2
         {
             get
@@ -405,5 +452,17 @@ namespace libsecondlife
                 hasAttribute |= TextureAttributes.Flags2;
             }
         }
+
+        private TextureAttributes hasAttribute;
+        private TextureEntryFace DefaultTexture;
+        private LLUUID _TextureID;
+        private uint _RGBA;
+        private float _RepeatU;
+        private float _RepeatV;
+        private float _OffsetU;
+        private float _OffsetV;
+        private float _Rotation;
+        private byte _Flags1;
+        private byte _Flags2;
     }
 }

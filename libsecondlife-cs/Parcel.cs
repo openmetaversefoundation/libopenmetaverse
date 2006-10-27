@@ -366,13 +366,18 @@ namespace libsecondlife
             Client = client;
             ParcelsForSale = new List<DirectoryParcel>();
 
+            // Setup the timer
+            DirLandTimer = new Timer(8000);
+            DirLandTimer.Elapsed += new ElapsedEventHandler(DirLandTimerEvent);
+            DirLandTimeout = false;
+
             // Setup the callbacks
             Client.Network.RegisterCallback(PacketType.DirLandReply, new PacketCallback(DirLandReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new PacketCallback(ParcelInfoReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelProperties, new PacketCallback(ParcelPropertiesHandler));
             Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new PacketCallback(ParcelDwellReplyHandler));
 
-            ParcelInfoParcel = new DirectoryParcel();
+            ParcelInfoParcel = null;
         }
 
         /// <summary>
@@ -450,9 +455,7 @@ namespace libsecondlife
             // Clear the list
             ParcelsForSale.Clear();
 
-            // Setup the timer
-            DirLandTimer = new Timer(15000);
-            DirLandTimer.Elapsed += new ElapsedEventHandler(DirLandTimerEvent);
+            // Start the timer
             DirLandTimeout = false;
             DirLandTimer.Start();
 
@@ -608,50 +611,53 @@ namespace libsecondlife
 
         private void ParcelInfoReplyHandler(Packet packet, Simulator simulator)
         {
-            ParcelInfoReplyPacket reply = (ParcelInfoReplyPacket)packet;
-
-            if (!reply.Data.ParcelID.Equals(ParcelInfoParcel.ID))
+            if (ParcelInfoParcel != null)
             {
-                Client.Log("Received a ParcelInfoReply for " + reply.Data.ParcelID.ToString() +
-                        ", looking for " + ParcelInfoParcel.ID.ToString(), Helpers.LogLevel.Warning);
+                ParcelInfoReplyPacket reply = (ParcelInfoReplyPacket)packet;
 
-                // Build and resend the ParcelInfoRequest packet
-                ParcelInfoRequestPacket request = new ParcelInfoRequestPacket();
-                request.AgentData.AgentID = Client.Network.AgentID;
-                request.AgentData.SessionID = Client.Network.SessionID;
-                request.Data.ParcelID = ParcelInfoParcel.ID;
+                if (!reply.Data.ParcelID.Equals(ParcelInfoParcel.ID))
+                {
+                    Client.Log("Received a ParcelInfoReply for " + reply.Data.ParcelID.ToString() +
+                            ", looking for " + ParcelInfoParcel.ID.ToString(), Helpers.LogLevel.Warning);
 
-                Client.Network.SendPacket(request);
+                    // Build and resend the ParcelInfoRequest packet
+                    ParcelInfoRequestPacket request = new ParcelInfoRequestPacket();
+                    request.AgentData.AgentID = Client.Network.AgentID;
+                    request.AgentData.SessionID = Client.Network.SessionID;
+                    request.Data.ParcelID = ParcelInfoParcel.ID;
 
-                return;
+                    Client.Network.SendPacket(request);
+
+                    return;
+                }
+
+                ParcelInfoParcel.SimName = Helpers.FieldToString(reply.Data.SimName);
+                ParcelInfoParcel.ActualArea = reply.Data.ActualArea;
+                ParcelInfoParcel.GlobalPosition.X = reply.Data.GlobalX;
+                ParcelInfoParcel.GlobalPosition.Y = reply.Data.GlobalY;
+                ParcelInfoParcel.GlobalPosition.Z = reply.Data.GlobalZ;
+                ParcelInfoParcel.Name = Helpers.FieldToString(reply.Data.Name);
+                ParcelInfoParcel.Desc = Helpers.FieldToString(reply.Data.Desc);
+                ParcelInfoParcel.SalePrice = reply.Data.SalePrice;
+                ParcelInfoParcel.OwnerID = reply.Data.OwnerID;
+                ParcelInfoParcel.SnapshotID = reply.Data.SnapshotID;
+                ParcelInfoParcel.Dwell = reply.Data.Dwell;
+
+                // Get RegionHandle from GlobalX/GlobalY
+                uint handleX = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.X / 256.0F);
+                handleX *= 256;
+                uint handleY = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.Y / 256.0F);
+                handleY *= 256;
+                // FIXME: Helpers function needed
+                //ParcelInfoParcel.RegionHandle = new U64(handleX, handleY);
+
+                // Get SimPosition from GlobalX/GlobalY and RegionHandle
+                ParcelInfoParcel.SimPosition.X = ParcelInfoParcel.GlobalPosition.X - (float)handleX;
+                ParcelInfoParcel.SimPosition.Y = ParcelInfoParcel.GlobalPosition.Y - (float)handleY;
+                ParcelInfoParcel.SimPosition.Z = ParcelInfoParcel.GlobalPosition.Z;
+
+                Finished = true;
             }
-
-            ParcelInfoParcel.SimName = Helpers.FieldToString(reply.Data.SimName);
-            ParcelInfoParcel.ActualArea = reply.Data.ActualArea;
-            ParcelInfoParcel.GlobalPosition.X = reply.Data.GlobalX;
-            ParcelInfoParcel.GlobalPosition.Y = reply.Data.GlobalY;
-            ParcelInfoParcel.GlobalPosition.Z = reply.Data.GlobalZ;
-            ParcelInfoParcel.Name = Helpers.FieldToString(reply.Data.Name);
-            ParcelInfoParcel.Desc = Helpers.FieldToString(reply.Data.Desc);
-            ParcelInfoParcel.SalePrice = reply.Data.SalePrice;
-            ParcelInfoParcel.OwnerID = reply.Data.OwnerID;
-            ParcelInfoParcel.SnapshotID = reply.Data.SnapshotID;
-            ParcelInfoParcel.Dwell = reply.Data.Dwell;
-
-            // Get RegionHandle from GlobalX/GlobalY
-            uint handleX = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.X / 256.0F);
-            handleX *= 256;
-            uint handleY = (uint)Math.Floor(ParcelInfoParcel.GlobalPosition.Y / 256.0F);
-            handleY *= 256;
-            // FIXME: Helpers function needed
-            //ParcelInfoParcel.RegionHandle = new U64(handleX, handleY);
-
-            // Get SimPosition from GlobalX/GlobalY and RegionHandle
-            ParcelInfoParcel.SimPosition.X = ParcelInfoParcel.GlobalPosition.X - (float)handleX;
-            ParcelInfoParcel.SimPosition.Y = ParcelInfoParcel.GlobalPosition.Y - (float)handleY;
-            ParcelInfoParcel.SimPosition.Z = ParcelInfoParcel.GlobalPosition.Z;
-
-            Finished = true;
         }
 
         //private void ParcelInfoTimerEvent(object source, System.Timers.ElapsedEventArgs ea)

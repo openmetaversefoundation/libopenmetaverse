@@ -691,14 +691,14 @@ namespace libsecondlife
 
         private void GroupActiveProposalItemHandler(Packet packet, Simulator simulator)
         {
-            GroupActiveProposalItemReplyPacket proposal = (GroupActiveProposalItemReplyPacket)packet;
+            //GroupActiveProposalItemReplyPacket proposal = (GroupActiveProposalItemReplyPacket)packet;
 
             // TODO: Create a proposal class to represent the fields in a proposal item
         }
 
         private void GroupVoteHistoryItemHandler(Packet packet, Simulator simulator)
         {
-            GroupVoteHistoryItemReplyPacket history = (GroupVoteHistoryItemReplyPacket)packet;
+            //GroupVoteHistoryItemReplyPacket history = (GroupVoteHistoryItemReplyPacket)packet;
 
             // TODO: This was broken in the official viewer when I was last trying to work  on it
         }
@@ -763,7 +763,9 @@ namespace libsecondlife
 
         private void GroupAccountTransactionsHandler(Packet packet, Simulator simulator)
         {
-            GroupAccountTransactionsReplyPacket transactions = (GroupAccountTransactionsReplyPacket)packet;
+            //GroupAccountTransactionsReplyPacket transactions = (GroupAccountTransactionsReplyPacket)packet;
+
+            // TODO: This one is slightly different than the previous two
 
             //if (GroupAccountTransactionsCallbacks.ContainsKey(transactions.AgentData.GroupID))
             //{
