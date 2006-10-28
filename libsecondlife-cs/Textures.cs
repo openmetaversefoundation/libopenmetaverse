@@ -113,13 +113,27 @@ namespace libsecondlife
             return (faceBits != 0);
         }
 
-        private float Dequantize(byte[] byteArray, int pos, float lower, float upper)
+        private float DequantizeSigned(byte[] byteArray, int pos, float upper)
         {
-            ushort value = (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
+            short value = (short)(byteArray[pos] | (byteArray[pos + 1] << 8));
             float QV = (float)value;
-            float range = upper - lower;
-            float QF = range / 65536.0F;
-            return (float)((QV * QF - (0.5F * range)) + QF);
+            float QF = upper / 32767.0F;
+            return (float)(QV * QF);
+        }
+
+        private float RepeatFloat(byte[] data, int pos)
+        {
+            return DequantizeSigned(data, pos, 101.0F) + 1.0F;
+        }
+
+        private float OffsetFloat(byte[] data, int pos)
+        {
+            return DequantizeSigned(data, pos, 1.0F);
+        }
+
+        private float RotationFloat(byte[] data, int pos)
+        {
+            return DequantizeSigned(data, pos, 359.995F);
         }
 
         private void FromBytes(byte[] data, int pos)
@@ -159,12 +173,12 @@ namespace libsecondlife
                         SetFace(face).RGBA = tmpUint;
             }
             //Read RepeatU -----------------------------------------
-            DefaultTexture.RepeatU = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
+            DefaultTexture.RepeatU = RepeatFloat(data, i);
             i += 2;
 
             while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
-                float tmpFloat = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
+                float tmpFloat = RepeatFloat(data, i);
                 i += 2;
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -172,12 +186,12 @@ namespace libsecondlife
                         SetFace(face).RepeatU = tmpFloat;
             }
             //Read RepeatV -----------------------------------------
-            DefaultTexture.RepeatV = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
+            DefaultTexture.RepeatV = RepeatFloat(data, i);
             i += 2;
 
             while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
-                float tmpFloat = Dequantize(data, i, -101.0F, 101.0F) + 1.0F;
+                float tmpFloat = RepeatFloat(data, i);
                 i += 2;
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -185,12 +199,12 @@ namespace libsecondlife
                         SetFace(face).RepeatV = tmpFloat;
             }
             //Read OffsetU -----------------------------------------
-            DefaultTexture.OffsetU = Dequantize(data, i, -1.0F, 1.0F);
+            DefaultTexture.OffsetU = OffsetFloat(data, i);
             i += 2;
 
             while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
-                float tmpFloat = Dequantize(data, i, -1.0F, 1.0F);
+                float tmpFloat = OffsetFloat(data, i);
                 i += 2;
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -198,12 +212,12 @@ namespace libsecondlife
                         SetFace(face).OffsetU = tmpFloat;
             }
             //Read OffsetV -----------------------------------------
-            DefaultTexture.OffsetV = Dequantize(data, i, -1.0F, 1.0F);
+            DefaultTexture.OffsetV = OffsetFloat(data, i);
             i += 2;
 
             while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
-                float tmpFloat = Dequantize(data, i, -1.0F, 1.0F);
+                float tmpFloat = OffsetFloat(data, i);
                 i += 2;
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -211,12 +225,12 @@ namespace libsecondlife
                         SetFace(face).OffsetV = tmpFloat;
             }
             //Read Rotation ----------------------------------------
-            DefaultTexture.Rotation = Dequantize(data, i, -359.995F, 359.995F);
+            DefaultTexture.Rotation = RotationFloat(data, i);
             i += 2;
 
             while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
             {
-                float tmpFloat = Dequantize(data, i, -359.995F, 359.995F);
+                float tmpFloat = RotationFloat(data, i);
                 i += 2;
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -284,16 +298,16 @@ namespace libsecondlife
         [Flags]
         public enum TextureAttributes : uint
         {
-            None,
-            TextureID,
-            RGBA,
-            RepeatU,
-            RepeatV,
-            OffsetU,
-            OffsetV,
-            Rotation,
-            Flags1,
-            Flags2,
+            None      = 0,
+            TextureID = 1 << 0,
+            RGBA      = 1 << 1,
+            RepeatU   = 1 << 2,
+            RepeatV   = 1 << 3,
+            OffsetU   = 1 << 4,
+            OffsetV   = 1 << 5,
+            Rotation  = 1 << 6,
+            Flags1    = 1 << 7,
+            Flags2    = 1 << 8,
             All = 0xFFFFFFFF
         }
 
