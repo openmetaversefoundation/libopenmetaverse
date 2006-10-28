@@ -51,19 +51,21 @@ namespace libsecondlife
     public delegate void BalanceCallback(int balance);
 
     /// <summary>
-    /// Triggered whenever an instant message is received
+    /// 
     /// </summary>
-    /// <param name="FromAgentID"></param>
-    /// <param name="FromAgentName"></param>
-    /// <param name="ToAgentID"></param>
-    /// <param name="ParentEstateID"></param>
-    /// <param name="RegionID"></param>
-    /// <param name="Position"></param>
-    /// <param name="Dialog"></param>
-    /// <param name="GroupIM"></param>
-    /// <param name="IMSessionID"></param>
-    /// <param name="Timestamp"></param>
-    /// <param name="Message"></param>
+    /// <param name="fromAgentID"></param>
+    /// <param name="fromAgentName"></param>
+    /// <param name="toAgentID"></param>
+    /// <param name="parentEstateID"></param>
+    /// <param name="regionID"></param>
+    /// <param name="position"></param>
+    /// <param name="dialog"></param>
+    /// <param name="groupIM"></param>
+    /// <param name="imSessionID"></param>
+    /// <param name="timestamp"></param>
+    /// <param name="message"></param>
+    /// <param name="offline"></param>
+    /// <param name="binaryBucket"></param>
     public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName, 
         LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, 
         bool dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
@@ -75,6 +77,9 @@ namespace libsecondlife
     /// <param name="message">A message about the current teleport status</param>
     public delegate void TeleportCallback(string message, TeleportStatus status);
 
+    /// <summary>
+    /// Name Conversion for Teleport Status flag/bit
+    /// </summary>
     public enum TeleportStatus
     {
         None,
@@ -150,13 +155,13 @@ namespace libsecondlife
     /// </summary>
     public class MainAvatar
     {
-        /// <summary></summary>
+        /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
-        /// <summary></summary>
+        /// <summary>Callback for incoming IMs</summary>
         public event InstantMessageCallback OnInstantMessage;
-        /// <summary></summary>
+        /// <summary>Callback for Teleport request update</summary>
         public event TeleportCallback OnTeleport;
-        /// <summary></summary>
+        /// <summary>Callback for incoming change in L$ balance</summary>
         public event BalanceCallback OnBalanceUpdated;
 
         /// <summary>Your (client) Avatar UUID, asset server</summary>
@@ -202,7 +207,7 @@ namespace libsecondlife
         private uint HeightWidthGenCounter;
 
         /// <summary>
-        /// 'CallBack Central' - Setup callbacks for packets related to our avatar
+        /// Constructor, aka 'CallBack Central' - Setup callbacks for packets related to our avatar
         /// </summary>
         /// <param name="client"></param>
         public MainAvatar(SecondLife client)
@@ -283,10 +288,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Generate an Instant Message (Full Arguments).
         /// </summary>
         /// <param name="fromName">Client's Avatar</param>
-        /// <param name="sessionID"></param>
+        /// <param name="sessionID">SessionID of current connection to grid</param>
         /// <param name="target">UUID of target Av.</param>
         /// <param name="message">Text Message being sent.</param>
         /// <param name="conferenceIDs"></param>
@@ -421,11 +426,24 @@ namespace libsecondlife
             Client.Network.SendPacket((Packet)money);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position"></param>
+        /// <param name="tc"></param>
         public void BeginTeleport(ulong regionHandle, LLVector3 position, TeleportCallback tc)
         {
             BeginTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z), tc);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position"></param>
+        /// <param name="lookAt"></param>
+        /// <param name="tc"></param>
         public void BeginTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt, TeleportCallback tc)
         {
             OnBeginTeleport = tc;
@@ -579,6 +597,10 @@ namespace libsecondlife
             Client.Network.SendPacket(move, simulator);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reliable"></param>
         public void UpdateCamera(bool reliable)
         {
             AgentUpdatePacket update = new AgentUpdatePacket();
@@ -610,11 +632,22 @@ namespace libsecondlife
             Client.Network.SendPacket((Packet)fovPacket);*/
         }
 
+        /// <summary>
+        /// [UNUSED - for now]
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void CoarseLocationHandler(Packet packet, Simulator simulator)
         {
             // TODO: This will be useful one day
         }
 
+        /// <summary>
+        /// Take an incoming ImprovedInstantMessage packet, auto-parse, and if
+        ///   OnInstantMessage is defined call that with the appropriate arguments.
+        /// </summary>
+        /// <param name="packet">Incoming ImprovedInstantMessagePacket</param>
+        /// <param name="simulator">[UNUSED]</param>
         private void InstantMessageHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.ImprovedInstantMessage)
@@ -642,6 +675,12 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Take an incoming Chat packet, auto-parse, and if OnChat is defined call 
+        ///   that with the appropriate arguments.
+        /// </summary>
+        /// <param name="packet">Incoming ChatFromSimulatorPacket</param>
+        /// <param name="simulator">[UNUSED]</param>
         private void ChatHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.ChatFromSimulator)
@@ -656,6 +695,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Update client's Position and LookAt from incoming packet
+        /// </summary>
+        /// <param name="packet">Incoming AgentMovementCompletePacket</param>
+        /// <param name="simulator">[UNUSED]</param>
         private void MovementCompleteHandler(Packet packet, Simulator simulator)
         {
             AgentMovementCompletePacket movement = (AgentMovementCompletePacket)packet;
@@ -664,11 +708,21 @@ namespace libsecondlife
             this.LookAt = movement.Data.LookAt;
         }
 
+        /// <summary>
+        /// Update Client Avatar's health via incoming packet
+        /// </summary>
+        /// <param name="packet">Incoming HealthMessagePacket</param>
+        /// <param name="simulator">[UNUSED]</param>
         private void HealthHandler(Packet packet, Simulator simulator)
         {
             health = ((HealthMessagePacket)packet).HealthData.Health;
         }
 
+        /// <summary>
+        /// Update Client Avatar's L$ balance from incoming packet
+        /// </summary>
+        /// <param name="packet">Incoming MoneyBalanceReplyPacket</param>
+        /// <param name="simulator">[UNUSED]</param>
         private void BalanceHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.MoneyBalanceReply)
@@ -690,6 +744,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void TeleportHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.TeleportStart)
@@ -779,6 +838,11 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="ea"></param>
         private void TeleportTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
         {
             TeleportTimeout = true;
