@@ -37,6 +37,8 @@ namespace libsecondlife
     {
         /// <summary></summary>
         public TextureEntryFace DefaultTexture;
+        /// <summary></summary>
+        public TextureEntryAnimation Animation;
 
         private Dictionary<uint, TextureEntryFace> Textures;
 
@@ -125,6 +127,7 @@ namespace libsecondlife
             Textures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
 
+            bool hasAnimationData = false;
             uint BitfieldSize = 0;
             uint faceBits = 0;
             int i = pos;
@@ -237,14 +240,38 @@ namespace libsecondlife
             DefaultTexture.Flags2 = data[i];
             i++;
 
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            while (true)
             {
+                if (data.Length > i + 4)
+                {
+                    //Not sure what this uint is, might just be there to indicate the beginning of animation data.
+                    uint unknownUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
+                    if (unknownUint == 0x10)
+                    {
+                        i += 4;
+                        hasAnimationData = true;
+                        break;
+                    }
+                }
+
+                if (!ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                    break;
+
                 byte tmpByte = data[i];
                 i++;
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
                         SetFace(face).Flags2 = tmpByte;
+            }
+            //Read Animation Data ----------------------------------
+            if (hasAnimationData)
+            {
+                Animation = new TextureEntryAnimation(data, i);
+            }
+            else
+            {
+                Animation = null;
             }
         }
     }
@@ -465,5 +492,68 @@ namespace libsecondlife
         private float _Rotation;
         private byte _Flags1;
         private byte _Flags2;
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class TextureEntryAnimation
+    {
+        /// <summary></summary>
+        public uint Flags;
+        /// <summary></summary>
+        public uint Face;
+        /// <summary></summary>
+        public uint SizeX;
+        /// <summary></summary>
+        public uint SizeY;
+        /// <summary></summary>
+        public float Start;
+        /// <summary></summary>
+        public float Length;
+        /// <summary></summary>
+        public float Rate;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
+        public TextureEntryAnimation(byte[] data, int pos)
+        {
+            FromBytes(data, pos);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToBytes()
+        {
+            byte[] bytes = new byte[0];
+            return bytes;
+        }
+
+        private void FromBytes(byte[] data, int pos)
+        {
+            int i = pos;
+
+            Flags = (uint)data[i++];
+            Face = (uint)data[i++];
+            SizeX = (uint)data[i++];
+            SizeY = (uint)data[i++];
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(data, i, 4);
+                Array.Reverse(data, i + 4, 4);
+                Array.Reverse(data, i + 8, 4);
+            }
+
+            Start = BitConverter.ToSingle(data, i);
+            Length = BitConverter.ToSingle(data, i + 4);
+            Rate = BitConverter.ToSingle(data, i + 8);
+        }
     }
 }

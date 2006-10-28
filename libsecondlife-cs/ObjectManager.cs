@@ -499,6 +499,18 @@ namespace libsecondlife
                 uint flags = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                     (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
+                if ((flags & 0x02) != 0)
+                {
+                    //Unknown 2 bytes
+                    i += 2;
+
+                    if (OnNewPrim != null)
+                    {
+                        OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                    }
+                    continue;
+                }
+
                 if ((flags & 0x20) != 0)
                 {
                     prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
@@ -515,17 +527,38 @@ namespace libsecondlife
                     i += 12;
                 }
 
-                //FIXME: read this string
-                while (block.Data[i] != 0)
+                byte unknownByte = block.Data[i];
+                if (unknownByte == 1)
                 {
+                    //Unknown
+                    i += 23;
+                }
+                else
+                {
+                    //FIXME: read this string
+                    while (block.Data[i] != 0)
+                    {
+                        i++;
+                    }
                     i++;
                 }
-                i++;
 
                 //Unknown field, possibly text color.
                 if ((flags & 0x04) != 0)
                 {
                     i += 5;
+                }
+
+                //Indicates that this is an attachment?
+                if ((flags & 0x100) != 0)
+                {
+                    //A string
+                    //Example: "AttachItemID STRING RW SV fa9a5ab8-1bad-b449-9873-cf5b803e664e"
+                    while (block.Data[i] != 0)
+                    {
+                        i++;
+                    }
+                    i++;
                 }
 
                 prim.PathCurve = (uint)block.Data[i++];
