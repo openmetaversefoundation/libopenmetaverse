@@ -27,7 +27,7 @@
     <!-- <include name="applications/SecondSuite/*.build" /> -->
     <!-- <include name="applications/SLChat/*.build" /> -->
     <include name="applications/SLIRC/*.build" />
-    <!-- <include name="applications/SLProxy/*.build" /> -->
+    <include name="SLProxy/*.build" />
   </fileset>
   <fileset id="lib">
     <include name="libjaspernet/*.build" />
@@ -155,6 +155,7 @@
         <fileset basedir="bin">
           <include name="*.exe" />
           <include name="*.dll" />
+          <include name="message_template.msg" />
 		</fileset>
       </copy>
     </if>

@@ -188,7 +188,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="keywordFile"></param>
         /// <param name="mapFile"></param>
         /// <param name="client"></param>
 		public ProtocolManager(string mapFile, SecondLife client)
