@@ -88,7 +88,7 @@ namespace sldump
 
                 try
                 {
-                    protocol = new ProtocolManager("keywords.txt", "message_template.msg", client);
+                    protocol = new ProtocolManager("message_template.msg", client);
                 }
                 catch (Exception e)
                 {

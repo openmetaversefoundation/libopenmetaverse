@@ -65,14 +65,17 @@ namespace Template2Keywords
             b *= 2;
             b &= 0x1FFF;
 
+            uint start = b;
+
             while (table.ContainsKey(b))
             {
                 if (table[b] == s)
                     return b;
 
                 b++;
-                if (b > 0x1FFF)
-                    return 0; //Give up looking, went past the end. (Shouldn't happen)
+                b &= 0x1FFF;
+                if (b == start)
+                    return 0; //Give up looking, went through all values. (Shouldn't happen)
             }
 
             table[b] = s;

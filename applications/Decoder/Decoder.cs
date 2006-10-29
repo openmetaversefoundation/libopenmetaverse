@@ -39,7 +39,7 @@ class Decoder {
 	private static int BUFSIZE = 8096;
 
     private static SecondLife client = new SecondLife();
-	private static ProtocolManager protocol = new ProtocolManager("keywords.txt", "message_template.msg", client);
+	private static ProtocolManager protocol = new ProtocolManager("message_template.msg", client);
 	private static string grep = null;
 	private static byte[] data = new byte[BUFSIZE];
 	private static byte[] temp = new byte[BUFSIZE];

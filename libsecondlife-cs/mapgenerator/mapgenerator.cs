@@ -707,16 +707,16 @@ namespace mapgenerator
 
             try
             {
-                if (args.Length < 4)
+                if (args.Length < 3)
                 {
-                    Console.WriteLine("Invalid arguments, need [keywords.txt] [message_template.msg] [template.cs] [_Packets_.cs]");
+                    Console.WriteLine("Invalid arguments, need [message_template.msg] [template.cs] [_Packets_.cs]");
                     return -1;
                 }
 
-                writer = new StreamWriter(args[3]);
-                protocol = new ProtocolManager(args[0], args[1]);
+                writer = new StreamWriter(args[2]);
+                protocol = new ProtocolManager(args[0]);
 
-                TextReader reader = new StreamReader(args[2]);
+                TextReader reader = new StreamReader(args[1]);
                 writer.WriteLine(reader.ReadToEnd());
                 reader.Close();
             }

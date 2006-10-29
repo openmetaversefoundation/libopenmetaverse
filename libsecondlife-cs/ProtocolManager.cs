@@ -184,7 +184,6 @@ namespace libsecondlife
 		public MapPacket[] HighMaps;
 
         private SecondLife Client;
-        private int i = 0;
 
         /// <summary>
         /// 
@@ -192,7 +191,7 @@ namespace libsecondlife
         /// <param name="keywordFile"></param>
         /// <param name="mapFile"></param>
         /// <param name="client"></param>
-		public ProtocolManager(string keywordFile, string mapFile, SecondLife client)
+		public ProtocolManager(string mapFile, SecondLife client)
 		{
             Client = client;
 
@@ -223,7 +222,7 @@ namespace libsecondlife
 			TypeSizes.Add(FieldType.Variable, -1);
 			TypeSizes.Add(FieldType.Fixed, -2);
 
-			LoadKeywordFile(keywordFile);
+            KeywordPositions = new Dictionary<string, int>();
 			LoadMapFile(mapFile);
 		}
 
@@ -378,36 +377,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="keywordFile"></param>
-		private void LoadKeywordFile(string keywordFile)
-		{
-			string line;
-			StreamReader file;
-
-			KeywordPositions = new Dictionary<string,int>();
-
-			// Load the keyword file
-			try
-			{
-				file = File.OpenText(keywordFile);
-			}
-			catch(Exception e)
-			{
-				Client.Log("Error opening \"" + keywordFile + "\": " + e.Message, Helpers.LogLevel.Error);
-				throw new Exception("Keyword file error", e);
-			}
-
-			while((line = file.ReadLine()) != null)
-			{
-				KeywordPositions.Add(line.Trim(), i++);
-			}
-
-			file.Close();
-		}
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="mapFile"></param>
         /// <param name="outputFile"></param>
 		public static void DecodeMapFile(string mapFile, string outputFile)
@@ -530,6 +499,9 @@ namespace libsecondlife
 
 								if (tokens.Length > 3)
 								{
+                                    //Hash packet name to insure correct keyword ordering
+                                    KeywordPosition(tokens[0]);
+
 									if (tokens[1] == "Fixed")
 									{
 										// Remove the leading "0x"
@@ -688,15 +660,34 @@ namespace libsecondlife
 
 		private int KeywordPosition(string keyword)
 		{
-			if (KeywordPositions.ContainsKey(keyword)) 
-			{
-				return (int)KeywordPositions[keyword];
-			} 
-			else 
-			{
-				Client.Log("Couldn't find keyword: " + keyword, Helpers.LogLevel.Warning);
-				return -1;
-			}
+            if (KeywordPositions.ContainsKey(keyword))
+            {
+                return KeywordPositions[keyword];
+            }
+
+            int hash = 0;
+            for (int i = 1; i < keyword.Length; i++)
+            {
+                hash = (hash + (int)(keyword[i])) * 2;
+            }
+            hash *= 2;
+            hash &= 0x1FFF;
+
+            int startHash = hash;
+
+            while (KeywordPositions.ContainsValue(hash))
+            {
+                hash++;
+                hash &= 0x1FFF;
+                if (hash == startHash)
+                {
+                    //Give up looking, went through all values and they were all taken.
+                    throw new Exception("All hash values are taken. Failed to add keyword: " + keyword);
+                }
+            }
+
+            KeywordPositions[keyword] = hash;
+            return hash;
 		}
 	}
 }
