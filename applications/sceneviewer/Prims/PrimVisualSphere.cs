@@ -6,7 +6,7 @@ using libsecondlife;
 
 namespace sceneviewer.Prims
 {
-    public class PrimVisualSphere : LinearPrimVisual
+    public class PrimVisualSphere : RotationalPrimVisual
     {
         public PrimVisualSphere(PrimObject prim)
             : base(prim)
@@ -15,6 +15,10 @@ namespace sceneviewer.Prims
         }
 
         protected override void AssignFaces()
+        {
+        }
+
+        protected override void BuildFaces()
         {
         }
 
@@ -30,8 +34,8 @@ namespace sceneviewer.Prims
             return (cut - 0.125f) * 2 * (float)Math.PI;
         }
 
-        protected override void BuildEndCapHollow(bool top)
-        {
-        }
+        //protected override void BuildEndCapHollow(bool top)
+        //{
+        //}
     }
 }

@@ -8,32 +8,11 @@ namespace sceneviewer.Prims
 {
     public abstract class LinearPrimVisual : PrimVisual
     {
-        // Reference vertices of the unscaled/unrotated primitive
-        protected Vector3[] ReferenceVertices;
-
-        protected CrossSection[] OuterFaces; // Section for each extruded outer face
-        protected CrossSection[] InnerFaces; // Section for each extruded inner face (hollow)
-        protected CrossSection[] CutFaces; // Two cut faces
-
-        protected int NumberFaces; // Number of faces on the base primitive
-        protected int FirstOuterFace; // If we're cutting, this might not be 0
-        protected int LastOuterFace; // If we're cutting, this might not be iNumberFaces
-
-        protected Color color;
-
-        // Accessors
-        protected int triangleCount = 0;
-        public override int TriangleCount
-        {
-            get { return triangleCount; }
-        }
-
         // Abstract functions
-        protected abstract int GetCutQuadrant(float cut);
-        protected abstract float GetAngleWithXAxis(float cut);
         protected abstract void BuildEndCapHollow(bool top);
 
-        public LinearPrimVisual(PrimObject prim) : base(prim)
+        public LinearPrimVisual(PrimObject prim)
+            : base(prim)
         {
             // TODO: This is temporary, for debugging and entertainment purposes
             Random rand = new Random((int)prim.LocalID + Environment.TickCount);

@@ -280,14 +280,7 @@ namespace libsecondlife
                     //block.Text Hovering text
                     //block.TextColor LLColor4U of the hovering text
                     //block.MediaURL Quicktime stream
-                    if (block.TextureEntry.Length >= 40)
-                    {
-                        prim.Textures = new TextureEntry(block.TextureEntry, 0);
-                    }
-                    else
-                    {
-                        prim.Textures = new TextureEntry();
-                    }
+                    prim.Textures = new TextureEntry(block.TextureEntry, 0);
                     //block.TextureAnim ?
                     //block.JointType ?
                     //block.JointPivot ?
@@ -527,6 +520,8 @@ namespace libsecondlife
                     i += 12;
                 }
 
+                // TODO: This seems kind of odd, isn't there a flag to identify
+                // whether this block is text (or 24 unknown bytes)?
                 byte unknownByte = block.Data[i];
                 if (unknownByte == 1)
                 {
@@ -535,11 +530,13 @@ namespace libsecondlife
                 }
                 else
                 {
-                    //FIXME: read this string
+                    string text = "";
                     while (block.Data[i] != 0)
                     {
+                        text += (char)block.Data[i];
                         i++;
                     }
+                    prim.Text = text;
                     i++;
                 }
 

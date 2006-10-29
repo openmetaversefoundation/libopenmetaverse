@@ -93,13 +93,14 @@ namespace libsecondlife
 		public LLQuaternion Rotation = new LLQuaternion();
         /// <summary></summary>
 		public uint State;
+        /// <summary></summary>
+        public string Text;
 
         /// <summary>
         /// 
         /// </summary>
         public PrimObject()
         {
-            
         }
 		
         /// <summary>

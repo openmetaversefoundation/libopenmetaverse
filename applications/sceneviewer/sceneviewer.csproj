@@ -59,6 +59,7 @@
     <Compile Include="Prims\PrimVisualSphere.cs" />
     <Compile Include="Prims\PrimVisualTorus.cs" />
     <Compile Include="Prims\PrimVisualTube.cs" />
+    <Compile Include="Prims\RotationalPrimVisual.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Skybox\Skybox.cs" />
     <Compile Include="Viewer.Designer.cs">

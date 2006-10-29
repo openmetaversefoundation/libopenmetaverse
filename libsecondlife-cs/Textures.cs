@@ -40,13 +40,15 @@ namespace libsecondlife
         /// <summary></summary>
         public TextureEntryAnimation Animation;
 
+        private SecondLife Client;
         private Dictionary<uint, TextureEntryFace> Textures;
 
         /// <summary>
         /// 
         /// </summary>
-        public TextureEntry()
+        public TextureEntry(SecondLife client)
         {
+            Client = client;
             Textures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
         }
@@ -56,8 +58,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="data"></param>
         /// <param name="pos"></param>
-        public TextureEntry(byte[] data, int pos)
+        public TextureEntry(SecondLife client, byte[] data, int pos)
         {
+            Client = client;
             FromBytes(data, pos);
         }
 
@@ -141,151 +144,167 @@ namespace libsecondlife
             Textures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
 
+            // Sanity check for the minimum length
+            if (data.Length < 40)
+            {
+                Client.Log("Skipping a TextureEntry, too short (" + data.Length + " bytes)", 
+                    Helpers.LogLevel.Warning);
+                return;
+            }
+
             bool hasAnimationData = false;
             uint BitfieldSize = 0;
             uint faceBits = 0;
             int i = pos;
 
-            //Read TextureID ---------------------------------------
-            DefaultTexture.TextureID = new LLUUID(data, i);
-            i += 16;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+            try
             {
-                LLUUID tmpUUID = new LLUUID(data, i);
+                //Read TextureID ---------------------------------------
+                DefaultTexture.TextureID = new LLUUID(data, i);
                 i += 16;
 
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).TextureID = tmpUUID;
-            }
-            //Read RGBA --------------------------------------------
-            DefaultTexture.RGBA = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
-            i += 4;
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    LLUUID tmpUUID = new LLUUID(data, i);
+                    i += 16;
 
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                uint tmpUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).TextureID = tmpUUID;
+                }
+                //Read RGBA --------------------------------------------
+                DefaultTexture.RGBA = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
                 i += 4;
 
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).RGBA = tmpUint;
-            }
-            //Read RepeatU -----------------------------------------
-            DefaultTexture.RepeatU = RepeatFloat(data, i);
-            i += 2;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                float tmpFloat = RepeatFloat(data, i);
-                i += 2;
-
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).RepeatU = tmpFloat;
-            }
-            //Read RepeatV -----------------------------------------
-            DefaultTexture.RepeatV = RepeatFloat(data, i);
-            i += 2;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                float tmpFloat = RepeatFloat(data, i);
-                i += 2;
-
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).RepeatV = tmpFloat;
-            }
-            //Read OffsetU -----------------------------------------
-            DefaultTexture.OffsetU = OffsetFloat(data, i);
-            i += 2;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                float tmpFloat = OffsetFloat(data, i);
-                i += 2;
-
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).OffsetU = tmpFloat;
-            }
-            //Read OffsetV -----------------------------------------
-            DefaultTexture.OffsetV = OffsetFloat(data, i);
-            i += 2;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                float tmpFloat = OffsetFloat(data, i);
-                i += 2;
-
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).OffsetV = tmpFloat;
-            }
-            //Read Rotation ----------------------------------------
-            DefaultTexture.Rotation = RotationFloat(data, i);
-            i += 2;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                float tmpFloat = RotationFloat(data, i);
-                i += 2;
-
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).Rotation = tmpFloat;
-            }
-            //Read Flags1 ------------------------------------------
-            DefaultTexture.Flags1 = data[i];
-            i++;
-
-            while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-            {
-                byte tmpByte = data[i];
-                i++;
-
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).Flags1 = tmpByte;
-            }
-            //Read Flags2 ------------------------------------------
-            DefaultTexture.Flags2 = data[i];
-            i++;
-
-            while (true)
-            {
-                if (data.Length > i + 4)
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
                 {
-                    //Not sure what this uint is, might just be there to indicate the beginning of animation data.
-                    uint unknownUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
-                    if (unknownUint == 0x10)
-                    {
-                        i += 4;
-                        hasAnimationData = true;
-                        break;
-                    }
+                    uint tmpUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
+                    i += 4;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).RGBA = tmpUint;
                 }
+                //Read RepeatU -----------------------------------------
+                DefaultTexture.RepeatU = RepeatFloat(data, i);
+                i += 2;
 
-                if (!ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
-                    break;
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    float tmpFloat = RepeatFloat(data, i);
+                    i += 2;
 
-                byte tmpByte = data[i];
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).RepeatU = tmpFloat;
+                }
+                //Read RepeatV -----------------------------------------
+                DefaultTexture.RepeatV = RepeatFloat(data, i);
+                i += 2;
+
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    float tmpFloat = RepeatFloat(data, i);
+                    i += 2;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).RepeatV = tmpFloat;
+                }
+                //Read OffsetU -----------------------------------------
+                DefaultTexture.OffsetU = OffsetFloat(data, i);
+                i += 2;
+
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    float tmpFloat = OffsetFloat(data, i);
+                    i += 2;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).OffsetU = tmpFloat;
+                }
+                //Read OffsetV -----------------------------------------
+                DefaultTexture.OffsetV = OffsetFloat(data, i);
+                i += 2;
+
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    float tmpFloat = OffsetFloat(data, i);
+                    i += 2;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).OffsetV = tmpFloat;
+                }
+                //Read Rotation ----------------------------------------
+                DefaultTexture.Rotation = RotationFloat(data, i);
+                i += 2;
+
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    float tmpFloat = RotationFloat(data, i);
+                    i += 2;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).Rotation = tmpFloat;
+                }
+                //Read Flags1 ------------------------------------------
+                DefaultTexture.Flags1 = data[i];
                 i++;
 
-                for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
-                    if ((faceBits & bit) != 0)
-                        SetFace(face).Flags2 = tmpByte;
+                while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                {
+                    byte tmpByte = data[i];
+                    i++;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).Flags1 = tmpByte;
+                }
+                //Read Flags2 ------------------------------------------
+                DefaultTexture.Flags2 = data[i];
+                i++;
+
+                while (true)
+                {
+                    if (data.Length > i + 4)
+                    {
+                        //Not sure what this uint is, might just be there to indicate the beginning of animation data.
+                        uint unknownUint = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
+                        if (unknownUint == 0x10)
+                        {
+                            i += 4;
+                            hasAnimationData = true;
+                            break;
+                        }
+                    }
+
+                    if (!ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
+                        break;
+
+                    byte tmpByte = data[i];
+                    i++;
+
+                    for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
+                        if ((faceBits & bit) != 0)
+                            SetFace(face).Flags2 = tmpByte;
+                }
+                //Read Animation Data ----------------------------------
+                if (hasAnimationData)
+                {
+                    Animation = new TextureEntryAnimation(data, i);
+                }
+                else
+                {
+                    Animation = null;
+                }
             }
-            //Read Animation Data ----------------------------------
-            if (hasAnimationData)
+            catch (Exception e)
             {
-                Animation = new TextureEntryAnimation(data, i);
-            }
-            else
-            {
-                Animation = null;
+                Client.Log("Had a problem decoding a TextureEntry: " + e.ToString(),
+                    Helpers.LogLevel.Warning);
             }
         }
     }

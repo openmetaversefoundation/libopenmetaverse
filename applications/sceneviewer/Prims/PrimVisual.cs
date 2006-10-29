@@ -20,17 +20,20 @@ namespace sceneviewer.Prims
         public Vector3 RotationVelocity;
         public int LevelOfDetail = 16;
 
-        // Accessors
-        public abstract int TriangleCount { get; }
-        //public abstract int Twist { set; get; }
-        //public abstract double Shear { set; get; }
-        //public abstract double TopSizeX { set; get;}
-        //public abstract double TopSizeY { set; get; }
-        //public abstract int CutStart { set; get; }
-        //public abstract int CutEnd { set; get; }
-        //public virtual int AdvancedCutStart { set { } get { return 0; } }
-        //public virtual int AdvancedCutEnd { set { } get { return 0; } }
-        //public abstract int Hollow { set; get; }
+        //
+        protected CrossSection[] OuterFaces; // Section for each extruded outer face
+        protected CrossSection[] InnerFaces; // Section for each extruded inner face (hollow)
+        protected CrossSection[] CutFaces; // Two cut faces
+
+        protected Color color;
+
+        //
+        protected int NumberFaces; // Number of faces on the base primitive
+        protected int FirstOuterFace; // If we're cutting, this might not be 0
+        protected int LastOuterFace; // If we're cutting, this might not be iNumberFaces
+
+        // Reference vertices of the unscaled/unrotated primitive
+        protected Vector3[] ReferenceVertices;
 
         protected const int MaxFaces = 9;
 
@@ -43,6 +46,8 @@ namespace sceneviewer.Prims
         // Abstract methods
         protected abstract void BuildFaces();
         protected abstract void AssignFaces();
+        protected abstract int GetCutQuadrant(float cut);
+        protected abstract float GetAngleWithXAxis(float cut);
 
         public PrimVisual(PrimObject prim)
         {
