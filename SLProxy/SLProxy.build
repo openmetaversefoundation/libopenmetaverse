@@ -82,10 +82,10 @@
       <sources failonempty="true">
         <include name="Analyst.cs" />
       </sources>
-      <!-- <references basedir="${bin_dir}/">
-        <include name="libsecondlife.dll"/>
+      <references basedir="${bin_dir}/">
+        <!-- <include name="libsecondlife.dll"/> -->
         <include name="SLProxy.dll"/>
-      </references> -->
+      </references>
     </csc>
   </target>
 
@@ -101,10 +101,10 @@
       <sources failonempty="true">
         <include name="ChatConsole.cs" />
       </sources>
-      <!-- <references basedir="${bin_dir}/">
-        <include name="libsecondlife.dll"/>
+      <references basedir="${bin_dir}/">
+        <!-- <include name="libsecondlife.dll"/> -->
         <include name="SLProxy.dll"/>
-      </references> -->
+      </references>
     </csc>
   </target>
 
