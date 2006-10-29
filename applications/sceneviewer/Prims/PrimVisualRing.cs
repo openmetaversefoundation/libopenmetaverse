@@ -21,6 +21,32 @@ namespace sceneviewer.Prims
             ReferenceVertices[1] = new Vector3(0f, 0.5f, 0f);
             ReferenceVertices[2] = new Vector3(-0.5f, -0.5f, 0f);
 
+            OuterFaces = new CrossSection[4];
+            for (int i = 0; i < 4; i++)
+            {
+                OuterFaces[i] = new CrossSection();
+            }
+
+            if (prim.ProfileHollow != 0)
+            {
+                hollow = true;
+                InnerFaces = new CrossSection[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    InnerFaces[i] = new CrossSection();
+                }
+            }
+
+            if (prim.ProfileBegin != 0 || prim.ProfileEnd != 1)
+            {
+                cut = true;
+                CutFaces = new CrossSection[2];
+                for (int i = 0; i < 2; i++)
+                {
+                    CutFaces[i] = new CrossSection();
+                }
+            }
+
             BuildFaces();
         }
 

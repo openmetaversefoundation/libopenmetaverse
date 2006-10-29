@@ -56,7 +56,7 @@
             </sources>
         </csc>
         <exec program="../bin/mapgenerator.exe" output="_Packets_.cs" useruntimeengine="true">
-            <arg line="../data/keywords.txt ../data/message_template.msg mapgenerator/template.cs _Packets_.cs" />
+            <arg line="../data/message_template.msg mapgenerator/template.cs _Packets_.cs" />
         </exec>
     </target>
     

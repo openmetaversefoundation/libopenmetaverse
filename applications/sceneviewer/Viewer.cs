@@ -28,10 +28,12 @@ namespace sceneviewer
         //private WaterSurface Water;
 
         // Variables for keeping track of the state of the mouse
-        private ButtonState PreviousLeftButton;
-        private Vector2 PreviousMousePosition;
+        //private ButtonState PreviousLeftButton;
+        //private Vector2 PreviousMousePosition;
 
         // Keyboard stuff
+        KeyboardState CurrentKeyboardState;
+        MouseState CurrentMouseState;
         Keys[] KeysHeldDown;
         List<Keys> KeysPressedThisFrame = new List<Keys>();
         List<Keys> KeysReleasedThisFrame = new List<Keys>();
@@ -47,13 +49,15 @@ namespace sceneviewer
             //this.AllowUserResizing = true;
             this.IsMouseVisible = true;
 
+            CurrentKeyboardState = Keyboard.GetState();
+            CurrentMouseState = Mouse.GetState();
             KeysHeldDown = Keyboard.GetState().GetPressedKeys();
 
             Window.ClientSizeChanged += new EventHandler(Window_ClientSizeChanged);
             this.Exiting += new EventHandler<GameEventArgs>(Viewer_Exiting);
 
             Camera = new Camera(this.Window, new Vector3(0, 0, 40), new Vector3(256, 256, 0));
-            PreviousLeftButton = ButtonState.Released;
+            //PreviousLeftButton = ButtonState.Released;
 
             Prims = new Dictionary<uint, PrimVisual>();
 
@@ -186,14 +190,16 @@ namespace sceneviewer
 
         void UpdateInput()
         {
+            CurrentKeyboardState = Keyboard.GetState();
+            CurrentMouseState = Mouse.GetState();
+
             // Clear our pressed and released lists.
             KeysPressedThisFrame.Clear();
             KeysReleasedThisFrame.Clear();
 
             // Interpret pressed key data between arrays to
             // figure out just-pressed and just-released keys.
-            KeyboardState currentState = Keyboard.GetState();
-            Keys[] currentKeys = currentState.GetPressedKeys();
+            Keys[] currentKeys = CurrentKeyboardState.GetPressedKeys();
 
             // First loop, looking for keys just pressed.
             for (int currentKey = 0; currentKey < currentKeys.Length; currentKey++)
@@ -244,29 +250,52 @@ namespace sceneviewer
             // The time since Update was called last
             float elapsed = (float)ElapsedTime.TotalSeconds;
 
-            MouseState currentState = Mouse.GetState();
-
-            Camera.Zoom = currentState.ScrollWheelValue * 0.005f;
-
-            if (currentState.LeftButton == ButtonState.Pressed &&
-                PreviousLeftButton == ButtonState.Pressed)
-            {
-                Vector2 curMouse = new Vector2(currentState.X, currentState.Y);
-                Vector2 deltaMouse = PreviousMousePosition - curMouse;
-
-                Camera.Theta += deltaMouse.X * 0.01f;
-                Camera.Phi -= deltaMouse.Y * 0.005f;
-                PreviousMousePosition = curMouse;
-            }
-            // It's implied that the leftPreviousState is unpressed in this situation.
-            else if (currentState.LeftButton == ButtonState.Pressed)
-            {
-                PreviousMousePosition = new Vector2(currentState.X, currentState.Y);
-            }
-
-            PreviousLeftButton = currentState.LeftButton;
-
             UpdateInput();
+
+            if (CurrentKeyboardState.IsKeyDown(Keys.W))
+            {
+                //Camera.Position.Y += 1.0f;
+                //Camera.Position = Vector3.Lerp(Camera.Position, Camera.LookAtPosition, 1.0f);
+                //Camera.Translate(new Vector3(0, -2.0f, 0));
+            }
+
+            if (CurrentKeyboardState.IsKeyDown(Keys.A))
+            {
+                //Camera.Rotate(Vector3.UnitY, 0.05f);
+            }
+
+            if (CurrentKeyboardState.IsKeyDown(Keys.S))
+            {
+                //Camera.Position.Y -= 1.0f;
+                //Camera.Translate(new Vector3(0, 2.0f, 0));
+            }
+
+            if (CurrentKeyboardState.IsKeyDown(Keys.D))
+            {
+                //Camera.Rotate(Vector3.UnitY, -0.05f);
+            }
+
+            //Camera.Zoom = CurrentMouseState.ScrollWheelValue * 0.005f;
+
+            //if (CurrentMouseState.LeftButton == ButtonState.Pressed &&
+            //    PreviousLeftButton == ButtonState.Pressed)
+            //{
+            //    Vector2 curMouse = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
+            //    Vector2 deltaMouse = PreviousMousePosition - curMouse;
+
+            //    Camera.Theta += deltaMouse.X * 0.01f;
+            //    Camera.Phi -= deltaMouse.Y * 0.005f;
+            //    PreviousMousePosition = curMouse;
+            //}
+            // It's implied that the leftPreviousState is unpressed in this situation.
+            //else if (CurrentMouseState.LeftButton == ButtonState.Pressed)
+            //{
+            //    PreviousMousePosition = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
+            //}
+
+            //PreviousLeftButton = CurrentMouseState.LeftButton;
+            
+            // Check for keypresses
             CheckGameKeys();
 
             // Let the GameComponents update
@@ -275,7 +304,7 @@ namespace sceneviewer
 
         void CheckGameKeys()
         {
-            if (KeyPressedThisFrame(Keys.W))
+            if (KeyPressedThisFrame(Keys.D1))
             {
                 Wireframe = !Wireframe;
             }
