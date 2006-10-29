@@ -244,7 +244,7 @@ namespace libsecondlife
                 if (block.ObjectData.Length == 60)
                 {
                     // New prim spotted
-                    PrimObject prim = new PrimObject();
+                    PrimObject prim = new PrimObject(Client);
 
                     prim.Position = new LLVector3(block.ObjectData, 0);
                     prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
@@ -280,7 +280,7 @@ namespace libsecondlife
                     //block.Text Hovering text
                     //block.TextColor LLColor4U of the hovering text
                     //block.MediaURL Quicktime stream
-                    prim.Textures = new TextureEntry(block.TextureEntry, 0);
+                    prim.Textures = new TextureEntry(Client, block.TextureEntry, 0);
                     //block.TextureAnim ?
                     //block.JointType ?
                     //block.JointPivot ?
@@ -469,7 +469,7 @@ namespace libsecondlife
             foreach (ObjectUpdateCompressedPacket.ObjectDataBlock block in update.ObjectData)
             {
                 int i = 0;
-                prim = new PrimObject();
+                prim = new PrimObject(Client);
 
                 prim.ID = new LLUUID(block.Data, 0);
                 i += 16;
@@ -581,7 +581,7 @@ namespace libsecondlife
                 //Unknown field
                 i += 4;
 
-                prim.Textures = new TextureEntry(block.Data, i);
+                prim.Textures = new TextureEntry(Client, block.Data, i);
 
                 if (OnNewPrim != null)
                 {

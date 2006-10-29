@@ -84,7 +84,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public int PathTwist = 0;
         /// <summary></summary>
-        public TextureEntry Textures = new TextureEntry();
+        public TextureEntry Textures;
         /// <summary></summary>
 		public uint ProfileHollow = 0;
         /// <summary></summary>
@@ -96,19 +96,25 @@ namespace libsecondlife
         /// <summary></summary>
         public string Text;
 
+        private SecondLife Client;
+
         /// <summary>
         /// 
         /// </summary>
-        public PrimObject()
+        public PrimObject(SecondLife client)
         {
+            Client = client;
+            Textures = new TextureEntry(Client);
         }
 		
         /// <summary>
         /// 
         /// </summary>
         /// <param name="texture"></param>
-		public PrimObject(LLUUID texture)
+		public PrimObject(SecondLife client, LLUUID texture)
 		{
+            Client = client;
+            Textures = new TextureEntry(Client);
             Textures.DefaultTexture.TextureID = texture;
 		}
 
