@@ -42,7 +42,7 @@ namespace FastImageApp
 
             //instantiate the imagemanager class
 
-            libsecondlife.Utils.FastImageTool.ImageManager im = new libsecondlife.Utils.FastImageTool.ImageManager(client, new libsecondlife.Utils.FastImageTool.ImageFinishedCallback(ImageProcessor));
+            libsecondlife.AssetSystem.FastImageTool.ImageManager im = new libsecondlife.AssetSystem.FastImageTool.ImageManager(client, new libsecondlife.AssetSystem.FastImageTool.ImageFinishedCallback(ImageProcessor));
             for(int i = 3; i < args.Length; i++)
             {
                 im.Add(new LLUUID(args[i]));
