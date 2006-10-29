@@ -41,7 +41,7 @@ namespace libsecondlife
 
         public SecondLife(string keywordFile, string mapFile)
         {
-            Protocol = new ProtocolManager(keywordFile, mapFile, this);
+            Protocol = new ProtocolManager(mapFile, this);
 	    Debug = true;
         }
 
