@@ -20,7 +20,7 @@ namespace FastImageApp
 
             try
             {
-                client = new SecondLife("keywords.txt", "message_template.msg");
+                client = new SecondLife();
             }
             catch (Exception e)
             {
@@ -28,7 +28,7 @@ namespace FastImageApp
                 return;
             }
 
-            Hashtable loginValues = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "FastImageApp", "Alpha Zaius - alpha.zaius@gmail.com");
+            Dictionary<string, object> loginValues = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], "FastImageApp", "Alpha Zaius - alpha.zaius@gmail.com");
 
             try
             {
