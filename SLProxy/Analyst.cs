@@ -605,14 +605,14 @@ public class Analyst {
 			foreach (Block block in packet.Blocks())
 				foreach (Field field in block.Fields) {
 					string value;
-//					if (field.Layout.Type == FieldType.Variable)
+					if (field.Layout.Type == FieldType.Variable)
 						value = DataConvert.toChoppedString(field.Data);
-//					else
-//						value = field.Data.ToString();
-//					if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, logGrep, RegexOptions.IgnoreCase).Success) {
-//						match = true;
-//						break;
-//					}
+					else
+						value = field.Data.ToString();
+					if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, logGrep, RegexOptions.IgnoreCase).Success) {
+						match = true;
+						break;
+					}
 
 					// try matching variable fields in 0x notation
 					if (field.Layout.Type == FieldType.Variable) {

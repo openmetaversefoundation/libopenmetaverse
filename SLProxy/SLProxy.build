@@ -89,25 +89,6 @@
     </csc>
   </target>
 
-  <target name="build-replay"
-    depends="init build-slproxy"
-    description="build SLProxy Replay">
-    <echo message="Build Directory is ${bin_dir}/" />
-    <mkdir dir="${bin_dir}" failonerror="false" />
-    <csc
-      target="exe"
-      debug="${build.debug}"
-      output="${bin_dir}/Replay.exe">
-      <sources failonempty="true">
-        <include name="Replay.cs" />
-      </sources>
-      <references basedir="${bin_dir}/">
-        <!-- <include name="libsecondlife.dll"/> -->
-        <include name="SLProxy.dll"/>
-      </references>
-    </csc>
-  </target>
-
   <target name="build-chatconsole"
     depends="init build-slproxy"
     description="build SLProxy ChatConsole">
