@@ -237,7 +237,7 @@ class Decoder {
 		     + " "
 		     + (header.Reliable		? "Rel" : "   ")
 		     + " "
-		     + (header.ZeroCoded	? "Zer" : "   ")
+		     + (header.Zerocoded	? "Zer" : "   ")
 		     + "]"
 		     ;
 	}
