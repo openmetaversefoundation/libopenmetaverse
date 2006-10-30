@@ -141,6 +141,7 @@ namespace libsecondlife
 
         private void FromBytes(byte[] data, int pos)
         {
+	    if(data.Length==0) return;  // No TextureEntry to process
             Textures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
 
