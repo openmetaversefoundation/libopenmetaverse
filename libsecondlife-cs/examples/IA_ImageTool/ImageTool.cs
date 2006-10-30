@@ -99,8 +99,12 @@ namespace IA_ImageTool
             {
                 Console.WriteLine("Downloading: " + _ImageID);
 
+
+                int start = Environment.TickCount;
                 ImageManager im = new ImageManager(base.client);
                 byte[] j2cdata = im.RequestImage(_ImageID);
+                int end = Environment.TickCount;
+                Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));
 
                 Console.WriteLine("Writing to: " + _FileName + ".tif");
                 KakaduWrap.WriteJ2CAsTiff(_FileName + ".tif", j2cdata);

@@ -105,7 +105,6 @@ namespace libsecondlife.AssetSystem
 
             Packet packet = ImagePacketHelper.RequestImage(ImageID);
 			slClient.Network.SendPacket(packet);
-            Console.WriteLine(packet);
 
 			while( tr.Completed == false )
 			{
@@ -133,7 +132,6 @@ namespace libsecondlife.AssetSystem
         /// <param name="simulator"></param>
         public void ImageDataCallbackHandler(Packet packet, Simulator simulator)
 		{
-            Console.WriteLine(packet);
             ImageDataPacket reply = (ImageDataPacket)packet;
 
 			LLUUID ImageID = reply.ImageID.ID;
@@ -173,7 +171,6 @@ namespace libsecondlife.AssetSystem
         /// <param name="simulator"></param>
         public void ImagePacketCallbackHandler(Packet packet, Simulator simulator)
 		{
-            Console.WriteLine(packet);
             ImagePacketPacket reply = (ImagePacketPacket)packet;
             
 
