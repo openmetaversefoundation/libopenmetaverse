@@ -25,7 +25,10 @@ namespace sceneviewer
 
         private Camera Camera;
         private Matrix World;
+
         //private WaterSurface Water;
+        //private Plane WaterPlane;
+        private VertexPositionColor[] WaterVertexArray;
 
         // Variables for keeping track of the state of the mouse
         //private ButtonState PreviousLeftButton;
@@ -56,13 +59,13 @@ namespace sceneviewer
             Window.ClientSizeChanged += new EventHandler(Window_ClientSizeChanged);
             this.Exiting += new EventHandler<GameEventArgs>(Viewer_Exiting);
 
-            Camera = new Camera(this.Window, new Vector3(0, 0, 40), new Vector3(256, 256, 0));
+            Camera = new Camera(this.Window, new Vector3(-10, -10, 40), new Vector3(255, 255, 40));
             //PreviousLeftButton = ButtonState.Released;
 
             Prims = new Dictionary<uint, PrimVisual>();
 
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
-                "radishman", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+                "weneedaloginscreen", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             Client = new SecondLife();
@@ -76,10 +79,16 @@ namespace sceneviewer
                 Exit();
             }
 
+            while (Client.Network.CurrentSim.Region.Name == null)
+            {
+                System.Threading.Thread.Sleep(10);
+            }
+
             InitializeComponent();
             InitializeTransform();
             InitializeEffect();
             InitializeScene();
+            InitializeWater();
 
             // Start the timer
             CameraUpdateTimer = new Timer(new TimerCallback(SendCameraUpdate), null, 0,
@@ -128,7 +137,9 @@ namespace sceneviewer
         {
             PrimVisual primVisual = PrimVisual.BuildPrimVisual(prim);
 
-            if (primVisual.GetType() == typeof(PrimVisualBox) || primVisual.GetType() == typeof(PrimVisualCylinder))
+            if (primVisual != null && 
+                (primVisual.GetType() == typeof(PrimVisualBox) || 
+                primVisual.GetType() == typeof(PrimVisualCylinder)))
             {
                 lock (Prims)
                 {
@@ -184,8 +195,21 @@ namespace sceneviewer
         {
             vertexDeclaration = new VertexDeclaration(
                 graphics.GraphicsDevice, VertexPositionColor.VertexElements);
+        }
 
+        private void InitializeWater()
+        {
             //Water = new WaterSurface(graphics.GraphicsDevice, Camera, new Vector3(0, 0, 1), 0, 128, 256);
+
+            float waterHeight = Client.Network.CurrentSim.Region.WaterHeight;
+
+            WaterVertexArray = new VertexPositionColor[6];
+            WaterVertexArray[0] = new VertexPositionColor(new Vector3(0, 0, waterHeight), Color.Blue);
+            WaterVertexArray[1] = new VertexPositionColor(new Vector3(255, 0, waterHeight), Color.Blue);
+            WaterVertexArray[2] = new VertexPositionColor(new Vector3(255, 255, waterHeight), Color.Blue);
+            WaterVertexArray[3] = new VertexPositionColor(new Vector3(0, 0, waterHeight), Color.Blue);
+            WaterVertexArray[4] = new VertexPositionColor(new Vector3(0, 255, waterHeight), Color.Blue);
+            WaterVertexArray[5] = new VertexPositionColor(new Vector3(255, 255, waterHeight), Color.Blue);
         }
 
         void UpdateInput()
@@ -254,47 +278,34 @@ namespace sceneviewer
 
             if (CurrentKeyboardState.IsKeyDown(Keys.W))
             {
-                //Camera.Position.Y += 1.0f;
-                //Camera.Position = Vector3.Lerp(Camera.Position, Camera.LookAtPosition, 1.0f);
-                //Camera.Translate(new Vector3(0, -2.0f, 0));
+                Camera.Translate(new Vector3(0, 0.8f, 0));
             }
 
             if (CurrentKeyboardState.IsKeyDown(Keys.A))
             {
-                //Camera.Rotate(Vector3.UnitY, 0.05f);
+                Camera.Rotate(0.05f);
             }
 
             if (CurrentKeyboardState.IsKeyDown(Keys.S))
             {
-                //Camera.Position.Y -= 1.0f;
-                //Camera.Translate(new Vector3(0, 2.0f, 0));
+                Camera.Translate(new Vector3(0, -1, 0));
             }
 
             if (CurrentKeyboardState.IsKeyDown(Keys.D))
             {
-                //Camera.Rotate(Vector3.UnitY, -0.05f);
+                Camera.Rotate(-0.05f);
             }
 
-            //Camera.Zoom = CurrentMouseState.ScrollWheelValue * 0.005f;
+            if (CurrentKeyboardState.IsKeyDown(Keys.PageUp))
+            {
+                Camera.Translate(new Vector3(0, 0, 1));
+            }
 
-            //if (CurrentMouseState.LeftButton == ButtonState.Pressed &&
-            //    PreviousLeftButton == ButtonState.Pressed)
-            //{
-            //    Vector2 curMouse = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
-            //    Vector2 deltaMouse = PreviousMousePosition - curMouse;
+            if (CurrentKeyboardState.IsKeyDown(Keys.PageDown))
+            {
+                Camera.Translate(new Vector3(0, 0, -1));
+            }
 
-            //    Camera.Theta += deltaMouse.X * 0.01f;
-            //    Camera.Phi -= deltaMouse.Y * 0.005f;
-            //    PreviousMousePosition = curMouse;
-            //}
-            // It's implied that the leftPreviousState is unpressed in this situation.
-            //else if (CurrentMouseState.LeftButton == ButtonState.Pressed)
-            //{
-            //    PreviousMousePosition = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
-            //}
-
-            //PreviousLeftButton = CurrentMouseState.LeftButton;
-            
             // Check for keypresses
             CheckGameKeys();
 
@@ -340,13 +351,13 @@ namespace sceneviewer
             {
                 pass.Begin();
 
-                //Water.Prepare();
-                //Water.RenderCutter();
+                // Draw the water plane
+                effect.Parameters["WorldViewProj"].SetValue(World * ViewProjectionMatrix);
+                effect.CommitChanges();
+                graphics.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.TriangleList,
+                                    2, WaterVertexArray);
 
-                //pass.End();
-
-                //pass.Begin();
-
+                #region DrawPrims
                 lock (Prims)
                 {
                     foreach (PrimVisual prim in Prims.Values)
@@ -391,6 +402,7 @@ namespace sceneviewer
                         }
                     }
                 }
+                #endregion DrawPrims
 
                 pass.End();
             }
