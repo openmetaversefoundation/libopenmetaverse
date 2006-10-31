@@ -8,6 +8,8 @@ using libsecondlife;
 using libsecondlife.InventorySystem;
 using libsecondlife.AssetSystem;
 
+
+
 namespace IA_ImageTool
 {
     /// <summary>
@@ -25,8 +27,12 @@ namespace IA_ImageTool
         [STAThread]
         static new void Main(string[] args)
         {
-            if (KakaduWrap.Check4Tools() == false)
+            if (
+//                    (File.Exists("libjasper.dll") == false) && 
+                    (KakaduWrap.Check4Tools() == false)
+                )
             {
+//                Console.WriteLine("or you need a copy of libjasper.dll, it can be found in SVN in the main trunk inside libjaspernet");
                 return;
             }
 
@@ -65,6 +71,7 @@ namespace IA_ImageTool
             }
 
             ImageTool it = new ImageTool(id, filename, put);
+            it.DownloadInventoryOnConnect = false;
             it.Connect(args[0], args[1], args[2]);
             it.doStuff();
             it.Disconnect();
@@ -101,16 +108,27 @@ namespace IA_ImageTool
 
 
                 int start = Environment.TickCount;
-                ImageManager im = new ImageManager(base.client);
+                ImageManager im = new ImageManager(base.client, ImageManager.CacheTypes.Disk);
                 byte[] j2cdata = im.RequestImage(_ImageID);
                 int end = Environment.TickCount;
                 Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));
+
+                Console.WriteLine("Image Data Length :" + j2cdata.Length);
 
                 Console.WriteLine("Writing to: " + _FileName + ".tif");
                 KakaduWrap.WriteJ2CAsTiff(_FileName + ".tif", j2cdata);
 
                 Console.WriteLine("Writing to: " + _FileName + ".bmp");
                 KakaduWrap.WriteJ2CAsBmp(_FileName + ".bmp", j2cdata);
+
+                /*
+                Console.WriteLine("Writing to: " + _FileName + ".tif");
+                File.WriteAllBytes(_FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
+
+                Console.WriteLine("Writing to: " + _FileName + ".tga");
+                File.WriteAllBytes(_FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
+                 */
+
             }
 
             Console.WriteLine("Done...");
