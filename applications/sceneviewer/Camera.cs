@@ -19,6 +19,11 @@ namespace sceneviewer
         private float _phi;
         private float _zoom;
 
+        public Matrix ViewMatrix
+        {
+            get { return _view; }
+        }
+
         public Matrix ProjectionMatrix
         {
             get { return _projection; }

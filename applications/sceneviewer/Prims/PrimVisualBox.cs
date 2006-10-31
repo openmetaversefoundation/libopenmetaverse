@@ -74,26 +74,29 @@ namespace sceneviewer.Prims
             {
                 int pointCount = OuterFaces[i].GetNumPoints();
 
-                Vector3 p1 = OuterFaces[i].GetRawVertex(0);
-                Vector3 p2 = OuterFaces[i].GetRawVertex(1);
-                Vector3 p3 = InnerFaces[i].GetRawVertex(0);
-                Vector3 p4 = InnerFaces[i].GetRawVertex(1);
+                if (pointCount >= 2)
+                {
+                    Vector3 p1 = OuterFaces[i].GetRawVertex(0);
+                    Vector3 p2 = OuterFaces[i].GetRawVertex(1);
+                    Vector3 p3 = InnerFaces[i].GetRawVertex(0);
+                    Vector3 p4 = InnerFaces[i].GetRawVertex(1);
 
-                p1.Z = p2.Z = p3.Z = p4.Z = z;
+                    p1.Z = p2.Z = p3.Z = p4.Z = z;
 
-                // TODO: Texturemapping
-                //Vector2 t1 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r1.x + 0.5), r1.y + 0.5));
-                //Vector2 t2 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r2.x + 0.5), r2.y + 0.5));
-                //Vector2 t3 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r3.x + 0.5), r3.y + 0.5));
-                //Vector2 t4 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r4.x + 0.5), r4.y + 0.5));
+                    // TODO: Texturemapping
+                    //Vector2 t1 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r1.x + 0.5), r1.y + 0.5));
+                    //Vector2 t2 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r2.x + 0.5), r2.y + 0.5));
+                    //Vector2 t3 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r3.x + 0.5), r3.y + 0.5));
+                    //Vector2 t4 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r4.x + 0.5), r4.y + 0.5));
 
-                Vertexes.Add(new VertexPositionColor(p4, color));
-                Vertexes.Add(new VertexPositionColor(p3, color));
-                Vertexes.Add(new VertexPositionColor(p2, color));
+                    Vertexes.Add(new VertexPositionColor(p4, color));
+                    Vertexes.Add(new VertexPositionColor(p3, color));
+                    Vertexes.Add(new VertexPositionColor(p2, color));
 
-                Vertexes.Add(new VertexPositionColor(p4, color));
-                Vertexes.Add(new VertexPositionColor(p2, color));
-                Vertexes.Add(new VertexPositionColor(p1, color));
+                    Vertexes.Add(new VertexPositionColor(p4, color));
+                    Vertexes.Add(new VertexPositionColor(p2, color));
+                    Vertexes.Add(new VertexPositionColor(p1, color));
+                }
             }
         }
     }
