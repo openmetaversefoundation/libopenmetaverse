@@ -115,9 +115,8 @@ namespace IA_ImageTool
                 Console.WriteLine("Writing to: " + _FileName + ".tif");
                 File.WriteAllBytes(_FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
 
-                // TODO: TGA support isn't working yet
-                // Console.WriteLine("Writing to: " + _FileName + ".tga");
-                // File.WriteAllBytes(_FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
+                Console.WriteLine("Writing to: " + _FileName + ".tga");
+                File.WriteAllBytes(_FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
 
             }
 
