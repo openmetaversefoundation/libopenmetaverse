@@ -54,7 +54,7 @@ namespace groupmanager
             ImageManager im = new ImageManager(Client);
             byte[] j2cdata = im.RequestImage(Group.InsigniaID);
             //
-            JasperWrapper.jas_init();
+            //JasperWrapper.jas_init();
             byte[] imagedata = JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata);
             //
             MemoryStream imageStream = new MemoryStream(imagedata, false);

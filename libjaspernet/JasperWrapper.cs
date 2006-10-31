@@ -94,8 +94,24 @@ public class JasperWrapper
 {
     const string JASPER_LIBRARY = "libjasper.dll";
 
+    protected static bool Initialized = false;
+    protected static int Initialized_Value;
+
     [DllImport(JASPER_LIBRARY)]
-    public static extern int jas_init();
+    protected static extern int jas_init();
+
+    public static int jasper_init()
+    {
+        if (!Initialized)
+        {
+            Initialized = true;
+            Initialized_Value = jas_init();
+            return Initialized_Value;
+        }
+
+        // TODO: Not sure what to return here...
+        return Initialized_Value;
+    }
 
     [DllImport(JASPER_LIBRARY)]
     private static extern IntPtr jas_getversion();
@@ -210,8 +226,12 @@ public class JasperWrapper
         get { return get_jasper_version(); }
     }
 
+
+
     public static byte[] jasper_decode_j2c_to_tiff(byte[] input)
     {
+        jasper_init();
+
         int header_size = 1024;  // a guess
         IntPtr input_stream_ptr = jas_stream_memopen(input);
         IntPtr temp_stream_ptr = jas_stream_tmpfile();
@@ -255,6 +275,8 @@ public class JasperWrapper
 
     public static byte[] jasper_decode_j2c_to_tga(byte[] input)
     {
+        jasper_init();
+
         int header_size = 32;  // roughly
         IntPtr input_stream_ptr = jas_stream_memopen(input);
 
