@@ -86,6 +86,8 @@ namespace libsecondlife
         /// <summary></summary>
         public TextureEntry Textures;
         /// <summary></summary>
+        public TextureAnimation TextureAnim;
+        /// <summary></summary>
 		public uint ProfileHollow = 0;
         /// <summary></summary>
 		public float PathRevolutions = 0;
@@ -95,6 +97,10 @@ namespace libsecondlife
 		public uint State;
         /// <summary></summary>
         public string Text;
+        /// <summary></summary>
+        public PrimFlexibleData Flexible;
+        /// <summary></summary>
+        public PrimLightData Light;
 
         private SecondLife Client;
 
@@ -104,7 +110,7 @@ namespace libsecondlife
         public PrimObject(SecondLife client)
         {
             Client = client;
-            Textures = new TextureEntry(Client);
+            Textures = new TextureEntry();
         }
 		
         /// <summary>
@@ -114,7 +120,7 @@ namespace libsecondlife
 		public PrimObject(SecondLife client, LLUUID texture)
 		{
             Client = client;
-            Textures = new TextureEntry(Client);
+            Textures = new TextureEntry();
             Textures.DefaultTexture.TextureID = texture;
 		}
 
@@ -372,5 +378,184 @@ namespace libsecondlife
                 return (float)pathTaper * 0.01F;
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        public int SetExtraParamsFromBytes(byte[] data, int pos)
+        {
+            int i = pos;
+            int totalLength = 1;
+
+            if (data.Length == 0)
+                return 0;
+
+            byte extraParamCount = data[i++];
+
+            for (int k = 0; k < extraParamCount; k++)
+            {
+                ExtraParamType type = (ExtraParamType)(data[i++] + (data[i++] << 8));
+                uint paramLength = (uint)(data[i++] + (data[i++] << 8) +
+                              (data[i++] << 16) + (data[i++] << 24));
+                if (type == ExtraParamType.Flexible)
+                {
+                    Flexible = new PrimFlexibleData(data, i);
+                }
+                else if (type == ExtraParamType.Light)
+                {
+                    Light = new PrimLightData(data, i);
+                }
+                i += (int)paramLength;
+                totalLength += (int)paramLength + 6;
+            }
+
+            return totalLength;
+        }
 	}
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum ExtraParamType : ushort
+    {
+        Flexible = 0x10,
+        Light = 0x20
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PrimFlexibleData
+    {
+        /// <summary></summary>
+        public int Softness;
+        /// <summary></summary>
+        public float Gravity;
+        /// <summary></summary>
+        public float Drag;
+        /// <summary></summary>
+        public float Wind;
+        /// <summary></summary>
+        public float Tension;
+        /// <summary></summary>
+        public LLVector3 Force;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
+        public PrimFlexibleData(byte[] data, int pos)
+        {
+            FromBytes(data, pos);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToBytes()
+        {
+            byte[] data = new byte[16];
+            int i = 0;
+
+            data[i] = (byte)((Softness & 2) << 6);
+            data[i + 1] = (byte)((Softness & 1) << 7);
+
+            data[i++] |= (byte)((byte)(Tension * 10.0f) & 0x7F);
+            data[i++] |= (byte)((byte)(Drag * 10.0f) & 0x7F);
+            data[i++] = (byte)((Gravity + 10.0f) * 10.0f);
+            data[i++] = (byte)(Wind * 10.0f);
+
+            Force.GetBytes().CopyTo(data, i);
+
+            return data;
+        }
+
+        private void FromBytes(byte[] data, int pos)
+        {
+            int i = pos;
+
+            Softness = ((data[i] & 0x80) >> 6) | ((data[i + 1] & 0x80) >> 7);
+
+            Tension = (data[i++] & 0x7F) / 10.0f;
+            Drag = (data[i++] & 0x7F) / 10.0f;
+            Gravity = (data[i++] / 10.0f) - 10.0f;
+            Wind = data[i++] / 10.0f;
+            Force = new LLVector3(data, i);
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PrimLightData
+    {
+        /// <summary></summary>
+        public byte R, G, B;
+        /// <summary></summary>
+        public float Intensity;
+        /// <summary></summary>
+        public float Radius;
+        /// <summary></summary>
+        public float Falloff;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
+        public PrimLightData(byte[] data, int pos)
+        {
+            FromBytes(data, pos);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToBytes()
+        {
+            byte[] data = new byte[16];
+            int i = 0;
+
+            data[i++] = R;
+            data[i++] = G;
+            data[i++] = B;
+            data[i++] = (byte)(Intensity * 255.0f);
+
+            BitConverter.GetBytes(Radius).CopyTo(data, i);
+            BitConverter.GetBytes(Falloff).CopyTo(data, i + 8);
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(data, i, 4);
+                Array.Reverse(data, i + 8, 4);
+            }
+
+            return data;
+        }
+
+        private void FromBytes(byte[] data, int pos)
+        {
+            int i = pos;
+
+            R = data[i++];
+            G = data[i++];
+            B = data[i++];
+            Intensity = data[i++] / 255.0f;
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(data, i, 4);
+                Array.Reverse(data, i + 8, 4);
+            }
+
+            Radius = BitConverter.ToSingle(data, i);
+            Falloff = BitConverter.ToSingle(data, i + 8);
+        }
+    }
 }

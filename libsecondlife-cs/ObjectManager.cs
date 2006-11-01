@@ -280,14 +280,14 @@ namespace libsecondlife
                     //block.Text Hovering text
                     //block.TextColor LLColor4U of the hovering text
                     //block.MediaURL Quicktime stream
-                    prim.Textures = new TextureEntry(Client, block.TextureEntry, 0);
-                    //block.TextureAnim ?
+                    prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                    prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
                     //block.JointType ?
                     //block.JointPivot ?
                     //block.JointAxisOrAnchor ?
                     //block.PCode ?
                     //block.PSBlock Particle system related
-                    //block.ExtraParams ?
+                    prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
                     prim.Scale = block.Scale;
                     //block.Flags ?
                     //block.UpdateFlags ?
@@ -471,117 +471,133 @@ namespace libsecondlife
                 int i = 0;
                 prim = new PrimObject(Client);
 
-                prim.ID = new LLUUID(block.Data, 0);
-                i += 16;
-                prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                i++; //PCode
-                prim.State = (uint)block.Data[i++];
-                i += 4; //CRC
-                prim.Material = (uint)block.Data[i++];
-                i++; //ClickAction
-
-                prim.Scale = new LLVector3(block.Data, i);
-                i += 12;
-                prim.Position = new LLVector3(block.Data, i);
-                i += 12;
-                prim.Rotation = new LLQuaternion(block.Data, i, true);
-                i += 12;
-
-                uint flags = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                if ((flags & 0x02) != 0)
+                try
                 {
-                    //Unknown 2 bytes
-                    i += 2;
+                    prim.ID = new LLUUID(block.Data, 0);
+                    i += 16;
+                    prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-                    if (OnNewPrim != null)
-                    {
-                        OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                    }
-                    continue;
-                }
+                    i++; //PCode
+                    prim.State = (uint)block.Data[i++];
+                    i += 4; //CRC
+                    prim.Material = (uint)block.Data[i++];
+                    i++; //ClickAction
 
-                if ((flags & 0x20) != 0)
-                {
-                    prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                }
-                else
-                {
-                    prim.ParentID = 0;
-                }
-
-                //Unknown field
-                if ((flags & 0x80) != 0)
-                {
+                    prim.Scale = new LLVector3(block.Data, i);
                     i += 12;
-                }
+                    prim.Position = new LLVector3(block.Data, i);
+                    i += 12;
+                    prim.Rotation = new LLQuaternion(block.Data, i, true);
+                    i += 12;
 
-                // TODO: This seems kind of odd, isn't there a flag to identify
-                // whether this block is text (or 24 unknown bytes)?
-                byte unknownByte = block.Data[i];
-                if (unknownByte == 1)
-                {
-                    //Unknown
-                    i += 23;
-                }
-                else
-                {
-                    string text = "";
-                    while (block.Data[i] != 0)
+                    uint flags = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                    if ((flags & 0x02) != 0)
                     {
-                        text += (char)block.Data[i];
+                        //Unknown 2 bytes
+                        i += 2;
+
+                        if (OnNewPrim != null)
+                        {
+                            OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                        }
+                        continue;
+                    }
+
+                    if ((flags & 0x20) != 0)
+                    {
+                        prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                    }
+                    else
+                    {
+                        prim.ParentID = 0;
+                    }
+
+                    //Unknown field
+                    if ((flags & 0x80) != 0)
+                    {
+                        i += 12;
+                    }
+
+                    //Unknown field, particle system?
+                    if ((flags & 0x08) != 0)
+                    {
+                        i += 86;
+                    }
+
+                    if ((flags & 0x04) != 0)
+                    {
+                        string text = "";
+                        while (block.Data[i] != 0)
+                        {
+                            text += (char)block.Data[i];
+                            i++;
+                        }
+                        prim.Text = text;
+                        i++;
+
+                        //Unknown field, possibly text color.
+                        i += 4;
+                    }
+
+                    i += prim.SetExtraParamsFromBytes(block.Data, i);
+
+                    //Indicates that this is an attachment?
+                    if ((flags & 0x100) != 0)
+                    {
+                        //A string
+                        //Example: "AttachItemID STRING RW SV fa9a5ab8-1bad-b449-9873-cf5b803e664e"
+                        while (block.Data[i] != 0)
+                        {
+                            i++;
+                        }
                         i++;
                     }
-                    prim.Text = text;
-                    i++;
-                }
 
-                //Unknown field, possibly text color.
-                if ((flags & 0x04) != 0)
-                {
-                    i += 5;
-                }
+                    prim.PathCurve = (uint)block.Data[i++];
+                    prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
+                    prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
+                    prim.PathScaleX = PrimObject.PathScaleFloat(block.Data[i++]);
+                    prim.PathScaleY = PrimObject.PathScaleFloat(block.Data[i++]);
+                    prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
+                    prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
+                    prim.PathTwist = (int)block.Data[i++];
+                    prim.PathTwistBegin = (int)block.Data[i++];
+                    prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                    prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
+                    prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
+                    prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
+                    prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
 
-                //Indicates that this is an attachment?
-                if ((flags & 0x100) != 0)
-                {
-                    //A string
-                    //Example: "AttachItemID STRING RW SV fa9a5ab8-1bad-b449-9873-cf5b803e664e"
-                    while (block.Data[i] != 0)
+                    prim.ProfileCurve = (uint)block.Data[i++];
+                    prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);
+                    prim.ProfileEnd = PrimObject.ProfileEndFloat(block.Data[i++]);
+                    prim.ProfileHollow = (uint)block.Data[i++];
+
+                    int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                    prim.Textures = new TextureEntry(block.Data, i, textureEntryLength);
+
+                    i += textureEntryLength;
+
+                    if (i < block.Data.Length)
                     {
-                        i++;
+                        int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                            (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                        prim.TextureAnim = new TextureAnimation(block.Data, i);
                     }
-                    i++;
+                }
+                catch (System.IndexOutOfRangeException)
+                {
+                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet.", Helpers.LogLevel.Warning);
+                    Client.Log(block.ToString(), Helpers.LogLevel.Warning);
                 }
 
-                prim.PathCurve = (uint)block.Data[i++];
-                prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
-                prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
-                prim.PathScaleX = PrimObject.PathScaleFloat(block.Data[i++]);
-                prim.PathScaleY = PrimObject.PathScaleFloat(block.Data[i++]);
-                prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
-                prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
-                prim.PathTwist = (int)block.Data[i++];
-                prim.PathTwistBegin = (int)block.Data[i++];
-                prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
-                prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
-                prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
-                prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
-               
-                prim.ProfileCurve = (uint)block.Data[i++];
-                prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);
-                prim.ProfileEnd = PrimObject.ProfileEndFloat(block.Data[i++]);
-                prim.ProfileHollow = (uint)block.Data[i++];
-
-                //Unknown field
-                i += 4;
-
-                prim.Textures = new TextureEntry(Client, block.Data, i);
 
                 if (OnNewPrim != null)
                 {
