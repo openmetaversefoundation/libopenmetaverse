@@ -148,6 +148,8 @@ namespace libsecondlife
         public float Building;
 
         public string LanguagesText;
+
+        public TextureEntry Textures;
     }
 
     /// <summary>
