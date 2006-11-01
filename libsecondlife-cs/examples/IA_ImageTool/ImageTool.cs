@@ -89,6 +89,8 @@ namespace IA_ImageTool
         {
             if (_Put)
             {
+                
+
                 Console.WriteLine("Reading: " + _FileName);
 
                 byte[] j2cdata = KakaduWrap.ReadJ2CData(_FileName);

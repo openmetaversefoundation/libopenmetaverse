@@ -97,6 +97,19 @@ namespace libsecondlife
             return Avatars.ContainsKey(id);
         }
 
+        public Avatar GetAvatar(LLUUID id)
+        {
+
+            if (Contains(id))
+            {
+                return Avatars[id];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// This function will only check if the avatar name exists locally,
         /// it will not do any networking calls to fetch the name
