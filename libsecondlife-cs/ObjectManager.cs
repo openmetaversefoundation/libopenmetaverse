@@ -324,6 +324,8 @@ namespace libsecondlife
                     avatar.Online = true;
                     avatar.CurrentRegion = simulator.Region;
 
+                    avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+
                     if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
                     {
                         // Update our avatar
