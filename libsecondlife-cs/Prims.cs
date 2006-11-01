@@ -101,6 +101,8 @@ namespace libsecondlife
         public PrimFlexibleData Flexible;
         /// <summary></summary>
         public PrimLightData Light;
+        /// <summary></summary>
+        public ParticleSystem ParticleSys;
 
         private SecondLife Client;
 
@@ -559,16 +561,3 @@ namespace libsecondlife
         }
     }
 }
-/*
-        PSYS_PART_FLAGS , 0 //Comment out any of the following masks to deactivate them
-    | PSYS_PART_BOUNCE_MASK           //0x04    Bounce on object's z-axis
-    //| PSYS_PART_WIND_MASK             //0x08    Particles are moved by wind
-    //| PSYS_PART_INTERP_COLOR_MASK       //0x01  Colors fade from start to end
-    //| PSYS_PART_INTERP_SCALE_MASK       //0x02   Scale fades from beginning to end
-    //| PSYS_PART_FOLLOW_SRC_MASK         //0x10  Particles follow the emitter
-    //| PSYS_PART_FOLLOW_VELOCITY_MASK    //0x20  Particles are created at the velocity of the emitter
-    //| PSYS_PART_TARGET_POS_MASK       //0x40  Particles follow the target
-    //| PSYS_PART_EMISSIVE_MASK           //0x100     articles are self-lit (glow)
-    //| PSYS_PART_TARGET_LINEAR_MASK    //0x80   Undocumented--Sends particles in straight line?
-    ,
-*/

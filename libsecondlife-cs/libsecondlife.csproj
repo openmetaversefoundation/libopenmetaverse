@@ -138,6 +138,9 @@
     <Compile Include="Parcel.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ParticleSystem.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Prims.cs">
       <SubType>Code</SubType>
     </Compile>

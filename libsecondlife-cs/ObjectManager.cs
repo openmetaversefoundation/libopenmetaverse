@@ -286,7 +286,7 @@ namespace libsecondlife
                     //block.JointPivot ?
                     //block.JointAxisOrAnchor ?
                     //block.PCode ?
-                    //block.PSBlock Particle system related
+                    prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
                     prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
                     prim.Scale = block.Scale;
                     //block.Flags ?
@@ -539,9 +539,9 @@ namespace libsecondlife
                         i += 12;
                     }
 
-                    //Unknown field, particle system?
                     if ((flags & 0x08) != 0)
                     {
+                        prim.ParticleSys = new ParticleSystem(block.Data, i);
                         i += 86;
                     }
 
