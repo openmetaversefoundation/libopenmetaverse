@@ -303,17 +303,7 @@ namespace libsecondlife
                 }
                 else if (block.ObjectData.Length == 76)
                 {
-                    Avatar avatar;
-
-                    if (Client.Avatars.Contains(block.FullID))
-                    {
-                        avatar = Client.Avatars.GetAvatar(block.FullID);
-                    }
-                    else
-                    {
-                        // New avatar spotted
-                        avatar = new Avatar();
-                    }
+                    Avatar avatar = new Avatar();
 
                     string FirstName = "";
                     string LastName = "";
@@ -345,10 +335,7 @@ namespace libsecondlife
                     }
                     else
                     {
-                        if (Client.Avatars.Contains(avatar.ID) == false)
-                        {
-                            Client.Avatars.AddAvatar(avatar);
-                        }
+                        Client.Avatars.AddAvatar(avatar);
 
                         if (OnNewAvatar != null)
                         {
@@ -441,8 +428,6 @@ namespace libsecondlife
                         Client.Self.Position = Position;
                         Client.Self.Rotation = Rotation;
                     }
-
-                    //TODO: Should check Client.Avatars.Contains() to see if this avatar is already being tracked, and update as nessesary.
 
                     AvatarUpdate avupdate = new AvatarUpdate();
                     avupdate.LocalID = localid;
