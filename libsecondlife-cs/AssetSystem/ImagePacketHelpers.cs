@@ -63,7 +63,6 @@ namespace libsecondlife.AssetSystem
             p.RequestImage[0].Image            = imageID;
 
             //FIXME: Find out what the appropriate values are here.
-            Console.WriteLine("Don't know what the valid value should be for Type in RequestImage");
             p.RequestImage[0].Type             = 0;
 
             p.AgentData.AgentID = AgentID;

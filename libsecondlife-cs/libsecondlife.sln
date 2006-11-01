@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libjaspernet", "..\libjaspe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastImageApp", "examples\FastImageApp\FastImageApp.csproj", "{74E4D0EA-93C2-40BC-A075-9EAD3A8FFCF1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_TestAsyncImage", "examples\IA_TestAsyncImage\IA_TestAsyncImage.csproj", "{A4F59DE9-E382-401D-AA8D-4557779D764E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,10 @@ Global
 		{74E4D0EA-93C2-40BC-A075-9EAD3A8FFCF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74E4D0EA-93C2-40BC-A075-9EAD3A8FFCF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74E4D0EA-93C2-40BC-A075-9EAD3A8FFCF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

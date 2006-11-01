@@ -35,7 +35,7 @@ using libsecondlife.InventorySystem;
 
 namespace libsecondlife.AssetSystem
 {
-    public delegate void ImageRetrievedCallback(LLUUID id, byte[] data); //this delegate is called when an image completed.
+    public delegate void ImageRetrievedCallback(LLUUID id, byte[] data, bool cached); //this delegate is called when an image completed.
 
     /// <summary>
 	/// Manages the uploading and downloading of Images from SecondLife
@@ -180,8 +180,6 @@ namespace libsecondlife.AssetSystem
                     {
                         return null;
                     }
-                    
-
                 case CacheTypes.Disk:
                     String filepath = Path.Combine(CacheDirectory, ImageID.ToStringHyphenated());
                     if (File.Exists(filepath))
@@ -198,9 +196,28 @@ namespace libsecondlife.AssetSystem
             }
         }
 
+        public bool isCachedImage(LLUUID ImageID)
+        {
+            switch (CacheType)
+            {
+                case CacheTypes.Memory:
+                    return CacheTable.ContainsKey(ImageID);
+                case CacheTypes.Disk:
+                    String filepath = Path.Combine(CacheDirectory, ImageID.ToStringHyphenated());
+                    return File.Exists(filepath);
+                default:
+                    return false;
+            }
+        }
+
         public bool isDownloadingImages()
         {
-            return htDownloadRequests.Count > 0;
+            bool isDownloading = false;
+            lock (htDownloadRequests)
+            {
+                isDownloading = htDownloadRequests.Count > 0 ? true : false;
+            }
+            return isDownloading;
         }
 
         /// <summary>
@@ -215,16 +232,27 @@ namespace libsecondlife.AssetSystem
                 return imgData;
             }
 
-			TransferRequest tr = new TransferRequest();
-			tr.Completed  = false;
-			tr.Size		  = int.MaxValue; // Number of bytes expected
-			tr.Received   = 0; // Number of bytes received
-			tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
+            TransferRequest tr;
+            lock (htDownloadRequests)
+            {
+                if (htDownloadRequests.ContainsKey(ImageID) == false)
+                {
+                    tr = new TransferRequest();
+                    tr.Completed = false;
+                    tr.Size = int.MaxValue; // Number of bytes expected
+                    tr.Received = 0; // Number of bytes received
+                    tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
 
-			htDownloadRequests[ImageID] = tr;
+                    htDownloadRequests[ImageID] = tr;
 
-            Packet packet = ImagePacketHelper.RequestImage(ImageID);
-			slClient.Network.SendPacket(packet);
+                    Packet packet = ImagePacketHelper.RequestImage(ImageID);
+                    slClient.Network.SendPacket(packet);
+                }
+                else
+                {
+                    tr = htDownloadRequests[ImageID];
+                }
+            }
 
 			while( tr.Completed == false )
 			{
@@ -233,7 +261,6 @@ namespace libsecondlife.AssetSystem
 
 			if( tr.Status == true )
 			{
-                CacheImage(ImageID, tr.AssetData);
 				return tr.AssetData;
 			} 
 			else 
@@ -248,22 +275,33 @@ namespace libsecondlife.AssetSystem
         /// <param name="ImageID">The Image's AssetID</param>
         public void RequestImageAsync(LLUUID ImageID)
         {
+            if (ImageID == null)
+            {
+                throw new Exception("WTF!!!  Don't request Image Assets by passing in an ImageID of null");
+            }
+
             byte[] imgData = CachedImage(ImageID);
             if (imgData != null)
             {
-                FireImageRetrieved(ImageID, imgData);
+                FireImageRetrieved(ImageID, imgData, true);
             }
 
-            TransferRequest tr = new TransferRequest();
-            tr.Completed = false;
-            tr.Size = int.MaxValue; // Number of bytes expected
-            tr.Received = 0; // Number of bytes received
-            tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
+            lock (htDownloadRequests)
+            {
+                if (htDownloadRequests.ContainsKey(ImageID) == false)
+                {
+                    TransferRequest tr = new TransferRequest();
+                    tr.Completed = false;
+                    tr.Size = int.MaxValue; // Number of bytes expected
+                    tr.Received = 0; // Number of bytes received
+                    tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
 
-            htDownloadRequests[ImageID] = tr;
+                    htDownloadRequests[ImageID] = tr;
 
-            Packet packet = ImagePacketHelper.RequestImage(ImageID);
-            slClient.Network.SendPacket(packet);
+                    Packet packet = ImagePacketHelper.RequestImage(ImageID);
+                    slClient.Network.SendPacket(packet);
+                }
+            }
         }
 
 
@@ -284,7 +322,11 @@ namespace libsecondlife.AssetSystem
 			byte[] Data    = reply.ImageData.Data;
 
             // Lookup the request that this packet is for
-			TransferRequest tr = htDownloadRequests[ImageID];
+            TransferRequest tr;
+            lock (htDownloadRequests)
+            {
+                tr = htDownloadRequests[ImageID];
+            }
 			if( tr == null )
 			{
                 // Received a packet for an image we didn't request...
@@ -307,7 +349,8 @@ namespace libsecondlife.AssetSystem
                 tr.Completed = true;
 
                 // Fire off image downloaded event
-                FireImageRetrieved(ImageID, tr.AssetData);
+                CacheImage(ImageID, tr.AssetData);
+                FireImageRetrieved(ImageID, tr.AssetData, false);
 			}
 		}
 
@@ -323,7 +366,11 @@ namespace libsecondlife.AssetSystem
             LLUUID ImageID = reply.ImageID.ID;
 
             // Lookup the request for this packet
-            TransferRequest tr = (TransferRequest)htDownloadRequests[ImageID];
+            TransferRequest tr;
+            lock (htDownloadRequests)
+            {
+                tr = (TransferRequest)htDownloadRequests[ImageID];
+            }
 			if( tr == null )
 			{
                 // Received a packet that doesn't belong to any requests in our queue, strange...
@@ -335,6 +382,8 @@ namespace libsecondlife.AssetSystem
             // then once we've received all data packets, it should be re-assembled into a complete array and marked
             // completed.
 
+            // FIXME: Sometimes this gets called before ImageDataCallbackHandler, when that
+            // happens tr.AssetData will be null.  Implimenting the above TODO should fix this.
 
             // Add this packet's data to the request.
             Array.Copy(reply.ImageData.Data, 0, tr.AssetData, tr.BaseDataReceived + (1000 * (reply.ImageID.Packet - 1)), reply.ImageData.Data.Length);
@@ -347,7 +396,8 @@ namespace libsecondlife.AssetSystem
                 tr.Completed = true;
 
                 // Fire off image downloaded event
-                FireImageRetrieved(ImageID, tr.AssetData);
+                CacheImage(ImageID, tr.AssetData);
+                FireImageRetrieved(ImageID, tr.AssetData, false);
 			}		
 		}
 
@@ -361,7 +411,11 @@ namespace libsecondlife.AssetSystem
             LLUUID ImageID = reply.ImageID.ID;
 
             // Lookup the request for this packet
-			TransferRequest tr = (TransferRequest)htDownloadRequests[ImageID];
+			TransferRequest tr;
+            lock (htDownloadRequests)
+            {
+                tr = (TransferRequest)htDownloadRequests[ImageID];
+            }
 			if( tr == null )
 			{
                 // Received a packet that doesn't belong to any requests in our queue, strange...
@@ -373,14 +427,14 @@ namespace libsecondlife.AssetSystem
             tr.Completed = true;
 
             // Fire off image downloaded event
-            FireImageRetrieved(ImageID, null);
+            FireImageRetrieved(ImageID, null, false);
         }
 
-        private void FireImageRetrieved(LLUUID ImageID, byte[] ImageData)
+        private void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached)
         {
             if (OnImageRetrieved != null)
             {
-                OnImageRetrieved(ImageID, ImageData);
+                OnImageRetrieved(ImageID, ImageData, cached);
             }
         }
 

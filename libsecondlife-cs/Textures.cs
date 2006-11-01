@@ -42,6 +42,10 @@ namespace libsecondlife
 
         private SecondLife Client;
         private Dictionary<uint, TextureEntryFace> Textures;
+        public Dictionary<uint, TextureEntryFace> FaceTextures
+        {
+            get { return Textures; }
+        }
 
         /// <summary>
         /// 
