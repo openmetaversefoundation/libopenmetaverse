@@ -32,10 +32,7 @@ namespace SLIRC
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                Hashtable loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
-                    txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 1, 50, 50, 50,
-                    "Win", "0", "accountant", "jhurliman@wsu.edu");
-                if (client.Network.Login(loginParams))
+                if (client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "slirc", "Unknown Author"))
                 {
                     LogMessage("Logged into Second Life");
                     lstAllowedUsers.Enabled = lstLog.Enabled = btnJoin.Enabled = txtMessage.Enabled = btnSay.Enabled = true;
@@ -45,7 +42,7 @@ namespace SLIRC
                     {
                         ircclient.Connect(new string[] { txtServerName.Text }, int.Parse(txtPort.Text));
                         LogMessage("Connected to IRC Server.");
-                        ircclient.Login(client.Avatar.FirstName + client.Avatar.LastName, "SLIRC Gateway");
+                        ircclient.Login(client.Self.FirstName + client.Self.LastName, "SLIRC Gateway");
                         ircclient.RfcJoin(txtChannel.Text);
                         LogMessage("Logged in");
                         if(listenthread != null) listenthread.Abort();
@@ -84,15 +81,15 @@ namespace SLIRC
         {
             LogMessage(e.Data.Nick + ": " + e.Data.Message);
             //From IRC -> Inject to SL
-            client.Avatar.Say(e.Data.Nick + ": " + e.Data.Message, 0);
+            client.Self.Chat(e.Data.Nick + ": " + e.Data.Message, 0, MainAvatar.ChatType.Say);
         }
 
         private void frmSLIRC_Load(object sender, EventArgs e)
         {
             try
             {
-                client = new SecondLife("keywords.txt", "message_template.msg");
-                client.Avatar.OnChat += new ChatCallback(Avatar_OnChat);
+                client = new SecondLife();
+                client.Self.OnChat += new ChatCallback(Avatar_OnChat);
                 grpLogin.Enabled = true;
             }
             catch (Exception error)
@@ -124,7 +121,7 @@ namespace SLIRC
                 Invoke(new SingleStringDelegate(AddToAllowedList), new object[] { name });
             }
         }
-        void Avatar_OnChat(string message, byte audible, byte type, byte sourcetype, string name, LLUUID id, byte command, LLUUID commandID)
+        void Avatar_OnChat(string message, byte audible, byte type, byte sourcetype, string name, LLUUID id)
         {
             if (message.Equals("addme"))
             {
@@ -150,12 +147,12 @@ namespace SLIRC
 
         private void btnGetPos_Click(object sender, EventArgs e)
         {
-            LogMessage("Position: " + client.Avatar.Position.X.ToString() + " " + client.Avatar.Position.Y.ToString());
+            LogMessage("Position: " + client.Self.Position.X.ToString() + " " + client.Self.Position.Y.ToString());
         }
 
         private void btnSay_Click(object sender, EventArgs e)
         {
-            client.Avatar.Say(ircclient.Nickname + ": " + txtMessage.Text, 0);
+            client.Self.Chat(ircclient.Nickname + ": " + txtMessage.Text, 0, MainAvatar.ChatType.Say);
             ircclient.SendMessage(SendType.Message, txtChannel.Text, txtMessage.Text);
         }
 

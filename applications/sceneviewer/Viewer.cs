@@ -65,7 +65,7 @@ namespace sceneviewer
             Prims = new Dictionary<uint, PrimVisual>();
 
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues("Ron", "Hubbard",
-                "weneedaloginscreen", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
+                "radishman", "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0",
                 "botmanager", "contact@libsecondlife.org");
 
             Client = new SecondLife();

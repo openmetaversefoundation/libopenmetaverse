@@ -14,7 +14,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,10 +28,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="libsecondlife, Version=0.0.5.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Meebey.SmartIrc4net, Version=0.3.5.1833, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Desktop\SmartIrc4net-0.3.5\bin\net\debug\Meebey.SmartIrc4net.dll</HintPath>
+      <HintPath>.\Meebey.SmartIrc4net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -71,6 +70,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\libsecondlife-cs\libsecondlife.csproj">
+      <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
+      <Name>libsecondlife</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
