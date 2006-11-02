@@ -37,7 +37,7 @@ namespace libsecondlife
         public uint Version; //???
         public uint StartTick; //???
 
-        public enum SourcePattern
+        public enum SourcePattern : byte
         {
             None = 0,
             Drop = 0x01,
@@ -71,9 +71,6 @@ namespace libsecondlife
         {
             int i = pos;
 
-            PartMaxAge = 10.0f; //Not yet parsed.
-            SrcPattern = SourcePattern.Explode; //Not yet parsed.
-
             if (data.Length == 0)
                 return;
 
@@ -83,8 +80,7 @@ namespace libsecondlife
             StartTick = (uint)(data[i++] + (data[i++] << 8) +
                     (data[i++] << 16) + (data[i++] << 24));
 
-            //Unknown
-            i++;
+            SrcPattern = (SourcePattern)data[i++];
 
             SrcMaxAge = (data[i++] + (data[i++] << 8)) / 256.0f;
 
@@ -94,21 +90,21 @@ namespace libsecondlife
             SrcAngleBegin = (data[i++] / 100.0f) * (float)Math.PI;
             SrcAngleEnd = (data[i++] / 100.0f) * (float)Math.PI;
 
-            SrcBurstRate = (data[i++] + (data[i++] << 8));
-            SrcBurstRadius = (data[i++] + (data[i++] << 8));
-            SrcBurstSpeedMin = (data[i++] + (data[i++] << 8));
-            SrcBurstSpeedMax = (data[i++] + (data[i++] << 8));
+            SrcBurstRate = (data[i++] + (data[i++] << 8)) / 256.0f;
+            SrcBurstRadius = (data[i++] + (data[i++] << 8)) / 256.0f;
+            SrcBurstSpeedMin = (data[i++] + (data[i++] << 8)) / 256.0f;
+            SrcBurstSpeedMax = (data[i++] + (data[i++] << 8)) / 256.0f;
             SrcBurstPartCount = data[i++];
 
             SrcOmega = new LLVector3();
-            SrcOmega.X = (data[i++] + (data[i++] << 8));
-            SrcOmega.Y = (data[i++] + (data[i++] << 8));
-            SrcOmega.Z = (data[i++] + (data[i++] << 8));
+            SrcOmega.X = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
+            SrcOmega.Y = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
+            SrcOmega.Z = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
 
             SrcAccel = new LLVector3();
-            SrcAccel.X = (data[i++] + (data[i++] << 8));
-            SrcAccel.Y = (data[i++] + (data[i++] << 8));
-            SrcAccel.Z = (data[i++] + (data[i++] << 8));
+            SrcAccel.X = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
+            SrcAccel.Y = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
+            SrcAccel.Z = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
 
             SrcTexture = new LLUUID(data, i);
             i += 16;
@@ -116,6 +112,11 @@ namespace libsecondlife
             i += 16;
 
             PartFlags = (ParticleFlags)(data[i++] + (data[i++] << 8));
+
+            PartMaxAge = (data[i++] + (data[i++] << 8)) / 256.0f;
+
+            //Unknown
+            i += 2;
 
             PartStartRGBA = (uint)(data[i++] + (data[i++] << 8) +
                     (data[i++] << 16) + (data[i++] << 24));
