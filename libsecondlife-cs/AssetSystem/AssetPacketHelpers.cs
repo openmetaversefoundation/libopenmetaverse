@@ -37,6 +37,8 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
     public class AssetPacketHelpers
 	{
+        private const bool DEBUG_PACKETS = true;
+
         /// <summary>
         /// Upload a small asset where the entire asset will fit in a single packet (less then 500 bytes)
         /// </summary>

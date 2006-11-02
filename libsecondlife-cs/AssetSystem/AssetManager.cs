@@ -40,7 +40,7 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
-        private const bool DEBUG_PACKETS = true;
+        private const bool DEBUG_PACKETS = false;
 
 
 		public const int SINK_FEE_IMAGE = 1;
@@ -159,7 +159,7 @@ namespace libsecondlife.AssetSystem
                         SinkFee(SINK_FEE_IMAGE);
                     }
 
-                    asset.AssetID = curUploadRequest.AssetID;
+                    asset.AssetID = curUploadRequest.TransactionID;
 
                     return asset.AssetID;
                 }

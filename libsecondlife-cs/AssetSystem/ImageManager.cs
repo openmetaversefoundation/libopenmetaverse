@@ -42,7 +42,9 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class ImageManager
 	{
-		private SecondLife slClient;
+        private const bool DEBUG_PACKETS = true;
+
+        private SecondLife slClient;
 
         public enum CacheTypes {None, Memory, Disk};
         private CacheTypes CacheType;
@@ -331,6 +333,8 @@ namespace libsecondlife.AssetSystem
         /// <param name="simulator"></param>
         public void ImageDataCallbackHandler(Packet packet, Simulator simulator)
 		{
+            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
             ImageDataPacket reply = (ImageDataPacket)packet;
 
 			LLUUID ImageID = reply.ImageID.ID;
@@ -378,6 +382,8 @@ namespace libsecondlife.AssetSystem
         /// <param name="simulator"></param>
         public void ImagePacketCallbackHandler(Packet packet, Simulator simulator)
 		{
+            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
             ImagePacketPacket reply = (ImagePacketPacket)packet;
             
             LLUUID ImageID = reply.ImageID.ID;
@@ -423,6 +429,8 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         public void ImageNotInDatabaseCallbackHandler(Packet packet, Simulator simulator)
         {
+            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
             ImageNotInDatabasePacket reply = (ImageNotInDatabasePacket)packet;
 
             LLUUID ImageID = reply.ImageID.ID;

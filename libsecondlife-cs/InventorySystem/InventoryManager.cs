@@ -40,7 +40,7 @@ namespace libsecondlife.InventorySystem
     /// </summary>
     public class InventoryManager
     {
-        private const bool DEBUG_PACKETS = true;
+        private const bool DEBUG_PACKETS = false;
 
 
         // Reference to the SLClient Library
@@ -252,7 +252,7 @@ namespace libsecondlife.InventorySystem
             }
             else
             {
-                ItemCreationInProgress = true;
+                ItemCreationInProgress = true; // This is released when we receive UpdateCreateInventoryItemHandler
                 iiCreationInProgress = iitem;
             }
 
@@ -270,6 +270,7 @@ namespace libsecondlife.InventorySystem
         {
             Packet packet = InvPacketHelper.UpdateInventoryItem(iitem);
             slClient.Network.SendPacket(packet);
+            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
         }
 
         internal void ItemCopy(LLUUID ItemID, LLUUID TargetFolderID)
@@ -414,7 +415,7 @@ namespace libsecondlife.InventorySystem
             {
                 UpdateCreateInventoryItemPacket reply = (UpdateCreateInventoryItemPacket)packet;
 
-                // User internal variable references, so we don't fire off any update code by using the public accessors
+                // Use internal variable references, so we don't fire off any update code by using the public accessors
 
                 iiCreationInProgress._ItemID = reply.InventoryData[0].ItemID;
 

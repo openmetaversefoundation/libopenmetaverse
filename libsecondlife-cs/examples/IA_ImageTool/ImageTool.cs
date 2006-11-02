@@ -18,6 +18,7 @@ namespace IA_ImageTool
         private LLUUID _ImageID;
         private string _FileName;
         private bool _Put;
+        private double _Rate;
 
         /// <summary>
         /// Used to upload/download images.
@@ -41,10 +42,20 @@ namespace IA_ImageTool
             LLUUID id = null;
             string filename = "";
             bool put = false;
+            double rate = 0;
+
             if (args[3].ToLower().Equals("put"))
             {
                 put = true;
-                filename = args[4];
+                if (args.Length == 6)
+                {
+                    double.TryParse(args[4], out rate);
+                    filename = args[5];
+                }
+                else
+                {
+                    filename = args[4];
+                }
             }
             else
             {
@@ -65,8 +76,11 @@ namespace IA_ImageTool
                 }
             }
 
-            ImageTool it = new ImageTool(id, filename, put);
-            it.DownloadInventoryOnConnect = put;
+            ImageTool it = new ImageTool(id, filename, put, rate);
+
+            // Only download the inventory tree if we're planning on putting/uploading files.
+            it.DownloadInventoryOnConnect = put; 
+
             if (it.Connect(args[0], args[1], args[2]))
             {
                 it.doStuff();
@@ -78,11 +92,12 @@ namespace IA_ImageTool
             }
         }
 
-        protected ImageTool(LLUUID imageID, string filename, bool put)
+        protected ImageTool(LLUUID imageID, string filename, bool put, double rate)
         {
             _ImageID = imageID;
             _FileName = filename;
             _Put = put;
+            _Rate = rate;
         }
 
         protected new void doStuff()
@@ -91,7 +106,17 @@ namespace IA_ImageTool
             {
                 Console.WriteLine("Reading: " + _FileName);
 
-                byte[] j2cdata = KakaduWrap.ReadJ2CData(_FileName, 1.0);
+                byte[] j2cdata;
+
+                if (_Rate != 0)
+                {
+                    j2cdata = KakaduWrap.ReadJ2CData(_FileName, _Rate);
+                }
+                else
+                {
+                    j2cdata = KakaduWrap.ReadJ2CData(_FileName);
+                }
+                
 
                 Console.WriteLine("Connecting to your Texture folder...");
                 InventoryFolder iFolder = AgentInventory.getFolder("Textures");
@@ -128,10 +153,12 @@ namespace IA_ImageTool
         {
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [get] [uuid] [(filename)]");
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [filename]");
+            Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [bit-rate] [filename]");
 
             Console.WriteLine();
-            Console.WriteLine("Example: ImageTool John Doe Password get 0444bf21-f77e-7f63-89e9-b839ec66bc15 cloud.tif");
-            Console.WriteLine("Example: ImageTool John Doe Password put Sample (this will output a bmp and a tiff)");
+            Console.WriteLine("Example: ImageTool John Doe Password get 0444bf21-f77e-7f63-89e9-b839ec66bc15 cloud (this will output a bmp and a tiff)");
+            Console.WriteLine("Example: ImageTool John Doe Password put Sample.tiff");
+            Console.WriteLine("Example: ImageTool John Doe Password put 1.0 BigImage.tiff (this will compress the file with the given bit-rate)");
         }
     }
 }

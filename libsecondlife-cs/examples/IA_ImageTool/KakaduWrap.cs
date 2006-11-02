@@ -105,6 +105,11 @@ namespace IA_ImageTool
 		/*
 		 * kdu_compress -no_info -no_weights -no_palette -i TestTexture.tif -o TestTexture.J2C
 		 */
+        public static void Convert2J2C(string tif_filename, string j2c_filename)
+        {
+            Convert2J2C( tif_filename, j2c_filename, 0 );
+        }
+
 		public static void Convert2J2C( string tif_filename, string j2c_filename, double rate )
 		{
 			if( File.Exists("kdu_compress.exe") == false )
@@ -120,12 +125,26 @@ namespace IA_ImageTool
 			Process p = new Process();
 			p.StartInfo.UseShellExecute = false;
 			p.StartInfo.FileName  = "kdu_compress.exe";
-			p.StartInfo.Arguments = "-no_info -no_weights -no_palette -rate " + rate + " -i " + tif_filename + " -o " + j2c_filename;
+
+            if (rate == 0)
+            {
+                p.StartInfo.Arguments = "-no_info -no_weights -no_palette -i " + tif_filename + " -o " + j2c_filename;
+            }
+            else
+            {
+                p.StartInfo.Arguments = "-no_info -no_weights -no_palette -rate " + rate + " -i " + tif_filename + " -o " + j2c_filename;
+            }
+
 			p.Start();
 			p.WaitForExit();
             if (p.ExitCode != 0)
                 throw new Exception("Error in calling kdu_compress");
 		}
+
+        public static byte[] ReadJ2CData(string filename)
+        {
+            return ReadJ2CData(filename, 0);
+        }
 
 		public static byte[] ReadJ2CData( string filename, double rate )
 		{
