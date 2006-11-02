@@ -122,43 +122,52 @@ namespace libsecondlife.AssetSystem
                 throw new Exception("An existing asset upload is currently in-progress.");
             }
 
-			Packet packet;
-            curUploadRequest = new TransferRequest();
-            curUploadRequest.Completed = false;
-			curUploadRequest.TransactionID = LLUUID.GenerateUUID();
+            try
+            {
+                Packet packet;
+                curUploadRequest = new TransferRequest();
+                curUploadRequest.Completed = false;
+                curUploadRequest.TransactionID = LLUUID.GenerateUUID();
 
-			if( asset.AssetData.Length > 500 )
-			{
-                packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(asset, curUploadRequest.TransactionID);
-				slClient.Network.SendPacket(packet);
-                if (DEBUG_PACKETS) { Console.WriteLine(packet); }
-                curUploadRequest.AssetData = asset.AssetData;
-			} 
-			else 
-			{
-                packet = AssetPacketHelpers.AssetUploadRequest(asset, curUploadRequest.TransactionID);
-				slClient.Network.SendPacket(packet);
-                if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+                if (asset.AssetData.Length > 500)
+                {
+                    packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(asset, curUploadRequest.TransactionID);
+                    slClient.Network.SendPacket(packet);
+                    if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+                    curUploadRequest.AssetData = asset.AssetData;
+                }
+                else
+                {
+                    packet = AssetPacketHelpers.AssetUploadRequest(asset, curUploadRequest.TransactionID);
+                    slClient.Network.SendPacket(packet);
+                    if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+                }
+
+                while (curUploadRequest.Completed == false)
+                {
+                    slClient.Tick();
+                }
+
+                if (curUploadRequest.Status == false)
+                {
+                    throw new Exception(curUploadRequest.StatusMsg);
+                }
+                else
+                {
+                    if (asset.Type == Asset.ASSET_TYPE_IMAGE)
+                    {
+                        SinkFee(SINK_FEE_IMAGE);
+                    }
+
+                    asset.AssetID = curUploadRequest.AssetID;
+
+                    return asset.AssetID;
+                }
             }
-
-			while( curUploadRequest.Completed == false )
-			{
-				slClient.Tick();
-			}
-
-            if (curUploadRequest.Status == false)
-			{
-                throw new Exception(curUploadRequest.StatusMsg);
-			} else {
-				if( asset.Type == Asset.ASSET_TYPE_IMAGE )
-				{
-					SinkFee( SINK_FEE_IMAGE );
-				}
-
-                asset.AssetID = curUploadRequest.AssetID;
-
-                return asset.AssetID;
-			}
+            finally
+            {
+                curUploadRequest = null;
+            }
 		}
 
         /// <summary>

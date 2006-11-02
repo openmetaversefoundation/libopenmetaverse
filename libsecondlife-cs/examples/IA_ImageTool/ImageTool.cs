@@ -8,8 +8,6 @@ using libsecondlife;
 using libsecondlife.InventorySystem;
 using libsecondlife.AssetSystem;
 
-
-
 namespace IA_ImageTool
 {
     /// <summary>
@@ -68,14 +66,16 @@ namespace IA_ImageTool
             }
 
             ImageTool it = new ImageTool(id, filename, put);
-            it.DownloadInventoryOnConnect = false;
-            it.Connect(args[0], args[1], args[2]);
-            it.doStuff();
-            it.Disconnect();
+            it.DownloadInventoryOnConnect = put;
+            if (it.Connect(args[0], args[1], args[2]))
+            {
+                it.doStuff();
+                it.Disconnect();
 
-            System.Threading.Thread.Sleep(500);
+                System.Threading.Thread.Sleep(500);
 
-            Console.WriteLine("Done logging out.");
+                Console.WriteLine("Done logging out.");
+            }
         }
 
         protected ImageTool(LLUUID imageID, string filename, bool put)
@@ -89,11 +89,9 @@ namespace IA_ImageTool
         {
             if (_Put)
             {
-                
-
                 Console.WriteLine("Reading: " + _FileName);
 
-                byte[] j2cdata = KakaduWrap.ReadJ2CData(_FileName);
+                byte[] j2cdata = KakaduWrap.ReadJ2CData(_FileName, 1.0);
 
                 Console.WriteLine("Connecting to your Texture folder...");
                 InventoryFolder iFolder = AgentInventory.getFolder("Textures");

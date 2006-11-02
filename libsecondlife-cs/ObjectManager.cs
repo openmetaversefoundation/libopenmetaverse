@@ -484,6 +484,7 @@ namespace libsecondlife
 
         private void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
+            return;
             ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
             PrimObject prim;
 

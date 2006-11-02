@@ -274,20 +274,12 @@ namespace Nii.JSON
 
             if ((b >= '0' && b <= '9') || b == '.' || b == '-' || b == '+')
             {
-                try
-                {
-                    return Convert.ToInt32(s);
-                }
-                catch
-                {
-                }
-                try
-                {
-                    return Convert.ToDouble(s, NumberFormatInfo.InvariantInfo);
-                }
-                catch
-                {
-                }
+                int intResult;
+                if (Int32.TryParse(s, out intResult))
+                    return intResult;
+                double doubleResult;
+                if (Double.TryParse(s, out doubleResult))
+                    return doubleResult;
             }
             if (s == "")
             {

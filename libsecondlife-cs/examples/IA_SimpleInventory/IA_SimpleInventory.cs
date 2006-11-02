@@ -71,7 +71,7 @@ namespace IA_SimpleInventory
             }
         }
 
-        protected void Connect(string FirstName, string LastName, string Password)
+        protected bool Connect(string FirstName, string LastName, string Password)
         {
             Console.WriteLine("Attempting to connect and login to SecondLife.");
 
@@ -85,7 +85,7 @@ namespace IA_SimpleInventory
             {
                 // Login failed
                 Console.WriteLine("Error logging in: " + client.Network.LoginError);
-                return;
+                return false;
             }
 
             // Login was successful
@@ -109,6 +109,7 @@ namespace IA_SimpleInventory
                 Console.WriteLine("Downloading Inventory.");
                 AgentInventory.DownloadInventory();
             }
+            return true;
         }
 
         protected void Disconnect()
