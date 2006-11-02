@@ -32,6 +32,7 @@ using libsecondlife;
 using libsecondlife.InventorySystem;
 
 using libsecondlife.Packets;
+using System.Threading;
 
 namespace libsecondlife.AssetSystem
 {
@@ -52,7 +53,7 @@ namespace libsecondlife.AssetSystem
 
 		private class TransferRequest
 		{
-			public bool Completed;
+            public ManualResetEvent Completed = new ManualResetEvent(false);
 			public bool Status;
 			public string StatusMsg;
 
@@ -126,7 +127,6 @@ namespace libsecondlife.AssetSystem
             {
                 Packet packet;
                 curUploadRequest = new TransferRequest();
-                curUploadRequest.Completed = false;
                 curUploadRequest.TransactionID = LLUUID.GenerateUUID();
 
                 if (asset.AssetData.Length > 500)
@@ -143,10 +143,7 @@ namespace libsecondlife.AssetSystem
                     if (DEBUG_PACKETS) { Console.WriteLine(packet); }
                 }
 
-                while (curUploadRequest.Completed == false)
-                {
-                    slClient.Tick();
-                }
+                curUploadRequest.Completed.WaitOne();
 
                 if (curUploadRequest.Status == false)
                 {
@@ -179,7 +176,6 @@ namespace libsecondlife.AssetSystem
 			LLUUID TransferID = LLUUID.GenerateUUID();
 
 			TransferRequest tr = new TransferRequest();
-			tr.Completed  = false;
 			tr.Size		  = int.MaxValue; // Number of bytes expected
 			tr.Received   = 0; // Number of bytes received
 			tr.LastPacketTime = Helpers.GetUnixTime(); // last time we recevied a packet for this request
@@ -190,10 +186,7 @@ namespace libsecondlife.AssetSystem
 			slClient.Network.SendPacket(packet);
             if (DEBUG_PACKETS) { Console.WriteLine(packet); }
 
-			while( tr.Completed == false )
-			{
-				slClient.Tick();
-			}
+            tr.Completed.WaitOne();
 
 			item.SetAssetData( tr.AssetData );
 		}
@@ -204,20 +197,13 @@ namespace libsecondlife.AssetSystem
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
 
             curUploadRequest.AssetID = reply.AssetBlock.UUID;
-            bool Success = reply.AssetBlock.Success;
+            curUploadRequest.Status = reply.AssetBlock.Success;
 
-			if( Success )
-			{
-                curUploadRequest.Completed = true;
-                curUploadRequest.Status = true;
+            if (curUploadRequest.Status)
                 curUploadRequest.StatusMsg = "Success";
-			} 
 			else 
-			{
-                curUploadRequest.Completed = true;
-                curUploadRequest.Status = false;
                 curUploadRequest.StatusMsg = "Server returned failed";
-			}
+            curUploadRequest.Completed.Set();
 		}
 
         private void RequestXferCallbackHandler(Packet packet, Simulator simulator)
@@ -303,13 +289,12 @@ namespace libsecondlife.AssetSystem
             // Mark it as either not found or update the request information
             if (Status == -2)
             {
-                tr.Completed = true;
                 tr.Status = false;
                 tr.StatusMsg = "Asset Status -2 :: Likely Status Not Found";
 
                 tr.Size = 1;
                 tr.AssetData = new byte[1];
-
+                tr.Completed.Set();
             }
             else
             {
@@ -340,7 +325,7 @@ namespace libsecondlife.AssetSystem
             // If we've gotten all the data, mark it completed.
             if (tr.Received >= tr.Size)
             {
-                tr.Completed = true;
+                tr.Completed.Set();
             }
         }
 	}
