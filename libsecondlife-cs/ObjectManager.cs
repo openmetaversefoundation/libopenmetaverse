@@ -69,6 +69,11 @@ namespace libsecondlife
     /// <param name="objectID"></param>
     public delegate void KillObjectCallback(Simulator simulator, uint objectID);
 
+    public enum PCode
+    {
+        Prim = 9
+    }
+
     /// <summary>
     /// Contains all of the variables sent in an object update packet for a 
     /// prim object. Used to track position and movement of prims.
@@ -243,62 +248,71 @@ namespace libsecondlife
             {
                 if (block.ObjectData.Length == 60)
                 {
-                    // New prim spotted
-                    PrimObject prim = new PrimObject(Client);
-
-                    prim.Position = new LLVector3(block.ObjectData, 0);
-                    prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
-
-                    // TODO: Parse the rest of the ObjectData byte array fields
-
-                    prim.LocalID = block.ID;
-                    prim.State = block.State;
-                    prim.ID = block.FullID;
-                    prim.ParentID = block.ParentID;
-                    //block.OwnerID Sound-related
-                    prim.Material = block.Material;
-                    prim.PathCurve = block.PathCurve;
-                    prim.ProfileCurve = block.ProfileCurve;
-                    prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
-                    prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
-                    prim.PathScaleX = PrimObject.PathScaleFloat(block.PathScaleX);
-                    prim.PathScaleY = PrimObject.PathScaleFloat(block.PathScaleY);
-                    prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
-                    prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
-                    prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
-                    prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
-                    prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                    prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
-                    prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
-                    prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
-                    prim.PathSkew = PrimObject.PathSkewFloat((byte)block.PathSkew);
-                    prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
-                    prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
-                    prim.ProfileHollow = block.ProfileHollow;
-                    prim.Name = Helpers.FieldToString(block.NameValue);
-                    //block.Data ?
-                    //block.Text Hovering text
-                    //block.TextColor LLColor4U of the hovering text
-                    //block.MediaURL Quicktime stream
-                    prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-                    prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
-                    //block.JointType ?
-                    //block.JointPivot ?
-                    //block.JointAxisOrAnchor ?
-                    //block.PCode ?
-                    prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
-                    prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
-                    prim.Scale = block.Scale;
-                    //block.Flags ?
-                    //block.UpdateFlags ?
-                    //block.ClickAction ?
-                    //block.Gain Sound-related
-                    //block.Sound Sound-related
-                    //block.Radius Sound-related
-
-                    if (OnNewPrim != null)
+                    if (block.PCode == (byte)PCode.Prim)
                     {
-                        OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                        // New prim spotted
+                        PrimObject prim = new PrimObject(Client);
+
+                        prim.Position = new LLVector3(block.ObjectData, 0);
+                        prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
+
+                        // TODO: Parse the rest of the ObjectData byte array fields
+
+                        prim.LocalID = block.ID;
+                        prim.State = block.State;
+                        prim.ID = block.FullID;
+                        prim.ParentID = block.ParentID;
+                        //block.OwnerID Sound-related
+                        prim.Material = block.Material;
+                        prim.PathCurve = block.PathCurve;
+                        prim.ProfileCurve = block.ProfileCurve;
+                        prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
+                        prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
+                        prim.PathScaleX = PrimObject.PathScaleFloat(block.PathScaleX);
+                        prim.PathScaleY = PrimObject.PathScaleFloat(block.PathScaleY);
+                        prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
+                        prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
+                        prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
+                        prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
+                        prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
+                        prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
+                        prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
+                        prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
+                        prim.PathSkew = PrimObject.PathSkewFloat((byte)block.PathSkew);
+                        prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
+                        prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
+                        prim.ProfileHollow = block.ProfileHollow;
+                        prim.Name = Helpers.FieldToString(block.NameValue);
+                        //block.Data ?
+                        //block.Text Hovering text
+                        //block.TextColor LLColor4U of the hovering text
+                        //block.MediaURL Quicktime stream
+                        prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                        prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
+                        //block.JointType ?
+                        //block.JointPivot ?
+                        //block.JointAxisOrAnchor ?
+                        prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
+                        prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
+                        prim.Scale = block.Scale;
+                        //block.Flags ?
+                        //block.UpdateFlags ?
+                        //block.ClickAction ?
+                        //block.Gain Sound-related
+                        //block.Sound Sound-related
+                        //block.Radius Sound-related
+
+                        if (OnNewPrim != null)
+                        {
+                            OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                        }
+                    }
+                    else
+                    {
+                        // FIXME: This is probably a tree/bush/grasspatch, which need their own
+                        // separate callback IMO -jph
+                        Client.Log("Got an ObjectUpdate block with an unhandled PCode " + 
+                            block.PCode, Helpers.LogLevel.Debug);
                     }
                 }
                 else if (block.ObjectData.Length == 76)
@@ -446,6 +460,11 @@ namespace libsecondlife
                 }
                 else
                 {
+                    // TODO: Is there an easy way to distinguish prims from trees in this packet,
+                    // or would the client have to do it's own lookup to determine whether it's a
+                    // prim or a tree? If the latter, we should rename this update to something 
+                    // less prim specific
+
                     PrimUpdate primupdate = new PrimUpdate();
                     primupdate.LocalID = localid;
                     primupdate.State = state;
@@ -480,7 +499,15 @@ namespace libsecondlife
                     prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                         (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-                    i++; //PCode
+                    byte pcode = block.Data[i++];
+
+                    if (pcode != (byte)PCode.Prim)
+                    {
+                        Client.Log("Got an ObjectUpdateCompressed block with unhandled PCode " +
+                            pcode, Helpers.LogLevel.Debug);
+                        continue;
+                    }
+
                     prim.State = (uint)block.Data[i++];
                     i += 4; //CRC
                     prim.Material = (uint)block.Data[i++];
@@ -594,9 +621,10 @@ namespace libsecondlife
                         prim.TextureAnim = new TextureAnimation(block.Data, i);
                     }
                 }
-                catch (System.IndexOutOfRangeException)
+                catch (System.IndexOutOfRangeException e)
                 {
-                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet.", Helpers.LogLevel.Warning);
+                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet: " + 
+                        e.ToString(), Helpers.LogLevel.Warning);
                     Client.Log(block.ToString(), Helpers.LogLevel.Warning);
                 }
 

@@ -397,6 +397,11 @@ namespace libsecondlife
 			return !(lhs == rhs);
 		}
 
+        public static LLVector3 operator +(LLVector3 lhs, LLVector3 rhs)
+        {
+            return new LLVector3(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -694,6 +699,24 @@ namespace libsecondlife
 
 			return bytes;
 		}
+
+        public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
+        {
+            float A = (lhs.W + lhs.X) * (rhs.W + rhs.X);
+            float B = (lhs.Z - lhs.Y) * (rhs.Y - rhs.Z);
+            float C = (lhs.X - lhs.W) * (rhs.Y - rhs.Z);
+            float D = (lhs.Y + lhs.Z) * (rhs.X - rhs.W);
+            float E = (lhs.X + lhs.Z) * (rhs.X + rhs.Y);
+            float F = (lhs.X - lhs.Z) * (rhs.X - rhs.Y);
+            float G = (lhs.W + lhs.Y) * (rhs.W - rhs.Z);
+            float H = (lhs.W - lhs.Y) * (rhs.W + rhs.Z);
+
+            return new LLQuaternion(
+                 A - ( E + F + G + H) / 2,  // X
+                -C + ( E - F + G - H) / 2,  // Y
+                -D + ( E - F - G + H) / 2,  // Z
+                 B + (-E - F + G + H) / 2); // W
+        }
 
         /// <summary>
         /// 

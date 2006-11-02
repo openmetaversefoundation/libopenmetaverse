@@ -62,7 +62,7 @@ namespace libsecondlife
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
         /// <summary></summary>
-        public LogCallback OnLogMessage;
+        public event LogCallback OnLogMessage;
         /// <summary>Debug flag</summary>
         public bool Debug;
 
@@ -107,7 +107,7 @@ namespace libsecondlife
         {
             if (OnLogMessage != null)
             {
-                ;
+                OnLogMessage(message, level);
             }
             else
             {
@@ -128,7 +128,7 @@ namespace libsecondlife
             {
                 if (OnLogMessage != null)
                 {
-                    ;
+                    OnLogMessage(message, Helpers.LogLevel.Debug);
                 }
                 else
                 {
@@ -169,7 +169,12 @@ namespace libsecondlife
             /// <summary>A critical error has occurred. Generally this will 
             /// be followed by the network layer shutting down, although the 
             /// stability of libsecondlife after an error is uncertain</summary>
-            Error
+            Error,
+            /// <summary>Used for internal testing, this logging level can 
+            /// generate very noisy (long and/or repetitive) messages. Don't
+            /// pass this to the Log() function, use DebugLog() instead.
+            /// </summary>
+            Debug
         };
 
         /// <summary>
