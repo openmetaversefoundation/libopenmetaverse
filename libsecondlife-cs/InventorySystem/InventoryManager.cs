@@ -431,7 +431,7 @@ namespace libsecondlife.InventorySystem
                 Console.WriteLine(packet);
             #endif
 
-            if (iiCreationInProgress == null)
+            if (iiCreationInProgress != null)
             {
                 UpdateCreateInventoryItemPacket reply = (UpdateCreateInventoryItemPacket)packet;
 
