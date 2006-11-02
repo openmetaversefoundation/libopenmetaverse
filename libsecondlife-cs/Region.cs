@@ -233,17 +233,53 @@ namespace libsecondlife
         /// <param name="prim"></param>
         /// <param name="position"></param>
         /// <param name="avatarPosition"></param>
-        public void RezObject(PrimObject prim, LLVector3 position, LLVector3 avatarPosition)
+        public void RezObject(PrimObject prim, LLVector3 position, LLVector3 rayStart, 
+            LLUUID groupID)
         {
-            // FIXME:
-            //byte[] textureEntry = new byte[40];
-            //Array.Copy(prim.Texture.Data, textureEntry, 16);
-            //textureEntry[35] = 0xe0; // No clue
+            ObjectAddPacket add = new ObjectAddPacket();
+            add.AgentData.AgentID = Client.Network.AgentID;
+            add.AgentData.SessionID = Client.Network.SessionID;
+            add.AgentData.GroupID = groupID;
+            // TODO: Why 2?
+            add.ObjectData.AddFlags = 2;
+            add.ObjectData.BypassRaycast = 1;
+            add.ObjectData.Material = prim.Material;
+            add.ObjectData.PathBegin = prim.PathBegin;
+            add.ObjectData.PathCurve = prim.PathCurve;
+            add.ObjectData.PathEnd = prim.PathEnd;
+            add.ObjectData.PathRadiusOffset = prim.PathRadiusOffset;
+            add.ObjectData.PathRevolutions = prim.PathRevolutions;
+            add.ObjectData.PathScaleX = prim.PathScaleX;
+            add.ObjectData.PathScaleY = prim.PathScaleY;
+            add.ObjectData.PathShearX = prim.PathShearX;
+            add.ObjectData.PathShearY = prim.PathShearY;
+            add.ObjectData.PathSkew = prim.PathSkew;
+            add.ObjectData.PathTaperX = prim.PathTaperX;
+            add.ObjectData.PathTaperY = prim.PathTaperY;
+            add.ObjectData.PathTwist = prim.PathTwist;
+            add.ObjectData.PathTwistBegin = prim.PathTwistBegin;
+            add.ObjectData.PCode = (byte)prim.PCode;
+            add.ObjectData.ProfileBegin = prim.ProfileBegin;
+            add.ObjectData.ProfileCurve = prim.ProfileCurve;
+            add.ObjectData.ProfileEnd = prim.ProfileEnd;
+            add.ObjectData.ProfileHollow = prim.ProfileHollow;
+            add.ObjectData.RayEnd = position;
+            add.ObjectData.RayEndIsIntersection = 0;
+            add.ObjectData.RayStart = avatarPosition;
+            add.ObjectData.RayTargetID = LLUUID.GenerateUUID();
+            add.ObjectData.Rotation = prim.Rotation;
+            add.ObjectData.Scale = prim.Scale;
+            add.ObjectData.State = prim.State;
+            if (prim.Textures != null)
+            {
+                add.ObjectData.TextureEntry = prim.Textures.ToBytes();
+            }
+            else
+            {
+                add.ObjectData.TextureEntry = new byte[0];
+            }
 
-            //Packet objectAdd = libsecondlife.Packets.Object.ObjectAdd(Client.Protocol, Client.Network.AgentID,
-            //        LLUUID.GenerateUUID(), avatarPosition,
-            //        position, prim, textureEntry);
-            //Client.Network.SendPacket(objectAdd);
+            Client.Network.SendPacket(add);
         }
 
         /// <summary>

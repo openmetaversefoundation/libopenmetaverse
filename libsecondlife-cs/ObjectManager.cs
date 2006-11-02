@@ -349,8 +349,6 @@ namespace libsecondlife
                     }
                     else
                     {
-                        Client.Avatars.AddAvatar(avatar);
-
                         if (OnNewAvatar != null)
                         {
                             OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
