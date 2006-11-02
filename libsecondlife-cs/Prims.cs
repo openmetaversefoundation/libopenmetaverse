@@ -157,11 +157,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathTwist"></param>
         /// <returns></returns>
-		public static byte PathTwistByte(float pathTwist)
+		public static sbyte PathTwistByte(float pathTwist)
 		{
 			// Y = 256 + ceil (X / 1.8)
 			ushort temp = Convert.ToUInt16(256 + Math.Ceiling(pathTwist / 1.8F));
-			return (byte)(temp % 256);
+			return (sbyte)(temp % 256);
 		}
 
         /*/// <summary>
@@ -298,10 +298,10 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathRadiusOffset"></param>
         /// <returns></returns>
-		public static byte PathRadiusOffsetByte(float pathRadiusOffset)
+		public static sbyte PathRadiusOffsetByte(float pathRadiusOffset)
 		{
 			// Y = 256 + 100X
-			return PathShearByte(pathRadiusOffset);
+			return (sbyte)PathShearByte(pathRadiusOffset);
 		}
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathSkew"></param>
         /// <returns></returns>
-		public static byte PathSkewByte(float pathSkew)
+		public static sbyte PathSkewByte(float pathSkew)
 		{
             return PathTaperByte(pathSkew);
 		}
@@ -362,10 +362,10 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathTaper"></param>
         /// <returns></returns>
-		public static byte PathTaperByte(float pathTaper)
+		public static sbyte PathTaperByte(float pathTaper)
 		{
 			// Y = 256 + 100X
-			return PathShearByte(pathTaper);
+			return (sbyte)PathShearByte(pathTaper);
 		}
 
         /// <summary>
