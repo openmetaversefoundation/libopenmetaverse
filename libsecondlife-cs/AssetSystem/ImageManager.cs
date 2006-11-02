@@ -48,6 +48,7 @@ namespace libsecondlife.AssetSystem
         private CacheTypes CacheType;
         private string CacheDirectory = "ImageCache";
         private Dictionary<LLUUID, Byte[]> CacheTable = new Dictionary<LLUUID, byte[]>();
+        private List<LLUUID> CachedDiskIndex = new List<LLUUID>();
 
         private ImagePacketHelpers ImagePacketHelper;
 
@@ -161,6 +162,7 @@ namespace libsecondlife.AssetSystem
                 case CacheTypes.Disk:
                     String filepath = Path.Combine(CacheDirectory, ImageID.ToStringHyphenated());
                     File.WriteAllBytes(filepath, ImageData);
+                    CachedDiskIndex.Add(ImageID);
                     break;
                 default:
                     break;
@@ -203,8 +205,23 @@ namespace libsecondlife.AssetSystem
                 case CacheTypes.Memory:
                     return CacheTable.ContainsKey(ImageID);
                 case CacheTypes.Disk:
-                    String filepath = Path.Combine(CacheDirectory, ImageID.ToStringHyphenated());
-                    return File.Exists(filepath);
+                    if (CachedDiskIndex.Contains(ImageID))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        String filepath = Path.Combine(CacheDirectory, ImageID.ToStringHyphenated());
+                        if (File.Exists(filepath))
+                        {
+                            CachedDiskIndex.Add(ImageID);
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
                 default:
                     return false;
             }
