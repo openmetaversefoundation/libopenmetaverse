@@ -24,6 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+//#define DEBUG_PACKETS
+
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,7 +45,6 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class ImageManager
 	{
-        private const bool DEBUG_PACKETS = true;
 
         private SecondLife slClient;
 
@@ -333,7 +335,9 @@ namespace libsecondlife.AssetSystem
         /// <param name="simulator"></param>
         public void ImageDataCallbackHandler(Packet packet, Simulator simulator)
 		{
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
 
             ImageDataPacket reply = (ImageDataPacket)packet;
 
@@ -382,7 +386,9 @@ namespace libsecondlife.AssetSystem
         /// <param name="simulator"></param>
         public void ImagePacketCallbackHandler(Packet packet, Simulator simulator)
 		{
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
 
             ImagePacketPacket reply = (ImagePacketPacket)packet;
             
@@ -429,7 +435,9 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         public void ImageNotInDatabaseCallbackHandler(Packet packet, Simulator simulator)
         {
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
 
             ImageNotInDatabasePacket reply = (ImageNotInDatabasePacket)packet;
 

@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+// #define DEBUG_PACKETS
+
 using System;
 using System.Collections.Generic;
 
@@ -41,7 +43,6 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
-        private const bool DEBUG_PACKETS = false;
 
 
 		public const int SINK_FEE_IMAGE = 1;
@@ -133,14 +134,18 @@ namespace libsecondlife.AssetSystem
                 {
                     packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(asset, curUploadRequest.TransactionID);
                     slClient.Network.SendPacket(packet);
-                    if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+                    #if DEBUG_PACKETS
+                        Console.WriteLine(packet);
+                    #endif
                     curUploadRequest.AssetData = asset.AssetData;
                 }
                 else
                 {
                     packet = AssetPacketHelpers.AssetUploadRequest(asset, curUploadRequest.TransactionID);
                     slClient.Network.SendPacket(packet);
-                    if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+                    #if DEBUG_PACKETS
+                        Console.WriteLine(packet);
+                    #endif
                 }
 
                 curUploadRequest.Completed.WaitOne();
@@ -184,7 +189,10 @@ namespace libsecondlife.AssetSystem
 
 			Packet packet = AssetPacketHelpers.TransferRequest(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item );
 			slClient.Network.SendPacket(packet);
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
 
             tr.Completed.WaitOne();
 
@@ -193,7 +201,10 @@ namespace libsecondlife.AssetSystem
 
         private void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
 
             curUploadRequest.AssetID = reply.AssetBlock.UUID;
@@ -208,7 +219,10 @@ namespace libsecondlife.AssetSystem
 
         private void RequestXferCallbackHandler(Packet packet, Simulator simulator)
 		{
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
             RequestXferPacket reply = (RequestXferPacket)packet;
 
             ulong XferID   = reply.XferID.ID;
@@ -226,12 +240,18 @@ namespace libsecondlife.AssetSystem
 
             packet = AssetPacketHelpers.SendXferPacket(XferID, packetData, 0);
 			slClient.Network.SendPacket(packet);
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
         }
 
         private void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
             ConfirmXferPacketPacket reply = (ConfirmXferPacketPacket)packet;
 
             ulong XferID = reply.XferID.ID;
@@ -251,7 +271,10 @@ namespace libsecondlife.AssetSystem
 
                     packet = AssetPacketHelpers.SendXferPacket(XferID, packetData, i);
                     slClient.Network.SendPacket(packet);
-                    if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+                    #if DEBUG_PACKETS
+                        Console.WriteLine(packet);
+                    #endif
                 }
                 else
                 {
@@ -263,7 +286,10 @@ namespace libsecondlife.AssetSystem
                     uint lastPacket = (uint)int.MaxValue + (uint)numPackets + (uint)1;
                     packet = AssetPacketHelpers.SendXferPacket(XferID, packetData, lastPacket);
                     slClient.Network.SendPacket(packet);
-                    if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+                    #if DEBUG_PACKETS
+                        Console.WriteLine(packet);
+                    #endif
                 }
             } else {
                 throw new Exception("Something is wrong with uploading assets, a confirmation came in for a packet we didn't send.");
@@ -272,7 +298,10 @@ namespace libsecondlife.AssetSystem
 
         private void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
         {
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
             TransferInfoPacket reply = (TransferInfoPacket)packet;
 
             LLUUID TransferID = reply.TransferInfo.TransferID;
@@ -305,7 +334,10 @@ namespace libsecondlife.AssetSystem
 
         private void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
             TransferPacketPacket reply = (TransferPacketPacket)packet;
 
             LLUUID TransferID = reply.TransferData.TransferID;

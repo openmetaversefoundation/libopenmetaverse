@@ -75,7 +75,7 @@ class Decoder {
 			// FIXME
 			Console.WriteLine("sorry, filtering is currently broken :(");
 			return;
-			grep = String.Join(" ", args);
+			// grep = String.Join(" ", args);
 		}
 
 		for (Reset();;) {

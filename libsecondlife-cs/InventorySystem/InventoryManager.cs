@@ -24,8 +24,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+//#define DEBUG_PACKETS
+
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 using libsecondlife;
 using libsecondlife.AssetSystem;
@@ -40,7 +43,7 @@ namespace libsecondlife.InventorySystem
     /// </summary>
     public class InventoryManager
     {
-        private const bool DEBUG_PACKETS = false;
+//        private const bool DEBUG_PACKETS = false;
 
 
         // Reference to the SLClient Library
@@ -67,7 +70,7 @@ namespace libsecondlife.InventorySystem
 
         // Used to track current item being created
         private InventoryItem iiCreationInProgress;
-        private bool ItemCreationInProgress;
+        public ManualResetEvent ItemCreationCompleted;
 
         private uint LastPacketRecieved;
 
@@ -246,37 +249,45 @@ namespace libsecondlife.InventorySystem
 
         internal void ItemCreate(InventoryItem iitem)
         {
-            if (ItemCreationInProgress)
+            if( iiCreationInProgress != null )
             {
                 throw new Exception("Can only create one item at a time, and an item creation is already in progress.");
             }
-            else
-            {
-                ItemCreationInProgress = true; // This is released when we receive UpdateCreateInventoryItemHandler
-                iiCreationInProgress = iitem;
-            }
+
+            ItemCreationCompleted = new ManualResetEvent(false);
+            iiCreationInProgress = iitem;
+            
 
             Packet packet = InvPacketHelper.CreateInventoryItem(iitem);
             slClient.Network.SendPacket(packet);
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
 
-            while (ItemCreationInProgress)
-            {
-                slClient.Tick();
-            }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
+            ItemCreationCompleted.WaitOne();
+
+            iiCreationInProgress = null;
         }
 
         internal void ItemUpdate(InventoryItem iitem)
         {
             Packet packet = InvPacketHelper.UpdateInventoryItem(iitem);
             slClient.Network.SendPacket(packet);
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet); 
+            #endif         
         }
 
         internal void ItemCopy(LLUUID ItemID, LLUUID TargetFolderID)
         {
             Packet packet = InvPacketHelper.CopyInventoryItem(ItemID, TargetFolderID);
             slClient.Network.SendPacket(packet);
+
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet); 
+            #endif         
         }
 
         internal void ItemGiveTo(InventoryItem iitem, LLUUID ToAgentID)
@@ -293,6 +304,9 @@ namespace libsecondlife.InventorySystem
 
             slClient.Network.SendPacket(packet);
 
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet); 
+            #endif         
         }
 
         internal void ItemRemove(InventoryItem iitem)
@@ -302,6 +316,10 @@ namespace libsecondlife.InventorySystem
 
             Packet packet = InvPacketHelper.RemoveInventoryItem(iitem.ItemID);
             slClient.Network.SendPacket(packet);
+
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet); 
+            #endif         
         }
 
         internal InventoryNotecard NewNotecard(string Name, string Description, string Body, LLUUID FolderID)
@@ -409,9 +427,11 @@ namespace libsecondlife.InventorySystem
 
         public void UpdateCreateInventoryItemHandler(Packet packet, Simulator simulator)
         {
-            if (DEBUG_PACKETS) { Console.WriteLine(packet); }
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
 
-            if (ItemCreationInProgress)
+            if (iiCreationInProgress == null)
             {
                 UpdateCreateInventoryItemPacket reply = (UpdateCreateInventoryItemPacket)packet;
 
@@ -442,7 +462,7 @@ namespace libsecondlife.InventorySystem
 
                 // NOT USED YET: iiCreationInProgress._CallbackID = reply.InventoryData[0].CallbackID;
 
-                ItemCreationInProgress = false;
+                ItemCreationCompleted.Set();
             }
             else
             {
