@@ -71,7 +71,8 @@ namespace libsecondlife
 
     public enum PCode
     {
-        Prim = 9
+        Prim = 9,
+        Unknown1 = 255
     }
 
     /// <summary>
@@ -307,11 +308,16 @@ namespace libsecondlife
                             OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                         }
                     }
+                    else if (block.PCode == (byte)PCode.Unknown1)
+                    {
+                        // FIXME: This is some sort of tree or patch of grass
+                        ;
+                    }
                     else
                     {
                         // FIXME: This is probably a tree/bush/grasspatch, which need their own
                         // separate callback IMO -jph
-                        Client.Log("Got an ObjectUpdate block with an unhandled PCode " + 
+                        Client.Log("Got an ObjectUpdate block with an unhandled PCode " +
                             block.PCode, Helpers.LogLevel.Debug);
                     }
                 }
