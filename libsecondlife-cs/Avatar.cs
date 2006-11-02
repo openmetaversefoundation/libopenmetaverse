@@ -429,6 +429,34 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Use the autopilot sim function to move the avatar to a new position
+        /// </summary>
+        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
+        /// <param name="globalX">Integer value for the global X coordinate to move to</param>
+        /// <param name="globalY">Integer value for the global Y coordinate to move to</param>
+        /// <param name="z">Floating-point value for the Z coordinate to move to</param>
+        /// <example>AutoPilot(252620, 247078, 20.2674);</example>
+        public void AutoPilot(ulong globalX, ulong globalY, float z)
+        {
+            GenericMessagePacket autopilot = new GenericMessagePacket();
+
+            autopilot.AgentData.AgentID = Client.Network.AgentID;
+            autopilot.AgentData.SessionID = Client.Network.SessionID;
+            autopilot.MethodData.Invoice = new LLUUID();
+            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
+            autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
+            autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
+            autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
+            autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
+            // TODO: Do we need to prevent z coordinates from being sent in 1.4827e-18 notation?
+            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+
+            Client.Network.SendPacket(autopilot);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="regionHandle"></param>
