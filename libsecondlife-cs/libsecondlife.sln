@@ -18,8 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapgenerator", "mapgenerato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_SimpleInventory", "examples\IA_SimpleInventory\IA_SimpleInventory.csproj", "{E464B963-46E3-4E1A-A36F-9C640C880E68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "botmanager", "examples\botmanager\botmanager.csproj", "{3E891B97-7267-47D4-AAF1-7DCD2F6D60AB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_NotecardTool", "examples\IA_NotecardTool\IA_NotecardTool.csproj", "{E185E4E1-62D2-430C-A94C-E8E38190805B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Teleport", "examples\Teleport\Teleport.csproj", "{B5AC6795-E426-4BC3-950F-D7B2970E2394}"
@@ -82,10 +80,6 @@ Global
 		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E891B97-7267-47D4-AAF1-7DCD2F6D60AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E891B97-7267-47D4-AAF1-7DCD2F6D60AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E891B97-7267-47D4-AAF1-7DCD2F6D60AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E891B97-7267-47D4-AAF1-7DCD2F6D60AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Release|Any CPU.ActiveCfg = Release|Any CPU
