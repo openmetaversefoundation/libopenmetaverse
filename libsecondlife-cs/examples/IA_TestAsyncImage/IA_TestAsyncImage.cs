@@ -44,17 +44,43 @@ namespace IA_TestAsyncImage
                 Console.WriteLine("ImageManager not ready yet, queueing Avatar textures.");
                 TextureQueue.Enqueue(avatar.FirstLifeImage);
                 TextureQueue.Enqueue(avatar.ProfileImage);
+
+                foreach (TextureEntryFace tef in avatar.Textures.FaceTextures.Values)
+                {
+                    TextureQueue.Enqueue(tef.TextureID);
+                }
             }
             else
             {
                 if (avatar.FirstLifeImage != null)
                 {
-                    imgManager.RequestImageAsync(avatar.FirstLifeImage);
+                    if (imgManager.isCachedImage(avatar.FirstLifeImage) == false)
+                    {
+                        imgManager.RequestImageAsync(avatar.FirstLifeImage);
+                    }
                 }
 
                 if (avatar.ProfileImage != null)
                 {
-                    imgManager.RequestImageAsync(avatar.ProfileImage);
+                    if (imgManager.isCachedImage(avatar.FirstLifeImage) == false)
+                    {
+                        imgManager.RequestImageAsync(avatar.ProfileImage);
+                    }
+                }
+
+                if (avatar.Textures != null)
+                {
+                    foreach (TextureEntryFace tef in avatar.Textures.FaceTextures.Values)
+                    {
+                        if (imgManager.isCachedImage(avatar.FirstLifeImage) == false)
+                        {
+                            imgManager.RequestImageAsync(tef.TextureID);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Already cached: " + tef.TextureID);
+                        }
+                    }
                 }
             }
         }
@@ -75,14 +101,28 @@ namespace IA_TestAsyncImage
             {
                 if ((prim.Textures.DefaultTexture != null) && (prim.Textures.DefaultTexture.TextureID != null))
                 {
-                    imgManager.RequestImageAsync(prim.Textures.DefaultTexture.TextureID);
+                    if (imgManager.isCachedImage(prim.Textures.DefaultTexture.TextureID) == false)
+                    {
+                        imgManager.RequestImageAsync(prim.Textures.DefaultTexture.TextureID);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Already cached: " + prim.Textures.DefaultTexture.TextureID);
+                    }
                 }
 
                 if (prim.Textures.FaceTextures != null)
                 {
                     foreach (TextureEntryFace tef in prim.Textures.FaceTextures.Values)
                     {
-                        imgManager.RequestImageAsync(tef.TextureID);
+                        if (imgManager.isCachedImage(tef.TextureID) == false)
+                        {
+                            imgManager.RequestImageAsync(tef.TextureID);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Already cached: " + tef.TextureID);
+                        }
                     }
                 }
             }
