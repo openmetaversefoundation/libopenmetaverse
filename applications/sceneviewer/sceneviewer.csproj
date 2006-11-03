@@ -1,0 +1,164 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{2E2A4A58-39A7-485F-BC99-F12F86E0A40A}</ProjectGuid>
+    <ProjectTypeGuids>{9F340DF3-2AED-4330-AC16-78AC2D9B4738};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>sceneviewer</RootNamespace>
+    <AssemblyName>sceneviewer</AssemblyName>
+    <XnaFrameworkVersion>v1.0</XnaFrameworkVersion>
+    <XnaPlatform>Windows</XnaPlatform>
+    <ApplicationIcon>Game.ico</ApplicationIcon>
+    <XNAGlobalContentPipelineAssemblies>Microsoft.Xna.Framework.Content.Pipeline.EffectImporter.dll;Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll;Microsoft.Xna.Framework.Content.Pipeline.TextureImporter.dll;Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll</XNAGlobalContentPipelineAssemblies>
+    <XNAProjectContentPipelineAssemblies>
+    </XNAProjectContentPipelineAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x86\Release</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="libsecondlife, Version=0.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\bin\libsecondlife.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework.Game">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="mscorlib">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Camera.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>Camera</Name>
+    </Compile>
+    <Compile Include="Prims\CrossSection.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>CrossSection</Name>
+    </Compile>
+    <Compile Include="Prims\LinearPrimVisual.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>LinearPrimVisual</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisual.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisual</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualBox.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualBox</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualCylinder.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualCylinder</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualPrism.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualPrism</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualRing.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualRing</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualSphere.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualSphere</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualTorus.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualTorus</Name>
+    </Compile>
+    <Compile Include="Prims\PrimVisualTube.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>PrimVisualTube</Name>
+    </Compile>
+    <Compile Include="Prims\RotationalPrimVisual.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>RotationalPrimVisual</Name>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Program.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>Program</Name>
+    </Compile>
+    <Compile Include="sceneviewer.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>sceneviewer</Name>
+    </Compile>
+    <Compile Include="VertexPosTexNormalTanBitan.cs">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>VertexPosTexNormalTanBitan</Name>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Game.ico">
+      <XNAUseContentPipeline>false</XNAUseContentPipeline>
+      <Name>Game</Name>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Shaders\basicprim.fx">
+      <XNAUseContentPipeline>true</XNAUseContentPipeline>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Name>basicprim</Name>
+    </Content>
+    <Content Include="Shaders\ocean.fx">
+      <XNAUseContentPipeline>true</XNAUseContentPipeline>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+      <Name>ocean</Name>
+    </Content>
+    <Content Include="Textures\cubemap.dds">
+      <XNAUseContentPipeline>true</XNAUseContentPipeline>
+      <Importer>TextureImporter</Importer>
+      <Processor>SpriteTextureProcessor</Processor>
+      <Name>cubemap</Name>
+    </Content>
+    <Content Include="Textures\wavenormalmap.dds">
+      <XNAUseContentPipeline>true</XNAUseContentPipeline>
+      <Importer>TextureImporter</Importer>
+      <Processor>SpriteTextureProcessor</Processor>
+      <Name>wavenormalmap</Name>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA\Game Studio Express\v1.0\Microsoft.Xna.ContentPipeline.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA\Game Studio Express\v1.0\Microsoft.Xna.Common.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
