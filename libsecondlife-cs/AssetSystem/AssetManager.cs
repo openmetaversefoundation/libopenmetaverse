@@ -226,7 +226,7 @@ namespace libsecondlife.AssetSystem
             RequestXferPacket reply = (RequestXferPacket)packet;
 
             ulong XferID   = reply.XferID.ID;
-			LLUUID AssetID = reply.XferID.VFileID;
+			// LLUUID AssetID = reply.XferID.VFileID; //Not used...
 
             // Setup to send the first packet
             curUploadRequest.LastPacketNumSent = 0;

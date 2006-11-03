@@ -72,7 +72,7 @@ namespace IA_TestAsyncImage
                 {
                     foreach (TextureEntryFace tef in avatar.Textures.FaceTextures.Values)
                     {
-                        if (imgManager.isCachedImage(avatar.FirstLifeImage) == false)
+                        if (imgManager.isCachedImage(tef.TextureID) == false)
                         {
                             imgManager.RequestImageAsync(tef.TextureID);
                         }
@@ -136,14 +136,20 @@ namespace IA_TestAsyncImage
             }
             else
             {
-                Console.WriteLine("Finished ( " + data.Length + "): " + ImageID);
+                if (data == null)
+                {
+                    Console.WriteLine("Image Data is null: " + ImageID);
+                }
+                else
+                {
+                    Console.WriteLine("Finished ( " + data.Length + "): " + ImageID);
 
-                String filename = Path.Combine(OutputDirectory, ImageID.ToStringHyphenated()) + ".tif";
-                
-                TiffJob tj = new TiffJob( filename, data );
-                Thread t = new Thread(tj.RunMe);
-                t.Start();
+                    String filename = Path.Combine(OutputDirectory, ImageID.ToStringHyphenated()) + ".tif";
 
+                    TiffJob tj = new TiffJob(filename, data);
+                    Thread t = new Thread(tj.RunMe);
+                    t.Start();
+                }
             }
         }
 

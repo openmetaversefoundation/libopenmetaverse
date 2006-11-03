@@ -30,6 +30,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using libsecondlife;
 using libsecondlife.Packets;
@@ -62,6 +63,8 @@ namespace libsecondlife.AssetSystem
 
 		private class TransferRequest
 		{
+            public ManualResetEvent ReceivedHeaderPacket = new ManualResetEvent(false);
+
 			public bool Completed;
 			public bool Status;
 			public string StatusMsg;
@@ -204,6 +207,11 @@ namespace libsecondlife.AssetSystem
 
         public bool isCachedImage(LLUUID ImageID)
         {
+            if (ImageID == null)
+            {
+                throw new Exception("Don't go calling isCachedImage() with a null...");
+            }
+
             switch (CacheType)
             {
                 case CacheTypes.Memory:
@@ -367,6 +375,9 @@ namespace libsecondlife.AssetSystem
 			Array.Copy(Data, 0, tr.AssetData, tr.Received, Data.Length);
 			tr.Received += (uint)Data.Length;
 
+            // Mark that the TransferRequest has received this header packet
+            tr.ReceivedHeaderPacket.Set();
+
 			// If we've gotten all the data, mark it completed.
 			if( tr.Received >= tr.Size )
 			{
@@ -413,6 +424,9 @@ namespace libsecondlife.AssetSystem
 
             // FIXME: Sometimes this gets called before ImageDataCallbackHandler, when that
             // happens tr.AssetData will be null.  Implimenting the above TODO should fix this.
+
+            // Wait until we've received the header packet for this image, which creates the AssetData array
+            tr.ReceivedHeaderPacket.WaitOne();
 
             // Add this packet's data to the request.
             Array.Copy(reply.ImageData.Data, 0, tr.AssetData, tr.BaseDataReceived + (1000 * (reply.ImageID.Packet - 1)), reply.ImageData.Data.Length);

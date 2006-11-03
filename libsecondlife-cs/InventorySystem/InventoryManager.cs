@@ -43,8 +43,6 @@ namespace libsecondlife.InventorySystem
     /// </summary>
     public class InventoryManager
     {
-//        private const bool DEBUG_PACKETS = false;
-
 
         // Reference to the SLClient Library
         private SecondLife slClient;
@@ -385,7 +383,7 @@ namespace libsecondlife.InventorySystem
             {
                 if (htFolderDownloadStatus.Count == 0)
                 {
-                    DescendentRequest dr = (DescendentRequest)alFolderRequestQueue[0];
+                    DescendentRequest dr = alFolderRequestQueue[0];
                     alFolderRequestQueue.RemoveAt(0);
                     RequestFolder(dr);
                 }
