@@ -105,7 +105,6 @@
     <Compile Include="EstateTools.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AssetSystem\FastImageTool.cs" />
     <Compile Include="GridManager.cs">
       <SubType>Code</SubType>
     </Compile>
