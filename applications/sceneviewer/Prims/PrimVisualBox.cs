@@ -89,6 +89,13 @@ namespace sceneviewer.Prims
                     //Vector2 t3 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r3.x + 0.5), r3.y + 0.5));
                     //Vector2 t4 = texturemapping.GetTextureCoordinate(new Vector2(1 - (r4.x + 0.5), r4.y + 0.5));
 
+                    float transformRatio = top ? 1 : 0;
+
+                    p1 = Transform(p1, transformRatio);
+                    p2 = Transform(p2, transformRatio);
+                    p3 = Transform(p3, transformRatio);
+                    p4 = Transform(p4, transformRatio);
+
                     Vertexes.Add(new VertexPositionColor(p4, color));
                     Vertexes.Add(new VertexPositionColor(p3, color));
                     Vertexes.Add(new VertexPositionColor(p2, color));

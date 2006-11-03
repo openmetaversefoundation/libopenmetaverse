@@ -445,7 +445,7 @@ namespace sceneviewer.Prims
             }
         }
 
-        private Vector3 Transform(Vector3 v, float ratio)
+        protected Vector3 Transform(Vector3 v, float ratio)
         {
             Matrix transform = Matrix.Identity;
 
