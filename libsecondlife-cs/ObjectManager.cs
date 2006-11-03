@@ -553,6 +553,7 @@ namespace libsecondlife
                     {
                         //TODO: use this
                         LLVector3 Omega = new LLVector3(block.Data, i);
+                        i += 12;
                     }
 
                     if ((flags & 0x08) != 0)
