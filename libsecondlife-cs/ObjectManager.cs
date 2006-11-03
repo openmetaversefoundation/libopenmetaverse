@@ -73,7 +73,8 @@ namespace libsecondlife
     {
         Prim = 9,
         Avatar = 47,
-        Unknown1 = 255
+        Grass = 95,
+        Tree = 255
     }
 
     /// <summary>
@@ -347,9 +348,14 @@ namespace libsecondlife
                         }
                     }
                 }
-                else if (block.PCode == (byte)PCode.Unknown1)
+                else if (block.PCode == (byte)PCode.Grass)
                 {
-                    // FIXME: This is some sort of tree or patch of grass
+                    // FIXME: Handle grass objects
+                    ;
+                }
+                else if (block.PCode == (byte)PCode.Tree)
+                {
+                    // FIXME: Handle tree objects
                     ;
                 }
                 else
