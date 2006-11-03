@@ -527,8 +527,10 @@ namespace libsecondlife
 
                     if ((flags & 0x02) != 0)
                     {
-                        //Unknown 2 bytes
-                        i += 2;
+                        byte TreeData = block.Data[i++];
+                        
+                        //Unknown byte
+                        i++;
 
                         if (OnNewPrim != null)
                         {
@@ -547,10 +549,10 @@ namespace libsecondlife
                         prim.ParentID = 0;
                     }
 
-                    //Unknown field
                     if ((flags & 0x80) != 0)
                     {
-                        i += 12;
+                        //TODO: use this
+                        LLVector3 Omega = new LLVector3(block.Data, i);
                     }
 
                     if ((flags & 0x08) != 0)
@@ -570,7 +572,7 @@ namespace libsecondlife
                         prim.Text = text;
                         i++;
 
-                        //Unknown field, possibly text color.
+                        //Text color.
                         i += 4;
                     }
 
