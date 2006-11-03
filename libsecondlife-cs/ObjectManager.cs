@@ -556,12 +556,6 @@ namespace libsecondlife
                         i += 12;
                     }
 
-                    if ((flags & 0x08) != 0)
-                    {
-                        prim.ParticleSys = new ParticleSystem(block.Data, i);
-                        i += 86;
-                    }
-
                     if ((flags & 0x04) != 0)
                     {
                         string text = "";
@@ -575,6 +569,12 @@ namespace libsecondlife
 
                         //Text color.
                         i += 4;
+                    }
+
+                    if ((flags & 0x08) != 0)
+                    {
+                        prim.ParticleSys = new ParticleSystem(block.Data, i);
+                        i += 86;
                     }
 
                     i += prim.SetExtraParamsFromBytes(block.Data, i);
