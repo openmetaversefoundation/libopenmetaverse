@@ -576,6 +576,28 @@ namespace libsecondlife
 
                     i += prim.SetExtraParamsFromBytes(block.Data, i);
 
+                    //Sound data
+                    if ((flags & 0x10) != 0)
+                    {
+                        //TODO: use this data
+                        LLUUID SoundUUID = new LLUUID(block.Data, i);
+                        i += 16;
+                        LLUUID OwnerUUID = new LLUUID(block.Data, i);
+                        i += 16;
+
+                        if (!BitConverter.IsLittleEndian)
+                        {
+                            Array.Reverse(block.Data, i, 4);
+                            Array.Reverse(block.Data, i + 5, 4);
+                        }
+
+                        float SoundGain = BitConverter.ToSingle(block.Data, i);
+                        i += 4;
+                        byte SoundFlags = block.Data[i++];
+                        float SoundRadius = BitConverter.ToSingle(block.Data, i);
+                        i += 4;
+                    }
+
                     //Indicates that this is an attachment?
                     if ((flags & 0x100) != 0)
                     {
