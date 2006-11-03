@@ -722,7 +722,21 @@ namespace libsecondlife
                 throw new NotConnectedException();
             }
         }
+        /// <summary>
+        /// Use this if you want to login to a specific location
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns>string with a value that can be used in the start field in .DefaultLoginValues()</returns>
 
+        public static string StartLocation(string sim, int x, int y, int z)
+        {
+            //uri:sim&x&y&z
+            return "uri:" + sim + "&" + x + "&" + y + "&" + z;
+        }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -738,7 +752,21 @@ namespace libsecondlife
 			return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last", 
 				1, 50, 50, 50, "Win", "0", userAgent, author);
 		}
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="password"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="author"></param>
+        /// <returns></returns>
+        public static Dictionary<string, object> DefaultLoginValues(
+            string firstName, string lastName, string password, string startLocation, string userAgent, string author)
+        {
+            return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", startLocation,
+                1, 50, 50, 50, "Win", "0", userAgent, author);
+        }
         public static Dictionary<string, object> DefaultLoginValues(string firstName, 
             string lastName, string password, string mac, string startLocation, string platform, 
             string viewerDigest, string userAgent, string author)
