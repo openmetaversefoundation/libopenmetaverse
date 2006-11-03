@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using libsecondlife.Packets;
+using libsecondlife.AssetSystem;
 
 namespace libsecondlife
 {
@@ -61,6 +62,30 @@ namespace libsecondlife
         public ObjectManager Objects;
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
+
+        /// <summary>Image Subsystem</summary>
+        private ImageManager _ImageManager;
+        public ImageManager Images
+        {
+            get
+            {
+                if (_ImageManager == null)
+                {
+                    _ImageManager = new ImageManager(this);
+                    return _ImageManager;
+                }
+                else
+                {
+                    return _ImageManager;
+                }
+            }
+
+            set
+            {
+                _ImageManager = value;
+            }
+        }
+
         /// <summary></summary>
         public event LogCallback OnLogMessage;
         /// <summary>Debug flag</summary>

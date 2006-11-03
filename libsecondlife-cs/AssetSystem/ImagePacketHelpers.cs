@@ -37,13 +37,11 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
     public class ImagePacketHelpers
 	{
-        private LLUUID AgentID;
-        private LLUUID SessionID;
+        private SecondLife Client;
 
-        public ImagePacketHelpers(LLUUID AgentID, LLUUID SessionID)
+        public ImagePacketHelpers(SecondLife client)
 		{
-            this.AgentID   = AgentID;
-            this.SessionID = SessionID;
+            this.Client   = client;
 		}
 
 
@@ -65,8 +63,8 @@ namespace libsecondlife.AssetSystem
             //FIXME: Find out what the appropriate values are here.
             p.RequestImage[0].Type             = 0;
 
-            p.AgentData.AgentID = AgentID;
-            p.AgentData.SessionID = SessionID;
+            p.AgentData.AgentID   = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
 
             return p;
 		}

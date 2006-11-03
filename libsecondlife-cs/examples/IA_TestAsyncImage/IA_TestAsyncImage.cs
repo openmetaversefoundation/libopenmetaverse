@@ -128,7 +128,7 @@ namespace IA_TestAsyncImage
             }
         }
 
-        private void NewImageRetrievedCallBack( LLUUID ImageID, byte[] data, bool wasCached )
+        private void NewImageRetrievedCallBack( LLUUID ImageID, byte[] data, bool wasCached, string statusMsg )
         {
             if (wasCached)
             {
@@ -138,7 +138,7 @@ namespace IA_TestAsyncImage
             {
                 if (data == null)
                 {
-                    Console.WriteLine("Image Data is null: " + ImageID);
+                    Console.WriteLine("Image Data is null (" + statusMsg + "): " + ImageID);
                 }
                 else
                 {

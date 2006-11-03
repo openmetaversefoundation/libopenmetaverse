@@ -39,7 +39,7 @@ using libsecondlife.InventorySystem;
 
 namespace libsecondlife.AssetSystem
 {
-    public delegate void ImageRetrievedCallback(LLUUID id, byte[] data, bool cached); //this delegate is called when an image completed.
+    public delegate void ImageRetrievedCallback(LLUUID id, byte[] data, bool cached, string statusmsg); //this delegate is called when an image completed.
 
     /// <summary>
 	/// Manages the uploading and downloading of Images from SecondLife
@@ -64,8 +64,8 @@ namespace libsecondlife.AssetSystem
 		private class TransferRequest
 		{
             public ManualResetEvent ReceivedHeaderPacket = new ManualResetEvent(false);
+            public ManualResetEvent Completed = new ManualResetEvent(false);
 
-			public bool Completed;
 			public bool Status;
 			public string StatusMsg;
 
@@ -78,8 +78,6 @@ namespace libsecondlife.AssetSystem
 
 			public TransferRequest()
 			{
-				Completed = false;
-
 				Status		= false;
 				StatusMsg	= "";
 
@@ -151,7 +149,7 @@ namespace libsecondlife.AssetSystem
             }
 
             // Image Packet Helpers
-            ImagePacketHelper = new ImagePacketHelpers(client.Network.AgentID, client.Network.SessionID);
+            ImagePacketHelper = new ImagePacketHelpers(client);
 
             // Image Callbacks
             slClient.Network.RegisterCallback(PacketType.ImageData, new PacketCallback(ImageDataCallbackHandler));
@@ -267,7 +265,6 @@ namespace libsecondlife.AssetSystem
                 if (htDownloadRequests.ContainsKey(ImageID) == false)
                 {
                     tr = new TransferRequest();
-                    tr.Completed = false;
                     tr.Size = int.MaxValue; // Number of bytes expected
                     tr.Received = 0; // Number of bytes received
                     tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
@@ -283,10 +280,8 @@ namespace libsecondlife.AssetSystem
                 }
             }
 
-			while( tr.Completed == false )
-			{
-				slClient.Tick();
-			}
+            // Wait for transfer to complete.
+            tr.Completed.WaitOne();
 
 			if( tr.Status == true )
 			{
@@ -320,7 +315,6 @@ namespace libsecondlife.AssetSystem
                 if (htDownloadRequests.ContainsKey(ImageID) == false)
                 {
                     TransferRequest tr = new TransferRequest();
-                    tr.Completed = false;
                     tr.Size = int.MaxValue; // Number of bytes expected
                     tr.Received = 0; // Number of bytes received
                     tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
@@ -382,7 +376,7 @@ namespace libsecondlife.AssetSystem
 			if( tr.Received >= tr.Size )
 			{
 				tr.Status	 = true;
-                tr.Completed = true;
+                tr.Completed.Set();
 
                 // Fire off image downloaded event
                 CacheImage(ImageID, tr.AssetData);
@@ -436,7 +430,7 @@ namespace libsecondlife.AssetSystem
 			if( tr.Received >= tr.Size )
 			{
                 tr.Status = true;
-                tr.Completed = true;
+                tr.Completed.Set();
 
                 // Fire off image downloaded event
                 CacheImage(ImageID, tr.AssetData);
@@ -471,17 +465,22 @@ namespace libsecondlife.AssetSystem
 
             tr.Status = false;
             tr.StatusMsg = "Image not in database";
-            tr.Completed = true;
+            tr.Completed.Set();
 
             // Fire off image downloaded event
-            FireImageRetrieved(ImageID, null, false);
+            FireImageRetrieved(ImageID, null, false, tr.StatusMsg);
         }
 
         private void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached)
         {
+            FireImageRetrieved(ImageID, ImageData, cached, "");
+        }
+
+        private void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached, string status)
+        {
             if (OnImageRetrieved != null)
             {
-                OnImageRetrieved(ImageID, ImageData, cached);
+                OnImageRetrieved(ImageID, ImageData, cached, status);
             }
         }
 

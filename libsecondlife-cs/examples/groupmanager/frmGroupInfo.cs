@@ -51,15 +51,25 @@ namespace groupmanager
             Invoke(new MethodInvoker(UpdateProfile));
 
             // Waterdrop: new LLUUID("c77a1c21-e604-7d2c-2c89-5539ce853466")
-            ImageManager im = new ImageManager(Client);
-            byte[] j2cdata = im.RequestImage(Group.InsigniaID);
-            //
-            //JasperWrapper.jas_init();
+
+            byte[] j2cdata;
+            if (Group.InsigniaID != null)
+            {
+                j2cdata = Client.Images.RequestImage(Group.InsigniaID);
+            }
+            else
+            {
+                // TODO: Add somekind of 
+                j2cdata = Client.Images.RequestImage("c77a1c21-e604-7d2c-2c89-5539ce853466");
+            }
+
             byte[] imagedata = JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata);
+
             //
             MemoryStream imageStream = new MemoryStream(imagedata, false);
             Image image = Image.FromStream(imageStream, false, false);
             //
+
             picInsignia.Image = image;
         }
 
