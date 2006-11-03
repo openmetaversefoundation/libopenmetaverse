@@ -558,7 +558,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position)
         {
-            position.Z = 0;
+            //position.Z = 0; //why was this here?
             return Teleport(simName, position, new LLVector3(0, 1.0F, 0));
         }
 
