@@ -86,7 +86,6 @@ namespace sceneviewer
         private VertexDeclaration WaterVertexDeclaration;
         private Texture2D WaterNormalMap;
         private TextureCube WaterReflectionCubemap;
-        private Texture2D env3;
 
         // Timers
         private Timer CameraUpdateTimer;
@@ -140,7 +139,10 @@ namespace sceneviewer
             }
 
             // Wait for basic information to be retrieved from the current sim
-            while (Client.Network.CurrentSim.Region.Name == null)
+            while (
+                Client.Network.CurrentSim == null || 
+                Client.Network.CurrentSim.Region == null || 
+                Client.Network.CurrentSim.Region.Name == null)
             {
                 System.Threading.Thread.Sleep(10);
             }
@@ -239,11 +241,10 @@ namespace sceneviewer
 
                 WaterNormalMap = Content.Load<Texture2D>("Textures/wavenormalmap");
                 WaterReflectionCubemap = Content.Load<TextureCube>("Textures/cubemap");
-                env3 = Content.Load<Texture2D>("Textures/env3");
 
                 EffectWater.Parameters["normalMap"].SetValue(WaterNormalMap);
                 EffectWater.Parameters["cubeMap"].SetValue(WaterReflectionCubemap);
-                EffectWater.Parameters["bumpHeight"].SetValue(1.45f);
+                EffectWater.Parameters["bumpHeight"].SetValue(1.4f);
             }
 
             // Load any ResourceManagementMode.Manual content here
