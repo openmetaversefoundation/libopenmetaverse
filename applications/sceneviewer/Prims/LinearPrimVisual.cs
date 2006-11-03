@@ -328,51 +328,6 @@ namespace sceneviewer.Prims
             VertexArray = Vertexes.ToArray();
         }
 
-        //private void BuildSideVertexes(CrossSection[] crossSection, int transforms)
-        //{
-        //    float transformOffset = 1.0f / (float)transforms;
-        //    float currentOffset = -0.5f;
-
-        //    for (int i = 0; i < transforms; i++)
-        //    {
-        //        for (int j = 0; j < crossSection.Length; j++)
-        //        {
-        //            int pointCount = crossSection[j].GetNumPoints();
-
-        //            if (pointCount > 0)
-        //            {
-        //                Vector3 lower1 = crossSection[j].GetRawVertex(0);
-        //                Vector3 lower2 = crossSection[j].GetRawVertex(1);
-
-        //                lower1.Z = currentOffset;
-        //                lower2.Z = currentOffset;
-
-        //                Vector3 upper1 = lower1;
-        //                Vector3 upper2 = lower2;
-
-        //                upper1.Z = currentOffset + transformOffset;
-        //                upper2.Z = currentOffset + transformOffset;
-
-        //                // FIXME: Perform skew, taper and twist transformations here
-        //                //lower1 = Vector3.Transform(lower1, lowerTransform);
-        //                //lower2 = Vector3.Transform(lower2, lowerTransform);
-        //                //upper1 = Vector3.Transform(upper1, upperTransform);
-        //                //upper2 = Vector3.Transform(upper2, upperTransform);
-
-        //                Vertexes.Add(new VertexPositionColor(lower1, color));
-        //                Vertexes.Add(new VertexPositionColor(lower2, color));
-        //                Vertexes.Add(new VertexPositionColor(upper2, color));
-
-        //                Vertexes.Add(new VertexPositionColor(lower1, color));
-        //                Vertexes.Add(new VertexPositionColor(upper2, color));
-        //                Vertexes.Add(new VertexPositionColor(upper1, color));
-        //            }
-        //        }
-
-        //        currentOffset += transformOffset;
-        //    }
-        //}
-
         protected void BuildSideVertexes(CrossSection[] crossSection, int transforms)
         {
             float transformOffset = 1.0f / (float)transforms;
@@ -389,6 +344,8 @@ namespace sceneviewer.Prims
                         for (int k = 0; k < pointCount - 1; k++)
                         {
                             Vector3 lower1, lower2, upper1, upper2;
+                            float lowerRatio = (float)i / (float)transforms;
+                            float upperRatio = (float)(i + 1) / (float)transforms;
 
                             lower1 = crossSection[j].GetRawVertex(k);
                             lower2 = crossSection[j].GetRawVertex(k + 1);
@@ -402,11 +359,10 @@ namespace sceneviewer.Prims
                             upper1.Z = currentOffset + transformOffset;
                             upper2.Z = currentOffset + transformOffset;
 
-                            // FIXME: Perform skew, taper and twist transformations here
-                            //lower1 = Vector3.Transform(lower1, lowerTransform);
-                            //lower2 = Vector3.Transform(lower2, lowerTransform);
-                            //upper1 = Vector3.Transform(upper1, upperTransform);
-                            //upper2 = Vector3.Transform(upper2, upperTransform);
+                            lower1 = Transform(lower1, lowerRatio);
+                            lower2 = Transform(lower2, lowerRatio);
+                            upper1 = Transform(upper1, upperRatio);
+                            upper2 = Transform(upper2, upperRatio);
 
                             Vertexes.Add(new VertexPositionColor(lower1, color));
                             Vertexes.Add(new VertexPositionColor(lower2, color));
@@ -439,20 +395,18 @@ namespace sceneviewer.Prims
                         first.Z = z;
                         Vector3 second = OuterFaces[i].GetRawVertex(j + 1);
                         second.Z = z;
+                        Vector3 center = new Vector3(0, 0, z);
 
-                        // FIXME: Perform skew, taper and twist transformations here
-                        if (top)
-                        {
-                            ;
-                        }
-                        else
-                        {
-                            ;
-                        }
+                        float transformRatio = top ? 1 : 0;
+
+                        // Apply the transformation to each vertex
+                        first = Transform(first, transformRatio);
+                        second = Transform(second, transformRatio);
+                        center = Transform(center, transformRatio);
 
                         Vertexes.Add(new VertexPositionColor(first, color));
                         Vertexes.Add(new VertexPositionColor(second, color));
-                        Vertexes.Add(new VertexPositionColor(new Vector3(0, 0, z), color));
+                        Vertexes.Add(new VertexPositionColor(center, color));
                     }
                 }
             }
@@ -462,33 +416,52 @@ namespace sceneviewer.Prims
         {
             float z = top ? 0.5f : -0.5f;
 
-            // FIXME: Apply transformations to the center point
-            Vector3 center = Vector3.Zero;
-
             for (int i = FirstOuterFace; i <= LastOuterFace; i++)
             {
                 int pointCount = OuterFaces[i].GetNumPoints();
 
                 for (int j = 0; j < pointCount - 1; j++)
                 {
-                    Vector3 p1 = OuterFaces[i].GetRawVertex(j);
-                    Vector3 p2 = OuterFaces[i].GetRawVertex(j + 1);
-
-                    center.Z = p1.Z = p2.Z = z;
+                    Vector3 first = OuterFaces[i].GetRawVertex(j);
+                    first.Z = z;
+                    Vector3 second = OuterFaces[i].GetRawVertex(j + 1);
+                    second.Z = z;
+                    Vector3 center = new Vector3(0, 0, z);
 
                     // TODO: Texturemapping stuff
                     //Vector2 t1 = texturemapping.GetTextureCoordinate(new Vector2(1 - (p1.x + 0.5), p1.y + 0.5));
                     //Vector2 t2 = texturemapping.GetTextureCoordinate(new Vector2(1 - (p2.x + 0.5), p2.y + 0.5));
 
-                    // FIXME: Perform skew, taper and twist transformations here
-                    //p1 = Vector3.Transform(p1, transform);
-                    //p2 = Vector3.Transform(p2, transform);
+                    float transformRatio = top ? 1 : 0;
 
-                    Vertexes.Add(new VertexPositionColor(p2, color));
-                    Vertexes.Add(new VertexPositionColor(p1, color));
+                    first = Transform(first, transformRatio);
+                    second = Transform(second, transformRatio);
+                    center = Transform(center, transformRatio);
+
+                    Vertexes.Add(new VertexPositionColor(first, color));
+                    Vertexes.Add(new VertexPositionColor(second, color));
                     Vertexes.Add(new VertexPositionColor(center, color));
                 }
             }
+        }
+
+        private Vector3 Transform(Vector3 v, float ratio)
+        {
+            Matrix transform = Matrix.Identity;
+
+            // Top Shear
+            transform.Translation = new Vector3(ratio * Prim.PathShearX, ratio * Prim.PathShearY, 0);
+
+            // FIXME: Taper
+            ;
+
+            // Twist (TODO: Needs testing)
+            float twistBegin = (float)Prim.PathTwistBegin * MathHelper.Pi / 180.0f;
+            float twistEnd = (float)Prim.PathTwist * MathHelper.Pi / 180.0f;
+            float twist = (twistEnd - twistBegin) * ratio;
+            transform *= Matrix.CreateRotationZ(twist);
+
+            return Vector3.Transform(v, transform);
         }
 
         private int NormalizeQuadrant(int quadrant)

@@ -49,7 +49,7 @@ namespace sceneviewer
 
         public Viewer()
         {
-            //this.AllowUserResizing = true;
+            this.AllowUserResizing = true;
             this.IsMouseVisible = true;
 
             CurrentKeyboardState = Keyboard.GetState();
