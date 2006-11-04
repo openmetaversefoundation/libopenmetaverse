@@ -45,7 +45,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="asset"></param>
         public static Packet AssetUploadRequest(Asset asset, LLUUID TransactionID)
 		{
-            if (asset.AssetData.Length > 500)
+            if (asset.AssetData.Length > 1000)
             {
                 throw new Exception("Asset too large to use AssetUploadRequest, use AssetUploadRequestHaderOnly() instead.");
             }
