@@ -44,6 +44,7 @@ namespace sceneviewer.Prims
         public Vector3 Acceleration;
         public Vector3 Velocity;
         public Vector3 RotationVelocity;
+        public BoundingBox BoundBox;
         public int LevelOfDetail = 16;
 
         //
@@ -71,6 +72,7 @@ namespace sceneviewer.Prims
 
         // Abstract methods
         protected abstract void BuildFaces();
+        protected abstract void BuildVertexes();
         protected abstract void AssignFaces();
         protected abstract int GetCutQuadrant(float cut);
         protected abstract float GetAngleWithXAxis(float cut);
@@ -85,7 +87,31 @@ namespace sceneviewer.Prims
             Velocity = Vector3.Zero;
             RotationVelocity = Vector3.Zero;
 
+            // TODO: This is temporary, for debugging and entertainment purposes
+            Random rand = new Random((int)Prim.LocalID + Environment.TickCount);
+            byte r = (byte)rand.Next(256);
+            byte g = (byte)rand.Next(256);
+            byte b = (byte)rand.Next(256);
+            color = new Color(r, g, b);
+
             BuildMatrix();
+        }
+
+        public void Select()
+        {
+            // TODO: This is temporary, for debugging and entertainment purposes
+            Random rand = new Random((int)Prim.LocalID + Environment.TickCount);
+            byte r = (byte)rand.Next(256);
+            byte g = (byte)rand.Next(256);
+            byte b = (byte)rand.Next(256);
+            color = new Color(r, g, b);
+
+            BuildVertexes();
+        }
+
+        public void Deselect()
+        {
+            ;
         }
 
         public void Update(PrimUpdate primUpdate)
@@ -107,6 +133,28 @@ namespace sceneviewer.Prims
             Matrix scaling = Matrix.CreateScale(Prim.Scale.X, Prim.Scale.Y, Prim.Scale.Z);
 
             Matrix = scaling * rotation * offset;
+            
+            // Now that we have the final transformation matrix we can create a proper bounding box
+            // TODO: This code has only been tested with linear extrusion prims
+            if (Prim.ParentID != 0)
+            {
+                float minX = -0.5f, minY = -0.5f, minZ = -0.5f;
+                if (Prim.PathShearX < 0) minX *= Prim.PathShearX;
+                if (Prim.PathShearY < 0) minY *= Prim.PathShearY;
+
+                float maxX = 0.5f, maxY = 0.5f, maxZ = 0.5f;
+                if (Prim.PathShearX > 0) maxX *= Prim.PathShearX;
+                if (Prim.PathShearY > 0) maxY *= Prim.PathShearY;
+
+                Vector3 min = Vector3.Transform(new Vector3(minX, minY, minZ), Matrix);
+                Vector3 max = Vector3.Transform(new Vector3(maxX, maxY, maxZ), Matrix);
+
+                BoundBox = new BoundingBox(min, max);
+            }
+            else
+            {
+                BoundBox = new BoundingBox();
+            }
         }
 
         public static PrimVisual BuildPrimVisual(PrimObject prim)

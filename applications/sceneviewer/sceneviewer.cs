@@ -87,8 +87,9 @@ namespace sceneviewer
         private Texture2D WaterNormalMap;
         private TextureCube WaterReflectionCubemap;
 
-        // Timers
+        // Timer related
         private Timer CameraUpdateTimer;
+        private float deltaFPSTime = 0;
 
         // State tracking
         bool Wireframe = false;
@@ -100,6 +101,10 @@ namespace sceneviewer
         public sceneviewer()
         {
             Graphics = new GraphicsDeviceManager(this);
+            Graphics.MinimumPixelShaderProfile = ShaderProfile.PS_2_0;
+            Graphics.PreferMultiSampling = false;
+            Graphics.SynchronizeWithVerticalRetrace = false;
+
             Content = new ContentManager(Services);
 
             KeysPressedThisFrame = new List<Keys>();
@@ -108,6 +113,7 @@ namespace sceneviewer
             Client = new SecondLife();
 
             this.IsMouseVisible = true;
+            Window.AllowUserResizing = true;
 
             CurrentKeyboardState = Keyboard.GetState();
             CurrentMouseState = Mouse.GetState();
@@ -274,9 +280,20 @@ namespace sceneviewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            float elapsed = (float)gameTime.ElapsedRealTime.TotalSeconds;
+            
             // Allows the default game to exit on Xbox 360 and Windows
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
+
+            // Update the FPS counter
+            float fps = 1.0f / elapsed;
+            deltaFPSTime += elapsed;
+            if (deltaFPSTime > 0.1f)
+            {
+                Window.Title = fps.ToString() + " FPS";
+                deltaFPSTime -= 0.1f;
+            }
 
             // Update the keyboard and mouse state
             UpdateInput();
@@ -358,6 +375,41 @@ namespace sceneviewer
         /// </summary>
         protected void HandleInput()
         {
+            //
+            // Mouse
+            //
+
+            if (CurrentMouseState.LeftButton == ButtonState.Pressed)
+            {
+                // Test for intersections with objects in the grid
+                Ray pickRay = GetPickRay();
+
+                // TODO: Can we optimize this, insted of looping through every object there is?
+                lock (Prims)
+                {
+                    foreach (PrimVisual prim in Prims.Values)
+                    {
+                        Nullable<float> result = pickRay.Intersects(prim.BoundBox);
+
+                        if (result.HasValue)
+                        {
+                            // TODO: This should be added to a temporary list of prims that will be 
+                            // depth sorted and possibly checked for per-face intersection
+
+                            prim.Select();
+                        }
+                    }
+                }
+
+
+                // TODO: If there were no object intersections, test for intersections
+                // with the water and terrain
+            }
+
+            //
+            // Keyboard
+            //
+
             if (CurrentKeyboardState.IsKeyDown(Keys.W))
             {
                 Camera.Translate(new Vector3(0, 0.8f, 0));
@@ -403,12 +455,12 @@ namespace sceneviewer
         {
             Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Graphics.GraphicsDevice.RenderState.CullMode = CullMode.None;
+            Graphics.GraphicsDevice.RenderState.CullMode = CullMode.CullClockwiseFace;
             Graphics.GraphicsDevice.RenderState.FillMode = (Wireframe) ? FillMode.WireFrame : FillMode.Solid;
             //graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
 
             RenderWater(gameTime);
-            RenderBasicPrims();
+            //RenderBasicPrims();
 
             base.Draw(gameTime);
         }
@@ -512,6 +564,51 @@ namespace sceneviewer
             }
 
             EffectBasicPrim.End();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Ray GetPickRay()
+        {
+            int mouseX = CurrentMouseState.X;
+            int mouseY = CurrentMouseState.Y;
+            float nearClip = Camera.NearClip;
+            float farClip = Camera.FarClip;
+
+            System.Console.WriteLine("mouseState.X: " + mouseX + ", mouseState.Y: " + mouseY);
+
+            // Determine the mouse position in screen space.
+            double screenSpaceX = ((float)mouseX / ((float)Window.ClientBounds.Width / 2.0f) - 1.0f) * 
+                ((float)Window.ClientBounds.Width / (float)Window.ClientBounds.Height);
+            double screenSpaceY = (1.0f - (float)mouseY / ((float)Window.ClientBounds.Height / 2.0f));
+
+            System.Console.WriteLine("ScreenSpaceX: " + screenSpaceX + ", ScreenSpaceY: " + screenSpaceY);
+
+            // Calculating the tangent in this method is for clarity. Normally, the
+            // tangent would be calculated only once at start up and recalculated
+            // if the camera field of view changes.
+            double viewRatio = Math.Tan(Camera.FOV / 2.0f);
+            screenSpaceX = screenSpaceX * viewRatio;
+            screenSpaceY = screenSpaceY * viewRatio;
+
+            // Determine the mouse position in camera space on the near clip plane.
+            Vector3 cameraSpaceNear = new Vector3((float)(screenSpaceX * nearClip),
+                (float)(screenSpaceY * nearClip), (float)(-nearClip));
+
+            // Deetermine the mouse position in camera space on the far clip plane.
+            Vector3 cameraSpaceFar = new Vector3((float)(screenSpaceX * farClip),
+                (float)(screenSpaceY * farClip), (float)(-farClip));
+
+            Vector3 worldSpaceNear = Vector3.Transform(cameraSpaceNear, ViewInverseMatrix);
+            Vector3 worldSpaceFar = Vector3.Transform(cameraSpaceFar, ViewInverseMatrix);
+
+            // Create a ray from the near clip plane to the far clip plane.
+            Ray pickRay = new Ray(worldSpaceNear, worldSpaceFar - worldSpaceNear);
+
+            return pickRay;
         }
 
 

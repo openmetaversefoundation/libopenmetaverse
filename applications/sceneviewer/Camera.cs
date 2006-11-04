@@ -36,6 +36,10 @@ namespace sceneviewer
     /// </summary>
     public class Camera
     {
+        public const float FOV = MathHelper.PiOver4;
+        public const float NearClip = 1.0f;
+        public const float FarClip = 1024.0f;
+
         public Vector3 _position;
         private Vector3 _lookatPosition;
         private Matrix _projection;
@@ -142,9 +146,9 @@ namespace sceneviewer
         /// </summary>
         public void UpdateProjection(GameWindow window)
         {
-            _projection = Matrix.CreatePerspectiveFieldOfView((float)MathHelper.PiOver4,
+            _projection = Matrix.CreatePerspectiveFieldOfView(FOV,
                 (float)window.ClientBounds.Width / (float)window.ClientBounds.Height,
-                1.0f, 1024.0f);
+                NearClip, FarClip);
         }
 
         public void Update()
