@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -285,7 +286,7 @@ namespace libsecondlife
                     prim.ProfileHollow = block.ProfileHollow;
                     prim.Name = Helpers.FieldToString(block.NameValue);
                     //block.Data ?
-                    //block.Text Hovering text
+                    prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
                     //block.TextColor LLColor4U of the hovering text
                     //block.MediaURL Quicktime stream
                     prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
@@ -569,6 +570,10 @@ namespace libsecondlife
 
                         //Text color.
                         i += 4;
+                    }
+                    else
+                    {
+                        prim.Text = "";
                     }
 
                     if ((flags & 0x08) != 0)
