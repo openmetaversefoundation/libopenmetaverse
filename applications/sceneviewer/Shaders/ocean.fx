@@ -131,7 +131,7 @@ float reflectionAmount
     string UIName = "Reflection amount";
 	string UIWidget = "slider";    
 	float UIMin = 0.0; float UIMax = 2.0; float UIStep = 0.01;    
-> = 1.0f;
+> = 0.2f;
 
 float waterAmount
 <
@@ -264,28 +264,6 @@ v2f BumpReflectWaveVS(a2v IN,
 }
 
 
-// Pixel Shaders
-
-float4 BumpReflectPS20(v2f IN,
-					   uniform sampler2D NormalMap,
-					   uniform samplerCUBE EnvironmentMap) : COLOR
-{
-	// fetch the bump normal from the normal map
-	float4 N = tex2D(NormalMap, IN.TexCoord.xy)*2.0 - 1.0;
-	
-	float3x3 m; // tangent to world matrix
-	m[0] = IN.TexCoord1;
-	m[1] = IN.TexCoord2;
-	m[2] = IN.TexCoord3;
-	float3 Nw = mul(m, N.xyz);
-	
-//	float3 E = float3(IN.TexCoord1.w, IN.TexCoord2.w, IN.TexCoord3.w);
-	float3 E = IN.eyeVector;
-    float3 R = reflect(-E, Nw);
-
-	return texCUBE(EnvironmentMap, R);
-}
-
 float4 OceanPS20(v2f IN,
 				 uniform sampler2D NormalMap,
 				 uniform samplerCUBE EnvironmentMap,
@@ -308,8 +286,8 @@ float4 OceanPS20(v2f IN,
 
     half3x3 m; // tangent to world matrix
     m[0] = IN.TexCoord1;
-    m[1] = IN.TexCoord2;
-    m[2] = IN.TexCoord3;
+    m[2] = IN.TexCoord2;
+    m[1] = IN.TexCoord3;
     half3 Nw = mul(m, N.xyz);
     Nw = normalize(Nw);
 
@@ -347,7 +325,6 @@ technique PS20 <
 		ZWriteEnable = true;
 		CullMode = None;
 
-//		PixelShader = compile ps_2_0 BumpReflectPS20(normalMapSampler, envMapSampler);
 		PixelShader = compile ps_2_0 OceanPS20(normalMapSampler, envMapSampler,
                                                deepColor, shallowColor, reflectionColor, reflectionAmount, waterAmount,
                                                fresnelPower, fresnelBias, hdrMultiplier);
