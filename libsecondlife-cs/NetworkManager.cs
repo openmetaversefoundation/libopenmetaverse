@@ -81,9 +81,11 @@ namespace libsecondlife
     /// </summary>
 	public class Simulator
 	{
-        /// <summary>
-        /// The Region class that this Simulator wraps
-        /// </summary>
+        /// <summary>The maximum size of the sequence number inbox, used to 
+        /// check for resent and/or duplicate packets</summary>
+        public const int INBOX_SIZE = 200;
+
+        /// <summary>The Region class that this Simulator wraps</summary>
         public Region Region;
 
         /// <summary>
@@ -128,7 +130,7 @@ namespace libsecondlife
 		private Socket Connection;
 		private AsyncCallback ReceivedData;
 		private Dictionary<int, Packet> NeedAck;
-		private SortedList<ushort, ushort> Inbox;
+        private Queue<ushort> Inbox;
         private List<uint> PendingAcks;
 		private bool connected;
 		private uint circuitCode;
@@ -164,7 +166,7 @@ namespace libsecondlife
             NeedAck = new Dictionary<int, Packet>();
 
             // Initialize the lists of sequence numbers we've received so far
-            Inbox = new SortedList<ushort, ushort>();
+            Inbox = new Queue<ushort>(INBOX_SIZE);
             PendingAcks = new List<uint>();
 
             Client.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
@@ -452,7 +454,7 @@ namespace libsecondlife
                 // Check if we already received this packet
                 lock (Inbox)
                 {
-                    if (Inbox.ContainsKey(packet.Header.Sequence))
+                    if (Inbox.Contains(packet.Header.Sequence))
                     {
                         Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
                             packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No"),
@@ -466,7 +468,12 @@ namespace libsecondlife
                     }
                     else
                     {
-                        Inbox.Add(packet.Header.Sequence, packet.Header.Sequence);
+                        if (Inbox.Count >= INBOX_SIZE)
+                        {
+                            Inbox.Dequeue();
+                        }
+
+                        Inbox.Enqueue(packet.Header.Sequence);
 
                         lock (PendingAcks)
                         {
