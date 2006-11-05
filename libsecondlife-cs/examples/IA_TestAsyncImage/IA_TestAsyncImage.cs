@@ -180,7 +180,13 @@ namespace IA_TestAsyncImage
 
             public void RunMe()
             {
-                File.WriteAllBytes(filename, JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
+                byte[] bytes = JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata);
+
+                FileStream file = new FileStream(filename, FileMode.Create);
+                BinaryWriter writer = new BinaryWriter(file);
+                writer.Write(bytes);
+                writer.Close();
+                file.Close();
             }
         }
     }

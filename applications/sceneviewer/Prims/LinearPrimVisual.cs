@@ -474,15 +474,27 @@ namespace sceneviewer.Prims
             // Top Shear
             transform.Translation = new Vector3(ratio * Prim.PathShearX, ratio * Prim.PathShearY, 0);
 
-            // FIXME: Taper
-            ;
+            // Taper
+            float xScale = 1.0f, yScale = 1.0f;
+            if (Prim.PathTaperX != 0)
+            {
+                float adjratio = (Prim.PathTaperX < 0) ? (1.0f - ratio) : (ratio);
+                xScale -= Math.Abs(Prim.PathTaperX) * adjratio;
+            }
+            if (Prim.PathTaperY != 0)
+            {
+                float adjratio = (Prim.PathTaperY < 0) ? (1.0f - ratio) : (ratio);
+                yScale -= Math.Abs(Prim.PathTaperY) * adjratio;
+            }
+            transform *= Matrix.CreateScale(xScale, yScale, 1.0f);
 
-            // Twist (TODO: Needs testing)
+            // Twist
             float twistBegin = (float)Prim.PathTwistBegin * MathHelper.Pi / 180.0f;
             float twistEnd = (float)Prim.PathTwist * MathHelper.Pi / 180.0f;
             float twist = (twistEnd - twistBegin) * ratio;
             transform *= Matrix.CreateRotationZ(-twist);
 
+            // Apply the transformation matrix to this point
             return Vector3.Transform(v, transform);
         }
 

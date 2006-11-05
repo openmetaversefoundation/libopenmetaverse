@@ -138,7 +138,7 @@ namespace libsecondlife
 		public static byte PathScaleByte(float pathScale)
 		{
 			// Y = 100 + 100X
-			return (byte)(100 + Convert.ToInt16(100.0F * pathScale));
+			return (byte)(100 + Convert.ToInt16(100.0f * pathScale));
 		}
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace libsecondlife
         public static float PathScaleFloat(byte pathScale)
         {
             // Y = -1 + 0.01X
-            return (float)pathScale * 0.01F - 1.0F;
+            return (float)Math.Round((double)pathScale * 0.01d - 1.0d, 4);
         }
 
         /// <summary>
@@ -160,20 +160,9 @@ namespace libsecondlife
 		public static sbyte PathTwistByte(float pathTwist)
 		{
 			// Y = 256 + ceil (X / 1.8)
-			ushort temp = Convert.ToUInt16(256 + Math.Ceiling(pathTwist / 1.8F));
+			ushort temp = Convert.ToUInt16(256 + Math.Ceiling(pathTwist / 1.8f));
 			return (sbyte)(temp % 256);
 		}
-
-        /*/// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pathTwist"></param>
-        /// <returns></returns>
-        public static float PathTwistFloat(sbyte pathTwist)
-        {
-            // Y = 0.5556X
-            return (float)pathTwist * 0.5556F;
-        }*/
 
         /// <summary>
         /// 
@@ -183,7 +172,7 @@ namespace libsecondlife
 		public static byte PathShearByte(float pathShear)
 		{
 			// Y = 256 + 100X
-			ushort temp = Convert.ToUInt16(100.0F * pathShear);
+			ushort temp = Convert.ToUInt16(100.0f * pathShear);
 			temp += 256;
 			return (byte)(temp % 256);
 		}
@@ -195,15 +184,19 @@ namespace libsecondlife
         /// <returns></returns>
         public static float PathShearFloat(byte pathShear)
         {
-            // Y = (X - 256) / 100
+            if (pathShear == 0) return 0.0f;
+
             if (pathShear > 150)
             {
-                return ((float)pathShear - 256.0F) / 100.0F;
+                // Negative value
+                return ((float)pathShear - 256.0f) / 100.0f;
             }
             else
             {
-                return (float)pathShear / 100.0F;
-            }        }
+                // Positive value
+                return (float)pathShear / 100.0f;
+            }
+        }
 
         /// <summary>
         /// 
@@ -213,7 +206,7 @@ namespace libsecondlife
 		public static byte ProfileBeginByte(float profileBegin)
 		{
 			// Y = ceil (200X)
-			return (byte)Convert.ToInt16(200.0F * profileBegin);
+			return (byte)Convert.ToInt16(200.0f * profileBegin);
 		}
 
         /// <summary>
@@ -224,7 +217,7 @@ namespace libsecondlife
         public static float ProfileBeginFloat(byte profileBegin)
         {
             // Y = 0.005X
-            return (float)profileBegin * 0.005F;
+            return (float)Math.Round((double)profileBegin * 0.005d, 4);
         }
 
         /// <summary>
@@ -235,7 +228,7 @@ namespace libsecondlife
 		public static byte ProfileEndByte(float profileEnd)
 		{
 			// Y = 200 - ceil (200X)
-			return (byte)(200 - (200.0F * profileEnd));
+			return (byte)(200 - (200.0f * profileEnd));
 		}
 
         /// <summary>
@@ -246,7 +239,7 @@ namespace libsecondlife
         public static float ProfileEndFloat(byte profileEnd)
         {
             // Y = 1 - 0.005X
-            return 1.0F - (float)profileEnd * 0.005F;
+            return (float)Math.Round(1.0d - (double)profileEnd * 0.005d);
         }
 
         /// <summary>
@@ -257,7 +250,7 @@ namespace libsecondlife
 		public static byte PathBeginByte(float pathBegin)
 		{
 			// Y = 100X
-			return (byte)Convert.ToInt16(100.0F * pathBegin);
+			return (byte)Convert.ToInt16(100.0f * pathBegin);
 		}
 
         /// <summary>
@@ -268,7 +261,7 @@ namespace libsecondlife
         public static float PathBeginFloat(byte pathBegin)
         {
             // Y = X / 100
-            return (float)pathBegin / 100.0F;
+            return (float)pathBegin / 100.0f;
         }
 
         /// <summary>
@@ -279,7 +272,7 @@ namespace libsecondlife
 		public static byte PathEndByte(float pathEnd)
 		{
 			// Y = 100 - 100X
-			return (byte)(100 - Convert.ToInt16(100.0F * pathEnd));
+			return (byte)(100 - Convert.ToInt16(100.0f * pathEnd));
 		}
 
         /// <summary>
@@ -290,7 +283,7 @@ namespace libsecondlife
         public static float PathEndFloat(byte pathEnd)
         {
             // Y = 1 - X / 100
-            return 1.0F - (float)pathEnd / 100;
+            return (float)Math.Round(1.0d - (double)pathEnd / 100.0d);
         }
 
         /// <summary>
@@ -312,7 +305,7 @@ namespace libsecondlife
         public static float PathRadiusOffsetFloat(sbyte pathRadiusOffset)
         {
             // Y = X / 100
-            return (float)pathRadiusOffset / 100.0F;
+            return (float)pathRadiusOffset / 100.0f;
         }
 
         /// <summary>
@@ -323,7 +316,7 @@ namespace libsecondlife
 		public static byte PathRevolutionsByte(float pathRevolutions)
 		{
 			// Y = ceil (66X) - 66
-			return (byte)(Convert.ToInt16(Math.Ceiling(66.0F * pathRevolutions)) - 66);
+			return (byte)(Convert.ToInt16(Math.Ceiling(66.0f * pathRevolutions)) - 66);
 		}
 
         /// <summary>
@@ -334,7 +327,7 @@ namespace libsecondlife
         public static float PathRevolutionsFloat(byte pathRevolutions)
         {
             // Y = 1 + 0.015X
-            return 1.0F + (float)pathRevolutions * 0.015F;
+            return (float)Math.Round(1.0d + (double)pathRevolutions * 0.015d);
         }
 
         /// <summary>
@@ -362,11 +355,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathTaper"></param>
         /// <returns></returns>
-		public static sbyte PathTaperByte(float pathTaper)
-		{
-			// Y = 256 + 100X
-			return (sbyte)PathShearByte(pathTaper);
-		}
+        public static sbyte PathTaperByte(float pathTaper)
+        {
+            // Y = 256 + 100X
+            return (sbyte)PathShearByte(pathTaper);
+        }
 
         /// <summary>
         /// 
@@ -377,11 +370,11 @@ namespace libsecondlife
         {
             if (pathTaper > 100)
             {
-                return (float)(256 - pathTaper) * 0.01F;
+                return (float)Math.Round((double)(256 - pathTaper) * 0.01d);
             }
             else
             {
-                return (float)pathTaper * 0.01F;
+                return (float)Math.Round((double)pathTaper * 0.01d);
             }
         }
 

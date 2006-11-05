@@ -76,12 +76,10 @@ namespace IA_SimpleInventory
             Console.WriteLine("Attempting to connect and login to SecondLife.");
 
             // Setup Login to Second Life
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(FirstName, LastName,
-                Password, "00:00:00:00:00:00", "last", "Win", "0", "createnotecard", "static.sprocket@gmail.com");
             Dictionary<string, object> loginReply = new Dictionary<string, object>();
 
             // Login
-            if (!client.Network.Login(loginParams))
+            if (!client.Network.Login(FirstName, LastName, Password, "createnotecard", "static.sprocket@gmail.com"))
             {
                 // Login failed
                 Console.WriteLine("Error logging in: " + client.Network.LoginError);

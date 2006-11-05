@@ -67,6 +67,11 @@ namespace sceneviewer
             get { return _view * _projection; }
         }
 
+        public BoundingFrustum Frustum
+        {
+            get { return new BoundingFrustum(ViewProjectionMatrix); }
+        }
+
         /// <summary>
         /// Gets the camera position
         /// </summary>

@@ -55,6 +55,7 @@ namespace sceneviewer
 
         // 3d world
         private Camera Camera;
+        private BoundingFrustum Frustum;
         private Matrix World;
         private Matrix ViewMatrix;
         private Matrix ViewProjectionMatrix;
@@ -80,12 +81,12 @@ namespace sceneviewer
 
         // Water
         private VertexPosTexNormalTanBitan[] WaterVertexArray;
-        //private VertexPositionTexture[] WaterVertexArray;
         private VertexBuffer WaterVertexBuffer;
         private IndexBuffer WaterIndexBuffer;
         private VertexDeclaration WaterVertexDeclaration;
         private Texture2D WaterNormalMap;
         private TextureCube WaterReflectionCubemap;
+        private float WaterHeight;
 
         // Timer related
         private Timer CameraUpdateTimer;
@@ -93,6 +94,7 @@ namespace sceneviewer
 
         // State tracking
         bool Wireframe = false;
+        bool FPSCounter = false;
 
 
         /// <summary>
@@ -146,12 +148,13 @@ namespace sceneviewer
 
             // Wait for basic information to be retrieved from the current sim
             while (
-                Client.Network.CurrentSim == null || 
                 Client.Network.CurrentSim.Region == null || 
                 Client.Network.CurrentSim.Region.Name == null)
             {
                 System.Threading.Thread.Sleep(10);
             }
+
+            WaterHeight = Client.Network.CurrentSim.Region.WaterHeight;
 
             // Initialize the engine
             InitializeTransform();
@@ -281,19 +284,10 @@ namespace sceneviewer
         protected override void Update(GameTime gameTime)
         {
             float elapsed = (float)gameTime.ElapsedRealTime.TotalSeconds;
-            
+
             // Allows the default game to exit on Xbox 360 and Windows
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
-
-            // Update the FPS counter
-            float fps = 1.0f / elapsed;
-            deltaFPSTime += elapsed;
-            if (deltaFPSTime > 0.1f)
-            {
-                Window.Title = fps.ToString() + " FPS";
-                deltaFPSTime -= 0.1f;
-            }
 
             // Update the keyboard and mouse state
             UpdateInput();
@@ -301,9 +295,23 @@ namespace sceneviewer
             // Check for keypresses and keys that are currently held down
             HandleInput();
 
+            // Update the camera matrices and bounding frustum
             ViewMatrix = Camera.ViewMatrix;
             ViewInverseMatrix = Matrix.Invert(ViewMatrix);
             ViewProjectionMatrix = Camera.ViewProjectionMatrix;
+            Frustum = Camera.Frustum;
+
+            if (FPSCounter)
+            {
+                // Update the FPS counter
+                float fps = 1.0f / elapsed;
+                deltaFPSTime += elapsed;
+                if (deltaFPSTime > 0.5f)
+                {
+                    Window.Title = fps.ToString() + " FPS";
+                    deltaFPSTime -= 0.1f;
+                }
+            }
 
             base.Update(gameTime);
         }
@@ -444,6 +452,11 @@ namespace sceneviewer
             {
                 Wireframe = !Wireframe;
             }
+
+            if (KeyPressedThisFrame(Keys.D2))
+            {
+                FPSCounter = !FPSCounter;
+            }
         }
 
 
@@ -460,7 +473,7 @@ namespace sceneviewer
             //graphics.GraphicsDevice.RenderState.MultiSampleAntiAlias = true;
 
             RenderWater(gameTime);
-            //RenderBasicPrims();
+            RenderBasicPrims();
 
             base.Draw(gameTime);
         }
@@ -471,7 +484,7 @@ namespace sceneviewer
         /// </summary>
         protected void RenderWater(GameTime gameTime)
         {
-            Matrix worldOffset = Matrix.CreateTranslation(new Vector3(0, 0, Client.Network.CurrentSim.Region.WaterHeight));
+            Matrix worldOffset = Matrix.CreateTranslation(new Vector3(0, 0, WaterHeight));
 
             Graphics.GraphicsDevice.VertexDeclaration = WaterVertexDeclaration;
             Graphics.GraphicsDevice.Vertices[0].SetSource(WaterVertexBuffer, 0, VertexPosTexNormalTanBitan.SizeInBytes);
@@ -537,26 +550,30 @@ namespace sceneviewer
                                 Vector3 basePosition = new Vector3(llBasePosition.X, llBasePosition.Y, llBasePosition.Z);
 
                                 Matrix worldOffset = Matrix.CreateTranslation(basePosition);
-                                Matrix rootRotation = Matrix.CreateFromQuaternion(new Quaternion(llBaseRotation.X, 
+                                Matrix rootRotation = Matrix.CreateFromQuaternion(new Quaternion(llBaseRotation.X,
                                     llBaseRotation.Y, llBaseRotation.Z, llBaseRotation.W));
 
                                 EffectBasicPrim.Parameters["WorldViewProj"].SetValue(prim.Matrix * rootRotation * worldOffset * ViewProjectionMatrix);
                                 EffectBasicPrim.CommitChanges();
-
-                                Graphics.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.TriangleList,
-                                    prim.VertexArray, 0, prim.VertexArray.Length / 3);
                             }
                         }
                         else
                         {
-                            // Root prim or not part of a linkset
+                            // FIXME: We only do this test on unlinked objects for now, since child bounding boxes are 
+                            // still broken
+                            //ContainmentType contain = Frustum.Contains(prim.BoundBox);
+                            //if (contain == ContainmentType.Disjoint)
+                            //{
+                            //    continue;
+                            //}
 
+                            // Root prim or not part of a linkset
                             EffectBasicPrim.Parameters["WorldViewProj"].SetValue(prim.Matrix * ViewProjectionMatrix);
                             EffectBasicPrim.CommitChanges();
-
-                            Graphics.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.TriangleList,
-                                prim.VertexArray, 0, prim.VertexArray.Length / 3);
                         }
+
+                        Graphics.GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.TriangleList,
+                            prim.VertexArray, 0, prim.VertexArray.Length / 3);
                     }
 
                     pass.End();
