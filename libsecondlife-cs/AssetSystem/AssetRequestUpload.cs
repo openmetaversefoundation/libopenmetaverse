@@ -86,12 +86,12 @@ namespace libsecondlife.AssetSystem
         {
             this.SendFirstPacket();
 
-            while (this.Completed.WaitOne(5000, true) == false)
+            while (this.Completed.WaitOne(1000, true) == false)
             {
                 //Console.WriteLine("WaitOne() timeout while uploading");
-                if (this.SecondsSinceLastPacket > 5)
+                if (this.SecondsSinceLastPacket > 2)
                 {
-                    Console.WriteLine("Resending Packet (more then 5 seconds since last confirm)");
+                    Console.WriteLine("Resending Packet (more than 2 seconds since last confirm)");
                     this.SendCurrentPacket();
                 }
             }
