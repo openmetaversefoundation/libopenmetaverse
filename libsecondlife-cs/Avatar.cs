@@ -150,6 +150,8 @@ namespace libsecondlife
         public string LanguagesText;
 
         public TextureEntry Textures;
+
+        public string ProfileURL;
     }
 
     /// <summary>

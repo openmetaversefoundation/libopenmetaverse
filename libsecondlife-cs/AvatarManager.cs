@@ -97,6 +97,40 @@ namespace libsecondlife
             return Avatars.ContainsKey(id);
         }
 
+        public void UpdateAvatar(Avatar a)
+        {
+            //Basic profile properties
+            AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
+            AvatarPropertiesUpdatePacket.AgentDataBlock adb = new AvatarPropertiesUpdatePacket.AgentDataBlock();
+            adb.AgentID = a.ID;
+            adb.SessionID = Client.Network.SessionID;
+            apup.AgentData = adb;
+            AvatarPropertiesUpdatePacket.PropertiesDataBlock pdb = new AvatarPropertiesUpdatePacket.PropertiesDataBlock();
+            pdb.AllowPublish = a.AllowPublish;
+            pdb.FLAboutText = Helpers.StringToField(a.FirstLifeText);
+            pdb.FLImageID = a.FirstLifeImage;
+            pdb.ImageID = a.ProfileImage;
+            pdb.MaturePublish = a.MaturePublish;
+            pdb.ProfileURL = Helpers.StringToField(a.ProfileURL);
+            apup.PropertiesData = pdb;
+            //Intrests
+            AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
+            AvatarInterestsUpdatePacket.AgentDataBlock iadb = new AvatarInterestsUpdatePacket.AgentDataBlock();
+            iadb.AgentID = a.ID;
+            iadb.SessionID = Client.Network.SessionID;
+            aiup.AgentData = iadb;
+            AvatarInterestsUpdatePacket.PropertiesDataBlock ipdb = new AvatarInterestsUpdatePacket.PropertiesDataBlock();
+            ipdb.LanguagesText = Helpers.StringToField(a.LanguagesText);
+            ipdb.SkillsMask = a.SkillsMask;
+            ipdb.SkillsText = Helpers.StringToField(a.SkillsText);
+            ipdb.WantToMask = a.WantToMask;
+            ipdb.WantToText = Helpers.StringToField(a.WantToText);
+            aiup.PropertiesData = ipdb;
+            //Send packets
+            Client.Network.SendPacket(apup);
+            Client.Network.SendPacket(aiup);
+        }
+
         /// <summary>
         /// This function will only check if the avatar name exists locally,
         /// it will not do any networking calls to fetch the name
@@ -341,6 +375,7 @@ namespace libsecondlife
             av.MaturePublish = reply.PropertiesData.MaturePublish;
             av.Identified = reply.PropertiesData.Identified;
             av.Transacted = reply.PropertiesData.Transacted;
+            av.ProfileURL = Helpers.FieldToString(reply.PropertiesData.ProfileURL);
             //reassign in the cache
             Avatars[av.ID] = av;
             //Heaven forbid that we actually get a packet we didn't ask for.
