@@ -252,20 +252,25 @@ namespace libsecondlife.InventorySystem
                 throw new Exception("Can only create one item at a time, and an item creation is already in progress.");
             }
 
-            ItemCreationCompleted = new ManualResetEvent(false);
-            iiCreationInProgress = iitem;
-            
+            try
+            {
+                ItemCreationCompleted = new ManualResetEvent(false);
+                iiCreationInProgress = iitem;
 
-            Packet packet = InvPacketHelper.CreateInventoryItem(iitem);
-            slClient.Network.SendPacket(packet);
 
-            #if DEBUG_PACKETS
+                Packet packet = InvPacketHelper.CreateInventoryItem(iitem);
+                slClient.Network.SendPacket(packet);
+
+#if DEBUG_PACKETS
                 Console.WriteLine(packet);
-            #endif
+#endif
 
-            ItemCreationCompleted.WaitOne();
-
-            iiCreationInProgress = null;
+                ItemCreationCompleted.WaitOne();
+            }
+            finally
+            {
+                iiCreationInProgress = null;
+            }
         }
 
         internal void ItemUpdate(InventoryItem iitem)

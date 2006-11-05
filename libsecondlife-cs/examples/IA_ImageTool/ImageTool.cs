@@ -122,7 +122,8 @@ namespace IA_ImageTool
                 InventoryFolder iFolder = AgentInventory.getFolder("Textures");
 
                 Console.WriteLine("Uploading Texture...");
-                iFolder.NewImage(_FileName, "ImageTool Upload", j2cdata);
+                InventoryImage image = iFolder.NewImage(_FileName, "ImageTool Upload", j2cdata);
+                Console.WriteLine("Asset id = " + image.AssetID.ToStringHyphenated());
             }
             else
             {

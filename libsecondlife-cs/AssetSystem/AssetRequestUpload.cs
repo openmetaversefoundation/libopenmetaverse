@@ -44,27 +44,14 @@ namespace libsecondlife.AssetSystem
 		public bool Status;
 		public string StatusMsg;
 
-        private Asset _Asset;
-        public Asset MyAsset
-        {
-            get { return _Asset; }
-            set 
-            {
-                _Asset = value;
-                
-                _NumPackets = _Asset.AssetData.Length / 1000;
-                if (_NumPackets < 1)
-                {
-                    _NumPackets = 1;
-                }
-            }
-        }
+        public Asset MyAsset;
 
         public LLUUID TransactionID;
-        public LLUUID AssetID;
         public ulong XferID;
 
-        public uint LastPacketNumSent;
+        SecondLife slClient;
+
+        public uint CurrentPacket;
         private uint _LastPacketTime;
         public uint LastPacketTime
         {
@@ -79,17 +66,161 @@ namespace libsecondlife.AssetSystem
         private int _NumPackets; 
         public int NumPackets { get { return _NumPackets; } }
 
-        public AssetRequestUpload(LLUUID TransID, Asset asset)
+        public AssetRequestUpload(SecondLife slClient, LLUUID TransID, Asset asset)
         {
+            this.slClient = slClient;
             TransactionID = TransID;
             UpdateLastPacketTime();
 
             MyAsset = asset;
+
+            CurrentPacket = 0;
+            _NumPackets = asset.AssetData.Length / 1000;
+            if (_NumPackets < 1)
+            {
+                _NumPackets = 1;
+            }
+        }
+
+        internal LLUUID DoUpload()
+        {
+            this.SendFirstPacket();
+
+            while (this.Completed.WaitOne(5000, true) == false)
+            {
+                //Console.WriteLine("WaitOne() timeout while uploading");
+                if (this.SecondsSinceLastPacket > 5)
+                {
+                    Console.WriteLine("Resending Packet (more then 5 seconds since last confirm)");
+                    this.SendCurrentPacket();
+                }
+            }
+
+
+            if (this.Status == false)
+            {
+                throw new Exception(this.StatusMsg);
+            }
+            else
+            {
+                return this.TransactionID;
+            }
         }
 
         public void UpdateLastPacketTime()
         {
             _LastPacketTime = Helpers.GetUnixTime();
+        }
+
+
+        internal void SendFirstPacket()
+        {
+            Packet packet;
+
+            if (this.MyAsset.AssetData.Length > 1000)
+            {
+                packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(this.MyAsset, this.TransactionID);
+            }
+            else
+            {
+                packet = AssetPacketHelpers.AssetUploadRequest(this.MyAsset, this.TransactionID);
+            }
+
+            slClient.Network.SendPacket(packet);
+#if DEBUG_PACKETS
+                Console.WriteLine(packet);
+#endif
+
+        }
+
+        internal void RequestXfer(ulong XferID)
+        {
+            this.XferID = XferID; 
+            // Setup to send the first packet
+            SendCurrentPacket();
+        }
+
+        internal void ConfirmXferPacket(ulong XferID, uint PacketNumConfirmed)
+        {
+            // TODO should check that this is the same transfer?
+            this.UpdateLastPacketTime();
+
+            if (PacketNumConfirmed == CurrentPacket)
+            {
+                // Increment Packet #
+                this.CurrentPacket++;
+                SendCurrentPacket();
+            }
+            else
+            {
+                throw new Exception("Something is wrong with uploading assets, a confirmation came in for a packet we didn't send.");
+            }
+        }
+
+        private void SendCurrentPacket()
+        {
+            //            Console.WriteLine("Sending " + tr.CurrentPacket + " / " + tr.NumPackets);
+            Packet uploadPacket;
+
+            // technically we don't need this lock, because no state is updated here!
+            // lock (this) 
+            {
+                // THREADING: snapshot this num so we use a consistent value throughout
+                uint packetNum = CurrentPacket; 
+                if (packetNum == 0)
+                {
+                    if (MyAsset.AssetData.Length <= 1000)
+                        throw new Exception("Should not use xfer for small assets");
+                    int dataSize = 1000;
+
+                    byte[] packetData = new byte[dataSize + 4]; // Extra space is for leading data length bytes
+
+                    // Prefix the first Xfer packet with the data length
+                    // FIXME: Apply endianness patch
+                    Array.Copy(BitConverter.GetBytes((int)MyAsset.AssetData.Length), 0, packetData, 0, 4);
+                    Array.Copy(MyAsset.AssetData, 0, packetData, 4, dataSize);
+
+                    uploadPacket = AssetPacketHelpers.SendXferPacket(XferID, packetData, packetNum);
+                }
+                else if (packetNum < this.NumPackets)
+                {
+                    byte[] packetData = new byte[1000];
+                    Array.Copy(this.MyAsset.AssetData, packetNum * 1000, packetData, 0, 1000);
+
+                    uploadPacket = AssetPacketHelpers.SendXferPacket(this.XferID, packetData, packetNum);
+                }
+                else
+                {
+                    // The last packet has to be handled slightly differently
+                    int lastLen = this.MyAsset.AssetData.Length - (this.NumPackets * 1000);
+                    byte[] packetData = new byte[lastLen];
+                    Array.Copy(this.MyAsset.AssetData, this.NumPackets * 1000, packetData, 0, lastLen);
+
+                    uint lastPacket = (uint)int.MaxValue + (uint)this.NumPackets + (uint)1;
+                    uploadPacket = AssetPacketHelpers.SendXferPacket(this.XferID, packetData, lastPacket);
+                }
+            }
+
+            slClient.Network.SendPacket(uploadPacket);
+
+#if DEBUG_PACKETS
+                Console.WriteLine(uploadPacket);
+#endif
+        }
+
+        internal void UploadComplete(LLUUID assetID, bool success)
+        {
+            MyAsset.AssetID = assetID;
+            this.Status = success;
+            UpdateLastPacketTime();
+
+            if (Status)
+                StatusMsg = "Success";
+            else
+                StatusMsg = "Server returned failed";
+
+            Console.WriteLine("Upload Complete");
+            Completed.Set();
         }
     }
 }

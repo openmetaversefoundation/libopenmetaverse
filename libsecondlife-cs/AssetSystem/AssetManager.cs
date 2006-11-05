@@ -110,43 +110,14 @@ namespace libsecondlife.AssetSystem
 
             try
             {
-                curUploadRequest = new AssetRequestUpload(LLUUID.GenerateUUID(), asset);
-                SendFirstPacket();
+                curUploadRequest = new AssetRequestUpload(slClient, LLUUID.GenerateUUID(), asset);
 
-
-                while (curUploadRequest.Completed.WaitOne(1250, true) == false)
+                LLUUID assetID = curUploadRequest.DoUpload();
+                if (asset.Type == Asset.ASSET_TYPE_IMAGE)
                 {
-                    Console.WriteLine("WaitOne() timeout while uploading");
-                    if (curUploadRequest.SecondsSinceLastPacket > 2)
-                    {
-                        Console.WriteLine("Resending Packet (more then 2 seconds since last confirm)");
-                        if (curUploadRequest.LastPacketNumSent != 0)
-                        {
-                            SendCurrentPacket();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Want to resend, but the packet send function isn't good for resending the first packet");
-                        }
-                    }
+                    //SinkFee(SINK_FEE_IMAGE);
                 }
-
-
-                if (curUploadRequest.Status == false)
-                {
-                    throw new Exception(curUploadRequest.StatusMsg);
-                }
-                else
-                {
-                    if (asset.Type == Asset.ASSET_TYPE_IMAGE)
-                    {
-                        SinkFee(SINK_FEE_IMAGE);
-                    }
-
-                    asset.AssetID = curUploadRequest.TransactionID;
-
-                    return asset.AssetID;
-                }
+                return assetID;
             }
             finally
             {
@@ -189,21 +160,7 @@ namespace libsecondlife.AssetSystem
 
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
 
-            curUploadRequest.AssetID = reply.AssetBlock.UUID;
-            curUploadRequest.Status = reply.AssetBlock.Success;
-            curUploadRequest.UpdateLastPacketTime();
-
-            if (curUploadRequest.Status)
-            {
-                curUploadRequest.StatusMsg = "Success";
-            }
-            else
-            {
-                curUploadRequest.StatusMsg = "Server returned failed";
-            }
-
-            Console.WriteLine("Upload Complete");
-            curUploadRequest.Completed.Set();
+            curUploadRequest.UploadComplete(reply.AssetBlock.UUID, reply.AssetBlock.Success);
 		}
 
         private void RequestXferCallbackHandler(Packet packet, Simulator simulator)
@@ -217,28 +174,7 @@ namespace libsecondlife.AssetSystem
             ulong XferID   = reply.XferID.ID;
 			// LLUUID AssetID = reply.XferID.VFileID; //Not used...
 
-            // Setup to send the first packet
-            curUploadRequest.LastPacketNumSent = 0;
-
-            int dataSize = curUploadRequest.MyAsset.AssetData.Length;
-            if (dataSize > 1000)
-            {
-                dataSize = 1000;
-            }
-
-            byte[] packetData = new byte[dataSize + 4]; // Extra space is for leading data length bytes
-
-            // Prefix the first Xfer packet with the data length
-            // FIXME: Apply endianness patch
-            Array.Copy(BitConverter.GetBytes((int)curUploadRequest.MyAsset.AssetData.Length), 0, packetData, 0, 4);
-            Array.Copy(curUploadRequest.MyAsset.AssetData, 0, packetData, 4, dataSize);
-
-            packet = AssetPacketHelpers.SendXferPacket(XferID, packetData, 0);
-			slClient.Network.SendPacket(packet);
-
-            #if DEBUG_PACKETS
-                Console.WriteLine(packet);
-            #endif
+            curUploadRequest.RequestXfer(XferID);
         }
 
         private void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
@@ -249,85 +185,9 @@ namespace libsecondlife.AssetSystem
 
             ConfirmXferPacketPacket reply = (ConfirmXferPacketPacket)packet;
 
-            uint PacketNumConfirmed = reply.XferID.Packet;
-            curUploadRequest.UpdateLastPacketTime();
-            curUploadRequest.XferID = reply.XferID.ID;
-
-            if (PacketNumConfirmed == curUploadRequest.LastPacketNumSent)
-            {
-                SendNextPacket();
-            } else {
-                throw new Exception("Something is wrong with uploading assets, a confirmation came in for a packet we didn't send.");
-            }
+            curUploadRequest.ConfirmXferPacket(reply.XferID.ID, reply.XferID.Packet);
         }
 
-        private void SendFirstPacket()
-        {
-            Packet packet;
-
-            lock( curUploadRequest )
-            {
-                if (curUploadRequest.MyAsset.AssetData.Length > 1000)
-                {
-                    packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(curUploadRequest.MyAsset, curUploadRequest.TransactionID);
-                }
-                else
-                {
-                    packet = AssetPacketHelpers.AssetUploadRequest(curUploadRequest.MyAsset, curUploadRequest.TransactionID);
-                }
-            }
-
-            slClient.Network.SendPacket(packet);
-            #if DEBUG_PACKETS
-                Console.WriteLine(packet);
-            #endif
-
-        }
-
-        private void SendNextPacket()
-        {
-            lock (curUploadRequest)
-            {    
-                // Increment Packet #
-                curUploadRequest.LastPacketNumSent += 1;
-            }
-
-            SendCurrentPacket();
-        }
-
-        private void SendCurrentPacket()
-        {
-//            Console.WriteLine("Sending " + tr.LastPacketNumSent + " / " + tr.NumPackets);
-
-            Packet uploadPacket;
-
-            lock(curUploadRequest)
-            {
-                if (curUploadRequest.LastPacketNumSent < curUploadRequest.NumPackets)
-                {
-                    byte[] packetData = new byte[1000];
-                    Array.Copy(curUploadRequest.MyAsset.AssetData, curUploadRequest.LastPacketNumSent * 1000, packetData, 0, 1000);
-
-                    uploadPacket = AssetPacketHelpers.SendXferPacket(curUploadRequest.XferID, packetData, curUploadRequest.LastPacketNumSent);
-                }
-                else
-                {
-                    // The last packet has to be handled slightly differently
-                    int lastLen = curUploadRequest.MyAsset.AssetData.Length - (curUploadRequest.NumPackets * 1000);
-                    byte[] packetData = new byte[lastLen];
-                    Array.Copy(curUploadRequest.MyAsset.AssetData, curUploadRequest.NumPackets * 1000, packetData, 0, lastLen);
-
-                    uint lastPacket = (uint)int.MaxValue + (uint)curUploadRequest.NumPackets + (uint)1;
-                    uploadPacket = AssetPacketHelpers.SendXferPacket(curUploadRequest.XferID, packetData, lastPacket);
-                }
-            }
-
-            slClient.Network.SendPacket(uploadPacket);
-
-            #if DEBUG_PACKETS
-                Console.WriteLine(uploadPacket);
-            #endif
-        }
 
         private void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
         {
