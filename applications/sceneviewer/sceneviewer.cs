@@ -137,6 +137,7 @@ namespace sceneviewer
         protected override void Initialize()
         {
             // Register libsl callbacks
+            Client.Objects.RequestAllObjects = true;
             Client.Objects.OnNewPrim += new NewPrimCallback(OnNewPrim);
             Client.Objects.OnPrimMoved += new PrimMovedCallback(OnPrimMoved);
             Client.Objects.OnObjectKilled += new KillObjectCallback(OnObjectKilled);

@@ -167,6 +167,11 @@ namespace libsecondlife
         /// simulator.
         /// </summary>
         public event KillObjectCallback OnObjectKilled;
+        /// <summary>
+        /// If true, when a cached object check is received from the server 
+        /// the full object info will automatically be requested.
+        /// </summary>
+        public bool RequestAllObjects = false;
 
         private SecondLife Client;
 
@@ -246,125 +251,127 @@ namespace libsecondlife
 
         private void UpdateHandler(Packet packet, Simulator simulator)
         {
-            ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
-
-            foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
+            if (OnNewPrim != null || OnNewAvatar != null)
             {
-                if (block.PCode == (byte)PCode.Prim)
+                ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
+
+                foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
                 {
-                    // New prim spotted
-                    PrimObject prim = new PrimObject(Client);
-
-                    prim.Position = new LLVector3(block.ObjectData, 0);
-                    prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
-
-                    // TODO: Parse the rest of the ObjectData byte array fields
-
-                    prim.LocalID = block.ID;
-                    prim.State = block.State;
-                    prim.ID = block.FullID;
-                    prim.ParentID = block.ParentID;
-                    //block.OwnerID Sound-related
-                    prim.Material = block.Material;
-                    prim.PathCurve = block.PathCurve;
-                    prim.ProfileCurve = block.ProfileCurve;
-                    prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
-                    prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
-                    prim.PathTaperX = PrimObject.PathScaleFloat(block.PathScaleX);
-                    prim.PathTaperY = PrimObject.PathScaleFloat(block.PathScaleY);
-                    prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
-                    prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
-                    prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
-                    prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
-                    prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                    //prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
-                    //prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
-                    prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
-                    prim.PathSkew = PrimObject.PathSkewFloat((byte)block.PathSkew);
-                    prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
-                    prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
-                    prim.ProfileHollow = block.ProfileHollow;
-                    prim.Name = Helpers.FieldToString(block.NameValue);
-                    //block.Data ?
-                    prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
-                    //block.TextColor LLColor4U of the hovering text
-                    //block.MediaURL Quicktime stream
-                    prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-                    prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
-                    //block.JointType ?
-                    //block.JointPivot ?
-                    //block.JointAxisOrAnchor ?
-                    prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
-                    prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
-                    prim.Scale = block.Scale;
-                    //block.Flags ?
-                    //block.UpdateFlags ?
-                    //block.ClickAction ?
-                    //block.Gain Sound-related
-                    //block.Sound Sound-related
-                    //block.Radius Sound-related
-
-                    if (OnNewPrim != null)
+                    if (block.PCode == (byte)PCode.Prim && OnNewPrim != null)
                     {
-                        OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                        // New prim spotted
+                        PrimObject prim = new PrimObject(Client);
+
+                        prim.Position = new LLVector3(block.ObjectData, 0);
+                        prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
+
+                        // TODO: Parse the rest of the ObjectData byte array fields
+
+                        prim.LocalID = block.ID;
+                        prim.State = block.State;
+                        prim.ID = block.FullID;
+                        prim.ParentID = block.ParentID;
+                        //block.OwnerID Sound-related
+                        prim.Material = block.Material;
+                        prim.PathCurve = block.PathCurve;
+                        prim.ProfileCurve = block.ProfileCurve;
+                        prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
+                        prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
+                        prim.PathTaperX = PrimObject.PathScaleFloat(block.PathScaleX);
+                        prim.PathTaperY = PrimObject.PathScaleFloat(block.PathScaleY);
+                        prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
+                        prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
+                        prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
+                        prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
+                        prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
+                        //prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
+                        //prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
+                        prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
+                        prim.PathSkew = PrimObject.PathSkewFloat((byte)block.PathSkew);
+                        prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
+                        prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
+                        prim.ProfileHollow = block.ProfileHollow;
+                        prim.Name = Helpers.FieldToString(block.NameValue);
+                        //block.Data ?
+                        prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
+                        //block.TextColor LLColor4U of the hovering text
+                        //block.MediaURL Quicktime stream
+                        prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                        prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
+                        //block.JointType ?
+                        //block.JointPivot ?
+                        //block.JointAxisOrAnchor ?
+                        prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
+                        prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
+                        prim.Scale = block.Scale;
+                        //block.Flags ?
+                        //block.UpdateFlags ?
+                        //block.ClickAction ?
+                        //block.Gain Sound-related
+                        //block.Sound Sound-related
+                        //block.Radius Sound-related
+
+                        if (OnNewPrim != null)
+                        {
+                            OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                        }
                     }
-                }
-                else if (block.PCode == (byte)PCode.Avatar)
-                {
-                    Avatar avatar = new Avatar();
-
-                    string FirstName = "";
-                    string LastName = "";
-                    string GroupName = "";
-
-                    //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
-                    avatar.Position = new LLVector3(block.ObjectData, 16);
-                    avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
-
-                    // TODO: Parse the rest of the ObjectData byte array fields
-
-                    ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
-
-                    avatar.ID = block.FullID;
-                    avatar.LocalID = block.ID;
-                    avatar.Name = FirstName + " " + LastName;
-                    avatar.GroupName = GroupName;
-                    avatar.Online = true;
-                    avatar.CurrentRegion = simulator.Region;
-
-                    avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-
-                    if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
+                    else if (block.PCode == (byte)PCode.Avatar && OnNewAvatar != null)
                     {
-                        // Update our avatar
-                        Client.Self.LocalID = avatar.LocalID;
-                        Client.Self.Position = avatar.Position;
-                        Client.Self.Rotation = avatar.Rotation;
+                        Avatar avatar = new Avatar();
+
+                        string FirstName = "";
+                        string LastName = "";
+                        string GroupName = "";
+
+                        //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
+                        avatar.Position = new LLVector3(block.ObjectData, 16);
+                        avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
+
+                        // TODO: Parse the rest of the ObjectData byte array fields
+
+                        ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
+
+                        avatar.ID = block.FullID;
+                        avatar.LocalID = block.ID;
+                        avatar.Name = FirstName + " " + LastName;
+                        avatar.GroupName = GroupName;
+                        avatar.Online = true;
+                        avatar.CurrentRegion = simulator.Region;
+
+                        avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+
+                        if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
+                        {
+                            // Update our avatar
+                            Client.Self.LocalID = avatar.LocalID;
+                            Client.Self.Position = avatar.Position;
+                            Client.Self.Rotation = avatar.Rotation;
+                        }
+                        else
+                        {
+                            if (OnNewAvatar != null)
+                            {
+                                OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                            }
+                        }
+                    }
+                    else if (block.PCode == (byte)PCode.Grass)
+                    {
+                        // FIXME: Handle grass objects
+                        ;
+                    }
+                    else if (block.PCode == (byte)PCode.Tree)
+                    {
+                        // FIXME: Handle tree objects
+                        ;
                     }
                     else
                     {
-                        if (OnNewAvatar != null)
-                        {
-                            OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                        }
+                        // FIXME: Figure out what the unknown PCodes are
+                        Client.Log("Got an ObjectUpdate block with an unhandled PCode " +
+                            block.PCode, Helpers.LogLevel.Debug);
                     }
-                }
-                else if (block.PCode == (byte)PCode.Grass)
-                {
-                    // FIXME: Handle grass objects
-                    ;
-                }
-                else if (block.PCode == (byte)PCode.Tree)
-                {
-                    // FIXME: Handle tree objects
-                    ;
-                }
-                else
-                {
-                    // FIXME: This is probably a tree/bush/grasspatch, which need their own
-                    // separate callback IMO -jph
-                    Client.Log("Got an ObjectUpdate block with an unhandled PCode " +
-                        block.PCode, Helpers.LogLevel.Debug);
                 }
             }
         }
@@ -396,8 +403,14 @@ namespace libsecondlife
 
                 if (avatar)
                 {
+                    if (OnAvatarMoved == null) return;
+
                     CollisionPlane = new LLVector4(block.Data, i);
                     i += 16;
+                }
+                else
+                {
+                    if (OnPrimMoved == null) return;
                 }
 
                 // Position
@@ -487,6 +500,7 @@ namespace libsecondlife
 
         private void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
+
             ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
             PrimObject prim;
 
@@ -504,154 +518,174 @@ namespace libsecondlife
 
                     byte pcode = block.Data[i++];
 
-                    if (pcode != (byte)PCode.Prim)
+                    if (pcode == (byte)PCode.Prim)
                     {
-                        Client.Log("Got an ObjectUpdateCompressed block with unhandled PCode " +
-                            pcode, Helpers.LogLevel.Debug);
-                        continue;
-                    }
+                        #region PrimRegion
+                        prim.State = (uint)block.Data[i++];
+                        i += 4; // CRC
+                        prim.Material = (uint)block.Data[i++];
+                        i++; // TODO: ClickAction
 
-                    prim.State = (uint)block.Data[i++];
-                    i += 4; //CRC
-                    prim.Material = (uint)block.Data[i++];
-                    i++; //ClickAction
+                        prim.Scale = new LLVector3(block.Data, i);
+                        i += 12;
+                        prim.Position = new LLVector3(block.Data, i);
+                        i += 12;
+                        prim.Rotation = new LLQuaternion(block.Data, i, true);
+                        i += 12;
 
-                    prim.Scale = new LLVector3(block.Data, i);
-                    i += 12;
-                    prim.Position = new LLVector3(block.Data, i);
-                    i += 12;
-                    prim.Rotation = new LLQuaternion(block.Data, i, true);
-                    i += 12;
+                        uint flags = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                            (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-                    uint flags = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                        if ((flags & 0x02) != 0)
+                        {
+                            byte TreeData = block.Data[i++];
 
-                    if ((flags & 0x02) != 0)
-                    {
-                        byte TreeData = block.Data[i++];
-                        
-                        //Unknown byte
-                        i++;
+                            // TODO: Unknown byte
+                            i++;
+
+                            if (OnNewPrim != null)
+                            {
+                                OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                            }
+                            continue;
+                        }
+
+                        if ((flags & 0x20) != 0)
+                        {
+                            prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                            (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                        }
+                        else
+                        {
+                            prim.ParentID = 0;
+                        }
+
+                        if ((flags & 0x80) != 0)
+                        {
+                            // TODO: Use this. What is it?
+                            LLVector3 Omega = new LLVector3(block.Data, i);
+                            i += 12;
+                        }
+
+                        if ((flags & 0x04) != 0)
+                        {
+                            string text = "";
+                            while (block.Data[i] != 0)
+                            {
+                                text += (char)block.Data[i];
+                                i++;
+                            }
+                            prim.Text = text;
+                            i++;
+
+                            // Text color
+                            i += 4;
+                        }
+                        else
+                        {
+                            prim.Text = "";
+                        }
+
+                        if ((flags & 0x08) != 0)
+                        {
+                            prim.ParticleSys = new ParticleSystem(block.Data, i);
+                            i += 86;
+                        }
+
+                        i += prim.SetExtraParamsFromBytes(block.Data, i);
+
+                        //Sound data
+                        if ((flags & 0x10) != 0)
+                        {
+                            //TODO: use this data
+                            LLUUID SoundUUID = new LLUUID(block.Data, i);
+                            i += 16;
+                            LLUUID OwnerUUID = new LLUUID(block.Data, i);
+                            i += 16;
+
+                            if (!BitConverter.IsLittleEndian)
+                            {
+                                Array.Reverse(block.Data, i, 4);
+                                Array.Reverse(block.Data, i + 5, 4);
+                            }
+
+                            float SoundGain = BitConverter.ToSingle(block.Data, i);
+                            i += 4;
+                            byte SoundFlags = block.Data[i++];
+                            float SoundRadius = BitConverter.ToSingle(block.Data, i);
+                            i += 4;
+                        }
+
+                        //Indicates that this is an attachment?
+                        if ((flags & 0x100) != 0)
+                        {
+                            //A string
+                            //Example: "AttachItemID STRING RW SV fa9a5ab8-1bad-b449-9873-cf5b803e664e"
+                            while (block.Data[i] != 0)
+                            {
+                                i++;
+                            }
+                            i++;
+                        }
+
+                        prim.PathCurve = (uint)block.Data[i++];
+                        prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
+                        prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
+                        prim.PathTaperX = PrimObject.PathScaleFloat(block.Data[i++]);
+                        prim.PathTaperY = PrimObject.PathScaleFloat(block.Data[i++]);
+                        prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
+                        prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
+                        prim.PathTwist = (int)block.Data[i++];
+                        prim.PathTwistBegin = (int)block.Data[i++];
+                        prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                        //prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
+                        //prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
+                        i += 2;
+                        prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
+                        prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
+
+                        prim.ProfileCurve = (uint)block.Data[i++];
+                        prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);
+                        prim.ProfileEnd = PrimObject.ProfileEndFloat(block.Data[i++]);
+                        prim.ProfileHollow = (uint)block.Data[i++];
+
+                        int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                            (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                        prim.Textures = new TextureEntry(block.Data, i, textureEntryLength);
+
+                        i += textureEntryLength;
+
+                        if (i < block.Data.Length)
+                        {
+                            int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                            prim.TextureAnim = new TextureAnimation(block.Data, i);
+                        }
 
                         if (OnNewPrim != null)
                         {
                             OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                         }
+
+                        #endregion PrimRegion
+                    }
+                    else if (pcode == (byte)PCode.Avatar)
+                    {
+                        Client.Log("######### Got an ObjectUpdateCompressed for an avatar, implement this! #########",
+                            Helpers.LogLevel.Warning);
+                    }
+                    else if (pcode == (byte)PCode.Grass || pcode == (byte)PCode.Tree)
+                    {
+                        // TODO:
+                        ;
+                    }
+                    else
+                    {
+                        Client.Log("Got an ObjectUpdateCompressed block with unhandled PCode " +
+                            pcode, Helpers.LogLevel.Debug);
                         continue;
-                    }
-
-                    if ((flags & 0x20) != 0)
-                    {
-                        prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                    }
-                    else
-                    {
-                        prim.ParentID = 0;
-                    }
-
-                    if ((flags & 0x80) != 0)
-                    {
-                        //TODO: use this
-                        LLVector3 Omega = new LLVector3(block.Data, i);
-                        i += 12;
-                    }
-
-                    if ((flags & 0x04) != 0)
-                    {
-                        string text = "";
-                        while (block.Data[i] != 0)
-                        {
-                            text += (char)block.Data[i];
-                            i++;
-                        }
-                        prim.Text = text;
-                        i++;
-
-                        //Text color.
-                        i += 4;
-                    }
-                    else
-                    {
-                        prim.Text = "";
-                    }
-
-                    if ((flags & 0x08) != 0)
-                    {
-                        prim.ParticleSys = new ParticleSystem(block.Data, i);
-                        i += 86;
-                    }
-
-                    i += prim.SetExtraParamsFromBytes(block.Data, i);
-
-                    //Sound data
-                    if ((flags & 0x10) != 0)
-                    {
-                        //TODO: use this data
-                        LLUUID SoundUUID = new LLUUID(block.Data, i);
-                        i += 16;
-                        LLUUID OwnerUUID = new LLUUID(block.Data, i);
-                        i += 16;
-
-                        if (!BitConverter.IsLittleEndian)
-                        {
-                            Array.Reverse(block.Data, i, 4);
-                            Array.Reverse(block.Data, i + 5, 4);
-                        }
-
-                        float SoundGain = BitConverter.ToSingle(block.Data, i);
-                        i += 4;
-                        byte SoundFlags = block.Data[i++];
-                        float SoundRadius = BitConverter.ToSingle(block.Data, i);
-                        i += 4;
-                    }
-
-                    //Indicates that this is an attachment?
-                    if ((flags & 0x100) != 0)
-                    {
-                        //A string
-                        //Example: "AttachItemID STRING RW SV fa9a5ab8-1bad-b449-9873-cf5b803e664e"
-                        while (block.Data[i] != 0)
-                        {
-                            i++;
-                        }
-                        i++;
-                    }
-
-                    prim.PathCurve = (uint)block.Data[i++];
-                    prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
-                    prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
-                    prim.PathTaperX = PrimObject.PathScaleFloat(block.Data[i++]);
-                    prim.PathTaperY = PrimObject.PathScaleFloat(block.Data[i++]);
-                    prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
-                    prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
-                    prim.PathTwist = (int)block.Data[i++];
-                    prim.PathTwistBegin = (int)block.Data[i++];
-                    prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                    //prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
-                    //prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
-                    i += 2;
-                    prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
-                    prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
-
-                    prim.ProfileCurve = (uint)block.Data[i++];
-                    prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);
-                    prim.ProfileEnd = PrimObject.ProfileEndFloat(block.Data[i++]);
-                    prim.ProfileHollow = (uint)block.Data[i++];
-
-                    int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                    prim.Textures = new TextureEntry(block.Data, i, textureEntryLength);
-
-                    i += textureEntryLength;
-
-                    if (i < block.Data.Length)
-                    {
-                        int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                            (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                        prim.TextureAnim = new TextureAnimation(block.Data, i);
                     }
                 }
                 catch (System.IndexOutOfRangeException e)
@@ -660,27 +694,24 @@ namespace libsecondlife
                         e.ToString(), Helpers.LogLevel.Warning);
                     Client.Log(block.ToString(), Helpers.LogLevel.Warning);
                 }
-
-
-                if (OnNewPrim != null)
-                {
-                    OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                }
             }
         }
 
         private void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
-            List<uint> ids = new List<uint>();
-            ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
-
-            // Assume clients aren't caching objects for now, so request updates for all of these objects
-            foreach (ObjectUpdateCachedPacket.ObjectDataBlock block in update.ObjectData)
+            if (RequestAllObjects)
             {
-                ids.Add(block.ID);
-            }
+                List<uint> ids = new List<uint>();
+                ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
 
-            RequestObjects(simulator, ids);
+                // Assume clients aren't caching objects for now, so request updates for all of these objects
+                foreach (ObjectUpdateCachedPacket.ObjectDataBlock block in update.ObjectData)
+                {
+                    ids.Add(block.ID);
+                }
+
+                RequestObjects(simulator, ids);
+            }
         }
 
         private void KillObjectHandler(Packet packet, Simulator simulator)

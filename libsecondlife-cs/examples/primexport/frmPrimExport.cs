@@ -196,6 +196,7 @@ namespace primexport
 
             client = new SecondLife();
             client.OnLogMessage += new LogCallback(client_OnLogMessage);
+            client.Objects.RequestAllObjects = true;
             client.Objects.OnNewPrim += primCallback;
 
             grpLogin.Enabled = true;
