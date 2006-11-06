@@ -406,6 +406,7 @@ namespace libsecondlife
         public void GiveMoney(LLUUID target, int amount, string description)
         {
             // 5001 - transaction type for av to av money transfers
+            
             GiveMoney(target, amount, description, 5001);
         }
 
@@ -426,6 +427,10 @@ namespace libsecondlife
             money.MoneyData.DestID = target;
             money.MoneyData.SourceID = this.ID;
             money.MoneyData.TransactionType = transactiontype;
+            money.MoneyData.AggregatePermInventory = 0; //TODO: whats this?
+            money.MoneyData.AggregatePermNextOwner = 0; //TODO: whats this?
+            money.MoneyData.Flags = 0; //TODO: whats this?
+            money.MoneyData.Amount = amount;
 
             Client.Network.SendPacket((Packet)money);
         }
@@ -598,7 +603,7 @@ namespace libsecondlife
                     {
                         // Request the region info again
                         Client.Grid.AddSim(simName);
-
+                        
                         System.Threading.Thread.Sleep(1000);
                     }
                 }
