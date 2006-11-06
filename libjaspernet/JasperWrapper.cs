@@ -100,17 +100,13 @@ public class JasperWrapper
     [DllImport(JASPER_LIBRARY)]
     protected static extern int jas_init();
 
-    public static int jasper_init()
+    public static void jasper_init()
     {
         if (!Initialized)
         {
             Initialized = true;
-            Initialized_Value = jas_init();
-            return Initialized_Value;
+            jas_init();  // always returns zero.
         }
-
-        // TODO: Not sure what to return here...
-        return Initialized_Value;
     }
 
     [DllImport(JASPER_LIBRARY)]
@@ -227,7 +223,43 @@ public class JasperWrapper
     }
 
 
-
+	public static byte[] jasper_encode_tiff_to_j2c(string filename) {
+		jasper_init();
+		IntPtr input_stream_ptr = jas_stream_fopen(filename, "rb");  // may need string conversion magic here on windows, sorry. :P
+		
+		int format = jas_image_getfmt(input_stream_ptr);
+		
+        Console.WriteLine("file is format # " + format);
+		
+        IntPtr image_ptr = jas_image_decode(input_stream_ptr, format, "");
+        if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
+        jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
+		
+        int output_buffer_size = 1048576;  // insert some good way of figuring out max output size here
+		
+        IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
+        IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
+		
+        Console.WriteLine("Ready to encode");
+        Console.WriteLine("jas_image_strtofmt(j2c)=" + jas_image_strtofmt("j2c"));
+        Console.WriteLine("jas_image_strtofmt(tif)=" + jas_image_strtofmt("tif"));
+        int retval = jas_image_encode(image_ptr, output_stream_ptr,
+									  jas_image_strtofmt("j2c"), "");
+		
+        jas_stream_flush(output_stream_ptr);
+        if (retval != 0) throw new Exception("Error encoding image: " + retval);
+		
+        byte[] buf = new byte[output_buffer_size];
+        Marshal.Copy(bufPtr, buf, 0, output_buffer_size);
+        Marshal.FreeHGlobal(bufPtr);
+		
+        jas_image_destroy(image_ptr);
+		
+        jas_stream_close(input_stream_ptr);
+		
+        return buf;
+	}
+	
     public static byte[] jasper_decode_j2c_to_tiff(byte[] input)
     {
         jasper_init();
@@ -305,7 +337,7 @@ public class JasperWrapper
         int offset = 0;
         output[offset++] = 0; // idlength
         output[offset++] = 0; // colormaptype = 0: no colormap
-        output[offset++] = 2; // image type = 2: uncompressed RGB 
+        output[offset++] = 2; // image type = 2: uncompressed RGB
         output[offset++] = 0; // color map spec is five zeroes for no color map
         output[offset++] = 0; // color map spec is five zeroes for no color map
         output[offset++] = 0; // color map spec is five zeroes for no color map
