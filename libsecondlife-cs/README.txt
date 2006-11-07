@@ -15,3 +15,4 @@ compiling. The output will be in the bin folder under the root directory.
 If you have any questions, stop by #libsl on EFNet in IRC
 
 http://www.libsecondlife.org/
+
