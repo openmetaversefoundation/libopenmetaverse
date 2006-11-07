@@ -852,11 +852,22 @@ namespace libsecondlife
 			return values;
 		}
 
+        /// <summary>
+        /// Assigned by the OnConnected event. Raised when login was a success
+        /// </summary>
+        /// <param name="sender">Reference to the SecondLife class that called the event</param>
+        public delegate void ConnectedCallback(object sender);
+        
+        /// <summary>
+        /// Event raised when the client was able to connected successfully.
+        /// </summary>
+        /// <remarks>Uses the ConnectedCallback delegate.</remarks>
+        public event ConnectedCallback OnConnected;
+        
         public bool Login(string firstName, string lastName, string password, string userAgent, string author)
         {
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName, 
                 password, userAgent, author);
-
             return Login(loginParams);
         }
 
@@ -1016,6 +1027,7 @@ namespace libsecondlife
 
                 DisconnectTimer.Start();
                 connected = true;
+                if (OnConnected != null) OnConnected(this.Client);
                 return true;
             }
             catch (Exception e)
