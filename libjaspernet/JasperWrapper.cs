@@ -237,7 +237,8 @@ public class JasperWrapper
       if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
       jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
       
-      int output_buffer_size = 1048576;  // insert some good way of figuring out max output size here
+      int output_buffer_size = image_struct.width * image_struct.height *
+				image_struct.numcmpts * 4 + 4096;  // it's called a safety margin
       
       IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
       IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
@@ -278,7 +279,9 @@ public class JasperWrapper
         if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
         jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
 
-        int output_buffer_size = image_struct.width * image_struct.height * 4 + header_size;
+        int output_buffer_size = image_struct.width * image_struct.height *
+				image_struct.numcmpts * 4 + 4096;  // it's called a safety margin
+
         IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
         IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
 
