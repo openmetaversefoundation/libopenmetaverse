@@ -464,6 +464,22 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Use the autopilot sim function to move the avatar to a new position
+        /// </summary>
+        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
+        /// <param name="localX">Integer value for the local X coordinate to move to</param>
+        /// <param name="localY">Integer value for the local Y coordinate to move to</param>
+        /// <param name="z">Floating-point value for the Z coordinate to move to</param>
+        /// <example>AutoPilot(252620, 247078, 20.2674);</example>
+        public void AutoPilotLocal(int localX, int localY, float z)
+        {
+            GridRegion gr = Client.Grid.GetGridRegion(Client.Network.CurrentSim.Region.Name);
+            ulong GridCornerX = ((ulong)gr.X * (ulong)256) + (ulong)localX;
+            ulong GridCornerY = ((ulong)gr.Y * (ulong)256) + (ulong)localY;
+            AutoPilot(GridCornerX, GridCornerY, z);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="regionHandle"></param>
