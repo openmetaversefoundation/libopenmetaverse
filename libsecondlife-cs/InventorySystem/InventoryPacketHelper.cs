@@ -258,7 +258,7 @@ namespace libsecondlife.InventorySystem
 
             // TODO: Either overload this method to allow inclusion of region info or
             // overload the ImprovedInstantMessage in the avatar class to allow item payloads
-            p.MessageBlock.RegionID = new LLUUID();
+            p.MessageBlock.RegionID = LLUUID.Zero;
             p.MessageBlock.ParentEstateID = (uint)0;
 
             return p;
@@ -271,7 +271,7 @@ namespace libsecondlife.InventorySystem
             CreateInventoryItemPacket p = new CreateInventoryItemPacket();
 
             p.InventoryBlock.CallbackID    = 0;
-            p.InventoryBlock.TransactionID = new LLUUID();
+            p.InventoryBlock.TransactionID = LLUUID.Zero;
 
             p.InventoryBlock.WearableType  = 0; //TODO: Specify the current type here
             p.InventoryBlock.Type    = iitem.Type;
@@ -362,7 +362,7 @@ namespace libsecondlife.InventorySystem
 			/* IDs */
             CRC += iitem.AssetID.CRC(); // AssetID
             CRC += iitem.FolderID.CRC(); // FolderID
-            CRC += iitem.ItemID==null?new LLUUID().CRC():iitem.ItemID.CRC(); // ItemID
+            CRC += iitem.ItemID == null ? LLUUID.Zero.CRC() : iitem.ItemID.CRC(); // ItemID
 
 			/* Permission stuff */
             CRC += iitem.CreatorID.CRC(); // CreatorID

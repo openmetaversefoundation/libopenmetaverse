@@ -56,8 +56,8 @@ namespace libsecondlife.InventorySystem
             : base(manager)
         {
             _Name = "";
-            _FolderID = new LLUUID();
-            _ParentID = new LLUUID();
+            _FolderID = LLUUID.Zero;
+            _ParentID = LLUUID.Zero;
             _Type = -1;
         }
 

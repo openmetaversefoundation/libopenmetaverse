@@ -356,7 +356,7 @@ namespace libsecondlife.AssetSystem
                 {
                     tr = htDownloadRequests[ImageID];
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // Received a packet for an image we didn't request...
                     return;

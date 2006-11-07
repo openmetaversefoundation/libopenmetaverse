@@ -246,9 +246,13 @@ namespace libsecondlife
 			uuid = uuid.Insert(12,"-");
 			uuid = uuid.Insert(8,"-");
 			
-
 			return uuid;
 		}
+
+        /// <summary>
+        /// An LLUUID with a value of all zeroes
+        /// </summary>
+        public readonly static LLUUID Zero = new LLUUID();
 	}
 
     /// <summary>
@@ -412,6 +416,11 @@ namespace libsecondlife
         {
             return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
         }
+
+        /// <summary>
+        /// An LLVector3 with a value of <0,0,0>
+        /// </summary>
+        public readonly static LLVector3 Zero = new LLVector3();
 	}
 
     /// <summary>
@@ -494,6 +503,11 @@ namespace libsecondlife
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
 		}
+
+        /// <summary>
+        /// An LLVector3d with a value of <0,0,0>
+        /// </summary>
+        public readonly static LLVector3d Zero = new LLVector3d();
 	}
 
     /// <summary>
@@ -569,6 +583,11 @@ namespace libsecondlife
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
 		}
+
+        /// <summary>
+        /// An LLVector4 with a value of <0,0,0,0>
+        /// </summary>
+        public readonly static LLVector4 Zero = new LLVector4();
 	}
 
     /// <summary>
@@ -712,5 +731,10 @@ namespace libsecondlife
 		{
 			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + W.ToString();
 		}
+
+        /// <summary>
+        /// An LLQuaternion with a value of <0,0,0,1>
+        /// </summary>
+        public readonly static LLQuaternion Unit = new LLQuaternion();
 	}
 }

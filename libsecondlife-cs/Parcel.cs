@@ -67,8 +67,8 @@ namespace libsecondlife
         /// </summary>
         public DirectoryParcel()
         {
-            GlobalPosition = new LLVector3();
-            SimPosition = new LLVector3();
+            GlobalPosition = LLVector3.Zero;
+            SimPosition = LLVector3.Zero;
         }
     }
 
@@ -175,16 +175,16 @@ namespace libsecondlife
 
         private void init()
         {
-            OwnerID = new LLUUID();
-            AABBMin = new LLVector3();
-            AABBMax = new LLVector3();
+            OwnerID = LLUUID.Zero;
+            AABBMin = LLVector3.Zero;
+            AABBMax = LLVector3.Zero;
             Bitmap = new byte[512];
-            MediaID = new LLUUID();
-            GroupID = new LLUUID();
-            AuthBuyerID = new LLUUID();
-            SnapshotID = new LLUUID();
-            UserLocation = new LLVector3();
-            UserLookAt = new LLVector3();
+            MediaID = LLUUID.Zero;
+            GroupID = LLUUID.Zero;
+            AuthBuyerID = LLUUID.Zero;
+            SnapshotID = LLUUID.Zero;
+            UserLocation = LLVector3.Zero;
+            UserLookAt = LLVector3.Zero;
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace libsecondlife
             request.AgentData.AgentID = client.Network.AgentID;
             request.AgentData.SessionID = client.Network.SessionID;
             request.Data.LocalID = LocalID;
-            request.Data.ParcelID = new LLUUID();
+            request.Data.ParcelID = LLUUID.Zero;
 
             client.Network.SendPacket((Packet)request, Sim);
         }

@@ -44,7 +44,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public float PathSkew = 0;
         /// <summary></summary>
-		public LLVector3 Position = new LLVector3();
+        public LLVector3 Position = LLVector3.Zero;
         /// <summary></summary>
 		public uint ProfileCurve = 0;
         /// <summary></summary>
@@ -52,13 +52,13 @@ namespace libsecondlife
         /// <summary></summary>
 		public float PathScaleY = 0;
         /// <summary></summary>
-		public LLUUID ID = new LLUUID();
+        public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
 		public uint LocalID = 0;
         /// <summary></summary>
         public uint ParentID = 0;
         /// <summary></summary>
-		public LLUUID GroupID = new LLUUID();
+        public LLUUID GroupID = LLUUID.Zero;
         /// <summary></summary>
 		public uint Material = 0;
         /// <summary></summary>
@@ -80,7 +80,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public uint PathCurve = 0;
         /// <summary></summary>
-		public LLVector3 Scale = new LLVector3();
+        public LLVector3 Scale = LLVector3.Zero;
         /// <summary></summary>
 		public int PathTwist = 0;
         /// <summary></summary>
@@ -94,7 +94,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public float PathRevolutions = 0;
         /// <summary></summary>
-		public LLQuaternion Rotation = new LLQuaternion();
+		public LLQuaternion Rotation = LLQuaternion.Unit;
         /// <summary></summary>
 		public uint State;
         /// <summary></summary>

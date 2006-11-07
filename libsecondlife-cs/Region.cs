@@ -53,11 +53,11 @@ namespace libsecondlife
         public Dictionary<int, Parcel> Parcels;
 
         /// <summary></summary>
-        public LLUUID ID;
+        public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
         public ulong Handle;
         /// <summary></summary>
-        public string Name;
+        public string Name = "";
         /// <summary></summary>
         public byte[] ParcelOverlay;
         /// <summary></summary>
@@ -88,30 +88,27 @@ namespace libsecondlife
         /// <summary></summary>
         public float WaterHeight;
         /// <summary></summary>
-        public LLUUID SimOwner;
+        public LLUUID SimOwner = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainBase0;
+        public LLUUID TerrainBase0 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainBase1;
+        public LLUUID TerrainBase1 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainBase2;
+        public LLUUID TerrainBase2 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainBase3;
+        public LLUUID TerrainBase3 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainDetail0;
+        public LLUUID TerrainDetail0 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainDetail1;
+        public LLUUID TerrainDetail1 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainDetail2;
+        public LLUUID TerrainDetail2 = LLUUID.Zero;
         /// <summary></summary>
-        public LLUUID TerrainDetail3;
+        public LLUUID TerrainDetail3 = LLUUID.Zero;
         /// <summary></summary>
         public bool IsEstateManager;
         /// <summary></summary>
         public EstateTools Estate;
-
-        private SecondLife Client;
-
 
         /// <summary></summary>
         private GridRegion _GridRegionData = null;
@@ -130,6 +127,8 @@ namespace libsecondlife
             }
         }
 
+        private SecondLife Client;
+
         /// <summary>
         /// 
         /// </summary>
@@ -138,21 +137,10 @@ namespace libsecondlife
         {
             Estate = new EstateTools(client);
             Client = client;
-            ID = new LLUUID();
             ParcelOverlay = new byte[4096];
             ParcelMarked = new int[64, 64];
 
             Parcels = new Dictionary<int, Parcel>();
-
-            SimOwner = new LLUUID();
-            TerrainBase0 = new LLUUID();
-            TerrainBase1 = new LLUUID();
-            TerrainBase2 = new LLUUID();
-            TerrainBase3 = new LLUUID();
-            TerrainDetail0 = new LLUUID();
-            TerrainDetail1 = new LLUUID();
-            TerrainDetail2 = new LLUUID();
-            TerrainDetail3 = new LLUUID();
         }
 
         /// <summary>

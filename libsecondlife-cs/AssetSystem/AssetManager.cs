@@ -89,7 +89,7 @@ namespace libsecondlife.AssetSystem
 			switch( sinkType )
 			{
 				case SINK_FEE_IMAGE:
-					slClient.Self.GiveMoney( new LLUUID(), 10, "Image Upload" );
+					slClient.Self.GiveMoney( LLUUID.Zero, 10, "Image Upload" );
 					break;
 				default:
 					throw new Exception("AssetManager: Unknown sinktype (" + sinkType + ")");

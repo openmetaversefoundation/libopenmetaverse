@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -36,7 +37,7 @@ namespace sldump
 		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
-			Console.WriteLine(packet.ToString());
+			//Console.WriteLine(packet.ToString());
 		}
 
         public static void DisconnectHandler(DisconnectType type, string message)
@@ -122,10 +123,14 @@ namespace sldump
 			// Login was successful
 			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
 
-			while (true)
+            int start = Environment.TickCount;
+
+			while (Environment.TickCount - start < 10000)
 			{
-				client.Tick();
+                System.Threading.Thread.Sleep(100);
 			}
+
+            client.Network.Logout();
 		}
 	}
 }

@@ -72,7 +72,7 @@ namespace ParcelDownloader
 			{
                 Parcel parcel = (Parcel)client.Network.CurrentSim.Region.Parcels[pkey];
 				// Probably should comment this out :-)
-				//parcel.Buy(client,false,new LLUUID());
+                //parcel.Buy(client, false, LLUUID.Zero);
 				Console.WriteLine("<Parcel>");
 				Console.WriteLine("\tName: " + parcel.Name);
 				Console.WriteLine("\tSize: " + parcel.Area);

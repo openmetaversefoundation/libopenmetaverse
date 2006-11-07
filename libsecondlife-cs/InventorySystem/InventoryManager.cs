@@ -484,7 +484,7 @@ namespace libsecondlife.InventorySystem
             InventoryItem invItem;
             InventoryFolder invFolder;
 
-            LLUUID uuidFolderID = new LLUUID();
+            LLUUID uuidFolderID = LLUUID.Zero;
 
             int iDescendentsExpected = int.MaxValue;
             int iDescendentsReceivedThisBlock = 0;

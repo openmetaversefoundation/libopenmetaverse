@@ -144,7 +144,7 @@ namespace libsecondlife
         public Group(LLUUID id)
         {
             ID = id;
-            InsigniaID = new LLUUID();
+            InsigniaID = LLUUID.Zero;
         }
 
         /// <summary>

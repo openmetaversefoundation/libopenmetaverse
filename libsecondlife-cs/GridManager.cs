@@ -96,7 +96,7 @@ namespace libsecondlife
 		{
 			Client = client;
 			Regions = new Dictionary<string, GridRegion>();
-            SunDirection = new LLVector3();
+            SunDirection = LLVector3.Zero;
 
 			Client.Network.RegisterCallback(PacketType.MapBlockReply, new PacketCallback(MapBlockReplyHandler));
             Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new PacketCallback(TimeMessageHandler));

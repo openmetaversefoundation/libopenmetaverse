@@ -169,27 +169,27 @@ namespace libsecondlife
         public event BalanceCallback OnBalanceUpdated;
 
         /// <summary>Your (client) Avatar UUID, asset server</summary>
-        public LLUUID ID;
+        public LLUUID ID = LLUUID.Zero;
         /// <summary>Your (client) Avatar ID, local to Region/sim</summary>
         public uint LocalID;
         /// <summary>Avatar First Name (i.e. Philip)</summary>
-        public string FirstName;
+        public string FirstName = "";
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
-        public string LastName;
+        public string LastName = "";
         /// <summary></summary>
         public string TeleportMessage;
         /// <summary>Current position of avatar</summary>
-        public LLVector3 Position;
+        public LLVector3 Position = LLVector3.Zero;
         /// <summary>Current rotation of avatar</summary>
-        public LLQuaternion Rotation;
+        public LLQuaternion Rotation = LLQuaternion.Unit;
         /// <summary>The point the avatar is currently looking at
         /// (may not stay updated)</summary>
-        public LLVector3 LookAt;
+        public LLVector3 LookAt = LLVector3.Zero;
         /// <summary>Position avatar client will goto when login to 'home' or during
         /// teleport request to 'home' region.</summary>
-        public LLVector3 HomePosition;
+        public LLVector3 HomePosition = LLVector3.Zero;
         /// <summary>LookAt point saved/restored with HomePosition</summary>
-        public LLVector3 HomeLookAt;
+        public LLVector3 HomeLookAt = LLVector3.Zero;
         /// <summary>Gets the health of the agent</summary>
         protected float health;
         public float Health
@@ -219,10 +219,6 @@ namespace libsecondlife
             PacketCallback callback;
             Client = client;
             TeleportMessage = "";
-
-            // Create emtpy vectors for now
-            HomeLookAt = HomePosition = Position = LookAt = new LLVector3();
-            Rotation = new LLQuaternion();
 
             // Coarse location callback
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new PacketCallback(CoarseLocationHandler));
@@ -331,9 +327,9 @@ namespace libsecondlife
             }
 
             // These fields are mandatory, even if we don't have valid values for them
-            im.MessageBlock.Position = new LLVector3();
+            im.MessageBlock.Position = LLVector3.Zero;
                 //TODO: Allow region id to be correctly set by caller or fetched from Client.*
-            im.MessageBlock.RegionID = new LLUUID(); 
+            im.MessageBlock.RegionID = LLUUID.Zero; 
 
 
             // Send the message
@@ -449,7 +445,7 @@ namespace libsecondlife
 
             autopilot.AgentData.AgentID = Client.Network.AgentID;
             autopilot.AgentData.SessionID = Client.Network.SessionID;
-            autopilot.MethodData.Invoice = new LLUUID();
+            autopilot.MethodData.Invoice = LLUUID.Zero;
             autopilot.MethodData.Method = Helpers.StringToField("autopilot");
             autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
             autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
@@ -660,9 +656,9 @@ namespace libsecondlife
             update.AgentData.AgentID = Client.Network.AgentID;
             update.AgentData.SessionID = Client.Network.SessionID;
             update.AgentData.State = 0;
-            update.AgentData.BodyRotation = new LLQuaternion(0, 0.6519076f, 0, 0);
-            update.AgentData.HeadRotation = new LLQuaternion();
             // Semi-sane default values
+            update.AgentData.BodyRotation = new LLQuaternion(0, 0.6519076f, 0, 0);
+            update.AgentData.HeadRotation = LLQuaternion.Unit;
             update.AgentData.CameraCenter = new LLVector3(9.549901f, 7.033957f, 11.75f);
             update.AgentData.CameraAtAxis = new LLVector3(0.7f, 0.7f, 0);
             update.AgentData.CameraLeftAxis = new LLVector3(-0.7f, 0.7f, 0);

@@ -1208,7 +1208,7 @@ namespace libsecondlife
             MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
             money.AgentData.AgentID = AgentID;
             money.AgentData.SessionID = SessionID;
-            money.MoneyData.TransactionID = new LLUUID();
+            money.MoneyData.TransactionID = LLUUID.Zero;
             SendPacket(money);
 
             // FIXME: MainAvatar can request the info if it wants to use it
