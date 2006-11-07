@@ -464,11 +464,11 @@ namespace libsecondlife
 		public float X;
 		public float Y;
 		public float Z;
-		public float S;
+		public float W;
 
 		public LLQuaternion()
 		{
-			X = Y = Z = S = 0.0F;
+			X = Y = Z = W = 0.0F;
 		}
 
 		public LLQuaternion(byte[] byteArray, int pos)
@@ -477,45 +477,57 @@ namespace libsecondlife
 				Array.Reverse(byteArray, pos,4);
 				Array.Reverse(byteArray, pos + 4, 4);
 				Array.Reverse(byteArray, pos + 8, 4);
-				Array.Reverse(byteArray, pos + 12, 4);
 			}
 
 			X = BitConverter.ToSingle(byteArray, pos);
 			Y = BitConverter.ToSingle(byteArray, pos + 4);
 			Z = BitConverter.ToSingle(byteArray, pos + 8);
-			S = BitConverter.ToSingle(byteArray, pos + 12);
+
+            float xyzsum = 1 - X * X - Y * Y - Z * Z;
+            W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
 		}
 
-		public LLQuaternion(float x, float y, float z, float s)
+		public LLQuaternion(float x, float y, float z, float w)
 		{
 			X = x;
 			Y = y;
 			Z = z;
-			S = s;
+			W = w;
 		}
 
 		public byte[] GetBytes()
 		{
-			byte[] byteArray = new byte[16];
+            byte[] bytes = new byte[12];
+            float norm;
 
-			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
-			Array.Copy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
+            norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
-			if(!BitConverter.IsLittleEndian) {
-				Array.Reverse(byteArray, 0, 4);
-				Array.Reverse(byteArray, 4, 4);
-				Array.Reverse(byteArray, 8, 4);
-				Array.Reverse(byteArray, 12, 4);
-			}
+            if (norm != 0)
+            {
+                norm = 1 / norm;
 
-			return byteArray;
+                Array.Copy(BitConverter.GetBytes(norm * X), 0, bytes, 0, 4);
+                Array.Copy(BitConverter.GetBytes(norm * Y), 0, bytes, 4, 4);
+                Array.Copy(BitConverter.GetBytes(norm * Z), 0, bytes, 8, 4);
+
+                if (!BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(bytes, 0, 4);
+                    Array.Reverse(bytes, 4, 4);
+                    Array.Reverse(bytes, 8, 4);
+                }
+            }
+            else
+            {
+                throw new Exception("Quaternion <" + X + "," + Y + "," + Z + "," + W + "> normalized to zero");
+            }
+
+            return bytes;
 		}
 
 		public override string ToString()
 		{
-			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
+			return "<" + X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + W.ToString() + ">";
 		}
 	}
 

@@ -487,18 +487,16 @@ public class Analyst {
 							Array.Copy(BitConverter.GetBytes(vector4S), 0, vector4Bytes, 12, 4);
 							return new LLVector4(vector4Bytes, 0);
 						case FieldType.LLQuaternion:
-							Match quaternionMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
+							Match quaternionMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
 							if (!quaternionMatch.Success)
 								throw new Exception();
 							float quaternionX = Convert.ToSingle(quaternionMatch.Groups[1].Captures[0].ToString());
 							float quaternionY = Convert.ToSingle(quaternionMatch.Groups[2].Captures[0].ToString());
 							float quaternionZ = Convert.ToSingle(quaternionMatch.Groups[3].Captures[0].ToString());
-							float quaternionS = Convert.ToSingle(quaternionMatch.Groups[4].Captures[0].ToString());
-							byte[] quaternionBytes = new byte[16];
+							byte[] quaternionBytes = new byte[12];
 							Array.Copy(BitConverter.GetBytes(quaternionX), 0, quaternionBytes,  0, 4);
 							Array.Copy(BitConverter.GetBytes(quaternionY), 0, quaternionBytes,  4, 4);
 							Array.Copy(BitConverter.GetBytes(quaternionZ), 0, quaternionBytes,  8, 4);
-							Array.Copy(BitConverter.GetBytes(quaternionS), 0, quaternionBytes, 12, 4);
 							return new LLQuaternion(quaternionBytes, 0);
 						case FieldType.IPADDR:
 							return IPAddress.Parse(value);

@@ -142,7 +142,7 @@ namespace libsecondlife
 			TypeSizes.Add(FieldType.LLVector3, 12);
 			TypeSizes.Add(FieldType.LLVector3d, 24);
 			TypeSizes.Add(FieldType.LLVector4, 16);
-			TypeSizes.Add(FieldType.LLQuaternion, 16);
+			TypeSizes.Add(FieldType.LLQuaternion, 12);
 			TypeSizes.Add(FieldType.IPADDR, 4);
 			TypeSizes.Add(FieldType.IPPORT, 2);
 			TypeSizes.Add(FieldType.Variable, -1);
