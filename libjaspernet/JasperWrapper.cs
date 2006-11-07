@@ -115,7 +115,7 @@ public class JasperWrapper
     [DllImport(JASPER_LIBRARY)]
     private static extern int jas_setdbglevel(int level);
 
-    [DllImport(JASPER_LIBRARY)]
+    [DllImport(JASPER_LIBRARY, CharSet=CharSet.Ansi)]
     public static extern IntPtr jas_stream_fopen(string filename, string mode);
 
     [DllImport(JASPER_LIBRARY)]
@@ -148,16 +148,16 @@ public class JasperWrapper
     public static extern int jas_image_getfmt(IntPtr stream);
 
     /* Get the ID for the image format with the specified name. */
-    [DllImport(JASPER_LIBRARY)]
+    [DllImport(JASPER_LIBRARY, CharSet=CharSet.Ansi)]
     private static extern int jas_image_strtofmt(string name);
 
-    [DllImport(JASPER_LIBRARY)]
+    [DllImport(JASPER_LIBRARY, CharSet=CharSet.Ansi)]
     public static extern int jas_image_fmtfromname(string filename);
 
-    [DllImport(JASPER_LIBRARY)]
+    [DllImport(JASPER_LIBRARY, CharSet=CharSet.Ansi)]
     public static extern int jas_image_encode(IntPtr image, IntPtr out_stream, int fmt, string optstr);
 
-    [DllImport(JASPER_LIBRARY)]
+    [DllImport(JASPER_LIBRARY, CharSet=CharSet.Ansi)]
     public static extern IntPtr jas_image_decode(IntPtr in_stream, int fmt, string optstr);
 
     [DllImport(JASPER_LIBRARY)]
@@ -177,7 +177,7 @@ public class JasperWrapper
 
     public static string get_jasper_version()
     {
-        string text = Marshal.PtrToStringAuto(jas_getversion());
+        string text = Marshal.PtrToStringAnsi(jas_getversion());
         if (text == null) throw new Exception("jas_getversion returned NULL\n");
         return text;
     }
@@ -222,44 +222,46 @@ public class JasperWrapper
         get { return get_jasper_version(); }
     }
 
+    /* This function can convert any file format that GeoJASPER can read
+       (tif, jpg, bmp, pnm, ras) into j2c.  The input format is determined
+       by the extension of the input file. */
 
-	public static byte[] jasper_encode_tiff_to_j2c(string filename) {
-		jasper_init();
-		IntPtr input_stream_ptr = jas_stream_fopen(filename, "rb");  // may need string conversion magic here on windows, sorry. :P
-		
-		int format = jas_image_getfmt(input_stream_ptr);
-		
-        Console.WriteLine("file is format # " + format);
-		
-        IntPtr image_ptr = jas_image_decode(input_stream_ptr, format, "");
-        if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
-        jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
-		
-        int output_buffer_size = 1048576;  // insert some good way of figuring out max output size here
-		
-        IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
-        IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
-		
-        Console.WriteLine("Ready to encode");
-        Console.WriteLine("jas_image_strtofmt(j2c)=" + jas_image_strtofmt("j2c"));
-        Console.WriteLine("jas_image_strtofmt(tif)=" + jas_image_strtofmt("tif"));
-        int retval = jas_image_encode(image_ptr, output_stream_ptr,
-									  jas_image_strtofmt("j2c"), "");
-		
-        jas_stream_flush(output_stream_ptr);
-        if (retval != 0) throw new Exception("Error encoding image: " + retval);
-		
-        byte[] buf = new byte[output_buffer_size];
-        Marshal.Copy(bufPtr, buf, 0, output_buffer_size);
-        Marshal.FreeHGlobal(bufPtr);
-		
-        jas_image_destroy(image_ptr);
-		
-        jas_stream_close(input_stream_ptr);
-		
-        return buf;
-	}
-	
+    public static byte[] jasper_encode_j2c(string filename) {
+      jasper_init();
+      IntPtr input_stream_ptr = jas_stream_fopen(filename, "rb");
+      int format = jas_image_getfmt(input_stream_ptr);
+      
+      Console.WriteLine("file is format # " + format);
+      
+      IntPtr image_ptr = jas_image_decode(input_stream_ptr, format, "");
+      if (image_ptr == IntPtr.Zero) throw new Exception("Error decoding image");
+      jas_image_t image_struct = jas_image_t.fromPtr(image_ptr);
+      
+      int output_buffer_size = 1048576;  // insert some good way of figuring out max output size here
+      
+      IntPtr bufPtr = Marshal.AllocHGlobal(output_buffer_size);
+      IntPtr output_stream_ptr = jas_stream_memopen(bufPtr, output_buffer_size);
+      
+      Console.WriteLine("Ready to encode");
+      Console.WriteLine("jas_image_strtofmt(j2c)=" + jas_image_strtofmt("j2c"));
+      Console.WriteLine("jas_image_strtofmt(tif)=" + jas_image_strtofmt("tif"));
+      int retval = jas_image_encode(image_ptr, output_stream_ptr,
+				    jas_image_strtofmt("j2c"), "");
+      
+      jas_stream_flush(output_stream_ptr);
+      if (retval != 0) throw new Exception("Error encoding image: " + retval);
+      
+      byte[] buf = new byte[output_buffer_size];
+      Marshal.Copy(bufPtr, buf, 0, output_buffer_size);
+      Marshal.FreeHGlobal(bufPtr);
+      
+      jas_image_destroy(image_ptr);
+      
+      jas_stream_close(input_stream_ptr);
+      
+      return buf;
+    }
+    
     public static byte[] jasper_decode_j2c_to_tiff(byte[] input)
     {
         jasper_init();
