@@ -352,13 +352,16 @@ namespace libsecondlife.AssetSystem
             TransferRequest tr;
             lock (htDownloadRequests)
             {
-                tr = htDownloadRequests[ImageID];
+                try
+                {
+                    tr = htDownloadRequests[ImageID];
+                }
+                catch (Exception e)
+                {
+                    // Received a packet for an image we didn't request...
+                    return;
+                }
             }
-			if( tr == null )
-			{
-                // Received a packet for an image we didn't request...
-				return;
-			}
 
             // Initialize the request so that it's data buffer is the right size for the image
 			tr.Size = Size;

@@ -15,7 +15,7 @@ namespace IA_ImageTool
     /// </summary>
     class ImageTool : SimpleInventory
     {
-        private LLUUID _ImageID;
+        private List<LLUUID> _ImageIDs = new List<LLUUID>();
         private string _FileName;
         private bool _Put;
         private double _Rate;
@@ -39,7 +39,7 @@ namespace IA_ImageTool
             }
 
 
-            LLUUID id = null;
+            List<LLUUID> uuidList = new List<LLUUID>();
             string filename = "";
             bool put = false;
             double rate = 0;
@@ -57,7 +57,22 @@ namespace IA_ImageTool
                     filename = args[4];
                 }
             }
-            else
+            else if (args[3].ToLower().Equals("getfile"))
+            {
+                if (args.Length < 5)
+                {
+                    ImageTool.Usage();
+                    return;
+                }
+
+                foreach( string id in File.ReadAllLines(args[4]) )
+                {
+                    uuidList.Add(id);
+                }
+
+
+            } 
+            else 
             {
                 if (args.Length < 6)
                 {
@@ -65,7 +80,8 @@ namespace IA_ImageTool
                     return;
                 }
 
-                id = new LLUUID(args[4]);
+                uuidList = new List<LLUUID>();
+                uuidList.Add( new LLUUID(args[4]) );
                 if (args.Length == 6)
                 {
                     filename = args[5];
@@ -76,7 +92,7 @@ namespace IA_ImageTool
                 }
             }
 
-            ImageTool it = new ImageTool(id, filename, put, rate);
+            ImageTool it = new ImageTool(uuidList, filename, put, rate);
 
             // Only download the inventory tree if we're planning on putting/uploading files.
             it.DownloadInventoryOnConnect = put; 
@@ -92,9 +108,9 @@ namespace IA_ImageTool
             }
         }
 
-        protected ImageTool(LLUUID imageID, string filename, bool put, double rate)
+        protected ImageTool(List<LLUUID> imageIDs, string filename, bool put, double rate)
         {
-            _ImageID = imageID;
+            _ImageIDs = imageIDs;
             _FileName = filename;
             _Put = put;
             _Rate = rate;
@@ -127,22 +143,43 @@ namespace IA_ImageTool
             }
             else
             {
-                Console.WriteLine("Downloading: " + _ImageID);
+                foreach( LLUUID ImageID in _ImageIDs )
+                {
+                    string FileName;
+                    if (_ImageIDs.Count > 1)
+                    {
+                        FileName = ImageID.ToString();
+                    }
+                    else
+                    {
+                        FileName = _FileName;
+                    }
 
+                    Console.WriteLine("Downloading: " + ImageID);
 
-                int start = Environment.TickCount;
-                ImageManager im = new ImageManager(base.client, ImageManager.CacheTypes.Disk);
-                byte[] j2cdata = im.RequestImage(_ImageID);
-                int end = Environment.TickCount;
-                Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));
+                    int start = Environment.TickCount;
+                    byte[] j2cdata;
 
-                Console.WriteLine("Image Data Length :" + j2cdata.Length);
+                    try
+                    {
+                        j2cdata = client.Images.RequestImage(ImageID);
 
-                Console.WriteLine("Writing to: " + _FileName + ".tif");
-                File.WriteAllBytes(_FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
+                        int end = Environment.TickCount;
+                        Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));
 
-                Console.WriteLine("Writing to: " + _FileName + ".tga");
-                File.WriteAllBytes(_FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
+                        Console.WriteLine("Image Data Length :" + j2cdata.Length);
+
+                        Console.WriteLine("Writing to: " + FileName + ".tif");
+                        File.WriteAllBytes(FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
+
+                        Console.WriteLine("Writing to: " + FileName + ".tga");
+                        File.WriteAllBytes(FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("ERROR: Can't download image :: " + e.Message);
+                    }
+                }
 
             }
 
@@ -153,11 +190,13 @@ namespace IA_ImageTool
         protected static void Usage()
         {
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [get] [uuid] [(filename)]");
+            Console.WriteLine("Usage: ImageTool [first] [last] [password] [getfile] [filename]");
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [filename]");
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [bit-rate] [filename]");
 
             Console.WriteLine();
             Console.WriteLine("Example: ImageTool John Doe Password get 0444bf21-f77e-7f63-89e9-b839ec66bc15 cloud (this will output a bmp and a tiff)");
+            Console.WriteLine("Example: ImageTool John Doe Password getfile uuids.txt (this will download a list of textures, one per line)");
             Console.WriteLine("Example: ImageTool John Doe Password put Sample.tiff");
             Console.WriteLine("Example: ImageTool John Doe Password put 1.0 BigImage.tiff (this will compress the file with the given bit-rate)");
         }
