@@ -112,6 +112,24 @@ namespace libsecondlife
 
         private SecondLife Client;
 
+
+        /// <summary></summary>
+        private GridRegion _GridRegionData = null;
+        public GridRegion GridRegionData
+        {
+            get
+            {
+                if (_GridRegionData == null)
+                {
+                    if ((Name != null) && (!Name.Equals("")))
+                    {
+                        _GridRegionData = Client.Grid.GetGridRegion(Client.Network.CurrentSim.Region.Name);
+                    }
+                }
+                return _GridRegionData;
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>

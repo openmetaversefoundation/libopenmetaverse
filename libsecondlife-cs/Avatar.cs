@@ -473,7 +473,7 @@ namespace libsecondlife
         /// <example>AutoPilot(252620, 247078, 20.2674);</example>
         public void AutoPilotLocal(int localX, int localY, float z)
         {
-            GridRegion gr = Client.Grid.GetGridRegion(Client.Network.CurrentSim.Region.Name);
+            GridRegion gr = Client.Network.CurrentSim.Region.GridRegionData;
             ulong GridCornerX = ((ulong)gr.X * (ulong)256) + (ulong)localX;
             ulong GridCornerY = ((ulong)gr.Y * (ulong)256) + (ulong)localY;
             AutoPilot(GridCornerX, GridCornerY, z);
