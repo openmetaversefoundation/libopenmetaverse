@@ -735,6 +735,6 @@ namespace libsecondlife
         /// <summary>
         /// An LLQuaternion with a value of <0,0,0,1>
         /// </summary>
-        public readonly static LLQuaternion Unit = new LLQuaternion();
+        public readonly static LLQuaternion Identity = new LLQuaternion();
 	}
 }

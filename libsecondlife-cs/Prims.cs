@@ -94,7 +94,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public float PathRevolutions = 0;
         /// <summary></summary>
-		public LLQuaternion Rotation = LLQuaternion.Unit;
+        public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary></summary>
 		public uint State;
         /// <summary></summary>

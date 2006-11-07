@@ -181,7 +181,7 @@ namespace libsecondlife
         /// <summary>Current position of avatar</summary>
         public LLVector3 Position = LLVector3.Zero;
         /// <summary>Current rotation of avatar</summary>
-        public LLQuaternion Rotation = LLQuaternion.Unit;
+        public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary>The point the avatar is currently looking at
         /// (may not stay updated)</summary>
         public LLVector3 LookAt = LLVector3.Zero;
@@ -658,7 +658,7 @@ namespace libsecondlife
             update.AgentData.State = 0;
             // Semi-sane default values
             update.AgentData.BodyRotation = new LLQuaternion(0, 0.6519076f, 0, 0);
-            update.AgentData.HeadRotation = LLQuaternion.Unit;
+            update.AgentData.HeadRotation = LLQuaternion.Identity;
             update.AgentData.CameraCenter = new LLVector3(9.549901f, 7.033957f, 11.75f);
             update.AgentData.CameraAtAxis = new LLVector3(0.7f, 0.7f, 0);
             update.AgentData.CameraLeftAxis = new LLVector3(-0.7f, 0.7f, 0);
