@@ -264,6 +264,7 @@ namespace libsecondlife.InventorySystem
         internal InventoryItem(InventoryManager manager, InventoryDescendentsPacket.ItemDataBlock itemData)
             : base(manager)
         {
+
             _Name = System.Text.Encoding.UTF8.GetString(itemData.Name).Trim().Replace("\0", "");
             _Description = System.Text.Encoding.UTF8.GetString(itemData.Description).Trim().Replace("\0", "");
             _CreationDate = itemData.CreationDate;
@@ -271,6 +272,7 @@ namespace libsecondlife.InventorySystem
             _InvType = itemData.InvType;
             _Type = itemData.Type;
 
+            _ItemID = itemData.ItemID;
             _AssetID = itemData.AssetID;
             _FolderID = itemData.FolderID;
 
@@ -480,7 +482,16 @@ namespace libsecondlife.InventorySystem
             output += "groupmask = '" + GroupMask + "' ";
             output += "ownermask = '" + OwnerMask + "' ";
 
-            output += "/>\n";
+            output += ">";
+
+            if (outputAssets)
+            {
+                if (AssetID != new LLUUID())
+                {
+                    output += xmlSafe(Helpers.FieldToString(Asset.AssetData));
+                }
+            }
+            output += "</item>";
 
             return output;
         }

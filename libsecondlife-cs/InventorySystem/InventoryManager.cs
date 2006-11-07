@@ -497,27 +497,40 @@ namespace libsecondlife.InventorySystem
                 {
                     iDescendentsReceivedThisBlock++;
 
-                    invItem = new InventoryItem(this, itemBlock);
-
-                    InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
-
-                    if (ifolder.alContents.Contains(invItem) == false)
+                    if (itemBlock.ItemID == new LLUUID())
                     {
-                        if ((invItem.InvType == 7) && (invItem.Type == Asset.ASSET_TYPE_NOTECARD))
-                        {
-                            InventoryItem temp = new InventoryNotecard(this, invItem);
-                            invItem = temp;
-                        }
-
-                        if ((invItem.InvType == 0) && (invItem.Type == Asset.ASSET_TYPE_IMAGE))
-                        {
-                            InventoryItem temp = new InventoryImage(this, invItem);
-                            invItem = temp;
-                        }
-
-                        ifolder.alContents.Add(invItem);
+                        // this shouldn't ever happen, but unless you've uploaded an invalid item
+                        // to yourself while developping inventory code
                     }
+                    else
+                    {
+                        invItem = new InventoryItem(this, itemBlock);
 
+                        if (invItem.AssetID == "1740c192ef6c4842ad57d879521b8689")
+                        {
+                            Console.WriteLine(itemBlock);
+                            Console.WriteLine(invItem.toXML(false));
+                        }
+
+                        InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
+
+                        if (ifolder.alContents.Contains(invItem) == false)
+                        {
+                            if ((invItem.InvType == 7) && (invItem.Type == Asset.ASSET_TYPE_NOTECARD))
+                            {
+                                InventoryItem temp = new InventoryNotecard(this, invItem);
+                                invItem = temp;
+                            }
+
+                            if ((invItem.InvType == 0) && (invItem.Type == Asset.ASSET_TYPE_IMAGE))
+                            {
+                                InventoryItem temp = new InventoryImage(this, invItem);
+                                invItem = temp;
+                            }
+
+                            ifolder.alContents.Add(invItem);
+                        }
+                    }
                 }
             }
 
