@@ -658,20 +658,6 @@ namespace libsecondlife
         /// <returns></returns>
 		public byte[] GetBytes()
 		{
-            //byte[] byteArray = new byte[16];
-
-            //Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-            //Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-            //Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
-            //Array.Copy(BitConverter.GetBytes(W), 0, byteArray, 12, 4);
-
-            //if(!BitConverter.IsLittleEndian) {
-            //    Array.Reverse(byteArray, 0, 4);
-            //    Array.Reverse(byteArray, 4, 4);
-            //    Array.Reverse(byteArray, 8, 4);
-            //    Array.Reverse(byteArray, 12, 4);
-            //}
-
             byte[] bytes = new byte[12];
             float norm;
 

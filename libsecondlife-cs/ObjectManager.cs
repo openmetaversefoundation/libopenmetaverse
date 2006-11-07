@@ -75,6 +75,7 @@ namespace libsecondlife
         Prim = 9,
         Avatar = 47,
         Grass = 95,
+        ParticleSystem = 143,
         Tree = 255
     }
 
@@ -372,11 +373,14 @@ namespace libsecondlife
                         // FIXME: Handle tree objects
                         ;
                     }
+                    else if (block.PCode == (byte)PCode.ParticleSystem)
+                    {
+                        ;
+                    }
                     else
                     {
-                        // FIXME: Figure out what the unknown PCodes are
-                        Client.Log("Got an ObjectUpdate block with an unhandled PCode " +
-                            block.PCode, Helpers.LogLevel.Debug);
+                        // FIXME: How many of the PCodes do we actually need to handle?
+                        ;
                     }
                 }
             }
@@ -684,13 +688,12 @@ namespace libsecondlife
                     }
                     else if (pcode == (byte)PCode.Grass || pcode == (byte)PCode.Tree)
                     {
-                        // TODO:
+                        // TODO: Add new_tree and any other tree-like prims
                         ;
                     }
                     else
                     {
-                        Client.Log("Got an ObjectUpdateCompressed block with unhandled PCode " +
-                            pcode, Helpers.LogLevel.Debug);
+                        // TODO: ...
                         continue;
                     }
                 }

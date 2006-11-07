@@ -652,7 +652,7 @@ namespace libsecondlife
             update.AgentData.CameraLeftAxis = new LLVector3(-0.7f, 0.7f, 0);
             update.AgentData.CameraUpAxis = new LLVector3(0.1822026f, 0.9828722f, 0);
             update.AgentData.Far = 384;
-            update.AgentData.ControlFlags = 0; // TODO: What is this?
+            update.AgentData.ControlFlags = 0;
             update.AgentData.Flags = 0;
             update.Header.Reliable = reliable;
 
