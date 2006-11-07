@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using libsecondlife.Packets;
 using libsecondlife.AssetSystem;
@@ -545,6 +546,21 @@ namespace libsecondlife
             CRC += (uint)((uint)saleType * 0x07073096); // SaleType
 
             return CRC;
+        }
+
+        public static string MD5(string password)
+        {
+            StringBuilder digest = new StringBuilder();
+            System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
+
+            // Convert the hash to a hex string
+            foreach (byte b in hash)
+            {
+                digest.AppendFormat("{0:x2}", b);
+            }
+
+            return "$1$" + digest.ToString();
         }
     }
 }

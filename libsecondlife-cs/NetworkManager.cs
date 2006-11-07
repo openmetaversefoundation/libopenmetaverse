@@ -25,12 +25,10 @@
  */
 
 using System;
-using System.Text;
 using System.Timers;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using Nwc.XmlRpc;
 using Nii.JSON;
 using libsecondlife.Packets;
@@ -805,19 +803,9 @@ namespace libsecondlife
 		{
             Dictionary<string, object> values = new Dictionary<string, object>();
 
-			// Generate an MD5 hash of the password
-			MD5 md5 = new MD5CryptoServiceProvider();
-			byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
-			StringBuilder passwordDigest = new StringBuilder();
-			// Convert the hash to a hex string
-			foreach(byte b in hash)
-			{
-				passwordDigest.AppendFormat("{0:x2}", b);
-			}
-
 			values["first"] = firstName;
 			values["last"] = lastName;
-			values["passwd"] = "$1$" + passwordDigest;
+            values["passwd"] = Helpers.MD5(password);
 			values["start"] = startLocation;
 			values["major"] = major;
 			values["minor"] = minor;
