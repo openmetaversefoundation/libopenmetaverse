@@ -68,7 +68,7 @@ namespace libsecondlife
     /// <param name="binaryBucket"></param>
     public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName, 
         LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, 
-        bool dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
+        byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
         byte offline, byte[] binaryBucket);
 
     /// <summary>
@@ -716,7 +716,7 @@ namespace libsecondlife
                         , im.MessageBlock.ParentEstateID
                         , im.MessageBlock.RegionID
                         , im.MessageBlock.Position
-                        , Convert.ToBoolean(im.MessageBlock.Dialog)
+                        , im.MessageBlock.Dialog
                         , im.MessageBlock.FromGroup
                         , im.MessageBlock.ID
                         , new DateTime(im.MessageBlock.Timestamp)
