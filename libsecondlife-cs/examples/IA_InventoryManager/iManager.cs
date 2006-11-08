@@ -5,6 +5,7 @@ using System.Text;
 using IA_SimpleInventory;
 using libsecondlife;
 using libsecondlife.InventorySystem;
+using libsecondlife.AssetSystem;
 
 namespace IA_InventoryManager
 {
@@ -93,6 +94,14 @@ namespace IA_InventoryManager
                         rmdir(curCmdLine);
                         break;
 
+                    case "getasset":
+                        getasset(curCmdLine);
+                        break;
+
+                    case "regioninfo":
+                        regioninfo(curCmdLine);
+                        break;
+
                     default:
                         Console.WriteLine("Unknown command '" + curCmdLine[0] + "'.");
                         Console.WriteLine("Type HELP for a list of available commands.");
@@ -110,7 +119,46 @@ namespace IA_InventoryManager
             Console.WriteLine("CD [dir]    - Change directory.");
             Console.WriteLine("MKDIR [dir] - Make a new directory.");
             Console.WriteLine("RMDIR [dir] - Remove directory.");
+            Console.WriteLine("GETASSET [uuid] - Fetch an asset from SL.");
+            Console.WriteLine("REGIONINFO [name] - Display Grid Region Info.");
             Console.WriteLine("QUIT        - Exit the Inventory Manager.");
+        }
+
+        private void regioninfo(string[] cmdLine)
+        {
+            if (cmdLine.Length < 2)
+            {
+                Console.WriteLine("Usage: regioninfo [name]");
+                Console.WriteLine("Example: regioninfo ahern");
+                return;
+            }
+
+            string regionName = "";
+            for( int i = 1; i < cmdLine.Length; i++ )
+            {
+                regionName += cmdLine[i] + " ";
+            }
+            regionName = regionName.Trim();
+
+            GridRegion gr = client.Grid.GetGridRegion(regionName);
+            Console.WriteLine(gr);
+        }
+
+        private void getasset(string[] cmdLine)
+        {
+            if (cmdLine.Length < 3)
+            {
+                Console.WriteLine("Usage: getasset [type] [UUID]");
+                Console.WriteLine("Example: getasset 13 c2ca25c1fb242e41650a54901bc2d21c");
+                return;
+            }
+
+            Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
+
+            AgentInventory.getAssetManager().GetInventoryAsset(asset);
+
+            Console.WriteLine(asset.AssetDataToString());
+
         }
 
         private void rmdir(string[] cmdLine)

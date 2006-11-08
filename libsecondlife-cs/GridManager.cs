@@ -66,6 +66,22 @@ namespace libsecondlife
 		public GridRegion() 
 		{
 		}
+
+        public override string ToString()
+        {
+            string output = "GridRegion";
+            output += Environment.NewLine + "Name: " + Name;
+            output += Environment.NewLine + "RegionHandle: " + RegionHandle;
+            output += Environment.NewLine + "X: " + X;
+            output += Environment.NewLine + "Y: " + Y;
+            output += Environment.NewLine + "MapImageID: " + MapImageID;
+            output += Environment.NewLine + "Access: " + Access;
+            output += Environment.NewLine + "RegionFlags: " + RegionFlags;
+            output += Environment.NewLine + "WaterHeight: " + WaterHeight;
+            output += Environment.NewLine + "Agents: " + Agents;
+
+            return output;
+        }
 	}
 
 	/// <summary>
