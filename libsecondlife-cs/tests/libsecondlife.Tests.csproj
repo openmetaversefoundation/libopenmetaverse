@@ -37,7 +37,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DebugServer.cs" />
     <Compile Include="Tests.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -739,7 +739,7 @@ namespace libsecondlife
         public static string StartLocation(string sim, int x, int y, int z)
         {
             //uri:sim&x&y&z
-            return "uri:" + sim + "&" + x + "&" + y + "&" + z;
+            return "uri:" + sim.ToLower() + "&" + x + "&" + y + "&" + z;
         }
         
         /// <summary>
@@ -755,8 +755,9 @@ namespace libsecondlife
             string firstName, string lastName, string password, string userAgent, string author)
 		{
 			return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last", 
-				1, 50, 50, 50, "Win", "0", userAgent, author);
+				1, 50, 50, 50, "Win", "0", userAgent, author, false);
 		}
+
         /// <summary>
         /// 
         /// </summary>
@@ -767,17 +768,32 @@ namespace libsecondlife
         /// <param name="author"></param>
         /// <returns></returns>
         public static Dictionary<string, object> DefaultLoginValues(
-            string firstName, string lastName, string password, string startLocation, string userAgent, string author)
+            string firstName, string lastName, string password, string startLocation, string userAgent, string author, 
+            bool md5pass)
         {
             return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", startLocation,
-                1, 50, 50, 50, "Win", "0", userAgent, author);
+                1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="password"></param>
+        /// <param name="mac"></param>
+        /// <param name="startLocation"></param>
+        /// <param name="platform"></param>
+        /// <param name="viewerDigest"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="author"></param>
+        /// <returns></returns>
         public static Dictionary<string, object> DefaultLoginValues(string firstName, 
             string lastName, string password, string mac, string startLocation, string platform, 
             string viewerDigest, string userAgent, string author)
         {
             return DefaultLoginValues(firstName, lastName, password, mac, startLocation,
-                1, 50, 50, 50, platform, viewerDigest, userAgent, author);
+                1, 50, 50, 50, platform, viewerDigest, userAgent, author, false);
         }
 
         /// <summary>
@@ -799,13 +815,13 @@ namespace libsecondlife
         /// <returns></returns>
         public static Dictionary<string, object> DefaultLoginValues(string firstName, 
             string lastName, string password, string mac, string startLocation, int major, int minor, 
-            int patch, int build, string platform, string viewerDigest, string userAgent, string author)
+            int patch, int build, string platform, string viewerDigest, string userAgent, string author, bool md5pass)
 		{
             Dictionary<string, object> values = new Dictionary<string, object>();
 
 			values["first"] = firstName;
 			values["last"] = lastName;
-            values["passwd"] = Helpers.MD5(password);
+            values["passwd"] = md5pass ? password : Helpers.MD5(password);
 			values["start"] = startLocation;
 			values["major"] = major;
 			values["minor"] = minor;
@@ -814,6 +830,7 @@ namespace libsecondlife
 			values["platform"] = platform;
 			values["mac"] = mac;
 			values["agree_to_tos"] = "true";
+            values["read_critical"] = "true";
 			values["viewer_digest"] = viewerDigest;
 			values["user-agent"] = userAgent + " (" + Helpers.VERSION + ")";
 			values["author"] = author;
@@ -851,11 +868,28 @@ namespace libsecondlife
         /// </summary>
         /// <remarks>Uses the ConnectedCallback delegate.</remarks>
         public event ConnectedCallback OnConnected;
-        
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="password"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="author"></param>
+        /// <returns></returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string author)
         {
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName, 
-                password, userAgent, author);
+                password, "last", userAgent, author, false);
+            return Login(loginParams);
+        }
+
+        public bool Login(string firstName, string lastName, string password, string userAgent, string start, 
+            string author, bool md5pass)
+        {
+            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName,
+                password, userAgent, start, author, md5pass);
             return Login(loginParams);
         }
 
@@ -889,7 +923,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-				LoginError = e.Message;
+				LoginError = "XML-RPC Error: " + e.Message;
 				LoginValues = null;
 				return false;
 			}
@@ -897,7 +931,7 @@ namespace libsecondlife
 			if (result.IsFault)
 			{
 				Client.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
-				LoginError = "Fault " + result.FaultCode + ": " + result.FaultString;
+				LoginError = "XML-RPC Fault: " + result.FaultCode + ": " + result.FaultString;
 				LoginValues = null;
 				return false;
 			}

@@ -8,88 +8,68 @@ using NUnit.Framework;
 namespace libsecondlife.Tests
 {
     [TestFixture]
-    public class EndianTests : Assert
+    public class UnitTests : Assert
     {
-        SecondLife Client = null;
-        DebugServer Server = null;
-        Packet CurrentPacket = null;
-        bool NetworkFinished = false;
+        SecondLife Client;
+        ulong CurrentRegionHandle = 0;
+        ulong AhernRegionHandle = 1096213093149184;
 
         [SetUp]
         public void Init()
         {
             Client = new SecondLife();
-            Client.Network.AgentID = LLUUID.GenerateUUID();
-            Client.Network.SessionID = LLUUID.GenerateUUID();
 
-            Server = new DebugServer("keywords.txt", "message_template.msg", 8338);
-            Assert.IsTrue(Server.Initialized, "Failed to initialize the server, couldn't bind to port 8338?");
+            //string startLoc = NetworkManager.StartLocation("ahern", 128, 128, 32);
 
-            Simulator debugSim = Client.Network.Connect(IPAddress.Loopback, 8338, 1, true);
-            Assert.IsNotNull(debugSim, "Failed to connect to the debugging simulator");
+            // Register callbacks
+            Client.Network.RegisterCallback(PacketType.ObjectUpdate, new PacketCallback(ObjectUpdateHandler));
 
-            Client.Network.RegisterCallback(PacketType.SimulatorAssign, new PacketCallback(SimulatorAssignHandler));
-        }
+            bool result = Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework",
+                "contact@libsecondlife.org");
 
-        [Test]
-        public void U8Receive()
-        {
-            CurrentPacket = null;
-            NetworkFinished = false;
-
-            // 2. Instruct the server to send a SimulatorAssign to the client with some fixed values
+            Assert.IsTrue(result, "Login failed for Testing Anvil: " + Client.Network.LoginError);
 
             int start = Environment.TickCount;
-
-            while (!NetworkFinished && Environment.TickCount - start < 5000)
+            while (Client.Network.CurrentSim.Region.Name == "")
             {
-                System.Threading.Thread.Sleep(0);
+                if (Environment.TickCount - start > 5000)
+                {
+                    Assert.Fail("Timeout waiting for a RegionHandshake packet");
+                }
             }
 
-            // 5. Parse the Packet and run our assertion(s)
-            Assert.IsNotNull(CurrentPacket, "Never received the packet");
-            Assert.IsTrue(true);
+            Assert.AreEqual(Client.Network.CurrentSim.Region.Name.ToLower(), "ahern", "Logged in to sim " + 
+                Client.Network.CurrentSim.Region.Name + " instead of Ahern");
         }
 
         [Test]
-        public void S8Receive()
+        public void U64Receive()
         {
-            ;
+            int start = Environment.TickCount;
+            while (CurrentRegionHandle == 0)
+            {
+                if (Environment.TickCount - start > 5000)
+                {
+                    Assert.Fail("Timeout waiting for an ObjectUpdate packet");
+                }
+            }
+
+            Assert.IsTrue(CurrentRegionHandle == AhernRegionHandle, "Current region is " +
+                CurrentRegionHandle + " when we were expecting " + AhernRegionHandle + ", possible endian issue");
         }
 
-        [Test]
-        public void U16Receive()
+        private void ObjectUpdateHandler(Packet packet, Simulator sim)
         {
-            ;
-        }
+            ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
 
-        [Test]
-        public void S16Receive()
-        {
-            ;
-        }
-
-        private void SimulatorAssignHandler(Packet packet, Simulator sim)
-        {
-            CurrentPacket = packet;
-            NetworkFinished = true;
+            CurrentRegionHandle = update.RegionData.RegionHandle;
         }
 
         [TearDown]
         public void Shutdown()
         {
-            try
-            {
-                Client.Network.SendPacket(System.Text.Encoding.UTF8.GetBytes("stopserver"));
-                Client.Network.Logout();
-            }
-            catch (NotConnectedException)
-            {
-                Assert.IsTrue(false, "Logout failed, not connected");
-            }
-
+            Client.Network.Logout();
             Client = null;
-            Server = null;
         }
     }
 }

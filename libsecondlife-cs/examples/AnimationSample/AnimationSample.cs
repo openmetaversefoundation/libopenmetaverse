@@ -50,13 +50,8 @@ namespace AnimationSample
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            //Login information
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirst.Text, txtLast.Text, txtPassword.Text, "00:00:00:00:00:00",
-                "last", 1, 12, 12, 12, "Win", "0", "animationsample", "jessemalthus@gmail.com");
-            Hashtable loginReply = new Hashtable();
-
             // Login
-            if (!client.Network.Login(loginParams))
+            if (!client.Network.Login(txtFirst.Text, txtLast.Text, txtPassword.Text, "animationsample", "jessemalthus@gmail.com"))
             {
                 // Login failed
                 MessageBox.Show("We're sorry, but login failed. Error: \n " + client.Network.LoginError);
