@@ -49,7 +49,7 @@ namespace IA_InventoryManager
             System.Threading.Thread.Sleep(1000);
 
             Console.WriteLine("==================================================================");
-            Console.WriteLine("The Inventory Manager program provides a simple shell for working with your Second Life[tm] Avatar's Inventory.");
+            Console.WriteLine("The Inventory Manager program provides a simple shell for working with your Second Life[tm] Avatar.");
             Console.WriteLine();
             Console.WriteLine("Type HELP for a list of available commands.");
             Console.WriteLine("-------------------------------------------");
@@ -69,6 +69,7 @@ namespace IA_InventoryManager
                 {
                     case "quit":
                     case "exit":
+                    case "bye":
                     case "q":
                         shutdown = true;
                         break;
@@ -102,6 +103,10 @@ namespace IA_InventoryManager
                         regioninfo(curCmdLine);
                         break;
 
+                    case "teleport":
+                        teleport(curCmdLine);
+                        break;
+
                     default:
                         Console.WriteLine("Unknown command '" + curCmdLine[0] + "'.");
                         Console.WriteLine("Type HELP for a list of available commands.");
@@ -116,12 +121,41 @@ namespace IA_InventoryManager
         {
             Console.WriteLine("Currently available commands are: ");
             Console.WriteLine("LS          - List contents of the current directory.");
-            Console.WriteLine("CD [dir]    - Change directory.");
-            Console.WriteLine("MKDIR [dir] - Make a new directory.");
-            Console.WriteLine("RMDIR [dir] - Remove directory.");
-            Console.WriteLine("GETASSET [uuid] - Fetch an asset from SL.");
-            Console.WriteLine("REGIONINFO [name] - Display Grid Region Info.");
+            Console.WriteLine("CD          - Change directory.");
+            Console.WriteLine("MKDIR       - Make a new directory.");
+            Console.WriteLine("RMDIR       - Remove directory.");
+            Console.WriteLine("GETASSET    - Fetch an asset from SL.");
+            Console.WriteLine("REGIONINFO  - Display Grid Region Info.");
+            Console.WriteLine("TELEPORT    - Teleport to a new sim.");
             Console.WriteLine("QUIT        - Exit the Inventory Manager.");
+        }
+
+        private void teleport(string[] cmdLine)
+        {
+            if (cmdLine.Length < 5)
+            {
+                Console.WriteLine("Usage: teleport [sim] [x] [y] [z]");
+                Console.WriteLine("Example: teleport hooper 182 40 26");
+                return;
+            }
+
+            if (cmdLine[1].ToLower() == client.Network.CurrentSim.Region.Name.ToLower())
+            {
+                Console.WriteLine("TODO: Add the ability to teleport somewhere in the local region. " +
+                    "Exiting for now, please specify a region other than the current one");
+            }
+            else
+            {
+                if (client.Grid.Regions.Count == 0)
+                {
+                    Console.WriteLine("Caching estate sims...");
+                    client.Grid.AddEstateSims();
+                    System.Threading.Thread.Sleep(3000);
+                }
+
+                
+                client.Self.Teleport(cmdLine[1], new LLVector3( float.Parse(cmdLine[2]), float.Parse(cmdLine[3]), float.Parse(cmdLine[4]) ) );
+            }
         }
 
         private void regioninfo(string[] cmdLine)
