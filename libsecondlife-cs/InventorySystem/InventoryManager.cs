@@ -259,13 +259,17 @@ namespace libsecondlife.InventorySystem
 
 
                 Packet packet = InvPacketHelper.CreateInventoryItem(iitem);
-                slClient.Network.SendPacket(packet);
+                int i = 0;
+                do
+                {
+                    if (i++ > 10)
+                        throw new Exception("Could not create " + iitem.Name);
+                    slClient.Network.SendPacket(packet);
 
 #if DEBUG_PACKETS
                 Console.WriteLine(packet);
 #endif
-
-                ItemCreationCompleted.WaitOne();
+                } while (!ItemCreationCompleted.WaitOne(5000, false));
             }
             finally
             {
