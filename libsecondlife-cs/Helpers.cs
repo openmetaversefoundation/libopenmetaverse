@@ -192,7 +192,7 @@ public class Helpers
 
     public static uint GetUnixTime()
     {
-        return (uint)Environment.TickCount;
+        return (uint)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
     }
 
     /// <summary>
