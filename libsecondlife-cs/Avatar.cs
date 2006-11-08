@@ -42,7 +42,7 @@ namespace libsecondlife
     /// <param name="FromName"></param>
     /// <param name="ID"></param>
     public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
-        string fromName, LLUUID id);
+        string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
 
     /// <summary>
     /// Triggered when the L$ account balance for this avatar changes
@@ -738,8 +738,15 @@ namespace libsecondlife
 
                 if (OnChat != null)
                 {
-                    OnChat(Helpers.FieldToString(chat.ChatData.Message), chat.ChatData.Audible, chat.ChatData.ChatType, 
-                        chat.ChatData.SourceType, Helpers.FieldToString(chat.ChatData.FromName), chat.ChatData.SourceID);
+                    OnChat(Helpers.FieldToString(chat.ChatData.Message)
+                            , chat.ChatData.Audible
+                            , chat.ChatData.ChatType
+                            , chat.ChatData.SourceType
+                            , Helpers.FieldToString(chat.ChatData.FromName)
+                            , chat.ChatData.SourceID
+                            , chat.ChatData.OwnerID
+                            , chat.ChatData.Position
+                            );
                 }
             }
         }

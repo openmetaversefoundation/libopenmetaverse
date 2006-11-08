@@ -121,7 +121,7 @@ namespace SLIRC
                 Invoke(new SingleStringDelegate(AddToAllowedList), new object[] { name });
             }
         }
-        void Avatar_OnChat(string message, byte audible, byte type, byte sourcetype, string name, LLUUID id)
+        void Avatar_OnChat(string message, byte audible, byte type, byte sourcetype, string name, LLUUID id, LLUUID ownerid, LLVector3 position)
         {
             if (message.Equals("addme"))
             {
