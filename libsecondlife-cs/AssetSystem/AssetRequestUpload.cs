@@ -25,6 +25,7 @@
  */
 
 //#define DEBUG_PACKETS
+#define DEBUG_HEADERS
 
 using System;
 using System.Collections.Generic;
@@ -130,6 +131,9 @@ namespace libsecondlife.AssetSystem
 #if DEBUG_PACKETS
                 Console.WriteLine(packet);
 #endif
+#if DEBUG_HEADERS
+                Console.WriteLine(packet.Header);
+#endif
 
         }
 
@@ -205,6 +209,9 @@ namespace libsecondlife.AssetSystem
 
 #if DEBUG_PACKETS
                 Console.WriteLine(uploadPacket);
+#endif
+#if DEBUG_HEADERS
+            Console.WriteLine(uploadPacket.Header);
 #endif
         }
 
