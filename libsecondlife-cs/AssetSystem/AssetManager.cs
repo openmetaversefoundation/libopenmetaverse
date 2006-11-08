@@ -152,6 +152,31 @@ namespace libsecondlife.AssetSystem
             item.SetAssetData(request.AssetData);
 		}
 
+		public void GetInventoryAsset( Asset asset )
+		{
+			LLUUID TransferID = LLUUID.GenerateUUID();
+
+            AssetRequestDownload request = new AssetRequestDownload(TransferID);
+            request.Size = int.MaxValue; // Number of bytes expected
+            request.Received = 0; // Number of bytes received
+            request.UpdateLastPacketTime(); // last time we recevied a packet for this request
+
+            htDownloadRequests[TransferID] = request;
+
+			Packet packet = AssetPacketHelpers.TransferRequest4BodyShape(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, asset );
+			slClient.Network.SendPacket(packet);
+
+            #if DEBUG_PACKETS
+                Console.WriteLine(packet);
+            #endif
+
+            request.Completed.WaitOne();
+
+            asset.AssetData = request.AssetData;
+            
+		}
+
+
         private void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS

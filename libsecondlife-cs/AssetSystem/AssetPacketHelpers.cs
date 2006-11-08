@@ -113,6 +113,11 @@ namespace libsecondlife.AssetSystem
         /// <param name="item"></param>
         public static Packet TransferRequest(LLUUID SessionID, LLUUID AgentID, LLUUID TransferID, InventoryItem item)
 		{
+            if (item.Asset.Type != 7)
+            {
+                Console.WriteLine("Warning: TransferRequest may not work for items other then notecards of type 7");
+            }
+
 			byte[] param = new byte[100];
 			int pos = 0;
 
@@ -147,5 +152,30 @@ namespace libsecondlife.AssetSystem
             return p;
         }
 
+        public static Packet TransferRequest4BodyShape(LLUUID SessionID, LLUUID AgentID, LLUUID TransferID, Asset asset)
+        {
+            if (asset.Type != 13)
+            {
+                Console.WriteLine("Warning: TransferRequest4BodyShape may not work for items of types other then 13");
+            }
+
+            byte[] param = new byte[20];
+            int pos = 0;
+
+            Array.Copy(asset.AssetID.Data, 0, param, pos, 16);
+            pos += 16;
+
+            param[pos] = (byte)asset.Type;
+            pos += 1;
+
+
+            TransferRequestPacket p = new TransferRequestPacket();
+            p.TransferInfo.TransferID = TransferID;
+            p.TransferInfo.Params = param;
+            p.TransferInfo.ChannelType = 2;
+            p.TransferInfo.SourceType = 2;
+            p.TransferInfo.Priority = (float)101.0;
+            return p;
+        }
 	}
 }
