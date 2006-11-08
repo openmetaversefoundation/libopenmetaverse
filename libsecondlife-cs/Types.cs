@@ -707,20 +707,12 @@ namespace libsecondlife
 
         public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
         {
-            float A = (lhs.W + lhs.X) * (rhs.W + rhs.X);
-            float B = (lhs.Z - lhs.Y) * (rhs.Y - rhs.Z);
-            float C = (lhs.X - lhs.W) * (rhs.Y - rhs.Z);
-            float D = (lhs.Y + lhs.Z) * (rhs.X - rhs.W);
-            float E = (lhs.X + lhs.Z) * (rhs.X + rhs.Y);
-            float F = (lhs.X - lhs.Z) * (rhs.X - rhs.Y);
-            float G = (lhs.W + lhs.Y) * (rhs.W - rhs.Z);
-            float H = (lhs.W - lhs.Y) * (rhs.W + rhs.Z);
-
-            return new LLQuaternion(
-                 A - ( E + F + G + H) / 2,  // X
-                -C + ( E - F + G - H) / 2,  // Y
-                -D + ( E - F - G + H) / 2,  // Z
-                 B + (-E - F + G + H) / 2); // W
+            LLQuaternion ret = new LLQuaternion();
+            ret.W = lhs.W * rhs.W - lhs.X * rhs.X - lhs.Y * rhs.Y - lhs.Z * rhs.Z;
+            ret.X = lhs.W * rhs.X + lhs.X * rhs.W + lhs.Y * rhs.Z - lhs.Z * rhs.Y;
+            ret.Y = lhs.W * rhs.Y + lhs.Y * rhs.W + lhs.Z * rhs.X - lhs.X * rhs.Z;
+            ret.Z = lhs.W * rhs.Z + lhs.Z * rhs.W + lhs.X * rhs.Y - lhs.Y * rhs.X;
+            return ret;
         }
 
         /// <summary>
