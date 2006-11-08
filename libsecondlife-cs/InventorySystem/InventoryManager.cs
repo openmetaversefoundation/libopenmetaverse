@@ -70,7 +70,7 @@ namespace libsecondlife.InventorySystem
         private InventoryItem iiCreationInProgress;
         public ManualResetEvent ItemCreationCompleted;
 
-        private uint LastPacketRecieved;
+        private int LastPacketRecievedAtTick;
 
         // Each InventorySystem needs to be initialized with a client and root folder.
         public InventoryManager(SecondLife client, LLUUID rootFolder)
@@ -382,7 +382,7 @@ namespace libsecondlife.InventorySystem
             }
 
             // Set last packet received to now, just so out time-out timer works
-            LastPacketRecieved = Helpers.GetUnixTime();
+            LastPacketRecievedAtTick = Environment.TickCount;
 
             // Send Packet requesting the root Folder, 
             // this should recurse through all folders
@@ -397,9 +397,10 @@ namespace libsecondlife.InventorySystem
                     RequestFolder(dr);
                 }
 
-                if ((Helpers.GetUnixTime() - LastPacketRecieved) > 10)
+                int curTick = Environment.TickCount;
+                if ((curTick - LastPacketRecievedAtTick) > 10000)
                 {
-                    Console.WriteLine("Time-out while waiting for packets (" + (Helpers.GetUnixTime() - LastPacketRecieved) + " seconds since last packet)");
+                    Console.WriteLine("Time-out while waiting for packets (" + ((curTick - LastPacketRecievedAtTick) / 1000) + " seconds since last packet)");
                     Console.WriteLine("Current Status:");
 
                     // have to make a seperate list otherwise we run into modifying the original array
@@ -413,12 +414,12 @@ namespace libsecondlife.InventorySystem
 
                     foreach (DescendentRequest dr in htFolderDownloadStatus.Values)
                     {
-                        Console.WriteLine(dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceived);
+                        Console.WriteLine(dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceivedAtTick);
 
                         alRestartList.Add(dr);
                     }
 
-                    LastPacketRecieved = Helpers.GetUnixTime();
+                    LastPacketRecievedAtTick = Environment.TickCount;
                     foreach (DescendentRequest dr in alRestartList)
                     {
                         RequestFolder(dr);
@@ -483,7 +484,7 @@ namespace libsecondlife.InventorySystem
         {
             InventoryDescendentsPacket reply = (InventoryDescendentsPacket)packet;
 
-            LastPacketRecieved = Helpers.GetUnixTime();
+            LastPacketRecievedAtTick = Environment.TickCount;
 
             InventoryItem invItem;
             InventoryFolder invFolder;
@@ -509,12 +510,6 @@ namespace libsecondlife.InventorySystem
                     else
                     {
                         invItem = new InventoryItem(this, itemBlock);
-
-                        if (invItem.AssetID == "1740c192ef6c4842ad57d879521b8689")
-                        {
-                            Console.WriteLine(itemBlock);
-                            Console.WriteLine(invItem.toXML(false));
-                        }
 
                         InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
 
@@ -601,14 +596,13 @@ namespace libsecondlife.InventorySystem
             }
             else
             {
-
                 // This one packet didn't have all the descendents we're expecting
                 // so update the total we're expecting, and update the total downloaded
 
                 DescendentRequest dr = (DescendentRequest)htFolderDownloadStatus[uuidFolderID];
                 dr.Expected = iDescendentsExpected;
                 dr.Received += iDescendentsReceivedThisBlock;
-                dr.LastReceived = Helpers.GetUnixTime();
+                dr.LastReceivedAtTick = Environment.TickCount;
 
                 if (dr.Received >= dr.Expected)
                 {
@@ -630,7 +624,7 @@ namespace libsecondlife.InventorySystem
 
             public int Expected = int.MaxValue;
             public int Received = 0;
-            public uint LastReceived = 0;
+            public int LastReceivedAtTick = 0;
 
             public bool FetchFolders = true;
             public bool FetchItems = true;
@@ -638,7 +632,7 @@ namespace libsecondlife.InventorySystem
             public DescendentRequest(LLUUID folderID)
             {
                 FolderID = folderID;
-                LastReceived = Helpers.GetUnixTime();
+                LastReceivedAtTick = Environment.TickCount;
             }
 
             public DescendentRequest(LLUUID folderID, bool fetchFolders, bool fetchItems)
@@ -646,7 +640,7 @@ namespace libsecondlife.InventorySystem
                 FolderID = folderID;
                 FetchFolders = fetchFolders;
                 FetchItems = fetchItems;
-                LastReceived = Helpers.GetUnixTime();
+                LastReceivedAtTick = Environment.TickCount;
             }
 
         }
