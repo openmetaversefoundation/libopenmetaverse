@@ -1217,7 +1217,13 @@ namespace libsecondlife
             //Client.Avatar.SetHeightWidth(676, 909);
 
             // Set the initial avatar camera position
-            Client.Self.UpdateCamera(true);
+            Avatar.AgentUpdateFlags controlFlags = Avatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
+            LLVector3 position = new LLVector3(128, 128, 32);
+            LLVector3 forwardAxis = new LLVector3(0, 0.999999f, 0);
+            LLVector3 leftAxis = new LLVector3(0.999999f, 0, 0);
+            LLVector3 upAxis = new LLVector3(0, 0, 0.999999f);
+            Client.Self.UpdateCamera(controlFlags, position, forwardAxis, leftAxis, upAxis, LLQuaternion.Identity,
+                LLQuaternion.Identity, 384.0f, true);
 
             // TODO: What animation are we stopping here?
             //AgentAnimationPacket animation = new AgentAnimationPacket();

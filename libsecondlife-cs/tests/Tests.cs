@@ -13,6 +13,7 @@ namespace libsecondlife.Tests
         SecondLife Client;
         ulong CurrentRegionHandle = 0;
         ulong AhernRegionHandle = 1096213093149184;
+        bool DetectedObject = false;
 
         [SetUp]
         public void Init()
@@ -43,6 +44,19 @@ namespace libsecondlife.Tests
         }
 
         [Test]
+        public void DetectObjects()
+        {
+            int start = Environment.TickCount;
+            while (!DetectedObject)
+            {
+                if (Environment.TickCount - start > 5000)
+                {
+                    Assert.Fail("Timeout waiting for an ObjectUpdate packet");
+                }
+            }
+        }
+
+        [Test]
         public void U64Receive()
         {
             int start = Environment.TickCount;
@@ -62,6 +76,7 @@ namespace libsecondlife.Tests
         {
             ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
 
+            DetectedObject = true;
             CurrentRegionHandle = update.RegionData.RegionHandle;
         }
 

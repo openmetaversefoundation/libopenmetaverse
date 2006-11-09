@@ -417,6 +417,16 @@ namespace libsecondlife
             return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
         }
 
+        public static LLVector3 operator *(LLVector3 vec, LLQuaternion quat)
+        {
+            LLQuaternion vq = new LLQuaternion(vec.X, vec.Y, vec.Z, 0);
+            LLQuaternion nq = new LLQuaternion(-quat.X, -quat.Y, -quat.Z, quat.W);
+
+            LLQuaternion result = (quat * vq) * nq;
+
+            return new LLVector3(result.X, result.Y, result.Z);
+        }
+
         /// <summary>
         /// An LLVector3 with a value of 0,0,0
         /// </summary>

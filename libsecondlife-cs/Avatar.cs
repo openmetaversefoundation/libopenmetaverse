@@ -757,21 +757,23 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="reliable"></param>
-        public void UpdateCamera(bool reliable)
+        public void UpdateCamera(Avatar.AgentUpdateFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
+            LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
+            bool reliable)
         {
             AgentUpdatePacket update = new AgentUpdatePacket();
             update.AgentData.AgentID = Client.Network.AgentID;
             update.AgentData.SessionID = Client.Network.SessionID;
             update.AgentData.State = 0;
             // Semi-sane default values
-            update.AgentData.BodyRotation = new LLQuaternion(0, 0.6519076f, 0, 0);
-            update.AgentData.HeadRotation = LLQuaternion.Identity;
-            update.AgentData.CameraCenter = new LLVector3(9.549901f, 7.033957f, 11.75f);
-            update.AgentData.CameraAtAxis = new LLVector3(0.7f, 0.7f, 0);
-            update.AgentData.CameraLeftAxis = new LLVector3(-0.7f, 0.7f, 0);
-            update.AgentData.CameraUpAxis = new LLVector3(0.1822026f, 0.9828722f, 0);
-            update.AgentData.Far = 384;
-            update.AgentData.ControlFlags = 0;
+            update.AgentData.BodyRotation = bodyRotation; //new LLQuaternion(0, 0.6519076f, 0, 0);
+            update.AgentData.HeadRotation = headRotation; //LLQuaternion.Identity;
+            update.AgentData.CameraCenter = position; //new LLVector3(9.549901f, 7.033957f, 11.75f);
+            update.AgentData.CameraAtAxis = forwardAxis; //new LLVector3(0.7f, 0.7f, 0);
+            update.AgentData.CameraLeftAxis = leftAxis; //new LLVector3(-0.7f, 0.7f, 0);
+            update.AgentData.CameraUpAxis = upAxis; //new LLVector3(0.1822026f, 0.9828722f, 0);
+            update.AgentData.Far = farClip;
+            update.AgentData.ControlFlags = (uint)controlFlags;
             update.AgentData.Flags = 0;
             update.Header.Reliable = reliable;
 
