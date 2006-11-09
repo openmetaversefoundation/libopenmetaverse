@@ -73,7 +73,7 @@ namespace name2key
 			client = new SecondLife();
 
 			// Setup the callback
-			client.Network.RegisterCallback(PacketType.DirPeopleReply, new PacketCallback(QueryHandler));
+            client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(QueryHandler));
 
 			// Setup the login values
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 

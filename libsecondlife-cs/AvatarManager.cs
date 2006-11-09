@@ -32,26 +32,42 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// Triggered after friend request packet is sent out
-    /// </summary>
-    /// <param name="AgentID"></param>
-    /// <param name="Online"></param>
-    public delegate void FriendNotificationCallback(LLUUID agentID, bool online);
-
-    /// <summary>
-    /// Triggered when a UUIDNameReply is received
-    /// </summary>
-    /// <param name="names"></param>
-    public delegate void AgentNamesCallback(Dictionary<LLUUID, string> names);
-    public delegate void AvatarPropertiesCallback(Avatar avatar);
-    public delegate void AvatarNameCallback(Avatar avatar);
-    public delegate void AvatarStatisticsCallback(Avatar avatar);
-    public delegate void AvatarIntrestsCallback(Avatar avatar);
-    /// <summary>
     /// 
     /// </summary>
     public class AvatarManager
     {
+        /// <summary>
+        /// Triggered after friend request packet is sent out
+        /// </summary>
+        /// <param name="AgentID"></param>
+        /// <param name="Online"></param>
+        public delegate void FriendNotificationCallback(LLUUID agentID, bool online);
+        /// <summary>
+        /// Triggered when a UUIDNameReply is received
+        /// </summary>
+        /// <param name="names"></param>
+        public delegate void AgentNamesCallback(Dictionary<LLUUID, string> names);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="avatar"></param>
+        public delegate void AvatarPropertiesCallback(Avatar avatar);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="avatar"></param>
+        public delegate void AvatarNameCallback(Avatar avatar);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="avatar"></param>
+        public delegate void AvatarStatisticsCallback(Avatar avatar);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="avatar"></param>
+        public delegate void AvatarInterestsCallback(Avatar avatar);
+
         /// <summary>Triggered whenever a friend comes online or goes offline</summary>
         public event FriendNotificationCallback OnFriendNotification;
 
@@ -60,7 +76,12 @@ namespace libsecondlife
         private AgentNamesCallback OnAgentNames;
         private Dictionary<LLUUID, AvatarPropertiesCallback> AvatarPropertiesCallbacks;
 	    private Dictionary<LLUUID, AvatarStatisticsCallback> AvatarStatisticsCallbacks;
-        private Dictionary<LLUUID, AvatarIntrestsCallback> AvatarIntrestsCallbacks;
+        private Dictionary<LLUUID, AvatarInterestsCallback> AvatarInterestsCallbacks;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
         public AvatarManager(SecondLife client)
         {
             Client = client;
@@ -68,15 +89,15 @@ namespace libsecondlife
             //Callback Dictionaries
             AvatarPropertiesCallbacks = new Dictionary<LLUUID, AvatarPropertiesCallback>();
 	        AvatarStatisticsCallbacks = new Dictionary<LLUUID, AvatarStatisticsCallback>();
-            AvatarIntrestsCallbacks = new Dictionary<LLUUID, AvatarIntrestsCallback>();
+            AvatarInterestsCallbacks = new Dictionary<LLUUID, AvatarInterestsCallback>();
             // Friend notification callback
-            PacketCallback callback = new PacketCallback(FriendNotificationHandler);
+            NetworkManager.PacketCallback callback = new NetworkManager.PacketCallback(FriendNotificationHandler);
             Client.Network.RegisterCallback(PacketType.OnlineNotification, callback);
             Client.Network.RegisterCallback(PacketType.OfflineNotification, callback);
-            Client.Network.RegisterCallback(PacketType.UUIDNameReply, new PacketCallback(GetAgentNameHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new PacketCallback(AvatarPropertiesHandler));
-	        Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new PacketCallback(AvatarStatisticsHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new PacketCallback(AvatarIntrestsHandler));
+            Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(GetAgentNameHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new NetworkManager.PacketCallback(AvatarInterestsHandler));
         }
               
 
@@ -92,11 +113,20 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public bool Contains(LLUUID id)
         {
             return Avatars.ContainsKey(id);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
         public void UpdateAvatar(Avatar a)
         {
             //Basic profile properties
@@ -384,12 +414,12 @@ namespace libsecondlife
             }
         }
 
-        public void BeginAvatarPropertiesRequest(LLUUID avatarid, AvatarPropertiesCallback apc, AvatarStatisticsCallback asc, AvatarIntrestsCallback aic)
+        public void BeginAvatarPropertiesRequest(LLUUID avatarid, AvatarPropertiesCallback apc, AvatarStatisticsCallback asc, AvatarInterestsCallback aic)
         {
             //Set teh callback!
             AvatarPropertiesCallbacks[avatarid] = apc;
 	        AvatarStatisticsCallbacks[avatarid] = asc;
-            AvatarIntrestsCallbacks[avatarid] = aic;
+            AvatarInterestsCallbacks[avatarid] = aic;
             //Oh noes
             //Packet construction, good times
             AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();
@@ -402,7 +432,7 @@ namespace libsecondlife
             Client.Network.SendPacket(aprp);
         }
 
-        public void AvatarIntrestsHandler(Packet packet, Simulator simulator)
+        private void AvatarInterestsHandler(Packet packet, Simulator simulator)
         {
             AvatarInterestsReplyPacket airp = (AvatarInterestsReplyPacket)packet;
             Avatar av;
@@ -426,8 +456,8 @@ namespace libsecondlife
                 av.SkillsText = Helpers.FieldToString(airp.PropertiesData.SkillsText);
                 av.LanguagesText = Helpers.FieldToString(airp.PropertiesData.LanguagesText);
             }
-            if (AvatarIntrestsCallbacks.ContainsKey(airp.AgentData.AvatarID) && AvatarIntrestsCallbacks[airp.AgentData.AvatarID] != null)
-                AvatarIntrestsCallbacks[airp.AgentData.AvatarID](av);
+            if (AvatarInterestsCallbacks.ContainsKey(airp.AgentData.AvatarID) && AvatarInterestsCallbacks[airp.AgentData.AvatarID] != null)
+                AvatarInterestsCallbacks[airp.AgentData.AvatarID](av);
         }
     }
 }

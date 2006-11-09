@@ -397,17 +397,17 @@ namespace libsecondlife
             GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();
             GroupRolesMembersCaches = new Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>>();
 
-            Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new PacketCallback(GroupDataHandler));
-            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new PacketCallback(GroupTitlesHandler));
-            Client.Network.RegisterCallback(PacketType.GroupProfileReply, new PacketCallback(GroupProfileHandler));
-            Client.Network.RegisterCallback(PacketType.GroupMembersReply, new PacketCallback(GroupMembersHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, new PacketCallback(GroupRoleDataHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, new PacketCallback(GroupRoleMembersHandler));
-            Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new PacketCallback(GroupActiveProposalItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new PacketCallback(GroupVoteHistoryItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new PacketCallback(GroupAccountSummaryHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountDetailsReply, new PacketCallback(GroupAccountDetailsHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountTransactionsReply, new PacketCallback(GroupAccountTransactionsHandler));
+            Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(GroupDataHandler));
+            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
+            Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
+            Client.Network.RegisterCallback(PacketType.GroupMembersReply, new NetworkManager.PacketCallback(GroupMembersHandler));
+            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, new NetworkManager.PacketCallback(GroupRoleDataHandler));
+            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, new NetworkManager.PacketCallback(GroupRoleMembersHandler));
+            Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new NetworkManager.PacketCallback(GroupActiveProposalItemHandler));
+            Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new NetworkManager.PacketCallback(GroupVoteHistoryItemHandler));
+            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryHandler));
+            Client.Network.RegisterCallback(PacketType.GroupAccountDetailsReply, new NetworkManager.PacketCallback(GroupAccountDetailsHandler));
+            Client.Network.RegisterCallback(PacketType.GroupAccountTransactionsReply, new NetworkManager.PacketCallback(GroupAccountTransactionsHandler));
         }
 
         /// <summary>

@@ -84,7 +84,7 @@ namespace groupmanager
             numFee.Value = Profile.MembershipFee;
             chkMature.Checked = Profile.MaturePublish;
 
-            Client.Avatars.BeginGetAvatarName(Profile.FounderID, new AgentNamesCallback(AgentNamesHandler));
+            Client.Avatars.BeginGetAvatarName(Profile.FounderID, new AvatarManager.AgentNamesCallback(AgentNamesHandler));
         }
 
         private void AgentNamesHandler(Dictionary<LLUUID, string> names)
@@ -209,7 +209,7 @@ namespace groupmanager
                 }
             }
 
-            Client.Avatars.BeginGetAvatarNames(requestids, new AgentNamesCallback(AgentNamesHandler));
+            Client.Avatars.BeginGetAvatarNames(requestids, new AvatarManager.AgentNamesCallback(AgentNamesHandler));
         }
 
         private void GroupTitlesHandler(Dictionary<LLUUID, GroupTitle> titles)

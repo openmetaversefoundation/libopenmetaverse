@@ -152,9 +152,9 @@ namespace libsecondlife.AssetSystem
             ImagePacketHelper = new ImagePacketHelpers(client);
 
             // Image Callbacks
-            slClient.Network.RegisterCallback(PacketType.ImageData, new PacketCallback(ImageDataCallbackHandler));
-            slClient.Network.RegisterCallback(PacketType.ImagePacket, new PacketCallback(ImagePacketCallbackHandler));
-            slClient.Network.RegisterCallback(PacketType.ImageNotInDatabase, new PacketCallback(ImageNotInDatabaseCallbackHandler));
+            slClient.Network.RegisterCallback(PacketType.ImageData, new NetworkManager.PacketCallback(ImageDataCallbackHandler));
+            slClient.Network.RegisterCallback(PacketType.ImagePacket, new NetworkManager.PacketCallback(ImagePacketCallbackHandler));
+            slClient.Network.RegisterCallback(PacketType.ImageNotInDatabase, new NetworkManager.PacketCallback(ImageNotInDatabaseCallbackHandler));
         }
 
         private void CacheImage(LLUUID ImageID, byte[] ImageData)

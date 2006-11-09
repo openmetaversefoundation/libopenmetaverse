@@ -88,12 +88,10 @@ namespace libsecondlife.InventorySystem
             resetFoldersByUUID();
 
             // Setup the callback for Inventory Downloads
-            PacketCallback InventoryDescendentsCallback = new PacketCallback(InventoryDescendentsHandler);
-            slClient.Network.RegisterCallback(PacketType.InventoryDescendents, InventoryDescendentsCallback);
+            slClient.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
 
             // Setup the callback for Inventory Creation Update
-            PacketCallback UpdateCreateInventoryItemCallback = new PacketCallback(UpdateCreateInventoryItemHandler);
-            slClient.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, UpdateCreateInventoryItemCallback);
+            slClient.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
 
         }
 

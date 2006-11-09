@@ -32,54 +32,6 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="simulator"></param>
-    /// <param name="prim"></param>
-    /// <param name="regionHandle"></param>
-    /// <param name="timeDilation"></param>
-    public delegate void NewPrimCallback(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="simulator"></param>
-    /// <param name="avatar"></param>
-    /// <param name="regionHandle"></param>
-    /// <param name="timeDilation"></param>
-    public delegate void NewAvatarCallback(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="simulator"></param>
-    /// <param name="prim"></param>
-    /// <param name="regionHandle"></param>
-    /// <param name="timeDilation"></param>
-    public delegate void PrimMovedCallback(Simulator simulator, PrimUpdate prim, ulong regionHandle, ushort timeDilation);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="simulator"></param>
-    /// <param name="avatar"></param>
-    /// <param name="regionHandle"></param>
-    /// <param name="timeDilation"></param>
-    public delegate void AvatarMovedCallback(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="simulator"></param>
-    /// <param name="objectID"></param>
-    public delegate void KillObjectCallback(Simulator simulator, uint objectID);
-
-    public enum PCode
-    {
-        Prim = 9,
-        Avatar = 47,
-        Grass = 95,
-        ParticleSystem = 143,
-        Tree = 255
-    }
-
-    /// <summary>
     /// Contains all of the variables sent in an object update packet for a 
     /// prim object. Used to track position and movement of prims.
     /// </summary>
@@ -131,6 +83,68 @@ namespace libsecondlife
 	/// </summary>
 	public class ObjectManager
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="prim"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
+        public delegate void NewPrimCallback(Simulator simulator, PrimObject prim, ulong regionHandle, 
+            ushort timeDilation);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="avatar"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
+        public delegate void NewAvatarCallback(Simulator simulator, Avatar avatar, ulong regionHandle, 
+            ushort timeDilation);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="prim"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
+        public delegate void PrimMovedCallback(Simulator simulator, PrimUpdate prim, ulong regionHandle, 
+            ushort timeDilation);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="avatar"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
+        public delegate void AvatarMovedCallback(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, 
+            ushort timeDilation);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="objectID"></param>
+        public delegate void KillObjectCallback(Simulator simulator, uint objectID);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum PCode
+        {
+            /// <summary></summary>
+            Prim = 9,
+            /// <summary></summary>
+            Avatar = 47,
+            /// <summary></summary>
+            Grass = 95,
+            /// <summary></summary>
+            NewTree = 111,
+            /// <summary></summary>
+            ParticleSystem = 143,
+            /// <summary></summary>
+            Tree = 255
+        }
+
         /// <summary>
         /// This event will be raised for every ObjectUpdate block that 
         /// contains a new prim.
@@ -184,11 +198,11 @@ namespace libsecondlife
         {
             Client = client;
 
-            Client.Network.RegisterCallback(PacketType.ObjectUpdate, new PacketCallback(UpdateHandler));
-            Client.Network.RegisterCallback(PacketType.ImprovedTerseObjectUpdate, new PacketCallback(TerseUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, new PacketCallback(CompressedUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new PacketCallback(CachedUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.KillObject, new PacketCallback(KillObjectHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(UpdateHandler));
+            Client.Network.RegisterCallback(PacketType.ImprovedTerseObjectUpdate, new NetworkManager.PacketCallback(TerseUpdateHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, new NetworkManager.PacketCallback(CompressedUpdateHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new NetworkManager.PacketCallback(CachedUpdateHandler));
+            Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
         }
 
         public void RequestObject(Simulator simulator, uint localID)
@@ -280,15 +294,15 @@ namespace libsecondlife
                             prim.ProfileCurve = block.ProfileCurve;
                             prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
                             prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
-                            prim.PathTaperX = PrimObject.PathScaleFloat(block.PathScaleX);
-                            prim.PathTaperY = PrimObject.PathScaleFloat(block.PathScaleY);
+                            prim.PathScaleX = PrimObject.PathScaleFloat(block.PathScaleX);
+                            prim.PathScaleY = PrimObject.PathScaleFloat(block.PathScaleY);
                             prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
                             prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
                             prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
                             prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
                             prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                            //prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
-                            //prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
+                            prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
+                            prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
                             prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
                             prim.PathSkew = PrimObject.PathSkewFloat((byte)block.PathSkew);
                             prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);

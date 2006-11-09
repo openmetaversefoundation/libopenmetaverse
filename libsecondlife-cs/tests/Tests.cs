@@ -22,7 +22,7 @@ namespace libsecondlife.Tests
             //string startLoc = NetworkManager.StartLocation("ahern", 128, 128, 32);
 
             // Register callbacks
-            Client.Network.RegisterCallback(PacketType.ObjectUpdate, new PacketCallback(ObjectUpdateHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(ObjectUpdateHandler));
 
             bool result = Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework",
                 "contact@libsecondlife.org");

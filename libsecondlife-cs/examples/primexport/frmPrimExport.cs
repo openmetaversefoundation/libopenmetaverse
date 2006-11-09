@@ -28,7 +28,7 @@ namespace primexport
         private System.ComponentModel.IContainer components = null;
 
         private SecondLife client;
-        private NewPrimCallback primCallback;
+        private ObjectManager.NewPrimCallback primCallback;
         private string currentText;
         private Dictionary<ulong, PrimObject> Prims;
         private string Filename = "";
@@ -191,7 +191,7 @@ namespace primexport
         {
             InitializeComponent();
 
-            primCallback = new NewPrimCallback(PrimSeen);
+            primCallback = new ObjectManager.NewPrimCallback(PrimSeen);
             Prims = new Dictionary<ulong, PrimObject>();
 
             client = new SecondLife();

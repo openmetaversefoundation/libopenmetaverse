@@ -40,13 +40,13 @@ namespace sldump
 			//Console.WriteLine(packet.ToString());
 		}
 
-        public static void DisconnectHandler(DisconnectType type, string message)
+        public static void DisconnectHandler(NetworkManager.DisconnectType type, string message)
         {
-            if (type == DisconnectType.NetworkTimeout)
+            if (type == NetworkManager.DisconnectType.NetworkTimeout)
             {
                 Console.WriteLine("Network connection timed out, disconnected");
             }
-            else if (type == DisconnectType.ServerInitiated)
+            else if (type == NetworkManager.DisconnectType.ServerInitiated)
             {
                 Console.WriteLine("Server disconnected us: " + message);
             }
@@ -103,17 +103,10 @@ namespace sldump
 			}
 
 			// Setup the packet callback and disconnect event handler
-			client.Network.RegisterCallback(PacketType.Default, new PacketCallback(DefaultHandler));
-            client.Network.OnDisconnected += new DisconnectCallback(DisconnectHandler);
+            client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
+            client.Network.OnDisconnected += new NetworkManager.DisconnectCallback(DisconnectHandler);
 
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
-                "0", "last", "Win", "0", "sldump", "contact@libsecondlife.org");
-
-			// An example of how to pass additional options to the login server
-            //loginParams["id0"] = "65e142a8d3c1ee6632259f111cb168c9";
-            //loginParams["viewer_digest"] = "0e63550f-0991-a092-3158-b4206e728ffa";
-
-			if (!client.Network.Login(loginParams/*, "http://127.0.0.1:8080/"*/))
+			if (!client.Network.Login(args[0], args[1], args[2], "sldump", "contact@libsecondlife.org"))
 			{
 				// Login failed
 				Console.WriteLine("Error logging in: " + client.Network.LoginError);

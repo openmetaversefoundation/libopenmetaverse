@@ -36,38 +36,6 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="packet"></param>
-    /// <param name="simulator"></param>
-	public delegate void PacketCallback(Packet packet, Simulator simulator);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="simulator"></param>
-    /// <param name="reason"></param>
-    public delegate void SimDisconnectCallback(Simulator simulator, DisconnectType reason);
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="reason"></param>
-    /// <param name="message"></param>
-    public delegate void DisconnectCallback(DisconnectType reason, string message);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum DisconnectType
-    {
-        /// <summary></summary>
-        ClientInitiated,
-        /// <summary></summary>
-        ServerInitiated,
-        /// <summary></summary>
-        NetworkTimeout
-    }
-
-    /// <summary>
     /// This exception is thrown whenever a network operation is attempted 
     /// without a network connection.
     /// </summary>
@@ -122,7 +90,7 @@ namespace libsecondlife
         
         private SecondLife Client;
 		private NetworkManager Network;
-		private Dictionary<PacketType,List<PacketCallback>> Callbacks;
+		private Dictionary<PacketType,List<NetworkManager.PacketCallback>> Callbacks;
 		private ushort Sequence;
 		private byte[] RecvBuffer;
 		private Socket Connection;
@@ -144,8 +112,8 @@ namespace libsecondlife
         /// <param name="circuit"></param>
         /// <param name="ip"></param>
         /// <param name="port"></param>
-		public Simulator(SecondLife client, Dictionary<PacketType,List<PacketCallback>> callbacks, uint circuit, 
-			IPAddress ip, int port)
+        public Simulator(SecondLife client, Dictionary<PacketType, List<NetworkManager.PacketCallback>> callbacks, 
+            uint circuit, IPAddress ip, int port)
 		{
             Client = client;
             Network = client.Network;
@@ -520,10 +488,10 @@ namespace libsecondlife
             {
                 if (Callbacks.ContainsKey(packet.Type))
                 {
-                    List<PacketCallback> callbackArray = Callbacks[packet.Type];
+                    List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
 
                     // Fire any registered callbacks
-                    foreach (PacketCallback callback in callbackArray)
+                    foreach (NetworkManager.PacketCallback callback in callbackArray)
                     {
                         if (callback != null)
                         {
@@ -534,10 +502,10 @@ namespace libsecondlife
                 
                 if (Callbacks.ContainsKey(PacketType.Default))
                 {
-                    List<PacketCallback> callbackArray = Callbacks[PacketType.Default];
+                    List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
 
                     // Fire any registered callbacks
-                    foreach (PacketCallback callback in callbackArray)
+                    foreach (NetworkManager.PacketCallback callback in callbackArray)
                     {
                         if (callback != null)
                         {
@@ -573,6 +541,43 @@ namespace libsecondlife
     /// </summary>
 	public class NetworkManager
 	{
+        /// <summary>
+        /// Coupled with RegisterCallback(), this is triggered whenever a packet
+        /// of a registered type is received
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        public delegate void PacketCallback(Packet packet, Simulator simulator);
+        /// <summary>
+        /// Triggered when a simulator other than the simulator that is currently
+        /// being occupied disconnects for whatever reason
+        /// </summary>
+        /// <param name="simulator">The simulator that disconnected, which will become a null
+        /// reference after the callback is finished</param>
+        /// <param name="reason">Enumeration explaining the reason for the disconnect</param>
+        public delegate void SimDisconnectCallback(Simulator simulator, DisconnectType reason);
+        /// <summary>
+        /// Triggered when we are logged out of the grid due to a simulator request,
+        /// client request, network timeout, or any other cause
+        /// </summary>
+        /// <param name="reason">Enumeration explaining the reason for the disconnect</param>
+        /// <param name="message">If we were logged out by the simulator, this 
+        /// is a message explaining why</param>
+        public delegate void DisconnectCallback(DisconnectType reason, string message);
+
+        /// <summary>
+        /// Explains why a simulator or the grid disconnected from us
+        /// </summary>
+        public enum DisconnectType
+        {
+            /// <summary>The client requested the logout or simulator disconnect</summary>
+            ClientInitiated,
+            /// <summary>The server notified us that it is disconnecting</summary>
+            ServerInitiated,
+            /// <summary>Either a socket was closed or network traffic timed out</summary>
+            NetworkTimeout
+        }
+
         /// <summary>
         /// The permanent UUID for the logged in avatar
         /// </summary>

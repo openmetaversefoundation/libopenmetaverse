@@ -60,23 +60,13 @@ namespace libsecondlife.AssetSystem
 			slClient = client;
 
 			// Used to upload small assets, or as an initial start packet for large transfers
-			PacketCallback AssetUploadCompleteCallback = new PacketCallback(AssetUploadCompleteCallbackHandler);
-            slClient.Network.RegisterCallback(PacketType.AssetUploadComplete, AssetUploadCompleteCallback);
-
-			// Transfer Packets for downloading large assets		
-			PacketCallback TransferInfoCallback = new PacketCallback(TransferInfoCallbackHandler);
-            slClient.Network.RegisterCallback(PacketType.TransferInfo, TransferInfoCallback);
-
-			PacketCallback TransferPacketCallback = new PacketCallback(TransferPacketCallbackHandler);
-            slClient.Network.RegisterCallback(PacketType.TransferPacket, TransferPacketCallback);
-
+            slClient.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteCallbackHandler));
+			// Transfer Packets for downloading large assets
+            slClient.Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoCallbackHandler));
+            slClient.Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketCallbackHandler));
 			// XFer packets for uploading large assets
-			PacketCallback ConfirmXferPacketCallback = new PacketCallback(ConfirmXferPacketCallbackHandler);
-            slClient.Network.RegisterCallback(PacketType.ConfirmXferPacket, ConfirmXferPacketCallback);
-			
-			PacketCallback RequestXferCallback = new PacketCallback(RequestXferCallbackHandler);
-            slClient.Network.RegisterCallback(PacketType.RequestXfer, RequestXferCallback);
-			
+            slClient.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketCallbackHandler));
+            slClient.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferCallbackHandler));
 		}
 
 

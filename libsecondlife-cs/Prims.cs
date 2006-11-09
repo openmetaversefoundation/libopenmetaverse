@@ -84,7 +84,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public int PathTwist = 0;
         /// <summary></summary>
-        public PCode PCode;
+        public ObjectManager.PCode PCode;
         /// <summary></summary>
         public TextureEntry Textures;
         /// <summary></summary>
@@ -114,7 +114,7 @@ namespace libsecondlife
         public PrimObject(SecondLife client)
         {
             Client = client;
-            PCode = PCode.Prim;
+            PCode = ObjectManager.PCode.Prim;
             Textures = new TextureEntry();
         }
 		
@@ -125,7 +125,7 @@ namespace libsecondlife
 		public PrimObject(SecondLife client, LLUUID texture)
 		{
             Client = client;
-            PCode = PCode.Prim;
+            PCode = ObjectManager.PCode.Prim;
             Textures = new TextureEntry();
             Textures.DefaultTexture.TextureID = texture;
 		}

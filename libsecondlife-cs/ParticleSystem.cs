@@ -4,6 +4,9 @@ using System.Text;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ParticleSystem
     {
         public uint PartStartRGBA;
@@ -47,6 +50,9 @@ namespace libsecondlife
             AngleConeEmpty = 0x10
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Flags]
         public enum ParticleFlags : ushort
         {
@@ -62,11 +68,21 @@ namespace libsecondlife
             Emissive = 0x100
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
         public ParticleSystem(byte[] data, int pos)
         {
             FromBytes(data, pos);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
         private void FromBytes(byte[] data, int pos)
         {
             int i = pos;

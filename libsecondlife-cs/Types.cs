@@ -418,7 +418,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// An LLVector3 with a value of <0,0,0>
+        /// An LLVector3 with a value of 0,0,0
         /// </summary>
         public readonly static LLVector3 Zero = new LLVector3();
 	}
@@ -505,7 +505,7 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// An LLVector3d with a value of <0,0,0>
+        /// An LLVector3d with a value of 0,0,0
         /// </summary>
         public readonly static LLVector3d Zero = new LLVector3d();
 	}
@@ -585,7 +585,7 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// An LLVector4 with a value of <0,0,0,0>
+        /// An LLVector4 with a value of 0,0,0,0
         /// </summary>
         public readonly static LLVector4 Zero = new LLVector4();
 	}
@@ -725,7 +725,7 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// An LLQuaternion with a value of <0,0,0,1>
+        /// An LLQuaternion with a value of 0,0,0,1
         /// </summary>
         public readonly static LLQuaternion Identity = new LLQuaternion();
 	}

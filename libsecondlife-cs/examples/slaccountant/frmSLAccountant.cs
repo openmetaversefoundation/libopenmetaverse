@@ -381,9 +381,8 @@ namespace SLAccountant
 			client = new SecondLife();
 
 			// Install our packet handlers
-			//client.Network.RegisterCallback(PacketType.AvatarAppearance, new PacketCallback(AvatarAppearanceHandler));
-			client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new PacketCallback(BalanceHandler));
-            client.Network.RegisterCallback(PacketType.DirPeopleReply, new PacketCallback(DirPeopleHandler));
+            client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
+            client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleHandler));
 
 			grpLogin.Enabled = true;
 		}
@@ -395,11 +394,8 @@ namespace SLAccountant
 				cmdConnect.Text = "Disconnect";
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text, 
-					txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
-					"Win", "0", "accountant", "jhurliman@wsu.edu");
-
-				if (client.Network.Login(loginParams))
+				if (client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, 
+                    "accountant", "jhurliman@wsu.edu"))
 				{
 					Random rand = new Random();
 					

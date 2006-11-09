@@ -24,8 +24,8 @@ namespace IA_TestAsyncImage
             TestAsync app = new TestAsync();
             app.DownloadInventoryOnConnect = false;
 
-            app.client.Objects.OnNewPrim += new NewPrimCallback(app.Objects_OnNewPrim);
-            app.client.Objects.OnNewAvatar += new NewAvatarCallback(app.Objects_OnNewAvatar);
+            app.client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(app.Objects_OnNewPrim);
+            app.client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(app.Objects_OnNewAvatar);
 
 
             app.Connect(args[0], args[1], args[2]);
