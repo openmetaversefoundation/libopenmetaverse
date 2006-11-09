@@ -138,7 +138,8 @@ namespace libsecondlife
 		public static byte PathScaleByte(float pathScale)
 		{
 			// Y = 100 + 100X
-			return (byte)(100 + Convert.ToInt16(100.0f * pathScale));
+            int scale = (int)(100.0f * pathScale);
+			return (byte)(100 + scale);
 		}
 
         /// <summary>
@@ -160,8 +161,8 @@ namespace libsecondlife
 		public static sbyte PathTwistByte(float pathTwist)
 		{
 			// Y = 256 + ceil (X / 1.8)
-			ushort temp = Convert.ToUInt16(256 + Math.Ceiling(pathTwist / 1.8f));
-			return (sbyte)(temp % 256);
+            int twist = (int)(256.0d + Math.Ceiling((double)pathTwist / 1.8d));
+			return (sbyte)(twist % 256);
 		}
 
         /// <summary>
@@ -206,7 +207,7 @@ namespace libsecondlife
 		public static byte ProfileBeginByte(float profileBegin)
 		{
 			// Y = ceil (200X)
-			return (byte)Convert.ToInt16(200.0f * profileBegin);
+			return (byte)(200.0f * profileBegin);
 		}
 
         /// <summary>
@@ -240,7 +241,7 @@ namespace libsecondlife
         public static float ProfileEndFloat(byte profileEnd)
         {
             // Y = 1 - 0.005X
-            return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d));
+            return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d), 4);
         }
 
         /// <summary>
