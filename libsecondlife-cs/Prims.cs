@@ -172,9 +172,9 @@ namespace libsecondlife
 		public static byte PathShearByte(float pathShear)
 		{
 			// Y = 256 + 100X
-			ushort temp = Convert.ToUInt16(100.0f * pathShear);
-			temp += 256;
-			return (byte)(temp % 256);
+            int shear = (int)(100.0f * pathShear);
+			shear += 256;
+			return (byte)(shear % 256);
 		}
 
         /// <summary>
@@ -228,7 +228,8 @@ namespace libsecondlife
 		public static byte ProfileEndByte(float profileEnd)
 		{
 			// Y = 200 - ceil (200X)
-			return (byte)(200 - (200.0f * profileEnd));
+            int end = (int)Math.Ceiling(200.0d * (double)profileEnd);
+			return (byte)(200 - end);
 		}
 
         /// <summary>
@@ -239,7 +240,7 @@ namespace libsecondlife
         public static float ProfileEndFloat(byte profileEnd)
         {
             // Y = 1 - 0.005X
-            return (float)Math.Round(1.0d - (double)profileEnd * 0.005d);
+            return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d));
         }
 
         /// <summary>
@@ -272,7 +273,8 @@ namespace libsecondlife
 		public static byte PathEndByte(float pathEnd)
 		{
 			// Y = 100 - 100X
-			return (byte)(100 - Convert.ToInt16(100.0f * pathEnd));
+            int end = (int)(100.0f * pathEnd);
+            return (byte)(100 - end);
 		}
 
         /// <summary>
@@ -283,7 +285,7 @@ namespace libsecondlife
         public static float PathEndFloat(byte pathEnd)
         {
             // Y = 1 - X / 100
-            return (float)Math.Round(1.0d - (double)pathEnd / 100.0d);
+            return (float)Math.Round(1.0d - ((double)pathEnd / 100.0d), 4);
         }
 
         /// <summary>
@@ -327,7 +329,7 @@ namespace libsecondlife
         public static float PathRevolutionsFloat(byte pathRevolutions)
         {
             // Y = 1 + 0.015X
-            return (float)Math.Round(1.0d + (double)pathRevolutions * 0.015d);
+            return (float)Math.Round(1.0d + (double)pathRevolutions * 0.015d, 4);
         }
 
         /// <summary>
@@ -370,11 +372,11 @@ namespace libsecondlife
         {
             if (pathTaper > 100)
             {
-                return (float)Math.Round((double)(256 - pathTaper) * 0.01d);
+                return (float)Math.Round((double)(256 - pathTaper) * 0.01d, 4);
             }
             else
             {
-                return (float)Math.Round((double)pathTaper * 0.01d);
+                return (float)Math.Round((double)pathTaper * 0.01d, 4);
             }
         }
 
