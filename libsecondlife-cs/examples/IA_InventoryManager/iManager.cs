@@ -107,6 +107,14 @@ namespace IA_InventoryManager
                         teleport(curCmdLine);
                         break;
 
+                    case "notecard":
+                        notecard(curCmdLine);
+                        break;
+
+                    case "xml":
+                        xml(curCmdLine);
+                        break;
+
                     default:
                         Console.WriteLine("Unknown command '" + curCmdLine[0] + "'.");
                         Console.WriteLine("Type HELP for a list of available commands.");
@@ -127,7 +135,100 @@ namespace IA_InventoryManager
             Console.WriteLine("GETASSET    - Fetch an asset from SL.");
             Console.WriteLine("REGIONINFO  - Display Grid Region Info.");
             Console.WriteLine("TELEPORT    - Teleport to a new sim.");
+            Console.WriteLine("NOTECARD    - Create a new notecard.");
+            Console.WriteLine("XML         - Display an item as xml");
             Console.WriteLine("QUIT        - Exit the Inventory Manager.");
+        }
+
+        private void xml(string[] cmdLine)
+        {
+            if (cmdLine.Length < 2)
+            {
+                Console.WriteLine("Usage: XML [itemName | uuid] ([outputAsset true/false])");
+                return;
+            }
+
+            LLUUID uuid = null;
+
+            try
+            {
+                uuid = new LLUUID(cmdLine[1]);
+            }
+            catch (Exception)
+            {
+            }
+
+            InventoryFolder iFolder = AgentInventory.getFolder(curDirectory);
+
+            InventoryBase itemOfInterest = null;
+
+            foreach (InventoryBase ib in iFolder.alContents)
+            {
+                if (ib is InventoryFolder)
+                {
+                    InventoryFolder folder = (InventoryFolder)ib;
+                    if (folder.Name.Equals(cmdLine[1]) || folder.FolderID.Equals(uuid))
+                    {
+                        itemOfInterest = folder;
+                        break;
+                    }
+                }
+                else if (ib is InventoryItem)
+                {
+                    InventoryItem item = (InventoryItem)ib;
+                    if (item.Name.Equals(cmdLine[1]) || item.ItemID.Equals(uuid))
+                    {
+                        itemOfInterest = item;
+                        break;
+                    }
+                }
+            }
+
+            if (itemOfInterest == null)
+            {
+                Console.WriteLine("Could not find: " + cmdLine[1]);
+                return;
+            }
+
+            if (cmdLine.Length == 3)
+            {
+                Console.WriteLine(itemOfInterest.toXML(bool.Parse(cmdLine[2])));
+            }
+            else
+            {
+                Console.WriteLine(itemOfInterest.toXML(false));
+            }
+
+        }
+
+
+        private void notecard(string[] cmdLine)
+        {
+            string NoteName = "";
+            for( int i = 1; i < cmdLine.Length; i++ )
+            {
+                NoteName += cmdLine[i] + " ";
+            }
+            NoteName = NoteName.Trim();
+
+            Console.Write("Description: ");
+            string NoteDesc = Console.ReadLine();
+
+            Console.WriteLine("Please enter body, press ESC to end");
+            Console.WriteLine("----------------------------------");
+
+            StringBuilder sb = new StringBuilder();
+            ConsoleKeyInfo cki;
+            do
+            {
+                cki = Console.ReadKey(true);
+                sb.Append(cki.Key.ToString());
+            } while (cki.Key != ConsoleKey.Escape);
+
+            InventoryFolder iFolder = AgentInventory.getFolder(curDirectory);
+            iFolder.NewNotecard(cmdLine[1], NoteDesc, sb.ToString());
+
+            Console.WriteLine("Notecard '" + NoteName + " 'Created");
         }
 
         private void teleport(string[] cmdLine)
@@ -316,12 +417,12 @@ namespace IA_InventoryManager
                 if (ib is InventoryFolder)
                 {
                     InventoryFolder folder = (InventoryFolder)ib;
-                    Console.WriteLine(TYPE_DIR + folder.Name);
+                    Console.WriteLine(TYPE_DIR + "<" + folder.FolderID.ToStringHyphenated() + "> " + folder.Name);
                 }
                 else
                 {
                     InventoryItem item = (InventoryItem)ib;
-                    Console.WriteLine(TYPE_ITEM + item.Name);
+                    Console.WriteLine(TYPE_ITEM + "<" + item.ItemID.ToStringHyphenated() + "> " + item.Name);
                 }
             }
         }

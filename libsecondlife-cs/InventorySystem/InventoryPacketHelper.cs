@@ -230,7 +230,7 @@ namespace libsecondlife.InventorySystem
 
         }
 
-		public Packet ImprovedInstantMessage(
+		public Packet GiveItemViaImprovedInstantMessage(
 			LLUUID ID
 			, LLUUID ToAgentID
 			, String FromAgentName

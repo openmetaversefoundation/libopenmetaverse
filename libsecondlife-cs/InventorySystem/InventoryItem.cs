@@ -59,7 +59,10 @@ namespace libsecondlife.InventorySystem
                     throw new Exception("You can not change an item's ID once it's been set.");
                 }
             }
-            get { return _ItemID; }
+            get 
+            {
+                return _ItemID; 
+            }
         }
 
         internal sbyte _InvType = 0;

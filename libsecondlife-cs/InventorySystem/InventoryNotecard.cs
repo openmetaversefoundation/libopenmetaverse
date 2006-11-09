@@ -64,6 +64,7 @@ namespace libsecondlife.InventorySystem
 			}
 
 			this.iManager = manager;
+            this._ItemID = ii._ItemID;
 			this._Asset = ii._Asset;
 			this._AssetID = ii._AssetID;
 			this._BaseMask = ii._BaseMask;

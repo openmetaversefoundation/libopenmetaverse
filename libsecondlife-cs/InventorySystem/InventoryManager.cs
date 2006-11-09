@@ -299,7 +299,7 @@ namespace libsecondlife.InventorySystem
         {
             LLUUID MessageID = LLUUID.GenerateUUID();
 
-            Packet packet = InvPacketHelper.ImprovedInstantMessage(
+            Packet packet = InvPacketHelper.GiveItemViaImprovedInstantMessage(
                 MessageID
                 , ToAgentID
                 , slClient.Self.FirstName + " " + slClient.Self.LastName
@@ -500,7 +500,7 @@ namespace libsecondlife.InventorySystem
                 {
                     iDescendentsReceivedThisBlock++;
 
-                    if (itemBlock.ItemID == new LLUUID())
+                    if (itemBlock.ItemID == LLUUID.Zero)
                     {
                         // this shouldn't ever happen, but unless you've uploaded an invalid item
                         // to yourself while developping inventory code
