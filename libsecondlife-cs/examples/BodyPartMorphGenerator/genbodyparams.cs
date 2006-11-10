@@ -61,7 +61,7 @@ namespace BodyPartMorphGenerator
             Labels.WriteLine("            switch( Param )");
             Labels.WriteLine("            {");
             Labels.WriteLine("                default:");
-            Labels.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
+            Labels.WriteLine("                    return \"\";");
 
             StringWriter LabelMin = new StringWriter();
             LabelMin.WriteLine("        public string GetLabelMin( uint Param )");
@@ -145,14 +145,17 @@ namespace BodyPartMorphGenerator
                 // Used to identify which nodes are bodyshape parameter nodes
                 if ( node.Attributes["id"] != null
                      && node.Attributes["name"] != null
-                     && node.Attributes["label"] != null
+                     && ( (node.Attributes["label"] != null) || (node.Attributes["label_min"] != null) )
                     )
                 {
                     string ID = node.Attributes["id"].Value;
 
-                    // Label
-                    Labels.WriteLine("                case " + ID + ":");
-                    Labels.WriteLine("                    return \"" + node.Attributes["label"].Value + "\";");
+                    if (node.Attributes["label"] != null)
+                    {
+                        // Label
+                        Labels.WriteLine("                case " + ID + ":");
+                        Labels.WriteLine("                    return \"" + node.Attributes["label"].Value + "\";");
+                    }
 
                     if (node.Attributes["label_min"] != null)
                     {
@@ -161,7 +164,7 @@ namespace BodyPartMorphGenerator
                         LabelMin.WriteLine("                    return \"" + node.Attributes["label_min"].Value + "\";");
                     }
 
-                    if (node.Attributes["label_min"] != null)
+                    if (node.Attributes["label_max"] != null)
                     {
                         // Label Max
                         LabelMax.WriteLine("                case " + ID + ":");

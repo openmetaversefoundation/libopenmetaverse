@@ -15,6 +15,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return "Male_Skeleton";
                 case 33:
                     return "Height";
                 case 34:
@@ -23,8 +25,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Shoulders";
                 case 37:
                     return "Hip Width";
+                case 842:
+                    return "Hip Length";
+                case 38:
+                    return "Torso Length";
+                case 195:
+                    return "EyeBone_Spread";
+                case 661:
+                    return "EyeBone_Head_Shear";
+                case 772:
+                    return "EyeBone_Head_Elongate";
+                case 768:
+                    return "EyeBone_Bug";
                 case 655:
                     return "Head Size";
+                case 197:
+                    return "Shoe_Heels";
+                case 502:
+                    return "Shoe_Platform";
+                case 675:
+                    return "Hand Size";
+                case 683:
+                    return "Neck Thickness";
+                case 689:
+                    return "EyeBone_Big_Eyes";
+                case 692:
+                    return "Leg Length";
+                case 693:
+                    return "Arm Length";
+                case 756:
+                    return "Neck Length";
                 case 180:
                     return "Hair_Volume";
                 case 761:
@@ -113,6 +143,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Noble_Nose_Bridge";
                 case 758:
                     return "Lower_Bridge_Nose";
+                case 12:
+                    return "Jowls";
                 case 13:
                     return "Cleft_Chin_Upper";
                 case 14:
@@ -159,6 +191,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Egg_Head";
                 case 187:
                     return "Squash_Stretch_Head";
+                case 188:
+                    return "Square_Head";
+                case 189:
+                    return "Round_Head";
+                case 194:
+                    return "Eye_Spread";
                 case 400:
                     return "Displace_Hair_Facial";
                 case 506:
@@ -227,6 +265,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Breast_Female_Cleavage";
                 case 685:
                     return "Chest_Male_No_Pecs";
+                case 100:
+                    return "Male_Torso";
                 case 151:
                     return "Big_Butt_Legs";
                 case 794:
@@ -299,34 +339,188 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "skirt_bigbutt";
                 case 849:
                     return "skirt_belly";
+                case 851:
+                    return "skirt_chubby";
+                case 856:
+                    return "skirt_lovehandles";
+                case 111:
+                    return "Pigment";
                 case 110:
                     return "Red Skin";
+                case 108:
+                    return "Rainbow Color";
+                case 114:
+                    return "Blonde Hair";
+                case 113:
+                    return "Red Hair";
+                case 115:
+                    return "White Hair";
+                case 112:
+                    return "Rainbow Color";
+                case 99:
+                    return "Eye Color";
+                case 98:
+                    return "Eye Lightness";
+                case 116:
+                    return "Rosy Complexion";
+                case 117:
+                    return "Lip Pinkness";
+                case 165:
+                    return "Freckles";
+                case 700:
+                    return "Lipstick Color";
+                case 701:
+                    return "Lipstick";
+                case 702:
+                    return "Lipgloss";
+                case 704:
+                    return "Blush";
+                case 705:
+                    return "Blush Color";
+                case 711:
+                    return "Blush Opacity";
+                case 708:
+                    return "Out Shdw Color";
+                case 706:
+                    return "Out Shdw Opacity";
+                case 707:
+                    return "Outer Shadow";
+                case 712:
+                    return "In Shdw Color";
+                case 713:
+                    return "In Shdw Opacity";
+                case 709:
+                    return "Inner Shadow";
+                case 703:
+                    return "Eyeliner";
+                case 714:
+                    return "Eyeliner Color";
+                case 751:
+                    return "5 O'Clock Shadow";
+                case 1048:
+                    return "Collar Back";
+                case 710:
+                    return "Nail Polish";
+                case 715:
+                    return "Nail Polish Color";
+                case 620:
+                    return "bottom length upper";
+                case 622:
+                    return "open upper";
+                case 621:
+                    return "bottom length lower";
+                case 623:
+                    return "open lower";
+                case 858:
+                    return "Skirt Length";
+                case 859:
+                    return "Slit Front";
+                case 860:
+                    return "Slit Back";
+                case 861:
+                    return "Slit Left";
+                case 862:
+                    return "Slit Right";
                 case 828:
                     return "Loose Upper Clothing";
                 case 816:
                     return "Loose Lower Clothing";
+                case 814:
+                    return "Waist Height";
+                case 815:
+                    return "Pants Length";
+                case 800:
+                    return "Sleeve Length";
+                case 801:
+                    return "Shirt Bottom";
+                case 802:
+                    return "Collar Front";
+                case 781:
+                    return "Collar Back";
+                case 150:
+                    return "Body Definition";
+                case 775:
+                    return "Body Freckles";
+                case 162:
+                    return "Facial Definition";
+                case 163:
+                    return "wrinkles";
+                case 505:
+                    return "Lip Thickness";
                 case 799:
                     return "Lip Ratio";
                 case 155:
                     return "Lip Width";
                 case 196:
                     return "Eye Spacing";
+                case 769:
+                    return "Eye Depth";
+                case 198:
+                    return "Heel Height";
+                case 513:
+                    return "Heel Shape";
+                case 514:
+                    return "Toe Shape";
+                case 503:
+                    return "Platform Height";
                 case 193:
                     return "Head Shape";
+                case 157:
+                    return "Belly Size";
+                case 637:
+                    return "Body Fat";
+                case 130:
+                    return "Front Fringe";
+                case 131:
+                    return "Side Fringe";
+                case 132:
+                    return "Back Fringe";
+                case 133:
+                    return "Hair Front";
+                case 134:
+                    return "Hair Sides";
+                case 135:
+                    return "Hair Back";
+                case 136:
+                    return "Hair Sweep";
+                case 137:
+                    return "Hair Tilt";
                 case 608:
                     return "bottom length lower";
                 case 609:
                     return "open jacket";
+                case 105:
+                    return "Breast Size";
+                case 629:
+                    return "Forehead Angle";
                 case 646:
                     return "Egg_Head";
                 case 647:
                     return "Squash_Stretch_Head";
                 case 649:
                     return "Torso Muscles";
+                case 678:
+                    return "Torso Muscles";
+                case 652:
+                    return "Leg Muscles";
+                case 659:
+                    return "Mouth Corner";
+                case 662:
+                    return "Face Shear";
+                case 773:
+                    return "Head Length";
                 case 682:
                     return "Head Size";
                 case 690:
                     return "Eye Size";
+                case 752:
+                    return "Hair Thickness";
+                case 763:
+                    return "Hair Volume";
+                case 785:
+                    return "Pigtails";
+                case 789:
+                    return "Ponytail";
                 case 795:
                     return "Butt Size";
                 case 841:
@@ -337,6 +531,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Love_Handles";
                 case 863:
                     return "skirt_looseness";
+                case 119:
+                    return "Eyebrow Size";
+                case 750:
+                    return "Eyebrow Density";
+                case 166:
+                    return "Sideburns";
+                case 167:
+                    return "Moustache";
+                case 168:
+                    return "Soulpatch";
+                case 169:
+                    return "Chin Curtains";
+                case 606:
+                    return "Sleeve Length";
+                case 607:
+                    return "Collar Front";
+                case 780:
+                    return "Collar Back";
+                case 603:
+                    return "Sleeve Length";
+                case 604:
+                    return "Bottom";
+                case 605:
+                    return "Collar Front";
+                case 779:
+                    return "Collar Back";
+                case 617:
+                    return "Socks Length";
+                case 616:
+                    return "Shoe Height";
+                case 619:
+                    return "Pants Length";
+                case 624:
+                    return "Pants Waist";
+                case 93:
+                    return "Glove Length";
+                case 844:
+                    return "Glove Fingers";
                 case 16:
                     return "Pointy_Eyebrows";
                 case 757:
@@ -352,7 +584,7 @@ namespace libsecondlife.AssetSystem.BodyShape
             switch( Param )
             {
                 default:
-                    throw new Exception("Unknown Body Part Parameter: " + Param);
+                    return "";
                 case 33:
                     return "Height";
                 case 34:
@@ -691,6 +923,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return "Female";
                 case 33:
                     return "Short";
                 case 34:
@@ -699,8 +933,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Narrow";
                 case 37:
                     return "Narrow";
+                case 842:
+                    return "Short hips";
+                case 38:
+                    return "Short Torso";
+                case 195:
+                    return "Eyes Together";
+                case 661:
+                    return "Eyes Shear Left Up";
+                case 772:
+                    return "Eyes Short Head";
+                case 768:
+                    return "Eyes Sunken";
                 case 655:
                     return "Small Head";
+                case 197:
+                    return "No Heels";
+                case 502:
+                    return "No Heels";
+                case 675:
+                    return "Small Hands";
+                case 683:
+                    return "Skinny Neck";
+                case 689:
+                    return "Eyes Back";
+                case 692:
+                    return "Short Legs";
+                case 693:
+                    return "Short Arms";
+                case 756:
+                    return "Short Neck";
                 case 180:
                     return "Less";
                 case 761:
@@ -789,6 +1051,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Low";
                 case 758:
                     return "Low";
+                case 12:
+                    return "Less";
                 case 13:
                     return "Round";
                 case 14:
@@ -835,6 +1099,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Chin Heavy";
                 case 187:
                     return "Squash Head";
+                case 188:
+                    return "Less Square";
+                case 189:
+                    return "Less Round";
+                case 194:
+                    return "Eyes Together";
                 case 400:
                     return "Cropped Hair";
                 case 506:
@@ -901,6 +1171,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Separate";
                 case 685:
                     return "Big Pectorals";
+                case 100:
+                    return "Male_Torso";
                 case 151:
                     return "Regular";
                 case 794:
@@ -963,34 +1235,188 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "no bustle";
                 case 852:
                     return "less";
+                case 851:
+                    return "less";
+                case 856:
+                    return "less";
+                case 111:
+                    return "Light";
                 case 110:
                     return "Pale";
+                case 108:
+                    return "None";
+                case 114:
+                    return "Black";
+                case 113:
+                    return "No Red";
+                case 115:
+                    return "No White";
+                case 112:
+                    return "None";
+                case 99:
+                    return "Natural";
+                case 98:
+                    return "Darker";
+                case 116:
+                    return "Less Rosy";
+                case 117:
+                    return "Darker";
+                case 165:
+                    return "Less";
+                case 700:
+                    return "Pink";
+                case 701:
+                    return "No Lipstick";
+                case 702:
+                    return "No Lipgloss";
+                case 704:
+                    return "No Blush";
+                case 705:
+                    return "Pink";
+                case 711:
+                    return "Clear";
+                case 708:
+                    return "Light";
+                case 706:
+                    return "Clear";
+                case 707:
+                    return "No Eyeshadow";
+                case 712:
+                    return "Light";
+                case 713:
+                    return "Clear";
+                case 709:
+                    return "No Eyeshadow";
+                case 703:
+                    return "No Eyeliner";
+                case 714:
+                    return "Dark Green";
+                case 751:
+                    return "Dense hair";
+                case 1048:
+                    return "Low";
+                case 710:
+                    return "No Polish";
+                case 715:
+                    return "Pink";
+                case 620:
+                    return "hi cut";
+                case 622:
+                    return "closed";
+                case 621:
+                    return "hi cut";
+                case 623:
+                    return "open";
+                case 858:
+                    return "Short";
+                case 859:
+                    return "Open Front";
+                case 860:
+                    return "Open Back";
+                case 861:
+                    return "Open Left";
+                case 862:
+                    return "Open Right";
                 case 828:
                     return "Tight Shirt";
                 case 816:
                     return "Tight Pants";
+                case 814:
+                    return "Low";
+                case 815:
+                    return "Short";
+                case 800:
+                    return "Short";
+                case 801:
+                    return "Short";
+                case 802:
+                    return "Low";
+                case 781:
+                    return "Low";
+                case 150:
+                    return "Less";
+                case 775:
+                    return "Less Freckles";
+                case 162:
+                    return "Less";
+                case 163:
+                    return "Less";
+                case 505:
+                    return "Thin Lips";
                 case 799:
                     return "More Upper Lip";
                 case 155:
                     return "Narrow Lips";
                 case 196:
                     return "Close Set Eyes";
+                case 769:
+                    return "Sunken Eyes";
+                case 198:
+                    return "Low Heels";
+                case 513:
+                    return "Pointy Heels";
+                case 514:
+                    return "Pointy";
+                case 503:
+                    return "Low Platforms";
                 case 193:
                     return "More Square";
+                case 157:
+                    return "Small";
+                case 637:
+                    return "Less Body Fat";
+                case 130:
+                    return "Short";
+                case 131:
+                    return "Short";
+                case 132:
+                    return "Short";
+                case 133:
+                    return "Short";
+                case 134:
+                    return "Short";
+                case 135:
+                    return "Short";
+                case 136:
+                    return "Sweep Forward";
+                case 137:
+                    return "Left";
                 case 608:
                     return "Short";
                 case 609:
                     return "Open";
+                case 105:
+                    return "Small";
+                case 629:
+                    return "More Vertical";
                 case 646:
                     return "Chin Heavy";
                 case 647:
                     return "Squash Head";
                 case 649:
                     return "Less Muscular";
+                case 678:
+                    return "Less Muscular";
+                case 652:
+                    return "Less Muscular";
+                case 659:
+                    return "Corner Down";
+                case 662:
+                    return "Shear Right Up";
+                case 773:
+                    return "Flat Head";
                 case 682:
                     return "Small Head";
                 case 690:
                     return "Beady Eyes";
+                case 752:
+                    return "5 O'Clock Shadow";
+                case 763:
+                    return "Less Volume";
+                case 785:
+                    return "Short Pigtails";
+                case 789:
+                    return "Short Ponytail";
                 case 795:
                     return "Flat Butt";
                 case 841:
@@ -1001,6 +1427,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Less Love";
                 case 863:
                     return "Tight Skirt";
+                case 119:
+                    return "Thin Eyebrows";
+                case 750:
+                    return "Sparse";
+                case 166:
+                    return "Short Sideburns";
+                case 167:
+                    return "Chaplin";
+                case 168:
+                    return "Less soul";
+                case 169:
+                    return "Less Curtains";
+                case 606:
+                    return "Short";
+                case 607:
+                    return "Low";
+                case 780:
+                    return "Low";
+                case 603:
+                    return "Short";
+                case 604:
+                    return "Short";
+                case 605:
+                    return "Low";
+                case 779:
+                    return "Low";
+                case 617:
+                    return "Short";
+                case 616:
+                    return "Short";
+                case 619:
+                    return "Short";
+                case 624:
+                    return "Low";
+                case 93:
+                    return "Short";
+                case 844:
+                    return "Fingerless";
                 case 16:
                     return "Smooth";
                 case 757:
@@ -1017,6 +1481,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return "Male";
                 case 33:
                     return "Tall";
                 case 34:
@@ -1025,8 +1491,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Broad";
                 case 37:
                     return "Wide";
+                case 842:
+                    return "Long Hips";
+                case 38:
+                    return "Long Torso";
+                case 195:
+                    return "Eyes Spread";
+                case 661:
+                    return "Eyes Shear Right Up";
+                case 772:
+                    return "Eyes Long Head";
+                case 768:
+                    return "Eyes Bugged";
                 case 655:
                     return "Big Head";
+                case 197:
+                    return "High Heels";
+                case 502:
+                    return "High Heels";
+                case 675:
+                    return "Large Hands";
+                case 683:
+                    return "Thick Neck";
+                case 689:
+                    return "Eyes Forward";
+                case 692:
+                    return "Long Legs";
+                case 693:
+                    return "Long arms";
+                case 756:
+                    return "Long Neck";
                 case 180:
                     return "More";
                 case 761:
@@ -1115,6 +1609,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "High";
                 case 758:
                     return "High";
+                case 12:
+                    return "More";
                 case 13:
                     return "Cleft";
                 case 14:
@@ -1161,6 +1657,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "Forehead Heavy";
                 case 187:
                     return "Stretch Head";
+                case 188:
+                    return "More Square";
+                case 189:
+                    return "More Round";
+                case 194:
+                    return "Eyes Spread";
                 case 400:
                     return "Bushy Hair";
                 case 506:
@@ -1289,34 +1791,188 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "more bustle";
                 case 852:
                     return "more";
+                case 851:
+                    return "more";
+                case 856:
+                    return "more";
+                case 111:
+                    return "Dark";
                 case 110:
                     return "Ruddy";
+                case 108:
+                    return "Wild";
+                case 114:
+                    return "Blonde";
+                case 113:
+                    return "Very Red";
+                case 115:
+                    return "All White";
+                case 112:
+                    return "Wild";
+                case 99:
+                    return "Unnatural";
+                case 98:
+                    return "Lighter";
+                case 116:
+                    return "More Rosy";
+                case 117:
+                    return "Pinker";
+                case 165:
+                    return "More";
+                case 700:
+                    return "Black";
+                case 701:
+                    return "More Lipstick";
+                case 702:
+                    return "Glossy";
+                case 704:
+                    return "More Blush";
+                case 705:
+                    return "Orange";
+                case 711:
+                    return "Opaque";
+                case 708:
+                    return "Dark";
+                case 706:
+                    return "Opaque";
+                case 707:
+                    return "More Eyeshadow";
+                case 712:
+                    return "Dark";
+                case 713:
+                    return "Opaque";
+                case 709:
+                    return "More Eyeshadow";
+                case 703:
+                    return "Full Eyeliner";
+                case 714:
+                    return "Black";
+                case 751:
+                    return "Shadow hair";
+                case 1048:
+                    return "High";
+                case 710:
+                    return "Painted Nails";
+                case 715:
+                    return "Black";
+                case 620:
+                    return "low cut";
+                case 622:
+                    return "open";
+                case 621:
+                    return "low cut";
+                case 623:
+                    return "closed";
+                case 858:
+                    return "Long";
+                case 859:
+                    return "Closed Front";
+                case 860:
+                    return "Closed Back";
+                case 861:
+                    return "Closed Left";
+                case 862:
+                    return "Closed Right";
                 case 828:
                     return "Loose Shirt";
                 case 816:
                     return "Loose Pants";
+                case 814:
+                    return "High";
+                case 815:
+                    return "Long";
+                case 800:
+                    return "Long";
+                case 801:
+                    return "Long";
+                case 802:
+                    return "High";
+                case 781:
+                    return "High";
+                case 150:
+                    return "More";
+                case 775:
+                    return "More Freckles";
+                case 162:
+                    return "More";
+                case 163:
+                    return "More";
+                case 505:
+                    return "Fat Lips";
                 case 799:
                     return "More Lower Lip";
                 case 155:
                     return "Wide Lips";
                 case 196:
                     return "Far Set Eyes";
+                case 769:
+                    return "Bugged Eyes";
+                case 198:
+                    return "High Heels";
+                case 513:
+                    return "Thick Heels";
+                case 514:
+                    return "Square";
+                case 503:
+                    return "High Platforms";
                 case 193:
                     return "More Round";
+                case 157:
+                    return "Big";
+                case 637:
+                    return "More Body Fat";
+                case 130:
+                    return "Long";
+                case 131:
+                    return "Long";
+                case 132:
+                    return "Long";
+                case 133:
+                    return "Long";
+                case 134:
+                    return "Long";
+                case 135:
+                    return "Long";
+                case 136:
+                    return "Sweep Back";
+                case 137:
+                    return "Right";
                 case 608:
                     return "Long";
                 case 609:
                     return "Closed";
+                case 105:
+                    return "Large";
+                case 629:
+                    return "More Sloped";
                 case 646:
                     return "Forehead Heavy";
                 case 647:
                     return "Stretch Head";
                 case 649:
                     return "More Muscular";
+                case 678:
+                    return "More Muscular";
+                case 652:
+                    return "More Muscular";
+                case 659:
+                    return "Corner Up";
+                case 662:
+                    return "Shear Left Up";
+                case 773:
+                    return "Long Head";
                 case 682:
                     return "Big Head";
                 case 690:
                     return "Anime Eyes";
+                case 752:
+                    return "Bushy Hair";
+                case 763:
+                    return "More Volume";
+                case 785:
+                    return "Long Pigtails";
+                case 789:
+                    return "Long Ponytail";
                 case 795:
                     return "Big Butt";
                 case 841:
@@ -1327,6 +1983,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return "More Love";
                 case 863:
                     return "Poofy Skirt";
+                case 119:
+                    return "Bushy Eyebrows";
+                case 750:
+                    return "Dense";
+                case 166:
+                    return "Mutton Chops";
+                case 167:
+                    return "Handlebars";
+                case 168:
+                    return "More soul";
+                case 169:
+                    return "More Curtains";
+                case 606:
+                    return "Long";
+                case 607:
+                    return "High";
+                case 780:
+                    return "High";
+                case 603:
+                    return "Long";
+                case 604:
+                    return "Long";
+                case 605:
+                    return "High";
+                case 779:
+                    return "High";
+                case 617:
+                    return "Long";
+                case 616:
+                    return "Tall";
+                case 619:
+                    return "Long";
+                case 624:
+                    return "High";
+                case 93:
+                    return "Long";
+                case 844:
+                    return "Fingers";
                 case 16:
                     return "Pointy";
                 case 757:
@@ -1343,6 +2037,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return 0f;
                 case 33:
                     return -2.3f;
                 case 34:
@@ -1351,8 +2047,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -1.8f;
                 case 37:
                     return -3.2f;
+                case 842:
+                    return -1f;
+                case 38:
+                    return -1f;
+                case 195:
+                    return -1f;
+                case 661:
+                    return -2f;
+                case 772:
+                    return -1f;
+                case 768:
+                    return -2f;
                 case 655:
                     return -.25f;
+                case 197:
+                    return 0f;
+                case 502:
+                    return 0f;
+                case 675:
+                    return -.3f;
+                case 683:
+                    return -.4f;
+                case 689:
+                    return -1f;
+                case 692:
+                    return -1f;
+                case 693:
+                    return -1f;
+                case 756:
+                    return -1f;
                 case 180:
                     return 0f;
                 case 761:
@@ -1441,6 +2165,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -.5f;
                 case 758:
                     return -1.5f;
+                case 12:
+                    return -.5f;
                 case 13:
                     return 0f;
                 case 14:
@@ -1487,6 +2213,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -1.3f;
                 case 187:
                     return -.5f;
+                case 188:
+                    return 0f;
+                case 189:
+                    return 0f;
+                case 194:
+                    return -2f;
                 case 400:
                     return 0f;
                 case 506:
@@ -1555,6 +2287,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -.3f;
                 case 685:
                     return -.5f;
+                case 100:
+                    return 0f;
                 case 151:
                     return 0f;
                 case 794:
@@ -1627,11 +2361,113 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 0f;
                 case 849:
                     return 0f;
+                case 851:
+                    return 0f;
+                case 856:
+                    return -1f;
+                case 111:
+                    return 0f;
                 case 110:
+                    return 0f;
+                case 108:
+                    return 0f;
+                case 114:
+                    return 0f;
+                case 113:
+                    return 0f;
+                case 115:
+                    return 0f;
+                case 112:
+                    return 0f;
+                case 99:
+                    return 0f;
+                case 98:
+                    return 0f;
+                case 116:
+                    return 0f;
+                case 117:
+                    return 0f;
+                case 165:
+                    return 0f;
+                case 700:
+                    return 0f;
+                case 701:
+                    return 0f;
+                case 702:
+                    return 0f;
+                case 704:
+                    return 0f;
+                case 705:
+                    return 0f;
+                case 711:
+                    return 0f;
+                case 708:
+                    return 0f;
+                case 706:
+                    return .2f;
+                case 707:
+                    return 0f;
+                case 712:
+                    return 0f;
+                case 713:
+                    return .2f;
+                case 709:
+                    return 0f;
+                case 703:
+                    return 0f;
+                case 714:
+                    return 0f;
+                case 751:
+                    return 0f;
+                case 1048:
+                    return 0f;
+                case 710:
+                    return 0f;
+                case 715:
+                    return 0f;
+                case 620:
+                    return 0f;
+                case 622:
+                    return 0f;
+                case 621:
+                    return 0f;
+                case 623:
+                    return 0f;
+                case 858:
+                    return .01f;
+                case 859:
+                    return 0f;
+                case 860:
+                    return 0f;
+                case 861:
+                    return 0f;
+                case 862:
                     return 0f;
                 case 828:
                     return 0f;
                 case 816:
+                    return 0f;
+                case 814:
+                    return 0f;
+                case 815:
+                    return 0f;
+                case 800:
+                    return 0f;
+                case 801:
+                    return 0f;
+                case 802:
+                    return 0f;
+                case 781:
+                    return 0f;
+                case 150:
+                    return 0f;
+                case 775:
+                    return 0f;
+                case 162:
+                    return 0f;
+                case 163:
+                    return 0f;
+                case 505:
                     return 0f;
                 case 799:
                     return 0f;
@@ -1639,11 +2475,45 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -0.9f;
                 case 196:
                     return -2f;
+                case 769:
+                    return 0f;
+                case 198:
+                    return 0f;
+                case 513:
+                    return 0f;
+                case 514:
+                    return 0f;
+                case 503:
+                    return 0f;
                 case 193:
+                    return 0f;
+                case 157:
+                    return 0f;
+                case 637:
+                    return 0f;
+                case 130:
+                    return 0f;
+                case 131:
+                    return 0f;
+                case 132:
+                    return 0f;
+                case 133:
+                    return 0f;
+                case 134:
+                    return 0f;
+                case 135:
+                    return 0f;
+                case 136:
+                    return 0f;
+                case 137:
                     return 0f;
                 case 608:
                     return 0f;
                 case 609:
+                    return 0f;
+                case 105:
+                    return 0f;
+                case 629:
                     return 0f;
                 case 646:
                     return -1.3f;
@@ -1651,9 +2521,27 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -0.5f;
                 case 649:
                     return 0f;
+                case 678:
+                    return 0f;
+                case 652:
+                    return 0f;
+                case 659:
+                    return 0f;
+                case 662:
+                    return 0f;
+                case 773:
+                    return 0f;
                 case 682:
                     return 0f;
                 case 690:
+                    return 0f;
+                case 752:
+                    return 0f;
+                case 763:
+                    return 0f;
+                case 785:
+                    return 0f;
+                case 789:
                     return 0f;
                 case 795:
                     return 0f;
@@ -1665,6 +2553,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -1f;
                 case 863:
                     return 0f;
+                case 119:
+                    return 0f;
+                case 750:
+                    return 0f;
+                case 166:
+                    return 0f;
+                case 167:
+                    return 0f;
+                case 168:
+                    return 0f;
+                case 169:
+                    return 0f;
+                case 606:
+                    return 0f;
+                case 607:
+                    return 0f;
+                case 780:
+                    return 0f;
+                case 603:
+                    return .01f;
+                case 604:
+                    return 0f;
+                case 605:
+                    return 0f;
+                case 779:
+                    return 0f;
+                case 617:
+                    return 0f;
+                case 616:
+                    return 0f;
+                case 619:
+                    return 0f;
+                case 624:
+                    return 0f;
+                case 93:
+                    return .01f;
+                case 844:
+                    return .01f;
                 case 16:
                     return -.5f;
                 case 757:
@@ -1681,6 +2607,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return 1f;
                 case 33:
                     return 2f;
                 case 34:
@@ -1689,8 +2617,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1.4f;
                 case 37:
                     return 2.8f;
+                case 842:
+                    return 1f;
+                case 38:
+                    return 1f;
+                case 195:
+                    return 1f;
+                case 661:
+                    return 2f;
+                case 772:
+                    return 1f;
+                case 768:
+                    return 2f;
                 case 655:
                     return .10f;
+                case 197:
+                    return 1f;
+                case 502:
+                    return 1f;
+                case 675:
+                    return .3f;
+                case 683:
+                    return .2f;
+                case 689:
+                    return 1f;
+                case 692:
+                    return 1f;
+                case 693:
+                    return 1f;
+                case 756:
+                    return 1f;
                 case 180:
                     return 1.3f;
                 case 761:
@@ -1779,6 +2735,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1.5f;
                 case 758:
                     return 1.5f;
+                case 12:
+                    return 2.5f;
                 case 13:
                     return 1.5f;
                 case 14:
@@ -1825,6 +2783,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1f;
                 case 187:
                     return 1f;
+                case 188:
+                    return .7f;
+                case 189:
+                    return 1f;
+                case 194:
+                    return 2f;
                 case 400:
                     return 2f;
                 case 506:
@@ -1893,6 +2857,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1.3f;
                 case 685:
                     return 1.1f;
+                case 100:
+                    return 1f;
                 case 151:
                     return 1f;
                 case 794:
@@ -1965,11 +2931,113 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1f;
                 case 849:
                     return 1f;
+                case 851:
+                    return 1f;
+                case 856:
+                    return 2f;
+                case 111:
+                    return 1f;
                 case 110:
                     return 0.1f;
+                case 108:
+                    return 1f;
+                case 114:
+                    return 1f;
+                case 113:
+                    return 1f;
+                case 115:
+                    return 1f;
+                case 112:
+                    return 1f;
+                case 99:
+                    return 1f;
+                case 98:
+                    return 1f;
+                case 116:
+                    return 1f;
+                case 117:
+                    return 1f;
+                case 165:
+                    return 1f;
+                case 700:
+                    return 1f;
+                case 701:
+                    return .9f;
+                case 702:
+                    return 1f;
+                case 704:
+                    return .9f;
+                case 705:
+                    return 1f;
+                case 711:
+                    return 1f;
+                case 708:
+                    return 1f;
+                case 706:
+                    return 1f;
+                case 707:
+                    return .7f;
+                case 712:
+                    return 1f;
+                case 713:
+                    return 1f;
+                case 709:
+                    return 1f;
+                case 703:
+                    return 1f;
+                case 714:
+                    return 1f;
+                case 751:
+                    return 1f;
+                case 1048:
+                    return 1f;
+                case 710:
+                    return 1f;
+                case 715:
+                    return 1f;
+                case 620:
+                    return 1f;
+                case 622:
+                    return 1f;
+                case 621:
+                    return 1f;
+                case 623:
+                    return 1f;
+                case 858:
+                    return 1f;
+                case 859:
+                    return 1f;
+                case 860:
+                    return 1f;
+                case 861:
+                    return 1f;
+                case 862:
+                    return 1f;
                 case 828:
                     return 1f;
                 case 816:
+                    return 1f;
+                case 814:
+                    return 1f;
+                case 815:
+                    return 1f;
+                case 800:
+                    return 1f;
+                case 801:
+                    return 1f;
+                case 802:
+                    return 1f;
+                case 781:
+                    return 1f;
+                case 150:
+                    return 1f;
+                case 775:
+                    return 1f;
+                case 162:
+                    return 1f;
+                case 163:
+                    return 1f;
+                case 505:
                     return 1f;
                 case 799:
                     return 1f;
@@ -1977,11 +3045,45 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1.3f;
                 case 196:
                     return 1f;
+                case 769:
+                    return 1f;
+                case 198:
+                    return 1f;
+                case 513:
+                    return 1f;
+                case 514:
+                    return 1f;
+                case 503:
+                    return 1f;
                 case 193:
+                    return 1f;
+                case 157:
+                    return 1f;
+                case 637:
+                    return 1f;
+                case 130:
+                    return 1f;
+                case 131:
+                    return 1f;
+                case 132:
+                    return 1f;
+                case 133:
+                    return 1f;
+                case 134:
+                    return 1f;
+                case 135:
+                    return 1f;
+                case 136:
+                    return 1f;
+                case 137:
                     return 1f;
                 case 608:
                     return 1f;
                 case 609:
+                    return 1f;
+                case 105:
+                    return 1f;
+                case 629:
                     return 1f;
                 case 646:
                     return 1f;
@@ -1989,9 +3091,27 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 1f;
                 case 649:
                     return 1f;
+                case 678:
+                    return 1f;
+                case 652:
+                    return 1f;
+                case 659:
+                    return 1f;
+                case 662:
+                    return 1f;
+                case 773:
+                    return 1f;
                 case 682:
                     return 1f;
                 case 690:
+                    return 1f;
+                case 752:
+                    return 1f;
+                case 763:
+                    return 1f;
+                case 785:
+                    return 1f;
+                case 789:
                     return 1f;
                 case 795:
                     return 1f;
@@ -2002,6 +3122,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                 case 676:
                     return 2f;
                 case 863:
+                    return 1f;
+                case 119:
+                    return 1f;
+                case 750:
+                    return 1f;
+                case 166:
+                    return 1f;
+                case 167:
+                    return 1f;
+                case 168:
+                    return 1f;
+                case 169:
+                    return 1f;
+                case 606:
+                    return 1f;
+                case 607:
+                    return 1f;
+                case 780:
+                    return 1f;
+                case 603:
+                    return 1f;
+                case 604:
+                    return 1f;
+                case 605:
+                    return 1f;
+                case 779:
+                    return 1f;
+                case 617:
+                    return 1f;
+                case 616:
+                    return 1f;
+                case 619:
+                    return 1f;
+                case 624:
+                    return 1f;
+                case 93:
+                    return 1f;
+                case 844:
                     return 1f;
                 case 16:
                     return 3f;
@@ -2019,6 +3177,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return 0f;
                 case 33:
                     return -2.3f;
                 case 34:
@@ -2027,8 +3187,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -0.5f;
                 case 37:
                     return -3.2f;
+                case 842:
+                    return -1f;
+                case 38:
+                    return -1f;
+                case 195:
+                    return -1f;
+                case 661:
+                    return -2f;
+                case 772:
+                    return -1f;
+                case 768:
+                    return -2f;
                 case 655:
                     return -.25f;
+                case 197:
+                    return 0f;
+                case 502:
+                    return 0f;
+                case 675:
+                    return -.3f;
+                case 683:
+                    return -.15f;
+                case 689:
+                    return -1f;
+                case 692:
+                    return -1f;
+                case 693:
+                    return .6f;
+                case 756:
+                    return 0f;
                 case 180:
                     return 0f;
                 case 761:
@@ -2117,6 +3305,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -.5f;
                 case 758:
                     return -1.5f;
+                case 12:
+                    return -.5f;
                 case 13:
                     return 0f;
                 case 14:
@@ -2163,6 +3353,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return -1.3f;
                 case 187:
                     return -.5f;
+                case 188:
+                    return 0f;
+                case 189:
+                    return 0f;
+                case 194:
+                    return -2f;
                 case 400:
                     return 0f;
                 case 506:
@@ -2230,6 +3426,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                 case 684:
                     return 0f;
                 case 685:
+                    return 0f;
+                case 100:
                     return 0f;
                 case 151:
                     return 0f;
@@ -2303,34 +3501,188 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 0f;
                 case 849:
                     return 0f;
+                case 851:
+                    return 0f;
+                case 856:
+                    return 0f;
+                case 111:
+                    return .5f;
                 case 110:
                     return 0f;
+                case 108:
+                    return 0f;
+                case 114:
+                    return .5f;
+                case 113:
+                    return 0f;
+                case 115:
+                    return 0f;
+                case 112:
+                    return 0f;
+                case 99:
+                    return 0f;
+                case 98:
+                    return 0f;
+                case 116:
+                    return 0f;
+                case 117:
+                    return 0f;
+                case 165:
+                    return 0f;
+                case 700:
+                    return .25f;
+                case 701:
+                    return 0.0f;
+                case 702:
+                    return 0f;
+                case 704:
+                    return 0f;
+                case 705:
+                    return .5f;
+                case 711:
+                    return .5f;
+                case 708:
+                    return 0f;
+                case 706:
+                    return .6f;
+                case 707:
+                    return 0f;
+                case 712:
+                    return 0f;
+                case 713:
+                    return .7f;
+                case 709:
+                    return 0f;
+                case 703:
+                    return 0.0f;
+                case 714:
+                    return 0f;
+                case 751:
+                    return 0.7f;
+                case 1048:
+                    return .8f;
+                case 710:
+                    return 0.0f;
+                case 715:
+                    return 0f;
+                case 620:
+                    return .8f;
+                case 622:
+                    return .8f;
+                case 621:
+                    return .8f;
+                case 623:
+                    return .8f;
+                case 858:
+                    return .4f;
+                case 859:
+                    return 1f;
+                case 860:
+                    return 1f;
+                case 861:
+                    return 1f;
+                case 862:
+                    return 1f;
                 case 828:
                     return 0f;
                 case 816:
                     return 0f;
+                case 814:
+                    return 1f;
+                case 815:
+                    return .8f;
+                case 800:
+                    return .89f;
+                case 801:
+                    return 1f;
+                case 802:
+                    return .78f;
+                case 781:
+                    return .78f;
+                case 150:
+                    return 0f;
+                case 775:
+                    return 0f;
+                case 162:
+                    return 0f;
+                case 163:
+                    return 0f;
+                case 505:
+                    return .5f;
                 case 799:
                     return .5f;
                 case 155:
                     return 0f;
                 case 196:
                     return 0f;
+                case 769:
+                    return .5f;
+                case 198:
+                    return 0f;
+                case 513:
+                    return .5f;
+                case 514:
+                    return .5f;
+                case 503:
+                    return 0f;
                 case 193:
+                    return .5f;
+                case 157:
+                    return 0f;
+                case 637:
+                    return 0f;
+                case 130:
+                    return .45f;
+                case 131:
+                    return .5f;
+                case 132:
+                    return .39f;
+                case 133:
+                    return .25f;
+                case 134:
+                    return .5f;
+                case 135:
+                    return .55f;
+                case 136:
+                    return .5f;
+                case 137:
                     return .5f;
                 case 608:
                     return .8f;
                 case 609:
                     return .2f;
+                case 105:
+                    return .5f;
+                case 629:
+                    return .5f;
                 case 646:
                     return 0f;
                 case 647:
                     return 0f;
                 case 649:
                     return .5f;
+                case 678:
+                    return .5f;
+                case 652:
+                    return .5f;
+                case 659:
+                    return .5f;
+                case 662:
+                    return .5f;
+                case 773:
+                    return .5f;
                 case 682:
                     return .5f;
                 case 690:
                     return .5f;
+                case 752:
+                    return .5f;
+                case 763:
+                    return .55f;
+                case 785:
+                    return 0f;
+                case 789:
+                    return 0f;
                 case 795:
                     return .25f;
                 case 841:
@@ -2341,6 +3693,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return 0f;
                 case 863:
                     return .333f;
+                case 119:
+                    return 0.5f;
+                case 750:
+                    return 0.7f;
+                case 166:
+                    return 0.0f;
+                case 167:
+                    return 0.0f;
+                case 168:
+                    return 0.0f;
+                case 169:
+                    return 0.0f;
+                case 606:
+                    return .8f;
+                case 607:
+                    return .8f;
+                case 780:
+                    return .8f;
+                case 603:
+                    return .4f;
+                case 604:
+                    return .85f;
+                case 605:
+                    return .84f;
+                case 779:
+                    return .84f;
+                case 617:
+                    return 0.35f;
+                case 616:
+                    return 0.1f;
+                case 619:
+                    return .3f;
+                case 624:
+                    return .8f;
+                case 93:
+                    return .8f;
+                case 844:
+                    return 1f;
                 case 16:
                     return -.5f;
                 case 757:
@@ -2357,6 +3747,8 @@ namespace libsecondlife.AssetSystem.BodyShape
             {
                 default:
                     throw new Exception("Unknown Body Part Parameter: " + Param);
+                case 32:
+                    return ( (Value >= 0f) && (Value <= 1f) );
                 case 33:
                     return ( (Value >= -2.3f) && (Value <= 2f) );
                 case 34:
@@ -2365,8 +3757,36 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -1.8f) && (Value <= 1.4f) );
                 case 37:
                     return ( (Value >= -3.2f) && (Value <= 2.8f) );
+                case 842:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 38:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 195:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 661:
+                    return ( (Value >= -2f) && (Value <= 2f) );
+                case 772:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 768:
+                    return ( (Value >= -2f) && (Value <= 2f) );
                 case 655:
                     return ( (Value >= -.25f) && (Value <= .10f) );
+                case 197:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 502:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 675:
+                    return ( (Value >= -.3f) && (Value <= .3f) );
+                case 683:
+                    return ( (Value >= -.4f) && (Value <= .2f) );
+                case 689:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 692:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 693:
+                    return ( (Value >= -1f) && (Value <= 1f) );
+                case 756:
+                    return ( (Value >= -1f) && (Value <= 1f) );
                 case 180:
                     return ( (Value >= 0f) && (Value <= 1.3f) );
                 case 761:
@@ -2455,6 +3875,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -.5f) && (Value <= 1.5f) );
                 case 758:
                     return ( (Value >= -1.5f) && (Value <= 1.5f) );
+                case 12:
+                    return ( (Value >= -.5f) && (Value <= 2.5f) );
                 case 13:
                     return ( (Value >= 0f) && (Value <= 1.5f) );
                 case 14:
@@ -2501,6 +3923,12 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -1.3f) && (Value <= 1f) );
                 case 187:
                     return ( (Value >= -.5f) && (Value <= 1f) );
+                case 188:
+                    return ( (Value >= 0f) && (Value <= .7f) );
+                case 189:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 194:
+                    return ( (Value >= -2f) && (Value <= 2f) );
                 case 400:
                     return ( (Value >= 0f) && (Value <= 2f) );
                 case 506:
@@ -2569,6 +3997,8 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -.3f) && (Value <= 1.3f) );
                 case 685:
                     return ( (Value >= -.5f) && (Value <= 1.1f) );
+                case 100:
+                    return ( (Value >= 0f) && (Value <= 1f) );
                 case 151:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 794:
@@ -2641,11 +4071,113 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 849:
                     return ( (Value >= 0f) && (Value <= 1f) );
+                case 851:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 856:
+                    return ( (Value >= -1f) && (Value <= 2f) );
+                case 111:
+                    return ( (Value >= 0f) && (Value <= 1f) );
                 case 110:
                     return ( (Value >= 0f) && (Value <= 0.1f) );
+                case 108:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 114:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 113:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 115:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 112:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 99:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 98:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 116:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 117:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 165:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 700:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 701:
+                    return ( (Value >= 0f) && (Value <= .9f) );
+                case 702:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 704:
+                    return ( (Value >= 0f) && (Value <= .9f) );
+                case 705:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 711:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 708:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 706:
+                    return ( (Value >= .2f) && (Value <= 1f) );
+                case 707:
+                    return ( (Value >= 0f) && (Value <= .7f) );
+                case 712:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 713:
+                    return ( (Value >= .2f) && (Value <= 1f) );
+                case 709:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 703:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 714:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 751:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 1048:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 710:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 715:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 620:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 622:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 621:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 623:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 858:
+                    return ( (Value >= .01f) && (Value <= 1f) );
+                case 859:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 860:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 861:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 862:
+                    return ( (Value >= 0f) && (Value <= 1f) );
                 case 828:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 816:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 814:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 815:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 800:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 801:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 802:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 781:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 150:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 775:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 162:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 163:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 505:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 799:
                     return ( (Value >= 0f) && (Value <= 1f) );
@@ -2653,11 +4185,45 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -0.9f) && (Value <= 1.3f) );
                 case 196:
                     return ( (Value >= -2f) && (Value <= 1f) );
+                case 769:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 198:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 513:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 514:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 503:
+                    return ( (Value >= 0f) && (Value <= 1f) );
                 case 193:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 157:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 637:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 130:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 131:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 132:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 133:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 134:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 135:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 136:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 137:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 608:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 609:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 105:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 629:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 646:
                     return ( (Value >= -1.3f) && (Value <= 1f) );
@@ -2665,9 +4231,27 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -0.5f) && (Value <= 1f) );
                 case 649:
                     return ( (Value >= 0f) && (Value <= 1f) );
+                case 678:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 652:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 659:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 662:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 773:
+                    return ( (Value >= 0f) && (Value <= 1f) );
                 case 682:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 690:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 752:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 763:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 785:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 789:
                     return ( (Value >= 0f) && (Value <= 1f) );
                 case 795:
                     return ( (Value >= 0f) && (Value <= 1f) );
@@ -2679,6 +4263,44 @@ namespace libsecondlife.AssetSystem.BodyShape
                     return ( (Value >= -1f) && (Value <= 2f) );
                 case 863:
                     return ( (Value >= 0f) && (Value <= 1f) );
+                case 119:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 750:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 166:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 167:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 168:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 169:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 606:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 607:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 780:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 603:
+                    return ( (Value >= .01f) && (Value <= 1f) );
+                case 604:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 605:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 779:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 617:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 616:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 619:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 624:
+                    return ( (Value >= 0f) && (Value <= 1f) );
+                case 93:
+                    return ( (Value >= .01f) && (Value <= 1f) );
+                case 844:
+                    return ( (Value >= .01f) && (Value <= 1f) );
                 case 16:
                     return ( (Value >= -.5f) && (Value <= 3f) );
                 case 757:
