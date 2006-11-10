@@ -161,9 +161,17 @@ namespace libsecondlife
         /// <returns></returns>
 		public static bool operator==(LLUUID lhs, LLUUID rhs)
 		{
-			if(object.ReferenceEquals(lhs, rhs))  return true;
-			if(object.ReferenceEquals(lhs, null)) return false;
-			if(object.ReferenceEquals(rhs, null)) return false;
+            // If both are null, or both are same instance, return true
+            if (System.Object.ReferenceEquals(lhs, rhs))
+            {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)lhs == null) || ((object)rhs == null))
+            {
+                return false;
+            }
 
 			for (int i = 0; i < 16; ++i)
 			{
@@ -239,7 +247,6 @@ namespace libsecondlife
 			for (int i = 0; i < 16; ++i)
 			{
 				uuid += Data[i].ToString("x2");
-
 			}
 			uuid = uuid.Insert(20,"-");
 			uuid = uuid.Insert(16,"-");
@@ -383,9 +390,17 @@ namespace libsecondlife
         /// <returns></returns>
 		public static bool operator==(LLVector3 lhs, LLVector3 rhs)
 		{
-			if(object.ReferenceEquals(lhs, rhs))  return true;
-			if(object.ReferenceEquals(lhs, null)) return false;
-			if(object.ReferenceEquals(rhs, null)) return false;
+            // If both are null, or both are same instance, return true
+            if (System.Object.ReferenceEquals(lhs, rhs))
+            {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)lhs == null) || ((object)rhs == null))
+            {
+                return false;
+            }
 
 			return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
 		}
@@ -715,6 +730,44 @@ namespace libsecondlife
 			return bytes;
 		}
 
+        public override int GetHashCode()
+        {
+            float sum = X + Y + Z + W;
+            return sum.GetHashCode();
+        }
+
+        public override bool Equals(object o)
+        {
+            if (!(o is LLQuaternion)) return false;
+
+            LLQuaternion quaternion = (LLQuaternion)o;
+
+            return X == quaternion.X && Y == quaternion.Y && Z == quaternion.Z && W == quaternion.W;
+        }
+
+        public static bool operator ==(LLQuaternion lhs, LLQuaternion rhs)
+        {
+            // If both are null, or both are same instance, return true
+            if (System.Object.ReferenceEquals(lhs, rhs))
+            {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)lhs == null) || ((object)rhs == null))
+            {
+                return false;
+            }
+
+            // Return true if the fields match:
+            return lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.W == rhs.W;
+        }
+
+        public static bool operator !=(LLQuaternion lhs, LLQuaternion rhs)
+        {
+            return !(lhs == rhs);
+        }
+
         public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
         {
             LLQuaternion ret = new LLQuaternion();
@@ -731,7 +784,7 @@ namespace libsecondlife
         /// <returns></returns>
 		public override string ToString()
 		{
-			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + W.ToString();
+			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ", " + W.ToString() + ">";
 		}
 
         /// <summary>

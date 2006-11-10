@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace libsecondlife.Tests
 {
     [TestFixture]
-    public class UnitTests : Assert
+    public class NetworkTests : Assert
     {
         SecondLife Client;
         ulong CurrentRegionHandle = 0;
@@ -20,13 +20,13 @@ namespace libsecondlife.Tests
         {
             Client = new SecondLife();
 
-            //string startLoc = NetworkManager.StartLocation("ahern", 128, 128, 32);
+            string startLoc = NetworkManager.StartLocation("ahern", 128, 128, 32);
 
             // Register callbacks
             Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(ObjectUpdateHandler));
 
-            bool result = Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework",
-                "contact@libsecondlife.org");
+            bool result = Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", startLoc,
+                "contact@libsecondlife.org", false);
 
             Assert.IsTrue(result, "Login failed for Testing Anvil: " + Client.Network.LoginError);
 

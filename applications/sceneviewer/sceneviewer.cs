@@ -102,6 +102,11 @@ namespace sceneviewer
         /// </summary>
         public sceneviewer()
         {
+            Quaternion a = new Quaternion(0.19134f, -0.46194f, 0.19134f, 0.84462f);
+            Quaternion b = new Quaternion(0.00000f, 0.00000f, 1.00000f, 0.00000f);
+            Quaternion c = a * b;
+            Console.WriteLine(c.ToString());
+
             Graphics = new GraphicsDeviceManager(this);
             Graphics.MinimumPixelShaderProfile = ShaderProfile.PS_2_0;
             Graphics.PreferMultiSampling = false;
@@ -138,9 +143,9 @@ namespace sceneviewer
         {
             // Register libsl callbacks
             Client.Objects.RequestAllObjects = true;
-            Client.Objects.OnNewPrim += new NewPrimCallback(OnNewPrim);
-            Client.Objects.OnPrimMoved += new PrimMovedCallback(OnPrimMoved);
-            Client.Objects.OnObjectKilled += new KillObjectCallback(OnObjectKilled);
+            Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(OnNewPrim);
+            Client.Objects.OnPrimMoved += new ObjectManager.PrimMovedCallback(OnPrimMoved);
+            Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(OnObjectKilled);
 
             if (!Client.Network.Login("Ron", "Hubbard", "radishman", "sceneviewer", "jhurliman@wsu.edu"))
             {
@@ -148,9 +153,7 @@ namespace sceneviewer
             }
 
             // Wait for basic information to be retrieved from the current sim
-            while (
-                Client.Network.CurrentSim.Region == null || 
-                Client.Network.CurrentSim.Region.Name == null)
+            while (Client.Network.CurrentSim.Region.Name == "")
             {
                 System.Threading.Thread.Sleep(10);
             }
@@ -596,14 +599,14 @@ namespace sceneviewer
             float nearClip = Camera.NearClip;
             float farClip = Camera.FarClip;
 
-            System.Console.WriteLine("mouseState.X: " + mouseX + ", mouseState.Y: " + mouseY);
+            //System.Console.WriteLine("mouseState.X: " + mouseX + ", mouseState.Y: " + mouseY);
 
             // Determine the mouse position in screen space.
             double screenSpaceX = ((float)mouseX / ((float)Window.ClientBounds.Width / 2.0f) - 1.0f) * 
                 ((float)Window.ClientBounds.Width / (float)Window.ClientBounds.Height);
             double screenSpaceY = (1.0f - (float)mouseY / ((float)Window.ClientBounds.Height / 2.0f));
 
-            System.Console.WriteLine("ScreenSpaceX: " + screenSpaceX + ", ScreenSpaceY: " + screenSpaceY);
+            //System.Console.WriteLine("ScreenSpaceX: " + screenSpaceX + ", ScreenSpaceY: " + screenSpaceY);
 
             // Calculating the tangent in this method is for clarity. Normally, the
             // tangent would be calculated only once at start up and recalculated
@@ -763,7 +766,7 @@ namespace sceneviewer
         /// <param name="obj"></param>
         void SendCameraUpdate(object obj)
         {
-            Client.Self.UpdateCamera(false);
+            //Client.Self.UpdateCamera(false);
         }
     }
 }
