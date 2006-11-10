@@ -30,7 +30,7 @@ using libsecondlife;
 namespace libsecondlife.Packets
 {
     /// <summary>
-    /// 
+    /// Thrown when a packet could not be successfully deserialized
     /// </summary>
     public class MalformedDataException : ApplicationException
     {
@@ -51,11 +51,13 @@ namespace libsecondlife.Packets
     }
     
     /// <summary>
-    /// 
+    /// The Second Life header of a message template packet. Either 5, 6, or 8 
+    /// bytes in length at the beginning of the packet, and encapsulates any 
+    /// appended ACKs at the end of the packet as well
     /// </summary>
     public abstract class Header
     {
-        /// <summary></summary>
+        /// <summary>The raw header data, does not include appended ACKs</summary>
         public byte[] Data;
         /// <summary></summary>
         public byte Flags

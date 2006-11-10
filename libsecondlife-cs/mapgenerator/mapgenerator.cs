@@ -66,13 +66,13 @@ namespace mapgenerator
             }
             if (field.Type != FieldType.Variable)
             {
-                writer.WriteLine("            /// <summary>" + field.Name + " field</summary>");
+                //writer.WriteLine("            /// <summary>" + field.Name + " field</summary>");
                 writer.WriteLine("            public " + type + " " + field.Name + ";");
             }
             else
             {
                 writer.WriteLine("            private byte[] _" + field.Name.ToLower() + ";");
-                writer.WriteLine("            /// <summary>" + field.Name + " field</summary>");
+                //writer.WriteLine("            /// <summary>" + field.Name + " field</summary>");
                 writer.WriteLine("            public byte[] " + field.Name + "\n            {");
                 writer.WriteLine("                get { return _" + field.Name.ToLower() + "; }");
                 writer.WriteLine("                set\n                {");
@@ -332,7 +332,8 @@ namespace mapgenerator
             bool variableFields = false;
             bool floatFields = false;
 
-            writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
+            //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
+            writer.WriteLine("        /// <exclude/>");
             writer.WriteLine("        public class " + block.Name + "Block\n        {");
 
             foreach (MapField field in block.Fields)
@@ -345,7 +346,7 @@ namespace mapgenerator
 
             // Length property
             writer.WriteLine("");
-            writer.WriteLine("            /// <summary>Length of this block serialized in bytes</summary>");
+            //writer.WriteLine("            /// <summary>Length of this block serialized in bytes</summary>");
             writer.WriteLine("            public int Length\n            {\n                get\n" +
                 "                {");
             int length = 0;
@@ -377,11 +378,11 @@ namespace mapgenerator
             writer.WriteLine("                }\n            }\n");
 
             // Default constructor
-            writer.WriteLine("            /// <summary>Default constructor</summary>");
+            //writer.WriteLine("            /// <summary>Default constructor</summary>");
             writer.WriteLine("            public " + block.Name + "Block() { }");
 
             // Constructor for building the class from bytes
-            writer.WriteLine("            /// <summary>Constructor for building the block from a byte array</summary>");
+            //writer.WriteLine("            /// <summary>Constructor for building the block from a byte array</summary>");
             writer.WriteLine("            public " + block.Name + "Block(byte[] bytes, ref int i)" +
                 "\n            {");
 
@@ -401,7 +402,7 @@ namespace mapgenerator
                 "                }\n            }\n");
 
             // ToBytes() function
-            writer.WriteLine("            /// <summary>Serialize this block to a byte array</summary>");
+            //writer.WriteLine("            /// <summary>Serialize this block to a byte array</summary>");
             writer.WriteLine("            public void ToBytes(byte[] bytes, ref int i)\n            {");
 
             // Declare a byte[] variable if we need it for floating point field conversions
@@ -415,7 +416,7 @@ namespace mapgenerator
             writer.WriteLine("            }\n");
 
             // ToString() function
-            writer.WriteLine("            /// <summary>Serialize this block to a string</summary><returns>A string containing the serialized block</returns>");
+            //writer.WriteLine("            /// <summary>Serialize this block to a string</summary><returns>A string containing the serialized block</returns>");
             writer.WriteLine("            public override string ToString()\n            {");
             writer.WriteLine("                string output = \"-- " + block.Name + " --\\n\";");
 
@@ -440,7 +441,8 @@ namespace mapgenerator
         {
             string sanitizedName;
 
-            writer.WriteLine("    /// <summary>" + packet.Name + " packet</summary>");
+            //writer.WriteLine("    /// <summary>" + packet.Name + " packet</summary>");
+            writer.WriteLine("    /// <exclude/>");
             writer.WriteLine("    public class " + packet.Name + "Packet : Packet\n    {");
 
             // Write out each block class
@@ -451,11 +453,11 @@ namespace mapgenerator
 
             // Header member
             writer.WriteLine("        private Header header;");
-            writer.WriteLine("        /// <summary>The header for this packet</summary>");
+            //writer.WriteLine("        /// <summary>The header for this packet</summary>");
             writer.WriteLine("        public override Header Header { get { return header; } set { header = value; } }");
 
             // PacketType member
-            writer.WriteLine("        /// <summary>Will return PacketType." + packet.Name+ "</summary>");
+            //writer.WriteLine("        /// <summary>Will return PacketType." + packet.Name+ "</summary>");
             writer.WriteLine("        public override PacketType Type { get { return PacketType." + 
                 packet.Name + "; } }");
 
@@ -466,7 +468,7 @@ namespace mapgenerator
                 if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
                 else { sanitizedName = block.Name; }
 
-                writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
+                //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
                 writer.WriteLine("        public " + block.Name + "Block" +
                     ((block.Count != 1) ? "[]" : "") + " " + sanitizedName + ";");
             }
@@ -474,7 +476,7 @@ namespace mapgenerator
             writer.WriteLine("");
 
             // Default constructor
-            writer.WriteLine("        /// <summary>Default constructor</summary>");
+            //writer.WriteLine("        /// <summary>Default constructor</summary>");
             writer.WriteLine("        public " + packet.Name + "Packet()\n        {");
             writer.WriteLine("            Header = new " + packet.Frequency.ToString() + "Header();");
             writer.WriteLine("            Header.ID = " + packet.ID + ";");
@@ -506,7 +508,7 @@ namespace mapgenerator
 
             // Constructor that takes a byte array and beginning position only (no prebuilt header)
             bool seenVariable = false;
-            writer.WriteLine("        /// <summary>Constructor that takes a byte array and beginning position (no prebuilt header)</summary>");
+            //writer.WriteLine("        /// <summary>Constructor that takes a byte array and beginning position (no prebuilt header)</summary>");
             writer.WriteLine("        public " + packet.Name + "Packet(byte[] bytes, ref int i)\n        {");
             writer.WriteLine("            int packetEnd = bytes.Length - 1;");
             writer.WriteLine("            Header = new " + packet.Frequency.ToString() + 
@@ -553,7 +555,7 @@ namespace mapgenerator
             seenVariable = false;
 
             // Constructor that takes a byte array and a prebuilt header
-            writer.WriteLine("        /// <summary>Constructor that takes a byte array and a prebuilt header</summary>");
+            //writer.WriteLine("        /// <summary>Constructor that takes a byte array and a prebuilt header</summary>");
             writer.WriteLine("        public " + packet.Name + "Packet(Header head, byte[] bytes, ref int i)\n        {");
             writer.WriteLine("            Header = head;");
             foreach (MapBlock block in packet.Blocks)
@@ -596,7 +598,7 @@ namespace mapgenerator
             writer.WriteLine("        }\n");
 
             // ToBytes() function
-            writer.WriteLine("        /// <summary>Serialize this packet to a byte array</summary><returns>A byte array containing the serialized packet</returns>");
+            //writer.WriteLine("        /// <summary>Serialize this packet to a byte array</summary><returns>A byte array containing the serialized packet</returns>");
             writer.WriteLine("        public override byte[] ToBytes()\n        {");
 
             writer.Write("            int length = ");
@@ -667,7 +669,7 @@ namespace mapgenerator
             writer.WriteLine("            return bytes;\n        }\n");
 
             // ToString() function
-            writer.WriteLine("        /// <summary>Serialize this packet to a string</summary><returns>A string containing the serialized packet</returns>");
+            //writer.WriteLine("        /// <summary>Serialize this packet to a string</summary><returns>A string containing the serialized packet</returns>");
             writer.WriteLine("        public override string ToString()\n        {");
             writer.WriteLine("            string output = \"--- " + packet.Name + " ---\\n\";");
 
@@ -727,7 +729,7 @@ namespace mapgenerator
             }
 
             // Write the PacketType enum
-            writer.WriteLine("    /// <summary>Used to identify the type of a packet</summary>");
+            //writer.WriteLine("    /// <summary>Used to identify the type of a packet</summary>");
             writer.WriteLine("    public enum PacketType\n    {\n" +
                 "        /// <summary>A generic value, not an actual packet type</summary>\n" +
                 "        Default,");
@@ -735,7 +737,7 @@ namespace mapgenerator
             {
                 if (packet != null)
                 {
-                    writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
+                    //writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
                     writer.WriteLine("        " + packet.Name + ",");
                 }
             }
@@ -743,7 +745,7 @@ namespace mapgenerator
             {
                 if (packet != null)
                 {
-                    writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
+                    //writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
                     writer.WriteLine("        " + packet.Name + ",");
                 }
             }
@@ -751,28 +753,28 @@ namespace mapgenerator
             {
                 if (packet != null)
                 {
-                    writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
+                    //writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
                     writer.WriteLine("        " + packet.Name + ",");
                 }
             }
             writer.WriteLine("    }\n");
 
             // Write the base Packet class
-            writer.WriteLine("    /// <summary>Base class for all packet classes</summary>\n" +
+            writer.WriteLine(//"    /// <summary>Base class for all packet classes</summary>\n" +
                 "    public abstract class Packet\n    {\n" + 
-                "        /// <summary>Either a LowHeader, MediumHeader, or HighHeader representing the first bytes of the packet</summary>\n" +
+                //"        /// <summary>Either a LowHeader, MediumHeader, or HighHeader representing the first bytes of the packet</summary>\n" +
                 "        public abstract Header Header { get; set; }\n" +
-                "        /// <summary>The type of this packet, identified by it's frequency and ID</summary>\n" +
+                //"        /// <summary>The type of this packet, identified by it's frequency and ID</summary>\n" +
                 "        public abstract PacketType Type { get; }\n" +
-                "        /// <summary>Used internally to track timeouts, do not use</summary>\n" +
+                //"        /// <summary>Used internally to track timeouts, do not use</summary>\n" +
                 "        public int TickCount;\n\n" +
-                "        /// <summary>Serializes the packet in to a byte array</summary>\n" +
-                "        /// <returns>A byte array containing the serialized packet payload, ready to be sent across the wire</returns>\n" +
+                //"        /// <summary>Serializes the packet in to a byte array</summary>\n" +
+                //"        /// <returns>A byte array containing the serialized packet payload, ready to be sent across the wire</returns>\n" +
                 "        public abstract byte[] ToBytes();\n\n" +
-                "        /// <summary>Get the PacketType for a given packet id and packet frequency</summary>\n" +
-                "        /// <param name=\"id\">The packet ID from the header</param>\n" +
-                "        /// <param name=\"frequency\">Frequency of this packet</param>\n" +
-                "        /// <returns>The packet type, or PacketType.Default</returns>\n" +
+                //"        /// <summary>Get the PacketType for a given packet id and packet frequency</summary>\n" +
+                //"        /// <param name=\"id\">The packet ID from the header</param>\n" +
+                //"        /// <param name=\"frequency\">Frequency of this packet</param>\n" +
+                //"        /// <returns>The packet type, or PacketType.Default</returns>\n" +
                 "        public static PacketType GetType(ushort id, PacketFrequency frequency)\n        {\n" +
                 "            switch (frequency)\n            {\n                case PacketFrequency.Low:\n" +
                 "                    switch (id)\n                    {");
@@ -813,10 +815,10 @@ namespace mapgenerator
             writer.WriteLine("                    }\n                    break;\n            }\n\n" +
                 "            return PacketType.Default;\n        }\n");
 
-            writer.WriteLine("        /// <summary>Construct a packet in it's native class from a byte array</summary>\n" +
-                "        /// <param name=\"bytes\">Byte array containing the packet, starting at position 0</param>\n" +
-                "        /// <param name=\"packetEnd\">The last byte of the packet. If the packet was 76 bytes long, packetEnd would be 75</param>\n" +
-                "        /// <returns>The native packet class for this type of packet, typecasted to the generic Packet</returns>\n" +
+            writer.WriteLine(//"        /// <summary>Construct a packet in it's native class from a byte array</summary>\n" +
+                //"        /// <param name=\"bytes\">Byte array containing the packet, starting at position 0</param>\n" +
+                //"        /// <param name=\"packetEnd\">The last byte of the packet. If the packet was 76 bytes long, packetEnd would be 75</param>\n" +
+                //"        /// <returns>The native packet class for this type of packet, typecasted to the generic Packet</returns>\n" +
                 "        public static Packet BuildPacket(byte[] bytes, ref int packetEnd)\n" +
                 "        {\n            ushort id;\n            int i = 0;\n" +
                 "            Header header = Header.BuildHeader(bytes, ref i, ref packetEnd);\n" +
