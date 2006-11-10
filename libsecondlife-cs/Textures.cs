@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace libsecondlife
 {
@@ -131,7 +132,200 @@ namespace libsecondlife
         /// <returns></returns>
         public byte[] ToBytes()
         {
-            byte[] bytes = new byte[0];
+            MemoryStream memStream = new MemoryStream();
+            BinaryWriter binWriter = new BinaryWriter(memStream);
+
+            Dictionary<LLUUID, uint> TextureIDs = new Dictionary<LLUUID,uint>();
+            Dictionary<uint, uint> RGBAs = new Dictionary<uint, uint>();
+            Dictionary<short, uint> RepeatUs = new Dictionary<short, uint>();
+            Dictionary<short, uint> RepeatVs = new Dictionary<short, uint>();
+            Dictionary<short, uint> OffsetUs = new Dictionary<short, uint>();
+            Dictionary<short, uint> OffsetVs = new Dictionary<short, uint>();
+            Dictionary<short, uint> Rotations = new Dictionary<short, uint>();
+            Dictionary<byte, uint> Flag1s = new Dictionary<byte, uint>();
+            Dictionary<byte, uint> Flag2s = new Dictionary<byte, uint>();
+            foreach (KeyValuePair<uint,TextureEntryFace> face in FaceTextures)
+            {
+                if (face.Value.TextureID != DefaultTexture.TextureID)
+                {
+                    if (TextureIDs.ContainsKey(face.Value.TextureID))
+                        TextureIDs[face.Value.TextureID] |= (uint)(1 << (int)face.Key);
+                    else
+                        TextureIDs[face.Value.TextureID] = (uint)(1 << (int)face.Key);
+                }
+
+                if (face.Value.RGBA != DefaultTexture.RGBA)
+                {
+                    if (RGBAs.ContainsKey(face.Value.RGBA))
+                        RGBAs[face.Value.RGBA] |= (uint)(1 << (int)face.Key);
+                    else
+                        RGBAs[face.Value.RGBA] = (uint)(1 << (int)face.Key);
+                }
+
+                short value;
+                short defaultValue;
+
+                value = RepeatShort(face.Value.RepeatU);
+                defaultValue = RepeatShort(DefaultTexture.RepeatU);
+                if (value != defaultValue)
+                {
+                    if (RepeatUs.ContainsKey(value))
+                        RepeatUs[value] |= (uint)(1 << (int)face.Key);
+                    else
+                        RepeatUs[value] = (uint)(1 << (int)face.Key);
+                }
+
+                value = RepeatShort(face.Value.RepeatV);
+                defaultValue = RepeatShort(DefaultTexture.RepeatV);
+                if (value != defaultValue)
+                {
+                    if (RepeatVs.ContainsKey(value))
+                        RepeatVs[value] |= (uint)(1 << (int)face.Key);
+                    else
+                        RepeatVs[value] = (uint)(1 << (int)face.Key);
+                }
+
+                value = OffsetShort(face.Value.OffsetU);
+                defaultValue = OffsetShort(DefaultTexture.OffsetU);
+                if (value != defaultValue)
+                {
+                    if (OffsetUs.ContainsKey(value))
+                        OffsetUs[value] |= (uint)(1 << (int)face.Key);
+                    else
+                        OffsetUs[value] = (uint)(1 << (int)face.Key);
+                }
+
+                value = OffsetShort(face.Value.OffsetV);
+                defaultValue = OffsetShort(DefaultTexture.OffsetV);
+                if (value != defaultValue)
+                {
+                    if (OffsetVs.ContainsKey(value))
+                        OffsetVs[value] |= (uint)(1 << (int)face.Key);
+                    else
+                        OffsetVs[value] = (uint)(1 << (int)face.Key);
+                }
+
+                value = RotationShort(face.Value.Rotation);
+                defaultValue = RotationShort(DefaultTexture.Rotation);
+                if (value != defaultValue)
+                {
+                    if (Rotations.ContainsKey(value))
+                        Rotations[value] |= (uint)(1 << (int)face.Key);
+                    else
+                        Rotations[value] = (uint)(1 << (int)face.Key);
+                }
+
+                if (face.Value.Flags1 != DefaultTexture.Flags1)
+                {
+                    if (Flag1s.ContainsKey(face.Value.Flags1))
+                        Flag1s[face.Value.Flags1] |= (uint)(1 << (int)face.Key);
+                    else
+                        Flag1s[face.Value.Flags1] = (uint)(1 << (int)face.Key);
+                }
+
+                if (face.Value.Flags2 != DefaultTexture.Flags2)
+                {
+                    if (Flag2s.ContainsKey(face.Value.Flags2))
+                        Flag2s[face.Value.Flags2] |= (uint)(1 << (int)face.Key);
+                    else
+                        Flag2s[face.Value.Flags2] = (uint)(1 << (int)face.Key);
+                }
+            }
+
+            binWriter.Write(DefaultTexture.TextureID.Data);
+            foreach (KeyValuePair<LLUUID, uint> kv in TextureIDs)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key.Data);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(DefaultTexture.RGBA);
+            foreach (KeyValuePair<uint, uint> kv in RGBAs)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(RepeatShort(DefaultTexture.RepeatU));
+            foreach (KeyValuePair<short, uint> kv in RepeatUs)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(RepeatShort(DefaultTexture.RepeatV));
+            foreach (KeyValuePair<short, uint> kv in RepeatVs)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(OffsetShort(DefaultTexture.OffsetU));
+            foreach (KeyValuePair<short, uint> kv in OffsetUs)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(OffsetShort(DefaultTexture.OffsetV));
+            foreach (KeyValuePair<short, uint> kv in OffsetVs)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(RotationShort(DefaultTexture.Rotation));
+            foreach (KeyValuePair<short, uint> kv in Rotations)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(DefaultTexture.Flags1);
+            foreach (KeyValuePair<byte, uint> kv in Flag1s)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            binWriter.Write((byte)0);
+            binWriter.Write(DefaultTexture.Flags2);
+            foreach (KeyValuePair<byte, uint> kv in Flag2s)
+            {
+                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(kv.Key);
+            }
+
+            return memStream.GetBuffer();
+        }
+
+        private byte[] FaceBitfieldToBytes(uint bitfield)
+        {
+            int byteLength = 0;
+            uint tmpBitfield = bitfield;
+            while (tmpBitfield != 0)
+            {
+                tmpBitfield >>= 7;
+                byteLength++;
+            }
+
+            if (byteLength == 0)
+                return new byte[1] { 0 };
+
+            byte[] bytes = new byte[byteLength];
+            for (int i = 0; i < byteLength; i++)
+            {
+                bytes[i] = (byte)((bitfield >> (7 * (byteLength - i - 1))) & 0x7F);
+                if (i < byteLength - 1)
+                    bytes[i] |= 0x80;
+            }
             return bytes;
         }
 
@@ -162,6 +356,27 @@ namespace libsecondlife
             float QV = (float)value;
             float QF = upper / 32767.0F;
             return (float)(QV * QF);
+        }
+
+        private short QuantizeSigned(float f, float upper)
+        {
+            float QF = 32767.0F / upper;
+            return (short)(f * QF);
+        }
+
+        private short RepeatShort(float value)
+        {
+            return QuantizeSigned(value - 1.0F, 101.0F);
+        }
+
+        private short OffsetShort(float value)
+        {
+            return QuantizeSigned(value, 1.0F);
+        }
+
+        private short RotationShort(float value)
+        {
+            return QuantizeSigned(value, 359.995F);
         }
 
         private float RepeatFloat(byte[] data, int pos)

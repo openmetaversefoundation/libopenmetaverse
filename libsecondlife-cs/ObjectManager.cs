@@ -146,6 +146,28 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public enum PermissionWho
+        {
+            Group = 4,
+            Everyone = 8,
+            NextOwner = 16
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum PermissionType
+        {
+            Copy = 0x00008000,
+            Modify = 0x00004000,
+            Move = 0x00080000,
+            Transfer = 0x00002000
+        }
+
+        /// <summary>
         /// This event will be raised for every ObjectUpdate block that 
         /// contains a new prim.
         /// <remarks>Depending on the circumstances a client could 
@@ -239,6 +261,100 @@ namespace libsecondlife
             Client.Network.SendPacket(request, simulator);
         }
 
+        public void AddPrim(Simulator simulator, PrimObject prim, LLVector3 nearPosition, LLUUID groupID)
+        {
+            ObjectAddPacket packet = new ObjectAddPacket();
+
+            packet.AgentData.AgentID = Client.Network.AgentID;
+            packet.AgentData.SessionID = Client.Network.SessionID;
+            packet.AgentData.GroupID = groupID;
+
+            packet.ObjectData.State = 0;
+            packet.ObjectData.AddFlags = 2;
+            packet.ObjectData.PCode = (byte)PCode.Prim;
+
+            packet.ObjectData.Material = (byte)prim.Material;
+            packet.ObjectData.Scale = prim.Scale;
+            packet.ObjectData.Rotation = prim.Rotation;
+
+            packet.ObjectData.PathBegin = PrimObject.PathBeginByte(prim.PathBegin);
+            packet.ObjectData.PathCurve = (byte)prim.PathCurve;
+            packet.ObjectData.PathEnd = PrimObject.PathEndByte(prim.PathEnd);
+            packet.ObjectData.PathRadiusOffset = PrimObject.PathRadiusOffsetByte(prim.PathRadiusOffset);
+            packet.ObjectData.PathRevolutions = PrimObject.PathRevolutionsByte(prim.PathRevolutions);
+            packet.ObjectData.PathScaleX = PrimObject.PathScaleByte(prim.PathScaleX);
+            packet.ObjectData.PathScaleY = PrimObject.PathScaleByte(prim.PathScaleY);
+            packet.ObjectData.PathShearX = PrimObject.PathShearByte(prim.PathShearX);
+            packet.ObjectData.PathShearY = PrimObject.PathShearByte(prim.PathShearY);
+            packet.ObjectData.PathSkew = PrimObject.PathSkewByte(prim.PathSkew);
+            packet.ObjectData.PathTaperX = PrimObject.PathTaperByte(prim.PathTaperX);
+            packet.ObjectData.PathTaperY = PrimObject.PathTaperByte(prim.PathTaperY);
+            packet.ObjectData.PathTwist = PrimObject.PathTwistByte(prim.PathTwist);
+            packet.ObjectData.PathTwistBegin = PrimObject.PathTwistByte(prim.PathTwistBegin);
+
+            packet.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
+            packet.ObjectData.ProfileBegin = PrimObject.ProfileBeginByte(prim.ProfileBegin);
+            packet.ObjectData.ProfileEnd = PrimObject.ProfileEndByte(prim.ProfileEnd);
+            packet.ObjectData.ProfileHollow = (byte)prim.ProfileHollow;
+
+            packet.ObjectData.RayStart = nearPosition;
+            packet.ObjectData.RayEnd = nearPosition;
+            packet.ObjectData.RayEndIsIntersection = 0;
+            packet.ObjectData.RayTargetID = LLUUID.Zero;
+            packet.ObjectData.BypassRaycast = 1;
+
+            packet.ObjectData.TextureEntry = prim.Textures.ToBytes();
+
+            Client.Network.SendPacket(packet, simulator);
+        }
+
+        public void LinkPrims(Simulator simulator, List<uint> localIDs)
+        {
+            ObjectLinkPacket packet = new ObjectLinkPacket();
+
+            packet.AgentData.AgentID = Client.Network.AgentID;
+            packet.AgentData.SessionID = Client.Network.SessionID;
+
+            packet.ObjectData = new ObjectLinkPacket.ObjectDataBlock[localIDs.Count];
+
+            int i = 0;
+            foreach (uint localID in localIDs)
+            {
+                packet.ObjectData[i] = new ObjectLinkPacket.ObjectDataBlock();
+                packet.ObjectData[i].ObjectLocalID = localID;
+
+                i++;
+            }
+
+            Client.Network.SendPacket(packet, simulator);
+        }
+
+        public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who, PermissionType permissions, bool set)
+        {
+            ObjectPermissionsPacket packet = new ObjectPermissionsPacket();
+
+            packet.AgentData.AgentID = Client.Network.AgentID;
+            packet.AgentData.SessionID = Client.Network.SessionID;
+
+            packet.HeaderData.Override = false;
+
+            packet.ObjectData = new ObjectPermissionsPacket.ObjectDataBlock[localIDs.Count];
+
+            int i = 0;
+            foreach (uint localID in localIDs)
+            {
+                packet.ObjectData[i] = new ObjectPermissionsPacket.ObjectDataBlock();
+                packet.ObjectData[i].ObjectLocalID = localID;
+                packet.ObjectData[i].Field = (byte)who;
+                packet.ObjectData[i].Mask = (uint)permissions;
+                packet.ObjectData[i].Set = Convert.ToByte(set);
+
+                i++;
+            }
+
+            Client.Network.SendPacket(packet, simulator);
+        }
+
         private void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
         {
             string[] lines = name.Split('\n');
@@ -322,7 +438,7 @@ namespace libsecondlife
                             prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
                             prim.Scale = block.Scale;
                             //block.Flags ?
-                            //block.UpdateFlags ?
+                            prim.Flags = (ObjectFlags)block.UpdateFlags;
                             //block.ClickAction ?
                             //block.Gain Sound-related
                             //block.Sound Sound-related
@@ -533,6 +649,8 @@ namespace libsecondlife
                 int i = 0;
                 prim = new PrimObject(Client);
 
+                prim.Flags = (ObjectFlags)block.UpdateFlags;
+
                 try
                 {
                     prim.ID = new LLUUID(block.Data, 0);
@@ -586,7 +704,7 @@ namespace libsecondlife
 
                         if ((flags & 0x80) != 0)
                         {
-                            // TODO: Use this. What is it?
+                            // TODO: Use this. What is it? Angular velocity.
                             LLVector3 Omega = new LLVector3(block.Data, i);
                             i += 12;
                         }
@@ -655,16 +773,15 @@ namespace libsecondlife
                         prim.PathCurve = (uint)block.Data[i++];
                         prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
                         prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
-                        prim.PathTaperX = PrimObject.PathScaleFloat(block.Data[i++]);
-                        prim.PathTaperY = PrimObject.PathScaleFloat(block.Data[i++]);
+                        prim.PathScaleX = PrimObject.PathScaleFloat(block.Data[i++]);
+                        prim.PathScaleY = PrimObject.PathScaleFloat(block.Data[i++]);
                         prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
                         prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
                         prim.PathTwist = (int)block.Data[i++];
                         prim.PathTwistBegin = (int)block.Data[i++];
                         prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                        //prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
-                        //prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
-                        i += 2;
+                        prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
+                        prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
                         prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
                         prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
 

@@ -105,6 +105,8 @@ namespace libsecondlife
         public PrimLightData Light;
         /// <summary></summary>
         public ParticleSystem ParticleSys;
+        /// <summary></summary>
+        public ObjectFlags Flags;
 
         private SecondLife Client;
 
@@ -417,6 +419,22 @@ namespace libsecondlife
             return totalLength;
         }
 	}
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum ObjectFlags
+    {
+        None = 0,
+        Physics = 1 << 0,
+        CreateSelected = 1 << 1,
+        Script = 1 << 6,
+        Touch = 1 << 7,
+        Money = 1 << 9,
+        Phantom = 1 << 10,
+        Temp = 1 << 30
+    }
 
     /// <summary>
     /// 
