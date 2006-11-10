@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace BodyPartMorphGenerator
 {
-    class genbodyparams
+    class GenBodyParams
     {
         static void Main(string[] args)
         {
@@ -44,6 +44,10 @@ namespace BodyPartMorphGenerator
 
             StringWriter MasterClass = new StringWriter();
             MasterClass.WriteLine("using System;");
+            MasterClass.WriteLine("using System.Collections.Generic;");
+            MasterClass.WriteLine("using System.IO;");
+            MasterClass.WriteLine("using System.Text;");
+            MasterClass.WriteLine();
             MasterClass.WriteLine("using libsecondlife.AssetSystem.BodyShape;");
             MasterClass.WriteLine();
             MasterClass.WriteLine("namespace libsecondlife.AssetSystem.BodyShape");
@@ -58,6 +62,23 @@ namespace BodyPartMorphGenerator
             Labels.WriteLine("            {");
             Labels.WriteLine("                default:");
             Labels.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
+
+            StringWriter LabelMin = new StringWriter();
+            LabelMin.WriteLine("        public string GetLabelMin( uint Param )");
+            LabelMin.WriteLine("        {");
+            LabelMin.WriteLine("            switch( Param )");
+            LabelMin.WriteLine("            {");
+            LabelMin.WriteLine("                default:");
+            LabelMin.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
+
+            StringWriter LabelMax = new StringWriter();
+            LabelMax.WriteLine("        public string GetLabelMax( uint Param )");
+            LabelMax.WriteLine("        {");
+            LabelMax.WriteLine("            switch( Param )");
+            LabelMax.WriteLine("            {");
+            LabelMax.WriteLine("                default:");
+            LabelMax.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
+
 
             StringWriter Names = new StringWriter();
             Names.WriteLine("        public string GetName( uint Param )");
@@ -133,6 +154,20 @@ namespace BodyPartMorphGenerator
                     Labels.WriteLine("                case " + ID + ":");
                     Labels.WriteLine("                    return \"" + node.Attributes["label"].Value + "\";");
 
+                    if (node.Attributes["label_min"] != null)
+                    {
+                        // Label Min
+                        LabelMin.WriteLine("                case " + ID + ":");
+                        LabelMin.WriteLine("                    return \"" + node.Attributes["label_min"].Value + "\";");
+                    }
+
+                    if (node.Attributes["label_min"] != null)
+                    {
+                        // Label Max
+                        LabelMax.WriteLine("                case " + ID + ":");
+                        LabelMax.WriteLine("                    return \"" + node.Attributes["label_max"].Value + "\";");
+                    }
+
                     // Name
                     Names.WriteLine("                case " + ID + ":");
                     Names.WriteLine("                    return \"" + node.Attributes["name"].Value + "\";");
@@ -159,19 +194,27 @@ namespace BodyPartMorphGenerator
 
                     // Max Values
                     ValueValid.WriteLine("                case " + node.Attributes["id"].Value + ":");
-                    ValueValid.WriteLine("                    return ( (Value > " + node.Attributes["value_min"].Value + "f) && (Value < " + node.Attributes["value_max"].Value + "f) );");
+                    ValueValid.WriteLine("                    return ( (Value >= " + node.Attributes["value_min"].Value + "f) && (Value <= " + node.Attributes["value_max"].Value + "f) );");
 
 
                 }
             }
 
+            // Finish up name stuff
+            Names.WriteLine("            }"); // Close switch
+            Names.WriteLine("        }"); // Close method
+
             // Finish up label stuff
             Labels.WriteLine("            }"); // Close  switch
             Labels.WriteLine("        }"); // Close  method
 
-            // Finish up name stuff
-            Names.WriteLine("            }"); // Close switch
-            Names.WriteLine("        }"); // Close method
+            // Finish up min label stuff
+            LabelMin.WriteLine("            }"); // Close  switch
+            LabelMin.WriteLine("        }"); // Close  method
+
+            // Finish up max label stuff
+            LabelMax.WriteLine("            }"); // Close  switch
+            LabelMax.WriteLine("        }"); // Close  method
 
             // Finish up Max Value stuff
             ValueMin.WriteLine("            }"); // Close  switch
@@ -190,13 +233,45 @@ namespace BodyPartMorphGenerator
             ValueValid.WriteLine("        }"); // Close  method
 
 
+            StringWriter ValidateAll = new StringWriter();
+            ValidateAll.WriteLine("        public bool IsValid( Dictionary<uint,float> BodyShape )");
+            ValidateAll.WriteLine("        {");
+            ValidateAll.WriteLine("            foreach(KeyValuePair<uint, float> kvp in BodyShape)");
+            ValidateAll.WriteLine("            {");
+            ValidateAll.WriteLine("                if( !IsValueValid(kvp.Key, kvp.Value) ) { return false; }");
+            ValidateAll.WriteLine("            }");
+            ValidateAll.WriteLine("");
+            ValidateAll.WriteLine("            return true;");
+            ValidateAll.WriteLine("        }");
+
+            StringWriter ToString = new StringWriter();
+            ToString.WriteLine("        public string ToString( Dictionary<uint,float> BodyShape )");
+            ToString.WriteLine("        {");
+            ToString.WriteLine("            StringWriter sw = new StringWriter();");
+            ToString.WriteLine("");
+            ToString.WriteLine("            foreach(KeyValuePair<uint, float> kvp in BodyShape)");
+            ToString.WriteLine("            {");
+            ToString.WriteLine("                sw.Write( kvp.Key + \":\" );");
+            ToString.WriteLine("                sw.Write( GetLabel(kvp.Key) + \":\" );");
+            ToString.WriteLine("                sw.WriteLine( kvp.Value );");
+            ToString.WriteLine("            }");
+            ToString.WriteLine("");
+            ToString.WriteLine("            return sw.ToString();");
+            ToString.WriteLine("        }");
+
+
+
             // Combine Master Class
-            MasterClass.Write(Labels.ToString());
             MasterClass.Write(Names.ToString());
+            MasterClass.Write(Labels.ToString());
+            MasterClass.Write(LabelMin.ToString());
+            MasterClass.Write(LabelMax.ToString());
             MasterClass.Write(ValueMin.ToString());
             MasterClass.Write(ValueMax.ToString());
             MasterClass.Write(ValueDefault.ToString());
             MasterClass.Write(ValueValid.ToString());
+            MasterClass.Write(ValidateAll.ToString());
+            MasterClass.Write(ToString.ToString());
 
             // Finish up the file
             MasterClass.WriteLine("    }"); // Close Class

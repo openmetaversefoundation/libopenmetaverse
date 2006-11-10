@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BodyPartMorphGenerator</RootNamespace>
     <AssemblyName>GenBodyParams</AssemblyName>
-    <StartupObject>BodyPartMorphGenerator.genbodyparams</StartupObject>
+    <StartupObject>BodyPartMorphGenerator.GenBodyParams</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,7 +34,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="genbodyparams.cs" />
+    <Compile Include="GenBodyParams.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
