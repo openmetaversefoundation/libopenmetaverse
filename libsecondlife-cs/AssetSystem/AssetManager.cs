@@ -116,7 +116,7 @@ namespace libsecondlife.AssetSystem
 		}
 
         /// <summary>
-        /// Get the Asset data for an item
+        /// Get the Asset data for an item, must be used when requesting a Notecard
         /// </summary>
         /// <param name="item"></param>
 		public void GetInventoryAsset( InventoryItem item )
@@ -142,7 +142,11 @@ namespace libsecondlife.AssetSystem
             item.SetAssetData(request.AssetData);
 		}
 
-		public void GetInventoryAsset( Asset asset )
+        /// <summary>
+        /// Get Asset data, works with BodyShapes (type 13) but does not work with Notecards(type 7)
+        /// </summary>
+        /// <param name="asset"></param>
+        public void GetInventoryAsset(Asset asset)
 		{
 			LLUUID TransferID = LLUUID.GenerateUUID();
 

@@ -290,7 +290,15 @@ namespace IA_InventoryManager
 
             Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
 
-            AgentInventory.getAssetManager().GetInventoryAsset(asset);
+            if (asset.Type == 13)
+            {
+                AgentInventory.getAssetManager().GetInventoryAsset(asset);
+            }
+            else
+            {
+                Console.WriteLine("Can't currently retrieve assets other then type 13 using this method.");
+                return;
+            }
 
             Console.WriteLine(asset.AssetDataToString());
 
