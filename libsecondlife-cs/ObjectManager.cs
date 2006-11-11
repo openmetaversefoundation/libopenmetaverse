@@ -418,10 +418,10 @@ namespace libsecondlife
                             prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
                             prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
                             prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                            prim.PathTaperX = PrimObject.PathTaperFloat((byte)block.PathTaperX);
-                            prim.PathTaperY = PrimObject.PathTaperFloat((byte)block.PathTaperY);
+                            prim.PathTaperX = PrimObject.PathTaperFloat(block.PathTaperX);
+                            prim.PathTaperY = PrimObject.PathTaperFloat(block.PathTaperY);
                             prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
-                            prim.PathSkew = PrimObject.PathSkewFloat((byte)block.PathSkew);
+                            prim.PathSkew = PrimObject.PathSkewFloat(block.PathSkew);
                             prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
                             prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
                             prim.ProfileHollow = block.ProfileHollow;
@@ -767,10 +767,10 @@ namespace libsecondlife
                         prim.PathTwist = (int)block.Data[i++];
                         prim.PathTwistBegin = (int)block.Data[i++];
                         prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                        prim.PathTaperX = PrimObject.PathTaperFloat(block.Data[i++]);
-                        prim.PathTaperY = PrimObject.PathTaperFloat(block.Data[i++]);
+                        prim.PathTaperX = PrimObject.PathTaperFloat((sbyte)block.Data[i++]);
+                        prim.PathTaperY = PrimObject.PathTaperFloat((sbyte)block.Data[i++]);
                         prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
-                        prim.PathSkew = PrimObject.PathSkewFloat(block.Data[i++]);
+                        prim.PathSkew = PrimObject.PathSkewFloat((sbyte)block.Data[i++]);
 
                         prim.ProfileCurve = (uint)block.Data[i++];
                         prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);

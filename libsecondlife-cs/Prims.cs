@@ -350,7 +350,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathSkew"></param>
         /// <returns></returns>
-        public static float PathSkewFloat(byte pathSkew)
+        public static float PathSkewFloat(sbyte pathSkew)
         {
             return PathTaperFloat(pathSkew);
         }
@@ -371,16 +371,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathTaper"></param>
         /// <returns></returns>
-        public static float PathTaperFloat(byte pathTaper)
+        public static float PathTaperFloat(sbyte pathTaper)
         {
-            if (pathTaper > 100)
-            {
-                return (float)Math.Round((double)(256 - pathTaper) * 0.01d, 4);
-            }
-            else
-            {
-                return (float)Math.Round((double)pathTaper * 0.01d, 4);
-            }
+            return (float)pathTaper / 100.0f;
         }
 
         /// <summary>
