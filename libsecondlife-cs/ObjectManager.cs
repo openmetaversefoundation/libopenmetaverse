@@ -388,8 +388,9 @@ namespace libsecondlife
 
                 foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
                 {
-                    if (block.PCode == (byte)PCode.Prim)
-                    {
+		    switch(block.PCode)
+		    {
+			case (byte)PCode.Prim:
                         if (OnNewPrim != null)
                         {
                             // New prim spotted
@@ -449,9 +450,8 @@ namespace libsecondlife
                                 OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
                         }
-                    }
-                    else if (block.PCode == (byte)PCode.Avatar)
-                    {
+			break;
+			case (byte)PCode.Avatar:
                         if (OnNewAvatar != null)
                         {
                             Avatar avatar = new Avatar();
@@ -492,25 +492,12 @@ namespace libsecondlife
                                 }
                             }
                         }
-                    }
-                    else if (block.PCode == (byte)PCode.Grass)
-                    {
-                        // FIXME: Handle grass objects
-                        ;
-                    }
-                    else if (block.PCode == (byte)PCode.Tree)
-                    {
-                        // FIXME: Handle tree objects
-                        ;
-                    }
-                    else if (block.PCode == (byte)PCode.ParticleSystem)
-                    {
-                        ;
-                    }
-                    else
-                    {
-                        // FIXME: How many of the PCodes do we actually need to handle?
-                        ;
+			break;
+			case (byte)PCode.Grass: // FIXME: Handle grass objects
+			case (byte)PCode.Tree: // FIXME: Handle trees
+			case (byte)PCode.ParticleSystem: // FIXME: Handle ParticleSystem
+			default:
+			break;
                     }
                 }
             }
