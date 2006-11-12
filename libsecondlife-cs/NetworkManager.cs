@@ -722,7 +722,7 @@ namespace libsecondlife
         /// <param name="simulator"></param>
 		public void SendPacket(Packet packet, Simulator simulator)
 		{
-            if (simulator.Connected)
+            if (simulator != null && simulator.Connected)
             {
                 simulator.SendPacket(packet, true);
             }
@@ -1282,6 +1282,13 @@ namespace libsecondlife
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
+            if (CurrentSim == null)
+            {
+                DisconnectTimer.Stop();
+                connected = false;
+                return;
+            }
+
             // If the current simulator is disconnected, shutdown+callback+return
             if (CurrentSim.DisconnectCandidate)
             {

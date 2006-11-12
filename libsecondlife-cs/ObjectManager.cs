@@ -77,11 +77,11 @@ namespace libsecondlife
         public LLVector3 RotationVelocity;
     }
 
-	/// <summary>
-	/// Handles all network traffic related to prims and avatar positions and 
+    /// <summary>
+    /// Handles all network traffic related to prims and avatar positions and 
     /// movement.
-	/// </summary>
-	public class ObjectManager
+    /// </summary>
+    public class ObjectManager
     {
         /// <summary>
         /// 
@@ -90,7 +90,7 @@ namespace libsecondlife
         /// <param name="prim"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void NewPrimCallback(Simulator simulator, PrimObject prim, ulong regionHandle, 
+        public delegate void NewPrimCallback(Simulator simulator, PrimObject prim, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
@@ -99,7 +99,7 @@ namespace libsecondlife
         /// <param name="avatar"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void NewAvatarCallback(Simulator simulator, Avatar avatar, ulong regionHandle, 
+        public delegate void NewAvatarCallback(Simulator simulator, Avatar avatar, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
@@ -108,7 +108,7 @@ namespace libsecondlife
         /// <param name="prim"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void PrimMovedCallback(Simulator simulator, PrimUpdate prim, ulong regionHandle, 
+        public delegate void PrimMovedCallback(Simulator simulator, PrimUpdate prim, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
@@ -117,7 +117,7 @@ namespace libsecondlife
         /// <param name="avatar"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void AvatarMovedCallback(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, 
+        public delegate void AvatarMovedCallback(Simulator simulator, AvatarUpdate avatar, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
@@ -165,6 +165,40 @@ namespace libsecondlife
             Modify = 0x00004000,
             Move = 0x00080000,
             Transfer = 0x00002000
+        }
+
+        public enum AttachmentPoint
+        {
+            Chest = 1,
+            Skull,
+            LeftShoulder,
+            RightShoulder,
+            LeftHand,
+            RightHand,
+            LeftFoot,
+            RightFoot,
+            Spine,
+            Pelvis,
+            Mouth,
+            Chin,
+            LeftEar,
+            RightEar,
+            LeftEyeball,
+            RightEyeball,
+            Nose,
+            RightUpperArm,
+            RightForarm,
+            LeftUpperArm,
+            LeftForearm,
+            RightHip,
+            RightUpperLeg,
+            RightLowerLeg,
+            LeftHip,
+            LeftUpperLeg,
+            LeftLowerLeg,
+            Stomach,
+            LeftPec,
+            RightPec
         }
 
         /// <summary>
@@ -388,116 +422,116 @@ namespace libsecondlife
 
                 foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
                 {
-		    switch(block.PCode)
-		    {
-			case (byte)PCode.Prim:
-                        if (OnNewPrim != null)
-                        {
-                            // New prim spotted
-                            PrimObject prim = new PrimObject(Client);
-
-                            prim.Position = new LLVector3(block.ObjectData, 0);
-                            prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
-
-                            // TODO: Parse the rest of the ObjectData byte array fields
-
-                            prim.LocalID = block.ID;
-                            prim.State = block.State;
-                            prim.ID = block.FullID;
-                            prim.ParentID = block.ParentID;
-                            //block.OwnerID Sound-related
-                            prim.Material = block.Material;
-                            prim.PathCurve = block.PathCurve;
-                            prim.ProfileCurve = block.ProfileCurve;
-                            prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
-                            prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
-                            prim.PathScaleX = PrimObject.PathScaleFloat(block.PathScaleX);
-                            prim.PathScaleY = PrimObject.PathScaleFloat(block.PathScaleY);
-                            prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
-                            prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
-                            prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
-                            prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
-                            prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                            prim.PathTaperX = PrimObject.PathTaperFloat(block.PathTaperX);
-                            prim.PathTaperY = PrimObject.PathTaperFloat(block.PathTaperY);
-                            prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
-                            prim.PathSkew = PrimObject.PathSkewFloat(block.PathSkew);
-                            prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
-                            prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
-                            prim.ProfileHollow = block.ProfileHollow;
-                            prim.Name = Helpers.FieldToString(block.NameValue);
-                            //block.Data ?
-                            prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
-                            //block.TextColor LLColor4U of the hovering text
-                            //block.MediaURL Quicktime stream
-                            prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-                            prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
-                            //block.JointType ?
-                            //block.JointPivot ?
-                            //block.JointAxisOrAnchor ?
-                            prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
-                            prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
-                            prim.Scale = block.Scale;
-                            //block.Flags ?
-                            prim.Flags = (ObjectFlags)block.UpdateFlags;
-                            //block.ClickAction ?
-                            //block.Gain Sound-related
-                            //block.Sound Sound-related
-                            //block.Radius Sound-related
-
+                    switch (block.PCode)
+                    {
+                        case (byte)PCode.Prim:
                             if (OnNewPrim != null)
                             {
-                                OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
-                        }
-			break;
-			case (byte)PCode.Avatar:
-                        if (OnNewAvatar != null)
-                        {
-                            Avatar avatar = new Avatar();
+                                // New prim spotted
+                                PrimObject prim = new PrimObject(Client);
 
-                            string FirstName = "";
-                            string LastName = "";
-                            string GroupName = "";
+                                prim.Position = new LLVector3(block.ObjectData, 0);
+                                prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
 
-                            //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
-                            avatar.Position = new LLVector3(block.ObjectData, 16);
-                            avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
+                                // TODO: Parse the rest of the ObjectData byte array fields
 
-                            // TODO: Parse the rest of the ObjectData byte array fields
+                                prim.LocalID = block.ID;
+                                prim.State = block.State;
+                                prim.ID = block.FullID;
+                                prim.ParentID = block.ParentID;
+                                //block.OwnerID Sound-related
+                                prim.Material = block.Material;
+                                prim.PathCurve = block.PathCurve;
+                                prim.ProfileCurve = block.ProfileCurve;
+                                prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
+                                prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
+                                prim.PathScaleX = PrimObject.PathScaleFloat(block.PathScaleX);
+                                prim.PathScaleY = PrimObject.PathScaleFloat(block.PathScaleY);
+                                prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
+                                prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
+                                prim.PathTwist = block.PathTwist; //PrimObject.PathTwistFloat(block.PathTwist);
+                                prim.PathTwistBegin = block.PathTwistBegin; //PrimObject.PathTwistFloat(block.PathTwistBegin);
+                                prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
+                                prim.PathTaperX = PrimObject.PathTaperFloat(block.PathTaperX);
+                                prim.PathTaperY = PrimObject.PathTaperFloat(block.PathTaperY);
+                                prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
+                                prim.PathSkew = PrimObject.PathSkewFloat(block.PathSkew);
+                                prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
+                                prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
+                                prim.ProfileHollow = block.ProfileHollow;
+                                prim.Name = Helpers.FieldToString(block.NameValue);
+                                //block.Data ?
+                                prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
+                                //block.TextColor LLColor4U of the hovering text
+                                //block.MediaURL Quicktime stream
+                                prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                                prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
+                                //block.JointType ?
+                                //block.JointPivot ?
+                                //block.JointAxisOrAnchor ?
+                                prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
+                                prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
+                                prim.Scale = block.Scale;
+                                //block.Flags ?
+                                prim.Flags = (ObjectFlags)block.UpdateFlags;
+                                //block.ClickAction ?
+                                //block.Gain Sound-related
+                                //block.Sound Sound-related
+                                //block.Radius Sound-related
 
-                            ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
-
-                            avatar.ID = block.FullID;
-                            avatar.LocalID = block.ID;
-                            avatar.Name = FirstName + " " + LastName;
-                            avatar.GroupName = GroupName;
-                            avatar.Online = true;
-                            avatar.CurrentRegion = simulator.Region;
-
-                            avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-
-                            if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
-                            {
-                                // Update our avatar
-                                Client.Self.LocalID = avatar.LocalID;
-                                Client.Self.Position = avatar.Position;
-                                Client.Self.Rotation = avatar.Rotation;
-                            }
-                            else
-                            {
-                                if (OnNewAvatar != null)
+                                if (OnNewPrim != null)
                                 {
-                                    OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                    OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                                 }
                             }
-                        }
-			break;
-			case (byte)PCode.Grass: // FIXME: Handle grass objects
-			case (byte)PCode.Tree: // FIXME: Handle trees
-			case (byte)PCode.ParticleSystem: // FIXME: Handle ParticleSystem
-			default:
-			break;
+                            break;
+                        case (byte)PCode.Avatar:
+                            if (OnNewAvatar != null)
+                            {
+                                Avatar avatar = new Avatar();
+
+                                string FirstName = "";
+                                string LastName = "";
+                                string GroupName = "";
+
+                                //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
+                                avatar.Position = new LLVector3(block.ObjectData, 16);
+                                avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
+
+                                // TODO: Parse the rest of the ObjectData byte array fields
+
+                                ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
+
+                                avatar.ID = block.FullID;
+                                avatar.LocalID = block.ID;
+                                avatar.Name = FirstName + " " + LastName;
+                                avatar.GroupName = GroupName;
+                                avatar.Online = true;
+                                avatar.CurrentRegion = simulator.Region;
+
+                                avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+
+                                if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
+                                {
+                                    // Update our avatar
+                                    Client.Self.LocalID = avatar.LocalID;
+                                    Client.Self.Position = avatar.Position;
+                                    Client.Self.Rotation = avatar.Rotation;
+                                }
+                                else
+                                {
+                                    if (OnNewAvatar != null)
+                                    {
+                                        OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                    }
+                                }
+                            }
+                            break;
+                        case (byte)PCode.Grass: // FIXME: Handle grass objects
+                        case (byte)PCode.Tree: // FIXME: Handle trees
+                        case (byte)PCode.ParticleSystem: // FIXME: Handle ParticleSystem
+                        default:
+                            break;
                     }
                 }
             }
@@ -521,7 +555,7 @@ namespace libsecondlife
                 int i = 0;
                 bool avatar;
 
-                localid = (uint)(block.Data[i++] + (block.Data[i++] << 8) + 
+                localid = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                     (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
                 byte state = block.Data[i++];
@@ -817,7 +851,7 @@ namespace libsecondlife
                 }
                 catch (System.IndexOutOfRangeException e)
                 {
-                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet: " + 
+                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet: " +
                         e.ToString(), Helpers.LogLevel.Warning);
                     Client.Log(block.ToString(), Helpers.LogLevel.Warning);
                 }

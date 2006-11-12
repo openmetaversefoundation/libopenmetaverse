@@ -682,6 +682,22 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Build a quaternion from normalized float values
+        /// </summary>
+        /// <param name="x">X value from -1.0 to 1.0</param>
+        /// <param name="y">Y value from -1.0 to 1.0</param>
+        /// <param name="z">Z value from -1.0 to 1.0</param>
+        public LLQuaternion(float x, float y, float z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+
+            float xyzsum = 1 - X * X - Y * Y - Z * Z;
+            W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="x"></param>
