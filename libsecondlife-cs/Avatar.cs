@@ -89,6 +89,13 @@ namespace libsecondlife
         Finished
     }
 
+    public enum InstantMessageDialog
+    {
+        RequestTeleport = 22,
+        AcceptTeleport = 23,
+        DenyTeleport = 24
+    }
+
     /// <summary>
     /// Basic class to hold other Avatar's data.
     /// </summary>
@@ -739,6 +746,53 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Respond to a teleport lure by either accepting it and initiating 
+        /// the teleport, or denying it
+        /// </summary>
+        /// <param name="requesterID">UUID of the avatar requesting the teleport</param>
+        /// <param name="accept">Accept the teleport request or deny it</param>
+        public void TeleportLureRespond(LLUUID requesterID, bool accept)
+        {
+            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+
+            im.AgentData.AgentID = Client.Network.AgentID;
+            im.AgentData.SessionID = Client.Network.SessionID;
+            im.MessageBlock.BinaryBucket = new byte[0];
+            im.MessageBlock.FromAgentName = Helpers.StringToField(this.FirstName + " " + this.LastName);
+            im.MessageBlock.FromGroup = false;
+            im.MessageBlock.ID = Client.Network.AgentID;
+            im.MessageBlock.Message = new byte[0];
+            im.MessageBlock.Offline = 0;
+            im.MessageBlock.ParentEstateID = 0;
+            im.MessageBlock.Position = this.Position;
+            im.MessageBlock.RegionID = LLUUID.Zero;
+            im.MessageBlock.Timestamp = 0;
+            im.MessageBlock.ToAgentID = requesterID;
+
+            if (accept)
+            {
+                im.MessageBlock.Dialog = (byte)InstantMessageDialog.AcceptTeleport;
+                
+                Client.Network.SendPacket(im);
+
+                TeleportLureRequestPacket lure = new TeleportLureRequestPacket();
+
+                lure.Info.AgentID = Client.Network.AgentID;
+                lure.Info.SessionID = Client.Network.SessionID;
+                lure.Info.LureID = Client.Network.AgentID;
+                lure.Info.TeleportFlags = 4; // TODO: What does this mean?
+
+                Client.Network.SendPacket(lure);
+            }
+            else
+            {
+                im.MessageBlock.Dialog = (byte)InstantMessageDialog.DenyTeleport;
+
+                Client.Network.SendPacket(im);
+            }
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="simulator"></param>
@@ -918,6 +972,8 @@ namespace libsecondlife
         {
             if (packet.Type == PacketType.TeleportStart)
             {
+                Client.DebugLog("TeleportStart received from " + simulator.ToString());
+
                 TeleportMessage = "Teleport started";
                 TeleportStat = TeleportStatus.Start;
 
@@ -928,6 +984,8 @@ namespace libsecondlife
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
+                Client.DebugLog("TeleportProgress received from " + simulator.ToString());
+
                 TeleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
                 TeleportStat = TeleportStatus.Progress;
 
@@ -938,6 +996,8 @@ namespace libsecondlife
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
+                Client.DebugLog("TeleportFailed received from " + simulator.ToString());
+
                 TeleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
                 TeleportStat = TeleportStatus.Failed;
 
@@ -950,31 +1010,27 @@ namespace libsecondlife
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
+                Client.DebugLog("TeleportFinish received from " + simulator.ToString());
+
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
 
                 // Connect to the new sim
                 Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort, 
                     simulator.CircuitCode, true);
                 
-                if ( sim != null)
+                if (sim != null)
                 {
                     TeleportMessage = "Teleport finished";
                     TeleportStat = TeleportStatus.Finished;
 
                     // Move the avatar in to the new sim
                     CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
-
                     move.AgentData.AgentID = Client.Network.AgentID;
                     move.AgentData.SessionID = Client.Network.SessionID;
                     move.AgentData.CircuitCode = simulator.CircuitCode;
+                    Client.Network.SendPacket(move, sim);
 
-                    Client.Network.SendPacket((Packet)move);
-
-                    Client.DebugLog(move.ToString());
-
-                    Client.Log("Moved to new sim " + Client.Network.CurrentSim.Region.Name + "(" + 
-                        Client.Network.CurrentSim.IPEndPoint.ToString() + ")",
-                        Helpers.LogLevel.Info);
+                    Client.Log("Moved to new sim " + sim.ToString(), Helpers.LogLevel.Info);
 
                     if (OnBeginTeleport != null)
                     {
@@ -983,6 +1039,7 @@ namespace libsecondlife
                     else
                     {
                         // Sleep a little while so we can collect parcel information
+                        // FIXME: This doesn't belong in libsecondlife
                         System.Threading.Thread.Sleep(1000);
                     }
                 }

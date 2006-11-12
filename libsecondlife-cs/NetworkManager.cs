@@ -327,6 +327,11 @@ namespace libsecondlife
             }
         }
 
+        public override string ToString()
+        {
+            return Region.Name + " (" + ipEndPoint.ToString() + ")";
+        }
+
         private void SendAck(ushort id)
         {
             PacketAckPacket ack = new PacketAckPacket();
