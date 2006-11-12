@@ -234,7 +234,12 @@ namespace libsecondlife
             if (incrementSequence)
             {
                 // Set the sequence number here since we are manually serializing the packet
-                packet.Header.Sequence = ++Sequence;
+                Sequence++;
+                if (Sequence >= ushort.MaxValue)
+                {
+                    Sequence = 0;
+                }
+                packet.Header.Sequence = Sequence;
 
                 if (packet.Header.Reliable)
                 {
@@ -423,7 +428,8 @@ namespace libsecondlife
                     if (Inbox.Contains(packet.Header.Sequence))
                     {
                         Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
-                            packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No"),
+                            packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No" + 
+                            ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count),
                             Helpers.LogLevel.Info);
 
                         // Send an ACK for this packet immediately
