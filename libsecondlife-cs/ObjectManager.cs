@@ -416,7 +416,7 @@ namespace libsecondlife
             packet.AgentData.GroupID = prim.GroupID;
 
             packet.ObjectData.State = (byte)prim.State;
-            packet.ObjectData.AddFlags = 2; // TODO: Why 2?
+            packet.ObjectData.AddFlags = ObjectFlags.CreateSelected;
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
             packet.ObjectData.Material = (byte)prim.Material;
@@ -435,8 +435,8 @@ namespace libsecondlife
             packet.ObjectData.PathSkew = PrimObject.PathSkewByte(prim.PathSkew);
             packet.ObjectData.PathTaperX = PrimObject.PathTaperByte(prim.PathTaperX);
             packet.ObjectData.PathTaperY = PrimObject.PathTaperByte(prim.PathTaperY);
-            packet.ObjectData.PathTwist = PrimObject.PathTwistByte(prim.PathTwist);
-            packet.ObjectData.PathTwistBegin = PrimObject.PathTwistByte(prim.PathTwistBegin);
+            packet.ObjectData.PathTwist = (sbyte)prim.PathTwist;
+            packet.ObjectData.PathTwistBegin = (sbyte)prim.PathTwistBegin;
 
             packet.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
             packet.ObjectData.ProfileBegin = PrimObject.ProfileBeginByte(prim.ProfileBegin);

@@ -236,61 +236,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="prim"></param>
-        /// <param name="position"></param>
-        /// <param name="avatarPosition"></param>
-        public void RezObject(PrimObject prim, LLVector3 position, LLVector3 rayStart, 
-            LLUUID groupID)
-        {
-            ObjectAddPacket add = new ObjectAddPacket();
-            add.AgentData.AgentID = Client.Network.AgentID;
-            add.AgentData.SessionID = Client.Network.SessionID;
-            add.AgentData.GroupID = groupID;
-            // TODO: Why 2?
-            add.ObjectData.AddFlags = 2;
-            add.ObjectData.BypassRaycast = 1;
-            add.ObjectData.Material = (byte)prim.Material;
-            add.ObjectData.PathBegin = PrimObject.PathBeginByte(prim.PathBegin);
-            add.ObjectData.PathCurve = (byte)prim.PathCurve;
-            add.ObjectData.PathEnd = PrimObject.PathEndByte(prim.PathEnd);
-            add.ObjectData.PathRadiusOffset = PrimObject.PathRadiusOffsetByte(prim.PathRadiusOffset);
-            add.ObjectData.PathRevolutions = PrimObject.PathRevolutionsByte(prim.PathRevolutions);
-            add.ObjectData.PathScaleX = PrimObject.PathScaleByte(prim.PathScaleX);
-            add.ObjectData.PathScaleY = PrimObject.PathScaleByte(prim.PathScaleY);
-            add.ObjectData.PathShearX = PrimObject.PathShearByte(prim.PathShearX);
-            add.ObjectData.PathShearY = PrimObject.PathShearByte(prim.PathShearY);
-            add.ObjectData.PathSkew = PrimObject.PathSkewByte(prim.PathSkew);
-            add.ObjectData.PathTaperX = PrimObject.PathTaperByte(prim.PathTaperX);
-            add.ObjectData.PathTaperY = PrimObject.PathTaperByte(prim.PathTaperY);
-            add.ObjectData.PathTwist = PrimObject.PathTwistByte(prim.PathTwist);
-            add.ObjectData.PathTwistBegin = PrimObject.PathTwistByte(prim.PathTwistBegin);
-            add.ObjectData.PCode = (byte)prim.PCode;
-            add.ObjectData.ProfileBegin = PrimObject.ProfileBeginByte(prim.ProfileBegin);
-            add.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
-            add.ObjectData.ProfileEnd = PrimObject.ProfileEndByte(prim.ProfileEnd);
-            add.ObjectData.ProfileHollow = (byte)prim.ProfileHollow;
-            add.ObjectData.RayEnd = position;
-            add.ObjectData.RayEndIsIntersection = 0;
-            add.ObjectData.RayStart = rayStart;
-            add.ObjectData.RayTargetID = LLUUID.GenerateUUID();
-            add.ObjectData.Rotation = prim.Rotation;
-            add.ObjectData.Scale = prim.Scale;
-            add.ObjectData.State = (byte)prim.State;
-            if (prim.Textures != null)
-            {
-                add.ObjectData.TextureEntry = prim.Textures.ToBytes();
-            }
-            else
-            {
-                add.ObjectData.TextureEntry = new byte[0];
-            }
-
-            Client.Network.SendPacket(add);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public void FillParcels()
         {
             // Begins filling parcels

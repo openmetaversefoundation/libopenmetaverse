@@ -161,18 +161,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="pathTwist"></param>
-        /// <returns></returns>
-		public static sbyte PathTwistByte(float pathTwist)
-		{
-			// Y = 256 + ceil (X / 1.8)
-            int twist = (int)(256.0d + Math.Ceiling((double)pathTwist / 1.8d));
-			return (sbyte)(twist % 256);
-		}
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="pathShear"></param>
         /// <returns></returns>
 		public static byte PathShearByte(float pathShear)
