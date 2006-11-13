@@ -143,7 +143,7 @@ namespace libsecondlife
 		public static byte PathScaleByte(float pathScale)
 		{
 			// Y = 100 + 100X
-            int scale = (int)(100.0f * pathScale);
+            int scale = (int)Math.Round(100.0f * pathScale);
 			return (byte)(100 + scale);
 		}
 
@@ -166,7 +166,7 @@ namespace libsecondlife
 		public static byte PathShearByte(float pathShear)
 		{
 			// Y = 256 + 100X
-            int shear = (int)(100.0f * pathShear);
+            int shear = (int)Math.Round(100.0f * pathShear);
 			shear += 256;
 			return (byte)(shear % 256);
 		}
@@ -200,7 +200,7 @@ namespace libsecondlife
 		public static byte ProfileBeginByte(float profileBegin)
 		{
 			// Y = ceil (200X)
-			return (byte)(200.0f * profileBegin);
+			return (byte)Math.Round(200.0f * profileBegin);
 		}
 
         /// <summary>
@@ -221,8 +221,8 @@ namespace libsecondlife
         /// <returns></returns>
 		public static byte ProfileEndByte(float profileEnd)
 		{
-			// Y = 200 - ceil (200X)
-            int end = (int)Math.Ceiling(200.0d * (double)profileEnd);
+			// Y = 200 - 200X
+            int end = (int)Math.Round(200.0d * (double)profileEnd);
 			return (byte)(200 - end);
 		}
 
@@ -311,8 +311,9 @@ namespace libsecondlife
         /// <returns></returns>
 		public static byte PathRevolutionsByte(float pathRevolutions)
 		{
-			// Y = ceil (66X) - 66
-			return (byte)(Convert.ToInt16(Math.Ceiling(66.0f * pathRevolutions)) - 66);
+			// Y = 66.5X - 66
+            int revolutions = (int)Math.Round(66.5d * (double)pathRevolutions);
+			return (byte)(revolutions - 66);
 		}
 
         /// <summary>
