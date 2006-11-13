@@ -63,7 +63,44 @@ namespace IA_InventoryManager
                 Console.Write( curDirectory + "> ");
 
                 string curCmd = Console.ReadLine();
-                string[] curCmdLine = curCmd.Split(cmdSeperators);
+                string[] curCmdLineParts = curCmd.Split(cmdSeperators);
+                List<string> merged = new List<string>();
+
+                bool inQuotedString = false;
+                string temp = "";
+                foreach (string s in curCmdLineParts)
+                {
+                    if (s.StartsWith("\""))
+                    {
+                        temp = s.Remove(0,1);
+                        inQuotedString = true;
+                    }
+                    else if (s.EndsWith("\""))
+                    {
+                        temp += " " + s.Remove(s.LastIndexOf('"'));
+                        merged.Add(temp);
+                        temp = "";
+                        inQuotedString = false;
+                    }
+                    else
+                    {
+                        if (inQuotedString)
+                        {
+                            temp += " " + s;
+                        }
+                        else
+                        {
+                            merged.Add(s);
+                        }
+                    }
+                }
+
+                string[] curCmdLine = new string[merged.Count];
+                int i = 0;
+                foreach( string s in merged )
+                {
+                    curCmdLine[i++] = s;
+                }
 
                 switch (curCmdLine[0].ToLower())
                 {
@@ -279,28 +316,53 @@ namespace IA_InventoryManager
             Console.WriteLine(gr);
         }
 
+        
+
         private void getasset(string[] cmdLine)
         {
-            if (cmdLine.Length < 3)
+            if (cmdLine.Length < 2)
             {
-                Console.WriteLine("Usage: getasset [type] [UUID]");
+                Console.WriteLine("Usage for arbitrary asset: getasset [type] [UUID]");
+                Console.WriteLine("Usage for asset of item  : getasset [itemname | UUID]");
                 Console.WriteLine("Example: getasset 13 c2ca25c1fb242e41650a54901bc2d21c");
+                Console.WriteLine("Example: getasset \"New Script\"");
                 return;
             }
 
-            Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
-
-            if (asset.Type == 13)
+            if (cmdLine.Length == 3)
             {
-                AgentInventory.getAssetManager().GetInventoryAsset(asset);
+                // Arbitrary Asset
+                Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
+
+                if (asset.Type == 13)
+                {
+                    AgentInventory.getAssetManager().GetInventoryAsset(asset);
+                }
+                else
+                {
+                    Console.WriteLine("Can't currently retrieve assets other then type 13 using this method.");
+                    return;
+                }
+
+                Console.WriteLine(asset.AssetDataToString());
             }
             else
             {
-                Console.WriteLine("Can't currently retrieve assets other then type 13 using this method.");
-                return;
+                // Asset for an item in inventory
+                InventoryFolder iFolder = AgentInventory.getFolder(curDirectory);
+                foreach (InventoryBase ib in iFolder.alContents)
+                {
+                    if (ib is InventoryItem)
+                    {
+                        InventoryItem item = (InventoryItem)ib;
+                        if (item.ItemID.Equals(cmdLine[1]) || item.Name.Equals(cmdLine[1]))
+                        {
+                            Console.WriteLine("Asset for " + item.Name + " [" + item.ItemID + "]");
+                            Console.WriteLine(item.Asset.AssetDataToString());
+                        }
+                    }
+                }
             }
-
-            Console.WriteLine(asset.AssetDataToString());
 
         }
 

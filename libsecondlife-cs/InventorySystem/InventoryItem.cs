@@ -489,7 +489,7 @@ namespace libsecondlife.InventorySystem
 
             if (outputAssets)
             {
-                if (AssetID != new LLUUID())
+                if (AssetID != LLUUID.Zero)
                 {
                     output += xmlSafe(Helpers.FieldToString(Asset.AssetData));
                 }
