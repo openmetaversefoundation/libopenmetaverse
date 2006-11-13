@@ -279,7 +279,7 @@ namespace libsecondlife
 		public static byte PathEndByte(float pathEnd)
 		{
 			// Y = 100 - 100X
-            int end = (int)(100.0f * pathEnd);
+            int end = (int)Math.Round(100.0f * pathEnd);
             return (byte)(100 - end);
 		}
 
