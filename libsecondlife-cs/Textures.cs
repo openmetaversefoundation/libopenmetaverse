@@ -412,7 +412,7 @@ namespace libsecondlife
             FaceTextures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
 
-            if (length == 0) 
+            if (length <= 0) 
                 return;  // No TextureEntry to process
 
             uint BitfieldSize = 0;

@@ -521,6 +521,68 @@ namespace libsecondlife
             Client.Network.SendPacket(packet, simulator);
         }
 
+        public void SetRotation(Simulator simulator, uint localID, LLQuaternion rotation)
+        {
+            ObjectRotationPacket objRotPacket = new ObjectRotationPacket();
+            objRotPacket.AgentData.AgentID = Client.Network.AgentID;
+            objRotPacket.AgentData.SessionID = Client.Network.SessionID;
+
+            objRotPacket.ObjectData = new ObjectRotationPacket.ObjectDataBlock[1];
+
+            objRotPacket.ObjectData[0] = new ObjectRotationPacket.ObjectDataBlock();
+            objRotPacket.ObjectData[0].ObjectLocalID = localID;
+            objRotPacket.ObjectData[0].Rotation = rotation;
+            Client.Network.SendPacket(objRotPacket, simulator);
+        }
+
+        public void AttachObject(Simulator simulator, uint localID, AttachmentPoint attachPoint, LLQuaternion rotation)
+        {
+            ObjectAttachPacket attach = new ObjectAttachPacket();
+            attach.AgentData.AgentID = Client.Network.AgentID;
+            attach.AgentData.SessionID = Client.Network.SessionID;
+            attach.AgentData.AttachmentPoint = (byte)attachPoint;
+
+            attach.ObjectData = new ObjectAttachPacket.ObjectDataBlock[1];
+            attach.ObjectData[0] = new ObjectAttachPacket.ObjectDataBlock();
+            attach.ObjectData[0].ObjectLocalID = localID;
+            attach.ObjectData[0].Rotation = rotation;
+
+            Client.Network.SendPacket(attach, simulator);
+        }
+
+        public void DetachObjects(Simulator simulator, List<uint> localIDs)
+        {
+            ObjectDetachPacket detach = new ObjectDetachPacket();
+            detach.AgentData.AgentID = Client.Network.AgentID;
+            detach.AgentData.SessionID = Client.Network.SessionID;
+            detach.ObjectData = new ObjectDetachPacket.ObjectDataBlock[localIDs.Count];
+
+            int i = 0;
+            foreach (uint localid in localIDs)
+            {
+                detach.ObjectData[i] = new ObjectDetachPacket.ObjectDataBlock();
+                detach.ObjectData[i].ObjectLocalID = localid;
+                i++;
+            }
+
+            Client.Network.SendPacket(detach, simulator);
+        }
+
+        public void SetPosition(Simulator simulator, uint localID, LLVector3 position)
+        {
+            ObjectPositionPacket objPosPacket = new ObjectPositionPacket();
+            objPosPacket.AgentData.AgentID = Client.Self.ID;
+            objPosPacket.AgentData.SessionID = Client.Network.SessionID;
+
+            objPosPacket.ObjectData = new ObjectPositionPacket.ObjectDataBlock[1];
+
+            objPosPacket.ObjectData[0] = new ObjectPositionPacket.ObjectDataBlock();
+            objPosPacket.ObjectData[0].ObjectLocalID = localID;
+            objPosPacket.ObjectData[0].Position = position;
+
+            Client.Network.SendPacket(objPosPacket, simulator);
+        }
+
         public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who, PermissionType permissions, bool set)
         {
             ObjectPermissionsPacket packet = new ObjectPermissionsPacket();
@@ -787,7 +849,7 @@ namespace libsecondlife
                     avupdate.Acceleration = Acceleration;
                     avupdate.Rotation = Rotation;
                     avupdate.RotationVelocity = RotationVelocity;
-                    avupdate.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                    avupdate.Textures = new TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
                     if (OnAvatarMoved != null)
                     {
@@ -809,7 +871,7 @@ namespace libsecondlife
                     primupdate.Acceleration = Acceleration;
                     primupdate.Rotation = Rotation;
                     primupdate.RotationVelocity = RotationVelocity;
-                    primupdate.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                    primupdate.Textures = new TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
                     if (OnPrimMoved != null)
                     {
