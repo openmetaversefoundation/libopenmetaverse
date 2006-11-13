@@ -150,8 +150,11 @@ namespace libsecondlife
         /// </summary>
         public enum PermissionWho
         {
+            /// <summary></summary>
             Group = 4,
+            /// <summary></summary>
             Everyone = 8,
+            /// <summary></summary>
             NextOwner = 16
         }
 
@@ -161,44 +164,149 @@ namespace libsecondlife
         [Flags]
         public enum PermissionType
         {
+            /// <summary></summary>
             Copy = 0x00008000,
+            /// <summary></summary>
             Modify = 0x00004000,
+            /// <summary></summary>
             Move = 0x00080000,
+            /// <summary></summary>
             Transfer = 0x00002000
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum AttachmentPoint
         {
+            /// <summary></summary>
             Chest = 1,
+            /// <summary></summary>
             Skull,
+            /// <summary></summary>
             LeftShoulder,
+            /// <summary></summary>
             RightShoulder,
+            /// <summary></summary>
             LeftHand,
+            /// <summary></summary>
             RightHand,
+            /// <summary></summary>
             LeftFoot,
+            /// <summary></summary>
             RightFoot,
+            /// <summary></summary>
             Spine,
+            /// <summary></summary>
             Pelvis,
+            /// <summary></summary>
             Mouth,
+            /// <summary></summary>
             Chin,
+            /// <summary></summary>
             LeftEar,
+            /// <summary></summary>
             RightEar,
+            /// <summary></summary>
             LeftEyeball,
+            /// <summary></summary>
             RightEyeball,
+            /// <summary></summary>
             Nose,
+            /// <summary></summary>
             RightUpperArm,
+            /// <summary></summary>
             RightForarm,
+            /// <summary></summary>
             LeftUpperArm,
+            /// <summary></summary>
             LeftForearm,
+            /// <summary></summary>
             RightHip,
+            /// <summary></summary>
             RightUpperLeg,
+            /// <summary></summary>
             RightLowerLeg,
+            /// <summary></summary>
             LeftHip,
+            /// <summary></summary>
             LeftUpperLeg,
+            /// <summary></summary>
             LeftLowerLeg,
+            /// <summary></summary>
             Stomach,
+            /// <summary></summary>
             LeftPec,
+            /// <summary></summary>
             RightPec
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum Tree
+        {
+            /// <summary></summary>
+            Pine1 = 0,
+            /// <summary></summary>
+            Oak,
+            /// <summary></summary>
+            TropicalBush1,
+            /// <summary></summary>
+            Palm1,
+            /// <summary></summary>
+            Dogwood,
+            /// <summary></summary>
+            TropicalBush2,
+            /// <summary></summary>
+            Palm2,
+            /// <summary></summary>
+            Cypress1,
+            /// <summary></summary>
+            Cypress2,
+            /// <summary></summary>
+            Pine2,
+            /// <summary></summary>
+            Plumeria,
+            /// <summary></summary>
+            WinterPine1,
+            /// <summary></summary>
+            WinterAspen,
+            /// <summary></summary>
+            WinterPine2,
+            /// <summary></summary>
+            Eucalyptus,
+            /// <summary></summary>
+            Fern,
+            /// <summary></summary>
+            Eelgrass,
+            /// <summary></summary>
+            SeaSword,
+            /// <summary></summary>
+            Kelp1,
+            /// <summary></summary>
+            BeachGrass1,
+            /// <summary></summary>
+            Kelp2
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum Grass
+        {
+            /// <summary></summary>
+            Grass0 = 0,
+            /// <summary></summary>
+            Grass1,
+            /// <summary></summary>
+            Grass2,
+            /// <summary></summary>
+            Grass3,
+            /// <summary></summary>
+            Grass4,
+            /// <summary></summary>
+            undergrowth_1
         }
 
         /// <summary>
@@ -295,16 +403,16 @@ namespace libsecondlife
             Client.Network.SendPacket(request, simulator);
         }
 
-        public void AddPrim(Simulator simulator, PrimObject prim, LLVector3 nearPosition, LLUUID groupID)
+        public void AddPrim(Simulator simulator, PrimObject prim, LLVector3 nearPosition)
         {
             ObjectAddPacket packet = new ObjectAddPacket();
 
             packet.AgentData.AgentID = Client.Network.AgentID;
             packet.AgentData.SessionID = Client.Network.SessionID;
-            packet.AgentData.GroupID = groupID;
+            packet.AgentData.GroupID = prim.GroupID;
 
-            packet.ObjectData.State = 0;
-            packet.ObjectData.AddFlags = 2;
+            packet.ObjectData.State = (byte)prim.State;
+            packet.ObjectData.AddFlags = 2; // TODO: Why 2?
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
             packet.ObjectData.Material = (byte)prim.Material;
@@ -340,6 +448,52 @@ namespace libsecondlife
             packet.ObjectData.TextureEntry = prim.Textures.ToBytes();
 
             Client.Network.SendPacket(packet, simulator);
+        }
+
+        public void AddTree(Simulator simulator, LLVector3 scale, LLQuaternion rotation, LLVector3 position, 
+            Tree treeType, LLUUID groupOwner, bool newTree)
+        {
+            ObjectAddPacket add = new ObjectAddPacket();
+
+            add.AgentData.AgentID = Client.Network.AgentID;
+            add.AgentData.SessionID = Client.Network.SessionID;
+            add.AgentData.GroupID = groupOwner;
+            add.ObjectData.BypassRaycast = 1;
+            add.ObjectData.Material = 3;
+            add.ObjectData.PathCurve = 16;
+            add.ObjectData.PCode = newTree ? (byte)PCode.NewTree : (byte)PCode.Tree;
+            add.ObjectData.RayEnd = position;
+            add.ObjectData.RayStart = position;
+            add.ObjectData.RayTargetID = LLUUID.Zero;
+            add.ObjectData.Rotation = rotation;
+            add.ObjectData.Scale = scale;
+            add.ObjectData.State = (byte)treeType;
+            add.ObjectData.TextureEntry = new byte[0];
+
+            Client.Network.SendPacket(add, simulator);
+        }
+
+        public void AddGrass(Simulator simulator, LLVector3 scale, LLQuaternion rotation, LLVector3 position,
+            Grass grassType, LLUUID groupOwner)
+        {
+            ObjectAddPacket add = new ObjectAddPacket();
+
+            add.AgentData.AgentID = Client.Network.AgentID;
+            add.AgentData.SessionID = Client.Network.SessionID;
+            add.AgentData.GroupID = groupOwner;
+            add.ObjectData.BypassRaycast = 1;
+            add.ObjectData.Material = 3;
+            add.ObjectData.PathCurve = 16;
+            add.ObjectData.PCode = (byte)PCode.Grass;
+            add.ObjectData.RayEnd = position;
+            add.ObjectData.RayStart = position;
+            add.ObjectData.RayTargetID = LLUUID.Zero;
+            add.ObjectData.Rotation = rotation;
+            add.ObjectData.Scale = scale;
+            add.ObjectData.State = (byte)grassType;
+            add.ObjectData.TextureEntry = new byte[0];
+
+            Client.Network.SendPacket(add, simulator);
         }
 
         public void LinkPrims(Simulator simulator, List<uint> localIDs)

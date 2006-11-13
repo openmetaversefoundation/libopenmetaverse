@@ -117,6 +117,9 @@ namespace libsecondlife
         {
             Client = client;
             PCode = ObjectManager.PCode.Prim;
+            Flexible = new PrimFlexibleData();
+            Light = new PrimLightData();
+            ParticleSys = new ParticleSystem();
             Textures = new TextureEntry();
         }
 		
@@ -454,7 +457,14 @@ namespace libsecondlife
         /// <summary></summary>
         public float Tension;
         /// <summary></summary>
-        public LLVector3 Force;
+        public LLVector3 Force = LLVector3.Zero;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PrimFlexibleData()
+        {
+        }
 
         /// <summary>
         /// 
@@ -515,6 +525,13 @@ namespace libsecondlife
         public float Radius;
         /// <summary></summary>
         public float Falloff;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public PrimLightData()
+        {
+        }
 
         /// <summary>
         /// 

@@ -92,7 +92,15 @@ namespace libsecondlife
         public TextureEntry()
         {
             FaceTextures = new Dictionary<uint, TextureEntryFace>();
+            //DefaultTexture = new TextureEntryFace(null);
+            DefaultTexture = null;
+        }
+
+        public TextureEntry(LLUUID textureID)
+        {
+            FaceTextures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
+            DefaultTexture.TextureID = textureID;
         }
 
         /// <summary>
@@ -132,6 +140,11 @@ namespace libsecondlife
         /// <returns></returns>
         public byte[] ToBytes()
         {
+            if (DefaultTexture == null)
+            {
+                return new byte[0];
+            }
+
             MemoryStream memStream = new MemoryStream();
             BinaryWriter binWriter = new BinaryWriter(memStream);
 

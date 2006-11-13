@@ -1168,6 +1168,8 @@ namespace libsecondlife
         /// </summary>
         private void Shutdown()
         {
+            Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
+
             lock (Simulators)
             {
                 // Disconnect all simulators except the current one

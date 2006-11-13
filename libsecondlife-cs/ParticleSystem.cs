@@ -12,13 +12,13 @@ namespace libsecondlife
         public uint PartStartRGBA;
         public uint PartEndRGBA;
 
-        public LLVector3 PartStartScale;
-        public LLVector3 PartEndScale;
+        public LLVector3 PartStartScale = LLVector3.Zero;
+        public LLVector3 PartEndScale = LLVector3.Zero;
 
         public float PartMaxAge;
         public float SrcMaxAge;
 
-        public LLVector3 SrcAccel;
+        public LLVector3 SrcAccel = LLVector3.Zero;
 
         public float SrcAngleBegin;
         public float SrcAngleEnd;
@@ -29,10 +29,10 @@ namespace libsecondlife
         public float SrcBurstSpeedMin;
         public float SrcBurstSpeedMax;
 
-        public LLVector3 SrcOmega;
+        public LLVector3 SrcOmega = LLVector3.Zero;
 
-        public LLUUID SrcTargetKey;
-        public LLUUID SrcTexture;
+        public LLUUID SrcTargetKey = LLUUID.Zero;
+        public LLUUID SrcTexture = LLUUID.Zero;
 
         public SourcePattern SrcPattern;
         public ParticleFlags PartFlags;
@@ -66,6 +66,13 @@ namespace libsecondlife
             TargetPos = 0x40,
             TargetLinear = 0x080,
             Emissive = 0x100
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ParticleSystem()
+        {
         }
 
         /// <summary>
