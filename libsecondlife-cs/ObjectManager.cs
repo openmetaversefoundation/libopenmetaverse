@@ -51,6 +51,8 @@ namespace libsecondlife
         public LLQuaternion Rotation;
         /// <summary></summary>
         public LLVector3 RotationVelocity;
+        /// <summary></summary>
+        public TextureEntry Textures;
     }
 
     /// <summary>
@@ -75,6 +77,8 @@ namespace libsecondlife
         public LLQuaternion Rotation;
         /// <summary></summary>
         public LLVector3 RotationVelocity;
+        /// <summary></summary>
+        public TextureEntry Textures;
     }
 
     /// <summary>
@@ -783,6 +787,7 @@ namespace libsecondlife
                     avupdate.Acceleration = Acceleration;
                     avupdate.Rotation = Rotation;
                     avupdate.RotationVelocity = RotationVelocity;
+                    avupdate.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
 
                     if (OnAvatarMoved != null)
                     {
@@ -804,6 +809,7 @@ namespace libsecondlife
                     primupdate.Acceleration = Acceleration;
                     primupdate.Rotation = Rotation;
                     primupdate.RotationVelocity = RotationVelocity;
+                    primupdate.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
 
                     if (OnPrimMoved != null)
                     {

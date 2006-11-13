@@ -546,6 +546,32 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Send an AgentAnimation packet that will toggle animations on or off
+        /// </summary>
+        /// <param name="animations">A list of animation UUIDs, and whether to
+        /// turn that animation on or off</param>
+        public void Animate(Dictionary<LLUUID, bool> animations)
+        {
+            AgentAnimationPacket animate = new AgentAnimationPacket();
+
+            animate.AgentData.AgentID = Client.Network.AgentID;
+            animate.AgentData.SessionID = Client.Network.SessionID;
+            animate.AnimationList = new AgentAnimationPacket.AnimationListBlock[animations.Count];
+            int i = 0;
+
+            foreach (KeyValuePair<LLUUID, bool> animation in animations)
+            {
+                animate.AnimationList[i] = new AgentAnimationPacket.AnimationListBlock();
+                animate.AnimationList[i].AnimID = animation.Key;
+                animate.AnimationList[i].StartAnim = animation.Value;
+
+                i++;
+            }
+
+            Client.Network.SendPacket(animate);
+        }
+
+        /// <summary>
         /// Use the autopilot sim function to move the avatar to a new position
         /// </summary>
         /// <remarks>The z value is currently not handled properly by the simulator</remarks>
