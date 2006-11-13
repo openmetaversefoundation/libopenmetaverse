@@ -416,7 +416,7 @@ namespace libsecondlife
             packet.AgentData.GroupID = prim.GroupID;
 
             packet.ObjectData.State = (byte)prim.State;
-            packet.ObjectData.AddFlags = ObjectFlags.CreateSelected;
+            packet.ObjectData.AddFlags = (uint)ObjectFlags.CreateSelected;
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
             packet.ObjectData.Material = (byte)prim.Material;
