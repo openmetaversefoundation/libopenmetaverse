@@ -323,7 +323,7 @@ namespace IA_InventoryManager
             if (cmdLine.Length < 2)
             {
                 Console.WriteLine("Usage for arbitrary asset: getasset [type] [UUID]");
-                Console.WriteLine("Usage for asset of item  : getasset [itemname | UUID]");
+                Console.WriteLine("Usage for asset of item (this works for notecards) : getasset [itemname | UUID]");
                 Console.WriteLine("Example: getasset 13 c2ca25c1fb242e41650a54901bc2d21c");
                 Console.WriteLine("Example: getasset \"New Script\"");
                 return;
@@ -340,7 +340,7 @@ namespace IA_InventoryManager
                 }
                 else
                 {
-                    Console.WriteLine("Can't currently retrieve assets other then type 13 using this method.");
+                    Console.WriteLine("Can't currently retrieve assets other then type 13 using this method.  If the item is in your inventory, change directory to the same folder and try specifying the retrieval by just UUID/Name without specifying type.");
                     return;
                 }
 
