@@ -155,7 +155,7 @@ namespace libsecondlife
         public static float PathScaleFloat(byte pathScale)
         {
             // Y = -1 + 0.01X
-            return (float)Math.Round((double)pathScale * 0.01d - 1.0d, 4);
+            return (float)Math.Round((double)pathScale * 0.01d - 1.0d, 6);
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace libsecondlife
         public static float ProfileBeginFloat(byte profileBegin)
         {
             // Y = 0.005X
-            return (float)Math.Round((double)profileBegin * 0.005d, 4);
+            return (float)Math.Round((double)profileBegin * 0.005d, 6);
         }
 
         /// <summary>
@@ -246,7 +246,7 @@ namespace libsecondlife
         public static float ProfileEndFloat(byte profileEnd)
         {
             // Y = 1 - 0.005X
-            return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d), 4);
+            return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d), 6);
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace libsecondlife
         public static float PathEndFloat(byte pathEnd)
         {
             // Y = 1 - X / 100
-            return (float)Math.Round(1.0d - ((double)pathEnd / 100.0d), 4);
+            return 1.0f - (float)pathEnd / 100.0f;
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace libsecondlife
         public static float PathRevolutionsFloat(byte pathRevolutions)
         {
             // Y = 1 + 0.015X
-            return (float)Math.Round(1.0d + (double)pathRevolutions * 0.015d, 4);
+            return (float)Math.Round(1.0d + (double)pathRevolutions * 0.015d, 6);
         }
 
         /// <summary>
@@ -413,6 +413,26 @@ namespace libsecondlife
             }
 
             return totalLength;
+        }
+
+        public override string ToString()
+        {
+            string output = "";
+
+            output += (Name != "") ? Name : "Unnamed";
+            output += ": " + ((Description != "") ? Description : "No description") + Environment.NewLine;
+            output += "ID: " + ID + Environment.NewLine;
+            output += "GroupID: " + GroupID + Environment.NewLine;
+            output += "ParentID: " + ParentID + Environment.NewLine;
+            output += "LocalID: " + LocalID + Environment.NewLine;
+            output += "Flags: " + Flags + Environment.NewLine;
+            output += "State: " + State + Environment.NewLine;
+            output += "PCode: " + PCode + Environment.NewLine;
+            output += "Material: " + Material + Environment.NewLine;
+            output += "PathBegin: " + PathBegin + Environment.NewLine;
+            output += "PathEnd: " + PathEnd + Environment.NewLine;
+
+            return output;
         }
 	}
 
