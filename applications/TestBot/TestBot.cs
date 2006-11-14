@@ -95,7 +95,7 @@ namespace TestBot
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);
-                response = commands[tokens[0]].Invoke(args);
+                response = commands[tokens[0]](args);
             }
             else
             {
