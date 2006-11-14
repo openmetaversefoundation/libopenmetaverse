@@ -37,7 +37,7 @@ namespace sldump
 		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
-			//Console.WriteLine(packet.ToString());
+			Console.WriteLine(packet.ToString());
 		}
 
         public static void DisconnectHandler(NetworkManager.DisconnectType type, string message)
@@ -115,10 +115,16 @@ namespace sldump
 
 			// Login was successful
 			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
+			AgentThrottle throttle=new AgentThrottle(50000);
+			throttle.land=0;
+			throttle.wind=0;
+			throttle.cloud=0;
+			throttle.texture=0;
+		    	throttle.send(client);
 
             int start = Environment.TickCount;
 
-			while (Environment.TickCount - start < 10000)
+			while (true)
 			{
                 System.Threading.Thread.Sleep(100);
 			}

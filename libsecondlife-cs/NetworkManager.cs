@@ -1215,16 +1215,8 @@ namespace libsecondlife
             //effect.Header.Reliable = false;
             //SendPacket(effect);
 
-            // TODO: Is this throttle necessary/good, and what does it do?
-            AgentThrottlePacket throttle = new AgentThrottlePacket();
-            throttle.AgentData.AgentID = this.AgentID;
-            throttle.AgentData.SessionID = this.SessionID;
-            throttle.AgentData.CircuitCode = this.CurrentSim.CircuitCode;
-            throttle.Throttle.GenCounter = 0;
-            throttle.Throttle.Throttles = new byte[] 
-                { 0x00, 0x00, 0x96, 0x47, 0x00, 0x00, 0xAA, 0x47, 0x00, 0x00, 0x88, 0x46, 0x00, 0x00, 0x88, 0x46, 
-                  0x00, 0x00, 0x5F, 0x48, 0x00, 0x00, 0x5F, 0x48, 0x00, 0x00, 0xDC, 0x47 };
-            SendPacket(throttle);
+	    AgentThrottle throttle=new AgentThrottle(50000);
+	    throttle.send(Client);
 
             // TODO: We should be setting the initial avatar height/width around here 
             //Client.Avatar.SetHeightWidth(676, 909);
@@ -1452,4 +1444,100 @@ namespace libsecondlife
             }
         }
 	}
+    /// <summary>
+    /// 
+    /// </summary>
+    public class AgentThrottle
+    {
+        /// <summary>Maximum data rates for each type of data.  Note that these are
+	///          actually in bytes per second, and not kbytes per second, as
+	///          displayed by the original client.  </summary>
+        public float resend, land, wind, cloud, task, texture, asset;
+
+	public float total
+        {
+	  get { return resend + land + wind + cloud + task + texture + asset;}
+	  set {
+	    resend  = (float) (value * 0.1);
+	    land    = (float) (value * 0.52 / 3);
+	    wind    = (float) (value * 0.05);
+	    cloud   = (float) (value * 0.05);
+	    task    = (float) (value * 0.704 / 3);
+	    texture = (float) (value * 0.704 / 3);
+	    asset   = (float) (value * 0.484 / 3);
+	  }
+	}
+        /// <summary>
+        /// 
+        /// </summary>
+        public AgentThrottle()
+        {
+	  total = 50000; // note that the client itself never seems to go below 75k, event
+			 // if you tell it to ?
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public AgentThrottle(float total_val)
+        {
+	  total = total_val;
+        }
+	
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="pos"></param>
+        public AgentThrottle(byte[] data, int pos)
+        {
+	  int i;
+	  if (!BitConverter.IsLittleEndian)
+	    for(i=0;i<7;i++) 
+	      Array.Reverse(data, pos+i*4, 4);
+	  
+	  resend  = BitConverter.ToSingle(data, pos); pos += 4;
+	  land    = BitConverter.ToSingle(data, pos); pos += 4;
+	  wind    = BitConverter.ToSingle(data, pos); pos += 4;
+	  cloud   = BitConverter.ToSingle(data, pos); pos += 4;
+	  task    = BitConverter.ToSingle(data, pos); pos += 4;
+	  texture = BitConverter.ToSingle(data, pos); pos += 4;
+	  asset   = BitConverter.ToSingle(data, pos);
+	}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ToBytes()
+        {
+            byte[] data = new byte[7*4];
+            int i = 0;
+
+            BitConverter.GetBytes(resend).CopyTo(data, i); i+=4;
+            BitConverter.GetBytes(land).CopyTo(data, i); i+=4;
+            BitConverter.GetBytes(wind).CopyTo(data, i); i+=4;
+            BitConverter.GetBytes(cloud).CopyTo(data, i); i+=4;
+            BitConverter.GetBytes(task).CopyTo(data, i); i+=4;
+            BitConverter.GetBytes(texture).CopyTo(data, i); i+=4;
+            BitConverter.GetBytes(asset).CopyTo(data, i); i+=4;
+
+	    if (!BitConverter.IsLittleEndian)
+	      for(i=0;i<7;i++) 
+		Array.Reverse(data, i*4, 4);
+
+            return data;
+        }
+	
+	public void send(SecondLife client) {
+	  AgentThrottlePacket throttle = new AgentThrottlePacket();
+	  throttle.AgentData.AgentID = client.Network.AgentID;
+	  throttle.AgentData.SessionID = client.Network.SessionID;
+	  throttle.AgentData.CircuitCode = client.Network.CurrentSim.CircuitCode;
+	  throttle.Throttle.GenCounter = 0;
+	  throttle.Throttle.Throttles = this.ToBytes();
+	  client.Network.SendPacket(throttle);
+	}
+    }
+
 }
