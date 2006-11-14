@@ -23,6 +23,7 @@
 
   <!-- build sets -->
   <fileset id="apps">
+    <include name="applications/TestBot/*.build" />
     <include name="applications/Decoder/*.build" />
     <!-- <include name="applications/SecondSuite/*.build" /> -->
     <!-- <include name="applications/SLChat/*.build" /> -->
