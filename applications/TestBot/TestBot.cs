@@ -10,6 +10,7 @@ namespace TestBot
     {
         SecondLife Client;
         LLUUID myGroupID;
+        Dictionary<LLUUID, GroupMember> myGroupMembers;
         Dictionary<uint, PrimObject> prims;
         Dictionary<uint, Avatar> avatars;
 
@@ -89,11 +90,20 @@ namespace TestBot
             if (tokens.Length == 0)
                 return;
 
+            string response = "";
             if (commands.ContainsKey(tokens[0]))
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);
-                string response = commands[tokens[0]].Invoke(args);
+                response = commands[tokens[0]].Invoke(args);
+            }
+            else
+            {
+                response = "Unknown command.";
+            }
+
+            if (response.Length > 0)
+            {
                 if (fromAgentID != null)
                 {
                     Client.Self.InstantMessage(fromAgentID, response, imSessionID);
@@ -165,7 +175,18 @@ namespace TestBot
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
             if (p.AgentData.AgentID == Client.Network.AgentID)
+            {
+                Console.WriteLine("Got my group ID, requesting group members...");
                 myGroupID = p.AgentData.ActiveGroupID;
+
+                Client.Groups.BeginGetGroupMembers(myGroupID, new GroupManager.GroupMembersCallback(OnGroupMembers));
+            }
+        }
+
+        void OnGroupMembers(Dictionary<LLUUID,GroupMember> members)
+        {
+            Console.WriteLine("Got " + members.Count + " group members.");
+            myGroupMembers = members;
         }
 
         void Objects_OnObjectKilled(Simulator simulator, uint objectID)
@@ -226,6 +247,12 @@ namespace TestBot
         void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, byte offline, byte[] binaryBucket)
         {
             Console.WriteLine("<IM>" + fromAgentName + ": " + message + "\n");
+
+            if (myGroupMembers != null && !myGroupMembers.ContainsKey(fromAgentID))
+            {
+                //Not a member of my group, ignore the IM.
+                return;
+            }
 
             if (dialog == 22)
             {
