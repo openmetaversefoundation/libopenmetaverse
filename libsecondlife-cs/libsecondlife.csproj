@@ -98,6 +98,7 @@
     <Compile Include="AssetSystem\AssetPacketHelpers.cs" />
     <Compile Include="AssetSystem\AssetRequestDownload.cs" />
     <Compile Include="AssetSystem\AssetRequestUpload.cs" />
+    <Compile Include="AssetSystem\BodyPart.cs" />
     <Compile Include="AssetSystem\BodyShape\_BodyShapeParams_.cs" />
     <Compile Include="AssetSystem\ImageManager.cs" />
     <Compile Include="AssetSystem\ImagePacketHelpers.cs" />
