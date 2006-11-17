@@ -8,18 +8,18 @@ namespace TestBot
 {
     class TestBot
     {
-        SecondLife Client;
-        LLUUID myGroupID;
-        Dictionary<LLUUID, GroupMember> myGroupMembers;
-        Dictionary<uint, PrimObject> prims;
-        Dictionary<uint, Avatar> avatars;
+        public SecondLife Client;
+        public LLUUID myGroupID;
+        public Dictionary<LLUUID, GroupMember> myGroupMembers;
+        public Dictionary<uint, PrimObject> prims;
+        public Dictionary<uint, Avatar> avatars;
 
         LLQuaternion bodyRotation;
         System.Timers.Timer updateTimer;
 
         public bool running = true;
 
-        public delegate string CommandHandler(string[] args);
+        public delegate string CommandHandler(string[] args, LLUUID fromAgentID);
         Dictionary<string, CommandHandler> commands;
 
         static void Main(string[] args)
@@ -95,7 +95,7 @@ namespace TestBot
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);
-                response = commands[tokens[0]](args);
+                response = commands[tokens[0]](args, fromAgentID);
             }
             else
             {
@@ -115,19 +115,19 @@ namespace TestBot
             }
         }
 
-        string QuitCmd(string[] args)
+        string QuitCmd(string[] args, LLUUID fromAgentID)
         {
             running = false;
             Client.Network.Logout();
             return "Logging off.";
         }
 
-        string LocationCmd(string[] args)
+        string LocationCmd(string[] args, LLUUID fromAgentID)
         {
             return "CurrentSim: '" + Client.Network.CurrentSim.Region.Name + "' Position: " + Client.Self.Position.ToString();
         }
 
-        string TreeCmd(string[] args)
+        string TreeCmd(string[] args, LLUUID fromAgentID)
         {
             if (args.Length == 1)
             {
