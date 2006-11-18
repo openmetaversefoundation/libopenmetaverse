@@ -13,7 +13,7 @@ namespace TestBot
 		public SetMasterCommand()
 		{
 			Name = "setMaster";
-			Description = "Sets the user name of the master of this bot.  Bot always obey master.";
+			Description = "Sets the user name of the master of this bot.  Bot always obeys master.";
 		}
 
 		public override string Execute(string[] args, LLUUID fromAgentID)

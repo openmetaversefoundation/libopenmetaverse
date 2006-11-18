@@ -16,8 +16,6 @@ namespace TestBot
         public Dictionary<uint, Avatar> Avatars = new Dictionary<uint,Avatar>();
         public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
         public bool Running = true;
-		public string FirstName;
-		public string LastName;
 		public string Master;
 
         LLQuaternion bodyRotation;
@@ -26,9 +24,6 @@ namespace TestBot
         public TestBot(string first, string last, string password, string master)
         {
             Client = new SecondLife();
-
-			FirstName = first;
-			LastName = last;
 
 			Master = master;
 
@@ -116,7 +111,7 @@ namespace TestBot
 
 		public void PrintPrompt()
 		{
-			Console.Write(String.Format("{0} {1} - {2}> ", FirstName, LastName, Client.Network.CurrentSim.Region.Name));
+			Console.Write(String.Format("{0} {1} - {2}> ", Client.Self.FirstName, Client.Self.LastName, Client.Network.CurrentSim.Region.Name));
 		}
 
         void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)

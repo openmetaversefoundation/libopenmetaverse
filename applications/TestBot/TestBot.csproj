@@ -39,6 +39,10 @@
   <ItemGroup>
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\SayCommand.cs" />
+    <Compile Include="Commands\JumpCommand.cs" />
+    <Compile Include="Commands\GotoCommand.cs" />
+    <Compile Include="Commands\SitCommand.cs" />
     <Compile Include="Commands\SetMasterCommand.cs" />
     <Compile Include="Commands\GiveAllCommand.cs" />
     <Compile Include="Commands\PrimCountCommand.cs" />
