@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
@@ -9,28 +10,26 @@ namespace TestBot
     public class TestBot
     {
         public SecondLife Client;
-        public LLUUID myGroupID;
-        public Dictionary<LLUUID, GroupMember> myGroupMembers;
-        public Dictionary<uint, PrimObject> prims;
-        public Dictionary<uint, Avatar> avatars;
+        public LLUUID GroupID;
+        public Dictionary<LLUUID, GroupMember> GroupMembers;
+        public Dictionary<uint, PrimObject> Prims = new Dictionary<uint,PrimObject>();
+        public Dictionary<uint, Avatar> Avatars = new Dictionary<uint,Avatar>();
+        public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
+        public bool Running = true;
+		public string FirstName;
+		public string LastName;
 
         LLQuaternion bodyRotation;
         System.Timers.Timer updateTimer;
-
-        public bool running = true;
-
-        public delegate string CommandHandler(string[] args, LLUUID fromAgentID);
-        Dictionary<string, CommandHandler> commands;
 
         public TestBot(string first, string last, string password)
         {
             Client = new SecondLife();
 
-            myGroupID = LLUUID.Zero;
-            prims = new Dictionary<uint, PrimObject>();
-            avatars = new Dictionary<uint, Avatar>();
-            commands = new Dictionary<string, CommandHandler>();
+			FirstName = first;
+			LastName = last;
 
+            GroupID = LLUUID.Zero;
             Client.Objects.RequestAllObjects = true;
             bodyRotation = LLQuaternion.Identity;
             updateTimer = new System.Timers.Timer(500);
@@ -45,9 +44,7 @@ namespace TestBot
             Client.Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
             Client.Self.OnInstantMessage += new InstantMessageCallback(Self_OnInstantMessage);
 
-            RegisterCommand("quit", new CommandHandler(QuitCmd));
-            RegisterCommand("tree", new CommandHandler(TreeCmd));
-            RegisterCommand("location", new CommandHandler(LocationCmd));
+			RegisterAllCommands(Assembly.GetExecutingAssembly());
 
             if (Client.Network.Login(first, last, password, "TestBot", "contact@libsecondlife.org"))
             {
@@ -55,9 +52,22 @@ namespace TestBot
             }
         }
 
-        public void RegisterCommand(string commandName, CommandHandler commandHandler)
+		public void RegisterAllCommands(Assembly assembly)
+		{
+			foreach (Type t in assembly.GetTypes())
+			{
+				if (t.IsSubclassOf(typeof(Command)))
+				{
+					Command command = (Command)t.GetConstructor(new Type[0]).Invoke(new object[0]);
+					RegisterCommand(command);
+				}
+			}
+		}
+
+        public void RegisterCommand(Command command)
         {
-            commands[commandName] = commandHandler;
+			command.Bot = this;
+			Commands.Add(command.Name.ToLower(), command);
         }
 
         public void DoCommand(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
@@ -67,11 +77,11 @@ namespace TestBot
                 return;
 
             string response = "";
-            if (commands.ContainsKey(tokens[0]))
+            if (Commands.ContainsKey(tokens[0].ToLower()))
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);
-                response = commands[tokens[0]](args, fromAgentID);
+                response = Commands[tokens[0].ToLower()].Execute(args, fromAgentID);
             }
             else
             {
@@ -81,61 +91,30 @@ namespace TestBot
             if (response.Length > 0)
             {
                 if (fromAgentID != null)
-                {
                     Client.Self.InstantMessage(fromAgentID, response, imSessionID);
-                }
-                else
-                {
-                    Console.WriteLine(response);
-                }
+                Console.WriteLine(response);
             }
         }
 
-        string QuitCmd(string[] args, LLUUID fromAgentID)
-        {
-            running = false;
-            Client.Network.Logout();
-            return "Logging off.";
-        }
+		public void Run()
+		{
+            Console.WriteLine("Type quit to exit.  Type help for a command list.");
 
-        string LocationCmd(string[] args, LLUUID fromAgentID)
-        {
-            return "CurrentSim: '" + Client.Network.CurrentSim.Region.Name + "' Position: " + Client.Self.Position.ToString();
-        }
-
-        string TreeCmd(string[] args, LLUUID fromAgentID)
-        {
-            if (args.Length == 1)
+            while (Running && Client.Network.Connected)
             {
-                try
-                {
-                    string treeName = args[0].Trim(new char[] { ' ' });
-                    ObjectManager.Tree tree = (ObjectManager.Tree)Enum.Parse(typeof(ObjectManager.Tree), treeName);
-
-                    LLVector3 treePosition = new LLVector3(Client.Self.Position.X, Client.Self.Position.Y,
-                        Client.Self.Position.Z);
-                    treePosition.Z += 3.0f;
-
-                    Client.Objects.AddTree(Client.Network.CurrentSim, new LLVector3(0.5f, 0.5f, 0.5f),
-                        LLQuaternion.Identity, treePosition, tree, myGroupID, false);
-
-                    return "Attempted to rez a " + treeName + " tree";
-                }
-                catch (Exception)
-                {
-                    return "Type !tree for usage";
-                }
+				PrintPrompt();
+                string input = Console.ReadLine();
+                DoCommand(input, null, null);
             }
 
-            string usage = "Usage: !tree [";
-            foreach (string value in Enum.GetNames(typeof(ObjectManager.Tree)))
-            {
-                usage += value + ",";
-            }
-            usage = usage.TrimEnd(new char[] { ',' });
-            usage += "]";
-            return usage;
-        }
+            if (Client.Network.Connected)
+                Client.Network.Logout();
+		}
+
+		public void PrintPrompt()
+		{
+			Console.Write(String.Format("{0} {1} - {2}> ", FirstName, LastName, Client.Network.CurrentSim.Region.Name));
+		}
 
         void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
@@ -153,69 +132,70 @@ namespace TestBot
             if (p.AgentData.AgentID == Client.Network.AgentID)
             {
                 Console.WriteLine("Got my group ID, requesting group members...");
-                myGroupID = p.AgentData.ActiveGroupID;
+                GroupID = p.AgentData.ActiveGroupID;
 
-                Client.Groups.BeginGetGroupMembers(myGroupID, new GroupManager.GroupMembersCallback(OnGroupMembers));
+                Client.Groups.BeginGetGroupMembers(GroupID, new GroupManager.GroupMembersCallback(OnGroupMembers));
             }
         }
 
         void OnGroupMembers(Dictionary<LLUUID,GroupMember> members)
         {
             Console.WriteLine("Got " + members.Count + " group members.");
-            myGroupMembers = members;
+            GroupMembers = members;
+			PrintPrompt();
         }
 
         void Objects_OnObjectKilled(Simulator simulator, uint objectID)
         {
-            lock (prims)
+            lock (Prims)
             {
-                if (prims.ContainsKey(objectID))
-                    prims.Remove(objectID);
+                if (Prims.ContainsKey(objectID))
+                    Prims.Remove(objectID);
             }
 
-            lock (avatars)
+            lock (Avatars)
             {
-                if (avatars.ContainsKey(objectID))
-                    avatars.Remove(objectID);
+                if (Avatars.ContainsKey(objectID))
+                    Avatars.Remove(objectID);
             }
         }
 
         void Objects_OnPrimMoved(Simulator simulator, PrimUpdate prim, ulong regionHandle, ushort timeDilation)
         {
-            lock (prims)
+            lock (Prims)
             {
-                if (prims.ContainsKey(prim.LocalID))
+                if (Prims.ContainsKey(prim.LocalID))
                 {
-                    prims[prim.LocalID].Position = prim.Position;
-                    prims[prim.LocalID].Rotation = prim.Rotation;
+                    Prims[prim.LocalID].Position = prim.Position;
+                    Prims[prim.LocalID].Rotation = prim.Rotation;
                 }
             }
         }
 
         void Objects_OnNewPrim(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
         {
-            lock (prims)
+            lock (Prims)
             {
-                prims[prim.LocalID] = prim;
+                Prims[prim.LocalID] = prim;
             }
         }
 
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
-            lock (avatars)
+            lock (Avatars)
             {
-                avatars[avatar.LocalID] = avatar;
+                Avatars[avatar.LocalID] = avatar;
             }
         }
 
         void Objects_OnAvatarMoved(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation)
         {
-            lock (avatars)
+            lock (Avatars)
             {
-                if (avatars.ContainsKey(avatar.LocalID))
+                if (Avatars.ContainsKey(avatar.LocalID))
                 {
-                    avatars[avatar.LocalID].Position = avatar.Position;
-                    avatars[avatar.LocalID].Rotation = avatar.Rotation;
+                    Avatars[avatar.LocalID].Position = avatar.Position;
+                    Avatars[avatar.LocalID].Rotation = avatar.Rotation;
                 }
             }
         }
@@ -224,7 +204,7 @@ namespace TestBot
         {
             Console.WriteLine("<IM>" + fromAgentName + ": " + message + "\n");
 
-            if (myGroupMembers != null && !myGroupMembers.ContainsKey(fromAgentID))
+            if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
             {
                 //Not a member of my group, ignore the IM.
                 return;

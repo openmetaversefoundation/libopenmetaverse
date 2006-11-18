@@ -37,6 +37,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command.cs" />
+    <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\GiveAllCommand.cs" />
+    <Compile Include="Commands\PrimCountCommand.cs" />
+    <Compile Include="Commands\TreeCommand.cs" />
+    <Compile Include="Commands\UptimeCommand.cs" />
+    <Compile Include="Commands\HelpCommand.cs" />
+    <Compile Include="Commands\LocationCommand.cs" />
+    <Compile Include="Commands\QuitCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="TestBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
