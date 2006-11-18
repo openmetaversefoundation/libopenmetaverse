@@ -11,6 +11,9 @@ namespace libsecondlife.AssetSystem
         public string name = "";
         public uint type = 0;
 
+        public string sale_type = "not";
+        public uint sale_price = 10;
+
         public LLUUID creator_id = new LLUUID();
         public LLUUID owner_id = new LLUUID();
         public LLUUID last_owner_id = new LLUUID();
@@ -24,9 +27,67 @@ namespace libsecondlife.AssetSystem
 
         public Dictionary<uint, float> parameters = new Dictionary<uint, float>();
         public Dictionary<uint, LLUUID> textures = new Dictionary<uint, LLUUID>();
+        
+        private static string intToHex(uint i)
+        {
+            return string.Format("{0:x8}", i);
+        }
 
+        public static byte[] BodyPartToByteData(BodyPart bp)
+        {
+            string data = "LLWearable version 22\n";
+            data += bp.name + "\n\n";
+            data += "\tpermissions 0\n\t{\n";
+            data += "\t\tbase_mask\t" + intToHex(bp.base_mask);
+            data += "\n\t\towner_mask\t" + intToHex(bp.owner_mask);
+            data += "\n\t\tgroup_mask\t" + intToHex(bp.group_mask);
+            data += "\n\t\teveryone_mask\t" + intToHex(bp.everyone_mask);
+            data += "\n\t\tnext_owner_mask\t" + intToHex(bp.next_owner_mask);
+            data += "\n\t\tcreator_id\t" + bp.creator_id.ToStringHyphenated();
+            data += "\n\t\towner_id\t" + bp.owner_id.ToStringHyphenated();
+            data += "\n\t\tlast_owner_id\t" + bp.last_owner_id.ToStringHyphenated();
+            data += "\n\t\tgroup_id\t" + bp.group_id.ToStringHyphenated();
+            data += "\n\t}";
+            data += "\n\tsale_info\t0";
+            data += "\n\t{";
+            data += "\n\t\tsale_type\t" + bp.sale_type;
+            data += "\n\t\tsale_price\t" + bp.sale_price;
+            data += "\n\t}";
+            data += "\ntype " + bp.type;
+            data += "\nparameters " + bp.parameters.Count;
+            foreach (KeyValuePair<uint, float> param in bp.parameters)
+            {
+                string prm = string.Format("{0:f1}", param.Value);
+                if(prm == "-1.0" || prm == "1.0" || prm == "0.0")
+                {
+                    switch(prm)
+                    {
+                        case "-1.0":
+                            prm = "-1";
+                            break;
+                        case "0.0":
+                            prm = "0";
+                            break;
+                        case "1.0":
+                            prm = "1";
+                            break;
+                    }
+                }
+                data += "\n" + param.Key + " " + prm;
+            }
+            data += "\ntextures " + bp.textures.Count;
+            foreach (KeyValuePair<uint, LLUUID> texture in bp.textures)
+            {
+                data += "\n" + texture.Key + " " + texture.Value.ToStringHyphenated();
+            }
 
-
+            return System.Text.Encoding.ASCII.GetBytes(data.ToCharArray());
+        }
+        /// <summary>
+        /// Converts byte[] data from a data transfer into a bodypart class
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static BodyPart ByteDataToBodyPart(byte[] data)
         {
             BodyPart bp = new BodyPart(); 
@@ -106,6 +167,12 @@ namespace libsecondlife.AssetSystem
                                case "group_id":
                                    bp.group_id = new LLUUID(split_field[1]);
                                    break;
+                               case "sale_type":
+                                   bp.sale_type = split_field[1];
+                                   break;
+                               case "sale_price":
+                                   bp.sale_price = uint.Parse(split_field[1]);
+                                   break;
                                default: break;
                            }
                        }
@@ -132,10 +199,26 @@ namespace libsecondlife.AssetSystem
 
             return bp;
         }
+        public BodyPart() { } //blank construction
 
-        public BodyPart()
+        public BodyPart(byte[] data)
         {
-            //empty BodyPart constructor
+            BodyPart bp = BodyPart.ByteDataToBodyPart(data);
+            this.base_mask = bp.base_mask;
+            this.creator_id = bp.creator_id;
+            this.everyone_mask = bp.everyone_mask;
+            this.group_id = bp.group_id;
+            this.group_mask = bp.group_mask;
+            this.last_owner_id = bp.last_owner_id;
+            this.name = bp.name;
+            this.next_owner_mask = bp.next_owner_mask;
+            this.owner_id = bp.owner_id;
+            this.owner_mask = bp.owner_mask;
+            this.parameters = bp.parameters;
+            this.textures = bp.textures;
+            this.type = bp.type;
+            this.sale_price = bp.sale_price;
+            this.sale_type = bp.sale_type;
         }
     }
 }
