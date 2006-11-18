@@ -18,16 +18,19 @@ namespace TestBot
         public bool Running = true;
 		public string FirstName;
 		public string LastName;
+		public string Master;
 
         LLQuaternion bodyRotation;
         System.Timers.Timer updateTimer;
 
-        public TestBot(string first, string last, string password)
+        public TestBot(string first, string last, string password, string master)
         {
             Client = new SecondLife();
 
 			FirstName = first;
 			LastName = last;
+
+			Master = master;
 
             GroupID = LLUUID.Zero;
             Client.Objects.RequestAllObjects = true;
@@ -204,7 +207,7 @@ namespace TestBot
         {
             Console.WriteLine("<IM>" + fromAgentName + ": " + message + "\n");
 
-            if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
+            if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID) && fromAgentName.ToLower().TrimEnd() != Master.ToLower().TrimEnd())
             {
                 //Not a member of my group, ignore the IM.
                 return;

@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\SetMasterCommand.cs" />
     <Compile Include="Commands\GiveAllCommand.cs" />
     <Compile Include="Commands\PrimCountCommand.cs" />
     <Compile Include="Commands\TreeCommand.cs" />
