@@ -138,8 +138,8 @@ namespace FollowBot
                 else
                 {
                     //stop at current position
-                    LLVector3 myPos = client.Self.Position;
-                    client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
+                    //LLVector3 myPos = client.Self.Position;
+                    //client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
                 }
                 Thread.Sleep(200); //Sleep 200ms between updates
                 SendAgentUpdate(0);
