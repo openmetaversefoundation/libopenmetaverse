@@ -521,6 +521,18 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Toggle running on or off
+        /// </summary>
+        public void SetAlwaysRun(bool running)
+        {
+            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
+            run.AgentData.AgentID = Client.Network.AgentID;
+            run.AgentData.SessionID = Client.Network.SessionID;
+            run.AgentData.AlwaysRun = running;
+            Client.Network.SendPacket(run);
+        }
+
+        /// <summary>
         /// Give Money to destionation Object or Avatar
         /// </summary>
         /// <param name="target">UUID of the Target Object/Avatar</param>
