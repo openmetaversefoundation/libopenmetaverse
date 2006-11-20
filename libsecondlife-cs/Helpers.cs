@@ -207,6 +207,23 @@ public class Helpers
     }
 
     /// <summary>
+    /// Calculates the magnitutde of the supplied vector
+    /// </summary>
+    public static float VecMag(LLVector3 vector)
+    {
+        return (float)Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
+    }
+
+    /// <summary>
+    /// Returns the supplied vector in normalized form
+    /// </summary>
+    public static LLVector3 VecDist(LLVector3 vector)
+    {
+        float mag = VecMag(vector);
+        return new LLVector3(vector.X/mag,vector.Y/mag,vector.Z/mag);
+    }
+
+    /// <summary>
     /// Decode a zerocoded byte array, used to decompress packets marked
     /// with the zerocoded flag
     /// </summary>
