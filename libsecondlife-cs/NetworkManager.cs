@@ -32,6 +32,7 @@ using System.Net.Sockets;
 using Nwc.XmlRpc;
 using Nii.JSON;
 using libsecondlife.Packets;
+using System.Globalization;
 
 namespace libsecondlife
 {
@@ -994,8 +995,8 @@ namespace libsecondlife
                     JSONArray jsonVector = (JSONArray)jsonObject["vector"];
 
                     // Convert the JSON object to an LLVector3
-                    vector = new LLVector3(Convert.ToSingle(jsonVector[0]),
-                        Convert.ToSingle(jsonVector[1]), Convert.ToSingle(jsonVector[2]));
+                    vector = new LLVector3(Convert.ToSingle(jsonVector[0], CultureInfo.InvariantCulture),
+						Convert.ToSingle( jsonVector[1], CultureInfo.InvariantCulture ), Convert.ToSingle( jsonVector[2], CultureInfo.InvariantCulture ) );
 
                     LoginValues["look_at"] = vector;
                 }
@@ -1012,13 +1013,13 @@ namespace libsecondlife
 
                     // Create the position vector
                     JSONArray array = (JSONArray)jsonObject["position"];
-                    posVector = new LLVector3(Convert.ToSingle(array[0]), Convert.ToSingle(array[1]),
-                        Convert.ToSingle(array[2]));
+					posVector = new LLVector3( Convert.ToSingle( array[0], CultureInfo.InvariantCulture ), Convert.ToSingle( array[1], CultureInfo.InvariantCulture ),
+						Convert.ToSingle( array[2], CultureInfo.InvariantCulture ) );
 
                     // Create the look_at vector
                     array = (JSONArray)jsonObject["look_at"];
-                    lookatVector = new LLVector3(Convert.ToSingle(array[0]),
-                        Convert.ToSingle(array[1]), Convert.ToSingle(array[2]));
+					lookatVector = new LLVector3( Convert.ToSingle( array[0], CultureInfo.InvariantCulture ),
+						Convert.ToSingle( array[1], CultureInfo.InvariantCulture ), Convert.ToSingle( array[2], CultureInfo.InvariantCulture ) );
 
                     // Create the regionhandle
                     array = (JSONArray)jsonObject["region_handle"];
