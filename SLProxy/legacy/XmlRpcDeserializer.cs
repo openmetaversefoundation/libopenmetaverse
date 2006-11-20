@@ -92,7 +92,7 @@ namespace Nwc.XmlRpc
 		_value = _text;
 		break;
 	      case DOUBLE:
-		_value = Double.Parse(_text);
+		_value = Double.Parse(_text, CultureInfo.InvariantCulture);
 		break;
 	      case INT:
 	      case ALT_INT:
