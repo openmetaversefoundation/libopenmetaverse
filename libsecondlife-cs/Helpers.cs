@@ -196,6 +196,17 @@ public class Helpers
     }
 
     /// <summary>
+    /// Calculates the distance between two vectors
+    /// </summary>
+    public static float VecDist(LLVector3 pointA, LLVector3 pointB)
+    {
+        float xd = pointB.X - pointA.X;
+        float yd = pointB.Y - pointA.Y;
+        float zd = pointB.Z - pointA.Z;
+        return (float)Math.Sqrt(xd * xd + yd * yd + zd * zd);
+    }
+
+    /// <summary>
     /// Decode a zerocoded byte array, used to decompress packets marked
     /// with the zerocoded flag
     /// </summary>
