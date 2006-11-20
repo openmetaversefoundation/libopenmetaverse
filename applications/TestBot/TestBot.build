@@ -85,7 +85,8 @@
       debug="${build.debug}"
       output="${bin_dir}/${assembly}.exe">
       <sources failonempty="true">
-        <include name="*.cs" />
+	      <include name="*.cs" />
+	      <include name="Commands/*.cs" />
       </sources>
       <references basedir="${bin_dir}/">
         <include name="libsecondlife.dll"/>
