@@ -152,35 +152,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum PermissionWho
-        {
-            /// <summary></summary>
-            Group = 4,
-            /// <summary></summary>
-            Everyone = 8,
-            /// <summary></summary>
-            NextOwner = 16
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum PermissionType
-        {
-            /// <summary></summary>
-            Copy = 0x00008000,
-            /// <summary></summary>
-            Modify = 0x00004000,
-            /// <summary></summary>
-            Move = 0x00080000,
-            /// <summary></summary>
-            Transfer = 0x00002000
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public enum AttachmentPoint
         {
             /// <summary></summary>
@@ -583,7 +554,8 @@ namespace libsecondlife
             Client.Network.SendPacket(objPosPacket, simulator);
         }
 
-        public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who, PermissionType permissions, bool set)
+        public void SetPermissions(Simulator simulator, List<uint> localIDs, Helpers.PermissionWho who, 
+            Helpers.PermissionType permissions, bool set)
         {
             ObjectPermissionsPacket packet = new ObjectPermissionsPacket();
 

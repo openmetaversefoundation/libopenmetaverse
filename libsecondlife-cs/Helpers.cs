@@ -69,6 +69,36 @@ public class Helpers
     };
 
     /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum PermissionWho
+    {
+        /// <summary></summary>
+        Group = 4,
+        /// <summary></summary>
+        Everyone = 8,
+        /// <summary></summary>
+        NextOwner = 16
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum PermissionType
+    {
+        /// <summary></summary>
+        Copy = 0x00008000,
+        /// <summary></summary>
+        Modify = 0x00004000,
+        /// <summary></summary>
+        Move = 0x00080000,
+        /// <summary></summary>
+        Transfer = 0x00002000
+    }
+
+    /// <summary>
     /// Packs to 32-bit unsigned integers in to a 64-bit unsigned integer
     /// </summary>
     /// <param name="a">The left-hand (or X) value</param>
