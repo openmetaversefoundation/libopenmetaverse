@@ -140,7 +140,10 @@ class Decoder {
 				boring = true;
 	}
 
-	private static void Done() {
+	private static void Done()
+    {
+        byte[] zeroBuffer = new byte[4096];
+
 		if (!boring) try {
 			byte[] buf;
 			if ((data[0] & 0xF0) == 0x40) {
@@ -173,7 +176,7 @@ class Decoder {
 				} else
 					buf = data;
 
-			Packet packet = Packet.BuildPacket(buf, ref pos);
+			Packet packet = Packet.BuildPacket(buf, ref pos, zeroBuffer);
 
 			if (grep != null) {
 				bool match = false;
