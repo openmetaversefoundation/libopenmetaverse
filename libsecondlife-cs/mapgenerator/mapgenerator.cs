@@ -819,11 +819,10 @@ namespace mapgenerator
                 //"        /// <param name=\"bytes\">Byte array containing the packet, starting at position 0</param>\n" +
                 //"        /// <param name=\"packetEnd\">The last byte of the packet. If the packet was 76 bytes long, packetEnd would be 75</param>\n" +
                 //"        /// <returns>The native packet class for this type of packet, typecasted to the generic Packet</returns>\n" +
-                "        public static Packet BuildPacket(byte[] bytes, ref int packetEnd)\n" +
+                "        public static Packet BuildPacket(byte[] bytes, ref int packetEnd, byte[] zeroBuffer)\n" +
                 "        {\n            ushort id;\n            int i = 0;\n" +
                 "            Header header = Header.BuildHeader(bytes, ref i, ref packetEnd);\n" +
                 "            if (header.Zerocoded)\n            {\n" +
-                "                byte[] zeroBuffer = new byte[8192];\n" +
                 "                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;\n" +
                 "                bytes = zeroBuffer;\n            }\n\n" + 
                 "            if (bytes[4] == 0xFF)\n            {\n" +

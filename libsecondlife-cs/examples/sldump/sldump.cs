@@ -60,10 +60,10 @@ namespace sldump
 		{
 			SecondLife client;
 
-			if (args.Length == 0 || (args.Length < 3 && args[0] != "--printmap"))
+			if (args.Length == 0 || (args.Length < 4 && args[0] != "--printmap"))
 			{
-				Console.WriteLine("Usage: sldump [--printmap] [--decrypt] [inputfile] [outputfile] [--protocol] [firstname] " +
-					"[lastname] [password]");
+				Console.WriteLine("Usage: sldump [--printmap] [--decrypt] [inputfile] [outputfile] "
+                    + "[--protocol] [firstname] [lastname] [password] [seconds (0 for infinite)]");
 				return;
 			}
 
@@ -115,18 +115,27 @@ namespace sldump
 
 			// Login was successful
 			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
-			AgentThrottle throttle=new AgentThrottle(50000);
-			throttle.land=0;
-			throttle.wind=0;
-			throttle.cloud=0;
-			throttle.texture=0;
-		    	throttle.send(client);
+
+            // Throttle packets that we don't want all the way down
+			AgentThrottle throttle = new AgentThrottle(50000);
+			throttle.Land = 0;
+			throttle.Wind = 0;
+			throttle.Cloud = 0;
+			throttle.Texture = 0;
+		    throttle.Send(client);
 
             int start = Environment.TickCount;
+            int milliseconds = Int32.Parse(args[3]) * 1000;
+            bool forever = (milliseconds > 0) ? false : true;
 
 			while (true)
 			{
                 System.Threading.Thread.Sleep(100);
+
+                if (!forever && Environment.TickCount - start > milliseconds)
+                {
+                    break;
+                }
 			}
 
             client.Network.Logout();

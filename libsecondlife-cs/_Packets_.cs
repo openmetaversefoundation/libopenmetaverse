@@ -1518,14 +1518,13 @@ namespace libsecondlife.Packets
             return PacketType.Default;
         }
 
-        public static Packet BuildPacket(byte[] bytes, ref int packetEnd)
+        public static Packet BuildPacket(byte[] bytes, ref int packetEnd, byte[] zeroBuffer)
         {
             ushort id;
             int i = 0;
             Header header = Header.BuildHeader(bytes, ref i, ref packetEnd);
             if (header.Zerocoded)
             {
-                byte[] zeroBuffer = new byte[8192];
                 packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
                 bytes = zeroBuffer;
             }
