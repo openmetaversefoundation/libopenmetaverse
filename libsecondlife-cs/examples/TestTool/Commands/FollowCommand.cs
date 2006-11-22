@@ -29,16 +29,15 @@ namespace libsecondlife.TestTool
 
         const float DISTANCE_BUFFER = 3.0f;
         string followName;
-        int regionX;
-        int regionY;
 
         bool Follow(string name)
         {
             followName = name;
 
-			ulong regionHandle = Client.Network.CurrentSim.Region.Handle;
-            regionX = (int)(regionHandle >> 32);
-            regionY = (int)(regionHandle & 0xFFFFFFFF);
+			//ulong regionHandle = Client.Network.CurrentSim.Region.Handle;
+			//regionX = (int)(regionHandle >> 32);
+			//regionY = (int)(regionHandle & 0xFFFFFFFF);
+
 
             foreach (Avatar av in TestTool.Avatars.Values)
             {
@@ -46,9 +45,9 @@ namespace libsecondlife.TestTool
                 else if (vecDist(av.Position, Client.Self.Position) > DISTANCE_BUFFER)
                 {
                     //move toward target
-                    ulong x = (ulong)(av.Position.X + regionX);
-                    ulong y = (ulong)(av.Position.Y + regionY);
-                    Client.Self.AutoPilot(x, y, av.Position.Z);
+					ulong x = (ulong)(av.Position.X + (av.CurrentRegion.GridRegionData.X * 256));
+					ulong y = (ulong)(av.Position.Y + (av.CurrentRegion.GridRegionData.Y * 256));
+                    Client.Self.AutoPilotLocal(Convert.ToInt32(av.Position.X), Convert.ToInt32(av.Position.Y), av.Position.Z);
                 }
                 else
                 {

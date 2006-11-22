@@ -21,11 +21,9 @@ namespace libsecondlife.TestTool
         LLQuaternion bodyRotation;
         System.Timers.Timer updateTimer;
 
-        public TestTool(string first, string last, string password, string master)
+        public TestTool(string first, string last, string password)
         {
             Client = new SecondLife();
-
-			Master = master;
 
             GroupID = LLUUID.Zero;
             Client.Objects.RequestAllObjects = true;

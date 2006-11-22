@@ -34,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
+    <Compile Include="CommandLineArguments.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
     <Compile Include="Commands\FollowCommand.cs" />
     <Compile Include="Commands\SayCommand.cs" />
