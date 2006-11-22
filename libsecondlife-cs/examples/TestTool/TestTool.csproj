@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>libsecondlife.TestTool</RootNamespace>
-    <AssemblyName>TestBot</AssemblyName>
+    <AssemblyName>TestTool</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,6 +35,7 @@
   <ItemGroup>
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\FollowCommand.cs" />
     <Compile Include="Commands\SayCommand.cs" />
     <Compile Include="Commands\JumpCommand.cs" />
     <Compile Include="Commands\GotoCommand.cs" />

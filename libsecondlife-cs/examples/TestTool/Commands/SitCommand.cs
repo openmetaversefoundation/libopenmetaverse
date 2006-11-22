@@ -61,12 +61,6 @@ namespace libsecondlife.TestTool
 		    return String.Empty;
 		}
 
-		//string standUpCommand(string[] args, LLUUID fromAgentID)
-		//{
-		//    client.Self.AutoPilotLocal(1, 1, 1);
-		//    return "Stood up.";
-		//}
-
 		//string sitTimeCommand(string[] args, LLUUID fromAgentID)
 		//{
 		//    return "Sitting Since: " + SitTime + " (" + (DateTime.Now - SitTime) + ")";
