@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class WhoCommand: Command
     {
@@ -17,7 +17,7 @@ namespace libsecondlife.TestTool
 		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
-			foreach (Avatar av in TestTool.Avatars.Values)
+			foreach (Avatar av in TestClient.Avatars.Values)
 			{
 				result.AppendFormat("\n{0} {1}", av.Name, av.GroupName);
 			}

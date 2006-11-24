@@ -4,18 +4,18 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public abstract class Command
     {
 		public string Name;
 		public string Description;
 
-		public TestTool TestTool;
+		public TestClient TestClient;
 
 		public SecondLife Client
 		{
-			get { return TestTool.Client; }
+			get { return TestClient.Client; }
 		}
 
 		public abstract string Execute(string[] args, LLUUID fromAgentID);

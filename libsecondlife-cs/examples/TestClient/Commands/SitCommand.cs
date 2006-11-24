@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class SitCommand: Command
     {
@@ -36,9 +36,9 @@ namespace libsecondlife.TestTool
 		    PrimObject closest = null;
 		    double closestDistance = Double.MaxValue;
 
-		    lock (TestTool.Prims)
+		    lock (TestClient.Prims)
 		    {
-		        foreach (PrimObject p in TestTool.Prims.Values)
+		        foreach (PrimObject p in TestClient.Prims.Values)
 		        {
 		            if ((p.Flags & ObjectFlags.Touch) > 0)
 		            {
@@ -55,7 +55,7 @@ namespace libsecondlife.TestTool
 		    if (closest != null)
 		    {
 		        Sit(closest.ID);
-		        return TestTool.Prims.Count + " prims. Sat on " + closest.ID + ". Distance: " + closestDistance;
+		        return TestClient.Prims.Count + " prims. Sat on " + closest.ID + ". Distance: " + closestDistance;
 		    }
 
 		    return String.Empty;

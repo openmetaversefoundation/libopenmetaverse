@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class SetMasterCommand: Command
     {
@@ -21,11 +21,11 @@ namespace libsecondlife.TestTool
 			string masterName = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)
 				masterName = masterName + args[ct] + " ";
-			TestTool.Master = masterName.TrimEnd();
+			TestClient.Master = masterName.TrimEnd();
 
-			foreach (Avatar av in TestTool.Avatars.Values)
+			foreach (Avatar av in TestClient.Avatars.Values)
 			{
-				if (av.Name == TestTool.Master)
+				if (av.Name == TestClient.Master)
 				{
 					Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
 					break;

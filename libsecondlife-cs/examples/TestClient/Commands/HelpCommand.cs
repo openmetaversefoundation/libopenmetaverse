@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class HelpCommand: Command
     {
@@ -18,7 +18,7 @@ namespace libsecondlife.TestTool
 		{
 			StringBuilder result = new StringBuilder();
 			result.AppendFormat("\n\nHELP\nClient accept teleport lures from master and group members.\n");
-			foreach (Command c in TestTool.Commands.Values)
+			foreach (Command c in TestClient.Commands.Values)
 			{
 				result.AppendFormat("{0} - {1}\n", c.Name, c.Description);
 			}

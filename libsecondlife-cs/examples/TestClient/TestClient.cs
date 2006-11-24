@@ -5,9 +5,9 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
-    public class TestTool
+    public class TestClient
     {
         public SecondLife Client;
         public LLUUID GroupID;
@@ -21,7 +21,7 @@ namespace libsecondlife.TestTool
         LLQuaternion bodyRotation;
         System.Timers.Timer updateTimer;
 
-        public TestTool(string first, string last, string password)
+        public TestClient(string first, string last, string password)
         {
             Client = new SecondLife();
 
@@ -62,7 +62,7 @@ namespace libsecondlife.TestTool
 
         public void RegisterCommand(Command command)
         {
-			command.TestTool = this;
+			command.TestClient = this;
 			Commands.Add(command.Name.ToLower(), command);
         }
 

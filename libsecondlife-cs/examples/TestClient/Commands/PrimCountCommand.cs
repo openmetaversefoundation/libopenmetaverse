@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class PrimCountCommand: Command
     {
@@ -16,7 +16,7 @@ namespace libsecondlife.TestTool
 
 		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-			return TestTool.Prims.Count.ToString();
+			return TestClient.Prims.Count.ToString();
 		}
     }
 }

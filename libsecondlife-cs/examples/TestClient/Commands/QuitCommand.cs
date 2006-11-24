@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class QuitCommand: Command
     {
@@ -17,7 +17,7 @@ namespace libsecondlife.TestTool
 		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
             Client.Network.Logout();
-			TestTool.Running = false;
+			TestClient.Running = false;
             return "Logging off.";
 		}
     }

@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class TreeCommand: Command
     {
@@ -28,7 +28,7 @@ namespace libsecondlife.TestTool
 		            treePosition.Z += 3.0f;
 
 		            Client.Objects.AddTree(Client.Network.CurrentSim, new LLVector3(0.5f, 0.5f, 0.5f),
-		                LLQuaternion.Identity, treePosition, tree, TestTool.GroupID, false);
+		                LLQuaternion.Identity, treePosition, tree, TestClient.GroupID, false);
 
 		            return "Attempted to rez a " + treeName + " tree";
 		        }

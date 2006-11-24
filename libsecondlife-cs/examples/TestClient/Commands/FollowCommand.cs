@@ -4,7 +4,7 @@ using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class FollowCommand: Command
     {
@@ -33,7 +33,7 @@ namespace libsecondlife.TestTool
 
         bool Follow(string name)
         {
-            foreach (Avatar av in TestTool.Avatars.Values)
+            foreach (Avatar av in TestClient.Avatars.Values)
             {
                 if (av.Name == name)
 				{

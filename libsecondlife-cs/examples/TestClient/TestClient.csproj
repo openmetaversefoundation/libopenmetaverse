@@ -7,8 +7,8 @@
     <ProjectGuid>{B87682F6-B2D7-4C4D-A529-400C24FD4880}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>libsecondlife.TestTool</RootNamespace>
-    <AssemblyName>TestTool</AssemblyName>
+    <RootNamespace>libsecondlife.TestClient</RootNamespace>
+    <AssemblyName>TestClient</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,7 +51,7 @@
     <Compile Include="Commands\LocationCommand.cs" />
     <Compile Include="Commands\QuitCommand.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="TestTool.cs" />
+    <Compile Include="TestClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

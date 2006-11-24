@@ -4,7 +4,7 @@ using System.Text;
 
 using CommandLine;
 
-namespace libsecondlife.TestTool
+namespace libsecondlife.TestClient
 {
     public class Program
     {
@@ -25,7 +25,7 @@ namespace libsecondlife.TestTool
 			Program program = new Program();
 			CommandLine.Parser.ParseArgumentsWithUsage(args, program);
 
-			TestTool testTool = new TestTool(program.FirstName, program.LastName, program.Password);
+			TestClient testTool = new TestClient(program.FirstName, program.LastName, program.Password);
 			testTool.Master = program.MasterName;			
 			testTool.Run();
         }
