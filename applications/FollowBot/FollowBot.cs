@@ -11,6 +11,7 @@ namespace FollowBot
         SecondLife client;
         Dictionary<uint, Avatar> avatars;
         static bool logout;
+        bool flying;
         const float DISTANCE_BUFFER = 3.0f;
         string followName;
         int regionX;
@@ -36,7 +37,8 @@ namespace FollowBot
             client.Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(OnAvatarMovedEvent);
             client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(OnObjectKilledEvent);
             client.Network.Login(firstName, lastName, password, "FollowBot", "root66@gmail.com");
-            SendAgentUpdate(0);
+            if (flying) SendAgentUpdate((uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_FLY);
+            else SendAgentUpdate(0);
             while (!logout) ParseCommand(Console.ReadLine());
             client.Network.Logout();
         }
@@ -63,7 +65,11 @@ namespace FollowBot
                 {
                     avatars[avatar.LocalID].Position = avatar.Position;
                     avatars[avatar.LocalID].Rotation = avatar.Rotation;
-                    if (!Follow(name)) SendAgentUpdate(0);
+                    if (!Follow(name))
+                    {
+                        if (flying) SendAgentUpdate((uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_FLY);
+                        else SendAgentUpdate(0);
+                    }
                 }
             }
         }
@@ -95,10 +101,23 @@ namespace FollowBot
 
             switch (command)
             {
+                case "fly":
+                    {
+                        flying = true;
+                        SendAgentUpdate((uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_FLY);
+                        break;
+                    }
+                case "land":
+                    {
+                        flying = false;
+                        SendAgentUpdate(0);
+                        break;
+                    }
                 case "follow":
                     {
                         followName = details;
-                        SendAgentUpdate(0);
+                        if (flying) SendAgentUpdate((uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_FLY);
+                        else SendAgentUpdate(0);
                         response = "Following " + details;
                         break;
                     }
@@ -131,6 +150,8 @@ namespace FollowBot
                 else if (vecDist(av.Position, client.Self.Position) > DISTANCE_BUFFER)
                 {
                     //move toward target
+                    if (av.Position.Z > client.Self.Position.Z + DISTANCE_BUFFER) flying = true;
+                    else flying = false;
                     ulong x = (ulong)(av.Position.X + regionX);
                     ulong y = (ulong)(av.Position.Y + regionY);
                     client.Self.AutoPilot(x, y, av.Position.Z);
@@ -142,7 +163,8 @@ namespace FollowBot
                     //client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
                 }
                 Thread.Sleep(200); //Sleep 200ms between updates
-                SendAgentUpdate(0);
+                if (flying) SendAgentUpdate((uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_FLY);
+                else SendAgentUpdate(0);
                 return true;
             }
             return false;
