@@ -28,7 +28,7 @@ namespace libsecondlife.TestTool
             GroupID = LLUUID.Zero;
             Client.Objects.RequestAllObjects = true;
             bodyRotation = LLQuaternion.Identity;
-            updateTimer = new System.Timers.Timer(500);
+            updateTimer = new System.Timers.Timer(1000);
             updateTimer.Elapsed += new System.Timers.ElapsedEventHandler(updateTimer_Elapsed);
 
             Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
@@ -120,6 +120,10 @@ namespace libsecondlife.TestTool
 
             Client.Self.UpdateCamera(0, Client.Self.Position, forward, left, up, bodyRotation,
                 LLQuaternion.Identity, 64, false);
+
+			foreach (Command c in Commands.Values)
+				if (c.Active)
+					c.Think();
         }
 
         void AgentDataUpdateHandler(Packet packet, Simulator sim)

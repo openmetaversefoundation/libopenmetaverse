@@ -16,8 +16,8 @@ namespace libsecondlife.TestTool
 
 		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-			TestTool.Running = false;
             Client.Network.Logout();
+			TestTool.Running = false;
             return "Logging off.";
 		}
     }

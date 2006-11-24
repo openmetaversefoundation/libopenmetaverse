@@ -29,38 +29,41 @@ namespace libsecondlife.TestTool
 
         const float DISTANCE_BUFFER = 3.0f;
         string followName;
+		Avatar followAvatar;
 
         bool Follow(string name)
         {
-            followName = name;
-
-			//ulong regionHandle = Client.Network.CurrentSim.Region.Handle;
-			//regionX = (int)(regionHandle >> 32);
-			//regionY = (int)(regionHandle & 0xFFFFFFFF);
-
-
             foreach (Avatar av in TestTool.Avatars.Values)
             {
-                if (av.Name != name) continue;
-                else if (vecDist(av.Position, Client.Self.Position) > DISTANCE_BUFFER)
-                {
-                    //move toward target
-					ulong x = (ulong)(av.Position.X + (av.CurrentRegion.GridRegionData.X * 256));
-					ulong y = (ulong)(av.Position.Y + (av.CurrentRegion.GridRegionData.Y * 256));
-                    Client.Self.AutoPilotLocal(Convert.ToInt32(av.Position.X), Convert.ToInt32(av.Position.Y), av.Position.Z);
-                }
-                else
-                {
-                    //stop at current position
-                    //LLVector3 myPos = client.Self.Position;
-                    //client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
-                }
-				//Thread.Sleep(200); //Sleep 200ms between updates
-				//SendAgentUpdate(0);
-                return true;
+                if (av.Name == name)
+				{
+		            followName = name;
+					followAvatar = av;
+					Active = true;
+	                return true;
+				}
             }
             return false;
         }
+
+		public override void Think()
+		{
+            if (vecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
+            {
+                //move toward target
+				ulong x = (ulong)(followAvatar.Position.X + (followAvatar.CurrentRegion.GridRegionData.X * 256));
+				ulong y = (ulong)(followAvatar.Position.Y + (followAvatar.CurrentRegion.GridRegionData.Y * 256));
+                Client.Self.AutoPilotLocal(Convert.ToInt32(followAvatar.Position.X), Convert.ToInt32(followAvatar.Position.Y), followAvatar.Position.Z);
+            }
+			//else
+			//{
+			//    //stop at current position
+			//    LLVector3 myPos = Client.Self.Position;
+			//    Client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
+			//}
+
+			base.Think();
+		}
 
 		//void SendAgentUpdate(uint ControlID)
 		//{

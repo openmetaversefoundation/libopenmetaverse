@@ -19,5 +19,17 @@ namespace libsecondlife.TestTool
 		}
 
 		public abstract string Execute(string[] args, LLUUID fromAgentID);
+
+		/// <summary>
+		/// When set to true, think will be called.
+		/// </summary>
+		public bool Active;
+
+		/// <summary>
+		/// Called twice per second, when Command.Active is set to true.
+		/// </summary>
+		public virtual void Think()
+		{
+		}
     }
 }

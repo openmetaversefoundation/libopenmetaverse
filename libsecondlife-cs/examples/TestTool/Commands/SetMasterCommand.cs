@@ -23,6 +23,15 @@ namespace libsecondlife.TestTool
 				masterName = masterName + args[ct] + " ";
 			TestTool.Master = masterName.TrimEnd();
 
+			foreach (Avatar av in TestTool.Avatars.Values)
+			{
+				if (av.Name == TestTool.Master)
+				{
+					Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
+					break;
+				}
+			}
+
 			return "Master set to " + masterName;
 		}
     }
