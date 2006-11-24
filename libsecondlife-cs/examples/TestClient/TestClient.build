@@ -23,7 +23,7 @@
      - datetime::parse('01/01/2002'))))}" />
   <property
     name="assembly"
-    value="TestTool"/>
+    value="TestCommand"/>
   <property
     name="bin_dir"
     value="../../bin" />
