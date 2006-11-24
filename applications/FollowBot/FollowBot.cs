@@ -12,7 +12,8 @@ namespace FollowBot
         Dictionary<uint, Avatar> avatars;
         static bool logout;
         bool flying;
-        const float DISTANCE_BUFFER = 3.0f;
+        const float BUFFER_DISTANCE = 3.0f;
+        const float DRAW_DISTANCE = 96.0f;
         string followName;
         int regionX;
         int regionY;
@@ -33,6 +34,7 @@ namespace FollowBot
         {
             client = new SecondLife();
             avatars = new Dictionary<uint, Avatar>();
+            client.Self.OnInstantMessage += new InstantMessageCallback(OnInstantMessageEvent);
             client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(OnNewAvatarEvent);
             client.Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(OnAvatarMovedEvent);
             client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(OnObjectKilledEvent);
@@ -44,6 +46,12 @@ namespace FollowBot
         }
 
         //EVENTS #####################################################
+
+        void OnInstantMessageEvent(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, byte offline, byte[] binaryBucket)
+        {
+            if (dialog == 22) client.Self.TeleportLureRespond(fromAgentID, true);
+        }
+
         void OnNewAvatarEvent(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
             lock (avatars)
@@ -110,6 +118,7 @@ namespace FollowBot
                 case "land":
                     {
                         flying = false;
+                        if (flying) SendAgentUpdate((uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM);
                         SendAgentUpdate(0);
                         break;
                     }
@@ -147,10 +156,10 @@ namespace FollowBot
             foreach (Avatar av in avatars.Values)
             {
                 if (av.Name != name) continue;
-                else if (vecDist(av.Position, client.Self.Position) > DISTANCE_BUFFER)
+                else if (vecDist(av.Position, client.Self.Position) > BUFFER_DISTANCE)
                 {
                     //move toward target
-                    if (av.Position.Z > client.Self.Position.Z + DISTANCE_BUFFER) flying = true;
+                    if (av.Position.Z > client.Self.Position.Z + BUFFER_DISTANCE) flying = true;
                     else flying = false;
                     ulong x = (ulong)(av.Position.X + regionX);
                     ulong y = (ulong)(av.Position.Y + regionY);
@@ -158,7 +167,7 @@ namespace FollowBot
                 }
                 else
                 {
-                    //stop at current position
+                    //stop at current position (not working)
                     //LLVector3 myPos = client.Self.Position;
                     //client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
                 }
@@ -173,11 +182,16 @@ namespace FollowBot
         void SendAgentUpdate(uint ControlID)
         {
             AgentUpdatePacket p = new AgentUpdatePacket();
-            p.AgentData.Far = 30.0f;
-            p.AgentData.CameraAtAxis = new LLVector3(0, 0, 0);
+            p.AgentData.Far = DRAW_DISTANCE;
+            LLVector3 myPos = client.Self.Position;
             p.AgentData.CameraCenter = new LLVector3(0, 0, 0);
+            p.AgentData.CameraAtAxis = new LLVector3(0, 0, 0);
             p.AgentData.CameraLeftAxis = new LLVector3(0, 0, 0);
             p.AgentData.CameraUpAxis = new LLVector3(0, 0, 0);
+            //old camera position (30m up, pointing straight down, not as good as 0's apparently)
+            //p.AgentData.CameraAtAxis = new LLVector3(myPos.X, myPos.Y, myPos.Z + 30);
+            //p.AgentData.CameraLeftAxis = new LLVector3(-1, 0, 0);
+            //p.AgentData.CameraUpAxis = new LLVector3(0, 1, 0);
             p.AgentData.HeadRotation = new LLQuaternion(0, 0, 0, 1); ;
             p.AgentData.BodyRotation = new LLQuaternion(0, 0, 0, 1); ;
             p.AgentData.AgentID = client.Network.AgentID;
