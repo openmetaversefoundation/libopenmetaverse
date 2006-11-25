@@ -512,7 +512,7 @@ namespace libsecondlife
             packet.ObjectData.RayTargetID = LLUUID.Zero;
             packet.ObjectData.BypassRaycast = 1;
 
-            packet.ObjectData.TextureEntry = prim.Textures.ToBytes();
+            packet.ObjectData.TextureEntry = prim.Textures.GetBytes();
 
             Client.Network.SendPacket(packet, simulator);
         }

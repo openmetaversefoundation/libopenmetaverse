@@ -138,7 +138,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte[] ToBytes()
+        public byte[] GetBytes()
         {
             if (DefaultTexture == null)
             {
@@ -248,7 +248,7 @@ namespace libsecondlife
             binWriter.Write(DefaultTexture.TextureID.Data);
             foreach (KeyValuePair<LLUUID, uint> kv in TextureIDs)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key.Data);
             }
 
@@ -256,7 +256,7 @@ namespace libsecondlife
             binWriter.Write(DefaultTexture.RGBA);
             foreach (KeyValuePair<uint, uint> kv in RGBAs)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -264,7 +264,7 @@ namespace libsecondlife
             binWriter.Write(RepeatShort(DefaultTexture.RepeatU));
             foreach (KeyValuePair<short, uint> kv in RepeatUs)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -272,7 +272,7 @@ namespace libsecondlife
             binWriter.Write(RepeatShort(DefaultTexture.RepeatV));
             foreach (KeyValuePair<short, uint> kv in RepeatVs)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -280,7 +280,7 @@ namespace libsecondlife
             binWriter.Write(OffsetShort(DefaultTexture.OffsetU));
             foreach (KeyValuePair<short, uint> kv in OffsetUs)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -288,7 +288,7 @@ namespace libsecondlife
             binWriter.Write(OffsetShort(DefaultTexture.OffsetV));
             foreach (KeyValuePair<short, uint> kv in OffsetVs)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -296,7 +296,7 @@ namespace libsecondlife
             binWriter.Write(RotationShort(DefaultTexture.Rotation));
             foreach (KeyValuePair<short, uint> kv in Rotations)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -304,7 +304,7 @@ namespace libsecondlife
             binWriter.Write(DefaultTexture.Flags1);
             foreach (KeyValuePair<byte, uint> kv in Flag1s)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
@@ -312,14 +312,14 @@ namespace libsecondlife
             binWriter.Write(DefaultTexture.Flags2);
             foreach (KeyValuePair<byte, uint> kv in Flag2s)
             {
-                binWriter.Write(FaceBitfieldToBytes(kv.Value));
+                binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
 
             return memStream.GetBuffer();
         }
 
-        private byte[] FaceBitfieldToBytes(uint bitfield)
+        private byte[] GetFaceBitfieldBytes(uint bitfield)
         {
             int byteLength = 0;
             uint tmpBitfield = bitfield;
@@ -340,6 +340,20 @@ namespace libsecondlife
                     bytes[i] |= 0x80;
             }
             return bytes;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public string GetXml(string name)
+        {
+            string xml = "<TextureEntry>";
+            // FIXME: Write GetXml for TextureEntry
+            xml += "</TextureEntry>";
+
+            return xml;
         }
 
         private bool ReadFaceBitfield(byte[] data, ref int pos, ref uint faceBits, ref uint bitfieldSize)
@@ -792,10 +806,31 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte[] ToBytes()
+        public byte[] GetBytes()
         {
             byte[] bytes = new byte[0];
+            // FIXME: Finish TextureAnimation GetBytes() function
             return bytes;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public string GetXml(string name)
+        {
+            string xml = "<TextureAnimation>";
+            xml += "<Flags>" + Flags + "</Flags>";
+            xml += "<Face>" + Face + "</Face>";
+            xml += "<SizeX>" + SizeX + "</SizeX>";
+            xml += "<SizeY>" + SizeY + "</SizeY>";
+            xml += "<Start>" + Start + "</Start>";
+            xml += "<Length>" + Length + "</Length>";
+            xml += "<Rate>" + Rate + "</Rate>";
+            xml += "</TextureAnimation>";
+
+            return xml;
         }
 
         private void FromBytes(byte[] data, int pos)

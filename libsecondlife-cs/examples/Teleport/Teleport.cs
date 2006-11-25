@@ -41,7 +41,7 @@ namespace Teleport
             if (success)
             {
                 // Get the current sim name
-                while (app.Client.Network.CurrentSim.Region.Name == null)
+                while (app.Client.Network.CurrentSim.Region.Name == "")
                 {
                     System.Threading.Thread.Sleep(100);
                 }

@@ -9,44 +9,22 @@ namespace libsecondlife
     /// </summary>
     public class ParticleSystem
     {
-        public uint PartStartRGBA;
-        public uint PartEndRGBA;
-
-        public LLVector3 PartStartScale = LLVector3.Zero;
-        public LLVector3 PartEndScale = LLVector3.Zero;
-
-        public float PartMaxAge;
-        public float SrcMaxAge;
-
-        public LLVector3 SrcAccel = LLVector3.Zero;
-
-        public float SrcAngleBegin;
-        public float SrcAngleEnd;
-
-        public int SrcBurstPartCount;
-        public float SrcBurstRadius;
-        public float SrcBurstRate;
-        public float SrcBurstSpeedMin;
-        public float SrcBurstSpeedMax;
-
-        public LLVector3 SrcOmega = LLVector3.Zero;
-
-        public LLUUID SrcTargetKey = LLUUID.Zero;
-        public LLUUID SrcTexture = LLUUID.Zero;
-
-        public SourcePattern SrcPattern;
-        public ParticleFlags PartFlags;
-
-        public uint Version; //???
-        public uint StartTick; //???
-
+        /// <summary>
+        /// 
+        /// </summary>
         public enum SourcePattern : byte
         {
+            /// <summary></summary>
             None = 0,
+            /// <summary></summary>
             Drop = 0x01,
+            /// <summary></summary>
             Explode = 0x02,
+            /// <summary></summary>
             Angle = 0x04,
+            /// <summary></summary>
             AngleCone = 0x08,
+            /// <summary></summary>
             AngleConeEmpty = 0x10
         }
 
@@ -56,17 +34,70 @@ namespace libsecondlife
         [Flags]
         public enum ParticleFlags : ushort
         {
+            /// <summary></summary>
             None = 0,
+            /// <summary></summary>
             InterpColor = 0x001,
+            /// <summary></summary>
             InterpScale = 0x002,
+            /// <summary></summary>
             Bounce = 0x004,
+            /// <summary></summary>
             Wind = 0x008,
+            /// <summary></summary>
             FollowSrc = 0x010,
+            /// <summary></summary>
             FollowVelocity = 0x20,
+            /// <summary></summary>
             TargetPos = 0x40,
+            /// <summary></summary>
             TargetLinear = 0x080,
+            /// <summary></summary>
             Emissive = 0x100
         }
+
+        /// <summary></summary>
+        public uint PartStartRGBA;
+        /// <summary></summary>
+        public uint PartEndRGBA;
+        /// <summary></summary>
+        public LLVector3 PartStartScale = LLVector3.Zero;
+        /// <summary></summary>
+        public LLVector3 PartEndScale = LLVector3.Zero;
+        /// <summary></summary>
+        public float PartMaxAge;
+        /// <summary></summary>
+        public float SrcMaxAge;
+        /// <summary></summary>
+        public LLVector3 SrcAccel = LLVector3.Zero;
+        /// <summary></summary>
+        public float SrcAngleBegin;
+        /// <summary></summary>
+        public float SrcAngleEnd;
+        /// <summary></summary>
+        public int SrcBurstPartCount;
+        /// <summary></summary>
+        public float SrcBurstRadius;
+        /// <summary></summary>
+        public float SrcBurstRate;
+        /// <summary></summary>
+        public float SrcBurstSpeedMin;
+        /// <summary></summary>
+        public float SrcBurstSpeedMax;
+        /// <summary></summary>
+        public LLVector3 SrcOmega = LLVector3.Zero;
+        /// <summary></summary>
+        public LLUUID SrcTargetKey = LLUUID.Zero;
+        /// <summary>Texture that will be applied to the particles</summary>
+        public LLUUID SrcTexture = LLUUID.Zero;
+        /// <summary></summary>
+        public SourcePattern SrcPattern;
+        /// <summary>Various options that describe the behavior of this system</summary>
+        public ParticleFlags PartFlags;
+        /// <summary>Unknown</summary>
+        public uint Version;
+        /// <summary>Unknown</summary>
+        public uint StartTick;
 
         /// <summary>
         /// 
@@ -83,6 +114,27 @@ namespace libsecondlife
         public ParticleSystem(byte[] data, int pos)
         {
             FromBytes(data, pos);
+        }
+
+        public byte[] GetBytes()
+        {
+            byte[] bytes = new byte[0];
+            // FIXME: Finish ParticleSystem.GetBytes()
+            return bytes;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public string GetXml(string name)
+        {
+            string xml = "<ParticleSystem>";
+            // FIXME: Finish ParticleSystem.GetXml()
+            xml += "</ParticleSystem>";
+
+            return xml;
         }
 
         /// <summary>

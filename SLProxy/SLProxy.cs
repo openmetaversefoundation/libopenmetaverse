@@ -189,7 +189,7 @@ namespace SLProxy {
 
 		// KeepAlive: blocks until the proxy is free to shut down
 		public void KeepAlive() {
-			lock(keepAliveLock);
+            lock (keepAliveLock) { };
 		}
 
 		// SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login

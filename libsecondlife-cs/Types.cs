@@ -347,6 +347,16 @@ namespace libsecondlife
 		}
 
         /// <summary>
+        /// Convert to a single xml node
+        /// </summary>
+        /// <param name="name">The desired name of the xml node</param>
+        /// <returns>A line of xml data containing the values for this data type</returns>
+        public string GetXml(string name)
+        {
+            return "<" + name + " x=\"" + X + "\" y=\"" + Y + "\" z=\"" + Z + "\" />";
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
@@ -745,6 +755,16 @@ namespace libsecondlife
 
 			return bytes;
 		}
+
+        /// <summary>
+        /// Convert to a single xml node
+        /// </summary>
+        /// <param name="name">The desired name of the xml node</param>
+        /// <returns>A line of xml data containing the values for this data type</returns>
+        public string GetXml(string name)
+        {
+            return "<" + name + " x=\"" + X + "\" y=\"" + Y + "\" z=\"" + Z + "\" w=\"" + W + "\" />";
+        }
 
         public override int GetHashCode()
         {
