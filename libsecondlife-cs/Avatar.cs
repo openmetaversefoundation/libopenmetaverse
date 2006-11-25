@@ -830,6 +830,21 @@ namespace libsecondlife
             }
         }
 
+        public void Touch(uint objectLocalID, LLVector3 offset)
+        {
+            ObjectGrabPacket grab = new ObjectGrabPacket();
+            grab.AgentData.AgentID = Client.Network.AgentID;
+            grab.AgentData.SessionID = Client.Network.SessionID;
+            grab.ObjectData.LocalID = objectLocalID;
+            grab.ObjectData.GrabOffset = offset;
+            Client.Network.SendPacket(grab);
+            ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
+            degrab.AgentData.AgentID = Client.Network.AgentID;
+            degrab.AgentData.SessionID = Client.Network.SessionID;
+            degrab.ObjectData.LocalID = objectLocalID;
+            Client.Network.SendPacket(degrab);
+        }
+
         /// <summary>
         /// 
         /// </summary>
