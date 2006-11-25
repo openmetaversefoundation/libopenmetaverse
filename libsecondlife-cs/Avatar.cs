@@ -844,6 +844,23 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Drags on an object
+        /// </summary>
+        /// <param name="objectID">Strangely, LLUID instead of local ID</param>
+        /// <param name="grabPosition">Drag target in region coordinates</param>
+        public void GrabUpdate(LLUUID objectID, LLVector3 grabPosition)
+        {
+            ObjectGrabUpdatePacket grab = new ObjectGrabUpdatePacket();
+            grab.AgentData.AgentID = Client.Network.AgentID;
+            grab.AgentData.SessionID = Client.Network.SessionID;
+            grab.ObjectData.ObjectID = objectID;
+            grab.ObjectData.GrabOffsetInitial = new LLVector3(0, 0, 0);
+            grab.ObjectData.GrabPosition = grabPosition;
+            grab.ObjectData.TimeSinceLast = 0;
+            Client.Network.SendPacket(grab);
+        }
+
+        /// <summary>
         /// Releases a grabbed object
         /// </summary>
         public void DeGrab(uint objectLocalID)
