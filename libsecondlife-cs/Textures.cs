@@ -793,6 +793,13 @@ namespace libsecondlife
         public float Rate;
 
         /// <summary>
+        /// Default constructor
+        /// </summary>
+        public TextureAnimation()
+        {
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="data"></param>
@@ -821,13 +828,13 @@ namespace libsecondlife
         public string GetXml(string name)
         {
             string xml = "<TextureAnimation>";
-            xml += "<Flags>" + Flags + "</Flags>";
-            xml += "<Face>" + Face + "</Face>";
-            xml += "<SizeX>" + SizeX + "</SizeX>";
-            xml += "<SizeY>" + SizeY + "</SizeY>";
-            xml += "<Start>" + Start + "</Start>";
-            xml += "<Length>" + Length + "</Length>";
-            xml += "<Rate>" + Rate + "</Rate>";
+            xml += "<Flags value=\"" + Flags + "\" />";
+            xml += "<Face value=\"" + Face + "\" />";
+            xml += "<SizeX value=\"" + SizeX + "\" />";
+            xml += "<SizeY value=\"" + SizeY + "\" />";
+            xml += "<Start value=\"" + Start + "\" />";
+            xml += "<Length value=\"" + Length + "\" />";
+            xml += "<Rate value=\"" + Rate + "\" />";
             xml += "</TextureAnimation>";
 
             return xml;

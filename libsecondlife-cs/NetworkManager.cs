@@ -1441,22 +1441,29 @@ namespace libsecondlife
     /// </summary>
     public class AgentThrottle
     {
-        /// <summary>Maximum data rates for each type of data. Note that these are
-        /// actually in bytes per second, and not kbytes per second, as displayed 
-        /// by the original client.</summary>
+        /// <summary>Maximum bytes per second for resending unacknowledged packets</summary>
         public float Resend;
+        /// <summary>Maximum bytes per second for LayerData terrain</summary>
         public float Land;
+        /// <summary>Maximum bytes per second for LayerData wind data</summary>
         public float Wind;
+        /// <summary>Maximum bytes per second for LayerData clouds</summary>
         public float Cloud;
+        /// <summary>Unknown, includes object data</summary>
         public float Task;
+        /// <summary>Maximum bytes per second for textures</summary>
         public float Texture;
+        /// <summary>Maximum bytes per second for downloaded assets</summary>
         public float Asset;
 
+        /// <summary>Maximum bytes per second the entire connection, divided up
+        /// between invidiual streams using default multipliers</summary>
         public float Total
         {
             get { return Resend + Land + Wind + Cloud + Task + Texture + Asset; }
             set
             {
+                // These sane initial values were pulled from the Second Life client
                 Resend = (value * 0.1f);
                 Land = (float)(value * 0.52f / 3f);
                 Wind = (float)(value * 0.05f);
@@ -1467,13 +1474,28 @@ namespace libsecondlife
             }
         }
 
+        private SecondLife Client;
+
         /// <summary>
-        /// 
+        /// Default constructor, uses a default high total of 1500 KBps (1536000)
         /// </summary>
-        public AgentThrottle(float total_val)
+        public AgentThrottle(SecondLife client)
         {
-            // note that the client itself never seems to go below 75k, even if you tell it to
-            Total = total_val;
+            Client = client;
+            Total = 1536000.0f;
+        }
+
+        /// <summary>
+        /// Sets the total KBps throttle
+        /// <param name="total">The total kilobytes per second for the connection.
+        /// This will be divided up between the various stream types using the 
+        /// default multipliers</param>
+        /// </summary>
+        public AgentThrottle(SecondLife client, float total)
+        {
+            Client = client;
+            // Note that the client itself never seems to go below 75k, even if you tell it to
+            Total = total;
         }
 
         /// <summary>
@@ -1497,15 +1519,19 @@ namespace libsecondlife
             Asset = BitConverter.ToSingle(data, pos);
         }
 
-        public void Send(SecondLife client)
+        /// <summary>
+        /// Send an AgentThrottle packet to the server using the current values
+        /// </summary>
+        public void Set()
         {
             AgentThrottlePacket throttle = new AgentThrottlePacket();
-            throttle.AgentData.AgentID = client.Network.AgentID;
-            throttle.AgentData.SessionID = client.Network.SessionID;
-            throttle.AgentData.CircuitCode = client.Network.CurrentSim.CircuitCode;
+            throttle.AgentData.AgentID = Client.Network.AgentID;
+            throttle.AgentData.SessionID = Client.Network.SessionID;
+            throttle.AgentData.CircuitCode = Client.Network.CurrentSim.CircuitCode;
             throttle.Throttle.GenCounter = 0;
             throttle.Throttle.Throttles = this.ToBytes();
-            client.Network.SendPacket(throttle);
+
+            Client.Network.SendPacket(throttle);
         }
 
         /// <summary>

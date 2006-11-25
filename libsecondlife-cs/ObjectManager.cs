@@ -765,7 +765,8 @@ namespace libsecondlife
 
                 foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
                 {
-                    switch (block.PCode)
+                    byte pcode = block.PCode;
+                    switch (pcode)
                     {
                         case (byte)PCode.Grass:
                         case (byte)PCode.Tree:
@@ -1044,7 +1045,6 @@ namespace libsecondlife
                             (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
                         byte pcode = block.Data[i++];
-
                         if (pcode == (byte)PCode.Prim)
                         {
                             #region Prim
@@ -1066,12 +1066,15 @@ namespace libsecondlife
 
                             if ((flags & CompressedFlags.Tree) != 0)
                             {
-                                // FIXME: Are we sure this is a Tree/Foliage flag? Wouldn't the PCode be 
-                                // different if it was?
-                                byte TreeData = block.Data[i++];
+                                // FIXME: I don't think this is even Tree data, as it would have
+                                // a different PCode. Figure out what this flag is and how to 
+                                // decode it
+                                byte Unknown1 = block.Data[i++];
+                                byte Unknown2 = block.Data[i++];
 
-                                // TODO: Unknown byte
-                                i++;
+                                Client.Log("Compressed object with Tree flag set: " + Environment.NewLine +
+                                    "Unknown byte 1: " + Unknown1 + Environment.NewLine +
+                                    "Unknown byte 2: " + Unknown2, Helpers.LogLevel.Debug);
                             }
 
                             if ((flags & CompressedFlags.HasParent) != 0)
@@ -1163,6 +1166,7 @@ namespace libsecondlife
 
                             if ((flags & CompressedFlags.Unknown1) != 0)
                             {
+                                // TODO: Is this even a valid flag?
                                 Client.Log("Compressed object with Unknown1 flag set: " + Environment.NewLine +
                                     "Flags: " + flags.ToString() + Environment.NewLine +
                                     Helpers.FieldToString(block.Data), Helpers.LogLevel.Debug);
@@ -1170,9 +1174,10 @@ namespace libsecondlife
 
                             if ((flags & CompressedFlags.Unknown2) != 0)
                             {
-                                Client.Log("Compressed object with Unknown2 flag set: " + Environment.NewLine +
-                                    "Flags: " + flags.ToString() + Environment.NewLine +
-                                    Helpers.FieldToString(block.Data), Helpers.LogLevel.Debug);
+                                // FIXME: Implement CompressedFlags.Unknown2
+                                //Client.Log("Compressed object with Unknown2 flag set: " + Environment.NewLine +
+                                //    "Flags: " + flags.ToString() + Environment.NewLine +
+                                //    Helpers.FieldToString(block.Data), Helpers.LogLevel.Debug);
                             }
 
                             prim.PathCurve = (uint)block.Data[i++];
@@ -1232,15 +1237,14 @@ namespace libsecondlife
                             }
                             #endregion Prim
                         }
-                        else if (pcode == (byte)PCode.Grass || pcode == (byte)PCode.Tree)
+                        else if (pcode == (byte)PCode.Grass || pcode == (byte)PCode.Tree || pcode == (byte)PCode.NewTree)
                         {
-                            // TODO: Add new_tree and any other tree-like prims
-                            Client.Log("######### Got an ObjectUpdateCompressed for grass/tree, implement this! #########",
-                                Helpers.LogLevel.Debug);
+                            // FIXME: Implement this
+                            //Client.Log("######### Got an ObjectUpdateCompressed for grass/tree, implement this! #########",
+                            //    Helpers.LogLevel.Debug);
                         }
                         else
                         {
-                            // TODO: ...
                             Client.Log("######### Got an ObjectUpdateCompressed for PCode=" + pcode.ToString() + 
                                 ", implement this! #########", Helpers.LogLevel.Debug);
                         }

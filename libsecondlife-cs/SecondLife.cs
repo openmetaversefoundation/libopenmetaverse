@@ -62,6 +62,8 @@ namespace libsecondlife
         public ObjectManager Objects;
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
+        /// <summary>Throttling Subsystem</summary>
+        public AgentThrottle Throttle;
 
         /// <summary>Image Subsystem</summary>
         private ImageManager _ImageManager;
@@ -89,7 +91,7 @@ namespace libsecondlife
         /// <summary></summary>
         public event LogCallback OnLogMessage;
         /// <summary>Debug flag</summary>
-        public bool Debug;
+        public bool Debug = true;
 
         /// <summary>
         /// Constructor.
@@ -103,7 +105,7 @@ namespace libsecondlife
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
-            Debug = true;
+            Throttle = new AgentThrottle(this);
         }
 
         /// <summary>

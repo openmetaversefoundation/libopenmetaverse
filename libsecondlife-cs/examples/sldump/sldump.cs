@@ -117,12 +117,11 @@ namespace sldump
 			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
 
             // Throttle packets that we don't want all the way down
-			AgentThrottle throttle = new AgentThrottle(50000);
-			throttle.Land = 0;
-			throttle.Wind = 0;
-			throttle.Cloud = 0;
-			throttle.Texture = 0;
-		    throttle.Send(client);
+			client.Throttle.Land = 0;
+            client.Throttle.Wind = 0;
+            client.Throttle.Cloud = 0;
+            client.Throttle.Texture = 0;
+            client.Throttle.Set();
 
             int start = Environment.TickCount;
             int milliseconds = Int32.Parse(args[3]) * 1000;

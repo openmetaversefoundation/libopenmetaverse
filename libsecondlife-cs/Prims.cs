@@ -65,7 +65,7 @@ namespace libsecondlife
         /// <summary></summary>
 		public string Name = "";
         /// <summary></summary>
-		public string Description;
+		public string Description = "";
         /// <summary></summary>
 		public float PathShearX = 0;
         /// <summary></summary>
@@ -122,6 +122,10 @@ namespace libsecondlife
             Light = new PrimLightData();
             ParticleSys = new ParticleSystem();
             Textures = new TextureEntry();
+            TextureAnim = new TextureAnimation();
+            Flexible = new PrimFlexibleData();
+            Light = new PrimLightData();
+            ParticleSys = new ParticleSystem();
         }
 		
         /// <summary>
@@ -411,7 +415,7 @@ namespace libsecondlife
         /// <returns></returns>
         public string GetXml()
         {
-            string xml = "<prim>";
+            string xml = "<Prim>";
             xml += "<PathTwistBegin value=\"" + PathTwistBegin + "\" />";
             xml += "<PathEnd value=\"" + PathEnd + "\" />";
             xml += "<ProfileBegin value=\"" + ProfileBegin + "\" />";
@@ -449,7 +453,7 @@ namespace libsecondlife
             xml += Flexible.GetXml("Flexible");
             xml += Light.GetXml("Light");
             xml += ParticleSys.GetXml("ParticleSys");
-            xml += "</prim>";
+            xml += "</Prim>";
 
             return xml;
         }
@@ -587,11 +591,11 @@ namespace libsecondlife
         public string GetXml(string name)
         {
             string xml = "<" + name + ">";
-            xml += "<Softness value=\"" + Softness + "\" >";
-            xml += "<Tension value=\"" + Tension + "\" >";
-            xml += "<Drag value=\"" + Drag + "\" >";
-            xml += "<Gravity value=\"" + Gravity + "\" >";
-            xml += "<Wind value=\"" + Wind + "\" >";
+            xml += "<Softness value=\"" + Softness + "\" />";
+            xml += "<Tension value=\"" + Tension + "\" />";
+            xml += "<Drag value=\"" + Drag + "\" />";
+            xml += "<Gravity value=\"" + Gravity + "\" />";
+            xml += "<Wind value=\"" + Wind + "\" />";
             xml += "</" + name + ">";
 
             return xml;
