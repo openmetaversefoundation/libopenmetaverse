@@ -258,7 +258,7 @@ public class Helpers
     /// </summary>
     /// <param name="a">Directional vector, such as 1,0,0 for the forward face</param>
     /// <param name="b">Target vector - normalize first with VecNorm</param>
-    public LLQuaternion RotBetween(LLVector3 a, LLVector3 b)
+    public static LLQuaternion RotBetween(LLVector3 a, LLVector3 b)
     {
         //A and B should both be normalized
         //dotProduct is 0 if a and b are perpendicular. I think that's normal?
