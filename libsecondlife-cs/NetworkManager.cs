@@ -87,20 +87,21 @@ namespace libsecondlife
         /// Used internally to track sim disconnections, do not modify this 
         /// variable.
         /// </summary>
-        public bool DisconnectCandidate;
+        public bool DisconnectCandidate = false;
 
         private SecondLife Client;
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
-        private ushort Sequence;
-        private byte[] RecvBuffer;
-        private byte[] ZeroBuffer;
-        private Socket Connection;
+        private ushort Sequence = 0;
+        private byte[] RecvBuffer = new byte[4092];
+        private byte[] ZeroBuffer = new byte[4092];
+        private byte[] ZeroOutBuffer = new byte[4092];
+        private Socket Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private AsyncCallback ReceivedData;
-        private Dictionary<int, Packet> NeedAck;
-        private Queue<ushort> Inbox;
-        private List<uint> PendingAcks;
-        private bool connected;
+        private Dictionary<int, Packet> NeedAck = new Dictionary<int, Packet>();
+        private Queue<ushort> Inbox = new Queue<ushort>(INBOX_SIZE);
+        private List<uint> PendingAcks = new List<uint>();
+        private bool connected = false;
         private uint circuitCode;
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
@@ -122,29 +123,16 @@ namespace libsecondlife
             Callbacks = callbacks;
             Region = new Region(client);
             circuitCode = circuit;
-            Sequence = 0;
-            RecvBuffer = new byte[4092];
-            ZeroBuffer = new byte[4092];
-            Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            connected = false;
-            DisconnectCandidate = false;
             AckTimer = new System.Timers.Timer(500);
             AckTimer.Elapsed += new ElapsedEventHandler(AckTimer_Elapsed);
 
-            // Initialize the dictionary for reliable packets waiting on ACKs from the server
-            NeedAck = new Dictionary<int, Packet>();
-
-            // Initialize the lists of sequence numbers we've received so far
-            Inbox = new Queue<ushort>(INBOX_SIZE);
-            PendingAcks = new List<uint>();
+            // Initialize the callback for receiving a new packet
+            ReceivedData = new AsyncCallback(OnReceivedData);
 
             Client.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
 
             try
             {
-                // Setup the callback
-                ReceivedData = new AsyncCallback(OnReceivedData);
-
                 // Create an endpoint that we will be communicating with (need it in two 
                 // types due to .NET weirdness)
                 ipEndPoint = new IPEndPoint(ip, port);
@@ -164,7 +152,7 @@ namespace libsecondlife
                 AckTimer.Start();
 
                 // Send the initial packet out
-                SendPacket(use, true);
+                SendPacket(use);
 
                 // Track the current time for timeout purposes
                 int start = Environment.TickCount;
@@ -221,7 +209,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="incrementSequence"></param>
-        public void SendPacket(Packet packet, bool incrementSequence)
+        public void SendPacket(Packet packet)
         {
             byte[] buffer;
             int bytes;
@@ -234,54 +222,50 @@ namespace libsecondlife
                 throw new NotConnectedException();
             }
 
-            if (incrementSequence)
-            {
-                // Set the sequence number here since we are manually serializing the packet
+            // Set the sequence number here since we are manually serializing the packet
+            if (Sequence == ushort.MaxValue)
+                Sequence = 0;
+            else
                 Sequence++;
-                if (Sequence >= ushort.MaxValue)
-                {
-                    Sequence = 0;
-                }
-                packet.Header.Sequence = Sequence;
+            packet.Header.Sequence = Sequence;
 
-                if (packet.Header.Reliable)
-                {
-                    // Keep track of when this packet was sent out
-                    packet.TickCount = Environment.TickCount;
+            if (packet.Header.Reliable)
+            {
+                // Keep track of when this packet was sent out
+                packet.TickCount = Environment.TickCount;
 
-                    lock (NeedAck)
+                lock (NeedAck)
+                {
+                    if (!NeedAck.ContainsKey(packet.Header.Sequence))
                     {
-                        if (!NeedAck.ContainsKey(packet.Header.Sequence))
-                        {
-                            NeedAck.Add(packet.Header.Sequence, packet);
-                        }
-                        else
-                        {
-                            Client.Log("Attempted to add a duplicate sequence number (" +
-                                packet.Header.Sequence + ") to the NeedAck dictionary for packet type " +
-                                packet.Type.ToString(), Helpers.LogLevel.Warning);
-                        }
+                        NeedAck.Add(packet.Header.Sequence, packet);
                     }
-
-                    // Append any ACKs that need to be sent out to this packet
-                    lock (PendingAcks)
+                    else
                     {
-                        if (PendingAcks.Count > 0 && packet.Type != PacketType.PacketAck &&
-                            packet.Type != PacketType.LogoutRequest)
+                        Client.Log("Attempted to add a duplicate sequence number (" +
+                            packet.Header.Sequence + ") to the NeedAck dictionary for packet type " +
+                            packet.Type.ToString(), Helpers.LogLevel.Warning);
+                    }
+                }
+
+                // Append any ACKs that need to be sent out to this packet
+                lock (PendingAcks)
+                {
+                    if (PendingAcks.Count > 0 && packet.Type != PacketType.PacketAck &&
+                        packet.Type != PacketType.LogoutRequest)
+                    {
+                        packet.Header.AckList = new uint[PendingAcks.Count];
+
+                        int i = 0;
+
+                        foreach (uint ack in PendingAcks)
                         {
-                            packet.Header.AckList = new uint[PendingAcks.Count];
-
-                            int i = 0;
-
-                            foreach (uint ack in PendingAcks)
-                            {
-                                packet.Header.AckList[i] = ack;
-                                i++;
-                            }
-
-                            PendingAcks.Clear();
-                            packet.Header.AppendedAcks = true;
+                            packet.Header.AckList[i] = ack;
+                            i++;
                         }
+
+                        PendingAcks.Clear();
+                        packet.Header.AppendedAcks = true;
                     }
                 }
             }
@@ -290,22 +274,27 @@ namespace libsecondlife
             buffer = packet.ToBytes();
             bytes = buffer.Length;
 
-            // Zerocode if needed
-            if (packet.Header.Zerocoded)
-            {
-                byte[] zeroBuffer = new byte[4096];
-                bytes = Helpers.ZeroEncode(buffer, bytes, zeroBuffer);
-
-                buffer = zeroBuffer;
-            }
-
             try
             {
-                Connection.Send(buffer, bytes, SocketFlags.None);
+                // Zerocode if needed
+                if (packet.Header.Zerocoded)
+                {
+                    lock (ZeroOutBuffer)
+                    {
+                        bytes = Helpers.ZeroEncode(buffer, bytes, ZeroOutBuffer);
+                        Connection.Send(ZeroOutBuffer, bytes, SocketFlags.None);
+                    }
+                }
+                else
+                {
+                    Connection.Send(buffer, bytes, SocketFlags.None);
+                }
             }
             catch (SocketException e)
             {
                 Client.Log(e.ToString(), Helpers.LogLevel.Error);
+
+                // FIXME: Assume this socket is dead and Disconnect()
             }
         }
 
@@ -327,6 +316,8 @@ namespace libsecondlife
             catch (SocketException e)
             {
                 Client.Log(e.ToString(), Helpers.LogLevel.Error);
+
+                // FIXME: Assume this socket is dead and Disconnect()
             }
         }
 
@@ -352,7 +343,7 @@ namespace libsecondlife
                 }
             }
 
-            SendPacket(ack, true);
+            SendPacket(ack);
         }
 
         private void SendAcks()
@@ -374,7 +365,7 @@ namespace libsecondlife
 
                     acks.Header.Reliable = false;
 
-                    SendPacket(acks, true);
+                    SendPacket(acks);
 
                     PendingAcks.Clear();
                 }
@@ -714,7 +705,7 @@ namespace libsecondlife
         {
             if (CurrentSim != null && CurrentSim.Connected)
             {
-                CurrentSim.SendPacket(packet, true);
+                CurrentSim.SendPacket(packet);
             }
         }
 
@@ -727,7 +718,7 @@ namespace libsecondlife
         {
             if (simulator != null && simulator.Connected)
             {
-                simulator.SendPacket(packet, true);
+                simulator.SendPacket(packet);
             }
         }
 
@@ -1148,7 +1139,7 @@ namespace libsecondlife
             logout.AgentData.AgentID = AgentID;
             logout.AgentData.SessionID = SessionID;
 
-            CurrentSim.SendPacket(logout, true);
+            CurrentSim.SendPacket(logout);
 
             // TODO: We should probably check if the server actually received the logout request
 

@@ -65,8 +65,8 @@ namespace libsecondlife
         /// <summary>Throttling Subsystem</summary>
         public AgentThrottle Throttle;
 
-        /// <summary>Image Subsystem</summary>
         private ImageManager _ImageManager;
+        /// <summary>Image Subsystem</summary>
         public ImageManager Images
         {
             get
@@ -88,13 +88,15 @@ namespace libsecondlife
             }
         }
 
-        /// <summary></summary>
+        /// <summary>Triggered whenever a message is logged.
+        /// If this is left null, log messages will go to 
+        /// the console</summary>
         public event LogCallback OnLogMessage;
-        /// <summary>Debug flag</summary>
+        /// <summary>Whether to log debug messages</summary>
         public bool Debug = true;
 
         /// <summary>
-        /// Constructor.
+        /// Default constructor
         /// </summary>
         public SecondLife()
         {
@@ -111,7 +113,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <returns>Client Avatar's Full Name</returns>
+        /// <returns>Client avatar's full name</returns>
         public override string ToString()
         {
             return Self.FirstName + " " + Self.LastName;
@@ -129,7 +131,7 @@ namespace libsecondlife
         /// Send a log message to the debugging output system
         /// </summary>
         /// <param name="message">The log message</param>
-        /// <param name="level">From the LogLevel enum, either Info, Warning, or Error</param>
+        /// <param name="level">The severity of the log entry</param>
         public void Log(string message, Helpers.LogLevel level)
         {
             if (OnLogMessage != null)
