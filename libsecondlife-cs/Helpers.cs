@@ -237,7 +237,7 @@ public class Helpers
     }
 
     /// <summary>
-    /// Calculates the magnitutde of the supplied vector
+    /// Calculate the magnitude of the supplied vector
     /// </summary>
     public static float VecMag(LLVector3 vector)
     {
@@ -245,12 +245,37 @@ public class Helpers
     }
 
     /// <summary>
-    /// Returns the supplied vector in normalized form
+    /// Return the supplied vector in normalized form
     /// </summary>
     public static LLVector3 VecNorm(LLVector3 vector)
     {
         float mag = VecMag(vector);
         return new LLVector3(vector.X/mag,vector.Y/mag,vector.Z/mag);
+    }
+
+    /// <summary>
+    /// Calculate the rotation between two vectors
+    /// </summary>
+    /// <param name="a">Directional vector, such as 1,0,0 for the forward face</param>
+    /// <param name="b">Target vector - normalize first with VecNorm</param>
+    LLQuaternion RotBetween(LLVector3 a, LLVector3 b)
+    {
+        //A and B should both be normalized
+        //dotProduct is 0 if a and b are perpendicular. I think that's normal?
+        float dotProduct = (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z);
+
+        LLVector3 crossProduct = new LLVector3();
+        crossProduct.X = a.Y * b.Z - a.Z * b.Y;
+        crossProduct.Y = a.Z * b.X - a.X * b.Z;
+        crossProduct.Z = a.X * b.Y - a.Y * b.X;
+
+        //float scalarProduct = (a.X * b.Y) + (a.Y * b.Z) + (a.Z * b.X); //not used?
+        float magProduct = VecMag(a) * VecMag(b);
+        double angle = Math.Acos(dotProduct / magProduct);
+
+        LLVector3 axis = VecNorm(crossProduct);
+        float s = (float)Math.Sin(angle / 2);
+        return new LLQuaternion(axis.X * s, axis.Y * s, axis.Z * s, (float)Math.Cos(angle / 2));
     }
 
     /// <summary>
