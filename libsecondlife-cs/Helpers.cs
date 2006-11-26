@@ -247,7 +247,7 @@ public class Helpers
     /// <summary>
     /// Returns the supplied vector in normalized form
     /// </summary>
-    public static LLVector3 VecDist(LLVector3 vector)
+    public static LLVector3 VecNorm(LLVector3 vector)
     {
         float mag = VecMag(vector);
         return new LLVector3(vector.X/mag,vector.Y/mag,vector.Z/mag);
