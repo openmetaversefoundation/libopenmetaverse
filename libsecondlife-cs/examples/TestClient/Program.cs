@@ -2,32 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using CommandLine;
 
 namespace libsecondlife.TestClient
 {
-    public class Program
-    {
-		[Argument(ArgumentType.Required, HelpText="First name of the SL account to log in with.")]
-		public string FirstName;
-
-		[Argument(ArgumentType.Required, HelpText="Last name of the SL account to log in with.")]
-		public string LastName;
-
-		[Argument(ArgumentType.Required, HelpText="Password of the SL account to log in with.")]
-		public string Password;
-
-		[Argument(ArgumentType.AtMostOnce, HelpText="Full account name to recieve IM commands from.")]
-		public string MasterName;
-
-        static void Main(string[] args)
-        {
-			Program program = new Program();
-			CommandLine.Parser.ParseArgumentsWithUsage(args, program);
-
-			TestClient testTool = new TestClient(program.FirstName, program.LastName, program.Password);
-			testTool.Master = program.MasterName;			
+	public class Program
+	{
+        	static void Main(string[] args)
+        	{
+			if(args.Length < 3 || args.Length == 4)
+			{
+				Console.WriteLine("Usage: TestClient.ext firstname lastname password [master name]");
+			}
+			TestClient testTool = new TestClient(args[0], args[1], args[2]);
+			if(args.Length > 4) testTool.Master = args[3] + " " + args[4];
 			testTool.Run();
+		}
         }
-    }
 }

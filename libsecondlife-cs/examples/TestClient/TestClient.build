@@ -14,7 +14,7 @@
 
   <!-- global project settings -->
   <xmlpeek
-    file="../../libsecondlife.build"
+    file="../../../libsecondlife.build"
     xpath="/project/property[@name = 'project.version']/@value"
     property="project.version" />
   <property

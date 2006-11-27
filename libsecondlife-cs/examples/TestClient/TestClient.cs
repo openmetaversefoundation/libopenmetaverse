@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
         public Dictionary<uint, Avatar> Avatars = new Dictionary<uint,Avatar>();
         public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
         public bool Running = true;
-		public string Master;
+	public string Master;
 
         LLQuaternion bodyRotation;
         System.Timers.Timer updateTimer;
