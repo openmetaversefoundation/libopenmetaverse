@@ -528,7 +528,7 @@ namespace libsecondlife
                             tPacket.ParcelData.East = (x * 4.0f) + 4.0f;
                             tPacket.ParcelData.North = (y * 4.0f) + 4.0f;
 
-                            simulator.SendPacket(tPacket);
+                            Client.Network.SendPacket(tPacket, simulator);
 
                             hasTriggered = true;
 
