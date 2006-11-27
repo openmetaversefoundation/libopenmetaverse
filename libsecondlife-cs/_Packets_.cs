@@ -69,25 +69,25 @@ namespace libsecondlife.Packets
         public bool Reliable
         {
             get { return (Data[0] & Helpers.MSG_RELIABLE) != 0; }
-            set { if (value) { Data[0] |= (byte)Helpers.MSG_RELIABLE; } else { Data[0] -= (byte)Helpers.MSG_RELIABLE; } }
+            set { if (value) { Data[0] |= (byte)Helpers.MSG_RELIABLE; } else { byte mask = (byte)Helpers.MSG_RELIABLE ^ 0xFF; Data[0] &= mask; } }
         }
         /// <summary></summary>
         public bool Resent
         {
             get { return (Data[0] & Helpers.MSG_RESENT) != 0; }
-            set { if (value) { Data[0] |= (byte)Helpers.MSG_RESENT; } else { Data[0] -= (byte)Helpers.MSG_RESENT; } }
+            set { if (value) { Data[0] |= (byte)Helpers.MSG_RESENT; } else { byte mask = (byte)Helpers.MSG_RESENT ^ 0xFF; Data[0] &= mask; } }
         }
         /// <summary></summary>
         public bool Zerocoded
         {
             get { return (Data[0] & Helpers.MSG_ZEROCODED) != 0; }
-            set { if (value) { Data[0] |= (byte)Helpers.MSG_ZEROCODED; } else { Data[0] -= (byte)Helpers.MSG_ZEROCODED; } }
+            set { if (value) { Data[0] |= (byte)Helpers.MSG_ZEROCODED; } else { byte mask = (byte)Helpers.MSG_ZEROCODED ^ 0xFF; Data[0] &= mask; } }
         }
         /// <summary></summary>
         public bool AppendedAcks
         {
             get { return (Data[0] & Helpers.MSG_APPENDED_ACKS) != 0; }
-            set { if (value) { Data[0] |= (byte)Helpers.MSG_APPENDED_ACKS; } else { Data[0] -= (byte)Helpers.MSG_APPENDED_ACKS; } }
+            set { if (value) { Data[0] |= (byte)Helpers.MSG_APPENDED_ACKS; } else { byte mask = (byte)Helpers.MSG_APPENDED_ACKS ^ 0xFF; Data[0] &= mask; } }
         }
         /// <summary></summary>
         public ushort Sequence
