@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using libsecondlife;
 using libsecondlife.Packets;
 using NUnit.Framework;
@@ -30,8 +29,7 @@ namespace libsecondlife.Tests
             Assert.IsTrue(a == b, "LLUUID hyphenated string constructor failed, should have " + a.ToString() + 
                 " but we got " + b.ToString());
 
-            // CRC
-            // FIXME:
+            // TODO: CRC test
         }
 
         [Test]
@@ -63,14 +61,6 @@ namespace libsecondlife.Tests
 
             Assert.IsTrue(result == expected, a.ToString() + " * " + b.ToString() + " produced " + result.ToString() +
                 " instead of " + expected.ToString());
-
-            //a = new LLQuaternion(0.19134f, -0.46194f, 0.19134f, 0.84462f);
-            //b = new LLQuaternion(-0.54861f, 1.00000f, 0.75000f, 0.10000f);
-            //expected = new LLQuaternion(-0.9820279f, 0.5499499f, 0.5905141f, 0.5078681f);
-            //result = a * b;
-
-            //Assert.IsTrue(result == expected, a.ToString() + " * " + b.ToString() + " produced " + result.ToString() +
-            //    " instead of " + expected.ToString());
         }
         [Test]
         public void VectorQuaternionMath()
