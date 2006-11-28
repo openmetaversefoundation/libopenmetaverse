@@ -52,6 +52,7 @@ namespace libsecondlife.AssetSystem
 
         SecondLife slClient;
 
+        public int resendCount;
         public uint CurrentPacket;
         private uint _LastPacketTime;
         public uint LastPacketTime
@@ -76,6 +77,7 @@ namespace libsecondlife.AssetSystem
             MyAsset = asset;
 
             CurrentPacket = 0;
+            resendCount = 0;
             _NumPackets = asset.AssetData.Length / 1000;
             if (_NumPackets < 1)
             {
@@ -87,13 +89,14 @@ namespace libsecondlife.AssetSystem
         {
             this.SendFirstPacket();
 
-            while (this.Completed.WaitOne(1000, true) == false)
+            while (this.Completed.WaitOne(1000, true) == false && this.resendCount < 20) // only resend 20 times
             {
                 //Console.WriteLine("WaitOne() timeout while uploading");
                 if (this.SecondsSinceLastPacket > 2)
                 {
                     Console.WriteLine("Resending Packet (more than 2 seconds since last confirm)");
                     this.SendCurrentPacket();
+                    resendCount++;
                 }
             }
 
@@ -153,6 +156,7 @@ namespace libsecondlife.AssetSystem
             {
                 // Increment Packet #
                 this.CurrentPacket++;
+                this.resendCount = 0;
                 SendCurrentPacket();
             }
             else

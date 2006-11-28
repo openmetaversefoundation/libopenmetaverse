@@ -125,6 +125,7 @@ namespace IA_ImageTool
 			Process p = new Process();
 			p.StartInfo.UseShellExecute = false;
 			p.StartInfo.FileName  = "kdu_compress.exe";
+            p.StartInfo.CreateNoWindow = true;
             p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             if (rate == 0)
             {
