@@ -461,12 +461,19 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="primXml"></param>
+        /// <param name="client"></param>
+        /// <param name="node"></param>
         /// <returns></returns>
-        public static PrimObject FromXml(XmlNode primXml)
+        public static PrimObject FromXml(SecondLife client, XmlNode node)
         {
-            // FIXME: Finish PrimObject.FromXml()
-            return null;
+            PrimObject prim = new PrimObject(client);
+
+            foreach (XmlNode childNode in node.ChildNodes)
+            {
+                ;
+            }
+
+            return prim;
         }
 
         public override string ToString()
@@ -600,6 +607,16 @@ namespace libsecondlife
 
             return xml;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public static PrimFlexibleData FromXml(XmlNode node)
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -674,6 +691,16 @@ namespace libsecondlife
             xml += "</" + name + ">";
 
             return xml;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public static PrimLightData FromXml(XmlNode node)
+        {
+            return null;
         }
 
         private void FromBytes(byte[] data, int pos)
