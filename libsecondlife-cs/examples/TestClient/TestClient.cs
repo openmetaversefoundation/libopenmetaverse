@@ -322,17 +322,26 @@ Begin:
             LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, 
             string message, byte offline, byte[] binaryBucket)
         {
-            if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID) && fromAgentName.ToLower().TrimEnd() != Master.ToLower().TrimEnd())
+            if (Master.Length > 0)
             {
-                // Not a member of my group and not master, ignore the IM
-                Console.WriteLine("<IM>" + fromAgentName + " (ignored): " + message);
-
-                return;
+                if (fromAgentName.ToLower().Trim() != Master.ToLower().Trim())
+                {
+                    // Received an IM from someone that is not the bot's master, ignore
+                    Console.WriteLine("<IM>" + fromAgentName + " (not master): " + message);
+                    return;
+                }
             }
             else
             {
-                Console.WriteLine("<IM>" + fromAgentName + ": " + message);
+                if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
+                {
+                    // Received an IM from someone outside the bot's group, ignore
+                    Console.WriteLine("<IM>" + fromAgentName + " (not in group): " + message);
+                    return;
+                }
             }
+
+            Console.WriteLine("<IM>" + fromAgentName + ": " + message);
 
             if (Clients.ContainsKey(toAgentID))
             {
@@ -348,6 +357,7 @@ Begin:
             }
             else
             {
+                // This shouldn't happen
                 Console.WriteLine("A bot that we aren't tracking received an IM?");
             }
         }

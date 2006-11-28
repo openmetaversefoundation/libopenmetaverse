@@ -1,34 +1,74 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-
+using System.IO;
 
 namespace libsecondlife.TestClient
 {
     public class Program
     {
+        private static void Usage()
+        {
+            Console.WriteLine("Usage: " + Environment.NewLine +
+                    "TestClient.exe firstname lastname password [master name]" + Environment.NewLine +
+                    "TestClient.exe --file filename [master name]");
+        }
+
         static void Main(string[] args)
         {
-            if (args.Length < 1 || args.Length > 5)
+            if (args.Length < 2 || args.Length > 5)
             {
-                Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe firstname lastname password [master name]" + Environment.NewLine +
-                    "TestClient.exe filename [master name]");
+                Usage();
+                return;
             }
 
             TestClient tester;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
 
-            if (args.Length <= 2)
+            if (args[0] == "--file")
             {
                 // Loading names from a file
-                // FIXME:
+                try
+                {
+                    using (StreamReader reader = new StreamReader(args[1]))
+                    {
+                        string line;
+                        int lineNumber = 0;
 
-                Console.WriteLine("FIXME!");
-                return;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            lineNumber++;
+                            string[] tokens = line.Trim().Split(new char[] { ' ', ',' });
+
+                            if (tokens.Length == 3)
+                            {
+                                account = new LoginDetails();
+                                account.FirstName = tokens[0];
+                                account.LastName = tokens[1];
+                                account.Password = tokens[2];
+
+                                if (args.Length == 4)
+                                {
+                                    account.Master = args[2] + " " + args[3];
+                                }
+
+                                accounts.Add(account);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid data on line " + lineNumber +
+                                    ", must be in the format of: FirstName LastName Password");
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Error reading from " + args[1]);
+                    return;
+                }
             }
-            else
+            else if (args.Length == 3 || args.Length == 5)
             {
                 // Taking a single login off the command-line
                 account = new LoginDetails();
@@ -43,7 +83,13 @@ namespace libsecondlife.TestClient
 
                 accounts.Add(account);
             }
+            else
+            {
+                Usage();
+                return;
+            }
 
+            // Login the accounts and run the input loop
             tester = new TestClient(accounts);
             tester.Run();
         }

@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
-			if (args.Length < 1)
+			if (args.Length != 1)
                 return "usage: jump 1000";
 
 			float height = 0;
