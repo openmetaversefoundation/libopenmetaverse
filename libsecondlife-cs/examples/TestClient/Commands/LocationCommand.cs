@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Show the location.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+		public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
             return "CurrentSim: '" + Client.Network.CurrentSim.Region.Name + "' Position: " + Client.Self.Position.ToString();
 		}

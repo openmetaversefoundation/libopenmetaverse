@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 			Description = "Sets the user name of the master user.  The master user can IM to run commands.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			string masterName = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)

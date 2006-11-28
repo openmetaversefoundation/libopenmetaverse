@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Sit on closest touchable prim.";
 		}
 
-		public string Sit(LLUUID target)
+		public string Sit(SecondLife Client, LLUUID target)
 		{
 		    AgentRequestSitPacket sitPacket = new AgentRequestSitPacket();
 			
@@ -31,7 +31,7 @@ namespace libsecondlife.TestClient
 		    return String.Empty;
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 		    PrimObject closest = null;
 		    double closestDistance = Double.MaxValue;
@@ -54,7 +54,7 @@ namespace libsecondlife.TestClient
 
 		    if (closest != null)
 		    {
-		        Sit(closest.ID);
+		        Sit(Client, closest.ID);
 		        return TestClient.Prims.Count + " prims. Sat on " + closest.ID + ". Distance: " + closestDistance;
 		    }
 

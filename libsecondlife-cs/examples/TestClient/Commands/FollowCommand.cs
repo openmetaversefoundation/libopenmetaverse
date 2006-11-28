@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Follow another avatar. (usage: follow FirstName LastName)";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			string target = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)
@@ -46,7 +46,7 @@ namespace libsecondlife.TestClient
             return false;
         }
 
-		public override void Think()
+		public override void Think(SecondLife Client)
 		{
             if (vecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
             {
@@ -62,7 +62,7 @@ namespace libsecondlife.TestClient
 			//    Client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
 			//}
 
-			base.Think();
+			base.Think(Client);
 		}
 
 		//void SendAgentUpdate(uint ControlID)

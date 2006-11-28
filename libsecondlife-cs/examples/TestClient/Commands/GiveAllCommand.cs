@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Gives you all it's money.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			if (fromAgentID == null)
 				return "Unable to send money to console.  This command only works when IMed.";

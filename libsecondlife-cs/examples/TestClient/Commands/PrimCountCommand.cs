@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Shows the number of prims that have been received.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			return TestClient.Prims.Count.ToString();
 		}

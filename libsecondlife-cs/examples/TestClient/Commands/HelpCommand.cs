@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Lists available commands.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
 			result.AppendFormat("\n\nHELP\nClient accept teleport lures from master and group members.\n");

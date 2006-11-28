@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Goto location. (e.g. \"goto simname/100/100/30\")";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
                 return "Destination should be specified as: sim/x/y/z";

@@ -48,9 +48,13 @@ namespace libsecondlife
     /// </summary>
     public class Simulator
     {
+        /// <summary>A public reference to the client that this Simulator object
+        /// is attached to</summary>
+        public SecondLife Client;
+
         /// <summary>The maximum size of the sequence number inbox, used to 
         /// check for resent and/or duplicate packets</summary>
-        public const int INBOX_SIZE = 200;
+        public const int INBOX_SIZE = 100;
 
         /// <summary>The Region class that this Simulator wraps</summary>
         public Region Region;
@@ -89,7 +93,6 @@ namespace libsecondlife
         /// </summary>
         public bool DisconnectCandidate = false;
 
-        private SecondLife Client;
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
         private ushort Sequence = 0;
@@ -470,13 +473,6 @@ namespace libsecondlife
                     }
                     else
                     {
-                        if (Inbox.Count >= INBOX_SIZE)
-                        {
-                            Inbox.Dequeue();
-                        }
-
-                        Inbox.Enqueue(packet.Header.Sequence);
-
                         lock (PendingAcks)
                         {
                             PendingAcks.Add((uint)packet.Header.Sequence);
@@ -484,6 +480,13 @@ namespace libsecondlife
                     }
                 }
             }
+
+            // Add this packet to our inbox
+            if (Inbox.Count >= INBOX_SIZE)
+            {
+                Inbox.Dequeue();
+            }
+            Inbox.Enqueue(packet.Header.Sequence);
 
             // Handle appended ACKs
             if (packet.Header.AppendedAcks)

@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Say something.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
                 return "usage: say whatever";

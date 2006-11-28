@@ -890,7 +890,7 @@ namespace libsecondlife
                             break;
                         case (byte)PCode.ParticleSystem:
                             // FIXME: Handle ParticleSystem
-                            Client.Log("Got an ObjectUpdate block with a ParticleSystem PCode", Helpers.LogLevel.Debug);
+                            Client.DebugLog("Got an ObjectUpdate block with a ParticleSystem PCode");
                             break;
                         default:
                             break;
@@ -1072,9 +1072,8 @@ namespace libsecondlife
                                 byte Unknown1 = block.Data[i++];
                                 byte Unknown2 = block.Data[i++];
 
-                                Client.Log("Compressed object with Tree flag set: " + Environment.NewLine +
-                                    "Unknown byte 1: " + Unknown1 + Environment.NewLine +
-                                    "Unknown byte 2: " + Unknown2, Helpers.LogLevel.Debug);
+                                Client.DebugLog("Compressed object with Tree flag set: " + Environment.NewLine +
+                                    "Unknown byte 1: " + Unknown1 + Environment.NewLine + "Unknown byte 2: " + Unknown2);
                             }
 
                             if ((flags & CompressedFlags.HasParent) != 0)
@@ -1167,17 +1166,17 @@ namespace libsecondlife
                             if ((flags & CompressedFlags.Unknown1) != 0)
                             {
                                 // TODO: Is this even a valid flag?
-                                Client.Log("Compressed object with Unknown1 flag set: " + Environment.NewLine +
+                                Client.DebugLog("Compressed object with Unknown1 flag set: " + Environment.NewLine +
                                     "Flags: " + flags.ToString() + Environment.NewLine +
-                                    Helpers.FieldToString(block.Data), Helpers.LogLevel.Debug);
+                                    Helpers.FieldToString(block.Data));
                             }
 
                             if ((flags & CompressedFlags.Unknown2) != 0)
                             {
                                 // FIXME: Implement CompressedFlags.Unknown2
-                                //Client.Log("Compressed object with Unknown2 flag set: " + Environment.NewLine +
+                                //Client.DebugLog("Compressed object with Unknown2 flag set: " + Environment.NewLine +
                                 //    "Flags: " + flags.ToString() + Environment.NewLine +
-                                //    Helpers.FieldToString(block.Data), Helpers.LogLevel.Debug);
+                                //    Helpers.FieldToString(block.Data));
                             }
 
                             prim.PathCurve = (uint)block.Data[i++];
@@ -1240,8 +1239,7 @@ namespace libsecondlife
                         else if (pcode == (byte)PCode.Grass || pcode == (byte)PCode.Tree || pcode == (byte)PCode.NewTree)
                         {
                             // FIXME: Implement this
-                            //Client.Log("######### Got an ObjectUpdateCompressed for grass/tree, implement this! #########",
-                            //    Helpers.LogLevel.Debug);
+                            //Client.DebugLog("######### Got an ObjectUpdateCompressed for grass/tree, implement this! #########");
                         }
                         else
                         {

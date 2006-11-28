@@ -134,6 +134,8 @@ namespace libsecondlife
         /// <param name="level">The severity of the log entry</param>
         public void Log(string message, Helpers.LogLevel level)
         {
+            if (level == Helpers.LogLevel.Debug && !Debug) return;
+
             if (OnLogMessage != null)
             {
                 OnLogMessage(message, level);

@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Shows the amount of L$.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			return "L$: " + Client.Self.Balance;
 		}

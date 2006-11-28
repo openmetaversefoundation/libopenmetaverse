@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Teleports to the specified height. (e.g. \"jump 1000\")";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
                 return "usage: jump 1000";

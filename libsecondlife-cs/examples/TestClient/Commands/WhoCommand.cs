@@ -14,7 +14,7 @@ namespace libsecondlife.TestClient
 			Description = "Lists seen avatars.";
 		}
 
-		public override string Execute(string[] args, LLUUID fromAgentID)
+        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
 			foreach (Avatar av in TestClient.Avatars.Values)
