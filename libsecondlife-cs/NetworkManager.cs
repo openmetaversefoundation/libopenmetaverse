@@ -456,37 +456,37 @@ namespace libsecondlife
                 }
 
                 // Check if we already received this packet
-                lock (Inbox)
+                if (Inbox.Contains(packet.Header.Sequence))
                 {
-                    if (Inbox.Contains(packet.Header.Sequence))
-                    {
-                        Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
-                            packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No" +
-                            ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count),
-                            Helpers.LogLevel.Info);
+                    Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
+                        packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No") +
+                        ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count,
+                        Helpers.LogLevel.Info);
 
-                        // Send an ACK for this packet immediately
-                        SendAck(packet.Header.Sequence);
+                    // Send an ACK for this packet immediately
+                    SendAck(packet.Header.Sequence);
 
-                        // Avoid firing a callback twice for the same packet
-                        return;
-                    }
-                    else
+                    // Avoid firing a callback twice for the same packet
+                    return;
+                }
+                else
+                {
+                    lock (PendingAcks)
                     {
-                        lock (PendingAcks)
-                        {
-                            PendingAcks.Add((uint)packet.Header.Sequence);
-                        }
+                        PendingAcks.Add((uint)packet.Header.Sequence);
                     }
                 }
             }
 
             // Add this packet to our inbox
-            if (Inbox.Count >= INBOX_SIZE)
+            lock (Inbox)
             {
-                Inbox.Dequeue();
+                if (Inbox.Count >= INBOX_SIZE)
+                {
+                    Inbox.Dequeue();
+                }
+                Inbox.Enqueue(packet.Header.Sequence);
             }
-            Inbox.Enqueue(packet.Header.Sequence);
 
             // Handle appended ACKs
             if (packet.Header.AppendedAcks)
