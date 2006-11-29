@@ -11,7 +11,7 @@ namespace libsecondlife.TestClient
 		public FollowCommand()
 		{
 			Name = "follow";
-			Description = "Follow another avatar. (usage: follow FirstName LastName)";
+			Description = "Follow another avatar. (usage: follow [FirstName LastName])  If no target is set then will follow master.";
 		}
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
@@ -20,6 +20,9 @@ namespace libsecondlife.TestClient
 			for (int ct = 0; ct < args.Length;ct++)
 				target = target + args[ct] + " ";
 			target = target.TrimEnd();
+
+			if (target.Length == 0)
+				target = TestClient.Master;
 			
 			if (Follow(target))
 				return "Following " + target;
@@ -50,13 +53,13 @@ namespace libsecondlife.TestClient
 		{
             if (vecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
             {
-                if (followAvatar.CurrentRegion.GridRegionData != null)
-                {
-                    // move toward target
-                    ulong x = (ulong)(followAvatar.Position.X + (followAvatar.CurrentRegion.GridRegionData.X * 256));
-                    ulong y = (ulong)(followAvatar.Position.Y + (followAvatar.CurrentRegion.GridRegionData.Y * 256));
-                    Client.Self.AutoPilotLocal(Convert.ToInt32(followAvatar.Position.X), Convert.ToInt32(followAvatar.Position.Y), followAvatar.Position.Z);
-                }
+                //move toward target
+				if (followAvatar.CurrentRegion.GridRegionData != null)
+				{
+					ulong x = (ulong)(followAvatar.Position.X + (followAvatar.CurrentRegion.GridRegionData.X * 256));
+					ulong y = (ulong)(followAvatar.Position.Y + (followAvatar.CurrentRegion.GridRegionData.Y * 256));
+					Client.Self.AutoPilotLocal(Convert.ToInt32(followAvatar.Position.X), Convert.ToInt32(followAvatar.Position.Y), followAvatar.Position.Z);
+				}
             }
 			//else
 			//{

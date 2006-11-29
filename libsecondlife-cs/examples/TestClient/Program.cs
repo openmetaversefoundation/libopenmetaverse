@@ -41,7 +41,7 @@ namespace libsecondlife.TestClient
                             lineNumber++;
                             string[] tokens = line.Trim().Split(new char[] { ' ', ',' });
 
-                            if (tokens.Length == 3)
+                            if (tokens.Length >= 3)
                             {
                                 account = new LoginDetails();
                                 account.FirstName = tokens[0];
@@ -49,6 +49,11 @@ namespace libsecondlife.TestClient
                                 account.Password = tokens[2];
 
                                 accounts.Add(account);
+
+								if (tokens.Length == 5)
+								{
+									master = tokens[3] + " " + tokens[4];
+								}
                             }
                             else
                             {
@@ -58,11 +63,12 @@ namespace libsecondlife.TestClient
                         }
                     }
                 }
-                catch (Exception)
-                {
-                    Console.WriteLine("Error reading from " + args[1]);
-                    return;
-                }
+				catch (Exception e)
+				{
+				    Console.WriteLine("Error reading from " + args[1]);
+					Console.WriteLine(e.ToString());
+				    return;
+				}
 
                 if (args.Length == 4)
                 {
