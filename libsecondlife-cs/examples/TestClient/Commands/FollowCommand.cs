@@ -71,22 +71,6 @@ namespace libsecondlife.TestClient
 			base.Think(Client);
 		}
 
-		//void SendAgentUpdate(uint ControlID)
-		//{
-		//    AgentUpdatePacket p = new AgentUpdatePacket();
-		//    p.AgentData.Far = 30.0f;
-		//    p.AgentData.CameraAtAxis = new LLVector3(0, 0, 0);
-		//    p.AgentData.CameraCenter = new LLVector3(0, 0, 0);
-		//    p.AgentData.CameraLeftAxis = new LLVector3(0, 0, 0);
-		//    p.AgentData.CameraUpAxis = new LLVector3(0, 0, 0);
-		//    p.AgentData.HeadRotation = new LLQuaternion(0, 0, 0, 1); ;
-		//    p.AgentData.BodyRotation = new LLQuaternion(0, 0, 0, 1); ;
-		//    p.AgentData.AgentID = client.Network.AgentID;
-		//    p.AgentData.SessionID = client.Network.SessionID;
-		//    p.AgentData.ControlFlags = ControlID;
-		//    client.Network.SendPacket(p);
-		//}
-
         float vecDist(LLVector3 pointA, LLVector3 pointB)
         {
             float xd = pointB.X - pointA.X;
