@@ -83,6 +83,8 @@ namespace libsecondlife
 		public float PathSkew = 0;
         /// <summary></summary>
         public LLVector3 Position = LLVector3.Zero;
+		/// <summary> </summary>
+		public ulong RegionHandle;
         /// <summary></summary>
 		public uint ProfileCurve = 0;
         /// <summary></summary>
@@ -175,6 +177,11 @@ namespace libsecondlife
             PCode = ObjectManager.PCode.Prim;
             Textures = new TextureEntry();
             Textures.DefaultTexture.TextureID = texture;
+		}
+
+		public GridRegion GridRegion
+		{
+			get { return Client.Grid.RegionsByHandle[RegionHandle]; }
 		}
 
         /// <summary>

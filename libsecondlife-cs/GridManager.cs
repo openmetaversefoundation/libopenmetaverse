@@ -95,8 +95,12 @@ namespace libsecondlife
         public event GridRegionCallback OnRegionAdd;
 
         /// <summary>A dictionary of all the regions, indexed by region ID</summary>
-		public Dictionary<string, GridRegion> Regions;
-        /// <summary>Current direction of the sun</summary>
+		public Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
+
+		/// <summary>A dictionary of all the regions, indexed by region handle</summary>
+		public Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong,GridRegion>();
+
+		/// <summary>Current direction of the sun</summary>
         public LLVector3 SunDirection;
 
 		private SecondLife Client;
@@ -111,7 +115,6 @@ namespace libsecondlife
 		public GridManager(SecondLife client)
 		{
 			Client = client;
-			Regions = new Dictionary<string, GridRegion>();
             SunDirection = LLVector3.Zero;
 
             Client.Network.RegisterCallback(PacketType.MapBlockReply, new NetworkManager.PacketCallback(MapBlockReplyHandler));
@@ -276,6 +279,11 @@ namespace libsecondlife
                     {
                         Regions[region.Name.ToLower()] = region;
                     }
+
+					lock (RegionsByHandle)
+					{
+						RegionsByHandle[region.RegionHandle] = region;
+					}
 
                     if (OnRegionAddInternal != null && BeginGetGridRegionName == region.Name.ToLower())
                     {

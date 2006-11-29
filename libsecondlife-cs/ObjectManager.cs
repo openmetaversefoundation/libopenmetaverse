@@ -778,6 +778,7 @@ namespace libsecondlife
 
                             prim.Name = name;
 
+							prim.RegionHandle = update.RegionData.RegionHandle;
                             prim.Position = new LLVector3(block.ObjectData, 0);
                             prim.Rotation = new LLQuaternion(block.ObjectData, 36, true);
                             // TODO: Parse the rest of the ObjectData byte array fields
@@ -806,6 +807,7 @@ namespace libsecondlife
                             prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
                             prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
                             prim.ProfileHollow = block.ProfileHollow;
+
 
                             //block.Data ?
                             prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
