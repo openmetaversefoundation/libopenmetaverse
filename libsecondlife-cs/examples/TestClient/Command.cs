@@ -12,7 +12,7 @@ namespace libsecondlife.TestClient
 		public string Description;
 		public TestClient TestClient;
 
-		public abstract string Execute(SecondLife Client, string[] args, LLUUID fromAgentID);
+		public abstract string Execute(SecondLife client, string[] args, LLUUID fromAgentID);
 
 		/// <summary>
 		/// When set to true, think will be called.

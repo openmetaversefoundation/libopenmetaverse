@@ -112,7 +112,7 @@ namespace libsecondlife.TestClient
             }
         }
 
-        private void RegisterAllCommands(Assembly assembly)
+        public void RegisterAllCommands(Assembly assembly)
         {
             foreach (Type t in assembly.GetTypes())
             {
@@ -126,9 +126,11 @@ namespace libsecondlife.TestClient
 
         private void RegisterCommand(Command command)
         {
-			command.TestClient = this;
-
-			Commands.Add(command.Name.ToLower(), command);
+			if (!Commands.ContainsKey(command.Name.ToLower()))
+			{
+				command.TestClient = this;
+				Commands.Add(command.Name.ToLower(), command);
+			}
         }
 
         private void DoCommand(SecondLife client, string cmd, LLUUID fromAgentID, LLUUID imSessionID)
@@ -218,7 +220,7 @@ Begin:
 
 		private void PrintPrompt()
 		{
-			//Console.Write(String.Format("{0} {1} - {2}> ", Client.Self.FirstName, Client.Self.LastName, Client.Network.CurrentSim.Region.Name));
+			//Console.Write(String.Format("{0} {1} - {2}> ", client.Self.FirstName, client.Self.LastName, client.Network.CurrentSim.Region.Name));
 
             int online = 0;
 

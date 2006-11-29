@@ -64,8 +64,8 @@ namespace libsecondlife.TestClient
 			//else
 			//{
 			//    //stop at current position
-			//    LLVector3 myPos = Client.Self.Position;
-			//    Client.Self.AutoPilot((ulong)myPos.X, (ulong)myPos.Y, myPos.Z);
+			//    LLVector3 myPos = client.Self.Position;
+			//    client.Self.AutoPilot((ulong)myPos.x, (ulong)myPos.y, myPos.Z);
 			//}
 
 			base.Think(Client);
