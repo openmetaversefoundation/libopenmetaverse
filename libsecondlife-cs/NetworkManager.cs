@@ -54,7 +54,7 @@ namespace libsecondlife
 
         /// <summary>The maximum size of the sequence number inbox, used to 
         /// check for resent and/or duplicate packets</summary>
-        public const int INBOX_SIZE = 100;
+        public const int INBOX_SIZE = 10000;
 
         /// <summary>The Region class that this Simulator wraps</summary>
         public Region Region;
@@ -112,7 +112,7 @@ namespace libsecondlife
         // Every tick, all ACKs are sent out and the age of unACKed packets is checked
         private int TickLength = 500;
         // Number of milliseconds before a packet is assumed lost and resent
-        private int ResendTimeout = 2500;
+        private int ResendTimeout = 4000;
 
         /// <summary>
         /// 
@@ -1274,12 +1274,6 @@ namespace libsecondlife
             //update.AgentData.AgentID = AgentID;
             //update.AgentData.SessionID = SessionID;
             //SendPacket(update);
-
-            // TODO: What is the purpose of this? Information is currently unused
-            RequestGrantedProxiesPacket proxies = new RequestGrantedProxiesPacket();
-            proxies.AgentData.AgentID = AgentID;
-            proxies.AgentData.SessionID = SessionID;
-            SendPacket(proxies);
         }
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)

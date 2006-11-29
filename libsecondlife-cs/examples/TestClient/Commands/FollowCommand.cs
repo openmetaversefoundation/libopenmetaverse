@@ -50,10 +50,13 @@ namespace libsecondlife.TestClient
 		{
             if (vecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
             {
-                //move toward target
-				ulong x = (ulong)(followAvatar.Position.X + (followAvatar.CurrentRegion.GridRegionData.X * 256));
-				ulong y = (ulong)(followAvatar.Position.Y + (followAvatar.CurrentRegion.GridRegionData.Y * 256));
-                Client.Self.AutoPilotLocal(Convert.ToInt32(followAvatar.Position.X), Convert.ToInt32(followAvatar.Position.Y), followAvatar.Position.Z);
+                if (followAvatar.CurrentRegion.GridRegionData != null)
+                {
+                    // move toward target
+                    ulong x = (ulong)(followAvatar.Position.X + (followAvatar.CurrentRegion.GridRegionData.X * 256));
+                    ulong y = (ulong)(followAvatar.Position.Y + (followAvatar.CurrentRegion.GridRegionData.Y * 256));
+                    Client.Self.AutoPilotLocal(Convert.ToInt32(followAvatar.Position.X), Convert.ToInt32(followAvatar.Position.Y), followAvatar.Position.Z);
+                }
             }
 			//else
 			//{

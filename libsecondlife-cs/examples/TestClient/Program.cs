@@ -24,6 +24,7 @@ namespace libsecondlife.TestClient
             TestClient tester;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
+            string master = "";
 
             if (args[0] == "--file")
             {
@@ -47,11 +48,6 @@ namespace libsecondlife.TestClient
                                 account.LastName = tokens[1];
                                 account.Password = tokens[2];
 
-                                if (args.Length == 4)
-                                {
-                                    account.Master = args[2] + " " + args[3];
-                                }
-
                                 accounts.Add(account);
                             }
                             else
@@ -67,6 +63,11 @@ namespace libsecondlife.TestClient
                     Console.WriteLine("Error reading from " + args[1]);
                     return;
                 }
+
+                if (args.Length == 4)
+                {
+                    master = args[2] + " " + args[3];
+                }
             }
             else if (args.Length == 3 || args.Length == 5)
             {
@@ -78,7 +79,7 @@ namespace libsecondlife.TestClient
 
                 if (args.Length == 5)
                 {
-                    account.Master = args[3] + " " + args[4];
+                    master = args[3] + " " + args[4];
                 }
 
                 accounts.Add(account);
@@ -91,6 +92,7 @@ namespace libsecondlife.TestClient
 
             // Login the accounts and run the input loop
             tester = new TestClient(accounts);
+            tester.Master = master;
             tester.Run();
         }
     }

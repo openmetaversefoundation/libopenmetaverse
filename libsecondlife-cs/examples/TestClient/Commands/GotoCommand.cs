@@ -8,33 +8,51 @@ namespace libsecondlife.TestClient
 {
     public class GotoCommand: Command
     {
+        private bool EstateLookupFinished = false;
+
 		public GotoCommand()
 		{
 			Name = "goto";
-			Description = "Goto location. (e.g. \"goto simname/100/100/30\")";
+			Description = "Teleport to a location (e.g. \"goto Hooper/100/100/30\")";
 		}
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
-                return "Destination should be specified as: sim/x/y/z";
+                return "usage: Destination should be specified as sim/x/y/z";
 
-            char[] seps = { '/' };
-            string[] destination = args[0].Split(seps);
-            if( destination.Length != 4 )
-                return "Destination should be specified as: sim/x/y/z";
+            string destination = "";
 
-            string sim = destination[0];
+            // Handle multi-word sim names by combining the arguments
+            foreach (string arg in args)
+            {
+                destination += arg + " ";
+            }
+            destination = destination.Trim();
+
+            string[] tokens = destination.Split(new char[] { '/' });
+            if (tokens.Length != 4)
+                return "usage: Destination should be specified as sim/x/y/z";
+
+            string sim = tokens[0];
 			float x = Client.Self.Position.X;
 			float y = Client.Self.Position.Y;
 			float z = Client.Self.Position.Z;
-			float.TryParse(destination[1], out x);
-			float.TryParse(destination[2], out y);
-			float.TryParse(destination[3], out z);
+            float.TryParse(tokens[1], out x);
+            float.TryParse(tokens[2], out y);
+            float.TryParse(tokens[3], out z);
+
+            if (!EstateLookupFinished)
+            {
+                Client.Grid.AddEstateSims();
+                System.Threading.Thread.Sleep(3000);
+
+                EstateLookupFinished = true;
+            }
 
 			Client.Self.Teleport(sim, new LLVector3(x, y, z));
 
-            return "Teleported to " + sim + " {" + x + "," + y + "," + z + "}";
+            return "Attempted to teleport to " + sim + " {" + x + "," + y + "," + z + "}";
 		}
     }
 }

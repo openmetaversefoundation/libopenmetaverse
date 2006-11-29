@@ -23,7 +23,6 @@ namespace libsecondlife.TestClient
             account.FirstName = args[0];
             account.LastName = args[1];
             account.Password = args[2];
-            account.Master = TestClient.Master;
 
             // Check if this client is already logged in
             foreach (SecondLife client in TestClient.Clients.Values)

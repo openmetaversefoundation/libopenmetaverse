@@ -12,7 +12,6 @@ namespace libsecondlife.TestClient
         public string FirstName;
         public string LastName;
         public string Password;
-        public string Master;
     }
 
     public class TestClient

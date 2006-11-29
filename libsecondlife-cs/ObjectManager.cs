@@ -512,7 +512,9 @@ namespace libsecondlife
             packet.ObjectData.RayTargetID = LLUUID.Zero;
             packet.ObjectData.BypassRaycast = 1;
 
-            packet.ObjectData.TextureEntry = prim.Textures.GetBytes();
+            // TODO: This is no longer a field in ObjectAdd. Detect if there actually is 
+            // texture information for this prim and send an ObjectUpdate
+            //packet.ObjectData.TextureEntry = prim.Textures.GetBytes();
 
             Client.Network.SendPacket(packet, simulator);
         }
