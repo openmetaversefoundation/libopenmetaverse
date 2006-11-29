@@ -111,6 +111,7 @@ namespace libsecondlife
         public EstateTools Estate;
 
         /// <summary></summary>
+        /// <remarks>This may cause your code to block while the GridRegion data is fetched for the 1st time.</remarks>
         private GridRegion _GridRegionData = null;
         public GridRegion GridRegionData
         {
