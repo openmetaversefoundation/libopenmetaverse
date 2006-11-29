@@ -126,20 +126,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public string GetXml(string name)
-        {
-            string xml = "<ParticleSystem>";
-            // FIXME: Finish ParticleSystem.GetXml()
-            xml += "</ParticleSystem>";
-
-            return xml;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="data"></param>
         /// <param name="pos"></param>
         private void FromBytes(byte[] data, int pos)

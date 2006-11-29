@@ -22,7 +22,7 @@ namespace libsecondlife.TestClient
 		    sitPacket.AgentData.SessionID = Client.Network.SessionID;
 
 		    sitPacket.TargetObject.TargetID = target;
-		    sitPacket.TargetObject.Offset = new LLVector3();
+		    sitPacket.TargetObject.Offset = LLVector3.Zero;
 
 		    Client.Network.SendPacket(sitPacket);
 

@@ -17,17 +17,24 @@ namespace libsecondlife.TestClient
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			string target = String.Empty;
-			for (int ct = 0; ct < args.Length;ct++)
+			for (int ct = 0; ct < args.Length; ct++)
 				target = target + args[ct] + " ";
 			target = target.TrimEnd();
 
 			if (target.Length == 0)
 				target = TestClient.Master;
-			
-			if (Follow(target))
-				return "Following " + target;
-			else
-				return "Unable to follow " + target + ".  Client may not be able to see that avatar.";
+
+            if (target.Length > 0)
+            {
+                if (Follow(target))
+                    return "Following " + target;
+                else
+                    return "Unable to follow " + target + ".  Client may not be able to see that avatar.";
+            }
+            else
+            {
+                return "No target specified and no master is set. usage: follow [FirstName LastName])";
+            }
 		}
 
         const float DISTANCE_BUFFER = 3.0f;

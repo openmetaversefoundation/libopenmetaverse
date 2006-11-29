@@ -342,20 +342,6 @@ namespace libsecondlife
             return bytes;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public string GetXml(string name)
-        {
-            string xml = "<TextureEntry>";
-            // FIXME: Write GetXml for TextureEntry
-            xml += "</TextureEntry>";
-
-            return xml;
-        }
-
         private bool ReadFaceBitfield(byte[] data, ref int pos, ref uint faceBits, ref uint bitfieldSize)
         {
             faceBits = 0;
@@ -818,26 +804,6 @@ namespace libsecondlife
             byte[] bytes = new byte[0];
             // FIXME: Finish TextureAnimation GetBytes() function
             return bytes;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public string GetXml(string name)
-        {
-            string xml = "<TextureAnimation>";
-            xml += "<Flags value=\"" + Flags + "\" />";
-            xml += "<Face value=\"" + Face + "\" />";
-            xml += "<SizeX value=\"" + SizeX + "\" />";
-            xml += "<SizeY value=\"" + SizeY + "\" />";
-            xml += "<Start value=\"" + Start + "\" />";
-            xml += "<Length value=\"" + Length + "\" />";
-            xml += "<Rate value=\"" + Rate + "\" />";
-            xml += "</TextureAnimation>";
-
-            return xml;
         }
 
         private void FromBytes(byte[] data, int pos)

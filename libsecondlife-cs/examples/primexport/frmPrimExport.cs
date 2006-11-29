@@ -544,7 +544,8 @@ namespace primexport
                         // This prim is part of a linkset, we need to adjust it's position and rotation
                         if (Prims.ContainsKey(prim.ParentID))
                         {
-                            stream.WriteLine(prim.GetXml());
+                            // FIXME: Rewrite this when the xml serialization stuff is complete
+                            //stream.WriteLine(prim.GetXml());
                         }
                         else if (Avatars.Contains(prim.ParentID) || Attachments.Contains(prim.ParentID))
                         {

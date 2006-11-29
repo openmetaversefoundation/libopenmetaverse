@@ -30,6 +30,43 @@ using System.Xml;
 namespace libsecondlife
 {
     /// <summary>
+    /// Primary parameters for primitives such as Physics Enabled or Phantom
+    /// </summary>
+    [Flags]
+    public enum ObjectFlags
+    {
+        /// <summary>None of the primary flags are enabled</summary>
+        None = 0,
+        /// <summary>Whether physics are enabled for this object</summary>
+        Physics = 1 << 0,
+        /// <summary></summary>
+        CreateSelected = 1 << 1,
+        /// <summary></summary>
+        Script = 1 << 6,
+        /// <summary>Whether this object contains an active touch script</summary>
+        Touch = 1 << 7,
+        /// <summary>Whether this object can receive payments</summary>
+        Money = 1 << 9,
+        /// <summary>Whether this object is phantom (no collisions)</summary>
+        Phantom = 1 << 10,
+        /// <summary>Whether this object is temporary</summary>
+        Temp = 1 << 30
+    }
+
+    /// <summary>
+    /// Extra parameters for primitives, these flags are for features that have
+    /// been added after the original ObjectFlags that has all eight bits 
+    /// reserved already
+    /// </summary>
+    public enum ExtraParamType : ushort
+    {
+        /// <summary>Whether this object has flexible parameters</summary>
+        Flexible = 0x10,
+        /// <summary>Whether this object has light parameters</summary>
+        Light = 0x20
+    }
+
+    /// <summary>
     /// 
     /// </summary>
 	public class PrimObject
@@ -409,73 +446,6 @@ namespace libsecondlife
             return totalLength;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public string GetXml()
-        {
-            string xml = "<Prim>";
-            xml += "<PathTwistBegin value=\"" + PathTwistBegin + "\" />";
-            xml += "<PathEnd value=\"" + PathEnd + "\" />";
-            xml += "<ProfileBegin value=\"" + ProfileBegin + "\" />";
-            xml += "<PathRadiusOffset value=\"" + PathRadiusOffset + "\" />";
-            xml += "<PathSkew value=\"" + PathSkew + "\" />";
-            xml += Position.GetXml("Position");
-            xml += "<ProfileCurve value=\"" + ProfileCurve + "\" />";
-            xml += "<PathScaleX value=\"" + PathScaleX + "\" />";
-            xml += "<PathScaleY value=\"" + PathScaleY + "\" />";
-            xml += "<ID value=\"" + ID.ToString() + "\" />";
-            xml += "<LocalID value=\"" + LocalID + "\" />";
-            xml += "<ParentID value=\"" + ParentID + "\" />";
-            xml += "<GroupID value=\"" + GroupID.ToString() + "\" />";
-            xml += "<Material value=\"" + Material + "\" />";
-            xml += "<Name value=\"" + Name + "\" />";
-            xml += "<Description value=\"" + Description + "\" />";
-            xml += "<PathShearX value=\"" + PathShearX + "\" />";
-            xml += "<PathShearY value=\"" + PathShearY + "\" />";
-            xml += "<PathTaperX value=\"" + PathTaperX + "\" />";
-            xml += "<PathTaperY value=\"" + PathTaperY + "\" />";
-            xml += "<ProfileEnd value=\"" + ProfileEnd + "\" />";
-            xml += "<PathBegin value=\"" + PathBegin + "\" />";
-            xml += "<PathCurve value=\"" + PathCurve + "\" />";
-            xml += Scale.GetXml("Scale");
-            xml += "<PathTwist value=\"" + PathTwist + "\" />";
-            xml += "<ProfileHollow value=\"" + ProfileHollow + "\" />";
-            xml += "<PathRevolutions value=\"" + PathRevolutions + "\" />";
-            xml += Rotation.GetXml("Rotation");
-            xml += "<State value=\"" + State + "\" />";
-            xml += "<Text value=\"" + Text + "\" />";
-            xml += "<PCode value=\"" + PCode + "\" />";
-            xml += "<Flags value=\"" + Flags + "\" />";
-            xml += Textures.GetXml("Textures");
-            xml += TextureAnim.GetXml("TextureAnim");
-            xml += Flexible.GetXml("Flexible");
-            xml += Light.GetXml("Light");
-            xml += ParticleSys.GetXml("ParticleSys");
-            xml += "</Prim>";
-
-            return xml;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        public static PrimObject FromXml(SecondLife client, XmlNode node)
-        {
-            PrimObject prim = new PrimObject(client);
-
-            foreach (XmlNode childNode in node.ChildNodes)
-            {
-                ;
-            }
-
-            return prim;
-        }
-
         public override string ToString()
         {
             string output = "";
@@ -494,31 +464,6 @@ namespace libsecondlife
             return output;
         }
 	}
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [Flags]
-    public enum ObjectFlags
-    {
-        None = 0,
-        Physics = 1 << 0,
-        CreateSelected = 1 << 1,
-        Script = 1 << 6,
-        Touch = 1 << 7,
-        Money = 1 << 9,
-        Phantom = 1 << 10,
-        Temp = 1 << 30
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum ExtraParamType : ushort
-    {
-        Flexible = 0x10,
-        Light = 0x20
-    }
 
     /// <summary>
     /// 
@@ -589,34 +534,6 @@ namespace libsecondlife
             Wind = data[i++] / 10.0f;
             Force = new LLVector3(data, i);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public string GetXml(string name)
-        {
-            string xml = "<" + name + ">";
-            xml += "<Softness value=\"" + Softness + "\" />";
-            xml += "<Tension value=\"" + Tension + "\" />";
-            xml += "<Drag value=\"" + Drag + "\" />";
-            xml += "<Gravity value=\"" + Gravity + "\" />";
-            xml += "<Wind value=\"" + Wind + "\" />";
-            xml += "</" + name + ">";
-
-            return xml;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        public static PrimFlexibleData FromXml(XmlNode node)
-        {
-            return null;
-        }
     }
 
     /// <summary>
@@ -674,33 +591,6 @@ namespace libsecondlife
             }
 
             return data;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public string GetXml(string name)
-        {
-            string xml = "<" + name + ">";
-            xml += "<Color X=\"" + R + "\" Y=\"" + G + "\" Z=\"" + B + "\" />";
-            xml += "<Intensity value=\"" + Intensity + "\" />";
-            xml += "<Radius value=\"" + Radius + "\" />";
-            xml += "<Falloff value=\"" + Falloff + "\" />";
-            xml += "</" + name + ">";
-
-            return xml;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns></returns>
-        public static PrimLightData FromXml(XmlNode node)
-        {
-            return null;
         }
 
         private void FromBytes(byte[] data, int pos)
