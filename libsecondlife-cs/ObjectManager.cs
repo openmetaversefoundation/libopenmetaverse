@@ -547,7 +547,6 @@ namespace libsecondlife
             add.ObjectData.Rotation = rotation;
             add.ObjectData.Scale = scale;
             add.ObjectData.State = (byte)treeType;
-            add.ObjectData.TextureEntry = new byte[0];
 
             Client.Network.SendPacket(add, simulator);
         }
@@ -579,7 +578,6 @@ namespace libsecondlife
             add.ObjectData.Rotation = rotation;
             add.ObjectData.Scale = scale;
             add.ObjectData.State = (byte)grassType;
-            add.ObjectData.TextureEntry = new byte[0];
 
             Client.Network.SendPacket(add, simulator);
         }

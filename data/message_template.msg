@@ -2,8 +2,6 @@
 
 version 1.053
 
-// 1.053 added EndPointID to DenyTrustedCircuit and CreateTrustedCircuit. PP
-
 // *************************************************************************
 // Test Message
 // *************************************************************************
@@ -605,6 +603,8 @@ sim -> dataserver
 		{	SimName		Variable	1 }
 		{	RegionX		U32		}
 		{	RegionY		U32		}
+		{	AvgAgentsInView U8  }
+		{	AvgViewerFPS U8		}
 	}
 }
 
@@ -891,7 +891,6 @@ sim -> dataserver
 		{	QueryStart	S32			}	// prev/next page support
 		{	EstateID	U32			}
 		{	Godlike		BOOL		}
-		{	SpaceIP		IPADDR		}	// check online for right farm
 	}
 }
 
@@ -962,56 +961,6 @@ sim -> dataserver
 	}
 }
 
-// DirPeopleQuery viewer->sim
-// ask about people. This gets translated into a DirPeopleQueryTrusted on
-// the simulator.
-// *NOTE: this message is not in use on the viewer. 2004.07.02 \P/hoenix
-{
-	DirPeopleQuery Low NotTrusted Zerocoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-		{	SessionID	LLUUID		}
-	}
-	{
-		QueryData		Single
-		{	QueryID		LLUUID	}
-		{	QueryText	Variable		1	}
-		{	Name		Variable		1	}
-		{	Group		Variable		1	}
-		{	Online		U8	}
-		{	WantToFlags	U32	}
-		{	SkillFlags	U32   }
-		{   Reputation  Variable        1   }  // string representation of "< 1" or "> 6" or "= 99"
-		{   Distance    Variable        1   }  // string representation of "< 1" or "> 6" or "= 99"
-	}
-}
-
-// DirPeopleQueryBackend sim->dataserver
-// continue query about people whith a space ip address. 
-{
-	DirPeopleQueryBackend Low Trusted Zerocoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		QueryData		Single
-		{	QueryID		LLUUID	}
-		{	QueryText	Variable		1	}
-		{	Name		Variable		1	}
-		{	Group		Variable		1	}
-		{	Online		U8	}
-		{	WantToFlags	U32	}
-		{	SkillFlags	U32   }
-		{   Reputation  Variable        1   }  // string representation of "< 1" or "> 6" or "= 99"
-		{   Distance    Variable        1   }  // string representation of "< 1" or "> 6" or "= 99"
-		{	EstateID	U32		}
-		{	Godlike		BOOL	}
-		{	SpaceIP		IPADDR	}  // used to check online status for the right farm
-	}
-}
-
 // DirPeopleReply
 {
 	DirPeopleReply Low Trusted Zerocoded
@@ -1055,40 +1004,6 @@ sim -> dataserver
 		{	EventFlags	U32				}
 	}
 }
-
-// DirGroupsQuery viewer->sim
-// reliable
-{
-	DirGroupsQuery Low NotTrusted Zerocoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-		{	SessionID	LLUUID		}
-	}
-	{
-		QueryData			Single
-		{	QueryID			LLUUID	}
-		{	QueryText		Variable	1	}	// string
-	}
-}
-
-// DirGroupsQueryBackend sim->dataserver
-// reliable
-{
-	DirGroupsQueryBackend Low Trusted Zerocoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-	}
-	{
-		QueryData			Single
-		{	QueryID			LLUUID	}
-		{	QueryText		Variable	1	}	// string
-		{	EstateID		U32		}
-		{	Godlike			BOOL	}
-	}
-}
-
 
 // DirGroupsReply
 // dataserver -> userserver -> viewer
@@ -1786,35 +1701,6 @@ sim -> dataserver
 	}
 }
 
-// DataAgentAccessRequest sim->data
-// ask if agent ID can in fact teleport from their current location in
-// EstateID to the destination specified by RegionHandle. If allowed, 
-// the handler will persist the location in user_start_location and
-// send back a DataAgentAccessReply. Otherwise, the handler will send back
-// a TeleportFailed.
-{
-	DataAgentAccessRequest	Low	Trusted Unencoded
-	{
-		Info	Single
-		{	AgentID			LLUUID			}
-		{	EstateID		U32				}
-		{	RegionHandle	U64				}
-		{	LocationID		U32				}
-		{	LocationPos		LLVector3		}
-		{	LocationLookAt	LLVector3		}
-	}	
-}
-
-// DataAgentAccessReply data->sim
-// Message to let us know if AgentID is allowed to teleport to RegionHandle.
-{
-	DataAgentAccessReply	Low	Trusted Unencoded
-	{
-		Info			Single
-		{	AgentID		LLUUID	}
-	}	
-}
-
 // DataHomeLocationRequest sim->data
 // Request 
 {
@@ -1822,6 +1708,7 @@ sim -> dataserver
 	{
 		Info		Single
 		{	AgentID			LLUUID	}
+		{	KickedFromEstateID	U32	}
 	}
 }
 
@@ -2020,21 +1907,6 @@ sim -> dataserver
 // Viewer to Simulator Messages
 // ***************************************************************************
 
-// RegisterNewAgent - Sent by viewer to simulator to tell the simulator 
-// that it's connecting. 
-// HACK -- If SessionID is null, don't bother asking for information 
-// from the space server.
-{
-	RegisterNewAgent Low NotTrusted Unencoded
-	{
-		HelloBlock			Single
-		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
-		{	LocationID		U32	}	// which start location to use
-		{	Godlike		BOOL	}
-	}
-}
-
 // Undo
 {
 	Undo Low NotTrusted Unencoded
@@ -2086,20 +1958,6 @@ sim -> dataserver
 		{	SessionID	LLUUID	}
 	}
 }
-
-// MovedIntoSimulator - Sent by simulatorA to simulatorB to tell the
-// simulator that a viewer is moving from A to B
-// sim --> sim
-{
-	MovedIntoSimulator High Trusted Unencoded
-	{
-		Sender				Single
-		{	ID				LLUUID	}
-		{	SessionID		LLUUID	}
-		{	CircuitCode		U32	}
-	}
-}
-
 
 // AgentPause - viewer occasionally will block, inform simulator of this fact
 {
@@ -2424,7 +2282,6 @@ sim -> dataserver
 		{	Scale			LLVector3	}
 		{	Rotation		LLQuaternion	}
 
-		{	TextureEntry	Variable	2	}
 		{	State			U8	}
 	}
 }
@@ -3290,66 +3147,65 @@ sim -> dataserver
 // persistance. The dataserver will push live updates through
 // AddModifyAbility messages to the simulator.
 // viewer -> simulator -> dataserver
-{
-	GrantModification Low NotTrusted Unencoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
-		{	GranterName		Variable	1	}
-	}
-	{
-		EmpoweredBlock		Variable
-		{	EmpoweredID		LLUUID	}
-	}
-}
-
+//{
+//	GrantModification Low NotTrusted Unencoded
+//	{
+//		AgentData			Single
+//		{	AgentID			LLUUID	}
+//		{	SessionID		LLUUID	}
+//		{	GranterName		Variable	1	}
+//	}
+//	{
+//		EmpoweredBlock		Variable
+//		{	EmpoweredID		LLUUID	}
+//	}
+//}
 // Revoke the ability to modify your stuff. This message is sent to
 // the simulator, and then passed along to the dataserver for
 // persistance. The dataserver will push live updates through
 // RemoveModifyAbility messages to the simulator.
 // viewer -> simulator -> dataserver
-{
-	RevokeModification Low NotTrusted Unencoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
-		{	GranterName		Variable	1	}
-	}
-	{
-		RevokedBlock		Variable
-		{	RevokedID		LLUUID	}
-	}
-}
+//{
+//	RevokeModification Low NotTrusted Unencoded
+//	{
+//		AgentData			Single
+//		{	AgentID			LLUUID	}
+//		{	SessionID		LLUUID	}
+//		{	GranterName		Variable	1	}
+//	}
+//	{
+//		RevokedBlock		Variable
+//		{	RevokedID		LLUUID	}
+//	}
+//}
 
 // This message is sent from viewer->simulator->dataserver, which responds with
 // the complete list of all granted agents in the GrantedProxies message.
-{
-	RequestGrantedProxies Low NotTrusted Unencoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-		{	SessionID		LLUUID	}
-	}
-}
+//{
+//	RequestGrantedProxies Low NotTrusted Unencoded
+//	{
+//		AgentData			Single
+//		{	AgentID			LLUUID	}
+//		{	SessionID		LLUUID	}
+//	}
+//}
 
 // response to the message above
-{
-	GrantedProxies Low Trusted Unencoded
-	{
-		AgentData			Single
-		{	AgentID			LLUUID	}
-	}
-	{
-		EmpoweredBlock			Variable
-		{	EmpoweredID		LLUUID	}
-	}
-	{
-		GranterBlock			Variable
-		{	GranterID		LLUUID	}
-	}
-}
+//{
+//	GrantedProxies Low Trusted Unencoded
+//	{
+//		AgentData			Single
+//		{	AgentID			LLUUID	}
+//	}
+//	{
+//		EmpoweredBlock			Variable
+//		{	EmpoweredID		LLUUID	}
+//	}
+//	{
+//		GranterBlock			Variable
+//		{	GranterID		LLUUID	}
+//	}
+//}
 
 // This message is sent from the dataserver to the simulator to let
 // AgentID know that they can modify GranterID's stuff. This message is
@@ -3357,22 +3213,22 @@ sim -> dataserver
 // in response to GrantModification messages, request, or login.
 // ROUTED dataserver -> simulator -> spaceserver -> simulator
 // reliable
-{
-	AddModifyAbility Low Trusted Zerocoded
-	{
-		TargetBlock			Single
-		{	TargetIP		IPADDR	}	// U32 encoded IP
-		{	TargetPort		IPPORT	}
-	}
-	{
-		AgentBlock			Single
-		{	AgentID			LLUUID	}
-	}
-	{
-		GranterBlock		Variable
-		{	GranterID		LLUUID	}
-	}
-}
+//{
+//	AddModifyAbility Low Trusted Zerocoded
+//	{
+//		TargetBlock			Single
+//		{	TargetIP		IPADDR	}	// U32 encoded IP
+//		{	TargetPort		IPPORT	}
+//	}
+//	{
+//		AgentBlock			Single
+//		{	AgentID			LLUUID	}
+//	}
+//	{
+//		GranterBlock		Variable
+//		{	GranterID		LLUUID	}
+//	}
+//}
 
 // This message is sent from the dataserver to the simulator to let
 // AgentID know that they can no longer modify GranterID's stuff. This
@@ -3380,19 +3236,19 @@ sim -> dataserver
 // message is in response to RevokeModification messages.
 // ROUTED dataserver -> simulator -> spaceserver -> simulator
 // reliable
-{
-	RemoveModifyAbility Low Trusted Unencoded
-	{
-		TargetBlock			Single
-		{	TargetIP		IPADDR	}	// U32 encoded IP
-		{	TargetPort		IPPORT	}
-	}
-	{
-		AgentBlock			Single
-		{	AgentID			LLUUID	}
-		{	RevokerID		LLUUID	}
-	}
-}
+//{
+//	RemoveModifyAbility Low Trusted Unencoded
+//	{
+//		TargetBlock			Single
+//		{	TargetIP		IPADDR	}	// U32 encoded IP
+//		{	TargetPort		IPPORT	}
+//	}
+//	{
+//		AgentBlock			Single
+//		{	AgentID			LLUUID	}
+//		{	RevokerID		LLUUID	}
+//	}
+//}
 
 // end viewer to simulator section
 
@@ -3405,7 +3261,9 @@ sim -> dataserver
                {       IP                      IPADDR       }
                {       StartTime               U32       }
                {       RunTime                 F32       }  // F32
-               {       FPS                             F32       }  // F32
+               {       SimFPS                  F32       }  // F32
+               {       FPS                     F32       }  // F32
+               {       AgentsInView			   U8 } //
                {       Ping                    F32       }  // F32
                {       MetersTraveled  F64       }
                {       RegionsVisited  S32       }
@@ -3957,7 +3815,7 @@ sim -> dataserver
 	}
 }
 
-// packed terse object udpate format
+// packed terse object update format
 {
 	ImprovedTerseObjectUpdate High Trusted Unencoded
 	{
@@ -5809,26 +5667,6 @@ sim -> dataserver
 		{	ParcelID	LLUUID	}
 	}
 }
-
-// userserver -> dataserver
-// Used to request all parcel sales in the database
-//{
-//	RequestParcelAuctions	Low	Trusted Unencoded
-//}
-
-// dataserver -> userserver -> spaceserver
-// response of all (up to max packet size) parcel sales in the database. 
-// each block in the meassage represents a parcel that a human agreed
-// to pay US$.
-//{
-//	BulkParcelAuctions	Low	Trusted Unencoded
-//	{
-//		ParcelData 		Variable
-//		{	RegionHandle	U64	}
-//		{	ParcelID		LLUUID	}
-//		{	WinnerID		LLUUID	}
-//	}
-//}
 
 // sim -> dataserver
 {
@@ -7971,18 +7809,18 @@ sim -> dataserver
 // userserver -> viewer, up-to-date inventory is here
 // could be sent as a result of spam
 // as well as in response to InventoryRequest
-{
-	InventoryUpdate Low Trusted Unencoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID	}
-	}
-	{
-		InventoryData	Single
-		{	IsComplete	U8	}
-		{	Filename	Variable	1	}
-	}
-}
+//{
+//	InventoryUpdate Low Trusted Unencoded
+//	{
+//		AgentData		Single
+//		{	AgentID		LLUUID	}
+//	}
+//	{
+//		InventoryData	Single
+//		{	IsComplete	U8	}
+//		{	Filename	Variable	1	}
+//	}
+//}
 
 // dataserver-> userserver -> viewer to move around the mute list
 {
@@ -8003,61 +7841,41 @@ sim -> dataserver
 	}
 }
 
-
-// UserLoginLocationReply 
-// userserver -> viewer
+// Sent from viewer to simulator to set user rights. This message will be
+// relayed up to the dataserver through a PUT. If that
+// succeeds, an UpdateUserRights will be relayed to the originating
+// viewer, and a presence lookup will be performed to find
+// agent-related and the same PUT will be issued to the sim host if
+// they are online.
 {
-	UserLoginLocationReply Low Trusted Zerocoded
+	GrantUserRights Low NotTrusted Unencoded
 	{
-		AgentData	Single
+		AgentData		Single
+		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID	}
-		{	Message		Variable	1	}
 	}
 	{
-		RegionInfo	Single
-		{	LocationValid	BOOL	}
-		{	GridsPerEdge	U32	}
-		{	MetersPerGrid	F32	}
-		{	Handle			U64	}
-		{	UsecSinceStart	U64	}
-		{	SecPerDay		U32	}
-		{	SecPerYear		U32	}
-		{	SunDirection	LLVector3	}
-		{	SunAngVelocity	LLVector3	}
-	}
-	{
-		SimulatorBlock		Single
-		{	IP				IPADDR	}
-		{	Port			IPPORT	}
-	}
-	{
-		URLBlock			Single
-		{	LocationID		U32			}
-		{	LocationLookAt	LLVector3	}
+		Rights			Variable
+		{	AgentRelated		LLUUID		}
+		{	RelatedRights		S32		}
 	}
 }
 
-// UserSimLocationReply  
-// userserver -> viewer
+// This message is sent from the simulator to the viewer to indicate a
+// targets granted rights. This is only sent to the originator of the
+// request and the target agent if it is a modify or map
+// right. Adding/removing online status rights will show up as an
+// online/offline notification.
 {
-	UserSimLocationReply Low Trusted Unencoded
+	ChangeUserRights Low Trusted Unencoded
 	{
-		SimulatorBlock		Single
-		{	AccessOK		U8	}
-		{	SimName			Variable	1	}
-		{	SimHandle		U64	}
+		AgentData		Single
+		{	AgentID		LLUUID	}
 	}
-}
-
-// UserListReply
-// Return a list of users on the system
-{
-	UserListReply Low Trusted Unencoded
 	{
-		UserBlock			Variable
-		{	FirstName		Variable	1	}
-		{	LastName		Variable	1	}
-		{	Status			U8	}
+		Rights			Variable
+		{	AgentRelated		LLUUID		}
+		{	RelatedRights		S32		}
 	}
 }
 
@@ -8115,64 +7933,6 @@ sim -> dataserver
 }
 
 
-
-// UserLoginLocationRequest
-// userserver -> spaceserver
-{
-	UserLoginLocationRequest Low Trusted Zerocoded
-	{
-		UserBlock			Single
-		{	SessionID		LLUUID	}
-		{   TravelAccess	U8		}
-		{	FirstLogin		BOOL	}
-		{	LimitedToEstate U32		}
-	}
-	{
-		PositionBlock		Single
-		{   ViewerRegion	U64   }
-		{	ViewerPosition	LLVector3	}
-	}
-	{
-		URLBlock	Single
-		{	SimName		Variable	1	}
-		{	Pos			LLVector3	}
-	}
-}
-
-// SpaceLoginLocationReply
-// spaceserver -> userserver
-// not reliable
-{
-	SpaceLoginLocationReply Low Trusted Zerocoded
-	{
-		UserBlock			Single
-		{	SessionID		LLUUID	}
-		{	LocationID		U32		}
-		{	LocationPos		LLVector3	}
-		{	LocationLookAt	LLVector3	}
-	}
-	{
-		SimulatorBlock		Single
-		{	IP				IPADDR	}
-		{	Port			IPPORT	}
-		{	CircuitCode		U32	}
-		{	Name			Variable	1	}
-		{	SimAccess		U8	}
-	}
-	{
-		RegionInfo	Single
-		{	GridsPerEdge	U32	}
-		{	MetersPerGrid	F32	}
-		{	Handle			U64	}
-		{	UsecSinceStart	U64	}
-		{	SecPerDay		U32	}
-		{	SecPerYear		U32	}
-		{	SunDirection	LLVector3	}
-		{	SunAngVelocity	LLVector3	}
-	}
-}
-
-
 // ***************************************************************************
 // Launcher messages
 // ***************************************************************************
@@ -8212,36 +7972,6 @@ sim -> dataserver
 	{
 		Users	Variable
 		{	AgentID			LLUUID	}
-	}
-}
-
-// ***************************************************************************
-// Simulator to QuerySim
-// ***************************************************************************
-
-// SimulatorPauseState - what parts of the sim are paused
-
-{
-	SimulatorPauseState Low NotTrusted Unencoded
-	{
-		PauseBlock			Single
-		{	SimPaused		U32	}
-		{	LayersPaused	U32	}
-		{	TasksPaused		U32	}
-	}
-}
-
-// SimulatorThrottleSettings - what are the current throttle settings?
-
-{
-	SimulatorThrottleSettings Low NotTrusted Unencoded
-	{
-		Sender				Single
-		{	ID				LLUUID	}
-	}
-	{
-		Throttle			Single
-		{	Throttles		Variable 1	}
 	}
 }
 
@@ -9601,11 +9331,11 @@ sim -> dataserver
 // Sent to establish a trust relationship between two components.
 // Only sent in response to a DenyTrustedCircuit message.
 {
-        CreateTrustedCircuit Low NotTrusted Unencoded
-        {
-                DataBlock Single
+	CreateTrustedCircuit Low NotTrusted Unencoded
+	{
+		DataBlock Single
 		{ EndPointID	LLUUID }
-                { Digest        Fixed 32 } // 32 hex digits == 1 MD5 Digest
+		{ Digest        Fixed 32 } // 32 hex digits == 1 MD5 Digest
 	}
 }
 
@@ -9616,11 +9346,17 @@ sim -> dataserver
 // - the reception of a trusted message on a non-trusted circuit
 // This allows us to re-auth a circuit if it gets closed due to timeouts or network failures.
 {
-        DenyTrustedCircuit Low NotTrusted Unencoded
+	DenyTrustedCircuit Low NotTrusted Unencoded
 	{
-                DataBlock Single
+		DataBlock Single
 		{ EndPointID	LLUUID }
 	}
+}
+
+// RequestTrustedCircuit
+// If the destination does not trust the sender, a Deny is sent back.
+{
+	RequestTrustedCircuit Low Trusted Unencoded
 }
 
 
@@ -9711,7 +9447,7 @@ sim -> dataserver
 	UserInfoRequest	Low	NotTrusted Unencoded
 	{
 		AgentData	Single
-		{	AgentID	LLUUID	}
+		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID	}
 	}
 }
@@ -9725,6 +9461,7 @@ sim -> dataserver
 	{
 		UserData	Single
 		{	IMViaEMail	BOOL	}
+		{	DirectoryVisibility	Variable 1	}
 		{	EMail		Variable	2	}
 	}
 }
@@ -9733,12 +9470,13 @@ sim -> dataserver
 	UpdateUserInfo	Low	NotTrusted Unencoded
 	{
 		AgentData	Single
-		{	AgentID	LLUUID	}
+		{	AgentID		LLUUID	}
 		{	SessionID	LLUUID	}
 	}
 	{
 		UserData	Single
 		{	IMViaEMail	BOOL	}
+		{	DirectoryVisibility	Variable 1	}
 	}
 }
 
