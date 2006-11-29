@@ -125,6 +125,8 @@ namespace BodyPartMorphGenerator
 
 //            XmlTextWriter xtw = new XmlTextWriter(sw);
 
+            StreamWriter ParamTable = File.AppendText("ParamTable.csv");
+
             foreach( XmlNode node in list )
             {
                 if ((node.Attributes["shared"] != null) && (node.Attributes["shared"].Value.Equals("1")))
@@ -148,6 +150,11 @@ namespace BodyPartMorphGenerator
                      && ( (node.Attributes["label"] != null) || (node.Attributes["label_min"] != null) )
                     )
                 {
+                    string ParamLabel = "";
+                    string ParamMin = "";
+                    string ParamMax = "";
+
+
                     string ID = node.Attributes["id"].Value;
 
                     if (node.Attributes["label"] != null)
@@ -155,6 +162,8 @@ namespace BodyPartMorphGenerator
                         // Label
                         Labels.WriteLine("                case " + ID + ":");
                         Labels.WriteLine("                    return \"" + node.Attributes["label"].Value + "\";");
+
+                        ParamLabel = node.Attributes["label"].Value;
                     }
 
                     if (node.Attributes["label_min"] != null)
@@ -162,6 +171,8 @@ namespace BodyPartMorphGenerator
                         // Label Min
                         LabelMin.WriteLine("                case " + ID + ":");
                         LabelMin.WriteLine("                    return \"" + node.Attributes["label_min"].Value + "\";");
+
+                        if (ParamLabel == "") { ParamLabel = node.Attributes["label_min"].Value; }
                     }
 
                     if (node.Attributes["label_max"] != null)
@@ -169,6 +180,8 @@ namespace BodyPartMorphGenerator
                         // Label Max
                         LabelMax.WriteLine("                case " + ID + ":");
                         LabelMax.WriteLine("                    return \"" + node.Attributes["label_max"].Value + "\";");
+
+                        if (ParamLabel == "") { ParamLabel = node.Attributes["label_max"].Value; }
                     }
 
                     // Name
@@ -179,9 +192,13 @@ namespace BodyPartMorphGenerator
                     ValueMin.WriteLine("                case " + ID + ":");
                     ValueMin.WriteLine("                    return " + node.Attributes["value_min"].Value + "f;");
 
+                    ParamMin = node.Attributes["value_min"].Value;
+
                     // Max Values
                     ValueMax.WriteLine("                case " + ID + ":");
                     ValueMax.WriteLine("                    return " + node.Attributes["value_max"].Value + "f;");
+
+                    ParamMax = node.Attributes["value_max"].Value;
 
                     // Default values
                     if (node.Attributes["value_default"] != null)
@@ -195,13 +212,16 @@ namespace BodyPartMorphGenerator
                         ValueDefault.WriteLine("                    return " + node.Attributes["value_min"].Value + "f;");
                     }
 
-                    // Max Values
+                    // Validation Values
                     ValueValid.WriteLine("                case " + node.Attributes["id"].Value + ":");
                     ValueValid.WriteLine("                    return ( (Value >= " + node.Attributes["value_min"].Value + "f) && (Value <= " + node.Attributes["value_max"].Value + "f) );");
 
-
+                    ParamTable.WriteLine(ID + "\t" + ParamLabel + "\t" + ParamMin + "\t" + ParamMax);
                 }
             }
+
+            ParamTable.Flush();
+            ParamTable.Close();
 
             // Finish up name stuff
             Names.WriteLine("            }"); // Close switch
