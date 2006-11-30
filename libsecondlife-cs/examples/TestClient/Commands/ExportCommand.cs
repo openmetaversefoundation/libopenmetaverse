@@ -52,7 +52,7 @@ namespace libsecondlife.TestClient
                         return ret;
                     }
 
-                    return "";
+                    return "Exported " + id.ToString() + " to " + file;
                 }
             }
 

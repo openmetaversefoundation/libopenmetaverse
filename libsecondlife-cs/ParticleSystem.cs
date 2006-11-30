@@ -17,23 +17,17 @@ namespace libsecondlife
         public enum SourcePattern : byte
         {
             /// <summary></summary>
-            [XmlEnum("None")]
-            None = 0,
+            [XmlEnum("None")] None = 0,
             /// <summary></summary>
-            [XmlEnum("Drop")]
-            Drop = 0x01,
+            [XmlEnum("Drop")] Drop = 0x01,
             /// <summary></summary>
-            [XmlEnum("Explode")]
-            Explode = 0x02,
+            [XmlEnum("Explode")] Explode = 0x02,
             /// <summary></summary>
-            [XmlEnum("Angle")]
-            Angle = 0x04,
+            [XmlEnum("Angle")] Angle = 0x04,
             /// <summary></summary>
-            [XmlEnum("AngleCone")]
-            AngleCone = 0x08,
+            [XmlEnum("AngleCone")] AngleCone = 0x08,
             /// <summary></summary>
-            [XmlEnum("AngleConeEmpty")]
-            AngleConeEmpty = 0x10
+            [XmlEnum("AngleConeEmpty")] AngleConeEmpty = 0x10
         }
 
         /// <summary>
@@ -65,50 +59,39 @@ namespace libsecondlife
         }
 
         /// <summary></summary>
-        [XmlAttribute]
-        public uint PartStartRGBA;
+        [XmlAttribute] public uint PartStartRGBA;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint PartEndRGBA;
+        [XmlAttribute] public uint PartEndRGBA;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PartMaxAge;
+        [XmlAttribute] public float PartMaxAge;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcMaxAge;
+        [XmlAttribute] public float SrcMaxAge;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcAngleBegin;
+        [XmlAttribute] public float SrcAngleBegin;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcAngleEnd;
+        [XmlAttribute] public float SrcAngleEnd;
         /// <summary></summary>
-        [XmlAttribute]
-        public int SrcBurstPartCount;
+        [XmlAttribute] public int SrcBurstPartCount;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcBurstRadius;
+        [XmlAttribute] public float SrcBurstRadius;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcBurstRate;
+        [XmlAttribute] public float SrcBurstRate;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcBurstSpeedMin;
+        [XmlAttribute] public float SrcBurstSpeedMin;
         /// <summary></summary>
-        [XmlAttribute]
-        public float SrcBurstSpeedMax;
+        [XmlAttribute] public float SrcBurstSpeedMax;
         /// <summary>Unknown</summary>
-        [XmlAttribute]
-        public uint Version;
+        [XmlAttribute] public uint Version;
         /// <summary>Unknown</summary>
-        [XmlAttribute]
-        public uint StartTick;
+        [XmlAttribute] public uint StartTick;
         /// <summary></summary>
-        [XmlAttribute]
-        public SourcePattern SrcPattern;
+        [XmlAttribute] public SourcePattern SrcPattern;
         /// <summary>Various options that describe the behavior of this system</summary>
-        [XmlAttribute]
-        public ParticleFlags PartFlags;
+        [XmlAttribute] public ParticleFlags PartFlags;
+        /// <summary></summary>
+        public LLUUID SrcTargetKey = LLUUID.Zero;
+        /// <summary>Texture that will be applied to the particles</summary>
+        public LLUUID SrcTexture = LLUUID.Zero;
         /// <summary></summary>
         public LLVector3 PartStartScale = LLVector3.Zero;
         /// <summary></summary>
@@ -117,10 +100,6 @@ namespace libsecondlife
         public LLVector3 SrcAccel = LLVector3.Zero;
         /// <summary></summary>
         public LLVector3 SrcOmega = LLVector3.Zero;
-        /// <summary></summary>
-        public LLUUID SrcTargetKey = LLUUID.Zero;
-        /// <summary>Texture that will be applied to the particles</summary>
-        public LLUUID SrcTexture = LLUUID.Zero;
         
         /// <summary>
         /// 

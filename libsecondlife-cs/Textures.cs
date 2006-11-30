@@ -591,7 +591,19 @@ namespace libsecondlife
     [Serializable]
     public class TextureEntryFace
     {
-        [Flags]
+        [XmlAttribute] protected uint rgba;
+        [XmlAttribute] protected float repeatU;
+        [XmlAttribute] protected float repeatV;
+        [XmlAttribute] protected float offsetU;
+        [XmlAttribute] protected float offsetV;
+        [XmlAttribute] protected float rotation;
+        [XmlAttribute] protected byte flags1;
+        [XmlAttribute] protected byte flags2;
+        protected LLUUID textureID;
+        protected TextureAttributes hasAttribute;
+        protected TextureEntryFace DefaultTexture;
+
+        [Flags, Serializable]
         public enum TextureAttributes : uint
         {
             None      = 0,
@@ -635,13 +647,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.TextureID) != 0)
-                    return _TextureID;
+                    return textureID;
                 else
-                    return DefaultTexture._TextureID;
+                    return DefaultTexture.textureID;
             }
             set
             {
-                _TextureID = value;
+                textureID = value;
                 hasAttribute |= TextureAttributes.TextureID;
             }
         }
@@ -654,13 +666,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.RGBA) != 0)
-                    return _RGBA;
+                    return rgba;
                 else
-                    return DefaultTexture._RGBA;
+                    return DefaultTexture.rgba;
             }
             set
             {
-                _RGBA = value;
+                rgba = value;
                 hasAttribute |= TextureAttributes.RGBA;
             }
         }
@@ -673,13 +685,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.RepeatU) != 0)
-                    return _RepeatU;
+                    return repeatU;
                 else
-                    return DefaultTexture._RepeatU;
+                    return DefaultTexture.repeatU;
             }
             set
             {
-                _RepeatU = value;
+                repeatU = value;
                 hasAttribute |= TextureAttributes.RepeatU;
             }
         }
@@ -692,13 +704,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.RepeatV) != 0)
-                    return _RepeatV;
+                    return repeatV;
                 else
-                    return DefaultTexture._RepeatV;
+                    return DefaultTexture.repeatV;
             }
             set
             {
-                _RepeatV = value;
+                repeatV = value;
                 hasAttribute |= TextureAttributes.RepeatV;
             }
         }
@@ -711,13 +723,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.OffsetU) != 0)
-                    return _OffsetU;
+                    return offsetU;
                 else
-                    return DefaultTexture._OffsetU;
+                    return DefaultTexture.offsetU;
             }
             set
             {
-                _OffsetU = value;
+                offsetU = value;
                 hasAttribute |= TextureAttributes.OffsetU;
             }
         }
@@ -730,13 +742,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.OffsetV) != 0)
-                    return _OffsetV;
+                    return offsetV;
                 else
-                    return DefaultTexture._OffsetV;
+                    return DefaultTexture.offsetV;
             }
             set
             {
-                _OffsetV = value;
+                offsetV = value;
                 hasAttribute |= TextureAttributes.OffsetV;
             }
         }
@@ -749,13 +761,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.Rotation) != 0)
-                    return _Rotation;
+                    return rotation;
                 else
-                    return DefaultTexture._Rotation;
+                    return DefaultTexture.rotation;
             }
             set
             {
-                _Rotation = value;
+                rotation = value;
                 hasAttribute |= TextureAttributes.Rotation;
             }
         }
@@ -768,13 +780,13 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.Flags1) != 0)
-                    return _Flags1;
+                    return flags1;
                 else
-                    return DefaultTexture._Flags1;
+                    return DefaultTexture.flags1;
             }
             set
             {
-                _Flags1 = value;
+                flags1 = value;
                 hasAttribute |= TextureAttributes.Flags1;
             }
         }
@@ -787,28 +799,16 @@ namespace libsecondlife
             get
             {
                 if ((hasAttribute & TextureAttributes.Flags2) != 0)
-                    return _Flags2;
+                    return flags2;
                 else
-                    return DefaultTexture._Flags2;
+                    return DefaultTexture.flags2;
             }
             set
             {
-                _Flags2 = value;
+                flags2 = value;
                 hasAttribute |= TextureAttributes.Flags2;
             }
         }
-
-        private TextureAttributes hasAttribute;
-        private TextureEntryFace DefaultTexture;
-        private LLUUID _TextureID;
-        private uint _RGBA;
-        private float _RepeatU;
-        private float _RepeatV;
-        private float _OffsetU;
-        private float _OffsetV;
-        private float _Rotation;
-        private byte _Flags1;
-        private byte _Flags2;
     }
 
     /// <summary>
@@ -818,19 +818,19 @@ namespace libsecondlife
     public class TextureAnimation
     {
         /// <summary></summary>
-        public uint Flags;
+        [XmlAttribute] public uint Flags;
         /// <summary></summary>
-        public uint Face;
+        [XmlAttribute] public uint Face;
         /// <summary></summary>
-        public uint SizeX;
+        [XmlAttribute] public uint SizeX;
         /// <summary></summary>
-        public uint SizeY;
+        [XmlAttribute] public uint SizeY;
         /// <summary></summary>
-        public float Start;
+        [XmlAttribute] public float Start;
         /// <summary></summary>
-        public float Length;
+        [XmlAttribute] public float Length;
         /// <summary></summary>
-        public float Rate;
+        [XmlAttribute] public float Rate;
 
         /// <summary>
         /// Default constructor

@@ -35,22 +35,21 @@ namespace libsecondlife
     /// Life networking protocol
     /// </summary>
     [XmlRoot("uuid")]
-	public class LLUUID
+    public class LLUUID : IXmlSerializable
 	{
+        /// <summary>The 16 bytes that make up the UUID</summary>
+        protected byte[] data = new byte[16];
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
 		public byte[] Data
 		{
 			get { return data; }
 		}
 
-        private byte[] data = null;
-
         /// <summary>
         /// 
         /// </summary>
 		public LLUUID()
 		{
-			data = new byte[16];
 		}
 
         /// <summary>
@@ -59,8 +58,6 @@ namespace libsecondlife
         /// <param name="val"></param>
 		public LLUUID(string val)
 		{
-			data = new byte[16];
-
 			if (val.Length == 36) val = val.Replace("-", "");
 			
 			if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
@@ -78,8 +75,6 @@ namespace libsecondlife
         /// <param name="pos"></param>
 		public LLUUID(byte[] byteArray, int pos)
 		{
-			data = new byte[16];
-
 			Array.Copy(byteArray, pos, data, 0, 16);
 		}
 
@@ -126,6 +121,40 @@ namespace libsecondlife
 		{
 			return new LLUUID(Guid.NewGuid().ToByteArray(), 0);
 		}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public System.Xml.Schema.XmlSchema GetSchema()
+        {
+            return null;
+        }
+
+        public void ReadXml(System.Xml.XmlReader reader)
+        {
+            //reader.ReadStartElement("uuid");
+            string val = reader.ReadString();
+
+            if (val.Length == 36) val = val.Replace("-", "");
+
+            if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
+
+            for (int i = 0; i < 16; ++i)
+            {
+                data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
+            }
+
+            //reader.ReadEndElement();
+            //reader.MoveToContent();
+        }
+
+        public void WriteXml(System.Xml.XmlWriter writer)
+        {
+            //writer.WriteStartElement("uuid");
+            writer.WriteString(this.ToString());
+            //writer.WriteEndElement();
+        }
 
         /// <summary>
         /// 
@@ -271,11 +300,11 @@ namespace libsecondlife
 	public class LLVector3
 	{
         /// <summary></summary>
-		public float X;
+		[XmlAttribute] public float X;
         /// <summary></summary>
-		public float Y;
+        [XmlAttribute] public float Y;
         /// <summary></summary>
-		public float Z;
+        [XmlAttribute] public float Z;
 
         /// <summary>
         /// 
@@ -458,11 +487,11 @@ namespace libsecondlife
 	public class LLVector3d
 	{
         /// <summary></summary>
-		public double X;
+        [XmlAttribute] public double X;
         /// <summary></summary>
-		public double Y;
+        [XmlAttribute] public double Y;
         /// <summary></summary>
-		public double Z;
+        [XmlAttribute] public double Z;
 
         /// <summary>
         /// 
@@ -546,13 +575,13 @@ namespace libsecondlife
 	public class LLVector4
 	{
         /// <summary></summary>
-		public float X;
+        [XmlAttribute] public float X;
         /// <summary></summary>
-		public float Y;
+        [XmlAttribute] public float Y;
         /// <summary></summary>
-		public float Z;
+        [XmlAttribute] public float Z;
         /// <summary></summary>
-		public float S;
+        [XmlAttribute] public float S;
 
         /// <summary>
         /// 
@@ -627,13 +656,13 @@ namespace libsecondlife
 	public class LLQuaternion
 	{
         /// <summary></summary>
-		public float X;
+        [XmlAttribute] public float X;
         /// <summary></summary>
-		public float Y;
+        [XmlAttribute] public float Y;
         /// <summary></summary>
-		public float Z;
+        [XmlAttribute] public float Z;
         /// <summary></summary>
-		public float W;
+        [XmlAttribute] public float W;
 
         /// <summary>
         /// 

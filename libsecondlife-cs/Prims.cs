@@ -88,11 +88,9 @@ namespace libsecondlife
     public enum ExtraParamType : ushort
     {
         /// <summary>Whether this object has flexible parameters</summary>
-        [XmlEnum("Flexible")]
-        Flexible = 0x10,
+        [XmlEnum("Flexible")] Flexible = 0x10,
         /// <summary>Whether this object has light parameters</summary>
-        [XmlEnum("Light")]
-        Light = 0x20
+        [XmlEnum("Light")] Light = 0x20
     }
 
     /// <summary>
@@ -102,86 +100,59 @@ namespace libsecondlife
     public class PrimObject
 	{
         /// <summary></summary>
-        [XmlAttribute]
-		public int PathTwistBegin = 0;
+        [XmlAttribute] public int PathTwistBegin = 0;
         /// <summary></summary>
-        [XmlAttribute]
-		public float PathEnd = 0;
+        [XmlAttribute] public float PathEnd = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float ProfileBegin = 0;
+        [XmlAttribute] public float ProfileBegin = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathRadiusOffset = 0;
+        [XmlAttribute] public float PathRadiusOffset = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathSkew = 0;
+        [XmlAttribute] public float PathSkew = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint ProfileCurve = 0;
+        [XmlAttribute] public uint ProfileCurve = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathScaleX = 0;
+        [XmlAttribute] public float PathScaleX = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathScaleY = 0;
+        [XmlAttribute] public float PathScaleY = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint LocalID = 0;
+        [XmlAttribute] public uint LocalID = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint ParentID = 0;
+        [XmlAttribute] public uint ParentID = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint Material = 0;
+        [XmlAttribute] public uint Material = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public string Name = "";
+        [XmlAttribute] public string Name = "";
         /// <summary></summary>
-        [XmlAttribute]
-        public string Description = "";
+        [XmlAttribute] public string Description = "";
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathShearX = 0;
+        [XmlAttribute] public float PathShearX = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathShearY = 0;
+        [XmlAttribute] public float PathShearY = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathTaperX = 0;
+        [XmlAttribute] public float PathTaperX = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathTaperY = 0;
+        [XmlAttribute] public float PathTaperY = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float ProfileEnd = 0;
+        [XmlAttribute] public float ProfileEnd = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathBegin = 0;
+        [XmlAttribute] public float PathBegin = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint PathCurve = 0;
+        [XmlAttribute] public uint PathCurve = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public int PathTwist = 0;
+        [XmlAttribute] public int PathTwist = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint ProfileHollow = 0;
+        [XmlAttribute] public uint ProfileHollow = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public float PathRevolutions = 0;
+        [XmlAttribute] public float PathRevolutions = 0;
         /// <summary></summary>
-        [XmlAttribute]
-        public uint State;
+        [XmlAttribute] public uint State;
         /// <summary></summary>
-        [XmlAttribute]
-        public string Text;
+        [XmlAttribute] public string Text;
         /// <summary></summary>
-        [XmlAttribute]
-        public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
+        [field:NonSerialized] public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
         /// <summary></summary>
-        [XmlAttribute]
-        public ulong RegionHandle;
+        [XmlAttribute] public ulong RegionHandle;
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
@@ -519,15 +490,15 @@ namespace libsecondlife
     public class PrimFlexibleData
     {
         /// <summary></summary>
-        public int Softness;
+        [XmlAttribute] public int Softness;
         /// <summary></summary>
-        public float Gravity;
+        [XmlAttribute] public float Gravity;
         /// <summary></summary>
-        public float Drag;
+        [XmlAttribute] public float Drag;
         /// <summary></summary>
-        public float Wind;
+        [XmlAttribute] public float Wind;
         /// <summary></summary>
-        public float Tension;
+        [XmlAttribute] public float Tension;
         /// <summary></summary>
         public LLVector3 Force = LLVector3.Zero;
 
@@ -591,13 +562,17 @@ namespace libsecondlife
     public class PrimLightData
     {
         /// <summary></summary>
-        public byte R, G, B;
+        [XmlAttribute] public byte R;
         /// <summary></summary>
-        public float Intensity;
+        [XmlAttribute] public byte G;
         /// <summary></summary>
-        public float Radius;
+        [XmlAttribute] public byte B;
         /// <summary></summary>
-        public float Falloff;
+        [XmlAttribute] public float Intensity;
+        /// <summary></summary>
+        [XmlAttribute] public float Radius;
+        /// <summary></summary>
+        [XmlAttribute] public float Falloff;
 
         /// <summary>
         /// 
