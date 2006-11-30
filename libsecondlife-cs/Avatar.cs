@@ -78,21 +78,32 @@ namespace libsecondlife
     public delegate void TeleportCallback(string message, TeleportStatus status);
 
     /// <summary>
-    /// Name Conversion for Teleport Status flag/bit
+    /// Current teleport status
     /// </summary>
     public enum TeleportStatus
     {
+        /// <summary></summary>
         None,
+        /// <summary></summary>
         Start,
+        /// <summary></summary>
         Progress,
+        /// <summary></summary>
         Failed,
+        /// <summary></summary>
         Finished
     }
 
+    /// <summary>
+    /// Special commands used in Instant Messages
+    /// </summary>
     public enum InstantMessageDialog
     {
+        /// <summary></summary>
         RequestTeleport = 22,
+        /// <summary></summary>
         AcceptTeleport = 23,
+        /// <summary></summary>
         DenyTeleport = 24
     }
 

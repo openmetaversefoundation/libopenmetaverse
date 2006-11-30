@@ -36,6 +36,7 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\ExportCommand.cs" />
     <Compile Include="Commands\LoadCommand.cs" />
     <Compile Include="Commands\LoginCommand.cs" />
     <Compile Include="Commands\LogoutCommand.cs" />

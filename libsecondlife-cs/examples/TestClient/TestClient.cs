@@ -186,33 +186,49 @@ Begin:
 
             if (Commands.ContainsKey(firstToken))
             {
-                foreach (SecondLife client in Clients.Values)
+                if (firstToken == "login")
                 {
-                    if (client.Network.Connected)
+                    // Special login case: Only call it once, and allow it with
+                    // no logged in avatars
+                    string[] args = new string[tokens.Length - 1];
+                    Array.Copy(tokens, 1, args, 0, args.Length);
+                    string response = Commands["login"].Execute(null, args, null);
+
+                    if (response.Length > 0)
                     {
-                        string[] args = new string[tokens.Length - 1];
-                        Array.Copy(tokens, 1, args, 0, args.Length);
-                        string response = Commands[firstToken].Execute(client, args, fromAgentID);
-
-                        if (response.Length > 0)
-                        {
-                            if (fromAgentID != null && client.Network.Connected)
-                                client.Self.InstantMessage(fromAgentID, response, imSessionID);
-                            Console.WriteLine(response);
-                        }
-
-                        if (firstToken == "login")
-                        {
-                            // Special login case: Only call it once
-                            break;
-                        }
+                        Console.WriteLine(response);
                     }
-
-                    if (avatars != Clients.Count)
+                }
+                else if (firstToken == "quit")
+                {
+                    // Special quit case: This allows us to quit even when there
+                    // are zero avatars logged in
+                    Commands["quit"].Execute(null, null, null);
+                }
+                else
+                {
+                    foreach (SecondLife client in Clients.Values)
                     {
-                        // The dictionary size changed, start over since the 
-                        // foreach is shot
-                        goto Begin;
+                        if (client.Network.Connected)
+                        {
+                            string[] args = new string[tokens.Length - 1];
+                            Array.Copy(tokens, 1, args, 0, args.Length);
+                            string response = Commands[firstToken].Execute(client, args, fromAgentID);
+
+                            if (response.Length > 0)
+                            {
+                                if (fromAgentID != null && client.Network.Connected)
+                                    client.Self.InstantMessage(fromAgentID, response, imSessionID);
+                                Console.WriteLine(response);
+                            }
+                        }
+
+                        if (avatars != Clients.Count)
+                        {
+                            // The dictionary size changed, start over since the 
+                            // foreach is shot
+                            goto Begin;
+                        }
                     }
                 }
             }

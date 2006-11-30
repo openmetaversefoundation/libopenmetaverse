@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using System.Text;
 using libsecondlife.Packets;
 
@@ -151,19 +152,26 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
         public enum PCode
         {
             /// <summary></summary>
+            [XmlEnum("Prim")]
             Prim = 9,
             /// <summary></summary>
+            [XmlEnum("Avatar")]
             Avatar = 47,
             /// <summary></summary>
+            [XmlEnum("Grass")]
             Grass = 95,
             /// <summary></summary>
+            [XmlEnum("NewTree")]
             NewTree = 111,
             /// <summary></summary>
+            [XmlEnum("ParticleSystem")]
             ParticleSystem = 143,
             /// <summary></summary>
+            [XmlEnum("Tree")]
             Tree = 255
         }
 
@@ -774,7 +782,7 @@ namespace libsecondlife
                             string name = Helpers.FieldToString(block.NameValue);
 
                             // New prim spotted
-                            PrimObject prim = new PrimObject(Client);
+                            PrimObject prim = new PrimObject();
 
                             prim.Name = name;
 
@@ -1035,7 +1043,7 @@ namespace libsecondlife
                 foreach (ObjectUpdateCompressedPacket.ObjectDataBlock block in update.ObjectData)
                 {
                     int i = 0;
-                    prim = new PrimObject(Client);
+                    prim = new PrimObject();
 
                     prim.Flags = (ObjectFlags)block.UpdateFlags;
 

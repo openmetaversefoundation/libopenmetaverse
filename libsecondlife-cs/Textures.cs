@@ -26,7 +26,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Xml.Serialization;
 using System.IO;
 
 namespace libsecondlife
@@ -36,23 +36,59 @@ namespace libsecondlife
     /// </summary>
     public enum Bumpiness
     {
+        /// <summary></summary>
+        [XmlEnum("None")]
         None = 0,
+        /// <summary></summary>
+        [XmlEnum("Brightness")]
         Brightness = 1,
+        /// <summary></summary>
+        [XmlEnum("Darkness")]
         Darkness = 2,
+        /// <summary></summary>
+        [XmlEnum("Woodgrain")]
         Woodgrain = 3,
+        /// <summary></summary>
+        [XmlEnum("Bark")]
         Bark = 4,
+        /// <summary></summary>
+        [XmlEnum("Bricks")]
         Bricks = 5,
+        /// <summary></summary>
+        [XmlEnum("Checker")]
         Checker = 6,
+        /// <summary></summary>
+        [XmlEnum("Concrete")]
         Concrete = 7,
+        /// <summary></summary>
+        [XmlEnum("Crustytile")]
         Crustytile = 8,
+        /// <summary></summary>
+        [XmlEnum("Cutstone")]
         Cutstone = 9,
+        /// <summary></summary>
+        [XmlEnum("Discs")]
         Discs = 10,
+        /// <summary></summary>
+        [XmlEnum("Gravel")]
         Gravel = 11,
+        /// <summary></summary>
+        [XmlEnum("Petridish")]
         Petridish = 12,
+        /// <summary></summary>
+        [XmlEnum("Siding")]
         Siding = 13,
+        /// <summary></summary>
+        [XmlEnum("Stonetile")]
         Stonetile = 14,
+        /// <summary></summary>
+        [XmlEnum("Stucco")]
         Stucco = 15,
+        /// <summary></summary>
+        [XmlEnum("Suction")]
         Suction = 16,
+        /// <summary></summary>
+        [XmlEnum("Weave")]
         Weave = 17
     }
 
@@ -61,9 +97,17 @@ namespace libsecondlife
     /// </summary>
     public enum Shininess
     {
+        /// <summary></summary>
+        [XmlEnum("None")]
         None = 0,
+        /// <summary></summary>
+        [XmlEnum("Low")]
         Low = 0x40,
+        /// <summary></summary>
+        [XmlEnum("Medium")]
         Medium = 0x80,
+        /// <summary></summary>
+        [XmlEnum("High")]
         High = 0xC0
     }
 
@@ -72,33 +116,35 @@ namespace libsecondlife
     /// </summary>
     public enum Mapping
     {
+        /// <summary></summary>
+        [XmlEnum("Default")]
         Default = 0,
+        /// <summary></summary>
+        [XmlEnum("Planar")]
         Planar = 2
     }
 
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class TextureEntry
     {
         /// <summary></summary>
-        public TextureEntryFace DefaultTexture;
+        public TextureEntryFace DefaultTexture = null;
         /// <summary></summary>
-        public Dictionary<uint, TextureEntryFace> FaceTextures;
+        public SerializableDictionary<uint, TextureEntryFace> FaceTextures = 
+            new SerializableDictionary<uint,TextureEntryFace>();
 
         /// <summary>
         /// 
         /// </summary>
         public TextureEntry()
         {
-            FaceTextures = new Dictionary<uint, TextureEntryFace>();
-            //DefaultTexture = new TextureEntryFace(null);
-            DefaultTexture = null;
         }
 
         public TextureEntry(LLUUID textureID)
         {
-            FaceTextures = new Dictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
             DefaultTexture.TextureID = textureID;
         }
@@ -367,7 +413,7 @@ namespace libsecondlife
         {
             short value = (short)(byteArray[pos] | (byteArray[pos + 1] << 8));
             float QV = (float)value;
-            float QF = upper / 32767.0F;
+            float QF = upper / 32767.0f;
             return (float)(QV * QF);
         }
 
@@ -379,37 +425,37 @@ namespace libsecondlife
 
         private short RepeatShort(float value)
         {
-            return QuantizeSigned(value - 1.0F, 101.0F);
+            return QuantizeSigned(value - 1.0f, 101.0f);
         }
 
         private short OffsetShort(float value)
         {
-            return QuantizeSigned(value, 1.0F);
+            return QuantizeSigned(value, 1.0f);
         }
 
         private short RotationShort(float value)
         {
-            return QuantizeSigned(value, 359.995F);
+            return QuantizeSigned(value, 359.995f);
         }
 
         private float RepeatFloat(byte[] data, int pos)
         {
-            return DequantizeSigned(data, pos, 101.0F) + 1.0F;
+            return DequantizeSigned(data, pos, 101.0f) + 1.0f;
         }
 
         private float OffsetFloat(byte[] data, int pos)
         {
-            return DequantizeSigned(data, pos, 1.0F);
+            return DequantizeSigned(data, pos, 1.0f);
         }
 
         private float RotationFloat(byte[] data, int pos)
         {
-            return DequantizeSigned(data, pos, 359.995F);
+            return DequantizeSigned(data, pos, 359.995f);
         }
 
         private void FromBytes(byte[] data, int pos, int length)
         {
-            FaceTextures = new Dictionary<uint, TextureEntryFace>();
+            FaceTextures = new SerializableDictionary<uint, TextureEntryFace>();
             DefaultTexture = new TextureEntryFace(null);
 
             if (length <= 0) 
@@ -542,6 +588,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class TextureEntryFace
     {
         [Flags]
@@ -558,6 +605,13 @@ namespace libsecondlife
             Flags1    = 1 << 7,
             Flags2    = 1 << 8,
             All = 0xFFFFFFFF
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public TextureEntryFace()
+        {
         }
 
         /// <summary>
@@ -757,10 +811,10 @@ namespace libsecondlife
         private byte _Flags2;
     }
 
-
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class TextureAnimation
     {
         /// <summary></summary>
@@ -828,6 +882,140 @@ namespace libsecondlife
             Start = BitConverter.ToSingle(data, i);
             Length = BitConverter.ToSingle(data, i + 4);
             Rate = BitConverter.ToSingle(data, i + 8);
+        }
+    }
+
+    /// <summary>
+    /// A serializable dictionary of TextureEntryFace objects, indexed by 
+    /// the prim face they are mapped to
+    /// </summary>
+    [Serializable]
+    public class Faces : System.Collections.DictionaryBase, System.Xml.Serialization.IXmlSerializable
+    {
+        private const string NS = "http://www.libsecondlife.org/";
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public Faces()
+        {
+        }
+
+        public virtual TextureEntryFace this[uint key]
+        {
+            get
+            {
+                return (TextureEntryFace)this.Dictionary[key];
+            }
+            set
+            {
+                this.Dictionary[key] = value;
+            }
+        }
+
+        public virtual void Add(uint key, TextureEntryFace value)
+        {
+            this.Dictionary.Add(key, value);
+        }
+
+        public virtual bool Contains(uint key)
+        {
+            return this.Dictionary.Contains(key);
+        }
+
+        public virtual bool ContainsKey(uint key)
+        {
+            return this.Dictionary.Contains(key);
+        }
+
+        public virtual bool ContainsValue(TextureEntryFace value)
+        {
+            foreach (TextureEntryFace item in this.Dictionary.Values)
+            {
+                if (item == value)
+                    return true;
+            }
+            return false;
+        }
+
+        public virtual void Remove(uint key)
+        {
+            this.Dictionary.Remove(key);
+        }
+
+        public virtual System.Collections.ICollection Keys
+        {
+            get
+            {
+                return this.Dictionary.Keys;
+            }
+        }
+
+        public virtual System.Collections.ICollection Values
+        {
+            get
+            {
+                return this.Dictionary.Values;
+            }
+        }
+
+        void System.Xml.Serialization.IXmlSerializable.WriteXml(System.Xml.XmlWriter w)
+        {
+            System.Xml.Serialization.XmlSerializer keySer =
+                new System.Xml.Serialization.XmlSerializer(typeof(uint));
+            System.Xml.Serialization.XmlSerializer valueSer =
+                new System.Xml.Serialization.XmlSerializer(typeof(TextureEntryFace));
+            w.WriteStartElement("dictionary", NS);
+            foreach (object key in Dictionary.Keys)
+            {
+                w.WriteStartElement("item", NS);
+
+                w.WriteStartElement("key", NS);
+                keySer.Serialize(w, key);
+                w.WriteEndElement();
+
+                w.WriteStartElement("value", NS);
+                object value = Dictionary[key];
+                valueSer.Serialize(w, value);
+                w.WriteEndElement();
+
+                w.WriteEndElement();
+            }
+            w.WriteEndElement();
+        }
+
+        void System.Xml.Serialization.IXmlSerializable.ReadXml(System.Xml.XmlReader r)
+        {
+            System.Xml.Serialization.XmlSerializer keySer =
+                new System.Xml.Serialization.XmlSerializer(typeof(string));
+            System.Xml.Serialization.XmlSerializer valueSer =
+                new System.Xml.Serialization.XmlSerializer(typeof(TextureEntryFace));
+
+            r.Read();
+            r.ReadStartElement("dictionary", NS);
+            while (r.NodeType != System.Xml.XmlNodeType.EndElement)
+            {
+                r.ReadStartElement("item", NS);
+
+                r.ReadStartElement("key", NS);
+                object key = keySer.Deserialize(r);
+                r.ReadEndElement();
+
+                r.ReadStartElement("value", NS);
+                object value = valueSer.Deserialize(r);
+                r.ReadEndElement();
+
+                Dictionary.Add(key, value);
+
+                r.ReadEndElement();
+                r.MoveToContent();
+            }
+            r.ReadEndElement();
+        }
+
+        System.Xml.Schema.XmlSchema System.Xml.Serialization.IXmlSerializable.GetSchema()
+        {
+            return null;
         }
     }
 }

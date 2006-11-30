@@ -26,13 +26,14 @@
 
 using System;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace libsecondlife
 {
     /// <summary>
     /// Primary parameters for primitives such as Physics Enabled or Phantom
     /// </summary>
-    [Flags]
+    [Flags, Serializable]
     public enum ObjectFlags
     {
         /// <summary>None of the primary flags are enabled</summary>
@@ -41,16 +42,41 @@ namespace libsecondlife
         Physics = 1 << 0,
         /// <summary></summary>
         CreateSelected = 1 << 1,
-        /// <summary></summary>
+        Unknown1 = 1 << 2,
+        Unknown2 = 1 << 3,
+        Unknown3 = 1 << 4,
+        Unknown4 = 1 << 5,
         Script = 1 << 6,
         /// <summary>Whether this object contains an active touch script</summary>
         Touch = 1 << 7,
+        Unknown5 = 1 << 8,
         /// <summary>Whether this object can receive payments</summary>
         Money = 1 << 9,
         /// <summary>Whether this object is phantom (no collisions)</summary>
         Phantom = 1 << 10,
+        Unknown6 = 1 << 11,
+        Unknown7 = 1 << 12,
+        Unknown8 = 1 << 13,
+        Unknown9 = 1 << 14,
+        Unknown10 = 1 << 15,
+        Unknown11 = 1 << 16,
+        Unknown12 = 1 << 17,
+        Unknown13 = 1 << 18,
+        Unknown14 = 1 << 19,
+        Unknown15 = 1 << 20,
+        Unknown16 = 1 << 21,
+        Unknown17 = 1 << 22,
+        Unknown18 = 1 << 23,
+        Unknown19 = 1 << 24,
+        Unknown20 = 1 << 25,
+        Unknown21 = 1 << 26,
+        Unknown22 = 1 << 27,
+        Unknown23 = 1 << 28,
+        Unknown24 = 1 << 29,
         /// <summary>Whether this object is temporary</summary>
-        Temp = 1 << 30
+        Temp = 1 << 30,
+        Unknown25 = 1 << 31,
+        Unknown26 = 1 << 32
     }
 
     /// <summary>
@@ -58,132 +84,134 @@ namespace libsecondlife
     /// been added after the original ObjectFlags that has all eight bits 
     /// reserved already
     /// </summary>
+    [Serializable]
     public enum ExtraParamType : ushort
     {
         /// <summary>Whether this object has flexible parameters</summary>
+        [XmlEnum("Flexible")]
         Flexible = 0x10,
         /// <summary>Whether this object has light parameters</summary>
+        [XmlEnum("Light")]
         Light = 0x20
     }
 
     /// <summary>
     /// 
     /// </summary>
-	public class PrimObject
+    [Serializable]
+    public class PrimObject
 	{
         /// <summary></summary>
+        [XmlAttribute]
 		public int PathTwistBegin = 0;
         /// <summary></summary>
+        [XmlAttribute]
 		public float PathEnd = 0;
         /// <summary></summary>
-		public float ProfileBegin = 0;
+        [XmlAttribute]
+        public float ProfileBegin = 0;
         /// <summary></summary>
-		public float PathRadiusOffset = 0;
+        [XmlAttribute]
+        public float PathRadiusOffset = 0;
         /// <summary></summary>
-		public float PathSkew = 0;
+        [XmlAttribute]
+        public float PathSkew = 0;
         /// <summary></summary>
-        public LLVector3 Position = LLVector3.Zero;
-		/// <summary> </summary>
-		public ulong RegionHandle;
+        [XmlAttribute]
+        public uint ProfileCurve = 0;
         /// <summary></summary>
-		public uint ProfileCurve = 0;
+        [XmlAttribute]
+        public float PathScaleX = 0;
         /// <summary></summary>
-		public float PathScaleX = 0;
+        [XmlAttribute]
+        public float PathScaleY = 0;
         /// <summary></summary>
-		public float PathScaleY = 0;
+        [XmlAttribute]
+        public uint LocalID = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public uint ParentID = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public uint Material = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public string Name = "";
+        /// <summary></summary>
+        [XmlAttribute]
+        public string Description = "";
+        /// <summary></summary>
+        [XmlAttribute]
+        public float PathShearX = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public float PathShearY = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public float PathTaperX = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public float PathTaperY = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public float ProfileEnd = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public float PathBegin = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public uint PathCurve = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public int PathTwist = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public uint ProfileHollow = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public float PathRevolutions = 0;
+        /// <summary></summary>
+        [XmlAttribute]
+        public uint State;
+        /// <summary></summary>
+        [XmlAttribute]
+        public string Text;
+        /// <summary></summary>
+        [XmlAttribute]
+        public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
+        /// <summary></summary>
+        [XmlAttribute]
+        public ulong RegionHandle;
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
-		public uint LocalID = 0;
-        /// <summary></summary>
-        public uint ParentID = 0;
-        /// <summary></summary>
         public LLUUID GroupID = LLUUID.Zero;
         /// <summary></summary>
-		public uint Material = 0;
-        /// <summary></summary>
-		public string Name = "";
-        /// <summary></summary>
-		public string Description = "";
-        /// <summary></summary>
-		public float PathShearX = 0;
-        /// <summary></summary>
-		public float PathShearY = 0;
-        /// <summary></summary>
-		public float PathTaperX = 0;
-        /// <summary></summary>
-		public float PathTaperY = 0;
-        /// <summary></summary>
-		public float ProfileEnd = 0;
-        /// <summary></summary>
-		public float PathBegin = 0;
-        /// <summary></summary>
-		public uint PathCurve = 0;
+        public LLVector3 Position = LLVector3.Zero;
         /// <summary></summary>
         public LLVector3 Scale = LLVector3.Zero;
         /// <summary></summary>
-		public int PathTwist = 0;
-        /// <summary></summary>
-        public uint ProfileHollow = 0;
-        /// <summary></summary>
-        public float PathRevolutions = 0;
-        /// <summary></summary>
         public LLQuaternion Rotation = LLQuaternion.Identity;
-        /// <summary></summary>
-        public uint State;
-        /// <summary></summary>
-        public string Text;
-        /// <summary></summary>
-        public ObjectManager.PCode PCode;
         /// <summary></summary>
         public ObjectFlags Flags;
         /// <summary></summary>
-        public TextureEntry Textures;
+        public TextureEntry Textures = new TextureEntry();
         /// <summary></summary>
-        public TextureAnimation TextureAnim;
+        public TextureAnimation TextureAnim = new TextureAnimation();
         /// <summary></summary>
-        public PrimFlexibleData Flexible;
+        public PrimFlexibleData Flexible = new PrimFlexibleData();
         /// <summary></summary>
-        public PrimLightData Light;
+        public PrimLightData Light = new PrimLightData();
         /// <summary></summary>
-        public ParticleSystem ParticleSys;
-
-        private SecondLife Client;
+        public ParticleSystem ParticleSys = new ParticleSystem();
 
         /// <summary>
-        /// 
+        /// Default constructor
         /// </summary>
-        public PrimObject(SecondLife client)
+        public PrimObject()
         {
-            Client = client;
-            PCode = ObjectManager.PCode.Prim;
-            Flexible = new PrimFlexibleData();
-            Light = new PrimLightData();
-            ParticleSys = new ParticleSystem();
-            Textures = new TextureEntry();
-            TextureAnim = new TextureAnimation();
-            Flexible = new PrimFlexibleData();
-            Light = new PrimLightData();
-            ParticleSys = new ParticleSystem();
         }
 		
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="texture"></param>
-		public PrimObject(SecondLife client, LLUUID texture)
-		{
-            Client = client;
-            PCode = ObjectManager.PCode.Prim;
-            Textures = new TextureEntry();
-            Textures.DefaultTexture.TextureID = texture;
-		}
-
-		public GridRegion GridRegion
-		{
-			get { return Client.Grid.RegionsByHandle[RegionHandle]; }
-		}
-
         /// <summary>
         /// 
         /// </summary>
@@ -470,11 +498,24 @@ namespace libsecondlife
 
             return output;
         }
+
+        public void ToXml(XmlWriter xmlWriter)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(PrimObject));
+            serializer.Serialize(xmlWriter, this);
+        }
+
+        public static PrimObject FromXml(XmlReader xmlReader)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(PrimObject));
+            return (PrimObject)serializer.Deserialize(xmlReader);
+        }
 	}
 
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class PrimFlexibleData
     {
         /// <summary></summary>
@@ -546,6 +587,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class PrimLightData
     {
         /// <summary></summary>

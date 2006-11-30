@@ -26,6 +26,7 @@
 
 using System;
 using System.Net;
+using System.Xml.Serialization;
 
 namespace libsecondlife
 {
@@ -33,6 +34,7 @@ namespace libsecondlife
     /// A 128-bit Universally Unique Identifier, used throughout the Second
     /// Life networking protocol
     /// </summary>
+    [XmlRoot("uuid")]
 	public class LLUUID
 	{
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
@@ -265,6 +267,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [XmlRoot("vector3")]
 	public class LLVector3
 	{
         /// <summary></summary>
@@ -451,6 +454,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [XmlRoot("vector3d")]
 	public class LLVector3d
 	{
         /// <summary></summary>
@@ -538,6 +542,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [XmlRoot("vector4")]
 	public class LLVector4
 	{
         /// <summary></summary>
@@ -618,6 +623,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [XmlRoot("quaternion")]
 	public class LLQuaternion
 	{
         /// <summary></summary>
