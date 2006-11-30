@@ -166,7 +166,7 @@ namespace libsecondlife
 
                 while (true)
                 {
-                    if (connected || Environment.TickCount - start > 8000)
+                    if (connected || Environment.TickCount - start > 15000)
                     {
                         return;
                     }
