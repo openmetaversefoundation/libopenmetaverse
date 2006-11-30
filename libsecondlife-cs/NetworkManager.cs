@@ -658,6 +658,7 @@ namespace libsecondlife
         private bool connected;
 
         private const int NetworkTrafficTimeout = 15000;
+        private const int LoginTimeout = 60000;
 
         /// <summary>
         /// 
@@ -958,7 +959,7 @@ namespace libsecondlife
 
             try
             {
-                result = (XmlRpcResponse)xmlrpc.Send(url);
+                result = (XmlRpcResponse)xmlrpc.Send(url, LoginTimeout);
             }
             catch (Exception e)
             {

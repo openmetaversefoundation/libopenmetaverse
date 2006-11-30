@@ -130,13 +130,24 @@ namespace libsecondlife.AssetSystem
 
             htDownloadRequests[TransferID] = request;
 
-			Packet packet = AssetPacketHelpers.TransferRequest(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item );
-			slClient.Network.SendPacket(packet);
+            // prep packet based on asset type
+            Packet packet;
+            switch (item.Type)
+            {
+                case 13:
+                    packet = AssetPacketHelpers.TransferRequestType13(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item.AssetID);
+                    break;
+                default:
+			        packet = AssetPacketHelpers.TransferRequest(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item );
+                    break;
+            }
+
+            // Send packet
+            slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
                 Console.WriteLine(packet);
             #endif
-
             request.Completed.WaitOne();
 
             item.SetAssetData(request.AssetData);
@@ -157,7 +168,7 @@ namespace libsecondlife.AssetSystem
 
             htDownloadRequests[TransferID] = request;
 
-			Packet packet = AssetPacketHelpers.TransferRequest4BodyShape(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, asset );
+            Packet packet = AssetPacketHelpers.TransferRequestType13(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, asset.AssetID);
 			slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS

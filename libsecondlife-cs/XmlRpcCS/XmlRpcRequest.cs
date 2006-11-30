@@ -60,7 +60,7 @@ namespace Nwc.XmlRpc
         /// <summary>Send the request to the server.</summary>
         /// <param name="url"><c>String</c> The url of the XML-RPC server.</param>
         /// <returns><c>XmlRpcResponse</c> The response generated.</returns>
-        public XmlRpcResponse Send(String url)
+        public XmlRpcResponse Send(String url, int timeout)
         {
             // Override SSL authentication mechanisms
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
@@ -76,7 +76,7 @@ namespace Nwc.XmlRpc
             request.ContentType = "text/xml";
             request.AllowWriteStreamBuffering = true;
             request.KeepAlive = false;
-            request.Timeout = 15000; // miliseconds adjust as you see fit
+            request.Timeout = timeout; // miliseconds adjust as you see fit
 
             Stream stream = request.GetRequestStream();
             XmlTextWriter xml = new XmlTextWriter(stream, _encoding);
