@@ -114,6 +114,8 @@ namespace libsecondlife
         // Number of milliseconds before a packet is assumed lost and resent
         private int ResendTimeout = 4000;
 
+        private const int SimConnectTimeout = 15000;
+
         /// <summary>
         /// 
         /// </summary>
@@ -166,7 +168,7 @@ namespace libsecondlife
 
                 while (true)
                 {
-                    if (connected || Environment.TickCount - start > 15000)
+                    if (connected || Environment.TickCount - start > SimConnectTimeout)
                     {
                         return;
                     }
@@ -655,6 +657,8 @@ namespace libsecondlife
         private System.Timers.Timer DisconnectTimer;
         private bool connected;
 
+        private const int NetworkTrafficTimeout = 15000;
+
         /// <summary>
         /// 
         /// </summary>
@@ -675,7 +679,7 @@ namespace libsecondlife
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
 
             // Disconnect a sim if no network traffic has been received for 15 seconds
-            DisconnectTimer = new System.Timers.Timer(15000);
+            DisconnectTimer = new System.Timers.Timer(NetworkTrafficTimeout);
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
         }
 
