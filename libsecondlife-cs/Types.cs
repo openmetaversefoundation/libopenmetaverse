@@ -39,6 +39,7 @@ namespace libsecondlife
 	{
         /// <summary>The 16 bytes that make up the UUID</summary>
         protected byte[] data = new byte[16];
+
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
 		public byte[] Data
 		{
@@ -300,11 +301,11 @@ namespace libsecondlife
 	public class LLVector3
 	{
         /// <summary></summary>
-		[XmlAttribute] public float X;
+		[XmlAttribute("x")] public float X;
         /// <summary></summary>
-        [XmlAttribute] public float Y;
+        [XmlAttribute("y")] public float Y;
         /// <summary></summary>
-        [XmlAttribute] public float Z;
+        [XmlAttribute("z")] public float Z;
 
         /// <summary>
         /// 
@@ -487,11 +488,11 @@ namespace libsecondlife
 	public class LLVector3d
 	{
         /// <summary></summary>
-        [XmlAttribute] public double X;
+        [XmlAttribute("x")] public double X;
         /// <summary></summary>
-        [XmlAttribute] public double Y;
+        [XmlAttribute("y")] public double Y;
         /// <summary></summary>
-        [XmlAttribute] public double Z;
+        [XmlAttribute("z")] public double Z;
 
         /// <summary>
         /// 
@@ -575,20 +576,20 @@ namespace libsecondlife
 	public class LLVector4
 	{
         /// <summary></summary>
-        [XmlAttribute] public float X;
+        [XmlAttribute("x")] public float X;
         /// <summary></summary>
-        [XmlAttribute] public float Y;
+        [XmlAttribute("y")] public float Y;
         /// <summary></summary>
-        [XmlAttribute] public float Z;
+        [XmlAttribute("z")] public float Z;
         /// <summary></summary>
-        [XmlAttribute] public float S;
+        [XmlAttribute("s")] public float S;
 
         /// <summary>
         /// 
         /// </summary>
 		public LLVector4()
 		{
-			X = Y = Z = S = 0.0F;
+			X = Y = Z = S = 0.0f;
 		}
 
         /// <summary>
@@ -656,13 +657,13 @@ namespace libsecondlife
 	public class LLQuaternion
 	{
         /// <summary></summary>
-        [XmlAttribute] public float X;
+        [XmlAttribute("x")] public float X;
         /// <summary></summary>
-        [XmlAttribute] public float Y;
+        [XmlAttribute("y")] public float Y;
         /// <summary></summary>
-        [XmlAttribute] public float Z;
+        [XmlAttribute("z")] public float Z;
         /// <summary></summary>
-        [XmlAttribute] public float W;
+        [XmlAttribute("w")] public float W;
 
         /// <summary>
         /// 

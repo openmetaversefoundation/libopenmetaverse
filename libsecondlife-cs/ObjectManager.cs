@@ -152,26 +152,19 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
         public enum PCode
         {
             /// <summary></summary>
-            [XmlEnum("Prim")]
             Prim = 9,
             /// <summary></summary>
-            [XmlEnum("Avatar")]
             Avatar = 47,
             /// <summary></summary>
-            [XmlEnum("Grass")]
             Grass = 95,
             /// <summary></summary>
-            [XmlEnum("NewTree")]
             NewTree = 111,
             /// <summary></summary>
-            [XmlEnum("ParticleSystem")]
             ParticleSystem = 143,
             /// <summary></summary>
-            [XmlEnum("Tree")]
             Tree = 255
         }
 

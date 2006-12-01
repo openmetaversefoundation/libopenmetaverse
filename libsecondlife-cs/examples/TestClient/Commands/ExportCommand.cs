@@ -21,6 +21,8 @@ namespace libsecondlife.TestClient
                 return "Usage: export uuid outputfile.xml";
 
             LLUUID id;
+            uint localid = 0;
+            int count = 0;
             string file = args[1];
 
             try
@@ -36,28 +38,55 @@ namespace libsecondlife.TestClient
             {
                 if (prim.ID == id)
                 {
-                    try
+                    if (prim.ParentID != 0)
                     {
-                        XmlWriter writer = XmlWriter.Create(file);
-                        prim.ToXml(writer);
-                        writer.Close();
+                        localid = prim.ParentID;
                     }
-                    catch (Exception e)
+                    else
                     {
-                        string ret = "Failed to write to " + file + ":" + e.ToString();
-                        if (ret.Length > 1000)
-                        {
-                            ret = ret.Remove(1000);
-                        }
-                        return ret;
+                        localid = prim.LocalID;
                     }
 
-                    return "Exported " + id.ToString() + " to " + file;
+                    break;
                 }
             }
 
-            return "Couldn't find UUID " + id.ToString() + " in the " + TestClient.Prims.Count + 
-                "objects currently indexed";
+            if (localid != 0)
+            {
+                try
+                {
+                    XmlWriter writer = XmlWriter.Create(file);
+                    writer.WriteStartElement("primitives");
+
+                    foreach (PrimObject prim in TestClient.Prims.Values)
+                    {
+                        if (prim.LocalID == localid || prim.ParentID == localid)
+                        {
+                            prim.ToXml(writer);
+                            count++;
+                        }
+                    }
+
+                    writer.WriteEndElement();
+                    writer.Close();
+                }
+                catch (Exception e)
+                {
+                    string ret = "Failed to write to " + file + ":" + e.ToString();
+                    if (ret.Length > 1000)
+                    {
+                        ret = ret.Remove(1000);
+                    }
+                    return ret;
+                }
+
+                return "Exported " + count + " prims to " + file;
+            }
+            else
+            {
+                return "Couldn't find UUID " + id.ToString() + " in the " + TestClient.Prims.Count +
+                    "objects currently indexed";
+            }
         }
     }
 }

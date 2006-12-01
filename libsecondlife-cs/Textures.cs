@@ -37,59 +37,41 @@ namespace libsecondlife
     public enum Bumpiness
     {
         /// <summary></summary>
-        [XmlEnum("None")]
-        None = 0,
+        [XmlEnum("None")] None = 0,
         /// <summary></summary>
-        [XmlEnum("Brightness")]
-        Brightness = 1,
+        [XmlEnum("Brightness")] Brightness = 1,
         /// <summary></summary>
-        [XmlEnum("Darkness")]
-        Darkness = 2,
+        [XmlEnum("Darkness")] Darkness = 2,
         /// <summary></summary>
-        [XmlEnum("Woodgrain")]
-        Woodgrain = 3,
+        [XmlEnum("Woodgrain")] Woodgrain = 3,
         /// <summary></summary>
-        [XmlEnum("Bark")]
-        Bark = 4,
+        [XmlEnum("Bark")] Bark = 4,
         /// <summary></summary>
-        [XmlEnum("Bricks")]
-        Bricks = 5,
+        [XmlEnum("Bricks")] Bricks = 5,
         /// <summary></summary>
-        [XmlEnum("Checker")]
-        Checker = 6,
+        [XmlEnum("Checker")] Checker = 6,
         /// <summary></summary>
-        [XmlEnum("Concrete")]
-        Concrete = 7,
+        [XmlEnum("Concrete")] Concrete = 7,
         /// <summary></summary>
-        [XmlEnum("Crustytile")]
-        Crustytile = 8,
+        [XmlEnum("Crustytile")] Crustytile = 8,
         /// <summary></summary>
-        [XmlEnum("Cutstone")]
-        Cutstone = 9,
+        [XmlEnum("Cutstone")] Cutstone = 9,
         /// <summary></summary>
-        [XmlEnum("Discs")]
-        Discs = 10,
+        [XmlEnum("Discs")] Discs = 10,
         /// <summary></summary>
-        [XmlEnum("Gravel")]
-        Gravel = 11,
+        [XmlEnum("Gravel")] Gravel = 11,
         /// <summary></summary>
-        [XmlEnum("Petridish")]
-        Petridish = 12,
+        [XmlEnum("Petridish")] Petridish = 12,
         /// <summary></summary>
-        [XmlEnum("Siding")]
-        Siding = 13,
+        [XmlEnum("Siding")] Siding = 13,
         /// <summary></summary>
-        [XmlEnum("Stonetile")]
-        Stonetile = 14,
+        [XmlEnum("Stonetile")] Stonetile = 14,
         /// <summary></summary>
-        [XmlEnum("Stucco")]
-        Stucco = 15,
+        [XmlEnum("Stucco")] Stucco = 15,
         /// <summary></summary>
-        [XmlEnum("Suction")]
-        Suction = 16,
+        [XmlEnum("Suction")] Suction = 16,
         /// <summary></summary>
-        [XmlEnum("Weave")]
-        Weave = 17
+        [XmlEnum("Weave")] Weave = 17
     }
 
     /// <summary>
@@ -98,17 +80,13 @@ namespace libsecondlife
     public enum Shininess
     {
         /// <summary></summary>
-        [XmlEnum("None")]
-        None = 0,
+        [XmlEnum("None")] None = 0,
         /// <summary></summary>
-        [XmlEnum("Low")]
-        Low = 0x40,
+        [XmlEnum("Low")] Low = 0x40,
         /// <summary></summary>
-        [XmlEnum("Medium")]
-        Medium = 0x80,
+        [XmlEnum("Medium")] Medium = 0x80,
         /// <summary></summary>
-        [XmlEnum("High")]
-        High = 0xC0
+        [XmlEnum("High")] High = 0xC0
     }
 
     /// <summary>
@@ -117,23 +95,51 @@ namespace libsecondlife
     public enum Mapping
     {
         /// <summary></summary>
-        [XmlEnum("Default")]
-        Default = 0,
+        [XmlEnum("Default")] Default = 0,
         /// <summary></summary>
-        [XmlEnum("Planar")]
-        Planar = 2
+        [XmlEnum("Planar")] Planar = 2
+    }
+
+    /// <summary>
+    /// Flags in the TextureEntry block that describe which properties are 
+    /// set
+    /// </summary>
+    [Flags]
+    public enum TextureAttributes : uint
+    {
+        /// <summary></summary>
+        None = 0,
+        /// <summary></summary>
+        TextureID = 1 << 0,
+        /// <summary></summary>
+        RGBA = 1 << 1,
+        /// <summary></summary>
+        RepeatU = 1 << 2,
+        /// <summary></summary>
+        RepeatV = 1 << 3,
+        /// <summary></summary>
+        OffsetU = 1 << 4,
+        /// <summary></summary>
+        OffsetV = 1 << 5,
+        /// <summary></summary>
+        Rotation = 1 << 6,
+        /// <summary></summary>
+        Flags1 = 1 << 7,
+        /// <summary></summary>
+        Flags2 = 1 << 8,
+        /// <summary></summary>
+        All = 0xFFFFFFFF
     }
 
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
     public class TextureEntry
     {
         /// <summary></summary>
-        public TextureEntryFace DefaultTexture = null;
+        [XmlElement("default")] public TextureEntryFace DefaultTexture = null;
         /// <summary></summary>
-        public SerializableDictionary<uint, TextureEntryFace> FaceTextures = 
+        [XmlElement("faces")] public SerializableDictionary<uint, TextureEntryFace> FaceTextures = 
             new SerializableDictionary<uint,TextureEntryFace>();
 
         /// <summary>
@@ -588,36 +594,189 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
     public class TextureEntryFace
     {
-        [XmlAttribute] protected uint rgba;
-        [XmlAttribute] protected float repeatU;
-        [XmlAttribute] protected float repeatV;
-        [XmlAttribute] protected float offsetU;
-        [XmlAttribute] protected float offsetV;
-        [XmlAttribute] protected float rotation;
-        [XmlAttribute] protected byte flags1;
-        [XmlAttribute] protected byte flags2;
-        protected LLUUID textureID;
-        protected TextureAttributes hasAttribute;
-        protected TextureEntryFace DefaultTexture;
+        [XmlAttribute("rgba")] private uint rgba;
+        [XmlAttribute("repeatu")] private float repeatU;
+        [XmlAttribute("repeatv")] private float repeatV;
+        [XmlAttribute("offsetu")] private float offsetU;
+        [XmlAttribute("offsetv")] private float offsetV;
+        [XmlAttribute("rotation")] private float rotation;
+        [XmlAttribute("flags1")] private byte flags1;
+        [XmlAttribute("flags2")] private byte flags2;
+        [XmlAttribute("textureattributes")] private TextureAttributes hasAttribute;
+        [XmlText] private LLUUID textureID;
+        [XmlElement("defaulttexture")] private TextureEntryFace DefaultTexture = null;
 
-        [Flags, Serializable]
-        public enum TextureAttributes : uint
+        //////////////////////
+        ///// Properties /////
+        //////////////////////
+
+        /// <summary></summary>
+        [XmlAttribute("rgba")]
+        public uint RGBA
         {
-            None      = 0,
-            TextureID = 1 << 0,
-            RGBA      = 1 << 1,
-            RepeatU   = 1 << 2,
-            RepeatV   = 1 << 3,
-            OffsetU   = 1 << 4,
-            OffsetV   = 1 << 5,
-            Rotation  = 1 << 6,
-            Flags1    = 1 << 7,
-            Flags2    = 1 << 8,
-            All = 0xFFFFFFFF
+            get
+            {
+                if ((hasAttribute & TextureAttributes.RGBA) != 0)
+                    return rgba;
+                else
+                    return DefaultTexture.rgba;
+            }
+            set
+            {
+                rgba = value;
+                hasAttribute |= TextureAttributes.RGBA;
+            }
         }
+
+        /// <summary></summary>
+        [XmlAttribute("repeatu")]
+        public float RepeatU
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.RepeatU) != 0)
+                    return repeatU;
+                else
+                    return DefaultTexture.repeatU;
+            }
+            set
+            {
+                repeatU = value;
+                hasAttribute |= TextureAttributes.RepeatU;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlAttribute("repeatv")]
+        public float RepeatV
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.RepeatV) != 0)
+                    return repeatV;
+                else
+                    return DefaultTexture.repeatV;
+            }
+            set
+            {
+                repeatV = value;
+                hasAttribute |= TextureAttributes.RepeatV;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlAttribute("offsetu")]
+        public float OffsetU
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.OffsetU) != 0)
+                    return offsetU;
+                else
+                    return DefaultTexture.offsetU;
+            }
+            set
+            {
+                offsetU = value;
+                hasAttribute |= TextureAttributes.OffsetU;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlAttribute("offsetv")]
+        public float OffsetV
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.OffsetV) != 0)
+                    return offsetV;
+                else
+                    return DefaultTexture.offsetV;
+            }
+            set
+            {
+                offsetV = value;
+                hasAttribute |= TextureAttributes.OffsetV;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlAttribute("rotation")]
+        public float Rotation
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.Rotation) != 0)
+                    return rotation;
+                else
+                    return DefaultTexture.rotation;
+            }
+            set
+            {
+                rotation = value;
+                hasAttribute |= TextureAttributes.Rotation;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlAttribute("flags1")]
+        public byte Flags1
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.Flags1) != 0)
+                    return flags1;
+                else
+                    return DefaultTexture.flags1;
+            }
+            set
+            {
+                flags1 = value;
+                hasAttribute |= TextureAttributes.Flags1;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlAttribute("flags2")]
+        public byte Flags2
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.Flags2) != 0)
+                    return flags2;
+                else
+                    return DefaultTexture.flags2;
+            }
+            set
+            {
+                flags2 = value;
+                hasAttribute |= TextureAttributes.Flags2;
+            }
+        }
+
+        /// <summary></summary>
+        [XmlElement("id")]
+        public LLUUID TextureID
+        {
+            get
+            {
+                if ((hasAttribute & TextureAttributes.TextureID) != 0)
+                    return textureID;
+                else
+                    return DefaultTexture.textureID;
+            }
+            set
+            {
+                textureID = value;
+                hasAttribute |= TextureAttributes.TextureID;
+            }
+        }
+
+        /////////////////////////////
+        ///// End of properties /////
+        /////////////////////////////
 
         /// <summary>
         /// 
@@ -638,199 +797,27 @@ namespace libsecondlife
             else
                 hasAttribute = TextureAttributes.None;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public LLUUID TextureID
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.TextureID) != 0)
-                    return textureID;
-                else
-                    return DefaultTexture.textureID;
-            }
-            set
-            {
-                textureID = value;
-                hasAttribute |= TextureAttributes.TextureID;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public uint RGBA
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.RGBA) != 0)
-                    return rgba;
-                else
-                    return DefaultTexture.rgba;
-            }
-            set
-            {
-                rgba = value;
-                hasAttribute |= TextureAttributes.RGBA;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float RepeatU
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.RepeatU) != 0)
-                    return repeatU;
-                else
-                    return DefaultTexture.repeatU;
-            }
-            set
-            {
-                repeatU = value;
-                hasAttribute |= TextureAttributes.RepeatU;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float RepeatV
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.RepeatV) != 0)
-                    return repeatV;
-                else
-                    return DefaultTexture.repeatV;
-            }
-            set
-            {
-                repeatV = value;
-                hasAttribute |= TextureAttributes.RepeatV;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float OffsetU
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.OffsetU) != 0)
-                    return offsetU;
-                else
-                    return DefaultTexture.offsetU;
-            }
-            set
-            {
-                offsetU = value;
-                hasAttribute |= TextureAttributes.OffsetU;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float OffsetV
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.OffsetV) != 0)
-                    return offsetV;
-                else
-                    return DefaultTexture.offsetV;
-            }
-            set
-            {
-                offsetV = value;
-                hasAttribute |= TextureAttributes.OffsetV;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float Rotation
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.Rotation) != 0)
-                    return rotation;
-                else
-                    return DefaultTexture.rotation;
-            }
-            set
-            {
-                rotation = value;
-                hasAttribute |= TextureAttributes.Rotation;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public byte Flags1
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.Flags1) != 0)
-                    return flags1;
-                else
-                    return DefaultTexture.flags1;
-            }
-            set
-            {
-                flags1 = value;
-                hasAttribute |= TextureAttributes.Flags1;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public byte Flags2
-        {
-            get
-            {
-                if ((hasAttribute & TextureAttributes.Flags2) != 0)
-                    return flags2;
-                else
-                    return DefaultTexture.flags2;
-            }
-            set
-            {
-                flags2 = value;
-                hasAttribute |= TextureAttributes.Flags2;
-            }
-        }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
     public class TextureAnimation
     {
         /// <summary></summary>
-        [XmlAttribute] public uint Flags;
+        [XmlAttribute("flags")] public uint Flags;
         /// <summary></summary>
-        [XmlAttribute] public uint Face;
+        [XmlAttribute("face")] public uint Face;
         /// <summary></summary>
-        [XmlAttribute] public uint SizeX;
+        [XmlAttribute("sizex")] public uint SizeX;
         /// <summary></summary>
-        [XmlAttribute] public uint SizeY;
+        [XmlAttribute("sizey")] public uint SizeY;
         /// <summary></summary>
-        [XmlAttribute] public float Start;
+        [XmlAttribute("start")] public float Start;
         /// <summary></summary>
-        [XmlAttribute] public float Length;
+        [XmlAttribute("length")] public float Length;
         /// <summary></summary>
-        [XmlAttribute] public float Rate;
+        [XmlAttribute("rate")] public float Rate;
 
         /// <summary>
         /// Default constructor
@@ -882,140 +869,6 @@ namespace libsecondlife
             Start = BitConverter.ToSingle(data, i);
             Length = BitConverter.ToSingle(data, i + 4);
             Rate = BitConverter.ToSingle(data, i + 8);
-        }
-    }
-
-    /// <summary>
-    /// A serializable dictionary of TextureEntryFace objects, indexed by 
-    /// the prim face they are mapped to
-    /// </summary>
-    [Serializable]
-    public class Faces : System.Collections.DictionaryBase, System.Xml.Serialization.IXmlSerializable
-    {
-        private const string NS = "http://www.libsecondlife.org/";
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public Faces()
-        {
-        }
-
-        public virtual TextureEntryFace this[uint key]
-        {
-            get
-            {
-                return (TextureEntryFace)this.Dictionary[key];
-            }
-            set
-            {
-                this.Dictionary[key] = value;
-            }
-        }
-
-        public virtual void Add(uint key, TextureEntryFace value)
-        {
-            this.Dictionary.Add(key, value);
-        }
-
-        public virtual bool Contains(uint key)
-        {
-            return this.Dictionary.Contains(key);
-        }
-
-        public virtual bool ContainsKey(uint key)
-        {
-            return this.Dictionary.Contains(key);
-        }
-
-        public virtual bool ContainsValue(TextureEntryFace value)
-        {
-            foreach (TextureEntryFace item in this.Dictionary.Values)
-            {
-                if (item == value)
-                    return true;
-            }
-            return false;
-        }
-
-        public virtual void Remove(uint key)
-        {
-            this.Dictionary.Remove(key);
-        }
-
-        public virtual System.Collections.ICollection Keys
-        {
-            get
-            {
-                return this.Dictionary.Keys;
-            }
-        }
-
-        public virtual System.Collections.ICollection Values
-        {
-            get
-            {
-                return this.Dictionary.Values;
-            }
-        }
-
-        void System.Xml.Serialization.IXmlSerializable.WriteXml(System.Xml.XmlWriter w)
-        {
-            System.Xml.Serialization.XmlSerializer keySer =
-                new System.Xml.Serialization.XmlSerializer(typeof(uint));
-            System.Xml.Serialization.XmlSerializer valueSer =
-                new System.Xml.Serialization.XmlSerializer(typeof(TextureEntryFace));
-            w.WriteStartElement("dictionary", NS);
-            foreach (object key in Dictionary.Keys)
-            {
-                w.WriteStartElement("item", NS);
-
-                w.WriteStartElement("key", NS);
-                keySer.Serialize(w, key);
-                w.WriteEndElement();
-
-                w.WriteStartElement("value", NS);
-                object value = Dictionary[key];
-                valueSer.Serialize(w, value);
-                w.WriteEndElement();
-
-                w.WriteEndElement();
-            }
-            w.WriteEndElement();
-        }
-
-        void System.Xml.Serialization.IXmlSerializable.ReadXml(System.Xml.XmlReader r)
-        {
-            System.Xml.Serialization.XmlSerializer keySer =
-                new System.Xml.Serialization.XmlSerializer(typeof(string));
-            System.Xml.Serialization.XmlSerializer valueSer =
-                new System.Xml.Serialization.XmlSerializer(typeof(TextureEntryFace));
-
-            r.Read();
-            r.ReadStartElement("dictionary", NS);
-            while (r.NodeType != System.Xml.XmlNodeType.EndElement)
-            {
-                r.ReadStartElement("item", NS);
-
-                r.ReadStartElement("key", NS);
-                object key = keySer.Deserialize(r);
-                r.ReadEndElement();
-
-                r.ReadStartElement("value", NS);
-                object value = valueSer.Deserialize(r);
-                r.ReadEndElement();
-
-                Dictionary.Add(key, value);
-
-                r.ReadEndElement();
-                r.MoveToContent();
-            }
-            r.ReadEndElement();
-        }
-
-        System.Xml.Schema.XmlSchema System.Xml.Serialization.IXmlSerializable.GetSchema()
-        {
-            return null;
         }
     }
 }

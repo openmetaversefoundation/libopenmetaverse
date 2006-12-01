@@ -33,7 +33,7 @@ namespace libsecondlife
     /// <summary>
     /// Primary parameters for primitives such as Physics Enabled or Phantom
     /// </summary>
-    [Flags, Serializable]
+    [Flags]
     public enum ObjectFlags
     {
         /// <summary>None of the primary flags are enabled</summary>
@@ -84,7 +84,6 @@ namespace libsecondlife
     /// been added after the original ObjectFlags that has all eight bits 
     /// reserved already
     /// </summary>
-    [Serializable]
     public enum ExtraParamType : ushort
     {
         /// <summary>Whether this object has flexible parameters</summary>
@@ -96,85 +95,85 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
+    [Serializable, XmlRoot("prim")]
     public class PrimObject
 	{
         /// <summary></summary>
-        [XmlAttribute] public int PathTwistBegin = 0;
+        [XmlAttribute("pathtwistbegin")] public int PathTwistBegin = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathEnd = 0;
+        [XmlAttribute("pathend")] public float PathEnd = 0;
         /// <summary></summary>
-        [XmlAttribute] public float ProfileBegin = 0;
+        [XmlAttribute("profilebegin")] public float ProfileBegin = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathRadiusOffset = 0;
+        [XmlAttribute("pathradiusoffset")] public float PathRadiusOffset = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathSkew = 0;
+        [XmlAttribute("pathskew")] public float PathSkew = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint ProfileCurve = 0;
+        [XmlAttribute("profilecurve")] public uint ProfileCurve = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathScaleX = 0;
+        [XmlAttribute("pathscalex")] public float PathScaleX = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathScaleY = 0;
+        [XmlAttribute("pathscaley")] public float PathScaleY = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint LocalID = 0;
+        [XmlAttribute("localid")] public uint LocalID = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint ParentID = 0;
+        [XmlAttribute("parentid")] public uint ParentID = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint Material = 0;
+        [XmlAttribute("material")] public uint Material = 0;
         /// <summary></summary>
-        [XmlAttribute] public string Name = "";
+        [XmlAttribute("name")] public string Name = "";
         /// <summary></summary>
-        [XmlAttribute] public string Description = "";
+        [XmlAttribute("description")] public string Description = "";
         /// <summary></summary>
-        [XmlAttribute] public float PathShearX = 0;
+        [XmlAttribute("pathshearx")] public float PathShearX = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathShearY = 0;
+        [XmlAttribute("pathsheary")] public float PathShearY = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathTaperX = 0;
+        [XmlAttribute("pathtaperx")] public float PathTaperX = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathTaperY = 0;
+        [XmlAttribute("pathtapery")] public float PathTaperY = 0;
         /// <summary></summary>
-        [XmlAttribute] public float ProfileEnd = 0;
+        [XmlAttribute("profileend")] public float ProfileEnd = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathBegin = 0;
+        [XmlAttribute("pathbegin")] public float PathBegin = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint PathCurve = 0;
+        [XmlAttribute("pathcurve")] public uint PathCurve = 0;
         /// <summary></summary>
-        [XmlAttribute] public int PathTwist = 0;
+        [XmlAttribute("pathtwist")] public int PathTwist = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint ProfileHollow = 0;
+        [XmlAttribute("profilehollow")] public uint ProfileHollow = 0;
         /// <summary></summary>
-        [XmlAttribute] public float PathRevolutions = 0;
+        [XmlAttribute("pathrevolutions")] public float PathRevolutions = 0;
         /// <summary></summary>
-        [XmlAttribute] public uint State;
+        [XmlAttribute("state")] public uint State;
         /// <summary></summary>
-        [XmlAttribute] public string Text;
+        [XmlAttribute("text")] public string Text;
         /// <summary></summary>
-        [field:NonSerialized] public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
+        [XmlAttribute("regionhandle")] public ulong RegionHandle;
         /// <summary></summary>
-        [XmlAttribute] public ulong RegionHandle;
+        [XmlAttribute("flags")] public ObjectFlags Flags;
         /// <summary></summary>
-        public LLUUID ID = LLUUID.Zero;
+        [XmlIgnore] public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
         /// <summary></summary>
-        public LLUUID GroupID = LLUUID.Zero;
+        [XmlElement("id")] public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
-        public LLVector3 Position = LLVector3.Zero;
+        [XmlElement("groupid")] public LLUUID GroupID = LLUUID.Zero;
         /// <summary></summary>
-        public LLVector3 Scale = LLVector3.Zero;
+        [XmlElement("position")] public LLVector3 Position = LLVector3.Zero;
         /// <summary></summary>
-        public LLQuaternion Rotation = LLQuaternion.Identity;
+        [XmlElement("scale")] public LLVector3 Scale = LLVector3.Zero;
         /// <summary></summary>
-        public ObjectFlags Flags;
+        [XmlElement("rotation")] public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary></summary>
-        public TextureEntry Textures = new TextureEntry();
+        [XmlElement("textures")] public TextureEntry Textures = new TextureEntry();
         /// <summary></summary>
-        public TextureAnimation TextureAnim = new TextureAnimation();
+        [XmlElement("textureanimation")] public TextureAnimation TextureAnim = new TextureAnimation();
         /// <summary></summary>
-        public PrimFlexibleData Flexible = new PrimFlexibleData();
+        [XmlElement("flexible")] public PrimFlexibleData Flexible = new PrimFlexibleData();
         /// <summary></summary>
-        public PrimLightData Light = new PrimLightData();
+        [XmlElement("light")] public PrimLightData Light = new PrimLightData();
         /// <summary></summary>
-        public ParticleSystem ParticleSys = new ParticleSystem();
+        [XmlElement("particles")] public ParticleSystem ParticleSys = new ParticleSystem();
 
         /// <summary>
         /// Default constructor
@@ -472,8 +471,10 @@ namespace libsecondlife
 
         public void ToXml(XmlWriter xmlWriter)
         {
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
             XmlSerializer serializer = new XmlSerializer(typeof(PrimObject));
-            serializer.Serialize(xmlWriter, this);
+            serializer.Serialize(xmlWriter, this, ns);
         }
 
         public static PrimObject FromXml(XmlReader xmlReader)
@@ -486,21 +487,20 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
     public class PrimFlexibleData
     {
         /// <summary></summary>
-        [XmlAttribute] public int Softness;
+        [XmlAttribute("softness")] public int Softness;
         /// <summary></summary>
-        [XmlAttribute] public float Gravity;
+        [XmlAttribute("gravity")] public float Gravity;
         /// <summary></summary>
-        [XmlAttribute] public float Drag;
+        [XmlAttribute("drag")] public float Drag;
         /// <summary></summary>
-        [XmlAttribute] public float Wind;
+        [XmlAttribute("wind")] public float Wind;
         /// <summary></summary>
-        [XmlAttribute] public float Tension;
+        [XmlAttribute("tension")] public float Tension;
         /// <summary></summary>
-        public LLVector3 Force = LLVector3.Zero;
+        [XmlElement("force")] public LLVector3 Force = LLVector3.Zero;
 
         /// <summary>
         /// 
@@ -558,21 +558,20 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
     public class PrimLightData
     {
         /// <summary></summary>
-        [XmlAttribute] public byte R;
+        [XmlAttribute("red")] public byte R;
         /// <summary></summary>
-        [XmlAttribute] public byte G;
+        [XmlAttribute("green")] public byte G;
         /// <summary></summary>
-        [XmlAttribute] public byte B;
+        [XmlAttribute("blue")] public byte B;
         /// <summary></summary>
-        [XmlAttribute] public float Intensity;
+        [XmlAttribute("intensity")] public float Intensity;
         /// <summary></summary>
-        [XmlAttribute] public float Radius;
+        [XmlAttribute("radius")] public float Radius;
         /// <summary></summary>
-        [XmlAttribute] public float Falloff;
+        [XmlAttribute("falloff")] public float Falloff;
 
         /// <summary>
         /// 

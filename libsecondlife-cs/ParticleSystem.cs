@@ -7,13 +7,11 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    [Serializable]
     public class ParticleSystem
     {
         /// <summary>
         /// 
         /// </summary>
-        [Serializable]
         public enum SourcePattern : byte
         {
             /// <summary></summary>
@@ -33,7 +31,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        [Flags, Serializable]
+        [Flags]
         public enum ParticleFlags : ushort
         {
             /// <summary></summary>
@@ -59,47 +57,47 @@ namespace libsecondlife
         }
 
         /// <summary></summary>
-        [XmlAttribute] public uint PartStartRGBA;
+        [XmlAttribute("startrgba")] public uint PartStartRGBA;
         /// <summary></summary>
-        [XmlAttribute] public uint PartEndRGBA;
+        [XmlAttribute("endrgba")] public uint PartEndRGBA;
         /// <summary></summary>
-        [XmlAttribute] public float PartMaxAge;
+        [XmlAttribute("maxage")] public float PartMaxAge;
         /// <summary></summary>
-        [XmlAttribute] public float SrcMaxAge;
+        [XmlAttribute("srcmaxage")] public float SrcMaxAge;
         /// <summary></summary>
-        [XmlAttribute] public float SrcAngleBegin;
+        [XmlAttribute("srcanglebegin")] public float SrcAngleBegin;
         /// <summary></summary>
-        [XmlAttribute] public float SrcAngleEnd;
+        [XmlAttribute("srcangleend")] public float SrcAngleEnd;
         /// <summary></summary>
-        [XmlAttribute] public int SrcBurstPartCount;
+        [XmlAttribute("srcburstpartcount")] public int SrcBurstPartCount;
         /// <summary></summary>
-        [XmlAttribute] public float SrcBurstRadius;
+        [XmlAttribute("srcburstradius")] public float SrcBurstRadius;
         /// <summary></summary>
-        [XmlAttribute] public float SrcBurstRate;
+        [XmlAttribute("srcburstrate")] public float SrcBurstRate;
         /// <summary></summary>
-        [XmlAttribute] public float SrcBurstSpeedMin;
+        [XmlAttribute("srcburstspeedmin")] public float SrcBurstSpeedMin;
         /// <summary></summary>
-        [XmlAttribute] public float SrcBurstSpeedMax;
+        [XmlAttribute("srcburstspeedmax")] public float SrcBurstSpeedMax;
         /// <summary>Unknown</summary>
-        [XmlAttribute] public uint Version;
+        [XmlAttribute("version")] public uint Version;
         /// <summary>Unknown</summary>
-        [XmlAttribute] public uint StartTick;
+        [XmlAttribute("starttick")] public uint StartTick;
         /// <summary></summary>
-        [XmlAttribute] public SourcePattern SrcPattern;
+        [XmlAttribute("srcpattern")] public SourcePattern SrcPattern;
         /// <summary>Various options that describe the behavior of this system</summary>
-        [XmlAttribute] public ParticleFlags PartFlags;
+        [XmlAttribute("particleflags")] public ParticleFlags PartFlags;
         /// <summary></summary>
-        public LLUUID SrcTargetKey = LLUUID.Zero;
+        [XmlElement("srctarget")] public LLUUID SrcTargetKey = LLUUID.Zero;
         /// <summary>Texture that will be applied to the particles</summary>
-        public LLUUID SrcTexture = LLUUID.Zero;
+        [XmlElement("srctexture")] public LLUUID SrcTexture = LLUUID.Zero;
         /// <summary></summary>
-        public LLVector3 PartStartScale = LLVector3.Zero;
+        [XmlElement("partstartscale")] public LLVector3 PartStartScale = LLVector3.Zero;
         /// <summary></summary>
-        public LLVector3 PartEndScale = LLVector3.Zero;
+        [XmlElement("partendscale")] public LLVector3 PartEndScale = LLVector3.Zero;
         /// <summary></summary>
-        public LLVector3 SrcAccel = LLVector3.Zero;
+        [XmlElement("srcaccel")] public LLVector3 SrcAccel = LLVector3.Zero;
         /// <summary></summary>
-        public LLVector3 SrcOmega = LLVector3.Zero;
+        [XmlElement("srcomega")] public LLVector3 SrcOmega = LLVector3.Zero;
         
         /// <summary>
         /// 
