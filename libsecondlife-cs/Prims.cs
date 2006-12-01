@@ -176,7 +176,7 @@ namespace libsecondlife
         [XmlElement("particles")] public ParticleSystem ParticleSys = new ParticleSystem();
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor, zeroes out or sets default prim parameters
         /// </summary>
         public PrimObject()
         {

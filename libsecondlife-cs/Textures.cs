@@ -32,7 +32,7 @@ using System.IO;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
+    /// The type of bump-mapping applied to a face
     /// </summary>
     public enum Bumpiness
     {
@@ -75,7 +75,7 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// The level of shininess applied to a face
     /// </summary>
     public enum Shininess
     {
@@ -90,7 +90,7 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// The texture mapping style used for a face
     /// </summary>
     public enum Mapping
     {
@@ -132,8 +132,13 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Represents all of the texturable faces for an object
     /// </summary>
+    /// <remarks>Objects in Second Life have infinite faces, with each face
+    /// using the properties of the default face unless set otherwise. So if
+    /// you have a TextureEntry with a default texture uuid of X, and face 72
+    /// has a texture UUID of Y, every face would be textured with X except for
+    /// face 72 that uses Y.</remarks>
     public class TextureEntry
     {
         /// <summary></summary>
@@ -143,28 +148,44 @@ namespace libsecondlife
             new SerializableDictionary<uint,TextureEntryFace>();
 
         /// <summary>
-        /// 
+        /// Default constructor, DefaultTexture will remain null
         /// </summary>
         public TextureEntry()
         {
         }
 
-        public TextureEntry(LLUUID textureID)
+        /// <summary>
+        /// Constructor that takes a default texture UUID
+        /// </summary>
+        /// <param name="textureID">Texture UUID to use as the default texture</param>
+        public TextureEntry(LLUUID defaultTextureID)
         {
             DefaultTexture = new TextureEntryFace(null);
-            DefaultTexture.TextureID = textureID;
+            DefaultTexture.TextureID = defaultTextureID;
         }
 
         /// <summary>
-        /// 
+        /// Constructor that creates the TextureEntry class from a byte array
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="pos"></param>
+        /// <param name="data">Byte array containing the TextureEntry field</param>
+        /// <param name="pos">Starting position of the TextureEntry field in 
+        /// the byte array</param>
+        /// <param name="length">Length of the TextureEntry field, in bytes</param>
         public TextureEntry(byte[] data, int pos, int length)
         {
             FromBytes(data, pos, length);
         }
 
+        /// <summary>
+        /// Returns the TextureEntryFace that is applied to the specified 
+        /// index. If a custom texture is not set for this face that would be
+        /// the default texture for this TextureEntry. Do not modify the 
+        /// returned TextureEntryFace, it will have undefined results. Use 
+        /// CreateFace() to get a TextureEntryFace that is safe for writing
+        /// </summary>
+        /// <param name="index">The index number of the face to retrieve</param>
+        /// <returns>A TextureEntryFace containing all the properties for that
+        /// face, suitable for read-only operations</returns>
         public TextureEntryFace GetFace(uint index)
         {
             if (FaceTextures.ContainsKey(index))
@@ -174,11 +195,15 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// This will either create a new face if a custom face for the given
+        /// index is not defined, or return the custom face for that index if
+        /// it already exists
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public TextureEntryFace SetFace(uint index)
+        /// <param name="index">The index number of the face to create or 
+        /// retrieve</param>
+        /// <returns>A TextureEntryFace containing all the properties for that
+        /// face</returns>
+        public TextureEntryFace CreateFace(uint index)
         {
             if (!FaceTextures.ContainsKey(index))
                 FaceTextures[index] = new TextureEntryFace(this.DefaultTexture);
@@ -190,7 +215,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-        public byte[] GetBytes()
+        public byte[] ToBytes()
         {
             if (DefaultTexture == null)
             {
@@ -482,7 +507,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).TextureID = tmpUUID;
+                        CreateFace(face).TextureID = tmpUUID;
             }
             //Read RGBA --------------------------------------------
             DefaultTexture.RGBA = (uint)(data[i] + (data[i + 1] << 8) + (data[i + 2] << 16) + (data[i + 3] << 24));
@@ -495,7 +520,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).RGBA = tmpUint;
+                        CreateFace(face).RGBA = tmpUint;
             }
             //Read RepeatU -----------------------------------------
             DefaultTexture.RepeatU = RepeatFloat(data, i);
@@ -508,7 +533,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).RepeatU = tmpFloat;
+                        CreateFace(face).RepeatU = tmpFloat;
             }
             //Read RepeatV -----------------------------------------
             DefaultTexture.RepeatV = RepeatFloat(data, i);
@@ -521,7 +546,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).RepeatV = tmpFloat;
+                        CreateFace(face).RepeatV = tmpFloat;
             }
             //Read OffsetU -----------------------------------------
             DefaultTexture.OffsetU = OffsetFloat(data, i);
@@ -534,7 +559,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).OffsetU = tmpFloat;
+                        CreateFace(face).OffsetU = tmpFloat;
             }
             //Read OffsetV -----------------------------------------
             DefaultTexture.OffsetV = OffsetFloat(data, i);
@@ -547,7 +572,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).OffsetV = tmpFloat;
+                        CreateFace(face).OffsetV = tmpFloat;
             }
             //Read Rotation ----------------------------------------
             DefaultTexture.Rotation = RotationFloat(data, i);
@@ -560,7 +585,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).Rotation = tmpFloat;
+                        CreateFace(face).Rotation = tmpFloat;
             }
             //Read Flags1 ------------------------------------------
             DefaultTexture.Flags1 = data[i];
@@ -573,7 +598,7 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).Flags1 = tmpByte;
+                        CreateFace(face).Flags1 = tmpByte;
             }
             //Read Flags2 ------------------------------------------
             DefaultTexture.Flags2 = data[i];
@@ -586,14 +611,16 @@ namespace libsecondlife
 
                 for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                     if ((faceBits & bit) != 0)
-                        SetFace(face).Flags2 = tmpByte;
+                        CreateFace(face).Flags2 = tmpByte;
             }
         }
     }
 
     /// <summary>
-    /// 
+    /// A single textured face. Don't instantiate this class yourself, use the
+    /// methods in TextureEntry
     /// </summary>
+    [XmlRoot("face")]
     public class TextureEntryFace
     {
         [XmlAttribute("rgba")] private uint rgba;

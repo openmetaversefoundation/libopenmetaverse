@@ -34,20 +34,23 @@ namespace libsecondlife.TestClient
                 return "Usage: export uuid outputfile.xml";
             }
 
-            foreach (PrimObject prim in TestClient.Prims.Values)
+            lock (TestClient.Prims)
             {
-                if (prim.ID == id)
+                foreach (PrimObject prim in TestClient.Prims.Values)
                 {
-                    if (prim.ParentID != 0)
+                    if (prim.ID == id)
                     {
-                        localid = prim.ParentID;
-                    }
-                    else
-                    {
-                        localid = prim.LocalID;
-                    }
+                        if (prim.ParentID != 0)
+                        {
+                            localid = prim.ParentID;
+                        }
+                        else
+                        {
+                            localid = prim.LocalID;
+                        }
 
-                    break;
+                        break;
+                    }
                 }
             }
 
@@ -58,12 +61,15 @@ namespace libsecondlife.TestClient
                     XmlWriter writer = XmlWriter.Create(file);
                     writer.WriteStartElement("primitives");
 
-                    foreach (PrimObject prim in TestClient.Prims.Values)
+                    lock (TestClient.Prims)
                     {
-                        if (prim.LocalID == localid || prim.ParentID == localid)
+                        foreach (PrimObject prim in TestClient.Prims.Values)
                         {
-                            prim.ToXml(writer);
-                            count++;
+                            if (prim.LocalID == localid || prim.ParentID == localid)
+                            {
+                                prim.ToXml(writer);
+                                count++;
+                            }
                         }
                     }
 

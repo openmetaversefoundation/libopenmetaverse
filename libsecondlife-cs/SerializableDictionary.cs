@@ -80,18 +80,20 @@ public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IX
     {
         XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
         XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
+        XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+        ns.Add("", "");
 
         foreach (TKey key in this.Keys)
         {
             writer.WriteStartElement("item");
 
             writer.WriteStartElement("key");
-            keySerializer.Serialize(writer, key);
+            keySerializer.Serialize(writer, key, ns);
             writer.WriteEndElement();
 
             writer.WriteStartElement("value");
             TValue value = this[key];
-            valueSerializer.Serialize(writer, value);
+            valueSerializer.Serialize(writer, value, ns);
             writer.WriteEndElement();
             writer.WriteEndElement();
         }

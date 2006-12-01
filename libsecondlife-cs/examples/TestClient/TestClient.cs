@@ -22,6 +22,7 @@ namespace libsecondlife.TestClient
         public Dictionary<uint, PrimObject> Prims = new Dictionary<uint,PrimObject>();
         public Dictionary<uint, Avatar> Avatars = new Dictionary<uint,Avatar>();
         public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
+        public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
         public bool Running = true;
 	    public string Master = "";
 
