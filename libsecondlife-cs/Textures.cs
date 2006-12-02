@@ -624,8 +624,8 @@ namespace libsecondlife
     public class TextureEntryFace
     {
         [XmlAttribute("rgba")] private uint rgba;
-        [XmlAttribute("repeatu")] private float repeatU;
-        [XmlAttribute("repeatv")] private float repeatV;
+        [XmlAttribute("repeatu")] private float repeatU = 1.0f;
+        [XmlAttribute("repeatv")] private float repeatV = 1.0f;
         [XmlAttribute("offsetu")] private float offsetU;
         [XmlAttribute("offsetv")] private float offsetV;
         [XmlAttribute("rotation")] private float rotation;

@@ -1078,8 +1078,9 @@ namespace libsecondlife
                 this.AgentID = new LLUUID((string)LoginValues["agent_id"]);
                 this.SessionID = new LLUUID((string)LoginValues["session_id"]);
                 Client.Self.ID = this.AgentID;
-                Client.Self.FirstName = (string)LoginValues["first_name"];
-                Client.Self.LastName = (string)LoginValues["last_name"];
+                // Names are wrapped in quotes now, have to strip those
+                Client.Self.FirstName = ((string)LoginValues["first_name"]).Trim(new char[] { '"' });
+                Client.Self.LastName = ((string)LoginValues["last_name"]).Trim(new char[] { '"' });
                 Client.Self.LookAt = vector;
                 Client.Self.HomePosition = posVector;
                 Client.Self.HomeLookAt = lookatVector;
