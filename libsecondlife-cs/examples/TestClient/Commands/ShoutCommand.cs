@@ -16,14 +16,32 @@ namespace libsecondlife.TestClient
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
         {
-            if (args.Length < 1)
-                return "usage: whisper whatever";
-
+            int channel = 0;
+            int startIndex = 0;
             string message = String.Empty;
-            foreach (string s in args)
-                message += s + " ";
+            if (args.Length < 1)
+            {
+                return "usage: shout (optional channel) whatever";
+            }
+            else if (args.Length > 1)
+            {
+                try
+                {
+                    channel = Convert.ToInt32(args[0]);
+                    startIndex = 1;
+                }
+                catch (FormatException)
+                {
+                    channel = 0;
+                }
+            }
 
-            Client.Self.Chat(message, 0, MainAvatar.ChatType.Shout);
+            for (int i = startIndex; i < args.Length; i++)
+            {
+                message += args[i] + " ";
+            }
+
+            Client.Self.Chat(message, channel, MainAvatar.ChatType.Shout);
 
             return "Shouted " + message;
         }
