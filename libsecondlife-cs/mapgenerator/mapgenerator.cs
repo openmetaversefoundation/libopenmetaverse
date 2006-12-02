@@ -327,13 +327,14 @@ namespace mapgenerator
             }
         }
 
-        static void WriteBlockClass(TextWriter writer, MapBlock block)
+        static void WriteBlockClass(TextWriter writer, MapBlock block, MapPacket packet)
         {
             bool variableFields = false;
             bool floatFields = false;
 
             //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
             writer.WriteLine("        /// <exclude/>");
+            writer.WriteLine("        [XmlType(\"" + packet.Name.ToLower() + "_" + block.Name.ToLower() + "\")]");
             writer.WriteLine("        public class " + block.Name + "Block" + Environment.NewLine + "        {");
 
             foreach (MapField field in block.Fields)
@@ -347,10 +348,14 @@ namespace mapgenerator
             // Length property
             writer.WriteLine("");
             //writer.WriteLine("            /// <summary>Length of this block serialized in bytes</summary>");
-            writer.WriteLine("            public int Length" + Environment.NewLine +
-                "            {" + Environment.NewLine + "                get" + Environment.NewLine +
-                "                {");
+            writer.WriteLine("            [XmlIgnore]" + Environment.NewLine +
+                             "            public int Length" + Environment.NewLine +
+                             "            {" + Environment.NewLine + 
+                             "                get" + Environment.NewLine +
+                             "                {");
             int length = 0;
+
+            // Figure out the length of this block
             foreach (MapField field in block.Fields)
             {
                 length += GetFieldLength(writer, field);
@@ -453,7 +458,7 @@ namespace mapgenerator
             // Write out each block class
             foreach (MapBlock block in packet.Blocks)
             {
-                WriteBlockClass(writer, block);
+                WriteBlockClass(writer, block, packet);
             }
 
             // Header member
@@ -769,6 +774,29 @@ namespace mapgenerator
             }
             writer.WriteLine("    }" + Environment.NewLine);
 
+            // Write all of the XmlInclude statements for the Packet class to allow packet serialization
+            foreach (MapPacket packet in protocol.LowMaps)
+            {
+                if (packet != null)
+                {
+                    writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
+                }
+            }
+            foreach (MapPacket packet in protocol.MediumMaps)
+            {
+                if (packet != null)
+                {
+                    writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
+                }
+            }
+            foreach (MapPacket packet in protocol.HighMaps)
+            {
+                if (packet != null)
+                {
+                    writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
+                }
+            }
+
             // Write the base Packet class
             writer.WriteLine(
                 "    public abstract class Packet" + Environment.NewLine + "    {" + Environment.NewLine + 
@@ -776,6 +804,13 @@ namespace mapgenerator
                 "        public abstract PacketType Type { get; }" + Environment.NewLine +
                 "        public int TickCount;" + Environment.NewLine + Environment.NewLine +
                 "        public abstract byte[] ToBytes();" + Environment.NewLine + Environment.NewLine +
+                "        public void ToXml(XmlWriter xmlWriter)" + Environment.NewLine +
+                "        {" + Environment.NewLine +
+                "            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();" + Environment.NewLine +
+                "            ns.Add(\"\", \"\");" + Environment.NewLine +
+                "            XmlSerializer serializer = new XmlSerializer(typeof(Packet));" + Environment.NewLine +
+                "            serializer.Serialize(xmlWriter, this, ns);" + Environment.NewLine +
+                "        }" + Environment.NewLine +
                 "        public static PacketType GetType(ushort id, PacketFrequency frequency)" + Environment.NewLine +
                 "        {" + Environment.NewLine +
                 "            switch (frequency)" + Environment.NewLine + "            {" + Environment.NewLine + 

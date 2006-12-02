@@ -25,6 +25,8 @@
  */
 
 using System;
+using System.Xml;
+using System.Xml.Serialization;
 using libsecondlife;
 
 namespace libsecondlife.Packets
@@ -35,14 +37,14 @@ namespace libsecondlife.Packets
     public class MalformedDataException : ApplicationException
     {
         /// <summary>
-        /// 
+        /// Default constructor
         /// </summary>
         public MalformedDataException() { }
 
         /// <summary>
-        /// 
+        /// Constructor that takes an additional error message
         /// </summary>
-        /// <param name="Message"></param>
+        /// <param name="Message">An error message to attach to this exception</param>
         public MalformedDataException(string Message)
             : base(Message)
         {
@@ -55,60 +57,77 @@ namespace libsecondlife.Packets
     /// bytes in length at the beginning of the packet, and encapsulates any 
     /// appended ACKs at the end of the packet as well
     /// </summary>
+    [XmlInclude(typeof(LowHeader))]
+    [XmlInclude(typeof(MediumHeader))]
+    [XmlInclude(typeof(HighHeader))]
     public abstract class Header
     {
-        /// <summary>The raw header data, does not include appended ACKs</summary>
+        /// <summary>Raw header data, does not include appended ACKs</summary>
         public byte[] Data;
-        /// <summary></summary>
+        /// <summary>Raw value of the flags byte</summary>
+        [XmlIgnore]
         public byte Flags
         {
             get { return Data[0]; }
             set { Data[0] = value; }
         }
-        /// <summary></summary>
+        /// <summary>Reliable flag, whether this packet requires an ACK</summary>
+        [XmlIgnore]
         public bool Reliable
         {
             get { return (Data[0] & Helpers.MSG_RELIABLE) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_RELIABLE; } else { byte mask = (byte)Helpers.MSG_RELIABLE ^ 0xFF; Data[0] &= mask; } }
         }
-        /// <summary></summary>
+        /// <summary>Resent flag, whether this same packet has already been 
+        /// sent</summary>
+        [XmlIgnore]
         public bool Resent
         {
             get { return (Data[0] & Helpers.MSG_RESENT) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_RESENT; } else { byte mask = (byte)Helpers.MSG_RESENT ^ 0xFF; Data[0] &= mask; } }
         }
-        /// <summary></summary>
+        /// <summary>Zerocoded flag, whether this packet is compressed with 
+        /// zerocoding</summary>
+        [XmlIgnore]
         public bool Zerocoded
         {
             get { return (Data[0] & Helpers.MSG_ZEROCODED) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_ZEROCODED; } else { byte mask = (byte)Helpers.MSG_ZEROCODED ^ 0xFF; Data[0] &= mask; } }
         }
-        /// <summary></summary>
+        /// <summary>Appended ACKs flag, whether this packet has ACKs appended
+        /// to the end</summary>
+        [XmlIgnore]
         public bool AppendedAcks
         {
             get { return (Data[0] & Helpers.MSG_APPENDED_ACKS) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_APPENDED_ACKS; } else { byte mask = (byte)Helpers.MSG_APPENDED_ACKS ^ 0xFF; Data[0] &= mask; } }
         }
-        /// <summary></summary>
+        /// <summary>Packet sequence number</summary>
+        [XmlIgnore]
         public ushort Sequence
         {
             get { return (ushort)((Data[2] << 8) + Data[3]); }
             set { Data[2] = (byte)(value >> 8); Data[3] = (byte)(value % 256); }
         }
-        /// <summary></summary>
+        /// <summary>Numeric ID number of this packet</summary>
+        [XmlIgnore]
         public abstract ushort ID { get; set; }
-        /// <summary></summary>
+        /// <summary>Frequency classification of this packet, Low Medium or 
+        /// High</summary>
+        [XmlIgnore]
         public abstract PacketFrequency Frequency { get; }
-        /// <summary></summary>
+        /// <summary>Convert this header to a byte array, not including any
+        /// appended ACKs</summary>
         public abstract void ToBytes(byte[] bytes, ref int i);
-        /// <summary></summary>
+        /// <summary>Array containing all the appended ACKs of this packet</summary>
         public uint[] AckList;
 
         /// <summary>
-        /// 
+        /// Convert the AckList to a byte array, used for packet serializing
         /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="i"></param>
+        /// <param name="bytes">Reference to the target byte array</param>
+        /// <param name="i">Beginning position to start writing to in the byte
+        /// array, will be updated with the ending position of the ACK list</param>
         public void AcksToBytes(byte[] bytes, ref int i)
         {
             foreach (uint ack in AckList)
@@ -900,6 +919,554 @@ namespace libsecondlife.Packets
         SoundTrigger,
     }
 
+    [XmlInclude(typeof(TestMessagePacket))]
+    [XmlInclude(typeof(AddCircuitCodePacket))]
+    [XmlInclude(typeof(UseCircuitCodePacket))]
+    [XmlInclude(typeof(LogControlPacket))]
+    [XmlInclude(typeof(RelayLogControlPacket))]
+    [XmlInclude(typeof(LogMessagesPacket))]
+    [XmlInclude(typeof(SimulatorAssignPacket))]
+    [XmlInclude(typeof(SpaceServerSimulatorTimeMessagePacket))]
+    [XmlInclude(typeof(AvatarTextureUpdatePacket))]
+    [XmlInclude(typeof(SimulatorMapUpdatePacket))]
+    [XmlInclude(typeof(SimulatorSetMapPacket))]
+    [XmlInclude(typeof(SubscribeLoadPacket))]
+    [XmlInclude(typeof(UnsubscribeLoadPacket))]
+    [XmlInclude(typeof(SimulatorStartPacket))]
+    [XmlInclude(typeof(SimulatorReadyPacket))]
+    [XmlInclude(typeof(TelehubInfoPacket))]
+    [XmlInclude(typeof(SimulatorPresentAtLocationPacket))]
+    [XmlInclude(typeof(SimulatorLoadPacket))]
+    [XmlInclude(typeof(SimulatorShutdownRequestPacket))]
+    [XmlInclude(typeof(RegionPresenceRequestByRegionIDPacket))]
+    [XmlInclude(typeof(RegionPresenceRequestByHandlePacket))]
+    [XmlInclude(typeof(RegionPresenceResponsePacket))]
+    [XmlInclude(typeof(RecordAgentPresencePacket))]
+    [XmlInclude(typeof(EraseAgentPresencePacket))]
+    [XmlInclude(typeof(AgentPresenceRequestPacket))]
+    [XmlInclude(typeof(AgentPresenceResponsePacket))]
+    [XmlInclude(typeof(UpdateSimulatorPacket))]
+    [XmlInclude(typeof(TrackAgentSessionPacket))]
+    [XmlInclude(typeof(ClearAgentSessionsPacket))]
+    [XmlInclude(typeof(LogDwellTimePacket))]
+    [XmlInclude(typeof(FeatureDisabledPacket))]
+    [XmlInclude(typeof(LogFailedMoneyTransactionPacket))]
+    [XmlInclude(typeof(UserReportInternalPacket))]
+    [XmlInclude(typeof(SetSimStatusInDatabasePacket))]
+    [XmlInclude(typeof(SetSimPresenceInDatabasePacket))]
+    [XmlInclude(typeof(EconomyDataRequestPacket))]
+    [XmlInclude(typeof(EconomyDataPacket))]
+    [XmlInclude(typeof(AvatarPickerRequestPacket))]
+    [XmlInclude(typeof(AvatarPickerRequestBackendPacket))]
+    [XmlInclude(typeof(AvatarPickerReplyPacket))]
+    [XmlInclude(typeof(PlacesQueryPacket))]
+    [XmlInclude(typeof(PlacesReplyPacket))]
+    [XmlInclude(typeof(DirFindQueryPacket))]
+    [XmlInclude(typeof(DirFindQueryBackendPacket))]
+    [XmlInclude(typeof(DirPlacesQueryPacket))]
+    [XmlInclude(typeof(DirPlacesQueryBackendPacket))]
+    [XmlInclude(typeof(DirPlacesReplyPacket))]
+    [XmlInclude(typeof(DirPeopleReplyPacket))]
+    [XmlInclude(typeof(DirEventsReplyPacket))]
+    [XmlInclude(typeof(DirGroupsReplyPacket))]
+    [XmlInclude(typeof(DirClassifiedQueryPacket))]
+    [XmlInclude(typeof(DirClassifiedQueryBackendPacket))]
+    [XmlInclude(typeof(DirClassifiedReplyPacket))]
+    [XmlInclude(typeof(AvatarClassifiedReplyPacket))]
+    [XmlInclude(typeof(ClassifiedInfoRequestPacket))]
+    [XmlInclude(typeof(ClassifiedInfoReplyPacket))]
+    [XmlInclude(typeof(ClassifiedInfoUpdatePacket))]
+    [XmlInclude(typeof(ClassifiedDeletePacket))]
+    [XmlInclude(typeof(ClassifiedGodDeletePacket))]
+    [XmlInclude(typeof(DirPicksQueryPacket))]
+    [XmlInclude(typeof(DirPicksQueryBackendPacket))]
+    [XmlInclude(typeof(DirPicksReplyPacket))]
+    [XmlInclude(typeof(DirLandQueryPacket))]
+    [XmlInclude(typeof(DirLandQueryBackendPacket))]
+    [XmlInclude(typeof(DirLandReplyPacket))]
+    [XmlInclude(typeof(DirPopularQueryPacket))]
+    [XmlInclude(typeof(DirPopularQueryBackendPacket))]
+    [XmlInclude(typeof(DirPopularReplyPacket))]
+    [XmlInclude(typeof(ParcelInfoRequestPacket))]
+    [XmlInclude(typeof(ParcelInfoReplyPacket))]
+    [XmlInclude(typeof(ParcelObjectOwnersRequestPacket))]
+    [XmlInclude(typeof(OnlineStatusRequestPacket))]
+    [XmlInclude(typeof(OnlineStatusReplyPacket))]
+    [XmlInclude(typeof(ParcelObjectOwnersReplyPacket))]
+    [XmlInclude(typeof(GroupNoticesListRequestPacket))]
+    [XmlInclude(typeof(GroupNoticesListReplyPacket))]
+    [XmlInclude(typeof(GroupNoticeRequestPacket))]
+    [XmlInclude(typeof(GroupNoticeAddPacket))]
+    [XmlInclude(typeof(GroupNoticeDeletePacket))]
+    [XmlInclude(typeof(TeleportRequestPacket))]
+    [XmlInclude(typeof(TeleportLocationRequestPacket))]
+    [XmlInclude(typeof(TeleportLocalPacket))]
+    [XmlInclude(typeof(TeleportLandmarkRequestPacket))]
+    [XmlInclude(typeof(TeleportProgressPacket))]
+    [XmlInclude(typeof(DataHomeLocationRequestPacket))]
+    [XmlInclude(typeof(DataHomeLocationReplyPacket))]
+    [XmlInclude(typeof(SpaceLocationTeleportRequestPacket))]
+    [XmlInclude(typeof(SpaceLocationTeleportReplyPacket))]
+    [XmlInclude(typeof(TeleportFinishPacket))]
+    [XmlInclude(typeof(StartLurePacket))]
+    [XmlInclude(typeof(TeleportLureRequestPacket))]
+    [XmlInclude(typeof(TeleportCancelPacket))]
+    [XmlInclude(typeof(CompleteLurePacket))]
+    [XmlInclude(typeof(TeleportStartPacket))]
+    [XmlInclude(typeof(TeleportFailedPacket))]
+    [XmlInclude(typeof(LeaderBoardRequestPacket))]
+    [XmlInclude(typeof(LeaderBoardDataPacket))]
+    [XmlInclude(typeof(UndoPacket))]
+    [XmlInclude(typeof(RedoPacket))]
+    [XmlInclude(typeof(UndoLandPacket))]
+    [XmlInclude(typeof(RedoLandPacket))]
+    [XmlInclude(typeof(AgentPausePacket))]
+    [XmlInclude(typeof(AgentResumePacket))]
+    [XmlInclude(typeof(ChatFromViewerPacket))]
+    [XmlInclude(typeof(AgentThrottlePacket))]
+    [XmlInclude(typeof(AgentFOVPacket))]
+    [XmlInclude(typeof(AgentHeightWidthPacket))]
+    [XmlInclude(typeof(AgentSetAppearancePacket))]
+    [XmlInclude(typeof(AgentQuitPacket))]
+    [XmlInclude(typeof(AgentQuitCopyPacket))]
+    [XmlInclude(typeof(ImageNotInDatabasePacket))]
+    [XmlInclude(typeof(RebakeAvatarTexturesPacket))]
+    [XmlInclude(typeof(SetAlwaysRunPacket))]
+    [XmlInclude(typeof(ObjectDeletePacket))]
+    [XmlInclude(typeof(ObjectDuplicatePacket))]
+    [XmlInclude(typeof(ObjectDuplicateOnRayPacket))]
+    [XmlInclude(typeof(ObjectScalePacket))]
+    [XmlInclude(typeof(ObjectRotationPacket))]
+    [XmlInclude(typeof(ObjectFlagUpdatePacket))]
+    [XmlInclude(typeof(ObjectClickActionPacket))]
+    [XmlInclude(typeof(ObjectImagePacket))]
+    [XmlInclude(typeof(ObjectMaterialPacket))]
+    [XmlInclude(typeof(ObjectShapePacket))]
+    [XmlInclude(typeof(ObjectExtraParamsPacket))]
+    [XmlInclude(typeof(ObjectOwnerPacket))]
+    [XmlInclude(typeof(ObjectGroupPacket))]
+    [XmlInclude(typeof(ObjectBuyPacket))]
+    [XmlInclude(typeof(BuyObjectInventoryPacket))]
+    [XmlInclude(typeof(DerezContainerPacket))]
+    [XmlInclude(typeof(ObjectPermissionsPacket))]
+    [XmlInclude(typeof(ObjectSaleInfoPacket))]
+    [XmlInclude(typeof(ObjectNamePacket))]
+    [XmlInclude(typeof(ObjectDescriptionPacket))]
+    [XmlInclude(typeof(ObjectCategoryPacket))]
+    [XmlInclude(typeof(ObjectSelectPacket))]
+    [XmlInclude(typeof(ObjectDeselectPacket))]
+    [XmlInclude(typeof(ObjectAttachPacket))]
+    [XmlInclude(typeof(ObjectDetachPacket))]
+    [XmlInclude(typeof(ObjectDropPacket))]
+    [XmlInclude(typeof(ObjectLinkPacket))]
+    [XmlInclude(typeof(ObjectDelinkPacket))]
+    [XmlInclude(typeof(ObjectHingePacket))]
+    [XmlInclude(typeof(ObjectDehingePacket))]
+    [XmlInclude(typeof(ObjectGrabPacket))]
+    [XmlInclude(typeof(ObjectGrabUpdatePacket))]
+    [XmlInclude(typeof(ObjectDeGrabPacket))]
+    [XmlInclude(typeof(ObjectSpinStartPacket))]
+    [XmlInclude(typeof(ObjectSpinUpdatePacket))]
+    [XmlInclude(typeof(ObjectSpinStopPacket))]
+    [XmlInclude(typeof(ObjectExportSelectedPacket))]
+    [XmlInclude(typeof(ObjectImportPacket))]
+    [XmlInclude(typeof(ModifyLandPacket))]
+    [XmlInclude(typeof(VelocityInterpolateOnPacket))]
+    [XmlInclude(typeof(VelocityInterpolateOffPacket))]
+    [XmlInclude(typeof(StateSavePacket))]
+    [XmlInclude(typeof(ReportAutosaveCrashPacket))]
+    [XmlInclude(typeof(SimWideDeletesPacket))]
+    [XmlInclude(typeof(TrackAgentPacket))]
+    [XmlInclude(typeof(ViewerStatsPacket))]
+    [XmlInclude(typeof(ScriptAnswerYesPacket))]
+    [XmlInclude(typeof(UserReportPacket))]
+    [XmlInclude(typeof(AlertMessagePacket))]
+    [XmlInclude(typeof(AgentAlertMessagePacket))]
+    [XmlInclude(typeof(MeanCollisionAlertPacket))]
+    [XmlInclude(typeof(ViewerFrozenMessagePacket))]
+    [XmlInclude(typeof(HealthMessagePacket))]
+    [XmlInclude(typeof(ChatFromSimulatorPacket))]
+    [XmlInclude(typeof(SimStatsPacket))]
+    [XmlInclude(typeof(RequestRegionInfoPacket))]
+    [XmlInclude(typeof(RegionInfoPacket))]
+    [XmlInclude(typeof(GodUpdateRegionInfoPacket))]
+    [XmlInclude(typeof(NearestLandingRegionRequestPacket))]
+    [XmlInclude(typeof(NearestLandingRegionReplyPacket))]
+    [XmlInclude(typeof(NearestLandingRegionUpdatedPacket))]
+    [XmlInclude(typeof(TeleportLandingStatusChangedPacket))]
+    [XmlInclude(typeof(RegionHandshakePacket))]
+    [XmlInclude(typeof(RegionHandshakeReplyPacket))]
+    [XmlInclude(typeof(SimulatorViewerTimeMessagePacket))]
+    [XmlInclude(typeof(EnableSimulatorPacket))]
+    [XmlInclude(typeof(DisableSimulatorPacket))]
+    [XmlInclude(typeof(TransferRequestPacket))]
+    [XmlInclude(typeof(TransferInfoPacket))]
+    [XmlInclude(typeof(TransferAbortPacket))]
+    [XmlInclude(typeof(TransferPriorityPacket))]
+    [XmlInclude(typeof(RequestXferPacket))]
+    [XmlInclude(typeof(AbortXferPacket))]
+    [XmlInclude(typeof(RequestAvatarInfoPacket))]
+    [XmlInclude(typeof(AvatarAppearancePacket))]
+    [XmlInclude(typeof(SetFollowCamPropertiesPacket))]
+    [XmlInclude(typeof(ClearFollowCamPropertiesPacket))]
+    [XmlInclude(typeof(RequestPayPricePacket))]
+    [XmlInclude(typeof(PayPriceReplyPacket))]
+    [XmlInclude(typeof(KickUserPacket))]
+    [XmlInclude(typeof(KickUserAckPacket))]
+    [XmlInclude(typeof(GodKickUserPacket))]
+    [XmlInclude(typeof(SystemKickUserPacket))]
+    [XmlInclude(typeof(EjectUserPacket))]
+    [XmlInclude(typeof(FreezeUserPacket))]
+    [XmlInclude(typeof(AvatarPropertiesRequestPacket))]
+    [XmlInclude(typeof(AvatarPropertiesRequestBackendPacket))]
+    [XmlInclude(typeof(AvatarPropertiesReplyPacket))]
+    [XmlInclude(typeof(AvatarInterestsReplyPacket))]
+    [XmlInclude(typeof(AvatarGroupsReplyPacket))]
+    [XmlInclude(typeof(AvatarPropertiesUpdatePacket))]
+    [XmlInclude(typeof(AvatarInterestsUpdatePacket))]
+    [XmlInclude(typeof(AvatarStatisticsReplyPacket))]
+    [XmlInclude(typeof(AvatarNotesReplyPacket))]
+    [XmlInclude(typeof(AvatarNotesUpdatePacket))]
+    [XmlInclude(typeof(AvatarPicksReplyPacket))]
+    [XmlInclude(typeof(EventInfoRequestPacket))]
+    [XmlInclude(typeof(EventInfoReplyPacket))]
+    [XmlInclude(typeof(EventNotificationAddRequestPacket))]
+    [XmlInclude(typeof(EventNotificationRemoveRequestPacket))]
+    [XmlInclude(typeof(EventGodDeletePacket))]
+    [XmlInclude(typeof(PickInfoRequestPacket))]
+    [XmlInclude(typeof(PickInfoReplyPacket))]
+    [XmlInclude(typeof(PickInfoUpdatePacket))]
+    [XmlInclude(typeof(PickDeletePacket))]
+    [XmlInclude(typeof(PickGodDeletePacket))]
+    [XmlInclude(typeof(ScriptQuestionPacket))]
+    [XmlInclude(typeof(ScriptControlChangePacket))]
+    [XmlInclude(typeof(ScriptDialogPacket))]
+    [XmlInclude(typeof(ScriptDialogReplyPacket))]
+    [XmlInclude(typeof(ForceScriptControlReleasePacket))]
+    [XmlInclude(typeof(RevokePermissionsPacket))]
+    [XmlInclude(typeof(LoadURLPacket))]
+    [XmlInclude(typeof(ScriptTeleportRequestPacket))]
+    [XmlInclude(typeof(ParcelOverlayPacket))]
+    [XmlInclude(typeof(ParcelPropertiesRequestByIDPacket))]
+    [XmlInclude(typeof(ParcelPropertiesUpdatePacket))]
+    [XmlInclude(typeof(ParcelReturnObjectsPacket))]
+    [XmlInclude(typeof(ParcelSetOtherCleanTimePacket))]
+    [XmlInclude(typeof(ParcelDisableObjectsPacket))]
+    [XmlInclude(typeof(ParcelSelectObjectsPacket))]
+    [XmlInclude(typeof(EstateCovenantRequestPacket))]
+    [XmlInclude(typeof(EstateCovenantReplyPacket))]
+    [XmlInclude(typeof(ForceObjectSelectPacket))]
+    [XmlInclude(typeof(ParcelBuyPassPacket))]
+    [XmlInclude(typeof(ParcelDeedToGroupPacket))]
+    [XmlInclude(typeof(ParcelReclaimPacket))]
+    [XmlInclude(typeof(ParcelClaimPacket))]
+    [XmlInclude(typeof(ParcelJoinPacket))]
+    [XmlInclude(typeof(ParcelDividePacket))]
+    [XmlInclude(typeof(ParcelReleasePacket))]
+    [XmlInclude(typeof(ParcelBuyPacket))]
+    [XmlInclude(typeof(ParcelGodForceOwnerPacket))]
+    [XmlInclude(typeof(ParcelAccessListRequestPacket))]
+    [XmlInclude(typeof(ParcelAccessListReplyPacket))]
+    [XmlInclude(typeof(ParcelAccessListUpdatePacket))]
+    [XmlInclude(typeof(ParcelDwellRequestPacket))]
+    [XmlInclude(typeof(ParcelDwellReplyPacket))]
+    [XmlInclude(typeof(RequestParcelTransferPacket))]
+    [XmlInclude(typeof(UpdateParcelPacket))]
+    [XmlInclude(typeof(RemoveParcelPacket))]
+    [XmlInclude(typeof(MergeParcelPacket))]
+    [XmlInclude(typeof(LogParcelChangesPacket))]
+    [XmlInclude(typeof(CheckParcelSalesPacket))]
+    [XmlInclude(typeof(ParcelSalesPacket))]
+    [XmlInclude(typeof(ParcelGodMarkAsContentPacket))]
+    [XmlInclude(typeof(ParcelGodReserveForNewbiePacket))]
+    [XmlInclude(typeof(ViewerStartAuctionPacket))]
+    [XmlInclude(typeof(StartAuctionPacket))]
+    [XmlInclude(typeof(ConfirmAuctionStartPacket))]
+    [XmlInclude(typeof(CompleteAuctionPacket))]
+    [XmlInclude(typeof(CancelAuctionPacket))]
+    [XmlInclude(typeof(CheckParcelAuctionsPacket))]
+    [XmlInclude(typeof(ParcelAuctionsPacket))]
+    [XmlInclude(typeof(UUIDNameRequestPacket))]
+    [XmlInclude(typeof(UUIDNameReplyPacket))]
+    [XmlInclude(typeof(UUIDGroupNameRequestPacket))]
+    [XmlInclude(typeof(UUIDGroupNameReplyPacket))]
+    [XmlInclude(typeof(ChatPassPacket))]
+    [XmlInclude(typeof(ChildAgentDyingPacket))]
+    [XmlInclude(typeof(ChildAgentUnknownPacket))]
+    [XmlInclude(typeof(KillChildAgentsPacket))]
+    [XmlInclude(typeof(GetScriptRunningPacket))]
+    [XmlInclude(typeof(ScriptRunningReplyPacket))]
+    [XmlInclude(typeof(SetScriptRunningPacket))]
+    [XmlInclude(typeof(ScriptResetPacket))]
+    [XmlInclude(typeof(ScriptSensorRequestPacket))]
+    [XmlInclude(typeof(ScriptSensorReplyPacket))]
+    [XmlInclude(typeof(CompleteAgentMovementPacket))]
+    [XmlInclude(typeof(AgentMovementCompletePacket))]
+    [XmlInclude(typeof(LogLoginPacket))]
+    [XmlInclude(typeof(ConnectAgentToUserserverPacket))]
+    [XmlInclude(typeof(ConnectToUserserverPacket))]
+    [XmlInclude(typeof(DataServerLogoutPacket))]
+    [XmlInclude(typeof(LogoutRequestPacket))]
+    [XmlInclude(typeof(FinalizeLogoutPacket))]
+    [XmlInclude(typeof(LogoutReplyPacket))]
+    [XmlInclude(typeof(LogoutDemandPacket))]
+    [XmlInclude(typeof(ImprovedInstantMessagePacket))]
+    [XmlInclude(typeof(RetrieveInstantMessagesPacket))]
+    [XmlInclude(typeof(DequeueInstantMessagesPacket))]
+    [XmlInclude(typeof(FindAgentPacket))]
+    [XmlInclude(typeof(RequestGodlikePowersPacket))]
+    [XmlInclude(typeof(GrantGodlikePowersPacket))]
+    [XmlInclude(typeof(GodlikeMessagePacket))]
+    [XmlInclude(typeof(EstateOwnerMessagePacket))]
+    [XmlInclude(typeof(GenericMessagePacket))]
+    [XmlInclude(typeof(MuteListRequestPacket))]
+    [XmlInclude(typeof(UpdateMuteListEntryPacket))]
+    [XmlInclude(typeof(RemoveMuteListEntryPacket))]
+    [XmlInclude(typeof(CopyInventoryFromNotecardPacket))]
+    [XmlInclude(typeof(UpdateInventoryItemPacket))]
+    [XmlInclude(typeof(UpdateCreateInventoryItemPacket))]
+    [XmlInclude(typeof(MoveInventoryItemPacket))]
+    [XmlInclude(typeof(CopyInventoryItemPacket))]
+    [XmlInclude(typeof(RemoveInventoryItemPacket))]
+    [XmlInclude(typeof(ChangeInventoryItemFlagsPacket))]
+    [XmlInclude(typeof(SaveAssetIntoInventoryPacket))]
+    [XmlInclude(typeof(CreateInventoryFolderPacket))]
+    [XmlInclude(typeof(UpdateInventoryFolderPacket))]
+    [XmlInclude(typeof(MoveInventoryFolderPacket))]
+    [XmlInclude(typeof(RemoveInventoryFolderPacket))]
+    [XmlInclude(typeof(FetchInventoryDescendentsPacket))]
+    [XmlInclude(typeof(InventoryDescendentsPacket))]
+    [XmlInclude(typeof(FetchInventoryPacket))]
+    [XmlInclude(typeof(FetchInventoryReplyPacket))]
+    [XmlInclude(typeof(BulkUpdateInventoryPacket))]
+    [XmlInclude(typeof(RequestInventoryAssetPacket))]
+    [XmlInclude(typeof(InventoryAssetResponsePacket))]
+    [XmlInclude(typeof(RemoveInventoryObjectsPacket))]
+    [XmlInclude(typeof(PurgeInventoryDescendentsPacket))]
+    [XmlInclude(typeof(UpdateTaskInventoryPacket))]
+    [XmlInclude(typeof(RemoveTaskInventoryPacket))]
+    [XmlInclude(typeof(MoveTaskInventoryPacket))]
+    [XmlInclude(typeof(RequestTaskInventoryPacket))]
+    [XmlInclude(typeof(ReplyTaskInventoryPacket))]
+    [XmlInclude(typeof(DeRezObjectPacket))]
+    [XmlInclude(typeof(DeRezAckPacket))]
+    [XmlInclude(typeof(RezObjectPacket))]
+    [XmlInclude(typeof(RezObjectFromNotecardPacket))]
+    [XmlInclude(typeof(DeclineInventoryPacket))]
+    [XmlInclude(typeof(TransferInventoryPacket))]
+    [XmlInclude(typeof(TransferInventoryAckPacket))]
+    [XmlInclude(typeof(RequestFriendshipPacket))]
+    [XmlInclude(typeof(AcceptFriendshipPacket))]
+    [XmlInclude(typeof(DeclineFriendshipPacket))]
+    [XmlInclude(typeof(FormFriendshipPacket))]
+    [XmlInclude(typeof(TerminateFriendshipPacket))]
+    [XmlInclude(typeof(OfferCallingCardPacket))]
+    [XmlInclude(typeof(AcceptCallingCardPacket))]
+    [XmlInclude(typeof(DeclineCallingCardPacket))]
+    [XmlInclude(typeof(RezScriptPacket))]
+    [XmlInclude(typeof(CreateInventoryItemPacket))]
+    [XmlInclude(typeof(CreateLandmarkForEventPacket))]
+    [XmlInclude(typeof(EventLocationRequestPacket))]
+    [XmlInclude(typeof(EventLocationReplyPacket))]
+    [XmlInclude(typeof(RegionHandleRequestPacket))]
+    [XmlInclude(typeof(RegionIDAndHandleReplyPacket))]
+    [XmlInclude(typeof(MoneyTransferRequestPacket))]
+    [XmlInclude(typeof(MoneyTransferBackendPacket))]
+    [XmlInclude(typeof(BulkMoneyTransferPacket))]
+    [XmlInclude(typeof(AdjustBalancePacket))]
+    [XmlInclude(typeof(MoneyBalanceRequestPacket))]
+    [XmlInclude(typeof(MoneyBalanceReplyPacket))]
+    [XmlInclude(typeof(RoutedMoneyBalanceReplyPacket))]
+    [XmlInclude(typeof(MoneyHistoryRequestPacket))]
+    [XmlInclude(typeof(MoneyHistoryReplyPacket))]
+    [XmlInclude(typeof(MoneySummaryRequestPacket))]
+    [XmlInclude(typeof(MoneySummaryReplyPacket))]
+    [XmlInclude(typeof(MoneyDetailsRequestPacket))]
+    [XmlInclude(typeof(MoneyDetailsReplyPacket))]
+    [XmlInclude(typeof(MoneyTransactionsRequestPacket))]
+    [XmlInclude(typeof(MoneyTransactionsReplyPacket))]
+    [XmlInclude(typeof(GestureRequestPacket))]
+    [XmlInclude(typeof(ActivateGesturesPacket))]
+    [XmlInclude(typeof(DeactivateGesturesPacket))]
+    [XmlInclude(typeof(MuteListUpdatePacket))]
+    [XmlInclude(typeof(UseCachedMuteListPacket))]
+    [XmlInclude(typeof(GrantUserRightsPacket))]
+    [XmlInclude(typeof(ChangeUserRightsPacket))]
+    [XmlInclude(typeof(OnlineNotificationPacket))]
+    [XmlInclude(typeof(OfflineNotificationPacket))]
+    [XmlInclude(typeof(SetStartLocationRequestPacket))]
+    [XmlInclude(typeof(SetStartLocationPacket))]
+    [XmlInclude(typeof(NetTestPacket))]
+    [XmlInclude(typeof(SetCPURatioPacket))]
+    [XmlInclude(typeof(SimCrashedPacket))]
+    [XmlInclude(typeof(NameValuePairPacket))]
+    [XmlInclude(typeof(RemoveNameValuePairPacket))]
+    [XmlInclude(typeof(GetNameValuePairPacket))]
+    [XmlInclude(typeof(UpdateAttachmentPacket))]
+    [XmlInclude(typeof(RemoveAttachmentPacket))]
+    [XmlInclude(typeof(AssetUploadRequestPacket))]
+    [XmlInclude(typeof(AssetUploadCompletePacket))]
+    [XmlInclude(typeof(ReputationAgentAssignPacket))]
+    [XmlInclude(typeof(ReputationIndividualRequestPacket))]
+    [XmlInclude(typeof(ReputationIndividualReplyPacket))]
+    [XmlInclude(typeof(EmailMessageRequestPacket))]
+    [XmlInclude(typeof(EmailMessageReplyPacket))]
+    [XmlInclude(typeof(ScriptDataRequestPacket))]
+    [XmlInclude(typeof(ScriptDataReplyPacket))]
+    [XmlInclude(typeof(CreateGroupRequestPacket))]
+    [XmlInclude(typeof(CreateGroupReplyPacket))]
+    [XmlInclude(typeof(UpdateGroupInfoPacket))]
+    [XmlInclude(typeof(GroupRoleChangesPacket))]
+    [XmlInclude(typeof(JoinGroupRequestPacket))]
+    [XmlInclude(typeof(JoinGroupReplyPacket))]
+    [XmlInclude(typeof(EjectGroupMemberRequestPacket))]
+    [XmlInclude(typeof(EjectGroupMemberReplyPacket))]
+    [XmlInclude(typeof(LeaveGroupRequestPacket))]
+    [XmlInclude(typeof(LeaveGroupReplyPacket))]
+    [XmlInclude(typeof(InviteGroupRequestPacket))]
+    [XmlInclude(typeof(InviteGroupResponsePacket))]
+    [XmlInclude(typeof(GroupProfileRequestPacket))]
+    [XmlInclude(typeof(GroupProfileReplyPacket))]
+    [XmlInclude(typeof(GroupAccountSummaryRequestPacket))]
+    [XmlInclude(typeof(GroupAccountSummaryReplyPacket))]
+    [XmlInclude(typeof(GroupAccountDetailsRequestPacket))]
+    [XmlInclude(typeof(GroupAccountDetailsReplyPacket))]
+    [XmlInclude(typeof(GroupAccountTransactionsRequestPacket))]
+    [XmlInclude(typeof(GroupAccountTransactionsReplyPacket))]
+    [XmlInclude(typeof(GroupActiveProposalsRequestPacket))]
+    [XmlInclude(typeof(GroupActiveProposalItemReplyPacket))]
+    [XmlInclude(typeof(GroupVoteHistoryRequestPacket))]
+    [XmlInclude(typeof(GroupVoteHistoryItemReplyPacket))]
+    [XmlInclude(typeof(StartGroupProposalPacket))]
+    [XmlInclude(typeof(GroupProposalBallotPacket))]
+    [XmlInclude(typeof(TallyVotesPacket))]
+    [XmlInclude(typeof(GroupMembersRequestPacket))]
+    [XmlInclude(typeof(GroupMembersReplyPacket))]
+    [XmlInclude(typeof(ActivateGroupPacket))]
+    [XmlInclude(typeof(SetGroupContributionPacket))]
+    [XmlInclude(typeof(SetGroupAcceptNoticesPacket))]
+    [XmlInclude(typeof(GroupRoleDataRequestPacket))]
+    [XmlInclude(typeof(GroupRoleDataReplyPacket))]
+    [XmlInclude(typeof(GroupRoleMembersRequestPacket))]
+    [XmlInclude(typeof(GroupRoleMembersReplyPacket))]
+    [XmlInclude(typeof(GroupTitlesRequestPacket))]
+    [XmlInclude(typeof(GroupTitlesReplyPacket))]
+    [XmlInclude(typeof(GroupTitleUpdatePacket))]
+    [XmlInclude(typeof(GroupRoleUpdatePacket))]
+    [XmlInclude(typeof(LiveHelpGroupRequestPacket))]
+    [XmlInclude(typeof(LiveHelpGroupReplyPacket))]
+    [XmlInclude(typeof(AgentWearablesRequestPacket))]
+    [XmlInclude(typeof(AgentWearablesUpdatePacket))]
+    [XmlInclude(typeof(AgentIsNowWearingPacket))]
+    [XmlInclude(typeof(AgentCachedTexturePacket))]
+    [XmlInclude(typeof(AgentCachedTextureResponsePacket))]
+    [XmlInclude(typeof(AgentDataUpdateRequestPacket))]
+    [XmlInclude(typeof(AgentDataUpdatePacket))]
+    [XmlInclude(typeof(GroupDataUpdatePacket))]
+    [XmlInclude(typeof(AgentGroupDataUpdatePacket))]
+    [XmlInclude(typeof(AgentDropGroupPacket))]
+    [XmlInclude(typeof(LogTextMessagePacket))]
+    [XmlInclude(typeof(CreateTrustedCircuitPacket))]
+    [XmlInclude(typeof(DenyTrustedCircuitPacket))]
+    [XmlInclude(typeof(RequestTrustedCircuitPacket))]
+    [XmlInclude(typeof(RezSingleAttachmentFromInvPacket))]
+    [XmlInclude(typeof(RezMultipleAttachmentsFromInvPacket))]
+    [XmlInclude(typeof(DetachAttachmentIntoInvPacket))]
+    [XmlInclude(typeof(CreateNewOutfitAttachmentsPacket))]
+    [XmlInclude(typeof(UserInfoRequestPacket))]
+    [XmlInclude(typeof(UserInfoReplyPacket))]
+    [XmlInclude(typeof(UpdateUserInfoPacket))]
+    [XmlInclude(typeof(GodExpungeUserPacket))]
+    [XmlInclude(typeof(StartExpungeProcessPacket))]
+    [XmlInclude(typeof(StartExpungeProcessAckPacket))]
+    [XmlInclude(typeof(StartParcelRenamePacket))]
+    [XmlInclude(typeof(StartParcelRenameAckPacket))]
+    [XmlInclude(typeof(BulkParcelRenamePacket))]
+    [XmlInclude(typeof(ParcelRenamePacket))]
+    [XmlInclude(typeof(StartParcelRemovePacket))]
+    [XmlInclude(typeof(StartParcelRemoveAckPacket))]
+    [XmlInclude(typeof(BulkParcelRemovePacket))]
+    [XmlInclude(typeof(InitiateUploadPacket))]
+    [XmlInclude(typeof(InitiateDownloadPacket))]
+    [XmlInclude(typeof(SystemMessagePacket))]
+    [XmlInclude(typeof(MapLayerRequestPacket))]
+    [XmlInclude(typeof(MapLayerReplyPacket))]
+    [XmlInclude(typeof(MapBlockRequestPacket))]
+    [XmlInclude(typeof(MapNameRequestPacket))]
+    [XmlInclude(typeof(MapBlockReplyPacket))]
+    [XmlInclude(typeof(MapItemRequestPacket))]
+    [XmlInclude(typeof(MapItemReplyPacket))]
+    [XmlInclude(typeof(SendPostcardPacket))]
+    [XmlInclude(typeof(RpcChannelRequestPacket))]
+    [XmlInclude(typeof(RpcChannelReplyPacket))]
+    [XmlInclude(typeof(RpcScriptRequestInboundPacket))]
+    [XmlInclude(typeof(RpcScriptRequestInboundForwardPacket))]
+    [XmlInclude(typeof(RpcScriptReplyInboundPacket))]
+    [XmlInclude(typeof(MailTaskSimRequestPacket))]
+    [XmlInclude(typeof(MailTaskSimReplyPacket))]
+    [XmlInclude(typeof(ScriptMailRegistrationPacket))]
+    [XmlInclude(typeof(ParcelMediaCommandMessagePacket))]
+    [XmlInclude(typeof(ParcelMediaUpdatePacket))]
+    [XmlInclude(typeof(LandStatRequestPacket))]
+    [XmlInclude(typeof(LandStatReplyPacket))]
+    [XmlInclude(typeof(SecuredTemplateChecksumRequestPacket))]
+    [XmlInclude(typeof(PacketAckPacket))]
+    [XmlInclude(typeof(OpenCircuitPacket))]
+    [XmlInclude(typeof(CloseCircuitPacket))]
+    [XmlInclude(typeof(TemplateChecksumRequestPacket))]
+    [XmlInclude(typeof(TemplateChecksumReplyPacket))]
+    [XmlInclude(typeof(ClosestSimulatorPacket))]
+    [XmlInclude(typeof(ObjectAddPacket))]
+    [XmlInclude(typeof(MultipleObjectUpdatePacket))]
+    [XmlInclude(typeof(RequestMultipleObjectsPacket))]
+    [XmlInclude(typeof(ObjectPositionPacket))]
+    [XmlInclude(typeof(RequestObjectPropertiesFamilyPacket))]
+    [XmlInclude(typeof(CoarseLocationUpdatePacket))]
+    [XmlInclude(typeof(CrossedRegionPacket))]
+    [XmlInclude(typeof(ConfirmEnableSimulatorPacket))]
+    [XmlInclude(typeof(ObjectPropertiesPacket))]
+    [XmlInclude(typeof(ObjectPropertiesFamilyPacket))]
+    [XmlInclude(typeof(ParcelPropertiesRequestPacket))]
+    [XmlInclude(typeof(SimStatusPacket))]
+    [XmlInclude(typeof(GestureUpdatePacket))]
+    [XmlInclude(typeof(AttachedSoundPacket))]
+    [XmlInclude(typeof(AttachedSoundGainChangePacket))]
+    [XmlInclude(typeof(AttachedSoundCutoffRadiusPacket))]
+    [XmlInclude(typeof(PreloadSoundPacket))]
+    [XmlInclude(typeof(InternalScriptMailPacket))]
+    [XmlInclude(typeof(ViewerEffectPacket))]
+    [XmlInclude(typeof(SetSunPhasePacket))]
+    [XmlInclude(typeof(StartPingCheckPacket))]
+    [XmlInclude(typeof(CompletePingCheckPacket))]
+    [XmlInclude(typeof(NeighborListPacket))]
+    [XmlInclude(typeof(AgentUpdatePacket))]
+    [XmlInclude(typeof(AgentAnimationPacket))]
+    [XmlInclude(typeof(AgentRequestSitPacket))]
+    [XmlInclude(typeof(AgentSitPacket))]
+    [XmlInclude(typeof(RequestImagePacket))]
+    [XmlInclude(typeof(ImageDataPacket))]
+    [XmlInclude(typeof(ImagePacketPacket))]
+    [XmlInclude(typeof(LayerDataPacket))]
+    [XmlInclude(typeof(ObjectUpdatePacket))]
+    [XmlInclude(typeof(ObjectUpdateCompressedPacket))]
+    [XmlInclude(typeof(ObjectUpdateCachedPacket))]
+    [XmlInclude(typeof(ImprovedTerseObjectUpdatePacket))]
+    [XmlInclude(typeof(KillObjectPacket))]
+    [XmlInclude(typeof(AgentToNewRegionPacket))]
+    [XmlInclude(typeof(TransferPacketPacket))]
+    [XmlInclude(typeof(SendXferPacketPacket))]
+    [XmlInclude(typeof(ConfirmXferPacketPacket))]
+    [XmlInclude(typeof(AvatarAnimationPacket))]
+    [XmlInclude(typeof(AvatarSitResponsePacket))]
+    [XmlInclude(typeof(CameraConstraintPacket))]
+    [XmlInclude(typeof(ParcelPropertiesPacket))]
+    [XmlInclude(typeof(EdgeDataPacketPacket))]
+    [XmlInclude(typeof(ChildAgentUpdatePacket))]
+    [XmlInclude(typeof(ChildAgentAlivePacket))]
+    [XmlInclude(typeof(ChildAgentPositionUpdatePacket))]
+    [XmlInclude(typeof(PassObjectPacket))]
+    [XmlInclude(typeof(AtomicPassObjectPacket))]
+    [XmlInclude(typeof(SoundTriggerPacket))]
     public abstract class Packet
     {
         public abstract Header Header { get; set; }
@@ -908,6 +1475,13 @@ namespace libsecondlife.Packets
 
         public abstract byte[] ToBytes();
 
+        public void ToXml(XmlWriter xmlWriter)
+        {
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
+            XmlSerializer serializer = new XmlSerializer(typeof(Packet));
+            serializer.Serialize(xmlWriter, this, ns);
+        }
         public static PacketType GetType(ushort id, PacketFrequency frequency)
         {
             switch (frequency)
@@ -2072,10 +2646,12 @@ namespace libsecondlife.Packets
     public class TestMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("testmessage_testblock1")]
         public class TestBlock1Block
         {
             public uint Test1;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2115,12 +2691,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("testmessage_neighborblock")]
         public class NeighborBlockBlock
         {
             public uint Test0;
             public uint Test1;
             public uint Test2;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2238,12 +2816,14 @@ namespace libsecondlife.Packets
     public class AddCircuitCodePacket : Packet
     {
         /// <exclude/>
+        [XmlType("addcircuitcode_circuitcode")]
         public class CircuitCodeBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint Code;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2342,12 +2922,14 @@ namespace libsecondlife.Packets
     public class UseCircuitCodePacket : Packet
     {
         /// <exclude/>
+        [XmlType("usecircuitcode_circuitcode")]
         public class CircuitCodeBlock
         {
             public LLUUID ID;
             public LLUUID SessionID;
             public uint Code;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2446,6 +3028,7 @@ namespace libsecondlife.Packets
     public class LogControlPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logcontrol_options")]
         public class OptionsBlock
         {
             public uint Mask;
@@ -2454,6 +3037,7 @@ namespace libsecondlife.Packets
             public bool Location;
             public byte Level;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2556,6 +3140,7 @@ namespace libsecondlife.Packets
     public class RelayLogControlPacket : Packet
     {
         /// <exclude/>
+        [XmlType("relaylogcontrol_options")]
         public class OptionsBlock
         {
             public uint Mask;
@@ -2564,6 +3149,7 @@ namespace libsecondlife.Packets
             public bool Location;
             public byte Level;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2666,10 +3252,12 @@ namespace libsecondlife.Packets
     public class LogMessagesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logmessages_options")]
         public class OptionsBlock
         {
             public bool Enable;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2757,6 +3345,7 @@ namespace libsecondlife.Packets
     public class SimulatorAssignPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorassign_regioninfo")]
         public class RegionInfoBlock
         {
             public uint IP;
@@ -2770,6 +3359,7 @@ namespace libsecondlife.Packets
             public LLVector3 SunAngVelocity;
             public LLVector3 SunDirection;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -2866,6 +3456,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorassign_neighborblock")]
         public class NeighborBlockBlock
         {
             public uint IP;
@@ -2885,6 +3476,7 @@ namespace libsecondlife.Packets
             public byte SimAccess;
             public uint PublicIP;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3017,6 +3609,7 @@ namespace libsecondlife.Packets
     public class SpaceServerSimulatorTimeMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("spaceserversimulatortimemessage_timeinfo")]
         public class TimeInfoBlock
         {
             public uint SecPerDay;
@@ -3026,6 +3619,7 @@ namespace libsecondlife.Packets
             public float SunPhase;
             public LLVector3 SunDirection;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3147,6 +3741,7 @@ namespace libsecondlife.Packets
     public class AvatarTextureUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatartextureupdate_wearabledata")]
         public class WearableDataBlock
         {
             public byte TextureIndex;
@@ -3163,6 +3758,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID CacheID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3213,10 +3809,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatartextureupdate_texturedata")]
         public class TextureDataBlock
         {
             public LLUUID TextureID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3254,11 +3852,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatartextureupdate_agentdata")]
         public class AgentDataBlock
         {
             public bool TexturesChanged;
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3387,10 +3987,12 @@ namespace libsecondlife.Packets
     public class SimulatorMapUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatormapupdate_mapdata")]
         public class MapDataBlock
         {
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3481,12 +4083,14 @@ namespace libsecondlife.Packets
     public class SimulatorSetMapPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorsetmap_mapdata")]
         public class MapDataBlock
         {
             public LLUUID MapImage;
             public int Type;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3681,12 +4285,14 @@ namespace libsecondlife.Packets
     public class SimulatorStartPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorstart_positionsuggestion")]
         public class PositionSuggestionBlock
         {
             public bool Ignore;
             public int GridX;
             public int GridY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3735,12 +4341,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorstart_controlport")]
         public class ControlPortBlock
         {
             public ushort PublicPort;
             public ushort Port;
             public uint PublicIP;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3845,11 +4453,13 @@ namespace libsecondlife.Packets
     public class SimulatorReadyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorready_telehubblock")]
         public class TelehubBlockBlock
         {
             public bool HasTelehub;
             public LLVector3 TelehubPos;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -3890,6 +4500,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorready_simulatorblock")]
         public class SimulatorBlockBlock
         {
             private byte[] _simname;
@@ -3909,6 +4520,7 @@ namespace libsecondlife.Packets
             public uint ParentEstateID;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4035,6 +4647,7 @@ namespace libsecondlife.Packets
     public class TelehubInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("telehubinfo_telehubblock")]
         public class TelehubBlockBlock
         {
             private byte[] _objectname;
@@ -4052,6 +4665,7 @@ namespace libsecondlife.Packets
             public LLVector3 TelehubPos;
             public LLQuaternion TelehubRot;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4107,10 +4721,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("telehubinfo_spawnpointblock")]
         public class SpawnPointBlockBlock
         {
             public LLVector3 SpawnPointPos;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4217,11 +4833,13 @@ namespace libsecondlife.Packets
     public class SimulatorPresentAtLocationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorpresentatlocation_telehubblock")]
         public class TelehubBlockBlock
         {
             public bool HasTelehub;
             public LLVector3 TelehubPos;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4262,6 +4880,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorpresentatlocation_simulatorblock")]
         public class SimulatorBlockBlock
         {
             private byte[] _simname;
@@ -4281,6 +4900,7 @@ namespace libsecondlife.Packets
             public uint ParentEstateID;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4349,6 +4969,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorpresentatlocation_simulatorpublichostblock")]
         public class SimulatorPublicHostBlockBlock
         {
             public ushort Port;
@@ -4356,6 +4977,7 @@ namespace libsecondlife.Packets
             public uint GridX;
             public uint GridY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4411,11 +5033,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorpresentatlocation_neighborblock")]
         public class NeighborBlockBlock
         {
             public uint IP;
             public ushort Port;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4548,12 +5172,14 @@ namespace libsecondlife.Packets
     public class SimulatorLoadPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorload_simulatorload")]
         public class SimulatorLoadBlock
         {
             public bool CanAcceptAgents;
             public float TimeDilation;
             public int AgentCount;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4603,12 +5229,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simulatorload_agentlist")]
         public class AgentListBlock
         {
             public byte X;
             public byte Y;
             public uint CircuitCode;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4768,10 +5396,12 @@ namespace libsecondlife.Packets
     public class RegionPresenceRequestByRegionIDPacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionpresencerequestbyregionid_regiondata")]
         public class RegionDataBlock
         {
             public LLUUID RegionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4872,10 +5502,12 @@ namespace libsecondlife.Packets
     public class RegionPresenceRequestByHandlePacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionpresencerequestbyhandle_regiondata")]
         public class RegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -4982,6 +5614,7 @@ namespace libsecondlife.Packets
     public class RegionPresenceResponsePacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionpresenceresponse_regiondata")]
         public class RegionDataBlock
         {
             public double ValidUntil;
@@ -5002,6 +5635,7 @@ namespace libsecondlife.Packets
             public ulong RegionHandle;
             public ushort RegionPort;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5146,10 +5780,12 @@ namespace libsecondlife.Packets
     public class RecordAgentPresencePacket : Packet
     {
         /// <exclude/>
+        [XmlType("recordagentpresence_regiondata")]
         public class RegionDataBlock
         {
             public LLUUID RegionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5187,6 +5823,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("recordagentpresence_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -5198,6 +5835,7 @@ namespace libsecondlife.Packets
             public uint EstateID;
             public int TimeToLive;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5338,10 +5976,12 @@ namespace libsecondlife.Packets
     public class EraseAgentPresencePacket : Packet
     {
         /// <exclude/>
+        [XmlType("eraseagentpresence_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5442,10 +6082,12 @@ namespace libsecondlife.Packets
     public class AgentPresenceRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentpresencerequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5546,6 +6188,7 @@ namespace libsecondlife.Packets
     public class AgentPresenceResponsePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentpresenceresponse_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -5554,6 +6197,7 @@ namespace libsecondlife.Packets
             public ushort RegionPort;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5677,6 +6321,7 @@ namespace libsecondlife.Packets
     public class UpdateSimulatorPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updatesimulator_simulatorinfo")]
         public class SimulatorInfoBlock
         {
             private byte[] _simname;
@@ -5694,6 +6339,7 @@ namespace libsecondlife.Packets
             public byte SimAccess;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5801,6 +6447,7 @@ namespace libsecondlife.Packets
     public class TrackAgentSessionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("trackagentsession_sessioninfo")]
         public class SessionInfoBlock
         {
             public double GlobalX;
@@ -5809,6 +6456,7 @@ namespace libsecondlife.Packets
             public ushort ViewerPort;
             public uint ViewerIP;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -5869,6 +6517,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("trackagentsession_regiondata")]
         public class RegionDataBlock
         {
             public float RegionX;
@@ -5877,6 +6526,7 @@ namespace libsecondlife.Packets
             public uint AgentCount;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6010,12 +6660,14 @@ namespace libsecondlife.Packets
     public class ClearAgentSessionsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("clearagentsessions_regioninfo")]
         public class RegionInfoBlock
         {
             public uint RegionX;
             public uint RegionY;
             public uint SpaceIP;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6118,6 +6770,7 @@ namespace libsecondlife.Packets
     public class LogDwellTimePacket : Packet
     {
         /// <exclude/>
+        [XmlType("logdwelltime_dwellinfo")]
         public class DwellInfoBlock
         {
             public float Duration;
@@ -6139,6 +6792,7 @@ namespace libsecondlife.Packets
             public LLUUID SessionID;
             public byte AvgViewerFPS;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6266,6 +6920,7 @@ namespace libsecondlife.Packets
     public class FeatureDisabledPacket : Packet
     {
         /// <exclude/>
+        [XmlType("featuredisabled_failureinfo")]
         public class FailureInfoBlock
         {
             public LLUUID AgentID;
@@ -6282,6 +6937,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6384,6 +7040,7 @@ namespace libsecondlife.Packets
     public class LogFailedMoneyTransactionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logfailedmoneytransaction_transactiondata")]
         public class TransactionDataBlock
         {
             public byte FailureType;
@@ -6398,6 +7055,7 @@ namespace libsecondlife.Packets
             public uint TransactionTime;
             public int TransactionType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6536,6 +7194,7 @@ namespace libsecondlife.Packets
     public class UserReportInternalPacket : Packet
     {
         /// <exclude/>
+        [XmlType("userreportinternal_meancollision")]
         public class MeanCollisionBlock
         {
             public float Mag;
@@ -6543,6 +7202,7 @@ namespace libsecondlife.Packets
             public LLUUID Perp;
             public byte Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6596,6 +7256,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("userreportinternal_reportdata")]
         public class ReportDataBlock
         {
             private byte[] _simname;
@@ -6653,6 +7314,7 @@ namespace libsecondlife.Packets
             public LLUUID LastOwnerID;
             public LLVector3 ViewerPosition;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6829,6 +7491,7 @@ namespace libsecondlife.Packets
     public class SetSimStatusInDatabasePacket : Packet
     {
         /// <exclude/>
+        [XmlType("setsimstatusindatabase_data")]
         public class DataBlock
         {
             public int X;
@@ -6860,6 +7523,7 @@ namespace libsecondlife.Packets
             }
             public int TimeToLive;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -6996,6 +7660,7 @@ namespace libsecondlife.Packets
     public class SetSimPresenceInDatabasePacket : Packet
     {
         /// <exclude/>
+        [XmlType("setsimpresenceindatabase_simdata")]
         public class SimDataBlock
         {
             public int PID;
@@ -7027,6 +7692,7 @@ namespace libsecondlife.Packets
             }
             public int TimeToLive;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7208,6 +7874,7 @@ namespace libsecondlife.Packets
     public class EconomyDataPacket : Packet
     {
         /// <exclude/>
+        [XmlType("economydata_info")]
         public class InfoBlock
         {
             public float PriceParcelClaimFactor;
@@ -7228,6 +7895,7 @@ namespace libsecondlife.Packets
             public int PriceParcelRent;
             public int PriceUpload;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7416,6 +8084,7 @@ namespace libsecondlife.Packets
     public class AvatarPickerRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpickerrequest_data")]
         public class DataBlock
         {
             private byte[] _name;
@@ -7430,6 +8099,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7473,12 +8143,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarpickerrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7581,6 +8253,7 @@ namespace libsecondlife.Packets
     public class AvatarPickerRequestBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpickerrequestbackend_data")]
         public class DataBlock
         {
             private byte[] _name;
@@ -7595,6 +8268,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7638,6 +8312,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarpickerrequestbackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -7645,6 +8320,7 @@ namespace libsecondlife.Packets
             public byte GodLevel;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7750,6 +8426,7 @@ namespace libsecondlife.Packets
     public class AvatarPickerReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpickerreply_data")]
         public class DataBlock
         {
             private byte[] _lastname;
@@ -7776,6 +8453,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7831,11 +8509,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarpickerreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -7946,6 +8626,7 @@ namespace libsecondlife.Packets
     public class PlacesQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("placesquery_querydata")]
         public class QueryDataBlock
         {
             private byte[] _simname;
@@ -7973,6 +8654,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8033,12 +8715,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("placesquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8084,10 +8768,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("placesquery_transactiondata")]
         public class TransactionDataBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8189,6 +8875,7 @@ namespace libsecondlife.Packets
     public class PlacesReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("placesreply_querydata")]
         public class QueryDataBlock
         {
             private byte[] _simname;
@@ -8235,6 +8922,7 @@ namespace libsecondlife.Packets
             public int Price;
             public float Dwell;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8348,11 +9036,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("placesreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8394,10 +9084,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("placesreply_transactiondata")]
         public class TransactionDataBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8511,6 +9203,7 @@ namespace libsecondlife.Packets
     public class DirFindQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirfindquery_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
@@ -8528,6 +9221,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8587,11 +9281,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirfindquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8691,6 +9387,7 @@ namespace libsecondlife.Packets
     public class DirFindQueryBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirfindquerybackend_querydata")]
         public class QueryDataBlock
         {
             public bool Godlike;
@@ -8710,6 +9407,7 @@ namespace libsecondlife.Packets
             }
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8778,10 +9476,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirfindquerybackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8877,6 +9577,7 @@ namespace libsecondlife.Packets
     public class DirPlacesQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirplacesquery_querydata")]
         public class QueryDataBlock
         {
             private byte[] _simname;
@@ -8906,6 +9607,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -8976,11 +9678,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirplacesquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9080,6 +9784,7 @@ namespace libsecondlife.Packets
     public class DirPlacesQueryBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirplacesquerybackend_querydata")]
         public class QueryDataBlock
         {
             private byte[] _simname;
@@ -9111,6 +9816,7 @@ namespace libsecondlife.Packets
             }
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9190,10 +9896,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirplacesquerybackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9289,6 +9997,7 @@ namespace libsecondlife.Packets
     public class DirPlacesReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirplacesreply_queryreplies")]
         public class QueryRepliesBlock
         {
             public bool ReservedNewbie;
@@ -9308,6 +10017,7 @@ namespace libsecondlife.Packets
             public bool Auction;
             public float Dwell;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9371,10 +10081,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirplacesreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9412,10 +10124,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirplacesreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9541,6 +10255,7 @@ namespace libsecondlife.Packets
     public class DirPeopleReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpeoplereply_queryreplies")]
         public class QueryRepliesBlock
         {
             public LLUUID AgentID;
@@ -9580,6 +10295,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9652,10 +10368,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpeoplereply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9693,10 +10411,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpeoplereply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9810,6 +10530,7 @@ namespace libsecondlife.Packets
     public class DirEventsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("direventsreply_queryreplies")]
         public class QueryRepliesBlock
         {
             private byte[] _name;
@@ -9839,6 +10560,7 @@ namespace libsecondlife.Packets
             public uint EventFlags;
             public uint UnixTime;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9912,10 +10634,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("direventsreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -9953,10 +10677,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("direventsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10070,6 +10796,7 @@ namespace libsecondlife.Packets
     public class DirGroupsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirgroupsreply_queryreplies")]
         public class QueryRepliesBlock
         {
             public int Members;
@@ -10088,6 +10815,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10150,10 +10878,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirgroupsreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10191,10 +10921,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirgroupsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10308,6 +11040,7 @@ namespace libsecondlife.Packets
     public class DirClassifiedQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirclassifiedquery_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
@@ -10325,6 +11058,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10384,11 +11118,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirclassifiedquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10488,6 +11224,7 @@ namespace libsecondlife.Packets
     public class DirClassifiedQueryBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirclassifiedquerybackend_querydata")]
         public class QueryDataBlock
         {
             public bool Godlike;
@@ -10507,6 +11244,7 @@ namespace libsecondlife.Packets
             }
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10575,10 +11313,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirclassifiedquerybackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10674,6 +11414,7 @@ namespace libsecondlife.Packets
     public class DirClassifiedReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirclassifiedreply_queryreplies")]
         public class QueryRepliesBlock
         {
             public byte ClassifiedFlags;
@@ -10693,6 +11434,7 @@ namespace libsecondlife.Packets
             public int PriceForListing;
             public uint ExpirationDate;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10761,10 +11503,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirclassifiedreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10802,10 +11546,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirclassifiedreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10919,6 +11665,7 @@ namespace libsecondlife.Packets
     public class AvatarClassifiedReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarclassifiedreply_data")]
         public class DataBlock
         {
             public LLUUID ClassifiedID;
@@ -10934,6 +11681,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -10981,11 +11729,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarclassifiedreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID TargetID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11096,10 +11846,12 @@ namespace libsecondlife.Packets
     public class ClassifiedInfoRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("classifiedinforequest_data")]
         public class DataBlock
         {
             public LLUUID ClassifiedID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11137,11 +11889,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("classifiedinforequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11241,6 +11995,7 @@ namespace libsecondlife.Packets
     public class ClassifiedInfoReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("classifiedinforeply_data")]
         public class DataBlock
         {
             public byte ClassifiedFlags;
@@ -11299,6 +12054,7 @@ namespace libsecondlife.Packets
             public uint ExpirationDate;
             public uint ParentEstate;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11420,10 +12176,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("classifiedinforeply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11518,6 +12276,7 @@ namespace libsecondlife.Packets
     public class ClassifiedInfoUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("classifiedinfoupdate_data")]
         public class DataBlock
         {
             public byte ClassifiedFlags;
@@ -11551,6 +12310,7 @@ namespace libsecondlife.Packets
             public int PriceForListing;
             public uint ParentEstate;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11640,11 +12400,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("classifiedinfoupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11743,10 +12505,12 @@ namespace libsecondlife.Packets
     public class ClassifiedDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("classifieddelete_data")]
         public class DataBlock
         {
             public LLUUID ClassifiedID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11784,11 +12548,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("classifieddelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11887,11 +12653,13 @@ namespace libsecondlife.Packets
     public class ClassifiedGodDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("classifiedgoddelete_data")]
         public class DataBlock
         {
             public LLUUID ClassifiedID;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -11933,11 +12701,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("classifiedgoddelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12036,11 +12806,13 @@ namespace libsecondlife.Packets
     public class DirPicksQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpicksquery_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
             public uint QueryFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12084,11 +12856,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpicksquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12188,6 +12962,7 @@ namespace libsecondlife.Packets
     public class DirPicksQueryBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpicksquerybackend_querydata")]
         public class QueryDataBlock
         {
             public bool Godlike;
@@ -12195,6 +12970,7 @@ namespace libsecondlife.Packets
             public uint QueryFlags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12247,10 +13023,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpicksquerybackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12346,6 +13124,7 @@ namespace libsecondlife.Packets
     public class DirPicksReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpicksreply_queryreplies")]
         public class QueryRepliesBlock
         {
             public bool Enabled;
@@ -12362,6 +13141,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID PickID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12412,10 +13192,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpicksreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12453,10 +13235,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpicksreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12570,6 +13354,7 @@ namespace libsecondlife.Packets
     public class DirLandQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirlandquery_querydata")]
         public class QueryDataBlock
         {
             public bool ReservedNewbie;
@@ -12578,6 +13363,7 @@ namespace libsecondlife.Packets
             public bool Auction;
             public uint QueryFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12630,11 +13416,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirlandquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12734,6 +13522,7 @@ namespace libsecondlife.Packets
     public class DirLandQueryBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirlandquerybackend_querydata")]
         public class QueryDataBlock
         {
             public bool ReservedNewbie;
@@ -12744,6 +13533,7 @@ namespace libsecondlife.Packets
             public uint QueryFlags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12805,10 +13595,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirlandquerybackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12904,6 +13696,7 @@ namespace libsecondlife.Packets
     public class DirLandReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirlandreply_queryreplies")]
         public class QueryRepliesBlock
         {
             public bool ReservedNewbie;
@@ -12924,6 +13717,7 @@ namespace libsecondlife.Packets
             public bool Auction;
             public int SalePrice;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -12992,10 +13786,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirlandreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13033,10 +13829,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirlandreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13150,11 +13948,13 @@ namespace libsecondlife.Packets
     public class DirPopularQueryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpopularquery_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
             public uint QueryFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13198,11 +13998,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpopularquery_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13302,6 +14104,7 @@ namespace libsecondlife.Packets
     public class DirPopularQueryBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpopularquerybackend_querydata")]
         public class QueryDataBlock
         {
             public bool Godlike;
@@ -13309,6 +14112,7 @@ namespace libsecondlife.Packets
             public uint QueryFlags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13361,10 +14165,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpopularquerybackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13460,6 +14266,7 @@ namespace libsecondlife.Packets
     public class DirPopularReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dirpopularreply_queryreplies")]
         public class QueryRepliesBlock
         {
             public LLUUID ParcelID;
@@ -13476,6 +14283,7 @@ namespace libsecondlife.Packets
             }
             public float Dwell;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13530,10 +14338,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpopularreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13571,10 +14381,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("dirpopularreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13688,10 +14500,12 @@ namespace libsecondlife.Packets
     public class ParcelInfoRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelinforequest_data")]
         public class DataBlock
         {
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13729,11 +14543,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelinforequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -13832,6 +14648,7 @@ namespace libsecondlife.Packets
     public class ParcelInfoReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelinforeply_data")]
         public class DataBlock
         {
             private byte[] _simname;
@@ -13880,6 +14697,7 @@ namespace libsecondlife.Packets
             public int AuctionID;
             public float Dwell;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14003,10 +14821,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelinforeply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14102,10 +14922,12 @@ namespace libsecondlife.Packets
     public class ParcelObjectOwnersRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelobjectownersrequest_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14145,11 +14967,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelobjectownersrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14248,10 +15072,12 @@ namespace libsecondlife.Packets
     public class OnlineStatusRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("onlinestatusrequest_data")]
         public class DataBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14289,6 +15115,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("onlinestatusrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -14297,6 +15124,7 @@ namespace libsecondlife.Packets
             public LLUUID QueryID;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14422,10 +15250,12 @@ namespace libsecondlife.Packets
     public class OnlineStatusReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("onlinestatusreply_data")]
         public class DataBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14463,11 +15293,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("onlinestatusreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14579,6 +15411,7 @@ namespace libsecondlife.Packets
     public class ParcelObjectOwnersReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelobjectownersreply_data")]
         public class DataBlock
         {
             public bool OnlineStatus;
@@ -14586,6 +15419,7 @@ namespace libsecondlife.Packets
             public LLUUID OwnerID;
             public int Count;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14699,10 +15533,12 @@ namespace libsecondlife.Packets
     public class GroupNoticesListRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupnoticeslistrequest_data")]
         public class DataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14740,11 +15576,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupnoticeslistrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14843,6 +15681,7 @@ namespace libsecondlife.Packets
     public class GroupNoticesListReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupnoticeslistreply_data")]
         public class DataBlock
         {
             public uint Timestamp;
@@ -14872,6 +15711,7 @@ namespace libsecondlife.Packets
             }
             public byte AssetType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -14941,11 +15781,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupnoticeslistreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15056,10 +15898,12 @@ namespace libsecondlife.Packets
     public class GroupNoticeRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupnoticerequest_data")]
         public class DataBlock
         {
             public LLUUID GroupNoticeID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15097,11 +15941,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupnoticerequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15200,6 +16046,7 @@ namespace libsecondlife.Packets
     public class GroupNoticeAddPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupnoticeadd_messageblock")]
         public class MessageBlockBlock
         {
             public LLUUID ID;
@@ -15239,6 +16086,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15311,10 +16159,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupnoticeadd_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15409,11 +16259,13 @@ namespace libsecondlife.Packets
     public class GroupNoticeDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupnoticedelete_data")]
         public class DataBlock
         {
             public LLUUID GroupNoticeID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15455,11 +16307,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupnoticedelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15558,12 +16412,14 @@ namespace libsecondlife.Packets
     public class TeleportRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportrequest_info")]
         public class InfoBlock
         {
             public LLUUID RegionID;
             public LLVector3 LookAt;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15609,11 +16465,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("teleportrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15712,12 +16570,14 @@ namespace libsecondlife.Packets
     public class TeleportLocationRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportlocationrequest_info")]
         public class InfoBlock
         {
             public ulong RegionHandle;
             public LLVector3 LookAt;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15769,11 +16629,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("teleportlocationrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15872,6 +16734,7 @@ namespace libsecondlife.Packets
     public class TeleportLocalPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportlocal_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
@@ -15880,6 +16743,7 @@ namespace libsecondlife.Packets
             public uint TeleportFlags;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -15988,12 +16852,14 @@ namespace libsecondlife.Packets
     public class TeleportLandmarkRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportlandmarkrequest_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID LandmarkID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16091,6 +16957,7 @@ namespace libsecondlife.Packets
     public class TeleportProgressPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportprogress_info")]
         public class InfoBlock
         {
             private byte[] _message;
@@ -16106,6 +16973,7 @@ namespace libsecondlife.Packets
             }
             public uint TeleportFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16155,10 +17023,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("teleportprogress_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16253,11 +17123,13 @@ namespace libsecondlife.Packets
     public class DataHomeLocationRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("datahomelocationrequest_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
             public uint KickedFromEstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16353,6 +17225,7 @@ namespace libsecondlife.Packets
     public class DataHomeLocationReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("datahomelocationreply_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
@@ -16360,6 +17233,7 @@ namespace libsecondlife.Packets
             public LLVector3 LookAt;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16466,6 +17340,7 @@ namespace libsecondlife.Packets
     public class SpaceLocationTeleportRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("spacelocationteleportrequest_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
@@ -16478,6 +17353,7 @@ namespace libsecondlife.Packets
             public uint TeleportFlags;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16609,6 +17485,7 @@ namespace libsecondlife.Packets
     public class SpaceLocationTeleportReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("spacelocationteleportreply_info")]
         public class InfoBlock
         {
             private byte[] _simname;
@@ -16632,6 +17509,7 @@ namespace libsecondlife.Packets
             public uint TeleportFlags;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16773,6 +17651,7 @@ namespace libsecondlife.Packets
     public class TeleportFinishPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportfinish_info")]
         public class InfoBlock
         {
             private byte[] _seedcapability;
@@ -16794,6 +17673,7 @@ namespace libsecondlife.Packets
             public uint SimIP;
             public uint TeleportFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16928,6 +17808,7 @@ namespace libsecondlife.Packets
     public class StartLurePacket : Packet
     {
         /// <exclude/>
+        [XmlType("startlure_info")]
         public class InfoBlock
         {
             private byte[] _message;
@@ -16944,6 +17825,7 @@ namespace libsecondlife.Packets
             public LLUUID TargetID;
             public byte LureType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -16994,11 +17876,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("startlure_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17097,6 +17981,7 @@ namespace libsecondlife.Packets
     public class TeleportLureRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportlurerequest_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
@@ -17104,6 +17989,7 @@ namespace libsecondlife.Packets
             public LLUUID LureID;
             public uint TeleportFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17206,11 +18092,13 @@ namespace libsecondlife.Packets
     public class TeleportCancelPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportcancel_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17303,6 +18191,7 @@ namespace libsecondlife.Packets
     public class CompleteLurePacket : Packet
     {
         /// <exclude/>
+        [XmlType("completelure_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
@@ -17313,6 +18202,7 @@ namespace libsecondlife.Packets
             public uint ParentEstateID;
             public uint TeleportFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17430,10 +18320,12 @@ namespace libsecondlife.Packets
     public class TeleportStartPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportstart_info")]
         public class InfoBlock
         {
             public uint TeleportFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17524,6 +18416,7 @@ namespace libsecondlife.Packets
     public class TeleportFailedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportfailed_info")]
         public class InfoBlock
         {
             public LLUUID AgentID;
@@ -17539,6 +18432,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17637,12 +18531,14 @@ namespace libsecondlife.Packets
     public class LeaderBoardRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("leaderboardrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public int Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17741,6 +18637,7 @@ namespace libsecondlife.Packets
     public class LeaderBoardDataPacket : Packet
     {
         /// <exclude/>
+        [XmlType("leaderboarddata_boarddata")]
         public class BoardDataBlock
         {
             private byte[] _timestring;
@@ -17758,6 +18655,7 @@ namespace libsecondlife.Packets
             public int MinPlace;
             public int Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17819,6 +18717,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("leaderboarddata_entry")]
         public class EntryBlock
         {
             public LLUUID ID;
@@ -17827,6 +18726,7 @@ namespace libsecondlife.Packets
             public int Place;
             public int Score;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -17886,10 +18786,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("leaderboarddata_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18003,10 +18905,12 @@ namespace libsecondlife.Packets
     public class UndoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("undo_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18044,12 +18948,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("undo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18164,10 +19070,12 @@ namespace libsecondlife.Packets
     public class RedoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("redo_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18205,12 +19113,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("redo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18325,11 +19235,13 @@ namespace libsecondlife.Packets
     public class UndoLandPacket : Packet
     {
         /// <exclude/>
+        [XmlType("undoland_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18422,11 +19334,13 @@ namespace libsecondlife.Packets
     public class RedoLandPacket : Packet
     {
         /// <exclude/>
+        [XmlType("redoland_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18519,12 +19433,14 @@ namespace libsecondlife.Packets
     public class AgentPausePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentpause_agentdata")]
         public class AgentDataBlock
         {
             public uint SerialNum;
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18623,12 +19539,14 @@ namespace libsecondlife.Packets
     public class AgentResumePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentresume_agentdata")]
         public class AgentDataBlock
         {
             public uint SerialNum;
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18727,6 +19645,7 @@ namespace libsecondlife.Packets
     public class ChatFromViewerPacket : Packet
     {
         /// <exclude/>
+        [XmlType("chatfromviewer_chatdata")]
         public class ChatDataBlock
         {
             public int Channel;
@@ -18743,6 +19662,7 @@ namespace libsecondlife.Packets
             }
             public byte Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18796,11 +19716,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("chatfromviewer_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18900,6 +19822,7 @@ namespace libsecondlife.Packets
     public class AgentThrottlePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentthrottle_throttle")]
         public class ThrottleBlock
         {
             public uint GenCounter;
@@ -18915,6 +19838,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -18964,12 +19888,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentthrottle_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint CircuitCode;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19075,11 +20001,13 @@ namespace libsecondlife.Packets
     public class AgentFOVPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentfov_fovblock")]
         public class FOVBlockBlock
         {
             public uint GenCounter;
             public float VerticalAngle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19126,12 +20054,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentfov_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint CircuitCode;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19236,12 +20166,14 @@ namespace libsecondlife.Packets
     public class AgentHeightWidthPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentheightwidth_heightwidthblock")]
         public class HeightWidthBlockBlock
         {
             public uint GenCounter;
             public ushort Height;
             public ushort Width;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19289,12 +20221,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentheightwidth_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint CircuitCode;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19399,10 +20333,12 @@ namespace libsecondlife.Packets
     public class AgentSetAppearancePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentsetappearance_visualparam")]
         public class VisualParamBlock
         {
             public byte ParamValue;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19439,6 +20375,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentsetappearance_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _textureentry;
@@ -19453,6 +20390,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19497,11 +20435,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentsetappearance_wearabledata")]
         public class WearableDataBlock
         {
             public byte TextureIndex;
             public LLUUID CacheID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19542,6 +20482,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentsetappearance_agentdata")]
         public class AgentDataBlock
         {
             public uint SerialNum;
@@ -19549,6 +20490,7 @@ namespace libsecondlife.Packets
             public LLUUID SessionID;
             public LLVector3 Size;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19694,11 +20636,13 @@ namespace libsecondlife.Packets
     public class AgentQuitPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentquit_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19791,10 +20735,12 @@ namespace libsecondlife.Packets
     public class AgentQuitCopyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentquitcopy_fuseblock")]
         public class FuseBlockBlock
         {
             public uint ViewerCircuitCode;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19834,11 +20780,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentquitcopy_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -19937,10 +20885,12 @@ namespace libsecondlife.Packets
     public class ImageNotInDatabasePacket : Packet
     {
         /// <exclude/>
+        [XmlType("imagenotindatabase_imageid")]
         public class ImageIDBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20029,10 +20979,12 @@ namespace libsecondlife.Packets
     public class RebakeAvatarTexturesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rebakeavatartextures_texturedata")]
         public class TextureDataBlock
         {
             public LLUUID TextureID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20121,12 +21073,14 @@ namespace libsecondlife.Packets
     public class SetAlwaysRunPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setalwaysrun_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public bool AlwaysRun;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20222,10 +21176,12 @@ namespace libsecondlife.Packets
     public class ObjectDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdelete_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20265,12 +21221,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public bool Force;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20385,10 +21343,12 @@ namespace libsecondlife.Packets
     public class ObjectDuplicatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectduplicate_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20428,11 +21388,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectduplicate_shareddata")]
         public class SharedDataBlock
         {
             public uint DuplicateFlags;
             public LLVector3 Offset;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20476,12 +21438,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectduplicate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20603,10 +21567,12 @@ namespace libsecondlife.Packets
     public class ObjectDuplicateOnRayPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectduplicateonray_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20646,6 +21612,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectduplicateonray_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -20660,6 +21627,7 @@ namespace libsecondlife.Packets
             public bool CopyCenters;
             public LLUUID RayTargetID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20805,11 +21773,13 @@ namespace libsecondlife.Packets
     public class ObjectScalePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectscale_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
             public LLVector3 Scale;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20853,11 +21823,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectscale_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -20969,11 +21941,13 @@ namespace libsecondlife.Packets
     public class ObjectRotationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectrotation_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
             public LLQuaternion Rotation;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21017,11 +21991,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectrotation_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21133,6 +22109,7 @@ namespace libsecondlife.Packets
     public class ObjectFlagUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectflagupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -21143,6 +22120,7 @@ namespace libsecondlife.Packets
             public bool CastsShadows;
             public bool IsPhantom;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21254,11 +22232,13 @@ namespace libsecondlife.Packets
     public class ObjectClickActionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectclickaction_objectdata")]
         public class ObjectDataBlock
         {
             public byte ClickAction;
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21301,11 +22281,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectclickaction_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21417,6 +22399,7 @@ namespace libsecondlife.Packets
     public class ObjectImagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectimage_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _mediaurl;
@@ -21443,6 +22426,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21501,11 +22485,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectimage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21617,11 +22603,13 @@ namespace libsecondlife.Packets
     public class ObjectMaterialPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectmaterial_objectdata")]
         public class ObjectDataBlock
         {
             public byte Material;
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21664,11 +22652,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectmaterial_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21780,6 +22770,7 @@ namespace libsecondlife.Packets
     public class ObjectShapePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectshape_objectdata")]
         public class ObjectDataBlock
         {
             public sbyte PathTwistBegin;
@@ -21802,6 +22793,7 @@ namespace libsecondlife.Packets
             public byte ProfileHollow;
             public byte PathRevolutions;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -21895,11 +22887,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectshape_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22011,6 +23005,7 @@ namespace libsecondlife.Packets
     public class ObjectExtraParamsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectextraparams_objectdata")]
         public class ObjectDataBlock
         {
             public bool ParamInUse;
@@ -22029,6 +23024,7 @@ namespace libsecondlife.Packets
             public uint ParamSize;
             public ushort ParamType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22091,11 +23087,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectextraparams_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22207,10 +23205,12 @@ namespace libsecondlife.Packets
     public class ObjectOwnerPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectowner_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22250,11 +23250,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectowner_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22296,12 +23298,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectowner_headerdata")]
         public class HeaderDataBlock
         {
             public LLUUID GroupID;
             public LLUUID OwnerID;
             public bool Override;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22422,10 +23426,12 @@ namespace libsecondlife.Packets
     public class ObjectGroupPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectgroup_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22465,12 +23471,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectgroup_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22586,12 +23594,14 @@ namespace libsecondlife.Packets
     public class ObjectBuyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectbuy_objectdata")]
         public class ObjectDataBlock
         {
             public byte SaleType;
             public int SalePrice;
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22640,6 +23650,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectbuy_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -22647,6 +23658,7 @@ namespace libsecondlife.Packets
             public LLUUID GroupID;
             public LLUUID CategoryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22766,12 +23778,14 @@ namespace libsecondlife.Packets
     public class BuyObjectInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("buyobjectinventory_data")]
         public class DataBlock
         {
             public LLUUID ObjectID;
             public LLUUID ItemID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22817,11 +23831,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("buyobjectinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -22921,11 +23937,13 @@ namespace libsecondlife.Packets
     public class DerezContainerPacket : Packet
     {
         /// <exclude/>
+        [XmlType("derezcontainer_data")]
         public class DataBlock
         {
             public LLUUID ObjectID;
             public bool Delete;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23018,6 +24036,7 @@ namespace libsecondlife.Packets
     public class ObjectPermissionsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectpermissions_objectdata")]
         public class ObjectDataBlock
         {
             public byte Set;
@@ -23025,6 +24044,7 @@ namespace libsecondlife.Packets
             public uint ObjectLocalID;
             public byte Field;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23076,11 +24096,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectpermissions_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23122,10 +24144,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectpermissions_headerdata")]
         public class HeaderDataBlock
         {
             public bool Override;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23238,12 +24262,14 @@ namespace libsecondlife.Packets
     public class ObjectSaleInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectsaleinfo_objectdata")]
         public class ObjectDataBlock
         {
             public uint LocalID;
             public byte SaleType;
             public int SalePrice;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23292,11 +24318,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectsaleinfo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23408,6 +24436,7 @@ namespace libsecondlife.Packets
     public class ObjectNamePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectname_objectdata")]
         public class ObjectDataBlock
         {
             public uint LocalID;
@@ -23423,6 +24452,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23472,11 +24502,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectname_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23588,6 +24620,7 @@ namespace libsecondlife.Packets
     public class ObjectDescriptionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdescription_objectdata")]
         public class ObjectDataBlock
         {
             public uint LocalID;
@@ -23603,6 +24636,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23652,11 +24686,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdescription_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23768,11 +24804,13 @@ namespace libsecondlife.Packets
     public class ObjectCategoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectcategory_objectdata")]
         public class ObjectDataBlock
         {
             public uint LocalID;
             public uint Category;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23818,11 +24856,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectcategory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23934,10 +24974,12 @@ namespace libsecondlife.Packets
     public class ObjectSelectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectselect_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -23977,11 +25019,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectselect_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24093,10 +25137,12 @@ namespace libsecondlife.Packets
     public class ObjectDeselectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdeselect_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24136,11 +25182,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdeselect_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24252,11 +25300,13 @@ namespace libsecondlife.Packets
     public class ObjectAttachPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectattach_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
             public LLQuaternion Rotation;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24300,12 +25350,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectattach_agentdata")]
         public class AgentDataBlock
         {
             public byte AttachmentPoint;
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24420,10 +25472,12 @@ namespace libsecondlife.Packets
     public class ObjectDetachPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdetach_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24463,11 +25517,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdetach_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24578,10 +25634,12 @@ namespace libsecondlife.Packets
     public class ObjectDropPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdrop_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24621,11 +25679,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdrop_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24736,10 +25796,12 @@ namespace libsecondlife.Packets
     public class ObjectLinkPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectlink_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24779,11 +25841,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectlink_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24894,10 +25958,12 @@ namespace libsecondlife.Packets
     public class ObjectDelinkPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdelink_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -24937,11 +26003,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdelink_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25052,10 +26120,12 @@ namespace libsecondlife.Packets
     public class ObjectHingePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objecthinge_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25095,10 +26165,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objecthinge_jointtype")]
         public class JointTypeBlock
         {
             public byte Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25135,11 +26207,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objecthinge_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25256,10 +26330,12 @@ namespace libsecondlife.Packets
     public class ObjectDehingePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdehinge_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25299,11 +26375,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdehinge_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25414,11 +26492,13 @@ namespace libsecondlife.Packets
     public class ObjectGrabPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectgrab_objectdata")]
         public class ObjectDataBlock
         {
             public LLVector3 GrabOffset;
             public uint LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25462,11 +26542,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectgrab_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25566,6 +26648,7 @@ namespace libsecondlife.Packets
     public class ObjectGrabUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectgrabupdate_objectdata")]
         public class ObjectDataBlock
         {
             public uint TimeSinceLast;
@@ -25573,6 +26656,7 @@ namespace libsecondlife.Packets
             public LLVector3 GrabOffsetInitial;
             public LLVector3 GrabPosition;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25624,11 +26708,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectgrabupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25728,10 +26814,12 @@ namespace libsecondlife.Packets
     public class ObjectDeGrabPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectdegrab_objectdata")]
         public class ObjectDataBlock
         {
             public uint LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25771,11 +26859,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectdegrab_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25874,10 +26964,12 @@ namespace libsecondlife.Packets
     public class ObjectSpinStartPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectspinstart_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -25915,11 +27007,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectspinstart_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26019,11 +27113,13 @@ namespace libsecondlife.Packets
     public class ObjectSpinUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectspinupdate_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
             public LLQuaternion Rotation;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26065,11 +27161,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectspinupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26169,10 +27267,12 @@ namespace libsecondlife.Packets
     public class ObjectSpinStopPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectspinstop_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26210,11 +27310,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectspinstop_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26314,10 +27416,12 @@ namespace libsecondlife.Packets
     public class ObjectExportSelectedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectexportselected_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26355,12 +27459,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectexportselected_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID RequestID;
             public short VolumeDetail;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26476,11 +27582,13 @@ namespace libsecondlife.Packets
     public class ObjectImportPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectimport_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26522,6 +27630,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectimport_assetdata")]
         public class AssetDataBlock
         {
             private byte[] _objectname;
@@ -26548,6 +27657,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26661,6 +27771,7 @@ namespace libsecondlife.Packets
     public class ModifyLandPacket : Packet
     {
         /// <exclude/>
+        [XmlType("modifyland_modifyblock")]
         public class ModifyBlockBlock
         {
             public byte BrushSize;
@@ -26668,6 +27779,7 @@ namespace libsecondlife.Packets
             public float Height;
             public byte Action;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26720,6 +27832,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("modifyland_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
@@ -26728,6 +27841,7 @@ namespace libsecondlife.Packets
             public float North;
             public float South;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26792,11 +27906,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("modifyland_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -26914,11 +28030,13 @@ namespace libsecondlife.Packets
     public class VelocityInterpolateOnPacket : Packet
     {
         /// <exclude/>
+        [XmlType("velocityinterpolateon_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27011,11 +28129,13 @@ namespace libsecondlife.Packets
     public class VelocityInterpolateOffPacket : Packet
     {
         /// <exclude/>
+        [XmlType("velocityinterpolateoff_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27108,6 +28228,7 @@ namespace libsecondlife.Packets
     public class StateSavePacket : Packet
     {
         /// <exclude/>
+        [XmlType("statesave_datablock")]
         public class DataBlockBlock
         {
             private byte[] _filename;
@@ -27122,6 +28243,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27165,11 +28287,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("statesave_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27268,11 +28392,13 @@ namespace libsecondlife.Packets
     public class ReportAutosaveCrashPacket : Packet
     {
         /// <exclude/>
+        [XmlType("reportautosavecrash_autosavedata")]
         public class AutosaveDataBlock
         {
             public int PID;
             public int Status;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27369,11 +28495,13 @@ namespace libsecondlife.Packets
     public class SimWideDeletesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simwidedeletes_datablock")]
         public class DataBlockBlock
         {
             public LLUUID TargetID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27417,11 +28545,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simwidedeletes_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27520,10 +28650,12 @@ namespace libsecondlife.Packets
     public class TrackAgentPacket : Packet
     {
         /// <exclude/>
+        [XmlType("trackagent_targetdata")]
         public class TargetDataBlock
         {
             public LLUUID PreyID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27561,11 +28693,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("trackagent_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27664,12 +28798,14 @@ namespace libsecondlife.Packets
     public class ViewerStatsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("viewerstats_downloadtotals")]
         public class DownloadTotalsBlock
         {
             public uint Objects;
             public uint Textures;
             public uint World;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27721,11 +28857,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("viewerstats_miscstats")]
         public class MiscStatsBlock
         {
             public uint Type;
             public double Value;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27772,6 +28910,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("viewerstats_netstats")]
         public class NetStatsBlock
         {
             public uint Packets;
@@ -27779,6 +28918,7 @@ namespace libsecondlife.Packets
             public uint Compressed;
             public uint Bytes;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27836,6 +28976,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("viewerstats_failstats")]
         public class FailStatsBlock
         {
             public uint FailedResends;
@@ -27845,6 +28986,7 @@ namespace libsecondlife.Packets
             public uint OffCircuit;
             public uint Resent;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -27914,6 +29056,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("viewerstats_agentdata")]
         public class AgentDataBlock
         {
             public uint IP;
@@ -27962,6 +29105,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28183,12 +29327,14 @@ namespace libsecondlife.Packets
     public class ScriptAnswerYesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptansweryes_data")]
         public class DataBlock
         {
             public LLUUID TaskID;
             public LLUUID ItemID;
             public int Questions;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28236,11 +29382,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("scriptansweryes_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28339,6 +29487,7 @@ namespace libsecondlife.Packets
     public class UserReportPacket : Packet
     {
         /// <exclude/>
+        [XmlType("userreport_meancollision")]
         public class MeanCollisionBlock
         {
             public float Mag;
@@ -28346,6 +29495,7 @@ namespace libsecondlife.Packets
             public LLUUID Perp;
             public byte Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28399,6 +29549,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("userreport_reportdata")]
         public class ReportDataBlock
         {
             public LLUUID ObjectID;
@@ -28441,6 +29592,7 @@ namespace libsecondlife.Packets
             public LLUUID ScreenshotID;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28522,11 +29674,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("userreport_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28644,6 +29798,7 @@ namespace libsecondlife.Packets
     public class AlertMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("alertmessage_alertdata")]
         public class AlertDataBlock
         {
             private byte[] _message;
@@ -28658,6 +29813,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28752,6 +29908,7 @@ namespace libsecondlife.Packets
     public class AgentAlertMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentalertmessage_alertdata")]
         public class AlertDataBlock
         {
             private byte[] _message;
@@ -28767,6 +29924,7 @@ namespace libsecondlife.Packets
             }
             public bool Modal;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28813,10 +29971,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentalertmessage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -28911,6 +30071,7 @@ namespace libsecondlife.Packets
     public class MeanCollisionAlertPacket : Packet
     {
         /// <exclude/>
+        [XmlType("meancollisionalert_meancollision")]
         public class MeanCollisionBlock
         {
             public float Mag;
@@ -28919,6 +30080,7 @@ namespace libsecondlife.Packets
             public byte Type;
             public LLUUID Victim;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29040,10 +30202,12 @@ namespace libsecondlife.Packets
     public class ViewerFrozenMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("viewerfrozenmessage_frozendata")]
         public class FrozenDataBlock
         {
             public bool Data;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29131,10 +30295,12 @@ namespace libsecondlife.Packets
     public class HealthMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("healthmessage_healthdata")]
         public class HealthDataBlock
         {
             public float Health;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29227,6 +30393,7 @@ namespace libsecondlife.Packets
     public class ChatFromSimulatorPacket : Packet
     {
         /// <exclude/>
+        [XmlType("chatfromsimulator_chatdata")]
         public class ChatDataBlock
         {
             private byte[] _message;
@@ -29258,6 +30425,7 @@ namespace libsecondlife.Packets
             public LLUUID SourceID;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29382,11 +30550,13 @@ namespace libsecondlife.Packets
     public class SimStatsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simstats_stat")]
         public class StatBlock
         {
             public float StatValue;
             public uint StatID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29433,6 +30603,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simstats_region")]
         public class RegionBlock
         {
             public uint RegionX;
@@ -29440,6 +30611,7 @@ namespace libsecondlife.Packets
             public uint RegionFlags;
             public uint ObjectCapacity;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29566,11 +30738,13 @@ namespace libsecondlife.Packets
     public class RequestRegionInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestregioninfo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29663,6 +30837,7 @@ namespace libsecondlife.Packets
     public class RegionInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("regioninfo_regioninfo")]
         public class RegionInfoBlock
         {
             public float BillableFactor;
@@ -29692,6 +30867,7 @@ namespace libsecondlife.Packets
             public float TerrainRaiseLimit;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29817,11 +30993,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("regioninfo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -29921,6 +31099,7 @@ namespace libsecondlife.Packets
     public class GodUpdateRegionInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("godupdateregioninfo_regioninfo")]
         public class RegionInfoBlock
         {
             public float BillableFactor;
@@ -29942,6 +31121,7 @@ namespace libsecondlife.Packets
             public uint ParentEstateID;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30028,11 +31208,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("godupdateregioninfo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30132,10 +31314,12 @@ namespace libsecondlife.Packets
     public class NearestLandingRegionRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("nearestlandingregionrequest_requestingregiondata")]
         public class RequestingRegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30230,10 +31414,12 @@ namespace libsecondlife.Packets
     public class NearestLandingRegionReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("nearestlandingregionreply_landingregiondata")]
         public class LandingRegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30328,10 +31514,12 @@ namespace libsecondlife.Packets
     public class NearestLandingRegionUpdatedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("nearestlandingregionupdated_regiondata")]
         public class RegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30426,10 +31614,12 @@ namespace libsecondlife.Packets
     public class TeleportLandingStatusChangedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("teleportlandingstatuschanged_regiondata")]
         public class RegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30524,6 +31714,7 @@ namespace libsecondlife.Packets
     public class RegionHandshakePacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionhandshake_regioninfo")]
         public class RegionInfoBlock
         {
             public float BillableFactor;
@@ -30561,6 +31752,7 @@ namespace libsecondlife.Packets
             public bool IsEstateManager;
             public LLUUID CacheID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30769,10 +31961,12 @@ namespace libsecondlife.Packets
     public class RegionHandshakeReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionhandshakereply_regioninfo")]
         public class RegionInfoBlock
         {
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30812,11 +32006,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("regionhandshakereply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -30916,6 +32112,7 @@ namespace libsecondlife.Packets
     public class SimulatorViewerTimeMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("simulatorviewertimemessage_timeinfo")]
         public class TimeInfoBlock
         {
             public uint SecPerDay;
@@ -30925,6 +32122,7 @@ namespace libsecondlife.Packets
             public float SunPhase;
             public LLVector3 SunDirection;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31046,12 +32244,14 @@ namespace libsecondlife.Packets
     public class EnableSimulatorPacket : Packet
     {
         /// <exclude/>
+        [XmlType("enablesimulator_simulatorinfo")]
         public class SimulatorInfoBlock
         {
             public uint IP;
             public ushort Port;
             public ulong Handle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31201,6 +32401,7 @@ namespace libsecondlife.Packets
     public class TransferRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferrequest_transferinfo")]
         public class TransferInfoBlock
         {
             public LLUUID TransferID;
@@ -31219,6 +32420,7 @@ namespace libsecondlife.Packets
             public int SourceType;
             public float Priority;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31338,6 +32540,7 @@ namespace libsecondlife.Packets
     public class TransferInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferinfo_transferinfo")]
         public class TransferInfoBlock
         {
             public LLUUID TransferID;
@@ -31346,6 +32549,7 @@ namespace libsecondlife.Packets
             public int TargetType;
             public int Status;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31459,11 +32663,13 @@ namespace libsecondlife.Packets
     public class TransferAbortPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferabort_transferinfo")]
         public class TransferInfoBlock
         {
             public LLUUID TransferID;
             public int ChannelType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31559,12 +32765,14 @@ namespace libsecondlife.Packets
     public class TransferPriorityPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferpriority_transferinfo")]
         public class TransferInfoBlock
         {
             public LLUUID TransferID;
             public int ChannelType;
             public float Priority;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31667,6 +32875,7 @@ namespace libsecondlife.Packets
     public class RequestXferPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestxfer_xferid")]
         public class XferIDBlock
         {
             public ulong ID;
@@ -31687,6 +32896,7 @@ namespace libsecondlife.Packets
             public LLUUID VFileID;
             public short VFileType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31809,11 +33019,13 @@ namespace libsecondlife.Packets
     public class AbortXferPacket : Packet
     {
         /// <exclude/>
+        [XmlType("abortxfer_xferid")]
         public class XferIDBlock
         {
             public ulong ID;
             public int Result;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -31914,10 +33126,12 @@ namespace libsecondlife.Packets
     public class RequestAvatarInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestavatarinfo_datablock")]
         public class DataBlockBlock
         {
             public LLUUID FullID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32006,10 +33220,12 @@ namespace libsecondlife.Packets
     public class AvatarAppearancePacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarappearance_visualparam")]
         public class VisualParamBlock
         {
             public byte ParamValue;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32046,6 +33262,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarappearance_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _textureentry;
@@ -32060,6 +33277,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32104,11 +33322,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarappearance_sender")]
         public class SenderBlock
         {
             public LLUUID ID;
             public bool IsTrial;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32225,11 +33445,13 @@ namespace libsecondlife.Packets
     public class SetFollowCamPropertiesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setfollowcamproperties_cameraproperty")]
         public class CameraPropertyBlock
         {
             public int Type;
             public float Value;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32276,10 +33498,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("setfollowcamproperties_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32386,10 +33610,12 @@ namespace libsecondlife.Packets
     public class ClearFollowCamPropertiesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("clearfollowcamproperties_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32478,10 +33704,12 @@ namespace libsecondlife.Packets
     public class RequestPayPricePacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestpayprice_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32570,11 +33798,13 @@ namespace libsecondlife.Packets
     public class PayPriceReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("paypricereply_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
             public int DefaultPayPrice;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32618,10 +33848,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("paypricereply_buttondata")]
         public class ButtonDataBlock
         {
             public int PayButton;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32730,11 +33962,13 @@ namespace libsecondlife.Packets
     public class KickUserPacket : Packet
     {
         /// <exclude/>
+        [XmlType("kickuser_targetblock")]
         public class TargetBlockBlock
         {
             public uint TargetIP;
             public ushort TargetPort;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32778,6 +34012,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("kickuser_userinfo")]
         public class UserInfoBlock
         {
             public LLUUID AgentID;
@@ -32794,6 +34029,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -32903,11 +34139,13 @@ namespace libsecondlife.Packets
     public class KickUserAckPacket : Packet
     {
         /// <exclude/>
+        [XmlType("kickuserack_userinfo")]
         public class UserInfoBlock
         {
             public LLUUID SessionID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33002,6 +34240,7 @@ namespace libsecondlife.Packets
     public class GodKickUserPacket : Packet
     {
         /// <exclude/>
+        [XmlType("godkickuser_userinfo")]
         public class UserInfoBlock
         {
             public LLUUID GodSessionID;
@@ -33020,6 +34259,7 @@ namespace libsecondlife.Packets
             public uint KickFlags;
             public LLUUID GodID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33133,10 +34373,12 @@ namespace libsecondlife.Packets
     public class SystemKickUserPacket : Packet
     {
         /// <exclude/>
+        [XmlType("systemkickuser_agentinfo")]
         public class AgentInfoBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33237,11 +34479,13 @@ namespace libsecondlife.Packets
     public class EjectUserPacket : Packet
     {
         /// <exclude/>
+        [XmlType("ejectuser_data")]
         public class DataBlock
         {
             public LLUUID TargetID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33285,11 +34529,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("ejectuser_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33388,11 +34634,13 @@ namespace libsecondlife.Packets
     public class FreezeUserPacket : Packet
     {
         /// <exclude/>
+        [XmlType("freezeuser_data")]
         public class DataBlock
         {
             public LLUUID TargetID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33436,11 +34684,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("freezeuser_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33539,12 +34789,14 @@ namespace libsecondlife.Packets
     public class AvatarPropertiesRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpropertiesrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33641,6 +34893,7 @@ namespace libsecondlife.Packets
     public class AvatarPropertiesRequestBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpropertiesrequestbackend_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -33648,6 +34901,7 @@ namespace libsecondlife.Packets
             public bool WebProfilesDisabled;
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33746,6 +35000,7 @@ namespace libsecondlife.Packets
     public class AvatarPropertiesReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpropertiesreply_propertiesdata")]
         public class PropertiesDataBlock
         {
             public LLUUID PartnerID;
@@ -33811,6 +35066,7 @@ namespace libsecondlife.Packets
             }
             public bool MaturePublish;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -33911,11 +35167,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarpropertiesreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34015,6 +35273,7 @@ namespace libsecondlife.Packets
     public class AvatarInterestsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarinterestsreply_propertiesdata")]
         public class PropertiesDataBlock
         {
             public uint WantToMask;
@@ -34053,6 +35312,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34124,11 +35384,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarinterestsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34228,11 +35490,13 @@ namespace libsecondlife.Packets
     public class AvatarGroupsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatargroupsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34274,6 +35538,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatargroupsreply_groupdata")]
         public class GroupDataBlock
         {
             private byte[] _grouptitle;
@@ -34303,6 +35568,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34445,6 +35711,7 @@ namespace libsecondlife.Packets
     public class AvatarPropertiesUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpropertiesupdate_propertiesdata")]
         public class PropertiesDataBlock
         {
             private byte[] _abouttext;
@@ -34485,6 +35752,7 @@ namespace libsecondlife.Packets
             }
             public bool MaturePublish;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34559,11 +35827,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarpropertiesupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34663,6 +35933,7 @@ namespace libsecondlife.Packets
     public class AvatarInterestsUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarinterestsupdate_propertiesdata")]
         public class PropertiesDataBlock
         {
             public uint WantToMask;
@@ -34701,6 +35972,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34772,11 +36044,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarinterestsupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34876,6 +36150,7 @@ namespace libsecondlife.Packets
     public class AvatarStatisticsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarstatisticsreply_statisticsdata")]
         public class StatisticsDataBlock
         {
             private byte[] _name;
@@ -34892,6 +36167,7 @@ namespace libsecondlife.Packets
             public int Negative;
             public int Positive;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34947,10 +36223,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarstatisticsreply_avatardata")]
         public class AvatarDataBlock
         {
             public LLUUID AvatarID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -34988,10 +36266,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarstatisticsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35105,6 +36385,7 @@ namespace libsecondlife.Packets
     public class AvatarNotesReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarnotesreply_data")]
         public class DataBlock
         {
             public LLUUID TargetID;
@@ -35120,6 +36401,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35168,10 +36450,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarnotesreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35266,6 +36550,7 @@ namespace libsecondlife.Packets
     public class AvatarNotesUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarnotesupdate_data")]
         public class DataBlock
         {
             public LLUUID TargetID;
@@ -35281,6 +36566,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35329,11 +36615,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarnotesupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35432,6 +36720,7 @@ namespace libsecondlife.Packets
     public class AvatarPicksReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarpicksreply_data")]
         public class DataBlock
         {
             private byte[] _pickname;
@@ -35447,6 +36736,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID PickID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35494,11 +36784,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarpicksreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID TargetID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35609,10 +36901,12 @@ namespace libsecondlife.Packets
     public class EventInfoRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventinforequest_eventdata")]
         public class EventDataBlock
         {
             public uint EventID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35652,11 +36946,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventinforequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35755,6 +37051,7 @@ namespace libsecondlife.Packets
     public class EventInfoReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventinforeply_eventdata")]
         public class EventDataBlock
         {
             public uint Duration;
@@ -35831,6 +37128,7 @@ namespace libsecondlife.Packets
             public uint Amount;
             public uint Cover;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -35955,10 +37253,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventinforeply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36053,10 +37353,12 @@ namespace libsecondlife.Packets
     public class EventNotificationAddRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventnotificationaddrequest_eventdata")]
         public class EventDataBlock
         {
             public uint EventID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36096,11 +37398,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventnotificationaddrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36199,10 +37503,12 @@ namespace libsecondlife.Packets
     public class EventNotificationRemoveRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventnotificationremoverequest_eventdata")]
         public class EventDataBlock
         {
             public uint EventID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36242,11 +37548,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventnotificationremoverequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36345,10 +37653,12 @@ namespace libsecondlife.Packets
     public class EventGodDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventgoddelete_eventdata")]
         public class EventDataBlock
         {
             public uint EventID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36388,6 +37698,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventgoddelete_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
@@ -36405,6 +37716,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36464,11 +37776,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventgoddelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36573,10 +37887,12 @@ namespace libsecondlife.Packets
     public class PickInfoRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("pickinforequest_data")]
         public class DataBlock
         {
             public LLUUID PickID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36614,11 +37930,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("pickinforequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36718,6 +38036,7 @@ namespace libsecondlife.Packets
     public class PickInfoReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("pickinforeply_data")]
         public class DataBlock
         {
             private byte[] _originalname;
@@ -36784,6 +38103,7 @@ namespace libsecondlife.Packets
             public LLUUID SnapshotID;
             public int SortOrder;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36892,10 +38212,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("pickinforeply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -36990,6 +38312,7 @@ namespace libsecondlife.Packets
     public class PickInfoUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("pickinfoupdate_data")]
         public class DataBlock
         {
             public bool Enabled;
@@ -37023,6 +38346,7 @@ namespace libsecondlife.Packets
             public LLUUID SnapshotID;
             public int SortOrder;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37107,11 +38431,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("pickinfoupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37210,10 +38536,12 @@ namespace libsecondlife.Packets
     public class PickDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("pickdelete_data")]
         public class DataBlock
         {
             public LLUUID PickID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37251,11 +38579,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("pickdelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37354,11 +38684,13 @@ namespace libsecondlife.Packets
     public class PickGodDeletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("pickgoddelete_data")]
         public class DataBlock
         {
             public LLUUID QueryID;
             public LLUUID PickID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37400,11 +38732,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("pickgoddelete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37503,6 +38837,7 @@ namespace libsecondlife.Packets
     public class ScriptQuestionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptquestion_data")]
         public class DataBlock
         {
             private byte[] _objectname;
@@ -37531,6 +38866,7 @@ namespace libsecondlife.Packets
             public LLUUID ItemID;
             public int Questions;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37647,12 +38983,14 @@ namespace libsecondlife.Packets
     public class ScriptControlChangePacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptcontrolchange_data")]
         public class DataBlock
         {
             public bool PassToAgent;
             public uint Controls;
             public bool TakeControls;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37761,6 +39099,7 @@ namespace libsecondlife.Packets
     public class ScriptDialogPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptdialog_data")]
         public class DataBlock
         {
             private byte[] _objectname;
@@ -37811,6 +39150,7 @@ namespace libsecondlife.Packets
             }
             public int ChatChannel;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -37893,6 +39233,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("scriptdialog_buttons")]
         public class ButtonsBlock
         {
             private byte[] _buttonlabel;
@@ -37907,6 +39248,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38020,6 +39362,7 @@ namespace libsecondlife.Packets
     public class ScriptDialogReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptdialogreply_data")]
         public class DataBlock
         {
             public LLUUID ObjectID;
@@ -38037,6 +39380,7 @@ namespace libsecondlife.Packets
             public int ButtonIndex;
             public int ChatChannel;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38096,11 +39440,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("scriptdialogreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38200,11 +39546,13 @@ namespace libsecondlife.Packets
     public class ForceScriptControlReleasePacket : Packet
     {
         /// <exclude/>
+        [XmlType("forcescriptcontrolrelease_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38297,11 +39645,13 @@ namespace libsecondlife.Packets
     public class RevokePermissionsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("revokepermissions_data")]
         public class DataBlock
         {
             public uint ObjectPermissions;
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38345,11 +39695,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("revokepermissions_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38448,6 +39800,7 @@ namespace libsecondlife.Packets
     public class LoadURLPacket : Packet
     {
         /// <exclude/>
+        [XmlType("loadurl_data")]
         public class DataBlock
         {
             private byte[] _url;
@@ -38487,6 +39840,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID OwnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38608,6 +39962,7 @@ namespace libsecondlife.Packets
     public class ScriptTeleportRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptteleportrequest_data")]
         public class DataBlock
         {
             private byte[] _objectname;
@@ -38635,6 +39990,7 @@ namespace libsecondlife.Packets
             public LLVector3 LookAt;
             public LLVector3 SimPosition;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38745,6 +40101,7 @@ namespace libsecondlife.Packets
     public class ParcelOverlayPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceloverlay_parceldata")]
         public class ParcelDataBlock
         {
             private byte[] _data;
@@ -38760,6 +40117,7 @@ namespace libsecondlife.Packets
             }
             public int SequenceID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38862,11 +40220,13 @@ namespace libsecondlife.Packets
     public class ParcelPropertiesRequestByIDPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelpropertiesrequestbyid_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public int SequenceID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -38912,11 +40272,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelpropertiesrequestbyid_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39016,6 +40378,7 @@ namespace libsecondlife.Packets
     public class ParcelPropertiesUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelpropertiesupdate_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID MediaID;
@@ -39078,6 +40441,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39215,11 +40579,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelpropertiesupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39319,10 +40685,12 @@ namespace libsecondlife.Packets
     public class ParcelReturnObjectsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelreturnobjects_taskids")]
         public class TaskIDsBlock
         {
             public LLUUID TaskID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39360,11 +40728,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelreturnobjects_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public uint ReturnType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39410,11 +40780,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelreturnobjects_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39456,10 +40828,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelreturnobjects_ownerids")]
         public class OwnerIDsBlock
         {
             public LLUUID OwnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39591,11 +40965,13 @@ namespace libsecondlife.Packets
     public class ParcelSetOtherCleanTimePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelsetothercleantime_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public int OtherCleanTime;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39641,11 +41017,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelsetothercleantime_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39745,10 +41123,12 @@ namespace libsecondlife.Packets
     public class ParcelDisableObjectsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceldisableobjects_taskids")]
         public class TaskIDsBlock
         {
             public LLUUID TaskID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39786,11 +41166,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldisableobjects_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public uint ReturnType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39836,11 +41218,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldisableobjects_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -39882,10 +41266,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldisableobjects_ownerids")]
         public class OwnerIDsBlock
         {
             public LLUUID OwnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40017,10 +41403,12 @@ namespace libsecondlife.Packets
     public class ParcelSelectObjectsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelselectobjects_returnids")]
         public class ReturnIDsBlock
         {
             public LLUUID ReturnID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40058,11 +41446,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelselectobjects_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public uint ReturnType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40108,11 +41498,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelselectobjects_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40230,11 +41622,13 @@ namespace libsecondlife.Packets
     public class EstateCovenantRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("estatecovenantrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40327,6 +41721,7 @@ namespace libsecondlife.Packets
     public class EstateCovenantReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("estatecovenantreply_data")]
         public class DataBlock
         {
             public LLUUID CovenantID;
@@ -40344,6 +41739,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID EstateOwnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40452,10 +41848,12 @@ namespace libsecondlife.Packets
     public class ForceObjectSelectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("forceobjectselect_data")]
         public class DataBlock
         {
             public uint LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40495,10 +41893,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("forceobjectselect_header")]
         public class HeaderBlock
         {
             public bool ResetList;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40604,10 +42004,12 @@ namespace libsecondlife.Packets
     public class ParcelBuyPassPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelbuypass_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40647,11 +42049,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelbuypass_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40750,11 +42154,13 @@ namespace libsecondlife.Packets
     public class ParcelDeedToGroupPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceldeedtogroup_data")]
         public class DataBlock
         {
             public int LocalID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40798,11 +42204,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldeedtogroup_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40901,10 +42309,12 @@ namespace libsecondlife.Packets
     public class ParcelReclaimPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelreclaim_data")]
         public class DataBlock
         {
             public int LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -40944,11 +42354,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelreclaim_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41047,12 +42459,14 @@ namespace libsecondlife.Packets
     public class ParcelClaimPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelclaim_data")]
         public class DataBlock
         {
             public bool IsGroupOwned;
             public LLUUID GroupID;
             public bool Final;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41096,6 +42510,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelclaim_parceldata")]
         public class ParcelDataBlock
         {
             public float East;
@@ -41103,6 +42518,7 @@ namespace libsecondlife.Packets
             public float North;
             public float South;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41161,11 +42577,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelclaim_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41283,6 +42701,7 @@ namespace libsecondlife.Packets
     public class ParcelJoinPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceljoin_parceldata")]
         public class ParcelDataBlock
         {
             public float East;
@@ -41290,6 +42709,7 @@ namespace libsecondlife.Packets
             public float North;
             public float South;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41348,11 +42768,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceljoin_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41451,6 +42873,7 @@ namespace libsecondlife.Packets
     public class ParcelDividePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceldivide_parceldata")]
         public class ParcelDataBlock
         {
             public float East;
@@ -41458,6 +42881,7 @@ namespace libsecondlife.Packets
             public float North;
             public float South;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41516,11 +42940,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldivide_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41619,10 +43045,12 @@ namespace libsecondlife.Packets
     public class ParcelReleasePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelrelease_data")]
         public class DataBlock
         {
             public int LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41662,11 +43090,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelrelease_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41765,6 +43195,7 @@ namespace libsecondlife.Packets
     public class ParcelBuyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelbuy_data")]
         public class DataBlock
         {
             public bool RemoveContribution;
@@ -41773,6 +43204,7 @@ namespace libsecondlife.Packets
             public LLUUID GroupID;
             public bool Final;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41825,11 +43257,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelbuy_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41929,11 +43363,13 @@ namespace libsecondlife.Packets
     public class ParcelGodForceOwnerPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelgodforceowner_data")]
         public class DataBlock
         {
             public int LocalID;
             public LLUUID OwnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -41977,11 +43413,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelgodforceowner_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42081,12 +43519,14 @@ namespace libsecondlife.Packets
     public class ParcelAccessListRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelaccesslistrequest_data")]
         public class DataBlock
         {
             public int LocalID;
             public int SequenceID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42138,11 +43578,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelaccesslistrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42242,6 +43684,7 @@ namespace libsecondlife.Packets
     public class ParcelAccessListReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelaccesslistreply_data")]
         public class DataBlock
         {
             public LLUUID AgentID;
@@ -42249,6 +43692,7 @@ namespace libsecondlife.Packets
             public int SequenceID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42304,12 +43748,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelaccesslistreply_list")]
         public class ListBlock
         {
             public LLUUID ID;
             public int Time;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42429,6 +43875,7 @@ namespace libsecondlife.Packets
     public class ParcelAccessListUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelaccesslistupdate_data")]
         public class DataBlock
         {
             public int LocalID;
@@ -42437,6 +43884,7 @@ namespace libsecondlife.Packets
             public uint Flags;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42498,12 +43946,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelaccesslistupdate_list")]
         public class ListBlock
         {
             public LLUUID ID;
             public int Time;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42553,11 +44003,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelaccesslistupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42675,11 +44127,13 @@ namespace libsecondlife.Packets
     public class ParcelDwellRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceldwellrequest_data")]
         public class DataBlock
         {
             public int LocalID;
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42723,11 +44177,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldwellrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42826,12 +44282,14 @@ namespace libsecondlife.Packets
     public class ParcelDwellReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parceldwellreply_data")]
         public class DataBlock
         {
             public int LocalID;
             public LLUUID ParcelID;
             public float Dwell;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42882,10 +44340,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parceldwellreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -42980,6 +44440,7 @@ namespace libsecondlife.Packets
     public class RequestParcelTransferPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestparceltransfer_data")]
         public class DataBlock
         {
             public bool ReservedNewbie;
@@ -42995,6 +44456,7 @@ namespace libsecondlife.Packets
             public uint TransactionTime;
             public int TransactionType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43135,6 +44597,7 @@ namespace libsecondlife.Packets
     public class UpdateParcelPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updateparcel_parceldata")]
         public class ParcelDataBlock
         {
             public bool ReservedNewbie;
@@ -43190,6 +44653,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43386,10 +44850,12 @@ namespace libsecondlife.Packets
     public class RemoveParcelPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removeparcel_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43490,10 +44956,12 @@ namespace libsecondlife.Packets
     public class MergeParcelPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mergeparcel_masterparceldata")]
         public class MasterParcelDataBlock
         {
             public LLUUID MasterID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43531,10 +44999,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mergeparcel_slaveparceldata")]
         public class SlaveParcelDataBlock
         {
             public LLUUID SlaveID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43641,6 +45111,7 @@ namespace libsecondlife.Packets
     public class LogParcelChangesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logparcelchanges_parceldata")]
         public class ParcelDataBlock
         {
             public int ActualArea;
@@ -43650,6 +45121,7 @@ namespace libsecondlife.Packets
             public sbyte Action;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43707,10 +45179,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("logparcelchanges_regiondata")]
         public class RegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43754,10 +45228,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("logparcelchanges_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43871,10 +45347,12 @@ namespace libsecondlife.Packets
     public class CheckParcelSalesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("checkparcelsales_regiondata")]
         public class RegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -43981,11 +45459,13 @@ namespace libsecondlife.Packets
     public class ParcelSalesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelsales_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
             public LLUUID BuyerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44090,10 +45570,12 @@ namespace libsecondlife.Packets
     public class ParcelGodMarkAsContentPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelgodmarkascontent_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44133,11 +45615,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelgodmarkascontent_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44236,11 +45720,13 @@ namespace libsecondlife.Packets
     public class ParcelGodReserveForNewbiePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelgodreservefornewbie_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public LLUUID SnapshotID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44284,11 +45770,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelgodreservefornewbie_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44387,11 +45875,13 @@ namespace libsecondlife.Packets
     public class ViewerStartAuctionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("viewerstartauction_parceldata")]
         public class ParcelDataBlock
         {
             public int LocalID;
             public LLUUID SnapshotID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44435,11 +45925,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("viewerstartauction_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44538,6 +46030,7 @@ namespace libsecondlife.Packets
     public class StartAuctionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("startauction_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
@@ -44554,6 +46047,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID SnapshotID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44605,10 +46099,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("startauction_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44703,11 +46199,13 @@ namespace libsecondlife.Packets
     public class ConfirmAuctionStartPacket : Packet
     {
         /// <exclude/>
+        [XmlType("confirmauctionstart_auctiondata")]
         public class AuctionDataBlock
         {
             public LLUUID ParcelID;
             public uint AuctionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44802,10 +46300,12 @@ namespace libsecondlife.Packets
     public class CompleteAuctionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("completeauction_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -44906,10 +46406,12 @@ namespace libsecondlife.Packets
     public class CancelAuctionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("cancelauction_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45010,10 +46512,12 @@ namespace libsecondlife.Packets
     public class CheckParcelAuctionsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("checkparcelauctions_regiondata")]
         public class RegionDataBlock
         {
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45120,11 +46624,13 @@ namespace libsecondlife.Packets
     public class ParcelAuctionsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelauctions_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
             public LLUUID WinnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45229,10 +46735,12 @@ namespace libsecondlife.Packets
     public class UUIDNameRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("uuidnamerequest_uuidnameblock")]
         public class UUIDNameBlockBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45333,6 +46841,7 @@ namespace libsecondlife.Packets
     public class UUIDNameReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("uuidnamereply_uuidnameblock")]
         public class UUIDNameBlockBlock
         {
             public LLUUID ID;
@@ -45359,6 +46868,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45477,10 +46987,12 @@ namespace libsecondlife.Packets
     public class UUIDGroupNameRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("uuidgroupnamerequest_uuidnameblock")]
         public class UUIDNameBlockBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45581,6 +47093,7 @@ namespace libsecondlife.Packets
     public class UUIDGroupNameReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("uuidgroupnamereply_uuidnameblock")]
         public class UUIDNameBlockBlock
         {
             public LLUUID ID;
@@ -45596,6 +47109,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45706,6 +47220,7 @@ namespace libsecondlife.Packets
     public class ChatPassPacket : Packet
     {
         /// <exclude/>
+        [XmlType("chatpass_chatdata")]
         public class ChatDataBlock
         {
             public LLUUID ID;
@@ -45739,6 +47254,7 @@ namespace libsecondlife.Packets
             public byte SourceType;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45877,11 +47393,13 @@ namespace libsecondlife.Packets
     public class ChildAgentDyingPacket : Packet
     {
         /// <exclude/>
+        [XmlType("childagentdying_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -45975,11 +47493,13 @@ namespace libsecondlife.Packets
     public class ChildAgentUnknownPacket : Packet
     {
         /// <exclude/>
+        [XmlType("childagentunknown_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46072,10 +47592,12 @@ namespace libsecondlife.Packets
     public class KillChildAgentsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("killchildagents_idblock")]
         public class IDBlockBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46164,11 +47686,13 @@ namespace libsecondlife.Packets
     public class GetScriptRunningPacket : Packet
     {
         /// <exclude/>
+        [XmlType("getscriptrunning_script")]
         public class ScriptBlock
         {
             public LLUUID ObjectID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46261,12 +47785,14 @@ namespace libsecondlife.Packets
     public class ScriptRunningReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptrunningreply_script")]
         public class ScriptBlock
         {
             public LLUUID ObjectID;
             public bool Running;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46362,12 +47888,14 @@ namespace libsecondlife.Packets
     public class SetScriptRunningPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setscriptrunning_script")]
         public class ScriptBlock
         {
             public LLUUID ObjectID;
             public bool Running;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46412,11 +47940,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("setscriptrunning_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46515,11 +48045,13 @@ namespace libsecondlife.Packets
     public class ScriptResetPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptreset_script")]
         public class ScriptBlock
         {
             public LLUUID ObjectID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46561,11 +48093,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("scriptreset_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46664,6 +48198,7 @@ namespace libsecondlife.Packets
     public class ScriptSensorRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptsensorrequest_requester")]
         public class RequesterBlock
         {
             public float Arc;
@@ -46688,6 +48223,7 @@ namespace libsecondlife.Packets
             public float Range;
             public LLUUID SourceID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46835,6 +48371,7 @@ namespace libsecondlife.Packets
     public class ScriptSensorReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptsensorreply_senseddata")]
         public class SensedDataBlock
         {
             public LLUUID ObjectID;
@@ -46857,6 +48394,7 @@ namespace libsecondlife.Packets
             public LLQuaternion Rotation;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -46937,10 +48475,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("scriptsensorreply_requester")]
         public class RequesterBlock
         {
             public LLUUID SourceID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47048,12 +48588,14 @@ namespace libsecondlife.Packets
     public class CompleteAgentMovementPacket : Packet
     {
         /// <exclude/>
+        [XmlType("completeagentmovement_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint CircuitCode;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47152,6 +48694,7 @@ namespace libsecondlife.Packets
     public class AgentMovementCompletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentmovementcomplete_data")]
         public class DataBlock
         {
             public uint Timestamp;
@@ -47159,6 +48702,7 @@ namespace libsecondlife.Packets
             public LLVector3 LookAt;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47216,11 +48760,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentmovementcomplete_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47319,12 +48865,14 @@ namespace libsecondlife.Packets
     public class LogLoginPacket : Packet
     {
         /// <exclude/>
+        [XmlType("loglogin_data")]
         public class DataBlock
         {
             public LLUUID ViewerDigest;
             public uint SpaceIP;
             public bool LastExecFroze;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47371,11 +48919,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("loglogin_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47474,11 +49024,13 @@ namespace libsecondlife.Packets
     public class ConnectAgentToUserserverPacket : Packet
     {
         /// <exclude/>
+        [XmlType("connectagenttouserserver_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47616,6 +49168,7 @@ namespace libsecondlife.Packets
     public class DataServerLogoutPacket : Packet
     {
         /// <exclude/>
+        [XmlType("dataserverlogout_userdata")]
         public class UserDataBlock
         {
             public LLUUID AgentID;
@@ -47623,6 +49176,7 @@ namespace libsecondlife.Packets
             public uint ViewerIP;
             public bool Disconnect;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47724,11 +49278,13 @@ namespace libsecondlife.Packets
     public class LogoutRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logoutrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47821,11 +49377,13 @@ namespace libsecondlife.Packets
     public class FinalizeLogoutPacket : Packet
     {
         /// <exclude/>
+        [XmlType("finalizelogout_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47918,11 +49476,13 @@ namespace libsecondlife.Packets
     public class LogoutReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logoutreply_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID NewAssetID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -47964,11 +49524,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("logoutreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48080,10 +49642,12 @@ namespace libsecondlife.Packets
     public class LogoutDemandPacket : Packet
     {
         /// <exclude/>
+        [XmlType("logoutdemand_logoutblock")]
         public class LogoutBlockBlock
         {
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48172,6 +49736,7 @@ namespace libsecondlife.Packets
     public class ImprovedInstantMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("improvedinstantmessage_messageblock")]
         public class MessageBlockBlock
         {
             public LLUUID ID;
@@ -48217,6 +49782,7 @@ namespace libsecondlife.Packets
             }
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48315,11 +49881,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("improvedinstantmessage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48419,11 +49987,13 @@ namespace libsecondlife.Packets
     public class RetrieveInstantMessagesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("retrieveinstantmessages_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48561,11 +50131,13 @@ namespace libsecondlife.Packets
     public class FindAgentPacket : Packet
     {
         /// <exclude/>
+        [XmlType("findagent_locationblock")]
         public class LocationBlockBlock
         {
             public double GlobalX;
             public double GlobalY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48612,12 +50184,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("findagent_agentblock")]
         public class AgentBlockBlock
         {
             public uint SpaceIP;
             public LLUUID Prey;
             public LLUUID Hunter;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48734,11 +50308,13 @@ namespace libsecondlife.Packets
     public class RequestGodlikePowersPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestgodlikepowers_requestblock")]
         public class RequestBlockBlock
         {
             public bool Godlike;
             public LLUUID Token;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48779,11 +50355,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("requestgodlikepowers_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48882,11 +50460,13 @@ namespace libsecondlife.Packets
     public class GrantGodlikePowersPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grantgodlikepowers_grantdata")]
         public class GrantDataBlock
         {
             public byte GodLevel;
             public LLUUID Token;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -48927,11 +50507,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grantgodlikepowers_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49030,6 +50612,7 @@ namespace libsecondlife.Packets
     public class GodlikeMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("godlikemessage_methoddata")]
         public class MethodDataBlock
         {
             public LLUUID Invoice;
@@ -49045,6 +50628,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49092,6 +50676,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("godlikemessage_paramlist")]
         public class ParamListBlock
         {
             private byte[] _parameter;
@@ -49106,6 +50691,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49149,11 +50735,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("godlikemessage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49271,6 +50859,7 @@ namespace libsecondlife.Packets
     public class EstateOwnerMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("estateownermessage_methoddata")]
         public class MethodDataBlock
         {
             public LLUUID Invoice;
@@ -49286,6 +50875,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49333,6 +50923,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("estateownermessage_paramlist")]
         public class ParamListBlock
         {
             private byte[] _parameter;
@@ -49347,6 +50938,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49390,11 +50982,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("estateownermessage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49512,6 +51106,7 @@ namespace libsecondlife.Packets
     public class GenericMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("genericmessage_methoddata")]
         public class MethodDataBlock
         {
             public LLUUID Invoice;
@@ -49527,6 +51122,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49574,6 +51170,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("genericmessage_paramlist")]
         public class ParamListBlock
         {
             private byte[] _parameter;
@@ -49588,6 +51185,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49631,11 +51229,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("genericmessage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49753,11 +51353,13 @@ namespace libsecondlife.Packets
     public class MuteListRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mutelistrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49799,10 +51401,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mutelistrequest_mutedata")]
         public class MuteDataBlock
         {
             public uint MuteCRC;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49899,11 +51503,13 @@ namespace libsecondlife.Packets
     public class UpdateMuteListEntryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updatemutelistentry_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -49945,6 +51551,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updatemutelistentry_mutedata")]
         public class MuteDataBlock
         {
             public LLUUID MuteID;
@@ -49962,6 +51569,7 @@ namespace libsecondlife.Packets
             }
             public int MuteType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50078,11 +51686,13 @@ namespace libsecondlife.Packets
     public class RemoveMuteListEntryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removemutelistentry_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50124,6 +51734,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removemutelistentry_mutedata")]
         public class MuteDataBlock
         {
             public LLUUID MuteID;
@@ -50139,6 +51750,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50243,11 +51855,13 @@ namespace libsecondlife.Packets
     public class CopyInventoryFromNotecardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("copyinventoryfromnotecard_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID ItemID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50289,11 +51903,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("copyinventoryfromnotecard_notecarddata")]
         public class NotecardDataBlock
         {
             public LLUUID ObjectID;
             public LLUUID NotecardItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50335,11 +51951,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("copyinventoryfromnotecard_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50457,6 +52075,7 @@ namespace libsecondlife.Packets
     public class UpdateInventoryItemPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updateinventoryitem_inventorydata")]
         public class InventoryDataBlock
         {
             public bool GroupOwned;
@@ -50502,6 +52121,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50649,11 +52269,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updateinventoryitem_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50765,6 +52387,7 @@ namespace libsecondlife.Packets
     public class UpdateCreateInventoryItemPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updatecreateinventoryitem_inventorydata")]
         public class InventoryDataBlock
         {
             public bool GroupOwned;
@@ -50810,6 +52433,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -50957,11 +52581,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updatecreateinventoryitem_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public bool SimApproved;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51072,6 +52698,7 @@ namespace libsecondlife.Packets
     public class MoveInventoryItemPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moveinventoryitem_inventorydata")]
         public class InventoryDataBlock
         {
             private byte[] _newname;
@@ -51088,6 +52715,7 @@ namespace libsecondlife.Packets
             public LLUUID ItemID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51139,12 +52767,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moveinventoryitem_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public bool Stamp;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51259,6 +52889,7 @@ namespace libsecondlife.Packets
     public class CopyInventoryItemPacket : Packet
     {
         /// <exclude/>
+        [XmlType("copyinventoryitem_inventorydata")]
         public class InventoryDataBlock
         {
             private byte[] _newname;
@@ -51277,6 +52908,7 @@ namespace libsecondlife.Packets
             public LLUUID OldItemID;
             public LLUUID OldAgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51338,11 +52970,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("copyinventoryitem_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51454,10 +53088,12 @@ namespace libsecondlife.Packets
     public class RemoveInventoryItemPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removeinventoryitem_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51495,11 +53131,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removeinventoryitem_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51610,11 +53248,13 @@ namespace libsecondlife.Packets
     public class ChangeInventoryItemFlagsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("changeinventoryitemflags_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID ItemID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51658,11 +53298,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("changeinventoryitemflags_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51773,11 +53415,13 @@ namespace libsecondlife.Packets
     public class SaveAssetIntoInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("saveassetintoinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID NewAssetID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51819,10 +53463,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("saveassetintoinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51917,11 +53563,13 @@ namespace libsecondlife.Packets
     public class CreateInventoryFolderPacket : Packet
     {
         /// <exclude/>
+        [XmlType("createinventoryfolder_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -51963,6 +53611,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("createinventoryfolder_folderdata")]
         public class FolderDataBlock
         {
             private byte[] _name;
@@ -51980,6 +53629,7 @@ namespace libsecondlife.Packets
             public sbyte Type;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52091,11 +53741,13 @@ namespace libsecondlife.Packets
     public class UpdateInventoryFolderPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updateinventoryfolder_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52137,6 +53789,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updateinventoryfolder_folderdata")]
         public class FolderDataBlock
         {
             private byte[] _name;
@@ -52154,6 +53807,7 @@ namespace libsecondlife.Packets
             public sbyte Type;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52277,11 +53931,13 @@ namespace libsecondlife.Packets
     public class MoveInventoryFolderPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moveinventoryfolder_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID ParentID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52323,12 +53979,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moveinventoryfolder_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public bool Stamp;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52443,11 +54101,13 @@ namespace libsecondlife.Packets
     public class RemoveInventoryFolderPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removeinventoryfolder_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52489,10 +54149,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removeinventoryfolder_folderdata")]
         public class FolderDataBlock
         {
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52599,6 +54261,7 @@ namespace libsecondlife.Packets
     public class FetchInventoryDescendentsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("fetchinventorydescendents_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID OwnerID;
@@ -52607,6 +54270,7 @@ namespace libsecondlife.Packets
             public bool FetchFolders;
             public bool FetchItems;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52660,11 +54324,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("fetchinventorydescendents_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52764,6 +54430,7 @@ namespace libsecondlife.Packets
     public class InventoryDescendentsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("inventorydescendents_itemdata")]
         public class ItemDataBlock
         {
             public bool GroupOwned;
@@ -52808,6 +54475,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -52949,6 +54617,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("inventorydescendents_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -52957,6 +54626,7 @@ namespace libsecondlife.Packets
             public LLUUID OwnerID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53014,6 +54684,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("inventorydescendents_folderdata")]
         public class FolderDataBlock
         {
             private byte[] _name;
@@ -53031,6 +54702,7 @@ namespace libsecondlife.Packets
             public sbyte Type;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53173,11 +54845,13 @@ namespace libsecondlife.Packets
     public class FetchInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("fetchinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID OwnerID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53219,11 +54893,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("fetchinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53335,6 +55011,7 @@ namespace libsecondlife.Packets
     public class FetchInventoryReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("fetchinventoryreply_inventorydata")]
         public class InventoryDataBlock
         {
             public bool GroupOwned;
@@ -53379,6 +55056,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53520,10 +55198,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("fetchinventoryreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53631,6 +55311,7 @@ namespace libsecondlife.Packets
     public class BulkUpdateInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("bulkupdateinventory_itemdata")]
         public class ItemDataBlock
         {
             public bool GroupOwned;
@@ -53676,6 +55357,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53823,11 +55505,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("bulkupdateinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -53869,6 +55553,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("bulkupdateinventory_folderdata")]
         public class FolderDataBlock
         {
             private byte[] _name;
@@ -53886,6 +55571,7 @@ namespace libsecondlife.Packets
             public sbyte Type;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54028,6 +55714,7 @@ namespace libsecondlife.Packets
     public class RequestInventoryAssetPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestinventoryasset_querydata")]
         public class QueryDataBlock
         {
             public LLUUID AgentID;
@@ -54035,6 +55722,7 @@ namespace libsecondlife.Packets
             public LLUUID OwnerID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54135,12 +55823,14 @@ namespace libsecondlife.Packets
     public class InventoryAssetResponsePacket : Packet
     {
         /// <exclude/>
+        [XmlType("inventoryassetresponse_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
             public LLUUID AssetID;
             public bool IsReadable;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54236,10 +55926,12 @@ namespace libsecondlife.Packets
     public class RemoveInventoryObjectsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removeinventoryobjects_itemdata")]
         public class ItemDataBlock
         {
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54277,11 +55969,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removeinventoryobjects_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54323,10 +56017,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removeinventoryobjects_folderdata")]
         public class FolderDataBlock
         {
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54451,10 +56147,12 @@ namespace libsecondlife.Packets
     public class PurgeInventoryDescendentsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("purgeinventorydescendents_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54492,11 +56190,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("purgeinventorydescendents_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54596,6 +56296,7 @@ namespace libsecondlife.Packets
     public class UpdateTaskInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updatetaskinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public bool GroupOwned;
@@ -54640,6 +56341,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54781,11 +56483,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updatetaskinventory_updatedata")]
         public class UpdateDataBlock
         {
             public byte Key;
             public uint LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54828,11 +56532,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updatetaskinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54938,11 +56644,13 @@ namespace libsecondlife.Packets
     public class RemoveTaskInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removetaskinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public uint LocalID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -54986,11 +56694,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removetaskinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55090,11 +56800,13 @@ namespace libsecondlife.Packets
     public class MoveTaskInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("movetaskinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public uint LocalID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55138,12 +56850,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("movetaskinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55246,10 +56960,12 @@ namespace libsecondlife.Packets
     public class RequestTaskInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requesttaskinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public uint LocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55289,11 +57005,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("requesttaskinventory_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55392,6 +57110,7 @@ namespace libsecondlife.Packets
     public class ReplyTaskInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("replytaskinventory_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID TaskID;
@@ -55408,6 +57127,7 @@ namespace libsecondlife.Packets
             }
             public short Serial;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55511,10 +57231,12 @@ namespace libsecondlife.Packets
     public class DeRezObjectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("derezobject_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55554,6 +57276,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("derezobject_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID GroupID;
@@ -55563,6 +57286,7 @@ namespace libsecondlife.Packets
             public LLUUID TransactionID;
             public LLUUID DestinationID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55617,11 +57341,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("derezobject_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55784,6 +57510,7 @@ namespace libsecondlife.Packets
     public class RezObjectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rezobject_inventorydata")]
         public class InventoryDataBlock
         {
             public bool GroupOwned;
@@ -55828,6 +57555,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -55969,6 +57697,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezobject_rezdata")]
         public class RezDataBlock
         {
             public bool RezSelected;
@@ -55984,6 +57713,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public LLUUID RayTargetID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56069,12 +57799,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezobject_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56184,10 +57916,12 @@ namespace libsecondlife.Packets
     public class RezObjectFromNotecardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rezobjectfromnotecard_inventorydata")]
         public class InventoryDataBlock
         {
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56225,6 +57959,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezobjectfromnotecard_rezdata")]
         public class RezDataBlock
         {
             public bool RezSelected;
@@ -56240,6 +57975,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public LLUUID RayTargetID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56325,11 +58061,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezobjectfromnotecard_notecarddata")]
         public class NotecardDataBlock
         {
             public LLUUID ObjectID;
             public LLUUID NotecardItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56371,12 +58109,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezobjectfromnotecard_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56504,10 +58244,12 @@ namespace libsecondlife.Packets
     public class DeclineInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("declineinventory_infoblock")]
         public class InfoBlockBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56596,12 +58338,14 @@ namespace libsecondlife.Packets
     public class TransferInventoryPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferinventory_infoblock")]
         public class InfoBlockBlock
         {
             public LLUUID DestID;
             public LLUUID SourceID;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56647,11 +58391,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("transferinventory_inventoryblock")]
         public class InventoryBlockBlock
         {
             public sbyte Type;
             public LLUUID InventoryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56762,11 +58508,13 @@ namespace libsecondlife.Packets
     public class TransferInventoryAckPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferinventoryack_infoblock")]
         public class InfoBlockBlock
         {
             public LLUUID InventoryID;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56860,12 +58608,14 @@ namespace libsecondlife.Packets
     public class RequestFriendshipPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestfriendship_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID DestID;
             public LLUUID FolderID;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -56911,11 +58661,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("requestfriendship_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57014,10 +58766,12 @@ namespace libsecondlife.Packets
     public class AcceptFriendshipPacket : Packet
     {
         /// <exclude/>
+        [XmlType("acceptfriendship_transactionblock")]
         public class TransactionBlockBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57055,11 +58809,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("acceptfriendship_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57101,10 +58857,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("acceptfriendship_folderdata")]
         public class FolderDataBlock
         {
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57217,10 +58975,12 @@ namespace libsecondlife.Packets
     public class DeclineFriendshipPacket : Packet
     {
         /// <exclude/>
+        [XmlType("declinefriendship_transactionblock")]
         public class TransactionBlockBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57258,11 +59018,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("declinefriendship_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57361,11 +59123,13 @@ namespace libsecondlife.Packets
     public class FormFriendshipPacket : Packet
     {
         /// <exclude/>
+        [XmlType("formfriendship_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID DestID;
             public LLUUID SourceID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57458,10 +59222,12 @@ namespace libsecondlife.Packets
     public class TerminateFriendshipPacket : Packet
     {
         /// <exclude/>
+        [XmlType("terminatefriendship_exblock")]
         public class ExBlockBlock
         {
             public LLUUID OtherID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57499,11 +59265,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("terminatefriendship_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57602,11 +59370,13 @@ namespace libsecondlife.Packets
     public class OfferCallingCardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("offercallingcard_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID DestID;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57648,11 +59418,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("offercallingcard_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57751,10 +59523,12 @@ namespace libsecondlife.Packets
     public class AcceptCallingCardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("acceptcallingcard_transactionblock")]
         public class TransactionBlockBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57792,11 +59566,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("acceptcallingcard_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57838,10 +59614,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("acceptcallingcard_folderdata")]
         public class FolderDataBlock
         {
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57954,10 +59732,12 @@ namespace libsecondlife.Packets
     public class DeclineCallingCardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("declinecallingcard_transactionblock")]
         public class TransactionBlockBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -57995,11 +59775,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("declinecallingcard_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58098,11 +59880,13 @@ namespace libsecondlife.Packets
     public class RezScriptPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rezscript_updateblock")]
         public class UpdateBlockBlock
         {
             public bool Enabled;
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58145,6 +59929,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezscript_inventoryblock")]
         public class InventoryBlockBlock
         {
             public bool GroupOwned;
@@ -58189,6 +59974,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58330,12 +60116,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezscript_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58445,6 +60233,7 @@ namespace libsecondlife.Packets
     public class CreateInventoryItemPacket : Packet
     {
         /// <exclude/>
+        [XmlType("createinventoryitem_inventoryblock")]
         public class InventoryBlockBlock
         {
             public uint CallbackID;
@@ -58477,6 +60266,7 @@ namespace libsecondlife.Packets
             public uint NextOwnerMask;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58557,11 +60347,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("createinventoryitem_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58661,6 +60453,7 @@ namespace libsecondlife.Packets
     public class CreateLandmarkForEventPacket : Packet
     {
         /// <exclude/>
+        [XmlType("createlandmarkforevent_inventoryblock")]
         public class InventoryBlockBlock
         {
             private byte[] _name;
@@ -58676,6 +60469,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID FolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58723,10 +60517,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("createlandmarkforevent_eventdata")]
         public class EventDataBlock
         {
             public uint EventID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58766,11 +60562,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("createlandmarkforevent_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58876,10 +60674,12 @@ namespace libsecondlife.Packets
     public class EventLocationRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventlocationrequest_eventdata")]
         public class EventDataBlock
         {
             public uint EventID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -58919,10 +60719,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventlocationrequest_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59018,12 +60820,14 @@ namespace libsecondlife.Packets
     public class EventLocationReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("eventlocationreply_eventdata")]
         public class EventDataBlock
         {
             public LLUUID RegionID;
             public bool Success;
             public LLVector3 RegionPos;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59068,10 +60872,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("eventlocationreply_querydata")]
         public class QueryDataBlock
         {
             public LLUUID QueryID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59167,10 +60973,12 @@ namespace libsecondlife.Packets
     public class RegionHandleRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionhandlerequest_requestblock")]
         public class RequestBlockBlock
         {
             public LLUUID RegionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59259,11 +61067,13 @@ namespace libsecondlife.Packets
     public class RegionIDAndHandleReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("regionidandhandlereply_replyblock")]
         public class ReplyBlockBlock
         {
             public LLUUID RegionID;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59362,6 +61172,7 @@ namespace libsecondlife.Packets
     public class MoneyTransferRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneytransferrequest_moneydata")]
         public class MoneyDataBlock
         {
             public byte AggregatePermInventory;
@@ -59383,6 +61194,7 @@ namespace libsecondlife.Packets
             public LLUUID SourceID;
             public int TransactionType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59455,11 +61267,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneytransferrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59559,6 +61373,7 @@ namespace libsecondlife.Packets
     public class MoneyTransferBackendPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneytransferbackend_moneydata")]
         public class MoneyDataBlock
         {
             public byte AggregatePermInventory;
@@ -59582,6 +61397,7 @@ namespace libsecondlife.Packets
             public uint TransactionTime;
             public int TransactionType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59716,6 +61532,7 @@ namespace libsecondlife.Packets
     public class BulkMoneyTransferPacket : Packet
     {
         /// <exclude/>
+        [XmlType("bulkmoneytransfer_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID DestID;
@@ -59735,6 +61552,7 @@ namespace libsecondlife.Packets
             public LLUUID TransactionID;
             public int TransactionType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59801,12 +61619,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("bulkmoneytransfer_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public uint RegionX;
             public uint RegionY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -59926,11 +61746,13 @@ namespace libsecondlife.Packets
     public class AdjustBalancePacket : Packet
     {
         /// <exclude/>
+        [XmlType("adjustbalance_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public int Delta;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60026,10 +61848,12 @@ namespace libsecondlife.Packets
     public class MoneyBalanceRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneybalancerequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60067,11 +61891,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneybalancerequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60171,6 +61997,7 @@ namespace libsecondlife.Packets
     public class MoneyBalanceReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneybalancereply_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID AgentID;
@@ -60191,6 +62018,7 @@ namespace libsecondlife.Packets
             public LLUUID TransactionID;
             public bool TransactionSuccess;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60315,11 +62143,13 @@ namespace libsecondlife.Packets
     public class RoutedMoneyBalanceReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("routedmoneybalancereply_targetblock")]
         public class TargetBlockBlock
         {
             public uint TargetIP;
             public ushort TargetPort;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60363,6 +62193,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("routedmoneybalancereply_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID AgentID;
@@ -60383,6 +62214,7 @@ namespace libsecondlife.Packets
             public LLUUID TransactionID;
             public bool TransactionSuccess;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60513,12 +62345,14 @@ namespace libsecondlife.Packets
     public class MoneyHistoryRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneyhistoryrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID AgentID;
             public int StartPeriod;
             public int EndPeriod;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60619,6 +62453,7 @@ namespace libsecondlife.Packets
     public class MoneyHistoryReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneyhistoryreply_moneydata")]
         public class MoneyDataBlock
         {
             public int Balance;
@@ -60639,6 +62474,7 @@ namespace libsecondlife.Packets
             public int EndPeriod;
             public int BonusEstimate;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60718,6 +62554,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneyhistoryreply_historydata")]
         public class HistoryDataBlock
         {
             public int Amount;
@@ -60733,6 +62570,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60782,10 +62620,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneyhistoryreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60899,12 +62739,14 @@ namespace libsecondlife.Packets
     public class MoneySummaryRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneysummaryrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -60954,11 +62796,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneysummaryrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61057,6 +62901,7 @@ namespace libsecondlife.Packets
     public class MoneySummaryReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneysummaryreply_moneydata")]
         public class MoneyDataBlock
         {
             public int ParcelDirFeeCurrent;
@@ -61111,6 +62956,7 @@ namespace libsecondlife.Packets
             public int CurrentInterval;
             public int BonusEstimate;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61276,10 +63122,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneysummaryreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61375,12 +63223,14 @@ namespace libsecondlife.Packets
     public class MoneyDetailsRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneydetailsrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61430,11 +63280,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneydetailsrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61533,6 +63385,7 @@ namespace libsecondlife.Packets
     public class MoneyDetailsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneydetailsreply_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
@@ -61550,6 +63403,7 @@ namespace libsecondlife.Packets
             }
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61609,6 +63463,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneydetailsreply_historydata")]
         public class HistoryDataBlock
         {
             public int Amount;
@@ -61624,6 +63479,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61673,10 +63529,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneydetailsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61790,12 +63648,14 @@ namespace libsecondlife.Packets
     public class MoneyTransactionsRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneytransactionsrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61845,11 +63705,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneytransactionsrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -61948,6 +63810,7 @@ namespace libsecondlife.Packets
     public class MoneyTransactionsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("moneytransactionsreply_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
@@ -61965,6 +63828,7 @@ namespace libsecondlife.Packets
             }
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62024,6 +63888,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneytransactionsreply_historydata")]
         public class HistoryDataBlock
         {
             private byte[] _time;
@@ -62062,6 +63927,7 @@ namespace libsecondlife.Packets
             public int Type;
             public int Amount;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62133,10 +63999,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("moneytransactionsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62250,11 +64118,13 @@ namespace libsecondlife.Packets
     public class GestureRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("gesturerequest_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID AgentID;
             public bool Reset;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62346,12 +64216,14 @@ namespace libsecondlife.Packets
     public class ActivateGesturesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("activategestures_data")]
         public class DataBlock
         {
             public LLUUID AssetID;
             public uint GestureFlags;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62399,12 +64271,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("activategestures_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62521,11 +64395,13 @@ namespace libsecondlife.Packets
     public class DeactivateGesturesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("deactivategestures_data")]
         public class DataBlock
         {
             public uint GestureFlags;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62569,12 +64445,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("deactivategestures_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62691,6 +64569,7 @@ namespace libsecondlife.Packets
     public class MuteListUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("mutelistupdate_mutedata")]
         public class MuteDataBlock
         {
             public LLUUID AgentID;
@@ -62706,6 +64585,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62804,10 +64684,12 @@ namespace libsecondlife.Packets
     public class UseCachedMuteListPacket : Packet
     {
         /// <exclude/>
+        [XmlType("usecachedmutelist_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62896,11 +64778,13 @@ namespace libsecondlife.Packets
     public class GrantUserRightsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grantuserrights_rights")]
         public class RightsBlock
         {
             public int RelatedRights;
             public LLUUID AgentRelated;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -62944,11 +64828,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grantuserrights_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63059,11 +64945,13 @@ namespace libsecondlife.Packets
     public class ChangeUserRightsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("changeuserrights_rights")]
         public class RightsBlock
         {
             public int RelatedRights;
             public LLUUID AgentRelated;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63107,10 +64995,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("changeuserrights_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63217,10 +65107,12 @@ namespace libsecondlife.Packets
     public class OnlineNotificationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("onlinenotification_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63321,10 +65213,12 @@ namespace libsecondlife.Packets
     public class OfflineNotificationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("offlinenotification_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63425,6 +65319,7 @@ namespace libsecondlife.Packets
     public class SetStartLocationRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setstartlocationrequest_startlocationdata")]
         public class StartLocationDataBlock
         {
             public LLVector3 LocationPos;
@@ -63442,6 +65337,7 @@ namespace libsecondlife.Packets
             public uint LocationID;
             public LLVector3 LocationLookAt;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63499,11 +65395,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("setstartlocationrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63603,6 +65501,7 @@ namespace libsecondlife.Packets
     public class SetStartLocationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setstartlocation_startlocationdata")]
         public class StartLocationDataBlock
         {
             public LLVector3 LocationPos;
@@ -63612,6 +65511,7 @@ namespace libsecondlife.Packets
             public uint LocationID;
             public LLVector3 LocationLookAt;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63729,10 +65629,12 @@ namespace libsecondlife.Packets
     public class NetTestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("nettest_netblock")]
         public class NetBlockBlock
         {
             public ushort Port;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63821,10 +65723,12 @@ namespace libsecondlife.Packets
     public class SetCPURatioPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setcpuratio_data")]
         public class DataBlock
         {
             public byte Ratio;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63912,11 +65816,13 @@ namespace libsecondlife.Packets
     public class SimCrashedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simcrashed_data")]
         public class DataBlock
         {
             public uint RegionX;
             public uint RegionY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -63962,10 +65868,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("simcrashed_users")]
         public class UsersBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64072,6 +65980,7 @@ namespace libsecondlife.Packets
     public class NameValuePairPacket : Packet
     {
         /// <exclude/>
+        [XmlType("namevaluepair_namevaluedata")]
         public class NameValueDataBlock
         {
             private byte[] _nvpair;
@@ -64086,6 +65995,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64130,10 +66040,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("namevaluepair_taskdata")]
         public class TaskDataBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64240,6 +66152,7 @@ namespace libsecondlife.Packets
     public class RemoveNameValuePairPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removenamevaluepair_namevaluedata")]
         public class NameValueDataBlock
         {
             private byte[] _nvpair;
@@ -64254,6 +66167,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64298,10 +66212,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removenamevaluepair_taskdata")]
         public class TaskDataBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64408,6 +66324,7 @@ namespace libsecondlife.Packets
     public class GetNameValuePairPacket : Packet
     {
         /// <exclude/>
+        [XmlType("getnamevaluepair_namevaluename")]
         public class NameValueNameBlock
         {
             private byte[] _name;
@@ -64422,6 +66339,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64466,10 +66384,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("getnamevaluepair_taskdata")]
         public class TaskDataBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64576,6 +66496,7 @@ namespace libsecondlife.Packets
     public class UpdateAttachmentPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updateattachment_inventorydata")]
         public class InventoryDataBlock
         {
             public bool GroupOwned;
@@ -64620,6 +66541,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64761,11 +66683,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updateattachment_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64807,11 +66731,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updateattachment_operationdata")]
         public class OperationDataBlock
         {
             public bool AddItem;
             public bool UseExistingAsset;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64851,10 +66777,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updateattachment_attachmentblock")]
         public class AttachmentBlockBlock
         {
             public byte AttachmentPoint;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -64961,11 +66889,13 @@ namespace libsecondlife.Packets
     public class RemoveAttachmentPacket : Packet
     {
         /// <exclude/>
+        [XmlType("removeattachment_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65007,11 +66937,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("removeattachment_attachmentblock")]
         public class AttachmentBlockBlock
         {
             public byte AttachmentPoint;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65109,6 +67041,7 @@ namespace libsecondlife.Packets
     public class AssetUploadRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("assetuploadrequest_assetblock")]
         public class AssetBlockBlock
         {
             public sbyte Type;
@@ -65127,6 +67060,7 @@ namespace libsecondlife.Packets
             public LLUUID TransactionID;
             public bool StoreLocal;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65235,12 +67169,14 @@ namespace libsecondlife.Packets
     public class AssetUploadCompletePacket : Packet
     {
         /// <exclude/>
+        [XmlType("assetuploadcomplete_assetblock")]
         public class AssetBlockBlock
         {
             public LLUUID UUID;
             public bool Success;
             public sbyte Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65335,6 +67271,7 @@ namespace libsecondlife.Packets
     public class ReputationAgentAssignPacket : Packet
     {
         /// <exclude/>
+        [XmlType("reputationagentassign_datablock")]
         public class DataBlockBlock
         {
             public LLUUID RateeID;
@@ -65343,6 +67280,7 @@ namespace libsecondlife.Packets
             public float Behavior;
             public float Building;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65454,11 +67392,13 @@ namespace libsecondlife.Packets
     public class ReputationIndividualRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("reputationindividualrequest_reputationdata")]
         public class ReputationDataBlock
         {
             public LLUUID ToID;
             public LLUUID FromID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65551,6 +67491,7 @@ namespace libsecondlife.Packets
     public class ReputationIndividualReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("reputationindividualreply_reputationdata")]
         public class ReputationDataBlock
         {
             public float Appearance;
@@ -65559,6 +67500,7 @@ namespace libsecondlife.Packets
             public LLUUID FromID;
             public float Building;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65670,6 +67612,7 @@ namespace libsecondlife.Packets
     public class EmailMessageRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("emailmessagerequest_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ObjectID;
@@ -65696,6 +67639,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65802,6 +67746,7 @@ namespace libsecondlife.Packets
     public class EmailMessageReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("emailmessagereply_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ObjectID;
@@ -65852,6 +67797,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -65987,6 +67933,7 @@ namespace libsecondlife.Packets
     public class ScriptDataRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptdatarequest_datablock")]
         public class DataBlockBlock
         {
             public sbyte RequestType;
@@ -66003,6 +67950,7 @@ namespace libsecondlife.Packets
             }
             public ulong Hash;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66123,6 +68071,7 @@ namespace libsecondlife.Packets
     public class ScriptDataReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptdatareply_datablock")]
         public class DataBlockBlock
         {
             public ulong Hash;
@@ -66138,6 +68087,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66255,11 +68205,13 @@ namespace libsecondlife.Packets
     public class CreateGroupRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("creategrouprequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66301,6 +68253,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("creategrouprequest_groupdata")]
         public class GroupDataBlock
         {
             public bool AllowPublish;
@@ -66332,6 +68285,7 @@ namespace libsecondlife.Packets
             public bool MaturePublish;
             public bool OpenEnrollment;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66464,6 +68418,7 @@ namespace libsecondlife.Packets
     public class CreateGroupReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("creategroupreply_replydata")]
         public class ReplyDataBlock
         {
             private byte[] _message;
@@ -66480,6 +68435,7 @@ namespace libsecondlife.Packets
             public bool Success;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66530,10 +68486,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("creategroupreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66628,11 +68586,13 @@ namespace libsecondlife.Packets
     public class UpdateGroupInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updategroupinfo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66674,6 +68634,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updategroupinfo_groupdata")]
         public class GroupDataBlock
         {
             public bool AllowPublish;
@@ -66695,6 +68656,7 @@ namespace libsecondlife.Packets
             public bool MaturePublish;
             public bool OpenEnrollment;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66823,12 +68785,14 @@ namespace libsecondlife.Packets
     public class GroupRoleChangesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouprolechanges_rolechange")]
         public class RoleChangeBlock
         {
             public LLUUID MemberID;
             public uint Change;
             public LLUUID RoleID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66876,12 +68840,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouprolechanges_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -66996,11 +68962,13 @@ namespace libsecondlife.Packets
     public class JoinGroupRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("joingrouprequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67042,10 +69010,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("joingrouprequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67141,10 +69111,12 @@ namespace libsecondlife.Packets
     public class JoinGroupReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("joingroupreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67182,11 +69154,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("joingroupreply_groupdata")]
         public class GroupDataBlock
         {
             public bool Success;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67284,11 +69258,13 @@ namespace libsecondlife.Packets
     public class EjectGroupMemberRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("ejectgroupmemberrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67330,10 +69306,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("ejectgroupmemberrequest_ejectdata")]
         public class EjectDataBlock
         {
             public LLUUID EjecteeID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67371,10 +69349,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("ejectgroupmemberrequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67487,10 +69467,12 @@ namespace libsecondlife.Packets
     public class EjectGroupMemberReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("ejectgroupmemberreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67528,10 +69510,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("ejectgroupmemberreply_ejectdata")]
         public class EjectDataBlock
         {
             public bool Success;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67568,10 +69552,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("ejectgroupmemberreply_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67672,11 +69658,13 @@ namespace libsecondlife.Packets
     public class LeaveGroupRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("leavegrouprequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67718,10 +69706,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("leavegrouprequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67816,10 +69806,12 @@ namespace libsecondlife.Packets
     public class LeaveGroupReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("leavegroupreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67857,11 +69849,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("leavegroupreply_groupdata")]
         public class GroupDataBlock
         {
             public bool Success;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -67959,11 +69953,13 @@ namespace libsecondlife.Packets
     public class InviteGroupRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("invitegrouprequest_invitedata")]
         public class InviteDataBlock
         {
             public LLUUID RoleID;
             public LLUUID InviteeID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68005,11 +70001,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("invitegrouprequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68051,10 +70049,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("invitegrouprequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68167,6 +70167,7 @@ namespace libsecondlife.Packets
     public class InviteGroupResponsePacket : Packet
     {
         /// <exclude/>
+        [XmlType("invitegroupresponse_invitedata")]
         public class InviteDataBlock
         {
             public LLUUID AgentID;
@@ -68175,6 +70176,7 @@ namespace libsecondlife.Packets
             public LLUUID RoleID;
             public LLUUID InviteeID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68281,11 +70283,13 @@ namespace libsecondlife.Packets
     public class GroupProfileRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupprofilerequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68327,10 +70331,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupprofilerequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68425,10 +70431,12 @@ namespace libsecondlife.Packets
     public class GroupProfileReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupprofilereply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68466,6 +70474,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupprofilereply_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID OwnerRole;
@@ -68515,6 +70524,7 @@ namespace libsecondlife.Packets
             public LLUUID FounderID;
             public bool OpenEnrollment;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68695,12 +70705,14 @@ namespace libsecondlife.Packets
     public class GroupAccountSummaryRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupaccountsummaryrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68750,12 +70762,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccountsummaryrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -68859,6 +70873,7 @@ namespace libsecondlife.Packets
     public class GroupAccountSummaryReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupaccountsummaryreply_moneydata")]
         public class MoneyDataBlock
         {
             public int ParcelDirFeeCurrent;
@@ -68912,6 +70927,7 @@ namespace libsecondlife.Packets
             public int TotalCredits;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69071,11 +71087,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccountsummaryreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69175,12 +71193,14 @@ namespace libsecondlife.Packets
     public class GroupAccountDetailsRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupaccountdetailsrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69230,12 +71250,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccountdetailsrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69339,6 +71361,7 @@ namespace libsecondlife.Packets
     public class GroupAccountDetailsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupaccountdetailsreply_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
@@ -69356,6 +71379,7 @@ namespace libsecondlife.Packets
             }
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69415,6 +71439,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccountdetailsreply_historydata")]
         public class HistoryDataBlock
         {
             public int Amount;
@@ -69430,6 +71455,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69479,11 +71505,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccountdetailsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69601,12 +71629,14 @@ namespace libsecondlife.Packets
     public class GroupAccountTransactionsRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupaccounttransactionsrequest_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69656,12 +71686,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccounttransactionsrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69765,6 +71797,7 @@ namespace libsecondlife.Packets
     public class GroupAccountTransactionsReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupaccounttransactionsreply_moneydata")]
         public class MoneyDataBlock
         {
             public LLUUID RequestID;
@@ -69782,6 +71815,7 @@ namespace libsecondlife.Packets
             }
             public int CurrentInterval;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69841,6 +71875,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccounttransactionsreply_historydata")]
         public class HistoryDataBlock
         {
             private byte[] _time;
@@ -69879,6 +71914,7 @@ namespace libsecondlife.Packets
             public int Type;
             public int Amount;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -69950,11 +71986,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupaccounttransactionsreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70072,11 +72110,13 @@ namespace libsecondlife.Packets
     public class GroupActiveProposalsRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupactiveproposalsrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70118,10 +72158,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupactiveproposalsrequest_transactiondata")]
         public class TransactionDataBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70159,10 +72201,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupactiveproposalsrequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70263,6 +72307,7 @@ namespace libsecondlife.Packets
     public class GroupActiveProposalItemReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupactiveproposalitemreply_proposaldata")]
         public class ProposalDataBlock
         {
             private byte[] _startdatetime;
@@ -70326,6 +72371,7 @@ namespace libsecondlife.Packets
             public int Quorum;
             public LLUUID VoteInitiator;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70425,11 +72471,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupactiveproposalitemreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70471,11 +72519,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupactiveproposalitemreply_transactiondata")]
         public class TransactionDataBlock
         {
             public uint TotalNumItems;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70595,11 +72645,13 @@ namespace libsecondlife.Packets
     public class GroupVoteHistoryRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupvotehistoryrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70641,10 +72693,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupvotehistoryrequest_transactiondata")]
         public class TransactionDataBlock
         {
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70682,10 +72736,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupvotehistoryrequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70786,6 +72842,7 @@ namespace libsecondlife.Packets
     public class GroupVoteHistoryItemReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupvotehistoryitemreply_historyitemdata")]
         public class HistoryItemDataBlock
         {
             private byte[] _startdatetime;
@@ -70859,6 +72916,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID VoteInitiator;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -70964,6 +73022,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupvotehistoryitemreply_voteitem")]
         public class VoteItemBlock
         {
             public LLUUID CandidateID;
@@ -70980,6 +73039,7 @@ namespace libsecondlife.Packets
             }
             public int NumVotes;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71033,11 +73093,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupvotehistoryitemreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71079,11 +73141,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupvotehistoryitemreply_transactiondata")]
         public class TransactionDataBlock
         {
             public uint TotalNumItems;
             public LLUUID TransactionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71209,6 +73273,7 @@ namespace libsecondlife.Packets
     public class StartGroupProposalPacket : Packet
     {
         /// <exclude/>
+        [XmlType("startgroupproposal_proposaldata")]
         public class ProposalDataBlock
         {
             public int Duration;
@@ -71227,6 +73292,7 @@ namespace libsecondlife.Packets
             public LLUUID GroupID;
             public int Quorum;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71293,11 +73359,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("startgroupproposal_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71397,6 +73465,7 @@ namespace libsecondlife.Packets
     public class GroupProposalBallotPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupproposalballot_proposaldata")]
         public class ProposalDataBlock
         {
             public LLUUID ProposalID;
@@ -71413,6 +73482,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71464,11 +73534,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupproposalballot_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71612,11 +73684,13 @@ namespace libsecondlife.Packets
     public class GroupMembersRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupmembersrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71658,11 +73732,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupmembersrequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID RequestID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71761,6 +73837,7 @@ namespace libsecondlife.Packets
     public class GroupMembersReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupmembersreply_memberdata")]
         public class MemberDataBlock
         {
             private byte[] _onlinestatus;
@@ -71790,6 +73867,7 @@ namespace libsecondlife.Packets
             }
             public ulong AgentPowers;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71864,10 +73942,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupmembersreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -71905,12 +73985,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("groupmembersreply_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID RequestID;
             public int MemberCount;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72034,12 +74116,14 @@ namespace libsecondlife.Packets
     public class ActivateGroupPacket : Packet
     {
         /// <exclude/>
+        [XmlType("activategroup_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72137,11 +74221,13 @@ namespace libsecondlife.Packets
     public class SetGroupContributionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setgroupcontribution_data")]
         public class DataBlock
         {
             public int Contribution;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72185,11 +74271,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("setgroupcontribution_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72288,11 +74376,13 @@ namespace libsecondlife.Packets
     public class SetGroupAcceptNoticesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("setgroupacceptnotices_data")]
         public class DataBlock
         {
             public LLUUID GroupID;
             public bool AcceptNotices;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72333,11 +74423,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("setgroupacceptnotices_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72436,11 +74528,13 @@ namespace libsecondlife.Packets
     public class GroupRoleDataRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouproledatarequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72482,11 +74576,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouproledatarequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID RequestID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72585,6 +74681,7 @@ namespace libsecondlife.Packets
     public class GroupRoleDataReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouproledatareply_roledata")]
         public class RoleDataBlock
         {
             public uint Members;
@@ -72624,6 +74721,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72703,10 +74801,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouproledatareply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72744,12 +74844,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouproledatareply_groupdata")]
         public class GroupDataBlock
         {
             public int RoleCount;
             public LLUUID RequestID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72872,11 +74974,13 @@ namespace libsecondlife.Packets
     public class GroupRoleMembersRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouprolemembersrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -72918,11 +75022,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouprolemembersrequest_groupdata")]
         public class GroupDataBlock
         {
             public LLUUID RequestID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73021,11 +75127,13 @@ namespace libsecondlife.Packets
     public class GroupRoleMembersReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouprolemembersreply_memberdata")]
         public class MemberDataBlock
         {
             public LLUUID MemberID;
             public LLUUID RoleID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73067,6 +75175,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouprolemembersreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -73074,6 +75183,7 @@ namespace libsecondlife.Packets
             public LLUUID RequestID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73194,6 +75304,7 @@ namespace libsecondlife.Packets
     public class GroupTitlesRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouptitlesrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -73201,6 +75312,7 @@ namespace libsecondlife.Packets
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73301,12 +75413,14 @@ namespace libsecondlife.Packets
     public class GroupTitlesReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouptitlesreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID RequestID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73352,6 +75466,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouptitlesreply_groupdata")]
         public class GroupDataBlock
         {
             public bool Selected;
@@ -73368,6 +75483,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73488,6 +75604,7 @@ namespace libsecondlife.Packets
     public class GroupTitleUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouptitleupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -73495,6 +75612,7 @@ namespace libsecondlife.Packets
             public LLUUID GroupID;
             public LLUUID TitleRoleID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73595,6 +75713,7 @@ namespace libsecondlife.Packets
     public class GroupRoleUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("grouproleupdate_roledata")]
         public class RoleDataBlock
         {
             private byte[] _name;
@@ -73634,6 +75753,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73710,12 +75830,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("grouproleupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73830,11 +75952,13 @@ namespace libsecondlife.Packets
     public class LiveHelpGroupRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("livehelpgrouprequest_requestdata")]
         public class RequestDataBlock
         {
             public LLUUID AgentID;
             public LLUUID RequestID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -73927,6 +76051,7 @@ namespace libsecondlife.Packets
     public class LiveHelpGroupReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("livehelpgroupreply_replydata")]
         public class ReplyDataBlock
         {
             public LLUUID RequestID;
@@ -73943,6 +76068,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74045,11 +76171,13 @@ namespace libsecondlife.Packets
     public class AgentWearablesRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentwearablesrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74142,12 +76270,14 @@ namespace libsecondlife.Packets
     public class AgentWearablesUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentwearablesupdate_wearabledata")]
         public class WearableDataBlock
         {
             public byte WearableType;
             public LLUUID AssetID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74192,12 +76322,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentwearablesupdate_agentdata")]
         public class AgentDataBlock
         {
             public uint SerialNum;
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74315,11 +76447,13 @@ namespace libsecondlife.Packets
     public class AgentIsNowWearingPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentisnowwearing_wearabledata")]
         public class WearableDataBlock
         {
             public byte WearableType;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74360,11 +76494,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentisnowwearing_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74476,11 +76612,13 @@ namespace libsecondlife.Packets
     public class AgentCachedTexturePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentcachedtexture_wearabledata")]
         public class WearableDataBlock
         {
             public LLUUID ID;
             public byte TextureIndex;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74521,12 +76659,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentcachedtexture_agentdata")]
         public class AgentDataBlock
         {
             public int SerialNum;
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74643,6 +76783,7 @@ namespace libsecondlife.Packets
     public class AgentCachedTextureResponsePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentcachedtextureresponse_wearabledata")]
         public class WearableDataBlock
         {
             public LLUUID TextureID;
@@ -74659,6 +76800,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74709,12 +76851,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentcachedtextureresponse_agentdata")]
         public class AgentDataBlock
         {
             public int SerialNum;
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74831,11 +76975,13 @@ namespace libsecondlife.Packets
     public class AgentDataUpdateRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentdataupdaterequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -74928,6 +77074,7 @@ namespace libsecondlife.Packets
     public class AgentDataUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentdataupdate_agentdata")]
         public class AgentDataBlock
         {
             private byte[] _grouptitle;
@@ -74978,6 +77125,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID ActiveGroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75115,6 +77263,7 @@ namespace libsecondlife.Packets
     public class GroupDataUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("groupdataupdate_agentgroupdata")]
         public class AgentGroupDataBlock
         {
             private byte[] _grouptitle;
@@ -75132,6 +77281,7 @@ namespace libsecondlife.Packets
             public LLUUID GroupID;
             public ulong AgentPowers;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75257,10 +77407,12 @@ namespace libsecondlife.Packets
     public class AgentGroupDataUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentgroupdataupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75298,6 +77450,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentgroupdataupdate_groupdata")]
         public class GroupDataBlock
         {
             public ulong GroupPowers;
@@ -75317,6 +77470,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75457,11 +77611,13 @@ namespace libsecondlife.Packets
     public class AgentDropGroupPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentdropgroup_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75555,6 +77711,7 @@ namespace libsecondlife.Packets
     public class LogTextMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("logtextmessage_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ToAgentId;
@@ -75574,6 +77731,7 @@ namespace libsecondlife.Packets
             public uint Time;
             public LLUUID FromAgentId;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75709,11 +77867,13 @@ namespace libsecondlife.Packets
     public class CreateTrustedCircuitPacket : Packet
     {
         /// <exclude/>
+        [XmlType("createtrustedcircuit_datablock")]
         public class DataBlockBlock
         {
             public byte[] Digest;
             public LLUUID EndPointID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75806,10 +77966,12 @@ namespace libsecondlife.Packets
     public class DenyTrustedCircuitPacket : Packet
     {
         /// <exclude/>
+        [XmlType("denytrustedcircuit_datablock")]
         public class DataBlockBlock
         {
             public LLUUID EndPointID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -75943,6 +78105,7 @@ namespace libsecondlife.Packets
     public class RezSingleAttachmentFromInvPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rezsingleattachmentfrominv_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _name;
@@ -75975,6 +78138,7 @@ namespace libsecondlife.Packets
             public uint NextOwnerMask;
             public uint GroupMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76061,11 +78225,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezsingleattachmentfrominv_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76165,6 +78331,7 @@ namespace libsecondlife.Packets
     public class RezMultipleAttachmentsFromInvPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rezmultipleattachmentsfrominv_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _name;
@@ -76197,6 +78364,7 @@ namespace libsecondlife.Packets
             public uint NextOwnerMask;
             public uint GroupMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76283,11 +78451,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezmultipleattachmentsfrominv_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76329,12 +78499,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rezmultipleattachmentsfrominv_headerdata")]
         public class HeaderDataBlock
         {
             public LLUUID CompoundMsgID;
             public bool FirstDetachAll;
             public byte TotalObjects;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76454,11 +78626,13 @@ namespace libsecondlife.Packets
     public class DetachAttachmentIntoInvPacket : Packet
     {
         /// <exclude/>
+        [XmlType("detachattachmentintoinv_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID AgentID;
             public LLUUID ItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76551,11 +78725,13 @@ namespace libsecondlife.Packets
     public class CreateNewOutfitAttachmentsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("createnewoutfitattachments_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID OldFolderID;
             public LLUUID OldItemID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76597,11 +78773,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("createnewoutfitattachments_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76643,10 +78821,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("createnewoutfitattachments_headerdata")]
         public class HeaderDataBlock
         {
             public LLUUID NewFolderID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76759,11 +78939,13 @@ namespace libsecondlife.Packets
     public class UserInfoRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("userinforequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76856,6 +79038,7 @@ namespace libsecondlife.Packets
     public class UserInfoReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("userinforeply_userdata")]
         public class UserDataBlock
         {
             private byte[] _email;
@@ -76882,6 +79065,7 @@ namespace libsecondlife.Packets
             }
             public bool IMViaEMail;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -76937,10 +79121,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("userinforeply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77035,6 +79221,7 @@ namespace libsecondlife.Packets
     public class UpdateUserInfoPacket : Packet
     {
         /// <exclude/>
+        [XmlType("updateuserinfo_userdata")]
         public class UserDataBlock
         {
             private byte[] _directoryvisibility;
@@ -77050,6 +79237,7 @@ namespace libsecondlife.Packets
             }
             public bool IMViaEMail;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77096,11 +79284,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("updateuserinfo_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77199,10 +79389,12 @@ namespace libsecondlife.Packets
     public class GodExpungeUserPacket : Packet
     {
         /// <exclude/>
+        [XmlType("godexpungeuser_expungedata")]
         public class ExpungeDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77240,11 +79432,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("godexpungeuser_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77356,10 +79550,12 @@ namespace libsecondlife.Packets
     public class StartExpungeProcessPacket : Packet
     {
         /// <exclude/>
+        [XmlType("startexpungeprocess_expungedata")]
         public class ExpungeDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77506,6 +79702,7 @@ namespace libsecondlife.Packets
     public class StartParcelRenamePacket : Packet
     {
         /// <exclude/>
+        [XmlType("startparcelrename_parceldata")]
         public class ParcelDataBlock
         {
             private byte[] _newname;
@@ -77521,6 +79718,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77676,6 +79874,7 @@ namespace libsecondlife.Packets
     public class BulkParcelRenamePacket : Packet
     {
         /// <exclude/>
+        [XmlType("bulkparcelrename_parceldata")]
         public class ParcelDataBlock
         {
             private byte[] _newname;
@@ -77692,6 +79891,7 @@ namespace libsecondlife.Packets
             public LLUUID ParcelID;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77813,6 +80013,7 @@ namespace libsecondlife.Packets
     public class ParcelRenamePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelrename_parceldata")]
         public class ParcelDataBlock
         {
             private byte[] _newname;
@@ -77828,6 +80029,7 @@ namespace libsecondlife.Packets
             }
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -77938,10 +80140,12 @@ namespace libsecondlife.Packets
     public class StartParcelRemovePacket : Packet
     {
         /// <exclude/>
+        [XmlType("startparcelremove_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78087,11 +80291,13 @@ namespace libsecondlife.Packets
     public class BulkParcelRemovePacket : Packet
     {
         /// <exclude/>
+        [XmlType("bulkparcelremove_parceldata")]
         public class ParcelDataBlock
         {
             public LLUUID ParcelID;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78203,6 +80409,7 @@ namespace libsecondlife.Packets
     public class InitiateUploadPacket : Packet
     {
         /// <exclude/>
+        [XmlType("initiateupload_filedata")]
         public class FileDataBlock
         {
             private byte[] _sourcefilename;
@@ -78228,6 +80435,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78279,10 +80487,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("initiateupload_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78377,6 +80587,7 @@ namespace libsecondlife.Packets
     public class InitiateDownloadPacket : Packet
     {
         /// <exclude/>
+        [XmlType("initiatedownload_filedata")]
         public class FileDataBlock
         {
             private byte[] _simfilename;
@@ -78402,6 +80613,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78453,10 +80665,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("initiatedownload_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78551,6 +80765,7 @@ namespace libsecondlife.Packets
     public class SystemMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("systemmessage_methoddata")]
         public class MethodDataBlock
         {
             public LLUUID Invoice;
@@ -78567,6 +80782,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78618,6 +80834,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("systemmessage_paramlist")]
         public class ParamListBlock
         {
             private byte[] _parameter;
@@ -78632,6 +80849,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78745,6 +80963,7 @@ namespace libsecondlife.Packets
     public class MapLayerRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("maplayerrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -78753,6 +80972,7 @@ namespace libsecondlife.Packets
             public uint Flags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78860,11 +81080,13 @@ namespace libsecondlife.Packets
     public class MapLayerReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("maplayerreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -78908,6 +81130,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("maplayerreply_layerdata")]
         public class LayerDataBlock
         {
             public uint Top;
@@ -78916,6 +81139,7 @@ namespace libsecondlife.Packets
             public uint Bottom;
             public uint Right;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79046,6 +81270,7 @@ namespace libsecondlife.Packets
     public class MapBlockRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mapblockrequest_positiondata")]
         public class PositionDataBlock
         {
             public ushort MaxX;
@@ -79053,6 +81278,7 @@ namespace libsecondlife.Packets
             public ushort MinX;
             public ushort MinY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79102,6 +81328,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mapblockrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -79110,6 +81337,7 @@ namespace libsecondlife.Packets
             public uint Flags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79223,6 +81451,7 @@ namespace libsecondlife.Packets
     public class MapNameRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mapnamerequest_namedata")]
         public class NameDataBlock
         {
             private byte[] _name;
@@ -79237,6 +81466,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79280,6 +81510,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mapnamerequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -79288,6 +81519,7 @@ namespace libsecondlife.Packets
             public uint Flags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79401,6 +81633,7 @@ namespace libsecondlife.Packets
     public class MapBlockReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mapblockreply_data")]
         public class DataBlock
         {
             public ushort X;
@@ -79422,6 +81655,7 @@ namespace libsecondlife.Packets
             public LLUUID MapImageID;
             public byte Agents;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79492,11 +81726,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mapblockreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79609,11 +81845,13 @@ namespace libsecondlife.Packets
     public class MapItemRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mapitemrequest_requestdata")]
         public class RequestDataBlock
         {
             public ulong RegionHandle;
             public uint ItemType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79663,6 +81901,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mapitemrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
@@ -79671,6 +81910,7 @@ namespace libsecondlife.Packets
             public uint Flags;
             public uint EstateID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79784,10 +82024,12 @@ namespace libsecondlife.Packets
     public class MapItemReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mapitemreply_requestdata")]
         public class RequestDataBlock
         {
             public uint ItemType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79827,6 +82069,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mapitemreply_data")]
         public class DataBlock
         {
             public uint X;
@@ -79846,6 +82089,7 @@ namespace libsecondlife.Packets
             public int Extra2;
             public int Extra;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -79917,11 +82161,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mapitemreply_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80040,6 +82286,7 @@ namespace libsecondlife.Packets
     public class SendPostcardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("sendpostcard_agentdata")]
         public class AgentDataBlock
         {
             private byte[] _to;
@@ -80104,6 +82351,7 @@ namespace libsecondlife.Packets
             public LLUUID AssetID;
             public bool MaturePublish;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80253,6 +82501,7 @@ namespace libsecondlife.Packets
     public class RpcChannelRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rpcchannelrequest_datablock")]
         public class DataBlockBlock
         {
             public LLUUID TaskID;
@@ -80260,6 +82509,7 @@ namespace libsecondlife.Packets
             public uint GridX;
             public uint GridY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80364,12 +82614,14 @@ namespace libsecondlife.Packets
     public class RpcChannelReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rpcchannelreply_datablock")]
         public class DataBlockBlock
         {
             public LLUUID TaskID;
             public LLUUID ItemID;
             public LLUUID ChannelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80466,11 +82718,13 @@ namespace libsecondlife.Packets
     public class RpcScriptRequestInboundPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rpcscriptrequestinbound_targetblock")]
         public class TargetBlockBlock
         {
             public uint GridX;
             public uint GridY;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80516,6 +82770,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("rpcscriptrequestinbound_datablock")]
         public class DataBlockBlock
         {
             private byte[] _stringvalue;
@@ -80534,6 +82789,7 @@ namespace libsecondlife.Packets
             public uint IntValue;
             public LLUUID ChannelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80653,6 +82909,7 @@ namespace libsecondlife.Packets
     public class RpcScriptRequestInboundForwardPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rpcscriptrequestinboundforward_datablock")]
         public class DataBlockBlock
         {
             public uint RPCServerIP;
@@ -80673,6 +82930,7 @@ namespace libsecondlife.Packets
             public LLUUID ChannelID;
             public ushort RPCServerPort;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80796,6 +83054,7 @@ namespace libsecondlife.Packets
     public class RpcScriptReplyInboundPacket : Packet
     {
         /// <exclude/>
+        [XmlType("rpcscriptreplyinbound_datablock")]
         public class DataBlockBlock
         {
             private byte[] _stringvalue;
@@ -80814,6 +83073,7 @@ namespace libsecondlife.Packets
             public uint IntValue;
             public LLUUID ChannelID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -80927,10 +83187,12 @@ namespace libsecondlife.Packets
     public class MailTaskSimRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mailtasksimrequest_datablock")]
         public class DataBlockBlock
         {
             public LLUUID TaskID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81019,6 +83281,7 @@ namespace libsecondlife.Packets
     public class MailTaskSimReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("mailtasksimreply_targetblock")]
         public class TargetBlockBlock
         {
             private byte[] _targetip;
@@ -81034,6 +83297,7 @@ namespace libsecondlife.Packets
             }
             public ushort TargetPort;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81081,10 +83345,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("mailtasksimreply_datablock")]
         public class DataBlockBlock
         {
             public LLUUID TaskID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81179,6 +83445,7 @@ namespace libsecondlife.Packets
     public class ScriptMailRegistrationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("scriptmailregistration_datablock")]
         public class DataBlockBlock
         {
             private byte[] _targetip;
@@ -81196,6 +83463,7 @@ namespace libsecondlife.Packets
             public ushort TargetPort;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81304,12 +83572,14 @@ namespace libsecondlife.Packets
     public class ParcelMediaCommandMessagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelmediacommandmessage_commandblock")]
         public class CommandBlockBlock
         {
             public uint Command;
             public float Time;
             public uint Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81413,6 +83683,7 @@ namespace libsecondlife.Packets
     public class ParcelMediaUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelmediaupdate_datablock")]
         public class DataBlockBlock
         {
             public LLUUID MediaID;
@@ -81429,6 +83700,7 @@ namespace libsecondlife.Packets
             }
             public byte MediaAutoScale;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81530,6 +83802,7 @@ namespace libsecondlife.Packets
     public class LandStatRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("landstatrequest_requestdata")]
         public class RequestDataBlock
         {
             public uint RequestFlags;
@@ -81547,6 +83820,7 @@ namespace libsecondlife.Packets
             }
             public int ParcelLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81608,11 +83882,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("landstatrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81711,12 +83987,14 @@ namespace libsecondlife.Packets
     public class LandStatReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("landstatreply_requestdata")]
         public class RequestDataBlock
         {
             public uint RequestFlags;
             public uint ReportType;
             public uint TotalObjectCount;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81768,6 +84046,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("landstatreply_reportdata")]
         public class ReportDataBlock
         {
             public float LocationX;
@@ -81799,6 +84078,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -81954,10 +84234,12 @@ namespace libsecondlife.Packets
     public class SecuredTemplateChecksumRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("securedtemplatechecksumrequest_tokenblock")]
         public class TokenBlockBlock
         {
             public LLUUID Token;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82046,10 +84328,12 @@ namespace libsecondlife.Packets
     public class PacketAckPacket : Packet
     {
         /// <exclude/>
+        [XmlType("packetack_packets")]
         public class PacketsBlock
         {
             public uint ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82152,11 +84436,13 @@ namespace libsecondlife.Packets
     public class OpenCircuitPacket : Packet
     {
         /// <exclude/>
+        [XmlType("opencircuit_circuitinfo")]
         public class CircuitInfoBlock
         {
             public uint IP;
             public ushort Port;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82341,6 +84627,7 @@ namespace libsecondlife.Packets
     public class TemplateChecksumReplyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("templatechecksumreply_datablock")]
         public class DataBlockBlock
         {
             public byte ServerVersion;
@@ -82350,6 +84637,7 @@ namespace libsecondlife.Packets
             public byte MajorVersion;
             public byte MinorVersion;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82407,10 +84695,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("templatechecksumreply_tokenblock")]
         public class TokenBlockBlock
         {
             public LLUUID Token;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82505,12 +84795,14 @@ namespace libsecondlife.Packets
     public class ClosestSimulatorPacket : Packet
     {
         /// <exclude/>
+        [XmlType("closestsimulator_simulatorblock")]
         public class SimulatorBlockBlock
         {
             public uint IP;
             public ushort Port;
             public ulong Handle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82564,10 +84856,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("closestsimulator_viewer")]
         public class ViewerBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82662,6 +84956,7 @@ namespace libsecondlife.Packets
     public class ObjectAddPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectadd_objectdata")]
         public class ObjectDataBlock
         {
             public uint AddFlags;
@@ -82694,6 +84989,7 @@ namespace libsecondlife.Packets
             public LLQuaternion Rotation;
             public LLUUID RayTargetID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82822,12 +85118,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectadd_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
             public LLUUID GroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82931,6 +85229,7 @@ namespace libsecondlife.Packets
     public class MultipleObjectUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("multipleobjectupdate_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _data;
@@ -82947,6 +85246,7 @@ namespace libsecondlife.Packets
             public byte Type;
             public uint ObjectLocalID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -82999,11 +85299,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("multipleobjectupdate_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83115,11 +85417,13 @@ namespace libsecondlife.Packets
     public class RequestMultipleObjectsPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestmultipleobjects_objectdata")]
         public class ObjectDataBlock
         {
             public uint ID;
             public byte CacheMissType;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83162,11 +85466,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("requestmultipleobjects_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83278,11 +85584,13 @@ namespace libsecondlife.Packets
     public class ObjectPositionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectposition_objectdata")]
         public class ObjectDataBlock
         {
             public uint ObjectLocalID;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83326,11 +85634,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectposition_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83442,11 +85752,13 @@ namespace libsecondlife.Packets
     public class RequestObjectPropertiesFamilyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestobjectpropertiesfamily_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ObjectID;
             public uint RequestFlags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83490,11 +85802,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("requestobjectpropertiesfamily_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83594,12 +85908,14 @@ namespace libsecondlife.Packets
     public class CoarseLocationUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("coarselocationupdate_location")]
         public class LocationBlock
         {
             public byte X;
             public byte Y;
             public byte Z;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83642,11 +85958,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("coarselocationupdate_index")]
         public class IndexBlock
         {
             public short You;
             public short Prey;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83757,11 +86075,13 @@ namespace libsecondlife.Packets
     public class CrossedRegionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("crossedregion_info")]
         public class InfoBlock
         {
             public LLVector3 LookAt;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83803,6 +86123,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("crossedregion_regiondata")]
         public class RegionDataBlock
         {
             private byte[] _seedcapability;
@@ -83820,6 +86141,7 @@ namespace libsecondlife.Packets
             public ulong RegionHandle;
             public uint SimIP;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83884,11 +86206,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("crossedregion_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -83993,11 +86317,13 @@ namespace libsecondlife.Packets
     public class ConfirmEnableSimulatorPacket : Packet
     {
         /// <exclude/>
+        [XmlType("confirmenablesimulator_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -84090,6 +86416,7 @@ namespace libsecondlife.Packets
     public class ObjectPropertiesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectproperties_objectdata")]
         public class ObjectDataBlock
         {
             public int OwnershipCost;
@@ -84169,6 +86496,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -84404,6 +86732,7 @@ namespace libsecondlife.Packets
     public class ObjectPropertiesFamilyPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectpropertiesfamily_objectdata")]
         public class ObjectDataBlock
         {
             public int OwnershipCost;
@@ -84443,6 +86772,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -84619,6 +86949,7 @@ namespace libsecondlife.Packets
     public class ParcelPropertiesRequestPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelpropertiesrequest_parceldata")]
         public class ParcelDataBlock
         {
             public float East;
@@ -84628,6 +86959,7 @@ namespace libsecondlife.Packets
             public float North;
             public float South;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -84695,11 +87027,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("parcelpropertiesrequest_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -84799,11 +87133,13 @@ namespace libsecondlife.Packets
     public class SimStatusPacket : Packet
     {
         /// <exclude/>
+        [XmlType("simstatus_simstatus")]
         public class SimStatusBlock
         {
             public bool CanAcceptAgents;
             public bool CanAcceptTasks;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -84894,6 +87230,7 @@ namespace libsecondlife.Packets
     public class GestureUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("gestureupdate_agentblock")]
         public class AgentBlockBlock
         {
             public LLUUID AgentID;
@@ -84910,6 +87247,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85011,6 +87349,7 @@ namespace libsecondlife.Packets
     public class AttachedSoundPacket : Packet
     {
         /// <exclude/>
+        [XmlType("attachedsound_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ObjectID;
@@ -85019,6 +87358,7 @@ namespace libsecondlife.Packets
             public LLUUID OwnerID;
             public byte Flags;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85125,11 +87465,13 @@ namespace libsecondlife.Packets
     public class AttachedSoundGainChangePacket : Packet
     {
         /// <exclude/>
+        [XmlType("attachedsoundgainchange_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ObjectID;
             public float Gain;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85225,11 +87567,13 @@ namespace libsecondlife.Packets
     public class AttachedSoundCutoffRadiusPacket : Packet
     {
         /// <exclude/>
+        [XmlType("attachedsoundcutoffradius_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ObjectID;
             public float Radius;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85325,12 +87669,14 @@ namespace libsecondlife.Packets
     public class PreloadSoundPacket : Packet
     {
         /// <exclude/>
+        [XmlType("preloadsound_datablock")]
         public class DataBlockBlock
         {
             public LLUUID ObjectID;
             public LLUUID SoundID;
             public LLUUID OwnerID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85439,6 +87785,7 @@ namespace libsecondlife.Packets
     public class InternalScriptMailPacket : Packet
     {
         /// <exclude/>
+        [XmlType("internalscriptmail_datablock")]
         public class DataBlockBlock
         {
             public LLUUID To;
@@ -85476,6 +87823,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85591,6 +87939,7 @@ namespace libsecondlife.Packets
     public class ViewerEffectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("viewereffect_effect")]
         public class EffectBlock
         {
             public float Duration;
@@ -85609,6 +87958,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85734,10 +88084,12 @@ namespace libsecondlife.Packets
     public class SetSunPhasePacket : Packet
     {
         /// <exclude/>
+        [XmlType("setsunphase_data")]
         public class DataBlock
         {
             public float Phase;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85778,11 +88130,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("setsunphase_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85881,11 +88235,13 @@ namespace libsecondlife.Packets
     public class StartPingCheckPacket : Packet
     {
         /// <exclude/>
+        [XmlType("startpingcheck_pingid")]
         public class PingIDBlock
         {
             public byte PingID;
             public uint OldestUnacked;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -85979,10 +88335,12 @@ namespace libsecondlife.Packets
     public class CompletePingCheckPacket : Packet
     {
         /// <exclude/>
+        [XmlType("completepingcheck_pingid")]
         public class PingIDBlock
         {
             public byte PingID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86070,6 +88428,7 @@ namespace libsecondlife.Packets
     public class NeighborListPacket : Packet
     {
         /// <exclude/>
+        [XmlType("neighborlist_neighborblock")]
         public class NeighborBlockBlock
         {
             public uint IP;
@@ -86090,6 +88449,7 @@ namespace libsecondlife.Packets
             public byte SimAccess;
             public uint PublicIP;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86219,6 +88579,7 @@ namespace libsecondlife.Packets
     public class AgentUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentupdate_agentdata")]
         public class AgentDataBlock
         {
             public uint ControlFlags;
@@ -86234,6 +88595,7 @@ namespace libsecondlife.Packets
             public byte Flags;
             public byte State;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86370,11 +88732,13 @@ namespace libsecondlife.Packets
     public class AgentAnimationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentanimation_animationlist")]
         public class AnimationListBlock
         {
             public LLUUID AnimID;
             public bool StartAnim;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86415,11 +88779,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentanimation_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86530,11 +88896,13 @@ namespace libsecondlife.Packets
     public class AgentRequestSitPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentrequestsit_targetobject")]
         public class TargetObjectBlock
         {
             public LLUUID TargetID;
             public LLVector3 Offset;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86576,11 +88944,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("agentrequestsit_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86680,11 +89050,13 @@ namespace libsecondlife.Packets
     public class AgentSitPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentsit_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86777,6 +89149,7 @@ namespace libsecondlife.Packets
     public class RequestImagePacket : Packet
     {
         /// <exclude/>
+        [XmlType("requestimage_requestimage")]
         public class RequestImageBlock
         {
             public float DownloadPriority;
@@ -86785,6 +89158,7 @@ namespace libsecondlife.Packets
             public uint Packet;
             public LLUUID Image;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86841,11 +89215,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("requestimage_agentdata")]
         public class AgentDataBlock
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -86956,6 +89332,7 @@ namespace libsecondlife.Packets
     public class ImageDataPacket : Packet
     {
         /// <exclude/>
+        [XmlType("imagedata_imageid")]
         public class ImageIDBlock
         {
             public LLUUID ID;
@@ -86963,6 +89340,7 @@ namespace libsecondlife.Packets
             public uint Size;
             public byte Codec;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87013,6 +89391,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("imagedata_imagedata")]
         public class ImageDataBlock
         {
             private byte[] _data;
@@ -87027,6 +89406,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87128,11 +89508,13 @@ namespace libsecondlife.Packets
     public class ImagePacketPacket : Packet
     {
         /// <exclude/>
+        [XmlType("imagepacket_imageid")]
         public class ImageIDBlock
         {
             public LLUUID ID;
             public ushort Packet;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87174,6 +89556,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("imagepacket_imagedata")]
         public class ImageDataBlock
         {
             private byte[] _data;
@@ -87188,6 +89571,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87289,10 +89673,12 @@ namespace libsecondlife.Packets
     public class LayerDataPacket : Packet
     {
         /// <exclude/>
+        [XmlType("layerdata_layerid")]
         public class LayerIDBlock
         {
             public byte Type;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87329,6 +89715,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("layerdata_layerdata")]
         public class LayerDataBlock
         {
             private byte[] _data;
@@ -87343,6 +89730,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87444,6 +89832,7 @@ namespace libsecondlife.Packets
     public class ObjectUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectupdate_objectdata")]
         public class ObjectDataBlock
         {
             public uint ID;
@@ -87583,6 +89972,7 @@ namespace libsecondlife.Packets
             public byte ProfileHollow;
             public byte PathRevolutions;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87830,11 +90220,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectupdate_regiondata")]
         public class RegionDataBlock
         {
             public ushort TimeDilation;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -87952,6 +90344,7 @@ namespace libsecondlife.Packets
     public class ObjectUpdateCompressedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectupdatecompressed_objectdata")]
         public class ObjectDataBlock
         {
             public uint UpdateFlags;
@@ -87967,6 +90360,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88017,11 +90411,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectupdatecompressed_regiondata")]
         public class RegionDataBlock
         {
             public ushort TimeDilation;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88138,12 +90534,14 @@ namespace libsecondlife.Packets
     public class ObjectUpdateCachedPacket : Packet
     {
         /// <exclude/>
+        [XmlType("objectupdatecached_objectdata")]
         public class ObjectDataBlock
         {
             public uint ID;
             public uint UpdateFlags;
             public uint CRC;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88195,11 +90593,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("objectupdatecached_regiondata")]
         public class RegionDataBlock
         {
             public ushort TimeDilation;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88316,6 +90716,7 @@ namespace libsecondlife.Packets
     public class ImprovedTerseObjectUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("improvedterseobjectupdate_objectdata")]
         public class ObjectDataBlock
         {
             private byte[] _data;
@@ -88341,6 +90742,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88393,11 +90795,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("improvedterseobjectupdate_regiondata")]
         public class RegionDataBlock
         {
             public ushort TimeDilation;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88514,10 +90918,12 @@ namespace libsecondlife.Packets
     public class KillObjectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("killobject_objectdata")]
         public class ObjectDataBlock
         {
             public uint ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88620,6 +91026,7 @@ namespace libsecondlife.Packets
     public class AgentToNewRegionPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agenttonewregion_regiondata")]
         public class RegionDataBlock
         {
             public uint IP;
@@ -88627,6 +91034,7 @@ namespace libsecondlife.Packets
             public ushort Port;
             public ulong Handle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88735,6 +91143,7 @@ namespace libsecondlife.Packets
     public class TransferPacketPacket : Packet
     {
         /// <exclude/>
+        [XmlType("transferpacket_transferdata")]
         public class TransferDataBlock
         {
             public LLUUID TransferID;
@@ -88753,6 +91162,7 @@ namespace libsecondlife.Packets
             public int ChannelType;
             public int Status;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88870,6 +91280,7 @@ namespace libsecondlife.Packets
     public class SendXferPacketPacket : Packet
     {
         /// <exclude/>
+        [XmlType("sendxferpacket_datapacket")]
         public class DataPacketBlock
         {
             private byte[] _data;
@@ -88884,6 +91295,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -88928,11 +91340,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("sendxferpacket_xferid")]
         public class XferIDBlock
         {
             public ulong ID;
             public uint Packet;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89039,11 +91453,13 @@ namespace libsecondlife.Packets
     public class ConfirmXferPacketPacket : Packet
     {
         /// <exclude/>
+        [XmlType("confirmxferpacket_xferid")]
         public class XferIDBlock
         {
             public ulong ID;
             public uint Packet;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89144,10 +91560,12 @@ namespace libsecondlife.Packets
     public class AvatarAnimationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avataranimation_animationsourcelist")]
         public class AnimationSourceListBlock
         {
             public LLUUID ObjectID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89185,10 +91603,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avataranimation_sender")]
         public class SenderBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89226,11 +91646,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avataranimation_animationlist")]
         public class AnimationListBlock
         {
             public LLUUID AnimID;
             public int AnimSequenceID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89361,6 +91783,7 @@ namespace libsecondlife.Packets
     public class AvatarSitResponsePacket : Packet
     {
         /// <exclude/>
+        [XmlType("avatarsitresponse_sittransform")]
         public class SitTransformBlock
         {
             public bool AutoPilot;
@@ -89370,6 +91793,7 @@ namespace libsecondlife.Packets
             public LLVector3 SitPosition;
             public LLQuaternion SitRotation;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89425,10 +91849,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("avatarsitresponse_sitobject")]
         public class SitObjectBlock
         {
             public LLUUID ID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89524,10 +91950,12 @@ namespace libsecondlife.Packets
     public class CameraConstraintPacket : Packet
     {
         /// <exclude/>
+        [XmlType("cameraconstraint_cameracollideplane")]
         public class CameraCollidePlaneBlock
         {
             public LLVector4 Plane;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -89617,6 +92045,7 @@ namespace libsecondlife.Packets
     public class ParcelPropertiesPacket : Packet
     {
         /// <exclude/>
+        [XmlType("parcelproperties_parceldata")]
         public class ParcelDataBlock
         {
             public bool ReservedNewbie;
@@ -89720,6 +92149,7 @@ namespace libsecondlife.Packets
             public int ClaimPrice;
             public int RentPrice;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90068,6 +92498,7 @@ namespace libsecondlife.Packets
     public class EdgeDataPacketPacket : Packet
     {
         /// <exclude/>
+        [XmlType("edgedatapacket_edgedata")]
         public class EdgeDataBlock
         {
             public byte LayerType;
@@ -90084,6 +92515,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90186,10 +92618,12 @@ namespace libsecondlife.Packets
     public class ChildAgentUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("childagentupdate_visualparam")]
         public class VisualParamBlock
         {
             public byte ParamValue;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90226,10 +92660,12 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("childagentupdate_granterblock")]
         public class GranterBlockBlock
         {
             public LLUUID GranterID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90267,11 +92703,13 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("childagentupdate_animationdata")]
         public class AnimationDataBlock
         {
             public LLUUID ObjectID;
             public LLUUID Animation;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90313,6 +92751,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("childagentupdate_agentdata")]
         public class AgentDataBlock
         {
             public uint ViewerCircuitCode;
@@ -90362,6 +92801,7 @@ namespace libsecondlife.Packets
             public uint LocomotionState;
             public LLUUID ActiveGroupID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90525,12 +92965,14 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("childagentupdate_groupdata")]
         public class GroupDataBlock
         {
             public ulong GroupPowers;
             public LLUUID GroupID;
             public bool AcceptNotices;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90581,6 +93023,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("childagentupdate_nvpairdata")]
         public class NVPairDataBlock
         {
             private byte[] _nvpairs;
@@ -90595,6 +93038,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90781,6 +93225,7 @@ namespace libsecondlife.Packets
     public class ChildAgentAlivePacket : Packet
     {
         /// <exclude/>
+        [XmlType("childagentalive_agentdata")]
         public class AgentDataBlock
         {
             public uint ViewerCircuitCode;
@@ -90788,6 +93233,7 @@ namespace libsecondlife.Packets
             public LLUUID SessionID;
             public ulong RegionHandle;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -90896,6 +93342,7 @@ namespace libsecondlife.Packets
     public class ChildAgentPositionUpdatePacket : Packet
     {
         /// <exclude/>
+        [XmlType("childagentpositionupdate_agentdata")]
         public class AgentDataBlock
         {
             public uint ViewerCircuitCode;
@@ -90911,6 +93358,7 @@ namespace libsecondlife.Packets
             public LLVector3 AtAxis;
             public LLVector3 Center;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -91050,6 +93498,7 @@ namespace libsecondlife.Packets
     public class PassObjectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("passobject_objectdata")]
         public class ObjectDataBlock
         {
             public LLUUID ID;
@@ -91121,6 +93570,7 @@ namespace libsecondlife.Packets
             public uint GroupMask;
             public uint OwnerMask;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -91344,6 +93794,7 @@ namespace libsecondlife.Packets
         }
 
         /// <exclude/>
+        [XmlType("passobject_nvpairdata")]
         public class NVPairDataBlock
         {
             private byte[] _nvpairs;
@@ -91358,6 +93809,7 @@ namespace libsecondlife.Packets
                 }
             }
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -91472,11 +93924,13 @@ namespace libsecondlife.Packets
     public class AtomicPassObjectPacket : Packet
     {
         /// <exclude/>
+        [XmlType("atomicpassobject_taskdata")]
         public class TaskDataBlock
         {
             public bool AttachmentNeedsSave;
             public LLUUID TaskID;
 
+            [XmlIgnore]
             public int Length
             {
                 get
@@ -91568,6 +94022,7 @@ namespace libsecondlife.Packets
     public class SoundTriggerPacket : Packet
     {
         /// <exclude/>
+        [XmlType("soundtrigger_sounddata")]
         public class SoundDataBlock
         {
             public LLUUID ObjectID;
@@ -91578,6 +94033,7 @@ namespace libsecondlife.Packets
             public ulong Handle;
             public LLVector3 Position;
 
+            [XmlIgnore]
             public int Length
             {
                 get
