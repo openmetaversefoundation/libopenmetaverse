@@ -93,7 +93,7 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Sweet delicious prims.
     /// </summary>
     [Serializable, XmlRoot("prim")]
     public class PrimObject
@@ -485,7 +485,7 @@ namespace libsecondlife
 	}
 
     /// <summary>
-    /// 
+    /// OMG Flexi
     /// </summary>
     public class PrimFlexibleData
     {
@@ -556,7 +556,7 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Information on the light property associated with a prim
     /// </summary>
     public class PrimLightData
     {

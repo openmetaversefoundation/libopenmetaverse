@@ -813,7 +813,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Contains the definition for individual faces
         /// </summary>
         /// <param name="defaultTexture"></param>
         public TextureEntryFace(TextureEntryFace defaultTexture)
@@ -827,7 +827,7 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Controls the texture animation of a particular prim
     /// </summary>
     public class TextureAnimation
     {

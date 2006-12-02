@@ -29,7 +29,7 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
 	/// <summary>
-	/// 
+	/// Estate level administration and utilities
 	/// </summary>
 	public class EstateTools
 	{

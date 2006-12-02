@@ -33,7 +33,7 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
+    /// Triggered on incoming chat messages
     /// </summary>
     /// <param name="Message"></param>
     /// <param name="Audible"></param>
@@ -51,7 +51,7 @@ namespace libsecondlife
     public delegate void BalanceCallback(int balance);
 
     /// <summary>
-    /// 
+    /// Tiggered on incoming instant messages
     /// </summary>
     /// <param name="fromAgentID"></param>
     /// <param name="fromAgentName"></param>

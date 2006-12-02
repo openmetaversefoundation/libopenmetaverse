@@ -29,7 +29,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Information on a particle system assocaited with a prim
         /// </summary>
         [Flags]
         public enum ParticleFlags : ushort

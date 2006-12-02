@@ -358,7 +358,7 @@ namespace libsecondlife
         private List<DirectoryParcel> ParcelsForSale;
 
         /// <summary>
-        /// 
+        /// Parcel (subdivided simulator lots) Subsystem
         /// </summary>
         /// <param name="client"></param>
         public ParcelManager(SecondLife client)

@@ -63,7 +63,7 @@ namespace libsecondlife
         /// <param name="avatar"></param>
         public delegate void AvatarStatisticsCallback(Avatar avatar);
         /// <summary>
-        /// 
+        /// Triggered when a response for Avatar Interests is returned
         /// </summary>
         /// <param name="avatar"></param>
         public delegate void AvatarInterestsCallback(Avatar avatar);
@@ -79,7 +79,7 @@ namespace libsecondlife
         private Dictionary<LLUUID, AvatarInterestsCallback> AvatarInterestsCallbacks;
 
         /// <summary>
-        /// 
+        /// Represents other avatars
         /// </summary>
         /// <param name="client"></param>
         public AvatarManager(SecondLife client)
