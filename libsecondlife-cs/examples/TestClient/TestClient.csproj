@@ -36,6 +36,8 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\ShoutCommand.cs" />
+    <Compile Include="Commands\WhisperCommand.cs" />
     <Compile Include="Commands\ExportCommand.cs" />
     <Compile Include="Commands\IMCommand.cs" />
     <Compile Include="Commands\ImportCommand.cs" />
