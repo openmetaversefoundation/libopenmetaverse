@@ -8,7 +8,7 @@ namespace libsecondlife.TestClient
 {
     public class PacketLogCommand : Command
     {
-        XmlWriter Writer;
+        List<Packet> Packets = new List<Packet>();
         bool Done = false;
         int Count = 0;
         int Total = 0;
@@ -24,21 +24,23 @@ namespace libsecondlife.TestClient
             if (args.Length != 2)
                 return "Usage: packetlog 10 tenpackets.xml";
 
+            XmlWriter writer;
+            NetworkManager.PacketCallback callback = new NetworkManager.PacketCallback(OnPacket);
+
+            Packets.Clear();
             Done = false;
             Count = 0;
-            NetworkManager.PacketCallback callback = new NetworkManager.PacketCallback(OnPacket);
 
             try
             {
                 Total = Int32.Parse(args[0]);
-                Writer = XmlWriter.Create(args[1]);
-                Writer.WriteStartElement("packets");
+                writer = XmlWriter.Create(args[1]);
 
                 Client.Network.RegisterCallback(PacketType.Default, callback);
             }
             catch (Exception e)
             {
-                return "Usage: packetlog 10 tenpackets.xml" + Environment.NewLine + e;
+                return "Usage: packetlog 10 tenpackets.xml (" + e + ")";
             }
 
             while (!Done)
@@ -48,30 +50,32 @@ namespace libsecondlife.TestClient
 
             Client.Network.UnregisterCallback(PacketType.Default, callback);
 
-            lock (Writer)
+            try
             {
-                Writer.WriteEndElement();
-                Writer.Close();
+                Helpers.PacketListToXml(Packets, writer);
             }
+            catch (Exception e)
+            {
+                return "Serialization failed: " + e.ToString();
+            }
+
+            writer.Close();
+            Packets.Clear();
 
             return "Exported " + Count + " packets to " + args[1];
         }
 
         private void OnPacket(Packet packet, Simulator simulator)
         {
-            lock (Writer)
+            lock (Packets)
             {
-                if (Writer.WriteState == WriteState.Error)
-                {
-                    Done = true;
-                }
-                else if (Count >= Total)
+                if (Count >= Total)
                 {
                     Done = true;
                 }
                 else
                 {
-                    packet.ToXml(Writer);
+                    Packets.Add(packet);
                     Count++;
                 }
             }
