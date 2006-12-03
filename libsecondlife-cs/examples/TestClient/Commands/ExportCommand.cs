@@ -33,7 +33,7 @@ namespace libsecondlife.TestClient
             {
                 return "Usage: export uuid outputfile.xml";
             }
-
+            
             lock (TestClient.Prims)
             {
                 foreach (PrimObject prim in TestClient.Prims.Values)
@@ -53,27 +53,26 @@ namespace libsecondlife.TestClient
                     }
                 }
             }
-
+            
             if (localid != 0)
             {
                 try
                 {
                     XmlWriter writer = XmlWriter.Create(file);
-                    writer.WriteStartElement("primitives");
-
+                    List<PrimObject> prims = new List<PrimObject>();
                     lock (TestClient.Prims)
                     {
                         foreach (PrimObject prim in TestClient.Prims.Values)
                         {
                             if (prim.LocalID == localid || prim.ParentID == localid)
                             {
-                                prim.ToXml(writer);
+                                prims.Add(prim);
                                 count++;
                             }
                         }
                     }
-
-                    writer.WriteEndElement();
+                    //Serialize it!
+                    Helpers.PrimListToXml(prims, writer);
                     writer.Close();
                 }
                 catch (Exception e)

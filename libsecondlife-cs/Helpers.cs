@@ -526,5 +526,27 @@ namespace libsecondlife
             XmlSerializer serializer = new XmlSerializer(typeof(List<Packet>));
             serializer.Serialize(xmlWriter, packets, ns);
         }
+
+        public static void PrimListToXml(List<PrimObject> list, XmlWriter xmlWriter)
+        {
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
+            XmlSerializer serializer = new XmlSerializer(typeof(List<PrimObject>));
+            serializer.Serialize(xmlWriter, list, ns);
+        }
+
+        public static List<PrimObject> PrimListFromXml(XmlReader reader)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<PrimObject>));
+            object list = serializer.Deserialize(reader);
+            return (List<PrimObject>)list;
+        }
+
+        public static List<Packet> PacketListFromXml(XmlReader reader)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Packet>));
+            object list = serializer.Deserialize(reader);
+            return (List<Packet>)list;
+        }
     }
 }
