@@ -451,7 +451,7 @@ namespace libsecondlife
         /// <param name="gmc"></param>
         public void BeginGetGroupMembers(LLUUID group, GroupMembersCallback gmc)
         {
-            LLUUID requestID = LLUUID.GenerateUUID();
+            LLUUID requestID = LLUUID.Random();
 
             lock (GroupMembersCaches)
             {
@@ -477,7 +477,7 @@ namespace libsecondlife
         /// <param name="grc"></param>
         public void BeginGetGroupRoles(LLUUID group, GroupRolesCallback grc)
         {
-            LLUUID requestID = LLUUID.GenerateUUID();
+            LLUUID requestID = LLUUID.Random();
 
             lock (GroupRolesCaches)
             {
@@ -503,7 +503,7 @@ namespace libsecondlife
         /// <param name="gtc"></param>
         public void BeginGetGroupTitles(LLUUID group, GroupTitlesCallback gtc)
         {
-            LLUUID requestID = LLUUID.GenerateUUID();
+            LLUUID requestID = LLUUID.Random();
 
             GroupTitlesCallbacks[group] = gtc;
 

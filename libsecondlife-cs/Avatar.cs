@@ -385,7 +385,7 @@ namespace libsecondlife
         /// <param name="message"></param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(FirstName + " " + LastName, LLUUID.GenerateUUID(), target, message, null, LLUUID.GenerateUUID());
+            InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, message, null, LLUUID.Random());
         }
 
         /// <summary>
@@ -396,7 +396,7 @@ namespace libsecondlife
         /// <param name="IMSessionID"></param>
         public void InstantMessage(LLUUID target, string message, LLUUID IMSessionID)
         {
-            InstantMessage(FirstName + " " + LastName, LLUUID.GenerateUUID(), target, message, null, IMSessionID);
+            InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, message, null, IMSessionID);
         }
 
         /// <summary>
@@ -409,7 +409,7 @@ namespace libsecondlife
         /// <param name="conferenceIDs"></param>
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
         {
-            InstantMessage(fromName, sessionID, target, message, conferenceIDs, LLUUID.GenerateUUID());
+            InstantMessage(fromName, sessionID, target, message, conferenceIDs, LLUUID.Random());
         }
 
         /// <summary>

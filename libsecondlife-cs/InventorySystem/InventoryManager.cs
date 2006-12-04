@@ -192,7 +192,7 @@ namespace libsecondlife.InventorySystem
 
         internal InventoryFolder FolderCreate(String name, LLUUID parentid)
         {
-            InventoryFolder ifolder = new InventoryFolder(this, name, LLUUID.GenerateUUID(), parentid);
+            InventoryFolder ifolder = new InventoryFolder(this, name, LLUUID.Random(), parentid);
             ifolder._Type = -1;
 
             if (htFoldersByUUID.ContainsKey(ifolder.ParentID))
@@ -297,7 +297,7 @@ namespace libsecondlife.InventorySystem
 
         internal void ItemGiveTo(InventoryItem iitem, LLUUID ToAgentID)
         {
-            LLUUID MessageID = LLUUID.GenerateUUID();
+            LLUUID MessageID = LLUUID.Random();
 
             Packet packet = InvPacketHelper.GiveItemViaImprovedInstantMessage(
                 MessageID

@@ -100,7 +100,7 @@ namespace libsecondlife.AssetSystem
 
             try
             {
-                curUploadRequest = new AssetRequestUpload(slClient, LLUUID.GenerateUUID(), asset);
+                curUploadRequest = new AssetRequestUpload(slClient, LLUUID.Random(), asset);
 
                 LLUUID assetID = curUploadRequest.DoUpload();
                 if (asset.Type == Asset.ASSET_TYPE_IMAGE)
@@ -121,7 +121,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="item"></param>
 		public void GetInventoryAsset( InventoryItem item )
 		{
-			LLUUID TransferID = LLUUID.GenerateUUID();
+			LLUUID TransferID = LLUUID.Random();
 
             AssetRequestDownload request = new AssetRequestDownload(TransferID);
             request.Size = int.MaxValue; // Number of bytes expected
@@ -159,7 +159,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="asset"></param>
         public void GetInventoryAsset(Asset asset)
 		{
-			LLUUID TransferID = LLUUID.GenerateUUID();
+			LLUUID TransferID = LLUUID.Random();
 
             AssetRequestDownload request = new AssetRequestDownload(TransferID);
             request.Size = int.MaxValue; // Number of bytes expected

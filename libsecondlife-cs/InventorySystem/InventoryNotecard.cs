@@ -30,7 +30,7 @@ namespace libsecondlife.InventorySystem
 
 			set
 			{
-				base._Asset          = new AssetNotecard( LLUUID.GenerateUUID(), value );
+				base._Asset          = new AssetNotecard( LLUUID.Random(), value );
 				LLUUID TransactionID = base.iManager.AssetManager.UploadAsset( Asset );
                 base.SetAssetTransactionIDs(Asset.AssetID, TransactionID);
 			}
@@ -97,7 +97,7 @@ namespace libsecondlife.InventorySystem
 				} 
 				else 
 				{
-					_Asset   = new AssetNotecard( LLUUID.GenerateUUID(), assetData );
+					_Asset   = new AssetNotecard( LLUUID.Random(), assetData );
 					_AssetID = _Asset.AssetID;
 				}
 			} 

@@ -53,7 +53,7 @@ namespace libsecondlife
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
             estate.AgentData.AgentID = Client.Network.AgentID;
             estate.AgentData.SessionID = Client.Network.SessionID;
-            estate.MethodData.Invoice = LLUUID.GenerateUUID();
+            estate.MethodData.Invoice = LLUUID.Random();
             estate.MethodData.Method = Helpers.StringToField("kick");
             estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[2];
             estate.ParamList[0].Parameter = Helpers.StringToField(Client.Network.AgentID.ToStringHyphenated());

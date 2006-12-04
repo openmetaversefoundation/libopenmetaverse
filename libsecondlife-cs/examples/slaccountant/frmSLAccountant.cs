@@ -453,7 +453,7 @@ namespace SLAccountant
             query.AgentData.AgentID = client.Network.AgentID;
             query.AgentData.SessionID = client.Network.SessionID;
             query.QueryData.QueryFlags = 1;
-            query.QueryData.QueryID = LLUUID.GenerateUUID();
+            query.QueryData.QueryID = LLUUID.Random();
             query.QueryData.QueryStart = 0;
             query.QueryData.QueryText = Helpers.StringToField(txtFind.Text);
             query.Header.Reliable = true;

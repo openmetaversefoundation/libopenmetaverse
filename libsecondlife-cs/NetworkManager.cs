@@ -29,10 +29,10 @@ using System.Timers;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Globalization;
 using Nwc.XmlRpc;
 using Nii.JSON;
 using libsecondlife.Packets;
-using System.Globalization;
 
 namespace libsecondlife
 {

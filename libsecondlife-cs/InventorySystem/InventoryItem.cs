@@ -440,7 +440,7 @@ namespace libsecondlife.InventorySystem
                 }
                 else
                 {
-                    _Asset = new Asset(LLUUID.GenerateUUID(), Type, assetData);
+                    _Asset = new Asset(LLUUID.Random(), Type, assetData);
                     _AssetID = _Asset.AssetID;
                 }
             }

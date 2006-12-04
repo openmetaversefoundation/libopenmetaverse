@@ -47,16 +47,18 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Default constructor
         /// </summary>
 		public LLUUID()
 		{
 		}
 
         /// <summary>
-        /// 
+        /// Constructor that takes a string UUID representation
         /// </summary>
-        /// <param name="val"></param>
+        /// <param name="val">A string representation of a UUID, case 
+        /// insensitive and can either be hyphenated or non-hyphenated</param>
+        /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
 		public LLUUID(string val)
 		{
 			if (val.Length == 36) val = val.Replace("-", "");
@@ -70,32 +72,22 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Constructor that takes a byte array containing a UUID
         /// </summary>
-        /// <param name="byteArray"></param>
-        /// <param name="pos"></param>
+        /// <param name="byteArray">Byte array containing a 16 byte UUID</param>
+        /// <param name="pos">Beginning offset in the array</param>
 		public LLUUID(byte[] byteArray, int pos)
 		{
 			Array.Copy(byteArray, pos, data, 0, 16);
 		}
 
         /// <summary>
-        /// 
+        /// Returns the raw bytes for this UUID
         /// </summary>
-        /// <param name="randomize"></param>
-		public LLUUID(bool randomize)
-		{
-			if (randomize) data = Guid.NewGuid().ToByteArray();
-			else           data = new byte[16];
-		}
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <returns>A 16 byte array containing this UUID</returns>
         public byte[] GetBytes()
         {
-            return Data;
+            return data;
         }
 
 		/// <summary>
@@ -118,23 +110,26 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-		public static LLUUID GenerateUUID()
+		public static LLUUID Random()
 		{
 			return new LLUUID(Guid.NewGuid().ToByteArray(), 0);
 		}
 
         /// <summary>
-        /// 
+        /// Required implementation for XML serialization
         /// </summary>
-        /// <returns></returns>
+        /// <returns>null</returns>
         public System.Xml.Schema.XmlSchema GetSchema()
         {
             return null;
         }
 
+        /// <summary>
+        /// Deserializes an XML UUID
+        /// </summary>
+        /// <param name="reader">XmlReader containing the UUID to deserialize</param>
         public void ReadXml(System.Xml.XmlReader reader)
         {
-            //reader.ReadStartElement("uuid");
             string val = reader.ReadString();
 
             if (val.Length == 36) val = val.Replace("-", "");
@@ -146,31 +141,40 @@ namespace libsecondlife
                 data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
             }
 
-            //reader.ReadEndElement();
             //reader.MoveToContent();
         }
 
+        /// <summary>
+        /// Serialize this UUID to XML
+        /// </summary>
+        /// <param name="writer">XmlWriter to serialize to</param>
         public void WriteXml(System.Xml.XmlWriter writer)
         {
-            //writer.WriteStartElement("uuid");
             writer.WriteString(this.ToString());
-            //writer.WriteEndElement();
         }
 
         /// <summary>
-        /// 
+        /// Return a hash code for this UUID, used by .NET for hash tables
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An integer composed of all the UUID bytes XORed together</returns>
 		public override int GetHashCode()
 		{
-			return ToString().GetHashCode();
+            int hash = data[0];
+
+            for (int i = 1; i < 16; i++)
+            {
+                hash ^= data[i];
+            }
+
+			return hash;
 		}
 
         /// <summary>
-        /// 
+        /// Comparison function
         /// </summary>
-        /// <param name="o"></param>
-        /// <returns></returns>
+        /// <param name="o">An object to compare to this UUID</param>
+        /// <returns>False if the object is not an LLUUID, true if it is and
+        /// byte for byte identical to this</returns>
 		public override bool Equals(object o)
 		{
 			if (!(o is LLUUID)) return false;
@@ -186,11 +190,11 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Equals operator
         /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
+        /// <param name="lhs">First LLUUID for comparison</param>
+        /// <param name="rhs">Second LLUUID for comparison</param>
+        /// <returns>True if the UUIDs are byte for byte equal, otherwise false</returns>
 		public static bool operator==(LLUUID lhs, LLUUID rhs)
 		{
             // If both are null, or both are same instance, return true
@@ -214,22 +218,22 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Not equals operator
         /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
+        /// <param name="lhs">First LLUUID for comparison</param>
+        /// <param name="rhs">Second LLUUID for comparison</param>
+        /// <returns>True if the UUIDs are not equal, otherwise true</returns>
 		public static bool operator!=(LLUUID lhs, LLUUID rhs)
 		{
 			return !(lhs == rhs);
 		}
 
         /// <summary>
-        /// 
+        /// XOR operator
         /// </summary>
-        /// <param name="lhs"></param>
-        /// <param name="rhs"></param>
-        /// <returns></returns>
+        /// <param name="lhs">First LLUUID</param>
+        /// <param name="rhs">Second LLUUID</param>
+        /// <returns>A UUID that is a XOR combination of the two input UUIDs</returns>
         public static LLUUID operator ^(LLUUID lhs, LLUUID rhs)
         {
             LLUUID returnUUID = new LLUUID();
@@ -243,22 +247,25 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// String typecasting operator
         /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
+        /// <param name="val">A UUID in string form. Case insensitive, 
+        /// hyphenated or non-hyphenated</param>
+        /// <returns>A UUID built from the string representation</returns>
         public static implicit operator LLUUID(string val)
 		{
 			return new LLUUID(val);
 		}
 
         /// <summary>
-        /// 
+        /// Get a string representation of this UUID
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A string representation of this UUID, lowercase and 
+        /// without hyphens</returns>
+        /// <example>11f8aa9cb0714242836b13b7abe0d489</example>
 		public override string ToString()
 		{
-			string uuid = "";
+			string uuid = String.Empty;
 
 			for (int i = 0; i < 16; ++i)
 			{
@@ -269,12 +276,14 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Get a hyphenated string representation of this UUID
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A string representation of this UUID, lowercase and 
+        /// with hyphens</returns>
+        /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
 		public string ToStringHyphenated()
 		{
-			string uuid = "";
+			string uuid = String.Empty;
 
 			for (int i = 0; i < 16; ++i)
 			{
@@ -291,34 +300,35 @@ namespace libsecondlife
         /// <summary>
         /// An LLUUID with a value of all zeroes
         /// </summary>
-        public readonly static LLUUID Zero = new LLUUID();
+        public static readonly LLUUID Zero = new LLUUID();
 	}
 
     /// <summary>
-    /// 
+    /// A three-dimensional vector with floating-point values
     /// </summary>
     [XmlRoot("vector3")]
 	public class LLVector3
 	{
-        /// <summary></summary>
+        /// <summary>X value</summary>
 		[XmlAttribute("x")] public float X;
-        /// <summary></summary>
+        /// <summary>Y value</summary>
         [XmlAttribute("y")] public float Y;
-        /// <summary></summary>
+        /// <summary>Z value</summary>
         [XmlAttribute("z")] public float Z;
 
         /// <summary>
-        /// 
+        /// Default constructor, all values are set to 0.0
         /// </summary>
 		public LLVector3()
 		{
-			X = Y = Z = 0.0F;
+			X = Y = Z = 0.0f;
 		}
 		
         /// <summary>
-        /// 
+        /// Constructor, builds a single-precision vector from a 
+        /// double-precision one
         /// </summary>
-        /// <param name="vector"></param>
+        /// <param name="vector">A double-precision vector</param>
 		public LLVector3(LLVector3d vector)
 		{
 			X = (float)vector.X;
@@ -327,30 +337,39 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Constructor, builds a vector from a byte array
         /// </summary>
-        /// <param name="byteArray"></param>
-        /// <param name="pos"></param>
+        /// <param name="byteArray">Byte array containing a 12 byte vector</param>
+        /// <param name="pos">Beginning position in the byte array</param>
 		public LLVector3(byte[] byteArray, int pos)
 		{
-			if(!BitConverter.IsLittleEndian) 
-			{
-				Array.Reverse(byteArray, pos, 4);
-				Array.Reverse(byteArray, pos + 4, 4);
-				Array.Reverse(byteArray, pos + 8, 4);
-			}
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] newArray = new byte[12];
+                Array.Copy(byteArray, pos, newArray, 0, 12);
 
-			X = BitConverter.ToSingle(byteArray, pos);
-			Y = BitConverter.ToSingle(byteArray, pos + 4);
-			Z = BitConverter.ToSingle(byteArray, pos + 8);
+                Array.Reverse(newArray, 0, 4);
+                Array.Reverse(newArray, 4, 4);
+                Array.Reverse(newArray, 8, 4);
+
+                X = BitConverter.ToSingle(newArray, 0);
+                Y = BitConverter.ToSingle(newArray, 4);
+                Z = BitConverter.ToSingle(newArray, 8);
+            }
+            else
+            {
+                X = BitConverter.ToSingle(byteArray, pos);
+                Y = BitConverter.ToSingle(byteArray, pos + 4);
+                Z = BitConverter.ToSingle(byteArray, pos + 8);
+            }
 		}
 
         /// <summary>
-        /// 
+        /// Constructor, builds a vector for individual float values
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
+        /// <param name="x">X value</param>
+        /// <param name="y">Y value</param>
+        /// <param name="z">Z value</param>
 		public LLVector3(float x, float y, float z)
 		{
 			X = x;
@@ -359,9 +378,9 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Returns the raw bytes for this vector
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A 12 byte array containing X, Y, and Z</returns>
 		public byte[] GetBytes()
 		{
 			byte[] byteArray = new byte[12];
@@ -380,25 +399,22 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Get a formatted string representation of the vector
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A string representation of the vector, similar to the LSL
+        /// vector to string conversion in Second Life</returns>
 		public override string ToString()
 		{
-			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
+			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ">";
 		}
 
         /// <summary>
-        /// 
+        /// A hash of the vector, used by .NET for hash tables
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The hashes of the individual components XORed together</returns>
 		public override int GetHashCode()
 		{
-			int x = (int)X;
-			int y = (int)Y;
-			int z = (int)Z;
-
-			return (x ^ y ^ z);
+			return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
 		}
 
         /// <summary>
@@ -482,24 +498,24 @@ namespace libsecondlife
 	}
 
     /// <summary>
-    /// 
+    /// A double-precision three-dimensional vector
     /// </summary>
     [XmlRoot("vector3d")]
 	public class LLVector3d
 	{
-        /// <summary></summary>
+        /// <summary>X value</summary>
         [XmlAttribute("x")] public double X;
-        /// <summary></summary>
+        /// <summary>Y value</summary>
         [XmlAttribute("y")] public double Y;
-        /// <summary></summary>
+        /// <summary>Z value</summary>
         [XmlAttribute("z")] public double Z;
 
         /// <summary>
-        /// 
+        /// Default constructor, sets all the values to 0.0
         /// </summary>
 		public LLVector3d()
 		{
-			X = Y = Z = 0.0D;
+			X = Y = Z = 0.0d;
 		}
 
         /// <summary>
@@ -522,15 +538,25 @@ namespace libsecondlife
         /// <param name="pos"></param>
 		public LLVector3d(byte[] byteArray, int pos)
 		{
-			if(!BitConverter.IsLittleEndian) {
-				Array.Reverse(byteArray, pos, 8);
-				Array.Reverse(byteArray, pos + 8, 8);
-				Array.Reverse(byteArray, pos + 16, 8);
-			}
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] newArray = new byte[24];
+                Array.Copy(byteArray, pos, newArray, 0, 24);
 
-			X = BitConverter.ToDouble(byteArray, pos);
-			Y = BitConverter.ToDouble(byteArray, pos + 8);
-			Z = BitConverter.ToDouble(byteArray, pos + 16);
+                Array.Reverse(newArray, 0, 8);
+                Array.Reverse(newArray, 8, 8);
+                Array.Reverse(newArray, 16, 8);
+
+                X = BitConverter.ToDouble(newArray, 0);
+                Y = BitConverter.ToDouble(newArray, 8);
+                Z = BitConverter.ToDouble(newArray, 16);
+            }
+            else
+            {
+                X = BitConverter.ToDouble(byteArray, pos);
+                Y = BitConverter.ToDouble(byteArray, pos + 8);
+                Z = BitConverter.ToDouble(byteArray, pos + 16);
+            }
 		}
 
         /// <summary>
@@ -545,7 +571,8 @@ namespace libsecondlife
 			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 8, 8);
 			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 16, 8);
 
-			if(!BitConverter.IsLittleEndian) {
+			if(!BitConverter.IsLittleEndian)
+            {
 				Array.Reverse(byteArray, 0, 8);
 				Array.Reverse(byteArray, 8, 8);
 				Array.Reverse(byteArray, 16, 8);
@@ -560,17 +587,17 @@ namespace libsecondlife
         /// <returns></returns>
 		public override string ToString()
 		{
-			return X.ToString() + " " + Y.ToString() + " " + Z.ToString();
+			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ">";
 		}
 
         /// <summary>
         /// An LLVector3d with a value of 0,0,0
         /// </summary>
-        public readonly static LLVector3d Zero = new LLVector3d();
+        public static readonly LLVector3d Zero = new LLVector3d();
 	}
 
     /// <summary>
-    /// 
+    /// A four-dimensional vector
     /// </summary>
     [XmlRoot("vector4")]
 	public class LLVector4
@@ -599,17 +626,28 @@ namespace libsecondlife
         /// <param name="pos"></param>
 		public LLVector4(byte[] byteArray, int pos)
 		{
-			if(!BitConverter.IsLittleEndian) {
-				Array.Reverse(byteArray, pos, 4);
-				Array.Reverse(byteArray, pos + 4, 4);
-				Array.Reverse(byteArray, pos + 8, 4);
-				Array.Reverse(byteArray, pos + 12, 4);
-			}
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] newArray = new byte[16];
+                Array.Copy(byteArray, pos, newArray, 0, 16);
 
-			X = BitConverter.ToSingle(byteArray, pos);
-			Y = BitConverter.ToSingle(byteArray, pos + 4);
-			Z = BitConverter.ToSingle(byteArray, pos + 8);
-			S = BitConverter.ToSingle(byteArray, pos + 12);
+                Array.Reverse(newArray, 0, 4);
+                Array.Reverse(newArray, 4, 4);
+                Array.Reverse(newArray, 8, 4);
+                Array.Reverse(newArray, 12, 4);
+
+                X = BitConverter.ToSingle(newArray, 0);
+                Y = BitConverter.ToSingle(newArray, 4);
+                Z = BitConverter.ToSingle(newArray, 8);
+                S = BitConverter.ToSingle(newArray, 12);
+            }
+            else
+            {
+                X = BitConverter.ToSingle(byteArray, pos);
+                Y = BitConverter.ToSingle(byteArray, pos + 4);
+                Z = BitConverter.ToSingle(byteArray, pos + 8);
+                S = BitConverter.ToSingle(byteArray, pos + 12);
+            }
 		}
 
         /// <summary>
@@ -641,7 +679,7 @@ namespace libsecondlife
         /// <returns></returns>
 		public override string ToString()
 		{
-			return X.ToString() + " " + Y.ToString() + " " + Z.ToString() + " " + S.ToString();
+			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ", " + S.ToString() + ">";
 		}
 
         /// <summary>
@@ -651,22 +689,22 @@ namespace libsecondlife
 	}
 
     /// <summary>
-    /// 
+    /// A quaternion, used for rotations
     /// </summary>
     [XmlRoot("quaternion")]
 	public class LLQuaternion
 	{
-        /// <summary></summary>
+        /// <summary>X value</summary>
         [XmlAttribute("x")] public float X;
-        /// <summary></summary>
+        /// <summary>Y value</summary>
         [XmlAttribute("y")] public float Y;
-        /// <summary></summary>
+        /// <summary>Z value</summary>
         [XmlAttribute("z")] public float Z;
-        /// <summary></summary>
+        /// <summary>W value</summary>
         [XmlAttribute("w")] public float W;
 
         /// <summary>
-        /// 
+        /// Default constructor, initializes to no rotation (0,0,0,1)
         /// </summary>
 		public LLQuaternion()
 		{
@@ -688,29 +726,48 @@ namespace libsecondlife
             {
                 if (!BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(byteArray, pos, 4);
-                    Array.Reverse(byteArray, pos + 4, 4);
-                    Array.Reverse(byteArray, pos + 8, 4);
-                    Array.Reverse(byteArray, pos + 12, 4);
-                }
+                    byte[] newArray = new byte[16];
+                    Array.Copy(byteArray, pos, newArray, 0, 16);
 
-                X = BitConverter.ToSingle(byteArray, pos);
-                Y = BitConverter.ToSingle(byteArray, pos + 4);
-                Z = BitConverter.ToSingle(byteArray, pos + 8);
-                W = BitConverter.ToSingle(byteArray, pos + 12);
+                    Array.Reverse(newArray, 0, 4);
+                    Array.Reverse(newArray, 4, 4);
+                    Array.Reverse(newArray, 8, 4);
+                    Array.Reverse(newArray, 12, 4);
+
+                    X = BitConverter.ToSingle(newArray, 0);
+                    Y = BitConverter.ToSingle(newArray, 4);
+                    Z = BitConverter.ToSingle(newArray, 8);
+                    W = BitConverter.ToSingle(newArray, 12);
+                }
+                else
+                {
+                    X = BitConverter.ToSingle(byteArray, pos);
+                    Y = BitConverter.ToSingle(byteArray, pos + 4);
+                    Z = BitConverter.ToSingle(byteArray, pos + 8);
+                    W = BitConverter.ToSingle(byteArray, pos + 12);
+                }
             }
             else
             {
                 if (!BitConverter.IsLittleEndian)
                 {
-                    Array.Reverse(byteArray, pos, 4);
-                    Array.Reverse(byteArray, pos + 4, 4);
-                    Array.Reverse(byteArray, pos + 8, 4);
-                }
+                    byte[] newArray = new byte[12];
+                    Array.Copy(byteArray, pos, newArray, 0, 12);
 
-                X = BitConverter.ToSingle(byteArray, pos);
-                Y = BitConverter.ToSingle(byteArray, pos + 4);
-                Z = BitConverter.ToSingle(byteArray, pos + 8);
+                    Array.Reverse(newArray, 0, 4);
+                    Array.Reverse(newArray, 4, 4);
+                    Array.Reverse(newArray, 8, 4);
+
+                    X = BitConverter.ToSingle(newArray, 0);
+                    Y = BitConverter.ToSingle(newArray, 4);
+                    Z = BitConverter.ToSingle(newArray, 8);
+                }
+                else
+                {
+                    X = BitConverter.ToSingle(byteArray, pos);
+                    Y = BitConverter.ToSingle(byteArray, pos + 4);
+                    Z = BitConverter.ToSingle(byteArray, pos + 8);
+                }
 
                 float xyzsum = 1 - X * X - Y * Y - Z * Z;
                 W = (xyzsum > 0) ? (float)Math.Sqrt(xyzsum) : 0;
@@ -776,18 +833,26 @@ namespace libsecondlife
             }
             else
             {
-                throw new Exception("Quaternion <" + X + "," + Y + "," + Z + "," + W + "> normalized to zero");
+                throw new Exception("Quaternion " + this.ToString() + " normalized to zero");
             }
 
 			return bytes;
 		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
-            float sum = X + Y + Z + W;
-            return sum.GetHashCode();
+            return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode() ^ W.GetHashCode());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
         public override bool Equals(object o)
         {
             if (!(o is LLQuaternion)) return false;
@@ -797,6 +862,12 @@ namespace libsecondlife
             return X == quaternion.X && Y == quaternion.Y && Z == quaternion.Z && W == quaternion.W;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
         public static bool operator ==(LLQuaternion lhs, LLQuaternion rhs)
         {
             // If both are null, or both are same instance, return true
@@ -815,11 +886,23 @@ namespace libsecondlife
             return lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z && lhs.W == rhs.W;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
         public static bool operator !=(LLQuaternion lhs, LLQuaternion rhs)
         {
             return !(lhs == rhs);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
         public static LLQuaternion operator *(LLQuaternion lhs, LLQuaternion rhs)
         {
             LLQuaternion ret = new LLQuaternion();

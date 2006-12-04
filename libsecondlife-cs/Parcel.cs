@@ -465,7 +465,7 @@ namespace libsecondlife
             query.QueryData.Auction = auction;
             query.QueryData.ForSale = forSale;
             query.QueryData.QueryFlags = 0;
-            query.QueryData.QueryID = LLUUID.GenerateUUID();
+            query.QueryData.QueryID = LLUUID.Random();
             query.QueryData.ReservedNewbie = reservedNewbie;
 
             Client.Network.SendPacket((Packet)query);
