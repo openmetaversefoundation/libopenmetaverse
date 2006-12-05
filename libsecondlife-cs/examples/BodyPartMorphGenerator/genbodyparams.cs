@@ -47,16 +47,16 @@ namespace BodyPartMorphGenerator
             MasterClass.WriteLine("using System.Collections.Generic;");
             MasterClass.WriteLine("using System.IO;");
             MasterClass.WriteLine("using System.Text;");
+//            MasterClass.WriteLine();
+//            MasterClass.WriteLine("using libsecondlife.AssetSystem.BodyShape;");
             MasterClass.WriteLine();
-            MasterClass.WriteLine("using libsecondlife.AssetSystem.BodyShape;");
-            MasterClass.WriteLine();
-            MasterClass.WriteLine("namespace libsecondlife.AssetSystem.BodyShape");
+            MasterClass.WriteLine("namespace libsecondlife.AssetSystem");
             MasterClass.WriteLine("{");
-            MasterClass.WriteLine("    class BodyShapeParams");
+            MasterClass.WriteLine("    public class BodyShapeParams");
             MasterClass.WriteLine("    {");
 
             StringWriter Labels = new StringWriter();
-            Labels.WriteLine("        public string GetLabel( uint Param )");
+            Labels.WriteLine("        public static string GetLabel( uint Param )");
             Labels.WriteLine("        {");
             Labels.WriteLine("            switch( Param )");
             Labels.WriteLine("            {");
@@ -64,7 +64,7 @@ namespace BodyPartMorphGenerator
             Labels.WriteLine("                    return \"\";");
 
             StringWriter LabelMin = new StringWriter();
-            LabelMin.WriteLine("        public string GetLabelMin( uint Param )");
+            LabelMin.WriteLine("        public static string GetLabelMin( uint Param )");
             LabelMin.WriteLine("        {");
             LabelMin.WriteLine("            switch( Param )");
             LabelMin.WriteLine("            {");
@@ -72,7 +72,7 @@ namespace BodyPartMorphGenerator
             LabelMin.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
 
             StringWriter LabelMax = new StringWriter();
-            LabelMax.WriteLine("        public string GetLabelMax( uint Param )");
+            LabelMax.WriteLine("        public static string GetLabelMax( uint Param )");
             LabelMax.WriteLine("        {");
             LabelMax.WriteLine("            switch( Param )");
             LabelMax.WriteLine("            {");
@@ -81,7 +81,7 @@ namespace BodyPartMorphGenerator
 
 
             StringWriter Names = new StringWriter();
-            Names.WriteLine("        public string GetName( uint Param )");
+            Names.WriteLine("        public static string GetName( uint Param )");
             Names.WriteLine("        {");
             Names.WriteLine("            switch( Param )");
             Names.WriteLine("            {");
@@ -89,7 +89,7 @@ namespace BodyPartMorphGenerator
             Names.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
 
             StringWriter ValueMin = new StringWriter();
-            ValueMin.WriteLine("        public float GetValueMin( uint Param )");
+            ValueMin.WriteLine("        public static float GetValueMin( uint Param )");
             ValueMin.WriteLine("        {");
             ValueMin.WriteLine("            switch( Param )");
             ValueMin.WriteLine("            {");
@@ -97,7 +97,7 @@ namespace BodyPartMorphGenerator
             ValueMin.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
 
             StringWriter ValueMax = new StringWriter();
-            ValueMax.WriteLine("        public float GetValueMax( uint Param )");
+            ValueMax.WriteLine("        public static float GetValueMax( uint Param )");
             ValueMax.WriteLine("        {");
             ValueMax.WriteLine("            switch( Param )");
             ValueMax.WriteLine("            {");
@@ -105,7 +105,7 @@ namespace BodyPartMorphGenerator
             ValueMax.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
 
             StringWriter ValueDefault = new StringWriter();
-            ValueDefault.WriteLine("        public float GetValueDefault( uint Param )");
+            ValueDefault.WriteLine("        public static float GetValueDefault( uint Param )");
             ValueDefault.WriteLine("        {");
             ValueDefault.WriteLine("            switch( Param )");
             ValueDefault.WriteLine("            {");
@@ -113,7 +113,7 @@ namespace BodyPartMorphGenerator
             ValueDefault.WriteLine("                    throw new Exception(\"Unknown Body Part Parameter: \" + Param);");
 
             StringWriter ValueValid = new StringWriter();
-            ValueValid.WriteLine("        public bool IsValueValid( uint Param, float Value )");
+            ValueValid.WriteLine("        public static bool IsValueValid( uint Param, float Value )");
             ValueValid.WriteLine("        {");
             ValueValid.WriteLine("            switch( Param )");
             ValueValid.WriteLine("            {");
@@ -125,13 +125,26 @@ namespace BodyPartMorphGenerator
 
 //            XmlTextWriter xtw = new XmlTextWriter(sw);
 
+            File.Delete("ParamTable.csv");
             StreamWriter ParamTable = File.AppendText("ParamTable.csv");
+            ParamTable.WriteLine("ID\tName\tEditGroup\tLabel\tLabelMin\tLabelMax\tMinValue\tMaxValue");
 
             foreach( XmlNode node in list )
             {
                 if ((node.Attributes["shared"] != null) && (node.Attributes["shared"].Value.Equals("1")))
                 {
                     // this param will have been already been defined
+                    continue;
+                }
+
+                if (
+                    (node.Attributes["edit_group"] != null)
+                     && ( node.Attributes["edit_group"].Value.Equals("driven")
+//                         || node.Attributes["edit_group"].Value.Equals("dummy")
+                        )
+                    )
+                {
+                    // this param is calculated by the client based on other params
                     continue;
                 }
 /*
@@ -147,15 +160,28 @@ namespace BodyPartMorphGenerator
                 // Used to identify which nodes are bodyshape parameter nodes
                 if ( node.Attributes["id"] != null
                      && node.Attributes["name"] != null
-                     && ( (node.Attributes["label"] != null) || (node.Attributes["label_min"] != null) )
+                     && node.Attributes["wearable"] != null
+                     // && ( (node.Attributes["label"] != null) || (node.Attributes["label_min"] != null) )
                     )
                 {
+                    string ParamName = node.Attributes["name"].Value;
+                    Console.WriteLine(ParamName);
+                    string ParamEditGroup = "";
+                    if( node.Attributes["edit_group"] != null )
+                    {
+                        ParamEditGroup = node.Attributes["edit_group"].Value;
+                    }
+
                     string ParamLabel = "";
+                    string ParamLabelMin = "";
+                    string ParamLabelMax = "";
                     string ParamMin = "";
                     string ParamMax = "";
 
 
                     string ID = node.Attributes["id"].Value;
+
+                    
 
                     if (node.Attributes["label"] != null)
                     {
@@ -172,7 +198,7 @@ namespace BodyPartMorphGenerator
                         LabelMin.WriteLine("                case " + ID + ":");
                         LabelMin.WriteLine("                    return \"" + node.Attributes["label_min"].Value + "\";");
 
-                        if (ParamLabel == "") { ParamLabel = node.Attributes["label_min"].Value; }
+                        ParamLabelMin = node.Attributes["label_min"].Value;
                     }
 
                     if (node.Attributes["label_max"] != null)
@@ -181,7 +207,7 @@ namespace BodyPartMorphGenerator
                         LabelMax.WriteLine("                case " + ID + ":");
                         LabelMax.WriteLine("                    return \"" + node.Attributes["label_max"].Value + "\";");
 
-                        if (ParamLabel == "") { ParamLabel = node.Attributes["label_max"].Value; }
+                        ParamLabelMax = node.Attributes["label_max"].Value;
                     }
 
                     // Name
@@ -216,7 +242,14 @@ namespace BodyPartMorphGenerator
                     ValueValid.WriteLine("                case " + node.Attributes["id"].Value + ":");
                     ValueValid.WriteLine("                    return ( (Value >= " + node.Attributes["value_min"].Value + "f) && (Value <= " + node.Attributes["value_max"].Value + "f) );");
 
-                    ParamTable.WriteLine(ID + "\t" + ParamLabel + "\t" + ParamMin + "\t" + ParamMax);
+                    ParamTable.WriteLine(    ID
+                                    + "\t" + ParamName
+                                    + "\t" + ParamEditGroup
+                                    + "\t" + ParamLabel
+                                    + "\t" + ParamLabelMin
+                                    + "\t" + ParamLabelMax
+                                    + "\t" + ParamMin 
+                                    + "\t" + ParamMax);
                 }
             }
 
@@ -257,7 +290,7 @@ namespace BodyPartMorphGenerator
 
 
             StringWriter ValidateAll = new StringWriter();
-            ValidateAll.WriteLine("        public bool IsValid( Dictionary<uint,float> BodyShape )");
+            ValidateAll.WriteLine("        public static bool IsValid( Dictionary<uint,float> BodyShape )");
             ValidateAll.WriteLine("        {");
             ValidateAll.WriteLine("            foreach(KeyValuePair<uint, float> kvp in BodyShape)");
             ValidateAll.WriteLine("            {");
@@ -268,7 +301,7 @@ namespace BodyPartMorphGenerator
             ValidateAll.WriteLine("        }");
 
             StringWriter ToString = new StringWriter();
-            ToString.WriteLine("        public string ToString( Dictionary<uint,float> BodyShape )");
+            ToString.WriteLine("        public static string ToString( Dictionary<uint,float> BodyShape )");
             ToString.WriteLine("        {");
             ToString.WriteLine("            StringWriter sw = new StringWriter();");
             ToString.WriteLine("");

@@ -100,7 +100,7 @@ namespace libsecondlife.AssetSystem
             string whole_enchilada = System.Text.Encoding.ASCII.GetString(data);
             
             //this seperates the whole enchilada into two, the header and the body.
-            string[] seperated_enchilada = whole_enchilada.Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] seperated_enchilada = whole_enchilada.Split(new string[] { "permissions" }, StringSplitOptions.RemoveEmptyEntries);
             if (seperated_enchilada.Length != 2) throw Corrupted;
 
             //this parses out the name out of the header
@@ -108,6 +108,7 @@ namespace libsecondlife.AssetSystem
             if (header.Length < 2) throw Corrupted;
             bp.name = header[1];
 
+            seperated_enchilada[1] = "permissions" + seperated_enchilada[1];
             string[] body = seperated_enchilada[1].Split('\n');
             foreach(string blk in body)
             {
@@ -181,10 +182,12 @@ namespace libsecondlife.AssetSystem
                else if (state == parameters_block)
                {
                    string[] split_up = block.Split(' ');
-                   if (split_up.Length != 2) throw Corrupted;
-                   
-                   if (bp.parameters.ContainsKey(uint.Parse(split_up[0]))) bp.parameters.Remove(uint.Parse(split_up[0]));
-                   bp.parameters.Add(uint.Parse(split_up[0]), float.Parse(split_up[1]));
+                   // if (split_up.Length != 2) throw Corrupted;
+                   if (split_up.Length == 2)
+                   {
+                       if (bp.parameters.ContainsKey(uint.Parse(split_up[0]))) bp.parameters.Remove(uint.Parse(split_up[0]));
+                       bp.parameters.Add(uint.Parse(split_up[0]), float.Parse(split_up[1]));
+                   }
                }
                else if (state == textures_block)
                {

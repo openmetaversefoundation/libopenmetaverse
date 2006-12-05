@@ -152,7 +152,10 @@ namespace libsecondlife.AssetSystem
             return p;
         }
 
-        public static Packet TransferRequestType13(LLUUID SessionID, LLUUID AgentID, LLUUID TransferID, LLUUID AssetID)
+        /**
+         * This doesn't seem to work for all asset types... Last noted not working was Notecards
+         **/
+        public static Packet TransferRequestDirect(LLUUID SessionID, LLUUID AgentID, LLUUID TransferID, LLUUID AssetID, sbyte Type)
         {
             byte[] param = new byte[20];
             int pos = 0;
@@ -160,7 +163,7 @@ namespace libsecondlife.AssetSystem
             Array.Copy(AssetID.Data, 0, param, pos, 16);
             pos += 16;
 
-            param[pos] = (byte)13;
+            param[pos] = (byte)Type;
             pos += 1;
 
 

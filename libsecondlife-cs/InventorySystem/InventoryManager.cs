@@ -98,7 +98,7 @@ namespace libsecondlife.InventorySystem
         // Used primarily for debugging and testing
         public AssetManager getAssetManager()
         {
-            Console.WriteLine("It is not recommended that you access the asset manager directly");
+            // Console.WriteLine("It is not recommended that you access the asset manager directly");
             return AssetManager;
         }
 

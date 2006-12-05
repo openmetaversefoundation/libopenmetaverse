@@ -7,6 +7,8 @@ using libsecondlife;
 using libsecondlife.InventorySystem;
 using libsecondlife.AssetSystem;
 
+using libsecondlife.Packets;
+
 namespace IA_InventoryManager
 {
     /// <summary>
@@ -26,6 +28,7 @@ namespace IA_InventoryManager
         private string TYPE_DIR  = "<DIR>  ";
         private string TYPE_ITEM = "<ITEM> ";
 
+        private AppearanceManager aManager;
 
         static new void Main(string[] args)
         {
@@ -40,12 +43,14 @@ namespace IA_InventoryManager
             it.doStuff();
             it.Disconnect();
 
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(1000);
 
         }
 
         private new void doStuff()
         {
+            client.Self.OnTeleport += new TeleportCallback(Self_OnTeleport);
+
             System.Threading.Thread.Sleep(1000);
 
             Console.WriteLine("==================================================================");
@@ -152,6 +157,10 @@ namespace IA_InventoryManager
                         xml(curCmdLine);
                         break;
 
+                    case "getlook":
+                        getlook();
+                        break;
+
                     default:
                         Console.WriteLine("Unknown command '" + curCmdLine[0] + "'.");
                         Console.WriteLine("Type HELP for a list of available commands.");
@@ -160,6 +169,11 @@ namespace IA_InventoryManager
 
             } while (shutdown == false);
             
+        }
+
+        void Self_OnTeleport(string message, TeleportStatus status)
+        {
+            Console.WriteLine("Teleport Completed");
         }
 
         private void help()
@@ -175,6 +189,17 @@ namespace IA_InventoryManager
             Console.WriteLine("NOTECARD    - Create a new notecard.");
             Console.WriteLine("XML         - Display an item as xml");
             Console.WriteLine("QUIT        - Exit the Inventory Manager.");
+        }
+
+        private void getlook()
+        {
+            if (aManager == null)
+            {
+                aManager = new AppearanceManager(client, AgentInventory.getAssetManager() );
+            }
+
+            aManager.SendAgentSetAppearance();
+
         }
 
         private void xml(string[] cmdLine)
@@ -294,6 +319,7 @@ namespace IA_InventoryManager
                 
                 client.Self.Teleport(cmdLine[1], new LLVector3( float.Parse(cmdLine[2]), float.Parse(cmdLine[3]), float.Parse(cmdLine[4]) ) );
             }
+
         }
 
         private void regioninfo(string[] cmdLine)
@@ -334,15 +360,7 @@ namespace IA_InventoryManager
                 // Arbitrary Asset
                 Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
 
-                if (asset.Type == 13)
-                {
-                    AgentInventory.getAssetManager().GetInventoryAsset(asset);
-                }
-                else
-                {
-                    Console.WriteLine("Can't currently retrieve assets other then type 13 using this method.  If the item is in your inventory, change directory to the same folder and try specifying the retrieval by just UUID/Name without specifying type.");
-                    return;
-                }
+                AgentInventory.getAssetManager().GetInventoryAsset(asset);
 
                 Console.WriteLine(asset.AssetDataToString());
             }

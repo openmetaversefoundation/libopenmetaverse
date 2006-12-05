@@ -91,6 +91,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AssetSystem\AppearanceManager.cs" />
     <Compile Include="AssetSystem\Asset.cs" />
     <Compile Include="AssetSystem\AssetImage.cs" />
     <Compile Include="AssetSystem\AssetManager.cs" />
@@ -99,7 +100,7 @@
     <Compile Include="AssetSystem\AssetRequestDownload.cs" />
     <Compile Include="AssetSystem\AssetRequestUpload.cs" />
     <Compile Include="AssetSystem\BodyPart.cs" />
-    <Compile Include="AssetSystem\BodyShape\_BodyShapeParams_.cs" />
+    <Compile Include="AssetSystem\_BodyShapeParams_.cs" />
     <Compile Include="AssetSystem\ImageManager.cs" />
     <Compile Include="AssetSystem\ImagePacketHelpers.cs" />
     <Compile Include="Avatar.cs">

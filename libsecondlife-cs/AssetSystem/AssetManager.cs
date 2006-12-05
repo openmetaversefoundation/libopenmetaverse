@@ -134,8 +134,9 @@ namespace libsecondlife.AssetSystem
             Packet packet;
             switch (item.Type)
             {
-                case 13:
-                    packet = AssetPacketHelpers.TransferRequestType13(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item.AssetID);
+                case 5:  //Shirt
+                case 13: //Bodyshape
+                    packet = AssetPacketHelpers.TransferRequestDirect(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item.AssetID, item.Type);
                     break;
                 default:
 			        packet = AssetPacketHelpers.TransferRequest(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, item );
@@ -168,7 +169,7 @@ namespace libsecondlife.AssetSystem
 
             htDownloadRequests[TransferID] = request;
 
-            Packet packet = AssetPacketHelpers.TransferRequestType13(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, asset.AssetID);
+            Packet packet = AssetPacketHelpers.TransferRequestDirect(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, asset.AssetID, asset.Type);
 			slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
@@ -282,7 +283,6 @@ namespace libsecondlife.AssetSystem
                 // If we've gotten all the data, mark it completed.
                 if (request.Received >= request.Size)
                 {
-                    Console.WriteLine("Download Complete");
                     request.Completed.Set();
                 }
             }
