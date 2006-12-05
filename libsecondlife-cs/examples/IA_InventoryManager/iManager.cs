@@ -195,8 +195,9 @@ namespace IA_InventoryManager
         {
             if (aManager == null)
             {
-                aManager = new AppearanceManager(client, AgentInventory.getAssetManager() );
+                aManager = new AppearanceManager(client);
             }
+
 
             aManager.SendAgentSetAppearance();
 

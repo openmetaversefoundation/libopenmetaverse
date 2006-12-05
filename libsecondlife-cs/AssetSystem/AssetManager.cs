@@ -43,7 +43,7 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
-
+        private static Dictionary<LLUUID,AssetManager> AssetManagers = new Dictionary<LLUUID,AssetManager>();
 
 		public const int SINK_FEE_IMAGE = 1;
 
@@ -55,7 +55,7 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// </summary>
         /// <param name="client"></param>
-        internal AssetManager(SecondLife client)
+        private AssetManager(SecondLife client)
 		{
 			slClient = client;
 
@@ -69,6 +69,20 @@ namespace libsecondlife.AssetSystem
             slClient.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferCallbackHandler));
 		}
 
+        public static AssetManager GetAssetManager( SecondLife client )
+        {
+            lock (AssetManagers)
+            {
+                if (AssetManagers.ContainsKey(client.Network.AgentID))
+                {
+                    return AssetManagers[client.Network.AgentID];
+                } else {
+                    AssetManager am = new AssetManager(client);
+                    AssetManagers[client.Network.AgentID] = am;
+                    return am;
+                }
+            }
+        }
 
         /// <summary>
         /// Handle the appropriate sink fee assoiacted with an asset upload

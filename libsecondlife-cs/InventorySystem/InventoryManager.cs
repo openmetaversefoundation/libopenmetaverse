@@ -78,7 +78,7 @@ namespace libsecondlife.InventorySystem
             slClient = client;
             if (slAssetManager == null)
             {
-                slAssetManager = new AssetManager(slClient);
+                slAssetManager = AssetManager.GetAssetManager(slClient);
             }
 
             InvPacketHelper = new InventoryPacketHelper(slClient.Network.AgentID, slClient.Network.SessionID);

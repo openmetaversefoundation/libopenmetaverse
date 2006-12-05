@@ -18,10 +18,10 @@ namespace libsecondlife.AssetSystem
         private ManualResetEvent AgentWearablesSignal = null;
         private AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
 
-        public AppearanceManager(SecondLife client, AssetManager amanager)
+        public AppearanceManager(SecondLife client)
         {
             Client = client;
-            AManager = amanager;
+            AManager = AssetManager.GetAssetManager(client);
 
             RegisterCallbacks();
 
