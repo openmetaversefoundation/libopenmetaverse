@@ -7,6 +7,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ParticleSystem
     {
         /// <summary>

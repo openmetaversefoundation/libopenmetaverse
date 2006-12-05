@@ -26,6 +26,7 @@
 
 using System;
 using System.Timers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -632,7 +633,7 @@ namespace libsecondlife
         /// The complete dictionary of all the login values returned by the 
         /// RPC login server, converted to native data types wherever possible
         /// </summary>
-        public Dictionary<string, object> LoginValues;
+        public Dictionary<string, object> LoginValues = new Dictionary<string,object>();
         /// <summary>
         /// Shows whether the network layer is logged in to the grid or not
         /// </summary>
@@ -651,9 +652,9 @@ namespace libsecondlife
         /// </summary>
         public DisconnectCallback OnDisconnected;
 
-        private Dictionary<PacketType, List<PacketCallback>> Callbacks;
         private SecondLife Client;
-        private List<Simulator> Simulators;
+        private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType,List<PacketCallback>>();
+        private List<Simulator> Simulators = new List<Simulator>();
         private System.Timers.Timer DisconnectTimer;
         private bool connected;
 
@@ -667,10 +668,7 @@ namespace libsecondlife
         public NetworkManager(SecondLife client)
         {
             Client = client;
-            Simulators = new List<Simulator>();
-            Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
             CurrentSim = null;
-            LoginValues = null;
 
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
@@ -951,11 +949,30 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Login(Dictionary<string, object> loginParams, string url)
         {
+            // Rebuild the Dictionary<> in to a Hashtable for compatibility with XmlRpcCS
+            Hashtable loginValues = new Hashtable(loginParams.Count);
+            foreach (KeyValuePair<string, object> kvp in loginParams)
+            {
+                if (kvp.Value is IList)
+                {
+                    IList list = ((IList)kvp.Value);
+                    ArrayList array = new ArrayList(list.Count);
+                    foreach (object obj in list)
+                    {
+                        array.Add(obj);
+                    }
+                }
+                else
+                {
+                    loginValues[kvp.Key] = kvp.Value;
+                }
+            }
+
             XmlRpcResponse result;
             XmlRpcRequest xmlrpc = new XmlRpcRequest();
             xmlrpc.MethodName = "login_to_simulator";
             xmlrpc.Params.Clear();
-            xmlrpc.Params.Add(loginParams);
+            xmlrpc.Params.Add(loginValues);
 
             try
             {
@@ -964,7 +981,7 @@ namespace libsecondlife
             catch (Exception e)
             {
                 LoginError = "XML-RPC Error: " + e.Message;
-                LoginValues = null;
+                LoginValues.Clear();
                 return false;
             }
 
@@ -972,11 +989,15 @@ namespace libsecondlife
             {
                 Client.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
                 LoginError = "XML-RPC Fault: " + result.FaultCode + ": " + result.FaultString;
-                LoginValues = null;
+                LoginValues.Clear();
                 return false;
             }
 
-            LoginValues = (Dictionary<string, object>)result.Value;
+            Hashtable values = (Hashtable)result.Value;
+            foreach (DictionaryEntry entry in values)
+            {
+                LoginValues[(string)entry.Key] = entry.Value;
+            }
 
             if ((string)LoginValues["login"] == "indeterminate")
             {

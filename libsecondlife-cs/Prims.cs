@@ -95,7 +95,7 @@ namespace libsecondlife
     /// <summary>
     /// Sweet delicious prims.
     /// </summary>
-    [Serializable, XmlRoot("prim")]
+    [Serializable]
     public class PrimObject
 	{
         /// <summary></summary>
@@ -161,19 +161,19 @@ namespace libsecondlife
         /// <summary></summary>
         [XmlElement("position")] public LLVector3 Position = LLVector3.Zero;
         /// <summary></summary>
-        [XmlElement("scale")] public LLVector3 Scale = LLVector3.Zero;
+        /*[XmlElement("scale")]*/ public LLVector3 Scale = LLVector3.Zero;
         /// <summary></summary>
-        [XmlElement("rotation")] public LLQuaternion Rotation = LLQuaternion.Identity;
+        /*[XmlElement("rotation")]*/ public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary></summary>
-        [XmlElement("textures")] public TextureEntry Textures = new TextureEntry();
+        /*[XmlElement("textures")]*/ public TextureEntry Textures = new TextureEntry();
         /// <summary></summary>
-        [XmlElement("textureanimation")] public TextureAnimation TextureAnim = new TextureAnimation();
+        /*[XmlElement("textureanimation")]*/ public TextureAnimation TextureAnim = new TextureAnimation();
         /// <summary></summary>
-        [XmlElement("flexible")] public PrimFlexibleData Flexible = new PrimFlexibleData();
+        /*[XmlElement("flexible")]*/ public PrimFlexibleData Flexible = new PrimFlexibleData();
         /// <summary></summary>
-        [XmlElement("light")] public PrimLightData Light = new PrimLightData();
+        /*[XmlElement("light")]*/ public PrimLightData Light = new PrimLightData();
         /// <summary></summary>
-        [XmlElement("particles")] public ParticleSystem ParticleSys = new ParticleSystem();
+        /*[XmlElement("particles")]*/ public ParticleSystem ParticleSys = new ParticleSystem();
 
         /// <summary>
         /// Default constructor, zeroes out or sets default prim parameters
@@ -487,6 +487,7 @@ namespace libsecondlife
     /// <summary>
     /// OMG Flexi
     /// </summary>
+    [Serializable]
     public class PrimFlexibleData
     {
         /// <summary></summary>
@@ -558,6 +559,7 @@ namespace libsecondlife
     /// <summary>
     /// Information on the light property associated with a prim
     /// </summary>
+    [Serializable]
     public class PrimLightData
     {
         /// <summary></summary>

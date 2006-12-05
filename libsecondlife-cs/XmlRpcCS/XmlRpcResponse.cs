@@ -1,7 +1,7 @@
 namespace Nwc.XmlRpc
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections;
     using System.IO;
     using System.Xml;
 
@@ -17,6 +17,15 @@ namespace Nwc.XmlRpc
         {
             Value = null;
             IsFault = false;
+        }
+
+        /// <summary>Constructor for a fault.</summary>
+        /// <param name="code"><c>int</c> the numeric faultCode value.</param>
+        /// <param name="message"><c>String</c> the faultString value.</param>
+        public XmlRpcResponse(int code, String message)
+            : this()
+        {
+            SetFault(code, message);
         }
 
         /// <summary>The data value of the response, may be fault data.</summary>
@@ -38,7 +47,7 @@ namespace Nwc.XmlRpc
                 if (!IsFault)
                     return 0;
                 else
-                    return (int)((Dictionary<string, object>)_value)[XmlRpcXmlTokens.FAULT_CODE];
+                    return (int)((Hashtable)_value)[XmlRpcXmlTokens.FAULT_CODE];
             }
         }
 
@@ -50,7 +59,7 @@ namespace Nwc.XmlRpc
                 if (!IsFault)
                     return "";
                 else
-                    return (String)((Dictionary<string, object>)_value)[XmlRpcXmlTokens.FAULT_STRING];
+                    return (String)((Hashtable)_value)[XmlRpcXmlTokens.FAULT_STRING];
             }
         }
 
@@ -59,7 +68,7 @@ namespace Nwc.XmlRpc
         /// <param name="message"><c>String</c> the faultString value.</param>
         public void SetFault(int code, String message)
         {
-            Dictionary<string, object> fault = new Dictionary<string,object>();
+            Hashtable fault = new Hashtable();
             fault.Add("faultCode", code);
             fault.Add("faultString", message);
             Value = fault;

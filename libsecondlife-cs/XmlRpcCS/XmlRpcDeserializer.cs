@@ -1,7 +1,7 @@
 namespace Nwc.XmlRpc
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections;
     using System.IO;
     using System.Xml;
     using System.Globalization;
@@ -22,7 +22,7 @@ namespace Nwc.XmlRpc
         private static DateTimeFormatInfo _dateFormat = new DateTimeFormatInfo();
 
         private Object _container;
-        private Stack<Object> _containerStack;
+        private Stack _containerStack;
 
         /// <summary>Protected reference to last text.</summary>
         protected String _text;
@@ -30,6 +30,7 @@ namespace Nwc.XmlRpc
         protected Object _value;
         /// <summary>Protected reference to last name field.</summary>
         protected String _name;
+
 
         /// <summary>Basic constructor.</summary>
         public XmlRpcDeserializer()
@@ -65,11 +66,11 @@ namespace Nwc.XmlRpc
                             break;
                         case STRUCT:
                             PushContext();
-                            _container = new Dictionary<string, object>();
+                            _container = new Hashtable();
                             break;
                         case ARRAY:
                             PushContext();
-                            _container = new List<object>();
+                            _container = new ArrayList();
                             break;
                     }
                     break;
@@ -92,7 +93,7 @@ namespace Nwc.XmlRpc
                             _value = _text;
                             break;
                         case DOUBLE:
-                            _value = Double.Parse(_text, CultureInfo.InvariantCulture);
+                            _value = Double.Parse(_text);
                             break;
                         case INT:
                         case ALT_INT:
@@ -112,12 +113,12 @@ namespace Nwc.XmlRpc
                             if (_value == null)
                                 _value = _text; // some kits don't use <string> tag, they just do <value>
 
-                            if ((_container != null) && (_container is List<object>)) // in an array?  If so add value to it.
-                                ((List<object>)_container).Add(_value);
+                            if ((_container != null) && (_container is IList)) // in an array?  If so add value to it.
+                                ((IList)_container).Add(_value);
                             break;
                         case MEMBER:
-                            if ((_container != null) && (_container is Dictionary<string, object>)) // in an struct?  If so add value to it.
-                                ((Dictionary<string, object>)_container).Add(_name, _value);
+                            if ((_container != null) && (_container is IDictionary)) // in an struct?  If so add value to it.
+                                ((IDictionary)_container).Add(_name, _value);
                             break;
                         case ARRAY:
                         case STRUCT:
@@ -172,8 +173,22 @@ namespace Nwc.XmlRpc
             _value = null;
             _name = null;
             _container = null;
-            _containerStack = new Stack<object>();
+            _containerStack = new Stack();
         }
+
+#if __MONO__
+    private DateTime DateParse(String str)
+      {
+	int year = Int32.Parse(str.Substring(0,4));
+	int month = Int32.Parse(str.Substring(4,2));
+	int day = Int32.Parse(str.Substring(6,2));
+	int hour = Int32.Parse(str.Substring(9,2));
+	int min = Int32.Parse(str.Substring(12,2));
+	int sec = Int32.Parse(str.Substring(15,2));
+	return new DateTime(year,month,day,hour,min,sec);
+      }
+#endif
+
     }
 }
 

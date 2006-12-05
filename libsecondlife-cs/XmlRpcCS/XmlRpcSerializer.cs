@@ -1,7 +1,7 @@
 namespace Nwc.XmlRpc
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections;
     using System.IO;
     using System.Xml;
 
@@ -72,13 +72,13 @@ namespace Nwc.XmlRpc
             {
                 output.WriteElementString(BOOLEAN, ((((Boolean)obj) == true) ? "1" : "0"));
             }
-            else if (obj is List<object>)
+            else if (obj is IList)
             {
                 output.WriteStartElement(ARRAY);
                 output.WriteStartElement(DATA);
-                if (((List<object>)obj).Count > 0)
+                if (((ArrayList)obj).Count > 0)
                 {
-                    foreach (Object member in ((List<object>)obj))
+                    foreach (Object member in ((IList)obj))
                     {
                         output.WriteStartElement(VALUE);
                         SerializeObject(output, member);
@@ -88,9 +88,9 @@ namespace Nwc.XmlRpc
                 output.WriteEndElement();
                 output.WriteEndElement();
             }
-            else if (obj is Dictionary<string, object>)
+            else if (obj is IDictionary)
             {
-                Dictionary<string, object> h = (Dictionary<string, object>)obj;
+                IDictionary h = (IDictionary)obj;
                 output.WriteStartElement(STRUCT);
                 foreach (String key in h.Keys)
                 {

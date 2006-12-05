@@ -139,6 +139,7 @@ namespace libsecondlife
     /// you have a TextureEntry with a default texture uuid of X, and face 72
     /// has a texture UUID of Y, every face would be textured with X except for
     /// face 72 that uses Y.</remarks>
+    [Serializable]
     public class TextureEntry
     {
         /// <summary></summary>
@@ -620,7 +621,7 @@ namespace libsecondlife
     /// A single textured face. Don't instantiate this class yourself, use the
     /// methods in TextureEntry
     /// </summary>
-    [XmlRoot("face")]
+    [Serializable]
     public class TextureEntryFace
     {
         [XmlAttribute("rgba")] private uint rgba;
@@ -829,6 +830,7 @@ namespace libsecondlife
     /// <summary>
     /// Controls the texture animation of a particular prim
     /// </summary>
+    [Serializable]
     public class TextureAnimation
     {
         /// <summary></summary>

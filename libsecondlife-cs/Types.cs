@@ -34,7 +34,7 @@ namespace libsecondlife
     /// A 128-bit Universally Unique Identifier, used throughout the Second
     /// Life networking protocol
     /// </summary>
-    [XmlRoot("uuid")]
+    [Serializable]
     public class LLUUID : IXmlSerializable
 	{
         /// <summary>The 16 bytes that make up the UUID</summary>
@@ -306,7 +306,7 @@ namespace libsecondlife
     /// <summary>
     /// A three-dimensional vector with floating-point values
     /// </summary>
-    [XmlRoot("vector3")]
+    [Serializable]
 	public class LLVector3
 	{
         /// <summary>X value</summary>
@@ -500,7 +500,7 @@ namespace libsecondlife
     /// <summary>
     /// A double-precision three-dimensional vector
     /// </summary>
-    [XmlRoot("vector3d")]
+    [Serializable]
 	public class LLVector3d
 	{
         /// <summary>X value</summary>
@@ -599,7 +599,7 @@ namespace libsecondlife
     /// <summary>
     /// A four-dimensional vector
     /// </summary>
-    [XmlRoot("vector4")]
+    [Serializable]
 	public class LLVector4
 	{
         /// <summary></summary>
@@ -691,7 +691,7 @@ namespace libsecondlife
     /// <summary>
     /// A quaternion, used for rotations
     /// </summary>
-    [XmlRoot("quaternion")]
+    [Serializable]
 	public class LLQuaternion
 	{
         /// <summary>X value</summary>

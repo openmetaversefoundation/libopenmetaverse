@@ -35,7 +35,7 @@ namespace libsecondlife
     /// </summary>
     /// <typeparam name="TKey">Key type, used as indices to values</typeparam>
     /// <typeparam name="TValue">Value type</typeparam>
-    [XmlRoot("dictionary")]
+    [Serializable]
     public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
     {
         #region IXmlSerializable Members

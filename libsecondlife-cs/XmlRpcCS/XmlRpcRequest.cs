@@ -1,9 +1,7 @@
-#pragma warning disable 0618
-
 namespace Nwc.XmlRpc
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections;
     using System.IO;
     using System.Xml;
     using System.Net;
@@ -36,16 +34,26 @@ namespace Nwc.XmlRpc
         private XmlRpcResponseDeserializer _deserializer = new XmlRpcResponseDeserializer();
 
         /// <summary><c>ArrayList</c> containing the parameters.</summary>
-        protected List<object> _params = null;
+        protected IList _params = null;
 
         /// <summary>Instantiate an <c>XmlRpcRequest</c></summary>
         public XmlRpcRequest()
         {
-            _params = new List<object>();
+            _params = new ArrayList();
         }
 
-        /// <summary><c>ArrayList</c> containing the parameters for the request.</summary>
-        public virtual List<object> Params
+        /// <summary>Instantiate an <c>XmlRpcRequest</c> for a specified method and parameters.</summary>
+        /// <param name="methodName"><c>String</c> designating the <i>object.method</i> on the server the request
+        /// should be directed to.</param>
+        /// <param name="parameters"><c>ArrayList</c> of XML-RPC type parameters to invoke the request with.</param>
+        public XmlRpcRequest(String methodName, IList parameters)
+        {
+            MethodName = methodName;
+            _params = parameters;
+        }
+
+        /// <summary><c>ArrayList</c> conntaining the parameters for the request.</summary>
+        public virtual IList Params
         {
             get { return _params; }
         }
@@ -57,16 +65,56 @@ namespace Nwc.XmlRpc
             set { _methodName = value; }
         }
 
+        /// <summary><c>String</c> object name portion of the method name.</summary>
+        public String MethodNameObject
+        {
+            get
+            {
+                int index = MethodName.IndexOf(".");
+
+                if (index == -1)
+                    return MethodName;
+
+                return MethodName.Substring(0, index);
+            }
+        }
+
+        /// <summary><c>String</c> method name portion of the object.method name.</summary>
+        public String MethodNameMethod
+        {
+            get
+            {
+                int index = MethodName.IndexOf(".");
+
+                if (index == -1)
+                    return MethodName;
+
+                return MethodName.Substring(index + 1, MethodName.Length - index - 1);
+            }
+        }
+
+        /// <summary>Invoke this request on the server.</summary>
+        /// <param name="url"><c>String</c> The url of the XML-RPC server.</param>
+        /// <returns><c>Object</c> The value returned from the method invocation on the server.</returns>
+        /// <exception cref="XmlRpcException">If an exception generated on the server side.</exception>
+        public Object Invoke(String url)
+        {
+            XmlRpcResponse res = Send(url, 10000);
+
+            if (res.IsFault)
+                throw new XmlRpcException(res.FaultCode, res.FaultString);
+
+            return res.Value;
+        }
+
         /// <summary>Send the request to the server.</summary>
         /// <param name="url"><c>String</c> The url of the XML-RPC server.</param>
+        /// <param name="timeout">Milliseconds before the connection times out.</param>
         /// <returns><c>XmlRpcResponse</c> The response generated.</returns>
         public XmlRpcResponse Send(String url, int timeout)
         {
             // Override SSL authentication mechanisms
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-            //ServicePointManager.ServerCertificateValidationCallback += 
-            //    delegate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-            //    { return true; };
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             if (request == null)
@@ -75,8 +123,7 @@ namespace Nwc.XmlRpc
             request.Method = "POST";
             request.ContentType = "text/xml";
             request.AllowWriteStreamBuffering = true;
-            request.KeepAlive = false;
-            request.Timeout = timeout; // miliseconds adjust as you see fit
+            request.Timeout = timeout;
 
             Stream stream = request.GetRequestStream();
             XmlTextWriter xml = new XmlTextWriter(stream, _encoding);
@@ -91,15 +138,6 @@ namespace Nwc.XmlRpc
             input.Close();
             response.Close();
             return resp;
-        }
-
-        private bool CheckValidationResult(Object sender,
-            System.Security.Cryptography.X509Certificates.X509Certificate certificate, 
-            System.Security.Cryptography.X509Certificates.X509Chain chain, 
-            System.Net.Security.SslPolicyErrors sslPolicyErrors)
-        {
-            // Always accept
-            return true;
         }
 
         /// <summary>Produce <c>String</c> representation of the object.</summary>
