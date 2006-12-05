@@ -806,10 +806,10 @@ namespace mapgenerator
                 "        public abstract byte[] ToBytes();" + Environment.NewLine + Environment.NewLine +
                 "        public void ToXml(XmlWriter xmlWriter)" + Environment.NewLine +
                 "        {" + Environment.NewLine +
-                "            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();" + Environment.NewLine +
-                "            ns.Add(\"\", \"\");" + Environment.NewLine +
+                //"            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();" + Environment.NewLine +
+                //"            ns.Add(\"\", \"\");" + Environment.NewLine +
                 "            XmlSerializer serializer = new XmlSerializer(typeof(Packet));" + Environment.NewLine +
-                "            serializer.Serialize(xmlWriter, this, ns);" + Environment.NewLine +
+                "            serializer.Serialize(xmlWriter, this);" + Environment.NewLine +
                 "        }" + Environment.NewLine +
                 "        public static PacketType GetType(ushort id, PacketFrequency frequency)" + Environment.NewLine +
                 "        {" + Environment.NewLine +

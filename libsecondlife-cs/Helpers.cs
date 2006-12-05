@@ -533,18 +533,18 @@ namespace libsecondlife
 
         public static void PacketListToXml(List<Packet> packets, XmlWriter xmlWriter)
         {
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add("", "");
+            //XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            //ns.Add("", "");
             XmlSerializer serializer = new XmlSerializer(typeof(List<Packet>));
-            serializer.Serialize(xmlWriter, packets, ns);
+            serializer.Serialize(xmlWriter, packets);
         }
 
         public static void PrimListToXml(List<PrimObject> list, XmlWriter xmlWriter)
         {
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add("", "");
+            //XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            //ns.Add("", "");
             XmlSerializer serializer = new XmlSerializer(typeof(List<PrimObject>));
-            serializer.Serialize(xmlWriter, list, ns);
+            serializer.Serialize(xmlWriter, list);
         }
 
         public static List<PrimObject> PrimListFromXml(XmlReader reader)

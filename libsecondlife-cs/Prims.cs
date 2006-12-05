@@ -471,10 +471,10 @@ namespace libsecondlife
 
         public void ToXml(XmlWriter xmlWriter)
         {
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add("", "");
+            //XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            //ns.Add("", "");
             XmlSerializer serializer = new XmlSerializer(typeof(PrimObject));
-            serializer.Serialize(xmlWriter, this, ns);
+            serializer.Serialize(xmlWriter, this);
         }
 
         public static PrimObject FromXml(XmlReader xmlReader)
