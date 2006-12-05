@@ -298,53 +298,65 @@ namespace libsecondlife
         public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
         {
             uint zerolen = 0;
-
-            Array.Copy(src, 0, dest, 0, 4);
-            zerolen += 4;
-
-            //int bodylen;
-            //if ((src[0] & MSG_APPENDED_ACKS) == 0)
-            //{
-            //    bodylen = srclen;
-            //}
-            //else
-            //{
-            //    bodylen = srclen - src[srclen - 1] * 4 - 1;
-            //}
             int bodylen = srclen;
-
             uint i;
-            for (i = zerolen; i < bodylen; i++)
-            {
-                if (src[i] == 0x00)
-                {
-                    for (byte j = 0; j < src[i + 1]; j++)
-                    {
-                        dest[zerolen++] = 0x00;
-                    }
 
-                    i++;
+            try
+            {
+                Array.Copy(src, 0, dest, 0, 4);
+                zerolen += 4;
+
+                //int bodylen;
+                //if ((src[0] & MSG_APPENDED_ACKS) == 0)
+                //{
+                //    bodylen = srclen;
+                //}
+                //else
+                //{
+                //    bodylen = srclen - src[srclen - 1] * 4 - 1;
+                //}
+
+                for (i = zerolen; i < bodylen; i++)
+                {
+                    if (src[i] == 0x00)
+                    {
+                        for (byte j = 0; j < src[i + 1]; j++)
+                        {
+                            dest[zerolen++] = 0x00;
+                        }
+
+                        i++;
+                    }
+                    else
+                    {
+                        dest[zerolen++] = src[i];
+                    }
                 }
-                else
+
+                // HACK: Fix truncated zerocoded messages
+                //for (uint j = zerolen; j < zerolen + 16; j++)
+                //{
+                //    dest[j] = 0;
+                //}
+                //zerolen += 16;
+
+                // copy appended ACKs
+                for (; i < srclen; i++)
                 {
                     dest[zerolen++] = src[i];
                 }
-            }
 
-            // HACK: Fix truncated zerocoded messages
-            for (uint j = zerolen; j < zerolen + 16; j++)
+                return (int)zerolen;
+            }
+            catch (Exception e)
             {
-                dest[j] = 0;
-            }
-            zerolen += 16;
-
-            // copy appended ACKs
-            for (; i < srclen; i++)
-            {
-                dest[zerolen++] = src[i];
+                Console.WriteLine("Zerodecoding error: " + Environment.NewLine +
+                    "srclen=" + srclen + ", bodylen=" + bodylen + ", zerolen=" + zerolen + Environment.NewLine +
+                    FieldToString(src, "src") + Environment.NewLine + 
+                    e.ToString());
             }
 
-            return (int)zerolen;
+            return 0;
         }
 
         /// <summary>
