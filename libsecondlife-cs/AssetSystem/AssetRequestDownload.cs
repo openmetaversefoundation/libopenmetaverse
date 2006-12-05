@@ -49,6 +49,7 @@ namespace libsecondlife.AssetSystem
         public int Size;
         public int Received;
         public byte[] AssetData;
+        public SortedList<int, byte[]> AssetDataReceived = new SortedList<int, byte[]>();
 
         private uint _LastPacketTime;
         public uint LastPacketTime { get { return _LastPacketTime; } }
@@ -57,6 +58,7 @@ namespace libsecondlife.AssetSystem
 
         public AssetRequestDownload(LLUUID TransID)
         {
+            
             TransactionID = TransID;
             UpdateLastPacketTime();
         }

@@ -15,6 +15,8 @@ namespace libsecondlife.AssetSystem
         private SecondLife Client;
         private AssetManager AManager;
 
+        private uint SerialNum = 1;
+
         private ManualResetEvent AgentWearablesSignal = null;
         private AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
 
@@ -149,7 +151,7 @@ namespace libsecondlife.AssetSystem
 
                 range = maxVal - minVal;
 
-                percentage = (kvp.Value - minVal) / maxVal;
+                percentage = (kvp.Value - minVal) / range;
 
                 packetVal = (byte)(percentage * (byte)255);
 
@@ -160,7 +162,7 @@ namespace libsecondlife.AssetSystem
             AgentSetAppearancePacket p = new AgentSetAppearancePacket();
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
-            p.AgentData.SerialNum = 12;
+            p.AgentData.SerialNum = ++SerialNum;
             p.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.35187f);
             p.ObjectData.TextureEntry = textures.ToBytes();
 
@@ -175,12 +177,27 @@ namespace libsecondlife.AssetSystem
                 }
                 else
                 {
-                    Console.WriteLine("Visual Param not defined, IDX: " + i);
-                    p.VisualParam[i].ParamValue = 0;
+                    uint paramid = GetParamID(i + 1);
+                    float defaultValue = BodyShapeParams.GetValueDefault(paramid);
+
+                    maxVal = BodyShapeParams.GetValueMax(paramid);
+                    minVal = BodyShapeParams.GetValueMin(paramid);
+
+                    range = maxVal - minVal;
+
+                    percentage = (defaultValue - minVal) / range;
+
+                    packetVal = (byte)(percentage * (byte)255);
+
+                    // Console.WriteLine("Warning Visual Param not defined, IDX: " + (i+1));
+                    // Console.WriteLine("PID: " + paramid + " / Default: " + defaultValue);
+                    p.VisualParam[i].ParamValue = packetVal;
                 }
             }
 
             Client.Network.SendPacket(p);
+
+            Console.WriteLine(p);
         }
 
 

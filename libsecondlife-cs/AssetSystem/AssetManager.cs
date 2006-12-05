@@ -289,16 +289,23 @@ namespace libsecondlife.AssetSystem
                 return;
             }
 
-            lock (request)
-            {
-                Array.Copy(Data, 0, request.AssetData, request.Received, Data.Length);
-                request.Received += Data.Length;
+            // Add data to data dictionary.
+            request.AssetDataReceived[reply.TransferData.Packet] = Data;
+            request.Received += Data.Length;
 
-                // If we've gotten all the data, mark it completed.
-                if (request.Received >= request.Size)
+
+
+            // If we've gotten all the data, mark it completed.
+            if (request.Received >= request.Size)
+            {
+                int curPos = 0;
+                foreach (KeyValuePair<int,byte[]> kvp in request.AssetDataReceived)
                 {
-                    request.Completed.Set();
+                    Array.Copy(kvp.Value, 0, request.AssetData, curPos, kvp.Value.Length);
+                    curPos += kvp.Value.Length;
                 }
+
+                request.Completed.Set();
             }
         }
 	}
