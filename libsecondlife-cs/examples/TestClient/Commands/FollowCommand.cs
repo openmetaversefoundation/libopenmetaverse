@@ -58,7 +58,7 @@ namespace libsecondlife.TestClient
 
 		public override void Think(SecondLife Client)
 		{
-            if (vecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
+            if (Helpers.VecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
             {
                 //move toward target
 				if (followAvatar.CurrentRegion.GridRegionData != null)
@@ -78,12 +78,5 @@ namespace libsecondlife.TestClient
 			base.Think(Client);
 		}
 
-        float vecDist(LLVector3 pointA, LLVector3 pointB)
-        {
-            float xd = pointB.X - pointA.X;
-            float yd = pointB.Y - pointA.Y;
-            float zd = pointB.Z - pointA.Z;
-            return (float)Math.Sqrt(xd * xd + yd * yd + zd * zd);
-        }
     }
 }
