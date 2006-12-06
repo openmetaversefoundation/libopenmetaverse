@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 
@@ -825,6 +826,15 @@ namespace libsecondlife
             else
                 hasAttribute = TextureAttributes.None;
         }
+
+        public void ToXml(XmlWriter xmlWriter)
+        {
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add("", "");
+            XmlSerializer serializer = new XmlSerializer(typeof(TextureEntryFace));
+            serializer.Serialize(xmlWriter, this, ns);
+        }
+
     }
 
     /// <summary>

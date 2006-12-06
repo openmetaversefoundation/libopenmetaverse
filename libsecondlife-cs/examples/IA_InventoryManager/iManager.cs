@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using System.Xml;
+using System.Xml.Serialization;
+
 using IA_SimpleInventory;
 using libsecondlife;
 using libsecondlife.InventorySystem;
@@ -161,6 +164,7 @@ namespace IA_InventoryManager
                         getlook();
                         break;
 
+
                     default:
                         Console.WriteLine("Unknown command '" + curCmdLine[0] + "'.");
                         Console.WriteLine("Type HELP for a list of available commands.");
@@ -174,6 +178,7 @@ namespace IA_InventoryManager
         void Self_OnTeleport(string message, TeleportStatus status)
         {
             Console.WriteLine("Teleport Completed");
+            StandUpStraight();
         }
 
         private void help()
@@ -189,6 +194,22 @@ namespace IA_InventoryManager
             Console.WriteLine("NOTECARD    - Create a new notecard.");
             Console.WriteLine("XML         - Display an item as xml");
             Console.WriteLine("QUIT        - Exit the Inventory Manager.");
+        }
+
+        private void StandUpStraight()
+        {
+            AgentUpdatePacket p = new AgentUpdatePacket();
+            p.AgentData.Far = 96.0f;
+            p.AgentData.CameraAtAxis = new LLVector3(0, 0, 0);
+            p.AgentData.CameraCenter = new LLVector3(0, 0, 0);
+            p.AgentData.CameraLeftAxis = new LLVector3(0, 0, 0);
+            p.AgentData.CameraUpAxis = new LLVector3(0, 0, 0);
+            p.AgentData.HeadRotation = new LLQuaternion(0, 0, 0, 1); ;
+            p.AgentData.BodyRotation = new LLQuaternion(0, 0, 0, 1); ;
+            p.AgentData.AgentID = client.Network.AgentID;
+            p.AgentData.SessionID = client.Network.SessionID;
+            p.AgentData.ControlFlags = (uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP;
+            client.Network.SendPacket(p);
         }
 
         private void getlook()

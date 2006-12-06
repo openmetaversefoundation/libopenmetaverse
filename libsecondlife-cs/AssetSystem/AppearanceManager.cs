@@ -25,8 +25,21 @@ namespace libsecondlife.AssetSystem
             Client = client;
             AManager = AssetManager.GetAssetManager(client);
 
+            Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             RegisterCallbacks();
 
+        }
+
+        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+        {
+            if (avatar.ID == Client.Network.AgentID)
+            {
+                Console.WriteLine("**********************");
+                Console.WriteLine("**********************");
+                Console.WriteLine("Saw Myself");
+                Console.WriteLine("**********************");
+                Console.WriteLine("**********************");
+            }
         }
 
         private void RegisterCallbacks()
@@ -54,22 +67,22 @@ namespace libsecondlife.AssetSystem
             TextureEntry textures = new TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
 
             // Face 17 - Under Pants
-            textures.CreateFace(17).TextureID = "b0bac26505cc7076202ba2a2e05fd172"; //Default Men's briefs
+            // textures.CreateFace(17).TextureID = "b0bac26505cc7076202ba2a2e05fd172"; //Default Men's briefs
 
             // Face 16 - Under Shirt
-            textures.CreateFace(16).TextureID = "d283de852dc3dc07dc452e1bfd4cf193"; //Default Men's tank
+            // textures.CreateFace(16).TextureID = "d283de852dc3dc07dc452e1bfd4cf193"; //Default Men's tank
 
             // Face 11 - Eyes
-            textures.CreateFace(11).TextureID = "3abd329a78478984ac1cb95f4ef35fbe"; //Default Eye
+            // textures.CreateFace(11).TextureID = "3abd329a78478984ac1cb95f4ef35fbe"; //Default Eye
 
             // Face 10 - 
-            textures.CreateFace(10).TextureID = "c24403bc4569361852b31917ad733035"; //Default 
+            // textures.CreateFace(10).TextureID = "c24403bc4569361852b31917ad733035"; //Default 
 
             // Face 9 - 
-            textures.CreateFace(9).TextureID = "a88225377555cf975720aa128e47f934"; //Default 
+            // textures.CreateFace(9).TextureID = "a88225377555cf975720aa128e47f934"; //Default 
 
             // Face 8 - 
-            textures.CreateFace(8).TextureID = "472ccc472a4e2556d082f7bb708bcca7"; //Default 
+            // textures.CreateFace(8).TextureID = "472ccc472a4e2556d082f7bb708bcca7"; //Default 
 
 
 
@@ -164,7 +177,42 @@ namespace libsecondlife.AssetSystem
             p.AgentData.SessionID = Client.Network.SessionID;
             p.AgentData.SerialNum = ++SerialNum;
             p.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.35187f);
-            p.ObjectData.TextureEntry = textures.ToBytes();
+//            p.ObjectData.TextureEntry = textures.ToBytes();
+
+            foreach( uint faceid in textures.FaceTextures.Keys )
+            {
+                switch (faceid)
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 12:
+                    case 15:
+                        break;
+                    default:
+                        Console.WriteLine("Your wearables define a face that we don't know the order of.  Please capture a AgentSetAppearance packet for your current outfit and submit to static.sprocket@gmail.com, thanks!");
+                        break;
+                }
+            }
+
+
+            TextureEntry te2 = new TextureEntry(textures.DefaultTexture.TextureID);
+            te2.CreateFace(15).TextureID = textures.GetFace(15).TextureID;
+            te2.CreateFace(2).TextureID  = textures.GetFace(2).TextureID;
+            te2.CreateFace(12).TextureID = textures.GetFace(12).TextureID;
+            te2.CreateFace(7).TextureID = textures.GetFace(7).TextureID;
+            te2.CreateFace(6).TextureID = textures.GetFace(6).TextureID;
+            te2.CreateFace(5).TextureID = textures.GetFace(5).TextureID;
+            te2.CreateFace(4).TextureID = textures.GetFace(4).TextureID;
+            te2.CreateFace(3).TextureID = textures.GetFace(3).TextureID;
+            te2.CreateFace(1).TextureID = textures.GetFace(1).TextureID;
+            te2.CreateFace(0).TextureID = textures.GetFace(0).TextureID;
+            p.ObjectData.TextureEntry = te2.ToBytes();
 
             p.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
             for (uint i = 0; i < 218; i++)
@@ -196,6 +244,14 @@ namespace libsecondlife.AssetSystem
             }
 
             Client.Network.SendPacket(p);
+
+            Console.WriteLine("Default: " + textures.DefaultTexture.TextureID);
+
+            foreach (KeyValuePair<uint, TextureEntryFace> kvp in textures.FaceTextures)
+            {
+                Console.WriteLine(kvp.Key + " : " + kvp.Value.TextureID);
+            }
+
 
             Console.WriteLine(p);
         }
