@@ -298,23 +298,22 @@ namespace libsecondlife
         public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
         {
             uint zerolen = 0;
-            int bodylen = srclen;
-            uint i;
+            int bodylen = 0;
+            uint i = 0;
 
             try
             {
                 Array.Copy(src, 0, dest, 0, 4);
                 zerolen += 4;
 
-                //int bodylen;
-                //if ((src[0] & MSG_APPENDED_ACKS) == 0)
-                //{
-                //    bodylen = srclen;
-                //}
-                //else
-                //{
-                //    bodylen = srclen - src[srclen - 1] * 4 - 1;
-                //}
+                if ((src[0] & MSG_APPENDED_ACKS) == 0)
+                {
+                    bodylen = srclen;
+                }
+                else
+                {
+                    bodylen = srclen - src[srclen - 1] * 4 - 1;
+                }
 
                 for (i = zerolen; i < bodylen; i++)
                 {
@@ -333,14 +332,7 @@ namespace libsecondlife
                     }
                 }
 
-                // HACK: Fix truncated zerocoded messages
-                //for (uint j = zerolen; j < zerolen + 16; j++)
-                //{
-                //    dest[j] = 0;
-                //}
-                //zerolen += 16;
-
-                // copy appended ACKs
+                // Copy appended ACKs
                 for (; i < srclen; i++)
                 {
                     dest[zerolen++] = src[i];
@@ -351,7 +343,7 @@ namespace libsecondlife
             catch (Exception e)
             {
                 Console.WriteLine("Zerodecoding error: " + Environment.NewLine +
-                    "srclen=" + srclen + ", bodylen=" + bodylen + ", zerolen=" + zerolen + Environment.NewLine +
+                    "i=" + i + "srclen=" + srclen + ", bodylen=" + bodylen + ", zerolen=" + zerolen + Environment.NewLine +
                     FieldToString(src, "src") + Environment.NewLine + 
                     e.ToString());
             }

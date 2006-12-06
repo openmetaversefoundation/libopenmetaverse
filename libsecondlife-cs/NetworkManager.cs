@@ -97,9 +97,9 @@ namespace libsecondlife
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
         private ushort Sequence = 0;
-        private byte[] RecvBuffer = new byte[4092];
-        private byte[] ZeroBuffer = new byte[4092];
-        private byte[] ZeroOutBuffer = new byte[4092];
+        private byte[] RecvBuffer = new byte[4096];
+        private byte[] ZeroBuffer = new byte[8192];
+        private byte[] ZeroOutBuffer = new byte[4096];
         private Socket Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private AsyncCallback ReceivedData;
         private Dictionary<int, Packet> NeedAck = new Dictionary<int, Packet>();
