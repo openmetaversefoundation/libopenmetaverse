@@ -519,6 +519,32 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Sends a request to sit on the specified object
+        /// </summary>
+        /// <param name="targetID">LLUUID of the object to sit on</param>
+        /// <param name="offset">Sit at offset</param>
+        public void RequestSit(LLUUID targetID, LLVector3 offset)
+        {
+            AgentRequestSitPacket requestSit = new AgentRequestSitPacket();
+            requestSit.AgentData.AgentID = Client.Network.AgentID;
+            requestSit.AgentData.SessionID = Client.Network.SessionID;
+            requestSit.TargetObject.TargetID = targetID;
+            requestSit.TargetObject.Offset = offset;
+            Client.Network.SendPacket(requestSit);
+        }
+
+        /// <summary>
+        /// Follows a call to RequestSit() to actually sit on the object
+        /// </summary>
+        public void Sit()
+        {
+            AgentSitPacket sit = new AgentSitPacket();
+            sit.AgentData.AgentID = Client.Network.AgentID;
+            sit.AgentData.SessionID = Client.Network.SessionID;
+            Client.Network.SendPacket(sit);
+        }
+        
+        /// <summary>
         /// Give Money to destination Avatar
         /// </summary>
         /// <param name="target">UUID of the Target Avatar</param>
