@@ -1477,8 +1477,6 @@ namespace libsecondlife.Packets
 
         public void ToXml(XmlWriter xmlWriter)
         {
-            //XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            //ns.Add("", "");
             XmlSerializer serializer = new XmlSerializer(typeof(Packet));
             serializer.Serialize(xmlWriter, this);
         }

@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Xml;
 using libsecondlife;
 using libsecondlife.Packets;
+using libsecondlife.AssetSystem;
 
 namespace libsecondlife.TestClient
 {
@@ -86,9 +87,16 @@ namespace libsecondlife.TestClient
 
             client.Objects.RequestAllObjects = true;
 
-            client.Network.Login(account.FirstName, account.LastName, account.Password, 
+            bool login = client.Network.Login(account.FirstName, account.LastName, account.Password, 
                 "TestClient", "contact@libsecondlife.org");
-            
+
+            if (login)
+            {
+                // Set our appearance
+                AppearanceManager appearance = new AppearanceManager(client);
+                appearance.SendAgentSetAppearance();
+            }
+
             return client;
         }
 

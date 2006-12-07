@@ -74,7 +74,7 @@
   <!-- build tasks -->
   <target
     name="build"
-    depends="init build-dll"
+    depends="init"
     description="Builds the binaries for the current configuration">
     <echo message="Build Directory is ${bin_dir}/" />
     <mkdir
@@ -91,14 +91,6 @@
         <include name="libsecondlife.dll"/>
       </references>
     </csc>
-  </target>
-
-  <target
-    name="build-dll"
-    description="Builds libsecondlife dll">
-    <nant
-      buildfile="../../libsecondlife-cs/libsecondlife.build"
-      target="${project.config} build"/>
   </target>
 
   <target

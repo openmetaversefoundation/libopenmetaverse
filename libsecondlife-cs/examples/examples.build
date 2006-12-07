@@ -57,7 +57,7 @@
     </csc>
   </target>
 
-  <target name="build" depends="init build-dll" description="Build all examples">
+  <target name="build" depends="init" description="Build all examples">
 	<foreach item="Folder" in="." property="example_path">
 	  <call target="example" unless="${string::contains(example_path,'svn') or string::contains(example_path,'IA_') or string::contains(example_path,'Test')}"/>
     </foreach>
@@ -67,11 +67,6 @@
     <foreach item="Folder" in="." property="example_path">
 	<call target="clean-examples" unless="${string::contains(example_path,'svn')}"/>
     </foreach>
-  </target>
-
-  <target name="build-dll" description="Builds libsecondlife dll">
-    <nant buildfile="../../libsecondlife.build"
-      target="${project.config} build-lib"/>
   </target>
 
   <target name="clean-example" description="Deletes files for a given example">
