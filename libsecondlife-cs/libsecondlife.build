@@ -55,7 +55,18 @@
                 <include name="mapgenerator/ProtocolManager.cs" />
             </sources>
         </csc>
-        <exec program="../bin/mapgenerator.exe" output="_Packets_.cs" useruntimeengine="true">
+	<!-- Does _Packets_.cs really need to be reproduced? -->
+	<!-- Don't do it unless we have must, otherwise lots of stuff recompiles. -->
+	<uptodate property="_Packets_.cs.uptodate">
+	    <sourcefiles>
+	        <include name="../bin/mapgenerator.exe" />
+		<include name="../data/message_template.msg mapgenerator/template.cs" />
+	    </sourcefiles>
+	    <targetfiles>
+	        <include name="_Packets_.cs" />
+	    </targetfiles>
+	</uptodate>
+        <exec program="../bin/mapgenerator.exe" output="_Packets_.cs" useruntimeengine="true" unless="${_Packets_.cs.uptodate}">
             <arg line="../data/message_template.msg mapgenerator/template.cs _Packets_.cs" />
         </exec>
     </target>
