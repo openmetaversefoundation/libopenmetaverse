@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Xml.Serialization;
 
@@ -132,16 +133,19 @@ namespace libsecondlife
         {
             string val = reader.ReadString();
 
-            if (val.Length == 36) val = val.Replace("-", "");
+			if (val.Length > 0)
+			{
+				if (val.Length == 36) val = val.Replace("-", "");
 
-            if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
+				if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
 
-            for (int i = 0; i < 16; ++i)
-            {
-                data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
-            }
+				for (int i = 0; i < 16; ++i)
+				{
+					data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
+				}
+			}
 
-            //reader.MoveToContent();
+            reader.Skip();
         }
 
         /// <summary>
@@ -150,7 +154,8 @@ namespace libsecondlife
         /// <param name="writer">XmlWriter to serialize to</param>
         public void WriteXml(System.Xml.XmlWriter writer)
         {
-            writer.WriteString(this.ToString());
+			if (this != LLUUID.Zero)
+				writer.WriteString(this.ToString());
         }
 
         /// <summary>
@@ -307,23 +312,15 @@ namespace libsecondlife
     /// A three-dimensional vector with floating-point values
     /// </summary>
     [Serializable]
-	public class LLVector3
+	public struct LLVector3
 	{
         /// <summary>X value</summary>
-		[XmlAttribute("x")] public float X;
-        /// <summary>Y value</summary>
-        [XmlAttribute("y")] public float Y;
+        [XmlAttribute("x"), DefaultValue(0)] public float X;
+		/// <summary>Y value</summary>
+        [XmlAttribute("y"), DefaultValue(0)] public float Y;
         /// <summary>Z value</summary>
-        [XmlAttribute("z")] public float Z;
+        [XmlAttribute("z"), DefaultValue(0)] public float Z;
 
-        /// <summary>
-        /// Default constructor, all values are set to 0.0
-        /// </summary>
-		public LLVector3()
-		{
-			X = Y = Z = 0.0f;
-		}
-		
         /// <summary>
         /// Constructor, builds a single-precision vector from a 
         /// double-precision one
@@ -352,7 +349,7 @@ namespace libsecondlife
                 Array.Reverse(newArray, 4, 4);
                 Array.Reverse(newArray, 8, 4);
 
-                X = BitConverter.ToSingle(newArray, 0);
+				X = BitConverter.ToSingle(newArray, 0);
                 Y = BitConverter.ToSingle(newArray, 4);
                 Z = BitConverter.ToSingle(newArray, 8);
             }
@@ -501,22 +498,14 @@ namespace libsecondlife
     /// A double-precision three-dimensional vector
     /// </summary>
     [Serializable]
-	public class LLVector3d
+	public struct LLVector3d
 	{
         /// <summary>X value</summary>
-        [XmlAttribute("x")] public double X;
+        [XmlAttribute("x"), DefaultValue(0)] public double X;
         /// <summary>Y value</summary>
-        [XmlAttribute("y")] public double Y;
+        [XmlAttribute("y"), DefaultValue(0)] public double Y;
         /// <summary>Z value</summary>
-        [XmlAttribute("z")] public double Z;
-
-        /// <summary>
-        /// Default constructor, sets all the values to 0.0
-        /// </summary>
-		public LLVector3d()
-		{
-			X = Y = Z = 0.0d;
-		}
+        [XmlAttribute("z"), DefaultValue(0)] public double Z;
 
         /// <summary>
         /// 
@@ -600,24 +589,16 @@ namespace libsecondlife
     /// A four-dimensional vector
     /// </summary>
     [Serializable]
-	public class LLVector4
+	public struct LLVector4
 	{
         /// <summary></summary>
-        [XmlAttribute("x")] public float X;
+        [XmlAttribute("x"), DefaultValue(0)] public float X;
         /// <summary></summary>
-        [XmlAttribute("y")] public float Y;
+        [XmlAttribute("y"), DefaultValue(0)] public float Y;
         /// <summary></summary>
-        [XmlAttribute("z")] public float Z;
+        [XmlAttribute("z"), DefaultValue(0)] public float Z;
         /// <summary></summary>
-        [XmlAttribute("s")] public float S;
-
-        /// <summary>
-        /// 
-        /// </summary>
-		public LLVector4()
-		{
-			X = Y = Z = S = 0.0f;
-		}
+        [XmlAttribute("s"), DefaultValue(0)] public float S;
 
         /// <summary>
         /// 
@@ -692,25 +673,25 @@ namespace libsecondlife
     /// A quaternion, used for rotations
     /// </summary>
     [Serializable]
-	public class LLQuaternion
+	public struct LLQuaternion
 	{
         /// <summary>X value</summary>
-        [XmlAttribute("x")] public float X;
+        [XmlAttribute("x"), DefaultValue(0)] public float X;
         /// <summary>Y value</summary>
-        [XmlAttribute("y")] public float Y;
+        [XmlAttribute("y"), DefaultValue(0)] public float Y;
         /// <summary>Z value</summary>
-        [XmlAttribute("z")] public float Z;
+        [XmlAttribute("z"), DefaultValue(0)] public float Z;
         /// <summary>W value</summary>
-        [XmlAttribute("w")] public float W;
+        [XmlAttribute("w"), DefaultValue(1)] public float W;
 
-        /// <summary>
-        /// Default constructor, initializes to no rotation (0,0,0,1)
-        /// </summary>
-		public LLQuaternion()
-		{
-			X = Y = Z = 0.0f;
-            W = 1.0f;
-		}
+		///// <summary>
+		///// Default constructor, initializes to no rotation (0,0,0,1)
+		///// </summary>
+		//public LLQuaternion()
+		//{
+		//    X = Y = Z = 0.0f;
+		//    W = 1.0f;
+		//}
 
         /// <summary>
         /// Build a quaternion object from a byte array
@@ -925,6 +906,6 @@ namespace libsecondlife
         /// <summary>
         /// An LLQuaternion with a value of 0,0,0,1
         /// </summary>
-        public readonly static LLQuaternion Identity = new LLQuaternion();
+        public readonly static LLQuaternion Identity = new LLQuaternion(0, 0, 0, 1);
 	}
 }

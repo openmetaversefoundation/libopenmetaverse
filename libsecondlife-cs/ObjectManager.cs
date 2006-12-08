@@ -906,7 +906,7 @@ namespace libsecondlife
         {
             float x, y, z, w;
             uint localid;
-            LLVector4 CollisionPlane = null;
+            LLVector4 CollisionPlane = LLVector4.Zero;
             LLVector3 Position;
             LLVector3 Velocity;
             LLVector3 Acceleration;

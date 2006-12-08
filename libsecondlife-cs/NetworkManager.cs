@@ -1020,9 +1020,9 @@ namespace libsecondlife
                 new System.Text.RegularExpressions.Regex(@"('|r([0-9])|r(\-))");
             string json;
             Dictionary<string, object> jsonObject = null;
-            LLVector3 vector = null;
-            LLVector3 posVector = null;
-            LLVector3 lookatVector = null;
+            LLVector3 vector = LLVector3.Zero;
+            LLVector3 posVector = LLVector3.Zero;
+            LLVector3 lookatVector = LLVector3.Zero;
             ulong regionHandle = 0;
 
             try

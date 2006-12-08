@@ -3429,9 +3429,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Handle >> 40) % 256);
                 bytes[i++] = (byte)((Handle >> 48) % 256);
                 bytes[i++] = (byte)((Handle >> 56) % 256);
-                if(SunAngVelocity == null) { Console.WriteLine("Warning: SunAngVelocity is null, in " + this.GetType()); }
                 Array.Copy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(SunDirection == null) { Console.WriteLine("Warning: SunDirection is null, in " + this.GetType()); }
                 Array.Copy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -3664,12 +3662,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SecPerYear >> 8) % 256);
                 bytes[i++] = (byte)((SecPerYear >> 16) % 256);
                 bytes[i++] = (byte)((SecPerYear >> 24) % 256);
-                if(SunAngVelocity == null) { Console.WriteLine("Warning: SunAngVelocity is null, in " + this.GetType()); }
                 Array.Copy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(SunPhase);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                if(SunDirection == null) { Console.WriteLine("Warning: SunDirection is null, in " + this.GetType()); }
                 Array.Copy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -4483,7 +4479,6 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((HasTelehub) ? 1 : 0);
-                if(TelehubPos == null) { Console.WriteLine("Warning: TelehubPos is null, in " + this.GetType()); }
                 Array.Copy(TelehubPos.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -4700,9 +4695,7 @@ namespace libsecondlife.Packets
                 Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
                 if(ObjectID == null) { Console.WriteLine("Warning: ObjectID is null, in " + this.GetType()); }
                 Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(TelehubPos == null) { Console.WriteLine("Warning: TelehubPos is null, in " + this.GetType()); }
                 Array.Copy(TelehubPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(TelehubRot == null) { Console.WriteLine("Warning: TelehubRot is null, in " + this.GetType()); }
                 Array.Copy(TelehubRot.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -4748,7 +4741,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(SpawnPointPos == null) { Console.WriteLine("Warning: SpawnPointPos is null, in " + this.GetType()); }
                 Array.Copy(SpawnPointPos.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -4863,7 +4855,6 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((HasTelehub) ? 1 : 0);
-                if(TelehubPos == null) { Console.WriteLine("Warning: TelehubPos is null, in " + this.GetType()); }
                 Array.Copy(TelehubPos.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -7375,7 +7366,6 @@ namespace libsecondlife.Packets
                 if(VersionString == null) { Console.WriteLine("Warning: VersionString is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VersionString.Length;
                 Array.Copy(VersionString, 0, bytes, i, VersionString.Length); i += VersionString.Length;
-                if(AgentPosition == null) { Console.WriteLine("Warning: AgentPosition is null, in " + this.GetType()); }
                 Array.Copy(AgentPosition.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = Category;
                 if(OwnerID == null) { Console.WriteLine("Warning: OwnerID is null, in " + this.GetType()); }
@@ -7392,7 +7382,6 @@ namespace libsecondlife.Packets
                 Array.Copy(ScreenshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(LastOwnerID == null) { Console.WriteLine("Warning: LastOwnerID is null, in " + this.GetType()); }
                 Array.Copy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(ViewerPosition == null) { Console.WriteLine("Warning: ViewerPosition is null, in " + this.GetType()); }
                 Array.Copy(ViewerPosition.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -12114,7 +12103,6 @@ namespace libsecondlife.Packets
                 Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 if(ClassifiedID == null) { Console.WriteLine("Warning: ClassifiedID is null, in " + this.GetType()); }
                 Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(PosGlobal == null) { Console.WriteLine("Warning: PosGlobal is null, in " + this.GetType()); }
                 Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 if(ParcelID == null) { Console.WriteLine("Warning: ParcelID is null, in " + this.GetType()); }
                 Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -12352,7 +12340,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = ClassifiedFlags;
                 if(ClassifiedID == null) { Console.WriteLine("Warning: ClassifiedID is null, in " + this.GetType()); }
                 Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(PosGlobal == null) { Console.WriteLine("Warning: PosGlobal is null, in " + this.GetType()); }
                 Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 if(ParcelID == null) { Console.WriteLine("Warning: ParcelID is null, in " + this.GetType()); }
                 Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -16445,9 +16432,7 @@ namespace libsecondlife.Packets
             {
                 if(RegionID == null) { Console.WriteLine("Warning: RegionID is null, in " + this.GetType()); }
                 Array.Copy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -16609,9 +16594,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -16775,13 +16758,11 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocationID >> 8) % 256);
                 bytes[i++] = (byte)((LocationID >> 16) % 256);
                 bytes[i++] = (byte)((LocationID >> 24) % 256);
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(TeleportFlags % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -17268,9 +17249,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -17400,7 +17379,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((CircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((CircuitCode >> 16) % 256);
                 bytes[i++] = (byte)((CircuitCode >> 24) % 256);
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(ParentEstateID % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 8) % 256);
@@ -17410,7 +17388,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -17565,7 +17542,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocationID >> 16) % 256);
                 bytes[i++] = (byte)((LocationID >> 24) % 256);
                 bytes[i++] = SimAccess;
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(SimIP % 256);
                 bytes[i++] = (byte)((SimIP >> 8) % 256);
@@ -17575,7 +17551,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -20523,7 +20498,6 @@ namespace libsecondlife.Packets
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(Size == null) { Console.WriteLine("Warning: Size is null, in " + this.GetType()); }
                 Array.Copy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -21421,7 +21395,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((DuplicateFlags >> 8) % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 16) % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 24) % 256);
-                if(Offset == null) { Console.WriteLine("Warning: Offset is null, in " + this.GetType()); }
                 Array.Copy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -21668,12 +21641,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((CopyRotates) ? 1 : 0);
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(RayStart == null) { Console.WriteLine("Warning: RayStart is null, in " + this.GetType()); }
                 Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(GroupID == null) { Console.WriteLine("Warning: GroupID is null, in " + this.GetType()); }
                 Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
-                if(RayEnd == null) { Console.WriteLine("Warning: RayEnd is null, in " + this.GetType()); }
                 Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)((BypassRaycast) ? 1 : 0);
                 bytes[i++] = (byte)((CopyCenters) ? 1 : 0);
@@ -21806,7 +21777,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                if(Scale == null) { Console.WriteLine("Warning: Scale is null, in " + this.GetType()); }
                 Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -21974,7 +21944,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                if(Rotation == null) { Console.WriteLine("Warning: Rotation is null, in " + this.GetType()); }
                 Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -25333,7 +25302,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                if(Rotation == null) { Console.WriteLine("Warning: Rotation is null, in " + this.GetType()); }
                 Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -26521,7 +26489,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(GrabOffset == null) { Console.WriteLine("Warning: GrabOffset is null, in " + this.GetType()); }
                 Array.Copy(GrabOffset.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(LocalID % 256);
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
@@ -26687,9 +26654,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TimeSinceLast >> 24) % 256);
                 if(ObjectID == null) { Console.WriteLine("Warning: ObjectID is null, in " + this.GetType()); }
                 Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(GrabOffsetInitial == null) { Console.WriteLine("Warning: GrabOffsetInitial is null, in " + this.GetType()); }
                 Array.Copy(GrabOffsetInitial.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(GrabPosition == null) { Console.WriteLine("Warning: GrabPosition is null, in " + this.GetType()); }
                 Array.Copy(GrabPosition.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -27144,7 +27109,6 @@ namespace libsecondlife.Packets
             {
                 if(ObjectID == null) { Console.WriteLine("Warning: ObjectID is null, in " + this.GetType()); }
                 Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(Rotation == null) { Console.WriteLine("Warning: Rotation is null, in " + this.GetType()); }
                 Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -29650,7 +29614,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = ReportType;
                 if(ScreenshotID == null) { Console.WriteLine("Warning: ScreenshotID is null, in " + this.GetType()); }
                 Array.Copy(ScreenshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -30476,7 +30439,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = SourceType;
                 if(SourceID == null) { Console.WriteLine("Warning: SourceID is null, in " + this.GetType()); }
                 Array.Copy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -32167,12 +32129,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SecPerYear >> 8) % 256);
                 bytes[i++] = (byte)((SecPerYear >> 16) % 256);
                 bytes[i++] = (byte)((SecPerYear >> 24) % 256);
-                if(SunAngVelocity == null) { Console.WriteLine("Warning: SunAngVelocity is null, in " + this.GetType()); }
                 Array.Copy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(SunPhase);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                if(SunDirection == null) { Console.WriteLine("Warning: SunDirection is null, in " + this.GetType()); }
                 Array.Copy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -37193,7 +37153,6 @@ namespace libsecondlife.Packets
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                if(GlobalPos == null) { Console.WriteLine("Warning: GlobalPos is null, in " + this.GetType()); }
                 Array.Copy(GlobalPos.GetBytes(), 0, bytes, i, 24); i += 24;
                 if(Creator == null) { Console.WriteLine("Warning: Creator is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Creator.Length;
@@ -38161,7 +38120,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)SimName.Length;
                 Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
-                if(PosGlobal == null) { Console.WriteLine("Warning: PosGlobal is null, in " + this.GetType()); }
                 Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 bytes[i++] = (byte)((TopPick) ? 1 : 0);
                 if(ParcelID == null) { Console.WriteLine("Warning: ParcelID is null, in " + this.GetType()); }
@@ -38386,7 +38344,6 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
-                if(PosGlobal == null) { Console.WriteLine("Warning: PosGlobal is null, in " + this.GetType()); }
                 Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 bytes[i++] = (byte)((TopPick) ? 1 : 0);
                 if(ParcelID == null) { Console.WriteLine("Warning: ParcelID is null, in " + this.GetType()); }
@@ -40029,9 +39986,7 @@ namespace libsecondlife.Packets
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
                 Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(SimPosition == null) { Console.WriteLine("Warning: SimPosition is null, in " + this.GetType()); }
                 Array.Copy(SimPosition.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -40499,7 +40454,6 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 if(MediaID == null) { Console.WriteLine("Warning: MediaID is null, in " + this.GetType()); }
                 Array.Copy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(UserLookAt == null) { Console.WriteLine("Warning: UserLookAt is null, in " + this.GetType()); }
                 Array.Copy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
@@ -40508,7 +40462,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                if(UserLocation == null) { Console.WriteLine("Warning: UserLocation is null, in " + this.GetType()); }
                 Array.Copy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
@@ -44730,7 +44683,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ActualArea >> 24) % 256);
                 if(ParcelID == null) { Console.WriteLine("Warning: ParcelID is null, in " + this.GetType()); }
                 Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(UserLocation == null) { Console.WriteLine("Warning: UserLocation is null, in " + this.GetType()); }
                 Array.Copy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
@@ -47316,7 +47268,6 @@ namespace libsecondlife.Packets
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Array.Copy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = SourceType;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -48285,10 +48236,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                if(SearchDir == null) { Console.WriteLine("Warning: SearchDir is null, in " + this.GetType()); }
                 Array.Copy(SearchDir.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = SearchRegions;
-                if(SearchPos == null) { Console.WriteLine("Warning: SearchPos is null, in " + this.GetType()); }
                 Array.Copy(SearchPos.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(Range);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
@@ -48444,14 +48393,11 @@ namespace libsecondlife.Packets
                 Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(OwnerID == null) { Console.WriteLine("Warning: OwnerID is null, in " + this.GetType()); }
                 Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(Velocity == null) { Console.WriteLine("Warning: Velocity is null, in " + this.GetType()); }
                 Array.Copy(Velocity.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(Range);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                if(Rotation == null) { Console.WriteLine("Warning: Rotation is null, in " + this.GetType()); }
                 Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -48739,9 +48685,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -49854,7 +49798,6 @@ namespace libsecondlife.Packets
                 if(FromAgentName == null) { Console.WriteLine("Warning: FromAgentName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FromAgentName.Length;
                 Array.Copy(FromAgentName, 0, bytes, i, FromAgentName.Length); i += FromAgentName.Length;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -57748,7 +57691,6 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
-                if(RayStart == null) { Console.WriteLine("Warning: RayStart is null, in " + this.GetType()); }
                 Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(ItemFlags % 256);
                 bytes[i++] = (byte)((ItemFlags >> 8) % 256);
@@ -57757,7 +57699,6 @@ namespace libsecondlife.Packets
                 if(FromTaskID == null) { Console.WriteLine("Warning: FromTaskID is null, in " + this.GetType()); }
                 Array.Copy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
-                if(RayEnd == null) { Console.WriteLine("Warning: RayEnd is null, in " + this.GetType()); }
                 Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = (byte)(EveryoneMask % 256);
@@ -58010,7 +57951,6 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
-                if(RayStart == null) { Console.WriteLine("Warning: RayStart is null, in " + this.GetType()); }
                 Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(ItemFlags % 256);
                 bytes[i++] = (byte)((ItemFlags >> 8) % 256);
@@ -58019,7 +57959,6 @@ namespace libsecondlife.Packets
                 if(FromTaskID == null) { Console.WriteLine("Warning: FromTaskID is null, in " + this.GetType()); }
                 Array.Copy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
-                if(RayEnd == null) { Console.WriteLine("Warning: RayEnd is null, in " + this.GetType()); }
                 Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = (byte)(EveryoneMask % 256);
@@ -60854,7 +60793,6 @@ namespace libsecondlife.Packets
                 if(RegionID == null) { Console.WriteLine("Warning: RegionID is null, in " + this.GetType()); }
                 Array.Copy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
-                if(RegionPos == null) { Console.WriteLine("Warning: RegionPos is null, in " + this.GetType()); }
                 Array.Copy(RegionPos.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -65367,7 +65305,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(LocationPos == null) { Console.WriteLine("Warning: LocationPos is null, in " + this.GetType()); }
                 Array.Copy(LocationPos.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
@@ -65376,7 +65313,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocationID >> 8) % 256);
                 bytes[i++] = (byte)((LocationID >> 16) % 256);
                 bytes[i++] = (byte)((LocationID >> 24) % 256);
-                if(LocationLookAt == null) { Console.WriteLine("Warning: LocationLookAt is null, in " + this.GetType()); }
                 Array.Copy(LocationLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -65538,7 +65474,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(LocationPos == null) { Console.WriteLine("Warning: LocationPos is null, in " + this.GetType()); }
                 Array.Copy(LocationPos.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(AgentID == null) { Console.WriteLine("Warning: AgentID is null, in " + this.GetType()); }
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -65556,7 +65491,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocationID >> 8) % 256);
                 bytes[i++] = (byte)((LocationID >> 16) % 256);
                 bytes[i++] = (byte)((LocationID >> 24) % 256);
-                if(LocationLookAt == null) { Console.WriteLine("Warning: LocationLookAt is null, in " + this.GetType()); }
                 Array.Copy(LocationLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -82410,7 +82344,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Msg.Length >> 8) % 256);
                 Array.Copy(Msg, 0, bytes, i, Msg.Length); i += Msg.Length;
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
-                if(PosGlobal == null) { Console.WriteLine("Warning: PosGlobal is null, in " + this.GetType()); }
                 Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -85048,7 +84981,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = ProfileBegin;
                 bytes[i++] = (byte)PathRadiusOffset;
                 bytes[i++] = (byte)PathSkew;
-                if(RayStart == null) { Console.WriteLine("Warning: RayStart is null, in " + this.GetType()); }
                 Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = ProfileCurve;
                 bytes[i++] = PathScaleX;
@@ -85059,20 +84991,17 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)PathTaperX;
                 bytes[i++] = (byte)PathTaperY;
                 bytes[i++] = RayEndIsIntersection;
-                if(RayEnd == null) { Console.WriteLine("Warning: RayEnd is null, in " + this.GetType()); }
                 Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = ProfileEnd;
                 bytes[i++] = PathBegin;
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = PCode;
                 bytes[i++] = PathCurve;
-                if(Scale == null) { Console.WriteLine("Warning: Scale is null, in " + this.GetType()); }
                 Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = State;
                 bytes[i++] = (byte)PathTwist;
                 bytes[i++] = ProfileHollow;
                 bytes[i++] = PathRevolutions;
-                if(Rotation == null) { Console.WriteLine("Warning: Rotation is null, in " + this.GetType()); }
                 Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(RayTargetID == null) { Console.WriteLine("Warning: RayTargetID is null, in " + this.GetType()); }
                 Array.Copy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -85617,7 +85546,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -86104,9 +86032,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(LookAt == null) { Console.WriteLine("Warning: LookAt is null, in " + this.GetType()); }
                 Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -88634,24 +88560,18 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ControlFlags >> 8) % 256);
                 bytes[i++] = (byte)((ControlFlags >> 16) % 256);
                 bytes[i++] = (byte)((ControlFlags >> 24) % 256);
-                if(CameraAtAxis == null) { Console.WriteLine("Warning: CameraAtAxis is null, in " + this.GetType()); }
                 Array.Copy(CameraAtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(Far);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Array.Copy(ba, 0, bytes, i, 4); i += 4;
                 if(AgentID == null) { Console.WriteLine("Warning: AgentID is null, in " + this.GetType()); }
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(CameraCenter == null) { Console.WriteLine("Warning: CameraCenter is null, in " + this.GetType()); }
                 Array.Copy(CameraCenter.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(CameraLeftAxis == null) { Console.WriteLine("Warning: CameraLeftAxis is null, in " + this.GetType()); }
                 Array.Copy(CameraLeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(HeadRotation == null) { Console.WriteLine("Warning: HeadRotation is null, in " + this.GetType()); }
                 Array.Copy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(CameraUpAxis == null) { Console.WriteLine("Warning: CameraUpAxis is null, in " + this.GetType()); }
                 Array.Copy(CameraUpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(BodyRotation == null) { Console.WriteLine("Warning: BodyRotation is null, in " + this.GetType()); }
                 Array.Copy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = Flags;
                 bytes[i++] = State;
@@ -88927,7 +88847,6 @@ namespace libsecondlife.Packets
             {
                 if(TargetID == null) { Console.WriteLine("Warning: TargetID is null, in " + this.GetType()); }
                 Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(Offset == null) { Console.WriteLine("Warning: Offset is null, in " + this.GetType()); }
                 Array.Copy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -90088,7 +90007,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((CRC >> 8) % 256);
                 bytes[i++] = (byte)((CRC >> 16) % 256);
                 bytes[i++] = (byte)((CRC >> 24) % 256);
-                if(JointPivot == null) { Console.WriteLine("Warning: JointPivot is null, in " + this.GetType()); }
                 Array.Copy(JointPivot.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = PathEnd;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
@@ -90146,9 +90064,7 @@ namespace libsecondlife.Packets
                 if(FullID == null) { Console.WriteLine("Warning: FullID is null, in " + this.GetType()); }
                 Array.Copy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = PathCurve;
-                if(Scale == null) { Console.WriteLine("Warning: Scale is null, in " + this.GetType()); }
                 Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(JointAxisOrAnchor == null) { Console.WriteLine("Warning: JointAxisOrAnchor is null, in " + this.GetType()); }
                 Array.Copy(JointAxisOrAnchor.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = Flags;
                 bytes[i++] = State;
@@ -91822,13 +91738,9 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((AutoPilot) ? 1 : 0);
                 bytes[i++] = (byte)((ForceMouselook) ? 1 : 0);
-                if(CameraEyeOffset == null) { Console.WriteLine("Warning: CameraEyeOffset is null, in " + this.GetType()); }
                 Array.Copy(CameraEyeOffset.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(CameraAtOffset == null) { Console.WriteLine("Warning: CameraAtOffset is null, in " + this.GetType()); }
                 Array.Copy(CameraAtOffset.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(SitPosition == null) { Console.WriteLine("Warning: SitPosition is null, in " + this.GetType()); }
                 Array.Copy(SitPosition.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(SitRotation == null) { Console.WriteLine("Warning: SitRotation is null, in " + this.GetType()); }
                 Array.Copy(SitRotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -91977,7 +91889,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(Plane == null) { Console.WriteLine("Warning: Plane is null, in " + this.GetType()); }
                 Array.Copy(Plane.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
@@ -92251,11 +92162,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SelectedPrims >> 24) % 256);
                 if(MediaID == null) { Console.WriteLine("Warning: MediaID is null, in " + this.GetType()); }
                 Array.Copy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(UserLookAt == null) { Console.WriteLine("Warning: UserLookAt is null, in " + this.GetType()); }
                 Array.Copy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(AABBMax == null) { Console.WriteLine("Warning: AABBMax is null, in " + this.GetType()); }
                 Array.Copy(AABBMax.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(AABBMin == null) { Console.WriteLine("Warning: AABBMin is null, in " + this.GetType()); }
                 Array.Copy(AABBMin.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(RequestResult % 256);
                 bytes[i++] = (byte)((RequestResult >> 8) % 256);
@@ -92287,7 +92195,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((OtherCount >> 16) % 256);
                 bytes[i++] = (byte)((OtherCount >> 24) % 256);
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                if(UserLocation == null) { Console.WriteLine("Warning: UserLocation is null, in " + this.GetType()); }
                 Array.Copy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(MaxPrims % 256);
                 bytes[i++] = (byte)((MaxPrims >> 8) % 256);
@@ -92874,13 +92781,10 @@ namespace libsecondlife.Packets
                 if(AgentID == null) { Console.WriteLine("Warning: AgentID is null, in " + this.GetType()); }
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
-                if(HeadRotation == null) { Console.WriteLine("Warning: HeadRotation is null, in " + this.GetType()); }
                 Array.Copy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(LeftAxis == null) { Console.WriteLine("Warning: LeftAxis is null, in " + this.GetType()); }
                 Array.Copy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Size == null) { Console.WriteLine("Warning: Size is null, in " + this.GetType()); }
                 Array.Copy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = GodLevel;
                 bytes[i++] = (byte)(RegionHandle % 256);
@@ -92892,26 +92796,20 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
                 bytes[i++] = AgentAccess;
-                if(AgentVel == null) { Console.WriteLine("Warning: AgentVel is null, in " + this.GetType()); }
                 Array.Copy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(AgentPos == null) { Console.WriteLine("Warning: AgentPos is null, in " + this.GetType()); }
                 Array.Copy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(PreyAgent == null) { Console.WriteLine("Warning: PreyAgent is null, in " + this.GetType()); }
                 Array.Copy(PreyAgent.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Throttles == null) { Console.WriteLine("Warning: Throttles is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Throttles.Length;
                 Array.Copy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
-                if(UpAxis == null) { Console.WriteLine("Warning: UpAxis is null, in " + this.GetType()); }
                 Array.Copy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(AgentTextures == null) { Console.WriteLine("Warning: AgentTextures is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(AgentTextures.Length % 256);
                 bytes[i++] = (byte)((AgentTextures.Length >> 8) % 256);
                 Array.Copy(AgentTextures, 0, bytes, i, AgentTextures.Length); i += AgentTextures.Length;
-                if(AtAxis == null) { Console.WriteLine("Warning: AtAxis is null, in " + this.GetType()); }
                 Array.Copy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Center == null) { Console.WriteLine("Warning: Center is null, in " + this.GetType()); }
                 Array.Copy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(BodyRotation == null) { Console.WriteLine("Warning: BodyRotation is null, in " + this.GetType()); }
                 Array.Copy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(Aspect);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
@@ -93400,9 +93298,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                if(LeftAxis == null) { Console.WriteLine("Warning: LeftAxis is null, in " + this.GetType()); }
                 Array.Copy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Size == null) { Console.WriteLine("Warning: Size is null, in " + this.GetType()); }
                 Array.Copy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(RegionHandle % 256);
                 bytes[i++] = (byte)((RegionHandle >> 8) % 256);
@@ -93412,15 +93308,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                if(AgentVel == null) { Console.WriteLine("Warning: AgentVel is null, in " + this.GetType()); }
                 Array.Copy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(AgentPos == null) { Console.WriteLine("Warning: AgentPos is null, in " + this.GetType()); }
                 Array.Copy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(UpAxis == null) { Console.WriteLine("Warning: UpAxis is null, in " + this.GetType()); }
                 Array.Copy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(AtAxis == null) { Console.WriteLine("Warning: AtAxis is null, in " + this.GetType()); }
                 Array.Copy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                if(Center == null) { Console.WriteLine("Warning: Center is null, in " + this.GetType()); }
                 Array.Copy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
@@ -93709,7 +93600,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
-                if(Scale == null) { Console.WriteLine("Warning: Scale is null, in " + this.GetType()); }
                 Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = State;
                 bytes[i++] = (byte)PathTwist;
@@ -93719,7 +93609,6 @@ namespace libsecondlife.Packets
                 Array.Copy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
                 bytes[i++] = ProfileHollow;
                 bytes[i++] = PathRevolutions;
-                if(Rotation == null) { Console.WriteLine("Warning: Rotation is null, in " + this.GetType()); }
                 Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(NextOwnerMask % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
@@ -94082,7 +93971,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Handle >> 40) % 256);
                 bytes[i++] = (byte)((Handle >> 48) % 256);
                 bytes[i++] = (byte)((Handle >> 56) % 256);
-                if(Position == null) { Console.WriteLine("Warning: Position is null, in " + this.GetType()); }
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 

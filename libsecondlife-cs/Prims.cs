@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -99,81 +100,81 @@ namespace libsecondlife
     public class PrimObject
 	{
         /// <summary></summary>
-        [XmlAttribute("pathtwistbegin")] public int PathTwistBegin = 0;
+        [XmlAttribute("pathtwistbegin"), DefaultValue(0)] public int PathTwistBegin;
         /// <summary></summary>
-        [XmlAttribute("pathend")] public float PathEnd = 0;
+        [XmlAttribute("pathend"), DefaultValue(0)] public float PathEnd;
         /// <summary></summary>
-        [XmlAttribute("profilebegin")] public float ProfileBegin = 0;
+        [XmlAttribute("profilebegin"), DefaultValue(0)] public float ProfileBegin;
         /// <summary></summary>
-        [XmlAttribute("pathradiusoffset")] public float PathRadiusOffset = 0;
+        [XmlAttribute("pathradiusoffset"), DefaultValue(0)] public float PathRadiusOffset;
         /// <summary></summary>
-        [XmlAttribute("pathskew")] public float PathSkew = 0;
+        [XmlAttribute("pathskew"), DefaultValue(0)] public float PathSkew;
         /// <summary></summary>
-        [XmlAttribute("profilecurve")] public uint ProfileCurve = 0;
+        [XmlAttribute("profilecurve"), DefaultValue(0)] public uint ProfileCurve;
         /// <summary></summary>
-        [XmlAttribute("pathscalex")] public float PathScaleX = 0;
+        [XmlAttribute("pathscalex"), DefaultValue(0)] public float PathScaleX;
         /// <summary></summary>
-        [XmlAttribute("pathscaley")] public float PathScaleY = 0;
+        [XmlAttribute("pathscaley"), DefaultValue(0)] public float PathScaleY;
         /// <summary></summary>
-        [XmlAttribute("localid")] public uint LocalID = 0;
+        [XmlAttribute("localid"), DefaultValue(0)] public uint LocalID;
         /// <summary></summary>
-        [XmlAttribute("parentid")] public uint ParentID = 0;
+        [XmlAttribute("parentid"), DefaultValue(0)] public uint ParentID;
         /// <summary></summary>
-        [XmlAttribute("material")] public uint Material = 0;
+        [XmlAttribute("material"), DefaultValue(0)] public uint Material;
         /// <summary></summary>
-        [XmlAttribute("name")] public string Name = "";
+        [XmlAttribute("name"), DefaultValue("")] public string Name = "";
         /// <summary></summary>
-        [XmlAttribute("description")] public string Description = "";
+        [XmlAttribute("description"), DefaultValue("")] public string Description = "";
         /// <summary></summary>
-        [XmlAttribute("pathshearx")] public float PathShearX = 0;
+        [XmlAttribute("pathshearx"), DefaultValue(0)] public float PathShearX;
         /// <summary></summary>
-        [XmlAttribute("pathsheary")] public float PathShearY = 0;
+        [XmlAttribute("pathsheary"), DefaultValue(0)] public float PathShearY;
         /// <summary></summary>
-        [XmlAttribute("pathtaperx")] public float PathTaperX = 0;
+        [XmlAttribute("pathtaperx"), DefaultValue(0)] public float PathTaperX;
         /// <summary></summary>
-        [XmlAttribute("pathtapery")] public float PathTaperY = 0;
+        [XmlAttribute("pathtapery"), DefaultValue(0)] public float PathTaperY;
         /// <summary></summary>
-        [XmlAttribute("profileend")] public float ProfileEnd = 0;
+        [XmlAttribute("profileend"), DefaultValue(0)] public float ProfileEnd;
         /// <summary></summary>
-        [XmlAttribute("pathbegin")] public float PathBegin = 0;
+        [XmlAttribute("pathbegin"), DefaultValue(0)] public float PathBegin;
         /// <summary></summary>
-        [XmlAttribute("pathcurve")] public uint PathCurve = 0;
+        [XmlAttribute("pathcurve"), DefaultValue(0)] public uint PathCurve;
         /// <summary></summary>
-        [XmlAttribute("pathtwist")] public int PathTwist = 0;
+        [XmlAttribute("pathtwist"), DefaultValue(0)] public int PathTwist;
         /// <summary></summary>
-        [XmlAttribute("profilehollow")] public uint ProfileHollow = 0;
+        [XmlAttribute("profilehollow"), DefaultValue(0)] public uint ProfileHollow;
         /// <summary></summary>
-        [XmlAttribute("pathrevolutions")] public float PathRevolutions = 0;
+        [XmlAttribute("pathrevolutions"), DefaultValue(0)] public float PathRevolutions;
         /// <summary></summary>
-        [XmlAttribute("state")] public uint State;
+        [XmlAttribute("state"), DefaultValue(0)] public uint State;
         /// <summary></summary>
-        [XmlAttribute("text")] public string Text;
+        [XmlAttribute("text"), DefaultValue("")] public string Text = "";
         /// <summary></summary>
-        [XmlAttribute("regionhandle")] public ulong RegionHandle;
+        [XmlAttribute("regionhandle"), DefaultValue(0)] public ulong RegionHandle;
         /// <summary></summary>
-        [XmlAttribute("flags")] public ObjectFlags Flags;
+        [XmlAttribute("flags"), DefaultValue(ObjectFlags.None)] public ObjectFlags Flags;
         /// <summary></summary>
         [XmlIgnore] public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
         /// <summary></summary>
         [XmlElement("id")] public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
         [XmlElement("groupid")] public LLUUID GroupID = LLUUID.Zero;
+		/// <summary></summary>
+        public LLVector3 Position = LLVector3.Zero;
+		/// <summary></summary>
+        public LLVector3 Scale = LLVector3.Zero;
         /// <summary></summary>
-        [XmlElement("position")] public LLVector3 Position = LLVector3.Zero;
+        public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary></summary>
-        /*[XmlElement("scale")]*/ public LLVector3 Scale = LLVector3.Zero;
+        public TextureEntry Textures = new TextureEntry();
         /// <summary></summary>
-        /*[XmlElement("rotation")]*/ public LLQuaternion Rotation = LLQuaternion.Identity;
+        public TextureAnimation TextureAnim = new TextureAnimation();
         /// <summary></summary>
-        /*[XmlElement("textures")]*/ public TextureEntry Textures = new TextureEntry();
+        public PrimFlexibleData Flexible = new PrimFlexibleData();
         /// <summary></summary>
-        /*[XmlElement("textureanimation")]*/ public TextureAnimation TextureAnim = new TextureAnimation();
+        public PrimLightData Light = new PrimLightData();
         /// <summary></summary>
-        /*[XmlElement("flexible")]*/ public PrimFlexibleData Flexible = new PrimFlexibleData();
-        /// <summary></summary>
-        /*[XmlElement("light")]*/ public PrimLightData Light = new PrimLightData();
-        /// <summary></summary>
-        /*[XmlElement("particles")]*/ public ParticleSystem ParticleSys = new ParticleSystem();
+        public ParticleSystem ParticleSys = new ParticleSystem();
 
         /// <summary>
         /// Default constructor, zeroes out or sets default prim parameters
@@ -491,17 +492,17 @@ namespace libsecondlife
     public class PrimFlexibleData
     {
         /// <summary></summary>
-        [XmlAttribute("softness")] public int Softness;
+        [XmlAttribute("softness"), DefaultValue(0)] public int Softness;
         /// <summary></summary>
-        [XmlAttribute("gravity")] public float Gravity;
+        [XmlAttribute("gravity"), DefaultValue(0)] public float Gravity;
         /// <summary></summary>
-        [XmlAttribute("drag")] public float Drag;
+        [XmlAttribute("drag"), DefaultValue(0)] public float Drag;
         /// <summary></summary>
-        [XmlAttribute("wind")] public float Wind;
+        [XmlAttribute("wind"), DefaultValue(0)] public float Wind;
         /// <summary></summary>
-        [XmlAttribute("tension")] public float Tension;
+        [XmlAttribute("tension"), DefaultValue(0)] public float Tension;
         /// <summary></summary>
-        [XmlElement("force")] public LLVector3 Force = LLVector3.Zero;
+        public LLVector3 Force = LLVector3.Zero;
 
         /// <summary>
         /// 
@@ -563,17 +564,17 @@ namespace libsecondlife
     public class PrimLightData
     {
         /// <summary></summary>
-        [XmlAttribute("red")] public byte R;
+        [XmlAttribute("red"), DefaultValue(0)] public byte R;
         /// <summary></summary>
-        [XmlAttribute("green")] public byte G;
+        [XmlAttribute("green"), DefaultValue(0)] public byte G;
         /// <summary></summary>
-        [XmlAttribute("blue")] public byte B;
+        [XmlAttribute("blue"), DefaultValue(0)] public byte B;
         /// <summary></summary>
-        [XmlAttribute("intensity")] public float Intensity;
+        [XmlAttribute("intensity"), DefaultValue(0)] public float Intensity;
         /// <summary></summary>
-        [XmlAttribute("radius")] public float Radius;
+        [XmlAttribute("radius"), DefaultValue(0)] public float Radius;
         /// <summary></summary>
-        [XmlAttribute("falloff")] public float Falloff;
+        [XmlAttribute("falloff"), DefaultValue(0)] public float Falloff;
 
         /// <summary>
         /// 
