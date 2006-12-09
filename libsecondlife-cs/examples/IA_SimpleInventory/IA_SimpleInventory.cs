@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using libsecondlife;
@@ -93,8 +94,8 @@ namespace IA_SimpleInventory
 
             // Get Root Inventory Folder UUID
             Console.WriteLine("Pulling root folder UUID from login data.");
-            List<object> alInventoryRoot = (List<object>)client.Network.LoginValues["inventory-root"];
-            Dictionary<string, object> htInventoryRoot = (Dictionary<string, object>)alInventoryRoot[0];
+            ArrayList alInventoryRoot = (ArrayList)client.Network.LoginValues["inventory-root"];
+            Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
             LLUUID agentRootFolderID = new LLUUID((string)htInventoryRoot["folder_id"]);
 
             // Initialize Inventory Manager object
