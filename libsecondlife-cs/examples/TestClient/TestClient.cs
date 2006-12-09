@@ -96,8 +96,8 @@ namespace libsecondlife.TestClient
             if (login)
             {
                 // Set our appearance
-                AppearanceManager appearance = new AppearanceManager(client);
-                appearance.SendAgentSetAppearance();
+                //AppearanceManager appearance = new AppearanceManager(client);
+                //appearance.SendAgentSetAppearance();
             }
 
             return client;

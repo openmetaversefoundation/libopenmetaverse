@@ -220,6 +220,7 @@ namespace libsecondlife
         /// <returns>A null-terminated byte array</returns>
         public static byte[] StringToField(string str)
         {
+            if (str.Length == 0) { return new byte[0]; }
             if (!str.EndsWith("\0")) { str += "\0"; }
             return System.Text.UTF8Encoding.UTF8.GetBytes(str);
         }

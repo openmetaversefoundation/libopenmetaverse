@@ -9,6 +9,24 @@ using System.IO;
 
 namespace libsecondlife.TestClient
 {
+    public class Linkset
+    {
+        public PrimObject RootPrim;
+        public List<PrimObject> Children;
+
+        public Linkset()
+        {
+            RootPrim = new PrimObject();
+            Children = new List<PrimObject>();
+        }
+
+        public Linkset(PrimObject rootPrim)
+        {
+            RootPrim = rootPrim;
+            Children = new List<PrimObject>();
+        }
+    }
+
     public class ImportCommand : Command
     {
         PrimObject currentPrim;
@@ -16,7 +34,10 @@ namespace libsecondlife.TestClient
         SecondLife currentClient;
         ManualResetEvent primDone;
         List<PrimObject> primsCreated;
-        bool registeredCreateEvent;
+        uint rootLocalID = 0;
+        bool registeredCreateEvent = false;
+        bool rezzingRootPrim = false;
+        bool linking = false;
 
         public ImportCommand()
         {
@@ -32,29 +53,22 @@ namespace libsecondlife.TestClient
                 return "Usage: import inputfile.xml";
 
             string name = args[0];
-
             Dictionary<uint, PrimObject> prims;
+
+            currentClient = Client;
 
             try
             {
-                //XmlReader reader = XmlReader.Create(name);
-                //prims = Helpers.PrimListFromXml(reader);
-                //reader.Close();
+                XmlReader reader = XmlReader.Create(name);
+                List<PrimObject> listprims = Helpers.PrimListFromXml(reader);
+                reader.Close();
 
-                XmlSerializer serializer = new XmlSerializer(typeof(List<PrimObject>));
-                XmlDeserializationEvents events = new XmlDeserializationEvents();
-                events.OnUnknownAttribute += new XmlAttributeEventHandler(OnUnknownAttribute);
-                events.OnUnknownElement += new XmlElementEventHandler(OnUnknownElement);
-                events.OnUnknownNode += new XmlNodeEventHandler(OnUnknownNode);
-                events.OnUnreferencedObject += new UnreferencedObjectEventHandler(OnUnreferenced);
-                List<PrimObject> listprims = (List<PrimObject>)serializer.Deserialize(XmlReader.Create(name), events);
-
+                // Create a dictionary indexed by the old local ID of the prims
                 prims = new Dictionary<uint, PrimObject>();
                 foreach (PrimObject prim in listprims)
                 {
                     prims.Add(prim.LocalID, prim);
                 }
-                //return list;
             }
             catch (Exception ex)
             {
@@ -66,33 +80,106 @@ namespace libsecondlife.TestClient
                 TestClient.OnPrimCreated += new TestClient.PrimCreatedCallback(TestClient_OnPrimCreated);
                 registeredCreateEvent = true;
             }
-            
-            primsCreated = new List<PrimObject>();
-            Console.WriteLine("Importing " + prims.Count + " prims.");
 
+            // Build an organized structure from the imported prims
+            Dictionary<uint, Linkset> linksets = new Dictionary<uint, Linkset>();
             foreach (PrimObject prim in prims.Values)
             {
-                currentPrim = prim;
-                currentClient = Client;
-                if (prim.ParentID != 0)
+                if (prim.ParentID == 0)
                 {
-                    if (prims.ContainsKey(prim.ParentID))
-                    {
-                        currentPosition = prims[prim.ParentID].Position + prim.Position;
-                    }
+                    if (linksets.ContainsKey(prim.LocalID))
+                        linksets[prim.LocalID].RootPrim = prim;
                     else
-                    {
-                        return "Rez failed, a child prim did not have a matching parent prim. ";
-                    }
+                        linksets[prim.LocalID] = new Linkset(prim);
                 }
                 else
                 {
-                    currentPosition = prim.Position;
+                    if (!linksets.ContainsKey(prim.ParentID))
+                        linksets[prim.ParentID] = new Linkset();
+
+                    linksets[prim.ParentID].Children.Add(prim);
                 }
-                Client.Objects.AddPrim(Client.Network.CurrentSim, prim, currentPosition);
-                if (!primDone.WaitOne(10000, false))
-                    return "Rez failed, timed out while creating a prim.";
-                primDone.Reset();
+            }
+            
+            primsCreated = new List<PrimObject>();
+            linking = false;
+            Console.WriteLine("Importing " + linksets.Count + " structures.");
+
+            foreach (Linkset linkset in linksets.Values)
+            {
+                if (linkset.RootPrim.LocalID != 0)
+                {
+                    // HACK: Offset the root prim position so it's not lying on top of the original
+                    // We need a more elaborate solution for importing with relative or absolute offsets
+                    linkset.RootPrim.Position.Z += 3.0f;
+                    currentPosition = linkset.RootPrim.Position;
+
+                    // Rez the root prim with no rotation
+                    LLQuaternion rootRotation = linkset.RootPrim.Rotation;
+                    linkset.RootPrim.Rotation = LLQuaternion.Identity;
+
+                    rezzingRootPrim = true;
+                    currentPrim = linkset.RootPrim;
+
+                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim, linkset.RootPrim.Position);
+
+                    if (!primDone.WaitOne(10000, false))
+                        return "Rez failed, timed out while creating a prim.";
+                    primDone.Reset();
+
+                    rezzingRootPrim = false;
+
+                    // Rez the child prims
+                    foreach (PrimObject prim in linkset.Children)
+                    {
+                        currentPrim = prim;
+                        currentPosition = prim.Position + linkset.RootPrim.Position;
+
+                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim, currentPosition);
+
+                        if (!primDone.WaitOne(10000, false))
+                            return "Rez failed, timed out while creating a prim.";
+                        primDone.Reset();
+                    }
+
+                    // Create a list of the local IDs of the newly created prims
+                    List<uint> primIDs = new List<uint>();
+                    foreach (PrimObject prim in primsCreated)
+                    {
+                        if (prim.LocalID != rootLocalID)
+                            primIDs.Add(prim.LocalID);
+                    }
+                    // Make sure the root object is the last in our list so it becomes the new root
+                    primIDs.Add(rootLocalID);
+
+                    // Link and set the permissions + rotation
+                    linking = true;
+
+                    Client.Objects.LinkPrims(Client.Network.CurrentSim, primIDs);
+
+                    Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
+                        Helpers.PermissionWho.Everyone | Helpers.PermissionWho.Group | Helpers.PermissionWho.NextOwner,
+                        Helpers.PermissionType.Copy | Helpers.PermissionType.Modify | Helpers.PermissionType.Move |
+                        Helpers.PermissionType.Transfer, true);
+
+                    Client.Objects.SetRotation(Client.Network.CurrentSim, rootLocalID, rootRotation);
+
+                    for (int i = 0; i < linkset.Children.Count + 1; i++)
+                    {
+                        primDone.WaitOne(10000, false);
+                        primDone.Reset();
+                    }
+
+                    linking = false;
+                }
+                else
+                {
+                    // Skip linksets with a missing root prim
+                    Console.WriteLine("WARNING: Skipping a linkset with a missing root prim");
+                }
+
+                // Reset everything for the next linkset
+                primsCreated.Clear();
             }
 
             return "Import complete.";
@@ -100,11 +187,25 @@ namespace libsecondlife.TestClient
 
         void TestClient_OnPrimCreated(Simulator simulator, PrimObject prim)
         {
-            primsCreated.Add(prim);
-            currentClient.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
-            currentClient.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
-            //currentClient.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
-            //currentClient.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
+            if (rezzingRootPrim)
+            {
+                rootLocalID = prim.LocalID;
+            }
+
+            if (!linking)
+            {
+                Console.WriteLine("Setting properties for " + prim.LocalID);
+
+                primsCreated.Add(prim);
+
+                // FIXME: Replace these individual calls with a single ObjectUpdate that sets the 
+                // particle system and everything
+                currentClient.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
+                currentClient.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
+                //currentClient.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+                //currentClient.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
+            }
+
             primDone.Set();
         }
 

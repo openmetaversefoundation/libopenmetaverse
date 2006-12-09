@@ -591,15 +591,27 @@ namespace libsecondlife
         /// <param name="textures"></param>
         public void SetTextures(Simulator simulator, uint localID, TextureEntry textures)
         {
+            SetTextures(simulator, localID, textures, String.Empty);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="textures"></param>
+        /// <param name="mediaUrl"></param>
+        public void SetTextures(Simulator simulator, uint localID, TextureEntry textures, string mediaUrl)
+        {
             ObjectImagePacket image = new ObjectImagePacket();
-            
+
             image.AgentData.AgentID = Client.Network.AgentID;
             image.AgentData.SessionID = Client.Network.SessionID;
             image.ObjectData = new ObjectImagePacket.ObjectDataBlock[1];
             image.ObjectData[0] = new ObjectImagePacket.ObjectDataBlock();
             image.ObjectData[0].ObjectLocalID = localID;
             image.ObjectData[0].TextureEntry = textures.ToBytes();
-            image.ObjectData[0].MediaURL = new byte[0];
+            image.ObjectData[0].MediaURL = Helpers.StringToField(mediaUrl);
 
             Client.Network.SendPacket(image, simulator);
         }
