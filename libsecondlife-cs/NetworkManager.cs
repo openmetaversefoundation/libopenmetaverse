@@ -961,6 +961,7 @@ namespace libsecondlife
                     {
                         array.Add(obj);
                     }
+                    loginValues[kvp.Key] = array;
                 }
                 else
                 {
