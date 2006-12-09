@@ -587,6 +587,89 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="textures"></param>
+        public void SetTextures(Simulator simulator, uint localID, TextureEntry textures)
+        {
+            ObjectImagePacket image = new ObjectImagePacket();
+            
+            image.AgentData.AgentID = Client.Network.AgentID;
+            image.AgentData.SessionID = Client.Network.SessionID;
+            image.ObjectData = new ObjectImagePacket.ObjectDataBlock[1];
+            image.ObjectData[0] = new ObjectImagePacket.ObjectDataBlock();
+            image.ObjectData[0].ObjectLocalID = localID;
+            image.ObjectData[0].TextureEntry = textures.ToBytes();
+            image.ObjectData[0].MediaURL = new byte[0];
+
+            Client.Network.SendPacket(image, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="light"></param>
+        public void SetLight(Simulator simulator, uint localID, PrimLightData light)
+        {
+            ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
+
+            extra.AgentData.AgentID = Client.Network.AgentID;
+            extra.AgentData.SessionID = Client.Network.SessionID;
+            extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
+            extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
+            extra.ObjectData[0].ObjectLocalID = localID;
+            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Light;
+            if (light == null)
+            {
+                extra.ObjectData[0].ParamInUse = false;
+                extra.ObjectData[0].ParamData = new byte[0];
+            }
+            else
+            {
+                extra.ObjectData[0].ParamInUse = true;
+                extra.ObjectData[0].ParamData = light.GetBytes();
+            }
+            extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
+
+            Client.Network.SendPacket(extra, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="flexible"></param>
+        public void SetFlexible(Simulator simulator, uint localID, PrimFlexibleData flexible)
+        {
+            ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
+
+            extra.AgentData.AgentID = Client.Network.AgentID;
+            extra.AgentData.SessionID = Client.Network.SessionID;
+            extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
+            extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
+            extra.ObjectData[0].ObjectLocalID = localID;
+            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Flexible;
+            if (flexible == null)
+            {
+                extra.ObjectData[0].ParamInUse = false;
+                extra.ObjectData[0].ParamData = new byte[0];
+            }
+            else
+            {
+                extra.ObjectData[0].ParamInUse = true;
+                extra.ObjectData[0].ParamData = flexible.GetBytes();
+            }
+            extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
+
+            Client.Network.SendPacket(extra, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
         /// <param name="localIDs"></param>
         public void LinkPrims(Simulator simulator, List<uint> localIDs)
         {

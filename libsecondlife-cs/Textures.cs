@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
+using System.ComponentModel;
 using System.IO;
 
 namespace libsecondlife
@@ -394,8 +395,8 @@ namespace libsecondlife
                 binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                 binWriter.Write(kv.Key);
             }
-
-            return memStream.GetBuffer();
+            
+            return memStream.ToArray();
         }
 
         private byte[] GetFaceBitfieldBytes(uint bitfield)
@@ -844,19 +845,19 @@ namespace libsecondlife
     public class TextureAnimation
     {
         /// <summary></summary>
-        [XmlAttribute("flags")] public uint Flags;
+        [XmlAttribute("flags"), DefaultValue(0)] public uint Flags;
         /// <summary></summary>
-        [XmlAttribute("face")] public uint Face;
+        [XmlAttribute("face"), DefaultValue(0)] public uint Face;
         /// <summary></summary>
-        [XmlAttribute("sizex")] public uint SizeX;
+        [XmlAttribute("sizex"), DefaultValue(0)] public uint SizeX;
         /// <summary></summary>
-        [XmlAttribute("sizey")] public uint SizeY;
+        [XmlAttribute("sizey"), DefaultValue(0)] public uint SizeY;
         /// <summary></summary>
-        [XmlAttribute("start")] public float Start;
+        [XmlAttribute("start"), DefaultValue(0)] public float Start;
         /// <summary></summary>
-        [XmlAttribute("length")] public float Length;
+        [XmlAttribute("length"), DefaultValue(0)] public float Length;
         /// <summary></summary>
-        [XmlAttribute("rate")] public float Rate;
+        [XmlAttribute("rate"), DefaultValue(0)] public float Rate;
 
         /// <summary>
         /// Default constructor

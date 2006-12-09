@@ -27,6 +27,9 @@ namespace libsecondlife.TestClient
         public bool Running = true;
 	    public string Master = "";
 
+        public delegate void PrimCreatedCallback(Simulator simulator, PrimObject prim);
+        public event PrimCreatedCallback OnPrimCreated;
+
         private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
         private LLVector3 left = new LLVector3(0.9999f, 0, 0);
@@ -321,6 +324,11 @@ Begin:
             lock (Prims)
             {
                 Prims[prim.LocalID] = prim;
+            }
+
+            if ((prim.Flags & ObjectFlags.CreateSelected) != 0 && OnPrimCreated != null)
+            {
+                OnPrimCreated(simulator, prim);
             }
         }
 

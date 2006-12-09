@@ -682,7 +682,7 @@ namespace libsecondlife
         /// <summary>Z value</summary>
         [XmlAttribute("z"), DefaultValue(0)] public float Z;
         /// <summary>W value</summary>
-        [XmlAttribute("w"), DefaultValue(1)] public float W;
+        [XmlAttribute("w"), DefaultValue(0)] public float W;
 
 		///// <summary>
 		///// Default constructor, initializes to no rotation (0,0,0,1)

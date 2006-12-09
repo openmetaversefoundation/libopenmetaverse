@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Xml.Serialization;
 
 namespace libsecondlife
@@ -58,35 +59,35 @@ namespace libsecondlife
         }
 
         /// <summary></summary>
-        [XmlAttribute("startrgba")] public uint PartStartRGBA;
+        [XmlAttribute("startrgba"), DefaultValue(0)] public uint PartStartRGBA;
         /// <summary></summary>
-        [XmlAttribute("endrgba")] public uint PartEndRGBA;
+        [XmlAttribute("endrgba"), DefaultValue(0)] public uint PartEndRGBA;
         /// <summary></summary>
-        [XmlAttribute("maxage")] public float PartMaxAge;
+        [XmlAttribute("maxage"), DefaultValue(0)] public float PartMaxAge;
         /// <summary></summary>
-        [XmlAttribute("srcmaxage")] public float SrcMaxAge;
+        [XmlAttribute("srcmaxage"), DefaultValue(0)] public float SrcMaxAge;
         /// <summary></summary>
-        [XmlAttribute("srcanglebegin")] public float SrcAngleBegin;
+        [XmlAttribute("srcanglebegin"), DefaultValue(0)] public float SrcAngleBegin;
         /// <summary></summary>
-        [XmlAttribute("srcangleend")] public float SrcAngleEnd;
+        [XmlAttribute("srcangleend"), DefaultValue(0)] public float SrcAngleEnd;
         /// <summary></summary>
-        [XmlAttribute("srcburstpartcount")] public int SrcBurstPartCount;
+        [XmlAttribute("srcburstpartcount"), DefaultValue(0)] public int SrcBurstPartCount;
         /// <summary></summary>
-        [XmlAttribute("srcburstradius")] public float SrcBurstRadius;
+        [XmlAttribute("srcburstradius"), DefaultValue(0)] public float SrcBurstRadius;
         /// <summary></summary>
-        [XmlAttribute("srcburstrate")] public float SrcBurstRate;
+        [XmlAttribute("srcburstrate"), DefaultValue(0)] public float SrcBurstRate;
         /// <summary></summary>
-        [XmlAttribute("srcburstspeedmin")] public float SrcBurstSpeedMin;
+        [XmlAttribute("srcburstspeedmin"), DefaultValue(0)] public float SrcBurstSpeedMin;
         /// <summary></summary>
-        [XmlAttribute("srcburstspeedmax")] public float SrcBurstSpeedMax;
+        [XmlAttribute("srcburstspeedmax"), DefaultValue(0)] public float SrcBurstSpeedMax;
         /// <summary>Unknown</summary>
-        [XmlAttribute("version")] public uint Version;
+        [XmlAttribute("serial"), DefaultValue(0)] public uint Serial;
         /// <summary>Unknown</summary>
-        [XmlAttribute("starttick")] public uint StartTick;
+        [XmlAttribute("starttick"), DefaultValue(0)] public uint StartTick;
         /// <summary></summary>
-        [XmlAttribute("srcpattern")] public SourcePattern SrcPattern;
+        [XmlAttribute("srcpattern"), DefaultValue(SourcePattern.None)] public SourcePattern SrcPattern = SourcePattern.None;
         /// <summary>Various options that describe the behavior of this system</summary>
-        [XmlAttribute("particleflags")] public ParticleFlags PartFlags;
+        [XmlAttribute("particleflags"), DefaultValue(ParticleFlags.None)] public ParticleFlags PartFlags = ParticleFlags.None;
         /// <summary></summary>
         [XmlElement("srctarget")] public LLUUID SrcTargetKey = LLUUID.Zero;
         /// <summary>Texture that will be applied to the particles</summary>
@@ -140,7 +141,7 @@ namespace libsecondlife
             if (data.Length == 0)
                 return;
 
-            Version = (uint)(data[i++] + (data[i++] << 8) +
+            Serial = (uint)(data[i++] + (data[i++] << 8) +
                     (data[i++] << 16) + (data[i++] << 24));
 
             StartTick = (uint)(data[i++] + (data[i++] << 8) +
