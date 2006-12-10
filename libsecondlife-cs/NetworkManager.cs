@@ -923,11 +923,22 @@ namespace libsecondlife
             return Login(loginParams);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="password"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="start"></param>
+        /// <param name="author"></param>
+        /// <param name="md5pass"></param>
+        /// <returns></returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string start,
             string author, bool md5pass)
         {
             Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName,
-                password, userAgent, start, author, md5pass);
+                password, start, userAgent, author, md5pass);
             return Login(loginParams);
         }
 
