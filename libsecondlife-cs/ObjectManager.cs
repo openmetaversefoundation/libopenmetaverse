@@ -110,6 +110,12 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="simulator"></param>
+        /// <param name="properties"></param>
+        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, ObjectProperties properties);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
         /// <param name="avatar"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
@@ -389,10 +395,16 @@ namespace libsecondlife
         /// </summary>
         public event KillObjectCallback OnObjectKilled;
         /// <summary>
+        /// Thie event will be raised when an object's properties are recieved
+        /// from the simulator
+        /// </summary>
+        public event ObjectPropertiesFamilyCallback OnObjectProperties;
+        /// <summary>
         /// If true, when a cached object check is received from the server 
         /// the full object info will automatically be requested.
         /// </summary>
-        public bool RequestAllObjects = false;
+        /// 
+        public bool RequestAllObjects = false;        
 
         private SecondLife Client;
 
@@ -410,6 +422,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, new NetworkManager.PacketCallback(CompressedUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new NetworkManager.PacketCallback(CachedUpdateHandler));
             Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, new NetworkManager.PacketCallback(ObjectPropertiesFamilyHandler));
         }
 
         /// <summary>
@@ -823,6 +836,22 @@ namespace libsecondlife
             }
 
             Client.Network.SendPacket(packet, simulator);
+        }
+
+        /// <summary>
+        /// Request additional properties for an object
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="objectID"></param>
+        public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID)
+        {
+            RequestObjectPropertiesFamilyPacket properties = new RequestObjectPropertiesFamilyPacket();
+            properties.AgentData.AgentID = Client.Network.AgentID;
+            properties.AgentData.SessionID = Client.Network.SessionID;
+            properties.ObjectData.ObjectID = objectID;
+            properties.ObjectData.RequestFlags = 0;
+
+            Client.Network.SendPacket(properties, simulator);
         }
 
         private void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
@@ -1401,6 +1430,33 @@ namespace libsecondlife
             float range = upper - lower;
             float QF = range / 65536.0F;
             return (float)((QV * QF - (0.5F * range)) + QF);
+        }
+
+        private void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
+        {
+            if (OnObjectProperties != null)
+            {
+                ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
+                ObjectProperties props = new ObjectProperties();
+
+                props.BaseMask = op.ObjectData.BaseMask;
+                props.Category = op.ObjectData.Category;
+                props.Description = Helpers.FieldToString(op.ObjectData.Description);
+                props.EveryoneMask = op.ObjectData.EveryoneMask;
+                props.GroupID = op.ObjectData.GroupID;
+                props.GroupMask = op.ObjectData.GroupMask;
+                props.LastOwnerID = op.ObjectData.LastOwnerID;
+                props.Name = Helpers.FieldToString(op.ObjectData.Name);
+                props.NextOwnerMask = op.ObjectData.NextOwnerMask;
+                props.ObjectID = op.ObjectData.ObjectID;
+                props.OwnerID = op.ObjectData.OwnerID;
+                props.OwnerMask = op.ObjectData.OwnerMask;
+                props.OwnershipCost = op.ObjectData.OwnershipCost;
+                props.SalePrice = op.ObjectData.SalePrice;
+                props.SaleType = op.ObjectData.SaleType;
+
+                OnObjectProperties(sim, props);
+            }
         }
     }
 }

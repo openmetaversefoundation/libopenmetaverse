@@ -490,6 +490,7 @@ namespace libsecondlife
 
             Client.Network.SendPacket(teleport);
 
+            // FIXME: Use a ManualResetEvent, Client.Tick() is bad
             while (TeleportStat != TeleportStatus.Failed && TeleportStat != TeleportStatus.Finished && !TeleportTimeout)
             {
                 Client.Tick();

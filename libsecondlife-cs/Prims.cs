@@ -638,4 +638,41 @@ namespace libsecondlife
             Falloff = BitConverter.ToSingle(data, i + 8);
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ObjectProperties
+    {
+        /// <summary></summary>
+        public LLUUID ObjectID;
+        /// <summary></summary>
+        public LLUUID OwnerID;
+        /// <summary></summary>
+        public LLUUID GroupID;
+        /// <summary></summary>
+        public uint BaseMask;
+        /// <summary></summary>
+        public uint OwnerMask;
+        /// <summary></summary>
+        public uint GroupMask;
+        /// <summary></summary>
+        public uint EveryoneMask;
+        /// <summary></summary>
+        public uint NextOwnerMask;
+        /// <summary></summary>
+        public int OwnershipCost;
+        /// <summary></summary>
+        public byte SaleType;
+        /// <summary></summary>
+        public int SalePrice;
+        /// <summary></summary>
+        public uint Category;
+        /// <summary></summary>
+        public LLUUID LastOwnerID;
+        /// <summary></summary>
+        public string Name;
+        /// <summary></summary>
+        public string Description;
+    }
 }
