@@ -305,7 +305,8 @@ namespace libsecondlife
             try
             {
                 Array.Copy(src, 0, dest, 0, 4);
-                zerolen += 4;
+                zerolen = 4;
+                bodylen = srclen;
 
                 //if ((src[0] & MSG_APPENDED_ACKS) == 0)
                 //{
