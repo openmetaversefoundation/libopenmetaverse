@@ -36,7 +36,7 @@ namespace libsecondlife
     /// <summary>
     /// Class to hold Client Avatar's data
     /// </summary>
-    public class MainAvatar
+    public partial class MainAvatar
     {
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -88,6 +88,8 @@ namespace libsecondlife
         private Timer TeleportTimer;
         private bool TeleportTimeout;
         private uint HeightWidthGenCounter;
+        
+        public MainAvatarStatus Status;
 
         /// <summary>
         /// Constructor, aka 'CallBack Central' - Setup callbacks for packets related to our avatar
@@ -98,6 +100,7 @@ namespace libsecondlife
             NetworkManager.PacketCallback callback;
             Client = client;
             TeleportMessage = "";
+            Status = new MainAvatarStatus();
 
             // Coarse location callback
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
