@@ -15,6 +15,7 @@ namespace Nwc.XmlRpc
     /// </remarks>
     public class XmlRpcServer : IEnumerable
     {
+#pragma warning disable 0414 // disable "private field assigned but not used"
         const int RESPONDER_COUNT = 10;
         private TcpListener _myListener;
         private int _port;
@@ -22,6 +23,7 @@ namespace Nwc.XmlRpc
         private IDictionary _handlers;
         private XmlRpcSystemObject _system;
         private WaitCallback _wc;
+#pragma warning restore 0414
 
         ///<summary>Constructor with port and address.</summary>
         ///<remarks>This constructor sets up a TcpListener listening on the

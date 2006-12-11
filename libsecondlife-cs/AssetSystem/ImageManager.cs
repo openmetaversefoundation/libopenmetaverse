@@ -344,7 +344,7 @@ namespace libsecondlife.AssetSystem
             ImageDataPacket reply = (ImageDataPacket)packet;
 
 			LLUUID ImageID = reply.ImageID.ID;
-			ushort Packets = reply.ImageID.Packets;
+// unused?		ushort Packets = reply.ImageID.Packets;
 			uint   Size    = reply.ImageID.Size;
 			byte[] Data    = reply.ImageData.Data;
 

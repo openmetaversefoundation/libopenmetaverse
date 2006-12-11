@@ -537,7 +537,7 @@ namespace libsecondlife.InventorySystem
                 String name = System.Text.Encoding.UTF8.GetString(folderBlock.Name).Trim().Replace("\0", "");
                 LLUUID folderid = folderBlock.FolderID;
                 LLUUID parentid = folderBlock.ParentID;
-                sbyte type = folderBlock.Type;
+// unused?      sbyte type = folderBlock.Type;
 
                 // There is always an folder block, even if there isn't any folders
                 // the "filler" block will not have a name

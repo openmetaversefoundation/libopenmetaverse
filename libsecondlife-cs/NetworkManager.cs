@@ -361,7 +361,7 @@ namespace libsecondlife
             return Region.Name + " (" + ipEndPoint.ToString() + ")";
         }
 
-        private void SendAck(uint id)
+/*        private void SendAck(uint id)
         {
             PacketAckPacket ack = new PacketAckPacket();
 
@@ -379,7 +379,7 @@ namespace libsecondlife
             }
 
             SendPacket(ack, true);
-        }
+        } */
 
         private void SendAcks()
         {

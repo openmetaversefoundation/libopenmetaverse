@@ -160,7 +160,7 @@ namespace libsecondlife
         /// <summary>
         /// Constructor that takes a default texture UUID
         /// </summary>
-        /// <param name="textureID">Texture UUID to use as the default texture</param>
+        /// <param name="defaultTextureID">Texture UUID to use as the default texture</param>
         public TextureEntry(LLUUID defaultTextureID)
         {
             DefaultTexture = new TextureEntryFace(null);

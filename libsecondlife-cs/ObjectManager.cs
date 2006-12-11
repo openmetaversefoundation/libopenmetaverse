@@ -478,8 +478,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator">The target simulator</param>
         /// <param name="prim">The prim object to rez</param>
-        /// <param name="nearPosition">An approximation of the position to rez
-        /// the prim at</param>
+        /// <param name="position">An approximation of the position at which to rez the prim</param>
         /// <remarks>Due to the way client prim rezzing is done on the server,
         /// the requested position for an object is only close to where the prim
         /// actually ends up. If you desire exact placement you'll need to 
@@ -841,7 +840,7 @@ namespace libsecondlife
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
-        /// <param name="sim"></param>
+        /// <param name="simulator"></param>
         /// <param name="objectID"></param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID)
         {
@@ -1150,6 +1149,7 @@ namespace libsecondlife
             }
         }
 
+#pragma warning disable 0219 // disable "value assigned but never used" while this function is incomplete
         private void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
             if (OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)
@@ -1383,6 +1383,7 @@ namespace libsecondlife
                 }
             }
         }
+#pragma warning restore 0219
 
         private void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
