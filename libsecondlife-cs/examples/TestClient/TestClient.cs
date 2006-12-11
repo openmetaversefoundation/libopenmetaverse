@@ -145,6 +145,24 @@ namespace libsecondlife.TestClient
 			}
         }
 
+        //breaks up large responses to deal with the max IM size
+        private void SendResponseIM(SecondLife client, LLUUID fromAgentID, string data, LLUUID imSessionID)
+        {
+            for ( int i = 0 ; i < data.Length ; i += 1024 ) {
+                int y;
+                if ((i + 1023) > data.Length)
+                {
+                    y = data.Length - i;
+                }
+                else
+                {
+                    y = 1023;
+                }
+                Console.WriteLine("sadfsadf " + data.Length.ToString() + " " + y.ToString());
+                string message = data.Substring(i, y);
+                client.Self.InstantMessage(fromAgentID, message, imSessionID);
+            }
+        }
         private void DoCommand(SecondLife client, string cmd, LLUUID fromAgentID, LLUUID imSessionID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
@@ -177,8 +195,9 @@ namespace libsecondlife.TestClient
 
                 if (response.Length > 0)
                 {
-                    if (fromAgentID != null && client.Network.Connected)
-                        client.Self.InstantMessage(fromAgentID, response, imSessionID);
+                    if (fromAgentID != null && client.Network.Connected) 
+                        SendResponseIM(client, fromAgentID, response, imSessionID);
+                        
                     Console.WriteLine(response);
                 }
             }
@@ -230,7 +249,7 @@ Begin:
                             if (response.Length > 0)
                             {
                                 if (fromAgentID != null && client.Network.Connected)
-                                    client.Self.InstantMessage(fromAgentID, response, imSessionID);
+                                    SendResponseIM(client, fromAgentID, response, imSessionID);
                                 Console.WriteLine(response);
                             }
                         }
@@ -361,7 +380,7 @@ Begin:
                 if (fromAgentName.ToLower().Trim() != Master.ToLower().Trim())
                 {
                     // Received an IM from someone that is not the bot's master, ignore
-                    Console.WriteLine("<IM>" + fromAgentName + " (not master): " + message);
+                    Console.WriteLine("<IM>" + fromAgentName + " (not master): " + message + "@"  + regionID.ToString() + ":" + position.ToString() );
                     return;
                 }
             }
@@ -370,7 +389,7 @@ Begin:
                 if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
                 {
                     // Received an IM from someone outside the bot's group, ignore
-                    Console.WriteLine("<IM>" + fromAgentName + " (not in group): " + message);
+                    Console.WriteLine("<IM>" + fromAgentName + " (not in group): " + message + "@" + regionID.ToString() + ":" + position.ToString());
                     return;
                 }
             }
