@@ -293,7 +293,9 @@ namespace libsecondlife
         /// first four bytes are copied directly to the output buffer.
         /// </remarks>
         /// <param name="src">The byte array to decode</param>
-        /// <param name="srclen">The length of the byte array to decode</param>
+        /// <param name="srclen">The length of the byte array to decode. This 
+        /// would be the length of the packet up to (but not including) any
+        /// appended ACKs</param>
         /// <param name="dest">The output byte array to decode to</param>
         /// <returns>The length of the output buffer</returns>
         public static int ZeroDecode(byte[] src, int srclen, byte[] dest)
@@ -307,14 +309,14 @@ namespace libsecondlife
                 Array.Copy(src, 0, dest, 0, 4);
                 zerolen += 4;
 
-                if ((src[0] & MSG_APPENDED_ACKS) == 0)
-                {
-                    bodylen = srclen;
-                }
-                else
-                {
-                    bodylen = srclen - src[srclen - 1] * 4 - 1;
-                }
+                //if ((src[0] & MSG_APPENDED_ACKS) == 0)
+                //{
+                //    bodylen = srclen;
+                //}
+                //else
+                //{
+                //    bodylen = srclen - src[srclen - 1] * 4 - 1;
+                //}
 
                 for (i = zerolen; i < bodylen; i++)
                 {
