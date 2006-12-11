@@ -176,8 +176,9 @@ namespace libsecondlife.AssetSystem
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
             p.AgentData.SerialNum = ++SerialNum;
-            p.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.35187f);
-//            p.ObjectData.TextureEntry = textures.ToBytes();
+            p.AgentData.Size = new LLVector3(15.0f,15.0f,15.0f);
+//            p.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.35187f);
+            //            p.ObjectData.TextureEntry = textures.ToBytes();
 
             foreach( uint faceid in textures.FaceTextures.Keys )
             {
@@ -193,6 +194,9 @@ namespace libsecondlife.AssetSystem
                     case 7:
                     case 12:
                     case 15:
+                    case 16:
+                    case 17:
+                    case 18:
                         break;
                     default:
                         Console.WriteLine("Your wearables define a face that we don't know the order of.  Please capture a AgentSetAppearance packet for your current outfit and submit to static.sprocket@gmail.com, thanks!");
@@ -200,8 +204,11 @@ namespace libsecondlife.AssetSystem
                 }
             }
 
-
+            //Re-order texture faces to match Linden Labs internal data structure.
             TextureEntry te2 = new TextureEntry(textures.DefaultTexture.TextureID);
+            te2.CreateFace(18).TextureID = textures.GetFace(18).TextureID;
+            te2.CreateFace(17).TextureID = textures.GetFace(17).TextureID;
+            te2.CreateFace(16).TextureID = textures.GetFace(16).TextureID;
             te2.CreateFace(15).TextureID = textures.GetFace(15).TextureID;
             te2.CreateFace(2).TextureID  = textures.GetFace(2).TextureID;
             te2.CreateFace(12).TextureID = textures.GetFace(12).TextureID;
@@ -253,6 +260,7 @@ namespace libsecondlife.AssetSystem
             }
 
 
+            
             Console.WriteLine(p);
         }
 
