@@ -158,7 +158,6 @@ namespace libsecondlife.TestClient
                 {
                     y = 1023;
                 }
-                Console.WriteLine("sadfsadf " + data.Length.ToString() + " " + y.ToString());
                 string message = data.Substring(i, y);
                 client.Self.InstantMessage(fromAgentID, message, imSessionID);
             }
