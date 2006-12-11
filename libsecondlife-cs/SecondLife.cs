@@ -46,8 +46,6 @@ namespace libsecondlife
     /// </summary>
     public class SecondLife
     {
-        public const string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
-
         /// <summary>Networking Subsystem</summary>
         public NetworkManager Network;
         /// <summary>Parcel (subdivided simulator lots) Subsystem</summary>
@@ -64,6 +62,8 @@ namespace libsecondlife
         public GroupManager Groups;
         /// <summary>Throttling Subsystem</summary>
         public AgentThrottle Throttle;
+        /// <summary>Settings Subsystem</summary>
+        public Settings Settings;
 
         private ImageManager _ImageManager;
         /// <summary>Image Subsystem</summary>
@@ -108,6 +108,7 @@ namespace libsecondlife
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
             Throttle = new AgentThrottle(this);
+            Settings = new Settings(this);
         }
 
         /// <summary>

@@ -83,7 +83,7 @@ namespace Teleport
             Console.WriteLine("Attempting to connect and login to Second Life.");
 
             // Setup Login to Second Life
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(FirstName, 
+            Dictionary<string, object> loginParams = Client.Network.DefaultLoginValues(FirstName, 
                 LastName, Password, "00:00:00:00:00:00", "last", "Win", "0", "createnotecard", 
                 "static.sprocket@gmail.com");
             Dictionary<string, object> loginReply = new Dictionary<string,object>();

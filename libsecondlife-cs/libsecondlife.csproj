@@ -160,6 +160,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SerializableDictionary.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Textures.cs">
       <SubType>Code</SubType>
     </Compile>

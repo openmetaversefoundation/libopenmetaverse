@@ -59,7 +59,7 @@ namespace groupmanager
                 cmdConnect.Text = "Disconnect";
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
-                Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(txtFirstName.Text,
+                Dictionary<string, object> loginParams = Client.Network.DefaultLoginValues(txtFirstName.Text,
                     txtLastName.Text, txtPassword.Text, "00:00:00:00:00:00", "last", 
                     "Win", "0", "groupmanager", "jhurliman@wsu.edu");
 

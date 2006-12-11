@@ -57,6 +57,12 @@ namespace libsecondlife
         public Region Region;
 
         /// <summary>
+        /// Used internally to track sim disconnections, do not modify this 
+        /// variable.
+        /// </summary>
+        public bool DisconnectCandidate = false;
+
+        /// <summary>
         /// The ID number associated with this particular connection to the 
         /// simulator, used to emulate TCP connections. This is used 
         /// internally for packets that have a CircuitCode field.
@@ -84,12 +90,6 @@ namespace libsecondlife
             get { return connected; }
         }
 
-        /// <summary>
-        /// Used internally to track sim disconnections, do not modify this 
-        /// variable.
-        /// </summary>
-        public bool DisconnectCandidate = false;
-
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
         private uint Sequence = 0;
@@ -101,7 +101,7 @@ namespace libsecondlife
         // Packets we sent out that need ACKs from the simulator
         private Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
         // Sequence numbers of packets we've received from the simulator
-        private Queue<uint> Inbox = new Queue<uint>(InboxSize);
+        private Queue<uint> Inbox;
         // ACKs that are queued up to be sent to the simulator
         private Dictionary<uint, uint> PendingAcks = new Dictionary<uint, uint>();
         private bool connected = false;
@@ -109,24 +109,6 @@ namespace libsecondlife
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
-        // The maximum value of a packet sequence number. After that we assume the 
-        // sequence number just rolls over? Or maybe the protocol isn't able to 
-        // sustain a connection past that
-        private const int MaxSequence = 0xFFFFFF;
-        // The maximum size of the sequence number inbox, used to 
-        // check for resent and/or duplicate packets
-        private const int InboxSize = 100;
-        // Millisecond interval between ticks, where all ACKs are sent out and the age of 
-        // unACKed packets is checked
-        private const int TickLength = 500;
-        // Milliseconds before a packet is assumed lost and resent
-        private const int ResendTimeout = 4000;
-        // Milliseconds before the connection to a simulator is assumed lost
-        private const int SimConnectTimeout = 15000;
-        // Maximum number of queued ACKs to be sent before SendAcks() is forced
-        private const int MaxPendingAcks = 10;
-        // Maximum number of ACKs to append to a packet
-        private const int MaxAppendedAcks = 10;
 
         /// <summary>
         /// 
@@ -144,7 +126,8 @@ namespace libsecondlife
             Callbacks = callbacks;
             Region = new Region(client);
             circuitCode = circuit;
-            AckTimer = new System.Timers.Timer(TickLength);
+            Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
+            AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new ElapsedEventHandler(AckTimer_Elapsed);
 
             // Initialize the callback for receiving a new packet
@@ -180,7 +163,7 @@ namespace libsecondlife
 
                 while (true)
                 {
-                    if (connected || Environment.TickCount - start > SimConnectTimeout)
+                    if (connected || Environment.TickCount - start > Client.Settings.SIMULATOR_TIMEOUT)
                     {
                         return;
                     }
@@ -253,7 +236,7 @@ namespace libsecondlife
             if (incrementSequence)
             {
                 // Set the sequence number
-                if (Sequence > MaxSequence)
+                if (Sequence > Client.Settings.MAX_SEQUENCE)
                     Sequence = 1;
                 else
                     Sequence++;
@@ -285,7 +268,7 @@ namespace libsecondlife
                         // Append any ACKs that need to be sent out to this packet
                         lock (PendingAcks)
                         {
-                            if (PendingAcks.Count > 0 && PendingAcks.Count < MaxAppendedAcks &&
+                            if (PendingAcks.Count > 0 && PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS &&
                                 packet.Type != PacketType.PacketAck &&
                                 packet.Type != PacketType.LogoutRequest)
                             {
@@ -421,7 +404,7 @@ namespace libsecondlife
             {
                 foreach (Packet packet in NeedAck.Values)
                 {
-                    if (now - packet.TickCount > ResendTimeout)
+                    if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
                         Client.Log("Resending " + packet.Type.ToString() + " packet, " + 
                             (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
@@ -477,7 +460,7 @@ namespace libsecondlife
             // Track the sequence number for this packet if it's marked as reliable
             if (packet.Header.Reliable)
             {
-                if (PendingAcks.Count > MaxPendingAcks)
+                if (PendingAcks.Count > Client.Settings.MAX_PENDING_ACKS)
                 {
                     SendAcks();
                 }
@@ -516,7 +499,7 @@ namespace libsecondlife
             // Add this packet to our inbox
             lock (Inbox)
             {
-                if (Inbox.Count >= InboxSize)
+                while (Inbox.Count >= Client.Settings.INBOX_SIZE)
                 {
                     Inbox.Dequeue();
                 }
@@ -797,6 +780,7 @@ namespace libsecondlife
                 throw new NotConnectedException();
             }
         }
+
         /// <summary>
         /// Use this if you want to login to a specific location
         /// </summary>
@@ -805,7 +789,6 @@ namespace libsecondlife
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <returns>string with a value that can be used in the start field in .DefaultLoginValues()</returns>
-
         public static string StartLocation(string sim, int x, int y, int z)
         {
             //uri:sim&x&y&z
@@ -821,8 +804,8 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public static Dictionary<string, object> DefaultLoginValues(
-            string firstName, string lastName, string password, string userAgent, string author)
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
+            string password, string userAgent, string author)
         {
             return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last",
                 1, 50, 50, 50, "Win", "0", userAgent, author, false);
@@ -837,9 +820,8 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public static Dictionary<string, object> DefaultLoginValues(
-            string firstName, string lastName, string password, string startLocation, string userAgent, string author,
-            bool md5pass)
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
+            string password, string startLocation, string userAgent, string author, bool md5pass)
         {
             return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", startLocation,
                 1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
@@ -858,8 +840,8 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public static Dictionary<string, object> DefaultLoginValues(string firstName,
-            string lastName, string password, string mac, string startLocation, string platform,
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
+            string password, string mac, string startLocation, string platform, 
             string viewerDigest, string userAgent, string author)
         {
             return DefaultLoginValues(firstName, lastName, password, mac, startLocation,
@@ -883,9 +865,10 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public static Dictionary<string, object> DefaultLoginValues(string firstName,
-            string lastName, string password, string mac, string startLocation, int major, int minor,
-            int patch, int build, string platform, string viewerDigest, string userAgent, string author, bool md5pass)
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
+            string password, string mac, string startLocation, int major, int minor, int patch, 
+            int build, string platform, string viewerDigest, string userAgent, string author, 
+            bool md5pass)
         {
             Dictionary<string, object> values = new Dictionary<string, object>();
 
@@ -902,7 +885,7 @@ namespace libsecondlife
             values["agree_to_tos"] = "true";
             values["read_critical"] = "true";
             values["viewer_digest"] = viewerDigest;
-            values["user-agent"] = userAgent + " (" + Helpers.VERSION + ")";
+            values["user-agent"] = userAgent + " (" + Client.Settings.VERSION + ")";
             values["author"] = author;
 
             // Build the options array
@@ -950,7 +933,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string author)
         {
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName,
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName,
                 password, "last", userAgent, author, false);
             return Login(loginParams);
         }
@@ -969,7 +952,7 @@ namespace libsecondlife
         public bool Login(string firstName, string lastName, string password, string userAgent, string start,
             string author, bool md5pass)
         {
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(firstName, lastName,
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName,
                 password, start, userAgent, author, md5pass);
             return Login(loginParams);
         }
@@ -981,7 +964,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Login(Dictionary<string, object> loginParams)
         {
-            return Login(loginParams, SecondLife.LOGIN_SERVER);
+            return Login(loginParams, Client.Settings.LOGIN_SERVER);
         }
 
         /// <summary>
@@ -1307,10 +1290,10 @@ namespace libsecondlife
             // Request the economy data
             SendPacket(new EconomyDataRequestPacket());
 
-            // TODO: We should be setting the initial avatar height/width around here 
+            // TODO: Should the appearance manager be handling this?
             //Client.Avatar.SetHeightWidth(676, 909);
 
-            // Set the initial avatar camera position
+            // TODO: A movement class should be handling this
             Avatar.AgentUpdateFlags controlFlags = Avatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
             LLVector3 position = new LLVector3(128, 128, 32);
             LLVector3 forwardAxis = new LLVector3(0, 0.999999f, 0);
@@ -1319,32 +1302,8 @@ namespace libsecondlife
             Client.Self.UpdateCamera(controlFlags, position, forwardAxis, leftAxis, upAxis, LLQuaternion.Identity,
                 LLQuaternion.Identity, 384.0f, true);
 
-            // TODO: Do we ever want to set this to true?
-            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
-            run.AgentData.AgentID = AgentID;
-            run.AgentData.SessionID = SessionID;
-            run.AgentData.AlwaysRun = false;
-            SendPacket(run);
-
-            // TODO: This information is currently unused
-            MuteListRequestPacket mute = new MuteListRequestPacket();
-            mute.AgentData.AgentID = AgentID;
-            mute.AgentData.SessionID = SessionID;
-            mute.MuteData.MuteCRC = 0;
-            SendPacket(mute);
-
-            // Get the current avatar balance
-            MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
-            money.AgentData.AgentID = AgentID;
-            money.AgentData.SessionID = SessionID;
-            money.MoneyData.TransactionID = LLUUID.Zero;
-            SendPacket(money);
-
-            // FIXME: MainAvatar can request the info if it wants to use it
-            //AgentDataUpdateRequestPacket update = new AgentDataUpdateRequestPacket();
-            //update.AgentData.AgentID = AgentID;
-            //update.AgentData.SessionID = SessionID;
-            //SendPacket(update);
+            // TODO: A movement class should be handling this
+            Client.Self.SetAlwaysRun(false);
         }
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
@@ -1441,7 +1400,7 @@ namespace libsecondlife
 
             simulator.Region.ID = handshake.RegionInfo.CacheID;
 
-            // FIXME:
+            // TODO: What do we need these for? RegionFlags probably contains good stuff
             //handshake.RegionInfo.BillableFactor;
             //handshake.RegionInfo.RegionFlags;
             //handshake.RegionInfo.SimAccess;
@@ -1519,7 +1478,8 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Throttles the network traffic for various different traffic types.
+    /// Access this class through SecondLife.Throttle
     /// </summary>
     public class AgentThrottle
     {

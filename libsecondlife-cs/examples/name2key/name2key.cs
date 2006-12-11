@@ -76,7 +76,7 @@ namespace name2key
             client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(QueryHandler));
 
 			// Setup the login values
-            Dictionary<string, object> loginParams = NetworkManager.DefaultLoginValues(args[0], args[1], args[2], 
+            Dictionary<string, object> loginParams = client.Network.DefaultLoginValues(args[0], args[1], args[2], 
                 "00:00:00:00:00:00", "last", "Win", "0", "name2key", "jhurliman@wsu.edu");
 
 			if (!client.Network.Login(loginParams))

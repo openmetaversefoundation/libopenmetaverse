@@ -85,7 +85,7 @@ namespace libsecondlife.AssetSystem
         }
 
         /// <summary>
-        /// Handle the appropriate sink fee assoiacted with an asset upload
+        /// Handle the appropriate sink fee associated with an asset upload
         /// </summary>
         /// <param name="sinkType"></param>
         public void SinkFee(int sinkType)
@@ -93,7 +93,7 @@ namespace libsecondlife.AssetSystem
 			switch( sinkType )
 			{
 				case SINK_FEE_IMAGE:
-					slClient.Self.GiveMoney( LLUUID.Zero, 10, "Image Upload" );
+					slClient.Self.GiveMoney( LLUUID.Zero, slClient.Settings.UPLOAD_COST, "Image Upload" );
 					break;
 				default:
 					throw new Exception("AssetManager: Unknown sinktype (" + sinkType + ")");
@@ -119,7 +119,7 @@ namespace libsecondlife.AssetSystem
                 LLUUID assetID = curUploadRequest.DoUpload();
                 if (asset.Type == Asset.ASSET_TYPE_IMAGE)
                 {
-                    //SinkFee(SINK_FEE_IMAGE);
+                    SinkFee(SINK_FEE_IMAGE);
                 }
                 return assetID;
             }

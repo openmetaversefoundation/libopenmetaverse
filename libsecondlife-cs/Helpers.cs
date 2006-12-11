@@ -38,8 +38,6 @@ namespace libsecondlife
     /// </summary>
     public class Helpers
     {
-        /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
-        public readonly static string VERSION = "libsecondlife 0.0.9";
         /// <summary>This header flag signals that ACKs are appended to the packet</summary>
         public const byte MSG_APPENDED_ACKS = 0x10;
         /// <summary>This header flag signals that this packet has been sent before</summary>

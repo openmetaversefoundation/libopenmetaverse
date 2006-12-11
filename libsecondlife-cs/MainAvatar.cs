@@ -167,7 +167,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Generate an Instant Message (Full Arguments).
+        /// Generate an Instant Message (full arguments)
         /// </summary>
         /// <param name="fromName">Client's Avatar</param>
         /// <param name="sessionID">SessionID of current connection to grid</param>
@@ -288,6 +288,46 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Request the list of muted things for this avatar
+        /// </summary>
+        public void RequestMuteList()
+        {
+            MuteListRequestPacket mute = new MuteListRequestPacket();
+            mute.AgentData.AgentID = Client.Network.AgentID;
+            mute.AgentData.SessionID = Client.Network.SessionID;
+            mute.MuteData.MuteCRC = 0;
+
+            Client.Network.SendPacket(mute);
+        }
+
+        /// <summary>
+        /// Request the current L$ balance
+        /// </summary>
+        public void RequestBalance()
+        {
+            MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
+            money.AgentData.AgentID = Client.Network.AgentID;
+            money.AgentData.SessionID = Client.Network.SessionID;
+            money.MoneyData.TransactionID = LLUUID.Zero;
+
+            Client.Network.SendPacket(money);
+        }
+
+        /// <summary>
+        /// Set the always running toggle on the server
+        /// </summary>
+        /// <param name="alwaysRun">Whether the avatar should always run or not</param>
+        public void SetAlwaysRun(bool alwaysRun)
+        {
+            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
+            run.AgentData.AgentID = Client.Network.AgentID;
+            run.AgentData.SessionID = Client.Network.SessionID;
+            run.AgentData.AlwaysRun = alwaysRun;
+
+            Client.Network.SendPacket(run);
+        }
+
+        /// <summary>
         /// Follows a call to RequestSit() to actually sit on the object
         /// </summary>
         public void Sit()
@@ -309,18 +349,6 @@ namespace libsecondlife
             // 5001 - transaction type for av to av money transfers
 
             GiveMoney(target, amount, description, 5001);
-        }
-
-        /// <summary>
-        /// Toggle running on or off
-        /// </summary>
-        public void SetAlwaysRun(bool running)
-        {
-            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
-            run.AgentData.AgentID = Client.Network.AgentID;
-            run.AgentData.SessionID = Client.Network.SessionID;
-            run.AgentData.AlwaysRun = running;
-            Client.Network.SendPacket(run);
         }
 
         /// <summary>
