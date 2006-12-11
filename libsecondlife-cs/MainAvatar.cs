@@ -100,7 +100,7 @@ namespace libsecondlife
             NetworkManager.PacketCallback callback;
             Client = client;
             TeleportMessage = "";
-            Status = new MainAvatarStatus();
+            Status = new MainAvatarStatus(Client);
 
             // Coarse location callback
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));

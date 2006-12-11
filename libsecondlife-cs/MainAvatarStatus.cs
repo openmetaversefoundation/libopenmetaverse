@@ -25,6 +25,8 @@
 	*/
 
 using System;
+using libsecondlife;
+using libsecondlife.Packets;
 
 namespace libsecondlife
 {
@@ -36,27 +38,49 @@ namespace libsecondlife
         public class MainAvatarStatus
         {
 
-            public ControlStatus Controls;
-            public CameraStatus Camera;
-
-            public int AgentControls
-            {
-                get { return agentControls; }
-            }
-
-            private static int agentControls;
+            private SecondLife Client;
+            private static uint agentControls;
 
             private static bool getControlFlag(Avatar.AgentUpdateFlags flag)
             {
-                int control = (int)flag;
+                uint control = (uint)flag;
                 return ((agentControls & control) == control);
             }
 
             private static void setControlFlag(Avatar.AgentUpdateFlags flag, bool value)
             {
-                int control = (int)flag;
+                uint control = (uint)flag;
                 if (value && ((agentControls & control) != control)) agentControls ^= control;
                 else if (!value && ((agentControls & control) == control)) agentControls ^= control;
+            }
+
+            public ControlStatus Controls;
+            public CameraStatus Camera;
+
+            /// <summary>Constructor for class MainAvatarStatus</summary>
+            public MainAvatarStatus(SecondLife client)
+            {
+                Client = client;
+            }
+
+            public uint AgentControls
+            {
+                get { return agentControls; }
+            }
+
+            public void SendUpdate()
+            {
+                AgentUpdatePacket update = new AgentUpdatePacket();
+                update.AgentData.HeadRotation = Camera.HeadRotation;
+                update.AgentData.BodyRotation = Camera.BodyRotation;
+                update.AgentData.CameraAtAxis = Camera.CameraAtAxis;
+                update.AgentData.CameraCenter = Camera.CameraCenter;
+                update.AgentData.CameraLeftAxis = Camera.CameraLeftAxis;
+                update.AgentData.CameraUpAxis = Camera.CameraUpAxis;
+                update.AgentData.ControlFlags = agentControls;
+                update.AgentData.Far = Camera.Far;
+
+                Client.Network.SendPacket(update);               
             }
 
             public struct ControlStatus
