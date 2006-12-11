@@ -53,10 +53,6 @@ namespace libsecondlife
         /// is attached to</summary>
         public SecondLife Client;
 
-        /// <summary>The maximum size of the sequence number inbox, used to 
-        /// check for resent and/or duplicate packets</summary>
-        public const int INBOX_SIZE = 10000;
-
         /// <summary>The Region class that this Simulator wraps</summary>
         public Region Region;
 
@@ -96,26 +92,41 @@ namespace libsecondlife
 
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
-        private ushort Sequence = 0;
+        private uint Sequence = 0;
         private byte[] RecvBuffer = new byte[4096];
         private byte[] ZeroBuffer = new byte[8192];
         private byte[] ZeroOutBuffer = new byte[4096];
         private Socket Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private AsyncCallback ReceivedData;
-        private Dictionary<int, Packet> NeedAck = new Dictionary<int, Packet>();
-        private Queue<ushort> Inbox = new Queue<ushort>(INBOX_SIZE);
-        private List<uint> PendingAcks = new List<uint>();
+        // Packets we sent out that need ACKs from the simulator
+        private Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
+        // Sequence numbers of packets we've received from the simulator
+        private Queue<uint> Inbox = new Queue<uint>(InboxSize);
+        // ACKs that are queued up to be sent to the simulator
+        private Dictionary<uint, uint> PendingAcks = new Dictionary<uint, uint>();
         private bool connected = false;
         private uint circuitCode;
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
-        // Every tick, all ACKs are sent out and the age of unACKed packets is checked
-        private int TickLength = 500;
-        // Number of milliseconds before a packet is assumed lost and resent
-        private int ResendTimeout = 4000;
-
+        // The maximum value of a packet sequence number. After that we assume the 
+        // sequence number just rolls over? Or maybe the protocol isn't able to 
+        // sustain a connection past that
+        private const int MaxSequence = 0xFFFFFF;
+        // The maximum size of the sequence number inbox, used to 
+        // check for resent and/or duplicate packets
+        private const int InboxSize = 100;
+        // Millisecond interval between ticks, where all ACKs are sent out and the age of 
+        // unACKed packets is checked
+        private const int TickLength = 500;
+        // Milliseconds before a packet is assumed lost and resent
+        private const int ResendTimeout = 4000;
+        // Milliseconds before the connection to a simulator is assumed lost
         private const int SimConnectTimeout = 15000;
+        // Maximum number of queued ACKs to be sent before SendAcks() is forced
+        private const int MaxPendingAcks = 10;
+        // Maximum number of ACKs to append to a packet
+        private const int MaxAppendedAcks = 10;
 
         /// <summary>
         /// 
@@ -242,8 +253,8 @@ namespace libsecondlife
             if (incrementSequence)
             {
                 // Set the sequence number
-                if (Sequence == ushort.MaxValue)
-                    Sequence = 0;
+                if (Sequence > MaxSequence)
+                    Sequence = 1;
                 else
                     Sequence++;
                 packet.Header.Sequence = Sequence;
@@ -267,24 +278,30 @@ namespace libsecondlife
                         }
                     }
 
-                    // Append any ACKs that need to be sent out to this packet
-                    lock (PendingAcks)
+                    // Don't append ACKs to resent packets, in case that's what was causing the
+                    // delivery to fail
+                    if (!packet.Header.Resent)
                     {
-                        if (PendingAcks.Count > 0 && packet.Type != PacketType.PacketAck &&
-                            packet.Type != PacketType.LogoutRequest)
+                        // Append any ACKs that need to be sent out to this packet
+                        lock (PendingAcks)
                         {
-                            packet.Header.AckList = new uint[PendingAcks.Count];
-
-                            int i = 0;
-
-                            foreach (uint ack in PendingAcks)
+                            if (PendingAcks.Count > 0 && PendingAcks.Count < MaxAppendedAcks &&
+                                packet.Type != PacketType.PacketAck &&
+                                packet.Type != PacketType.LogoutRequest)
                             {
-                                packet.Header.AckList[i] = ack;
-                                i++;
-                            }
+                                packet.Header.AckList = new uint[PendingAcks.Count];
 
-                            PendingAcks.Clear();
-                            packet.Header.AppendedAcks = true;
+                                int i = 0;
+
+                                foreach (uint ack in PendingAcks.Values)
+                                {
+                                    packet.Header.AckList[i] = ack;
+                                    i++;
+                                }
+
+                                PendingAcks.Clear();
+                                packet.Header.AppendedAcks = true;
+                            }
                         }
                     }
                 }
@@ -344,7 +361,7 @@ namespace libsecondlife
             return Region.Name + " (" + ipEndPoint.ToString() + ")";
         }
 
-        private void SendAck(ushort id)
+        private void SendAck(uint id)
         {
             PacketAckPacket ack = new PacketAckPacket();
 
@@ -355,7 +372,7 @@ namespace libsecondlife
 
             lock (PendingAcks)
             {
-                if (PendingAcks.Contains(id))
+                if (PendingAcks.ContainsKey(id))
                 {
                     PendingAcks.Remove(id);
                 }
@@ -370,11 +387,18 @@ namespace libsecondlife
             {
                 if (PendingAcks.Count > 0)
                 {
+                    if (PendingAcks.Count > 250)
+                    {
+                        // FIXME: Handle the odd case where we have too many pending ACKs queued up
+                        Client.Log("Too many ACKs queued up!", Helpers.LogLevel.Error);
+                        return;
+                    }
+
                     int i = 0;
                     PacketAckPacket acks = new PacketAckPacket();
                     acks.Packets = new PacketAckPacket.PacketsBlock[PendingAcks.Count];
 
-                    foreach (uint ack in PendingAcks)
+                    foreach (uint ack in PendingAcks.Values)
                     {
                         acks.Packets[i] = new PacketAckPacket.PacketsBlock();
                         acks.Packets[i].ID = ack;
@@ -453,7 +477,7 @@ namespace libsecondlife
             // Track the sequence number for this packet if it's marked as reliable
             if (packet.Header.Reliable)
             {
-                if (PendingAcks.Count > 10)
+                if (PendingAcks.Count > MaxPendingAcks)
                 {
                     SendAcks();
                 }
@@ -467,7 +491,14 @@ namespace libsecondlife
                         Helpers.LogLevel.Info);
 
                     // Send an ACK for this packet immediately
-                    SendAck(packet.Header.Sequence);
+                    //SendAck(packet.Header.Sequence);
+
+                    // TESTING: Try just queuing up ACKs for resent packets instead of immediately triggering an ACK
+                    lock (PendingAcks)
+                    {
+                        uint sequence = (uint)packet.Header.Sequence;
+                        if (!PendingAcks.ContainsKey(sequence)) { PendingAcks[sequence] = sequence; }
+                    }
 
                     // Avoid firing a callback twice for the same packet
                     return;
@@ -476,7 +507,8 @@ namespace libsecondlife
                 {
                     lock (PendingAcks)
                     {
-                        PendingAcks.Add((uint)packet.Header.Sequence);
+                        uint sequence = (uint)packet.Header.Sequence;
+                        if (!PendingAcks.ContainsKey(sequence)) { PendingAcks[sequence] = sequence; }
                     }
                 }
             }
@@ -484,7 +516,7 @@ namespace libsecondlife
             // Add this packet to our inbox
             lock (Inbox)
             {
-                if (Inbox.Count >= INBOX_SIZE)
+                if (Inbox.Count >= InboxSize)
                 {
                     Inbox.Dequeue();
                 }
@@ -496,7 +528,7 @@ namespace libsecondlife
             {
                 lock (NeedAck)
                 {
-                    foreach (ushort ack in packet.Header.AckList)
+                    foreach (uint ack in packet.Header.AckList)
                     {
                         NeedAck.Remove(ack);
                     }
@@ -512,7 +544,7 @@ namespace libsecondlife
                 {
                     foreach (PacketAckPacket.PacketsBlock block in ackPacket.Packets)
                     {
-                        NeedAck.Remove((ushort)block.ID);
+                        NeedAck.Remove(block.ID);
                     }
                 }
             }
@@ -1608,5 +1640,4 @@ namespace libsecondlife
             return data;
         }
     }
-
 }

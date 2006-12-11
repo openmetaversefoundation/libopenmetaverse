@@ -102,12 +102,12 @@ namespace libsecondlife.Packets
             get { return (Data[0] & Helpers.MSG_APPENDED_ACKS) != 0; }
             set { if (value) { Data[0] |= (byte)Helpers.MSG_APPENDED_ACKS; } else { byte mask = (byte)Helpers.MSG_APPENDED_ACKS ^ 0xFF; Data[0] &= mask; } }
         }
-        /// <summary>Packet sequence number</summary>
+        /// <summary>Packet sequence number, three bytes long</summary>
         [XmlIgnore]
-        public ushort Sequence
+        public uint Sequence
         {
-            get { return (ushort)((Data[2] << 8) + Data[3]); }
-            set { Data[2] = (byte)(value >> 8); Data[3] = (byte)(value % 256); }
+            get { return (uint)((Data[1] << 16) + (Data[2] << 8) + Data[3]); }
+            set { Data[1] = (byte)(value >> 16); Data[2] = (byte)(value >> 8); Data[3] = (byte)(value % 256); }
         }
         /// <summary>Numeric ID number of this packet</summary>
         [XmlIgnore]
@@ -182,7 +182,11 @@ namespace libsecondlife.Packets
                     
                     for (int i = 0; i < count; i++)
                     {
-                        AckList[i] = (ushort)((bytes[(packetEnd - i * 4) - 1] << 8) | (bytes[packetEnd - i * 4]));
+                        AckList[i] = (uint)(
+                            (bytes[(packetEnd - i * 4) - 3] << 24) |
+                            (bytes[(packetEnd - i * 4) - 2] << 16) |
+                            (bytes[(packetEnd - i * 4) - 1] <<  8) |
+                            (bytes[(packetEnd - i * 4)    ]));
                     }
 
                     packetEnd -= (count * 4);
