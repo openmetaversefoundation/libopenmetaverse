@@ -176,7 +176,11 @@ namespace libsecondlife.AssetSystem
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
             p.AgentData.SerialNum = ++SerialNum;
-            p.AgentData.Size = new LLVector3(15.0f,15.0f,15.0f);
+
+            float range = 2.025506f - 1.50856f;
+            float height = 1.50856f + (((float)VisualParams[25] / 255.0f) * range);
+
+            p.AgentData.Size = new LLVector3(0.45f, 0.6f, height);
 //            p.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.35187f);
             //            p.ObjectData.TextureEntry = textures.ToBytes();
 
