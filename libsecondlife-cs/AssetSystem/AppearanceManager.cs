@@ -203,6 +203,7 @@ namespace libsecondlife.AssetSystem
                     case 18:
                         break;
                     default:
+                        Console.WriteLine("Unknown order for FaceID: " + faceid);
                         Console.WriteLine("Your wearables define a face that we don't know the order of.  Please capture a AgentSetAppearance packet for your current outfit and submit to static.sprocket@gmail.com, thanks!");
                         break;
                 }
