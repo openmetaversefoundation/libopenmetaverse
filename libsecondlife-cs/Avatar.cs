@@ -128,6 +128,8 @@ namespace libsecondlife
         [Flags]
         public enum AgentUpdateFlags
         {
+            /// <summary>Empty flag</summary>
+            NONE = 0,
             /// <summary>Move Forward (SL Keybinding: W/Up Arrow)</summary>
             AGENT_CONTROL_AT_POS = 0x1 << CONTROL_AT_POS_INDEX,
             /// <summary>Move Backward (SL Keybinding: S/Down Arrow)</summary>

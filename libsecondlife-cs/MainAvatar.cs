@@ -69,17 +69,26 @@ namespace libsecondlife
         public LLVector3 HomePosition = LLVector3.Zero;
         /// <summary>LookAt point saved/restored with HomePosition</summary>
         public LLVector3 HomeLookAt = LLVector3.Zero;
+        /// <summary>Used for camera and control key state tracking</summary>
+        public MainAvatarStatus Status;
+        
         /// <summary>Gets the health of the agent</summary>
-        protected float health;
         public float Health
         {
             get { return health; }
         }
+        
         /// <summary>Gets the current balance of the agent</summary>
-        protected int balance;
         public int Balance
         {
             get { return balance; }
+        }
+
+        /// <summary>Gets the local ID of the prim the avatar is sitting on,
+        /// zero if the avatar is not currently sitting</summary>
+        public uint SittingOn
+        {
+            get { return sittingOn; }
         }
 
         private SecondLife Client;
@@ -88,8 +97,10 @@ namespace libsecondlife
         private Timer TeleportTimer;
         private bool TeleportTimeout;
         private uint HeightWidthGenCounter;
-        
-        public MainAvatarStatus Status;
+        private float health = 0.0f;
+        private int balance = 0;
+
+        internal uint sittingOn = 0;
 
         /// <summary>
         /// Constructor, aka 'CallBack Central' - Setup callbacks for packets related to our avatar
@@ -100,6 +111,7 @@ namespace libsecondlife
             NetworkManager.PacketCallback callback;
             Client = client;
             TeleportMessage = "";
+
             Status = new MainAvatarStatus(Client);
 
             // Coarse location callback

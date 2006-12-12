@@ -154,6 +154,13 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         /// <param name="objectID"></param>
         public delegate void KillObjectCallback(Simulator simulator, uint objectID);
+        /// <summary>
+        /// Called whenever the client avatar sits down or stands up
+        /// </summary>
+        /// <param name="simulator">Simulator the packet was received from</param>
+        /// <param name="sittingOn">The local ID of the object that is being sat
+        /// on. If this is zero the avatar is not sitting on an object</param>
+        public delegate void AvatarSitChanged(Simulator simulator, uint sittingOn);
 
         /// <summary>
         /// 
@@ -389,6 +396,12 @@ namespace libsecondlife
         /// movement-related vectors.
         /// </summary>
         public event AvatarMovedCallback OnAvatarMoved;
+        /// <summary>
+        /// This event will be raised when the main avatar sits on an 
+        /// object or stands up, with a local ID of the current seat or
+        /// zero.
+        /// </summary>
+        public event AvatarSitChanged OnAvatarSitChanged;
         /// <summary>
         /// This event will be raised when an object is removed from a 
         /// simulator.
@@ -973,6 +986,19 @@ namespace libsecondlife
 
                             break;
                         case (byte)PCode.Avatar:
+                            if (block.FullID == Client.Network.AgentID)
+                            {
+                                // Detect if we are sitting or standing
+                                uint oldSittingOn = Client.Self.sittingOn;
+                                Client.Self.sittingOn = block.ParentID;
+
+                                // Fire the callback for our sitting orientation changing
+                                if (Client.Self.sittingOn != oldSittingOn && OnAvatarSitChanged != null)
+                                {
+                                    OnAvatarSitChanged(simulator, Client.Self.sittingOn);
+                                }
+                            }
+
                             if (OnNewAvatar != null)
                             {
                                 Avatar avatar = new Avatar();
