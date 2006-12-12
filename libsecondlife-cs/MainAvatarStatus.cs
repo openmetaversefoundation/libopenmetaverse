@@ -71,6 +71,8 @@ namespace libsecondlife
             public void SendUpdate()
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();
+                update.AgentData.AgentID = Client.Network.AgentID;
+                update.AgentData.SessionID = Client.Network.SessionID;
                 update.AgentData.HeadRotation = Camera.HeadRotation;
                 update.AgentData.BodyRotation = Camera.BodyRotation;
                 update.AgentData.CameraAtAxis = Camera.CameraAtAxis;
