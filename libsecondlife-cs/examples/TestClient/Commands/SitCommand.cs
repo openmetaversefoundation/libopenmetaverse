@@ -19,18 +19,21 @@ namespace libsecondlife.TestClient
 		    PrimObject closest = null;
 		    double closestDistance = Double.MaxValue;
 
-		    lock (TestClient.Prims)
+		    lock (TestClient.SimPrims)
 		    {
-		        foreach (PrimObject p in TestClient.Prims.Values)
-		        {
-                    float distance = Helpers.VecDist(Client.Self.Position, p.Position);
+                if (TestClient.SimPrims.ContainsKey(Client.Network.CurrentSim))
+                {
+                    foreach (PrimObject p in TestClient.SimPrims[Client.Network.CurrentSim].Values)
+                    {
+                        float distance = Helpers.VecDist(Client.Self.Position, p.Position);
 
-	                if (closest == null || distance < closestDistance)
-	                {
-	                    closest = p;
-	                    closestDistance = distance;
-	                }
-		        }
+                        if (closest == null || distance < closestDistance)
+                        {
+                            closest = p;
+                            closestDistance = distance;
+                        }
+                    }
+                }
 		    }
 
             if (closest != null)
@@ -38,7 +41,7 @@ namespace libsecondlife.TestClient
                 Client.Self.RequestSit(closest.ID, LLVector3.Zero);
                 Client.Self.Sit();
 
-                return TestClient.Prims.Count + " prims. Sat on " + closest.ID + ". Distance: " + closestDistance;
+                return "Sat on " + closest.ID + ". Distance: " + closestDistance;
             }
             else
             {

@@ -16,7 +16,17 @@ namespace libsecondlife.TestClient
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
-			return TestClient.Prims.Count.ToString();
+            int count = 0;
+
+            lock (TestClient.SimPrims)
+            {
+                foreach (Dictionary<uint, PrimObject> prims in TestClient.SimPrims.Values)
+                {
+                    count += prims.Count;
+                }
+            }
+
+			return count.ToString();
 		}
     }
 }

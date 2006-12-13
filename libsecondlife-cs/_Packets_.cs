@@ -17799,7 +17799,6 @@ namespace libsecondlife.Packets
                     else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
                 }
             }
-            public LLUUID TargetID;
             public byte LureType;
 
             [XmlIgnore]
@@ -17807,7 +17806,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 17;
+                    int length = 1;
                     if (Message != null) { length += 1 + Message.Length; }
                     return length;
                 }
@@ -17822,7 +17821,6 @@ namespace libsecondlife.Packets
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
                     Array.Copy(bytes, i, _message, 0, length); i += length;
-                    TargetID = new LLUUID(bytes, i); i += 16;
                     LureType = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -17836,8 +17834,6 @@ namespace libsecondlife.Packets
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
                 Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
-                if(TargetID == null) { Console.WriteLine("Warning: TargetID is null, in " + this.GetType()); }
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = LureType;
             }
 
@@ -17845,8 +17841,50 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Info --" + Environment.NewLine;
                 output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
-                output += "TargetID: " + TargetID.ToString() + "" + Environment.NewLine;
                 output += "LureType: " + LureType.ToString() + "" + Environment.NewLine;
+                output = output.Trim();
+                return output;
+            }
+        }
+
+        /// <exclude/>
+        [XmlType("startlure_targetdata")]
+        public class TargetDataBlock
+        {
+            public LLUUID TargetID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 16;
+                }
+            }
+
+            public TargetDataBlock() { }
+            public TargetDataBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    TargetID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                if(TargetID == null) { Console.WriteLine("Warning: TargetID is null, in " + this.GetType()); }
+                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                string output = "-- TargetData --" + Environment.NewLine;
+                output += "TargetID: " + TargetID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -17904,6 +17942,7 @@ namespace libsecondlife.Packets
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.StartLure; } }
         public InfoBlock Info;
+        public TargetDataBlock[] TargetData;
         public AgentDataBlock AgentData;
 
         public StartLurePacket()
@@ -17912,6 +17951,7 @@ namespace libsecondlife.Packets
             Header.ID = 90;
             Header.Reliable = true;
             Info = new InfoBlock();
+            TargetData = new TargetDataBlock[0];
             AgentData = new AgentDataBlock();
         }
 
@@ -17920,6 +17960,10 @@ namespace libsecondlife.Packets
             int packetEnd = bytes.Length - 1;
             Header = new LowHeader(bytes, ref i, ref packetEnd);
             Info = new InfoBlock(bytes, ref i);
+            int count = (int)bytes[i++];
+            TargetData = new TargetDataBlock[count];
+            for (int j = 0; j < count; j++)
+            { TargetData[j] = new TargetDataBlock(bytes, ref i); }
             AgentData = new AgentDataBlock(bytes, ref i);
         }
 
@@ -17927,6 +17971,10 @@ namespace libsecondlife.Packets
         {
             Header = head;
             Info = new InfoBlock(bytes, ref i);
+            int count = (int)bytes[i++];
+            TargetData = new TargetDataBlock[count];
+            for (int j = 0; j < count; j++)
+            { TargetData[j] = new TargetDataBlock(bytes, ref i); }
             AgentData = new AgentDataBlock(bytes, ref i);
         }
 
@@ -17934,11 +17982,15 @@ namespace libsecondlife.Packets
         {
             int length = 8;
             length += Info.Length;            length += AgentData.Length;;
+            length++;
+            for (int j = 0; j < TargetData.Length; j++) { length += TargetData[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             Info.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)TargetData.Length;
+            for (int j = 0; j < TargetData.Length; j++) { TargetData[j].ToBytes(bytes, ref i); }
             AgentData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
@@ -17948,6 +18000,10 @@ namespace libsecondlife.Packets
         {
             string output = "--- StartLure ---" + Environment.NewLine;
                 output += Info.ToString() + "" + Environment.NewLine;
+            for (int j = 0; j < TargetData.Length; j++)
+            {
+                output += TargetData[j].ToString() + "" + Environment.NewLine;
+            }
                 output += AgentData.ToString() + "" + Environment.NewLine;
             return output;
         }

@@ -20,7 +20,7 @@ namespace libsecondlife.TestClient
         public Dictionary<LLUUID, SecondLife> Clients = new Dictionary<LLUUID, SecondLife>();
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
-        public Dictionary<uint, PrimObject> Prims = new Dictionary<uint,PrimObject>();
+        public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims = new Dictionary<Simulator, Dictionary<uint, PrimObject>>();
         public Dictionary<uint, Avatar> Avatars = new Dictionary<uint,Avatar>();
         public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
         public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
@@ -57,6 +57,11 @@ namespace libsecondlife.TestClient
                     Clients[client.Network.AgentID] = client;
 
                     Console.WriteLine("Logged in " + client.ToString());
+
+                    // Throttle the connection to not receive LayerData or asset packets
+                    client.Throttle.Total = 0.0f;
+                    client.Throttle.Task = 1536000.0f;
+                    client.Throttle.Set();
                 }
                 else
                 {
@@ -312,10 +317,10 @@ Begin:
 
         private void Objects_OnObjectKilled(Simulator simulator, uint objectID)
         {
-            lock (Prims)
+            lock (SimPrims)
             {
-                if (Prims.ContainsKey(objectID))
-                    Prims.Remove(objectID);
+                if (SimPrims.ContainsKey(simulator) && SimPrims[simulator].ContainsKey(objectID))
+                    SimPrims[simulator].Remove(objectID);
             }
 
             lock (Avatars)
@@ -327,21 +332,26 @@ Begin:
 
         private void Objects_OnPrimMoved(Simulator simulator, PrimUpdate prim, ulong regionHandle, ushort timeDilation)
         {
-            lock (Prims)
+            lock (SimPrims)
             {
-                if (Prims.ContainsKey(prim.LocalID))
+                if (SimPrims.ContainsKey(simulator) && SimPrims[simulator].ContainsKey(prim.LocalID))
                 {
-                    Prims[prim.LocalID].Position = prim.Position;
-                    Prims[prim.LocalID].Rotation = prim.Rotation;
+                    SimPrims[simulator][prim.LocalID].Position = prim.Position;
+                    SimPrims[simulator][prim.LocalID].Rotation = prim.Rotation;
                 }
             }
         }
 
         private void Objects_OnNewPrim(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
         {
-            lock (Prims)
+            lock (SimPrims)
             {
-                Prims[prim.LocalID] = prim;
+                if (!SimPrims.ContainsKey(simulator))
+                {
+                    SimPrims[simulator] = new Dictionary<uint, PrimObject>(10000);
+                }
+
+                SimPrims[simulator][prim.LocalID] = prim;
             }
 
             if ((prim.Flags & ObjectFlags.CreateSelected) != 0 && OnPrimCreated != null)

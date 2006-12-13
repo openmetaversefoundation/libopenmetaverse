@@ -175,7 +175,7 @@ namespace IA_InventoryManager
             
         }
 
-        void Self_OnTeleport(string message, TeleportStatus status)
+        void Self_OnTeleport(Simulator currentSim, string message, TeleportStatus status)
         {
             Console.WriteLine("Teleport Completed");
             StandUpStraight();

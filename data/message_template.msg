@@ -1798,8 +1798,11 @@ sim -> dataserver
 	{
 		Info	Single
 		{	LureType 		U8	 			}
-		{	TargetID		LLUUID			}
 		{	Message			Variable	1	}
+	}
+	{
+		TargetData Variable
+		{	TargetID		LLUUID			}
 	}
 }
 

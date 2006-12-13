@@ -32,6 +32,92 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// Triggered on incoming chat messages
+    /// </summary>
+    /// <param name="Message"></param>
+    /// <param name="Audible"></param>
+    /// <param name="Type"></param>
+    /// <param name="Sourcetype"></param>
+    /// <param name="FromName"></param>
+    /// <param name="ID"></param>
+    public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
+        string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
+
+    /// <summary>
+    /// Triggered when the L$ account balance for this avatar changes
+    /// </summary>
+    /// <param name="balance">The new account balance</param>
+    public delegate void BalanceCallback(int balance);
+
+    /// <summary>
+    /// Tiggered on incoming instant messages
+    /// </summary>
+    /// <param name="fromAgentID"></param>
+    /// <param name="fromAgentName"></param>
+    /// <param name="toAgentID"></param>
+    /// <param name="parentEstateID"></param>
+    /// <param name="regionID"></param>
+    /// <param name="position"></param>
+    /// <param name="dialog"></param>
+    /// <param name="groupIM"></param>
+    /// <param name="imSessionID"></param>
+    /// <param name="timestamp"></param>
+    /// <param name="message"></param>
+    /// <param name="offline"></param>
+    /// <param name="binaryBucket"></param>
+    public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
+        LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
+        byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
+        byte offline, byte[] binaryBucket);
+
+    /// <summary>
+    /// Triggered for any status updates of a teleport (progress, failed, succeeded)
+    /// </summary>
+    /// <param name="currentSim">The simulator the avatar is currently residing in</param>
+    /// <param name="message">A message about the current teleport status</param>
+    /// <param name="status">The current status of the teleport</param>
+    public delegate void TeleportCallback(Simulator currentSim, string message, TeleportStatus status);
+
+    /// <summary>
+    /// Current teleport status
+    /// </summary>
+    public enum TeleportStatus
+    {
+        /// <summary></summary>
+        None,
+        /// <summary></summary>
+        Start,
+        /// <summary></summary>
+        Progress,
+        /// <summary></summary>
+        Failed,
+        /// <summary></summary>
+        Finished
+    }
+
+    /// <summary>
+    /// Special commands used in Instant Messages
+    /// </summary>
+    public enum InstantMessageDialog
+    {
+        /// <summary>Indicates a regular IM from another agent</summary>
+        MessageFromAgent = 0,
+        /// <summary>Indicates that someone has given the user inventory</summary>
+        GiveInventory = 4,
+        /// <summary>Indicates that the IM is from an object</summary>
+        MessageFromObject = 19,
+        /// <summary>Indicates that the IM is a teleport invitation</summary>
+        RequestTeleport = 22,
+        /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+        AcceptTeleport = 23,
+        /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+        DenyTeleport = 24,
+        /// <summary>Indicates that a user has started typing</summary>
+        StartTyping = 41,
+        /// <summary>Indicates that a user has stopped typing</summary>
+        StopTyping = 42
+    }
 
     /// <summary>
     /// Class to hold Client Avatar's data
@@ -227,7 +313,7 @@ namespace libsecondlife
 
 
             // Send the message
-            Client.Network.SendPacket((Packet)im);
+            Client.Network.SendPacket(im);
         }
 
         /// <summary>
@@ -265,7 +351,7 @@ namespace libsecondlife
             chat.ChatData.Message = Helpers.StringToField(message);
             chat.ChatData.Type = (byte)type;
 
-            Client.Network.SendPacket((Packet)chat);
+            Client.Network.SendPacket(chat);
         }
 
         /// <summary>
@@ -284,7 +370,7 @@ namespace libsecondlife
             heightwidth.HeightWidthBlock.Width = width;
             heightwidth.HeightWidthBlock.GenCounter = HeightWidthGenCounter++;
 
-            Client.Network.SendPacket((Packet)heightwidth);
+            Client.Network.SendPacket(heightwidth);
         }
 
         /// <summary>
@@ -388,7 +474,7 @@ namespace libsecondlife
             money.MoneyData.Flags = 0; //TODO: whats this?
             money.MoneyData.Amount = amount;
 
-            Client.Network.SendPacket((Packet)money);
+            Client.Network.SendPacket(money);
         }
 
         /// <summary>
@@ -455,10 +541,9 @@ namespace libsecondlife
         /// <example>AutoPilot(252620, 247078, 20.2674);</example>
         public void AutoPilotLocal(int localX, int localY, float z)
         {
-            GridRegion gr = Client.Network.CurrentSim.Region.GridRegionData;
-            ulong GridCornerX = ((ulong)gr.X * (ulong)256) + (ulong)localX;
-            ulong GridCornerY = ((ulong)gr.Y * (ulong)256) + (ulong)localY;
-            AutoPilot(GridCornerX, GridCornerY, z);
+            uint x, y;
+            Helpers.LongToUInts(Client.Network.CurrentSim.Region.Handle, out x, out y);
+            AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
         /// <summary>
@@ -546,11 +631,11 @@ namespace libsecondlife
                 TeleportMessage = "Teleport timed out.";
                 TeleportStat = TeleportStatus.Failed;
 
-                if (OnTeleport != null) { OnTeleport(TeleportMessage, TeleportStat); }
+                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat); }
             }
             else
             {
-                if (OnTeleport != null) { OnTeleport(TeleportMessage, TeleportStat); }
+                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat); }
             }
 
             return (TeleportStat == TeleportStatus.Finished);
@@ -612,7 +697,7 @@ namespace libsecondlife
             {
                 TeleportMessage = "Unable to resolve name: " + simName;
                 TeleportStat = TeleportStatus.Failed;
-                OnTeleport(TeleportMessage, TeleportStat);
+                OnTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
             }
 
             return false;
@@ -765,7 +850,7 @@ namespace libsecondlife
             fovPacket.FOVBlock.GenCounter = 0;
             fovPacket.FOVBlock.VerticalAngle = 6.28318531f;
             fovPacket.Header.Reliable = true;
-            Client.Network.SendPacket((Packet)fovPacket);*/
+            Client.Network.SendPacket(fovPacket);*/
         }
 
         /// <summary>
@@ -903,7 +988,7 @@ namespace libsecondlife
 
                 if (OnBeginTeleport != null)
                 {
-                    OnBeginTeleport(TeleportMessage, TeleportStat);
+                    OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
                 }
             }
             else if (packet.Type == PacketType.TeleportProgress)
@@ -915,7 +1000,7 @@ namespace libsecondlife
 
                 if (OnBeginTeleport != null)
                 {
-                    OnBeginTeleport(TeleportMessage, TeleportStat);
+                    OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
                 }
             }
             else if (packet.Type == PacketType.TeleportFailed)
@@ -927,7 +1012,7 @@ namespace libsecondlife
 
                 if (OnBeginTeleport != null)
                 {
-                    OnBeginTeleport(TeleportMessage, TeleportStat);
+                    OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
                 }
 
                 OnBeginTeleport = null;
@@ -958,7 +1043,7 @@ namespace libsecondlife
 
                     if (OnBeginTeleport != null)
                     {
-                        OnBeginTeleport(TeleportMessage, TeleportStat);
+                        OnBeginTeleport(sim, TeleportMessage, TeleportStat);
                     }
                     else
                     {
@@ -972,11 +1057,13 @@ namespace libsecondlife
                     TeleportMessage = "Failed to connect to the new sim after a teleport";
                     TeleportStat = TeleportStatus.Failed;
 
+                    // FIXME: Set the previous CurrentSim to the current simulator again
+
                     Client.Log(TeleportMessage, Helpers.LogLevel.Warning);
 
                     if (OnBeginTeleport != null)
                     {
-                        OnBeginTeleport(TeleportMessage, TeleportStat);
+                        OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
                     }
                 }
 

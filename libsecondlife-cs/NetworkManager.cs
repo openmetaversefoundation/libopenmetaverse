@@ -182,6 +182,8 @@ namespace libsecondlife
         /// </summary>
         public void Disconnect()
         {
+            connected = false;
+
             // Send the CloseCircuit notice
             CloseCircuitPacket close = new CloseCircuitPacket();
 
@@ -204,8 +206,6 @@ namespace libsecondlife
             {
                 Client.Log(e.ToString(), Helpers.LogLevel.Error);
             }
-
-            connected = false;
         }
 
         /// <summary>
@@ -233,6 +233,9 @@ namespace libsecondlife
             }
             packet.Header.AppendedAcks = false;
 
+            // Keep track of when this packet was sent out
+            packet.TickCount = Environment.TickCount;
+
             if (incrementSequence)
             {
                 // Set the sequence number
@@ -244,9 +247,6 @@ namespace libsecondlife
 
                 if (packet.Header.Reliable)
                 {
-                    // Keep track of when this packet was sent out
-                    packet.TickCount = Environment.TickCount;
-
                     lock (NeedAck)
                     {
                         if (!NeedAck.ContainsKey(packet.Header.Sequence))
@@ -398,19 +398,22 @@ namespace libsecondlife
 
         private void ResendUnacked()
         {
-            int now = Environment.TickCount;
-
-            lock (NeedAck)
+            if (connected)
             {
-                foreach (Packet packet in NeedAck.Values)
-                {
-                    if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
-                    {
-                        Client.Log("Resending " + packet.Type.ToString() + " packet, " + 
-                            (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
+                int now = Environment.TickCount;
 
-                        packet.Header.Resent = true;
-                        SendPacket(packet, false);
+                lock (NeedAck)
+                {
+                    foreach (Packet packet in NeedAck.Values)
+                    {
+                        if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
+                        {
+                            Client.Log("Resending " + packet.Type.ToString() + " packet, " +
+                                (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
+
+                            packet.Header.Resent = true;
+                            SendPacket(packet, false);
+                        }
                     }
                 }
             }
@@ -1308,68 +1311,71 @@ namespace libsecondlife
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
-            if (CurrentSim == null)
+            if (connected)
             {
-                DisconnectTimer.Stop();
-                connected = false;
-                return;
-            }
-
-            // If the current simulator is disconnected, shutdown+callback+return
-            if (CurrentSim.DisconnectCandidate)
-            {
-                Client.Log("Network timeout for the current simulator (" +
-                    CurrentSim.Region.Name + "), logging out", Helpers.LogLevel.Warning);
-
-                DisconnectTimer.Stop();
-                connected = false;
-
-                // Shutdown the network layer
-                Shutdown();
-
-                if (OnDisconnected != null)
+                if (CurrentSim == null)
                 {
-                    OnDisconnected(DisconnectType.NetworkTimeout, "");
+                    DisconnectTimer.Stop();
+                    connected = false;
+                    return;
                 }
 
-                // We're completely logged out and shut down, leave this function
-                return;
-            }
-
-            List<Simulator> disconnectedSims = null;
-
-            // Check all of the connected sims for disconnects
-            lock (Simulators)
-            {
-                foreach (Simulator sim in Simulators)
+                // If the current simulator is disconnected, shutdown+callback+return
+                if (CurrentSim.DisconnectCandidate)
                 {
-                    if (sim.DisconnectCandidate)
+                    Client.Log("Network timeout for the current simulator (" +
+                        CurrentSim.Region.Name + "), logging out", Helpers.LogLevel.Warning);
+
+                    DisconnectTimer.Stop();
+                    connected = false;
+
+                    // Shutdown the network layer
+                    Shutdown();
+
+                    if (OnDisconnected != null)
                     {
-                        if (disconnectedSims == null)
+                        OnDisconnected(DisconnectType.NetworkTimeout, "");
+                    }
+
+                    // We're completely logged out and shut down, leave this function
+                    return;
+                }
+
+                List<Simulator> disconnectedSims = null;
+
+                // Check all of the connected sims for disconnects
+                lock (Simulators)
+                {
+                    foreach (Simulator sim in Simulators)
+                    {
+                        if (sim.DisconnectCandidate)
                         {
-                            disconnectedSims = new List<Simulator>();
-                        }
+                            if (disconnectedSims == null)
+                            {
+                                disconnectedSims = new List<Simulator>();
+                            }
 
-                        disconnectedSims.Add(sim);
-                    }
-                    else
-                    {
-                        sim.DisconnectCandidate = true;
+                            disconnectedSims.Add(sim);
+                        }
+                        else
+                        {
+                            sim.DisconnectCandidate = true;
+                        }
                     }
                 }
-            }
 
-            // Actually disconnect each sim we detected as disconnected
-            if (disconnectedSims != null)
-            {
-                foreach (Simulator sim in disconnectedSims)
+                // Actually disconnect each sim we detected as disconnected
+                if (disconnectedSims != null)
                 {
-                    // This sim hasn't received any network traffic since the 
-                    // timer last elapsed, consider it disconnected
-                    Client.Log("Network timeout for simulator " + sim.Region.Name +
-                        ", disconnecting", Helpers.LogLevel.Warning);
+                    foreach (Simulator sim in disconnectedSims)
+                    {
+                        // This sim hasn't received any network traffic since the 
+                        // timer last elapsed, consider it disconnected
+                        Client.Log("Network timeout for simulator " + sim.Region.Name +
+                            ", disconnecting", Helpers.LogLevel.Warning);
 
-                    DisconnectSim(sim);
+                        DisconnectSim(sim);
+                    }
                 }
             }
         }
@@ -1441,8 +1447,8 @@ namespace libsecondlife
 
                 if (simulator.Region.ParcelOverlaysReceived > 3)
                 {
-                    Client.Log("Finished building the " + simulator.Region.Name + " parcel overlay",
-                        Helpers.LogLevel.Info);
+                    // TODO: ParcelOverlaysReceived should become internal, and reset to zero every 
+                    // time it hits four. Also need a callback here
                 }
             }
             else

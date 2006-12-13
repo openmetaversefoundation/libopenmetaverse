@@ -177,7 +177,7 @@ namespace libsecondlife.Tests
             CurrentRegionHandle = update.RegionData.RegionHandle;
         }
 
-        private void OnTeleportHandler(string message, TeleportStatus status)
+        private void OnTeleportHandler(Simulator currentSim, string message, TeleportStatus status)
         {
             switch (status)
             {

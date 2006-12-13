@@ -986,8 +986,16 @@ namespace libsecondlife
 
                             break;
                         case (byte)PCode.Avatar:
+                            // Update some internals if this is our avatar
                             if (block.FullID == Client.Network.AgentID)
                             {
+                                // Update our current position information
+                                Client.Self.LocalID = block.ID;
+                                //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
+                                Client.Self.Position = new LLVector3(block.ObjectData, 16);
+                                Client.Self.Rotation = new LLQuaternion(block.ObjectData, 52, true);
+                                // TODO: Parse the rest of the ObjectData byte array fields
+
                                 // Detect if we are sitting or standing
                                 uint oldSittingOn = Client.Self.sittingOn;
                                 Client.Self.sittingOn = block.ParentID;
@@ -1010,7 +1018,6 @@ namespace libsecondlife
                                 //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
                                 avatar.Position = new LLVector3(block.ObjectData, 16);
                                 avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
-
                                 // TODO: Parse the rest of the ObjectData byte array fields
 
                                 ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
@@ -1024,19 +1031,9 @@ namespace libsecondlife
 
                                 avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
 
-                                if (FirstName == Client.Self.FirstName && LastName == Client.Self.LastName)
+                                if (OnNewAvatar != null)
                                 {
-                                    // Update our avatar
-                                    Client.Self.LocalID = avatar.LocalID;
-                                    Client.Self.Position = avatar.Position;
-                                    Client.Self.Rotation = avatar.Rotation;
-                                }
-                                else
-                                {
-                                    if (OnNewAvatar != null)
-                                    {
-                                        OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                    }
+                                    OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                                 }
                             }
                             break;
@@ -1176,6 +1173,7 @@ namespace libsecondlife
         }
 
 #pragma warning disable 0219 // disable "value assigned but never used" while this function is incomplete
+
         private void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
             if (OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)

@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
-			return "L$: " + Client.Self.Balance;
+			return Client.ToString() + " has L$: " + Client.Self.Balance;
 		}
     }
 }
