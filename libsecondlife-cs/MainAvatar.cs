@@ -45,6 +45,20 @@ namespace libsecondlife
         string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
 
     /// <summary>
+    /// Triggered when a script pops up a dialog box
+    /// </summary>
+    /// <param name="message">The dialog box message</param>
+    /// <param name="objectName">Name of the object that sent the dialog</param>
+    /// <param name="imageID">Image to be displayed in the dialog</param>
+    /// <param name="objectID">ID of the object that sent the dialog</param>
+    /// <param name="firstName">First name of the object owner</param>
+    /// <param name="lastName">Last name of the object owner</param>
+    /// <param name="chatChannel">Chat channel that the object is communicating on</param>
+    /// <param name="buttons">List of button labels</param>
+    public delegate void ScriptDialogCallback(string message, string objectName, LLUUID imageID,
+        LLUUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons);
+
+    /// <summary>
     /// Triggered when the L$ account balance for this avatar changes
     /// </summary>
     /// <param name="balance">The new account balance</param>
@@ -126,6 +140,8 @@ namespace libsecondlife
     {
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
+        /// <summary>Callback for pop-up dialogs from scripts</summary>
+        public event ScriptDialogCallback OnScriptDialog;
         /// <summary>Callback for incoming IMs</summary>
         public event InstantMessageCallback OnInstantMessage;
         /// <summary>Callback for Teleport request update</summary>
@@ -215,6 +231,9 @@ namespace libsecondlife
 
             // Chat callback
             Client.Network.RegisterCallback(PacketType.ChatFromSimulator, new NetworkManager.PacketCallback(ChatHandler));
+
+            // Script dialog callback
+            Client.Network.RegisterCallback(PacketType.ScriptDialog, new NetworkManager.PacketCallback(ScriptDialogHandler));
 
             TeleportTimer = new Timer(18000);
             TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
@@ -906,22 +925,42 @@ namespace libsecondlife
         /// <param name="simulator">[UNUSED]</param>
         private void ChatHandler(Packet packet, Simulator simulator)
         {
-            if (packet.Type == PacketType.ChatFromSimulator)
+            if (OnChat != null)
             {
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
-                if (OnChat != null)
+                OnChat(Helpers.FieldToString(chat.ChatData.Message)
+                    , chat.ChatData.Audible
+                    , chat.ChatData.ChatType
+                    , chat.ChatData.SourceType
+                    , Helpers.FieldToString(chat.ChatData.FromName)
+                    , chat.ChatData.SourceID
+                    , chat.ChatData.OwnerID
+                    , chat.ChatData.Position
+                    );
+            }
+        }
+
+        private void ScriptDialogHandler(Packet packet, Simulator simulator)
+        {
+            if (OnScriptDialog != null)
+            {
+                ScriptDialogPacket dialog = (ScriptDialogPacket)packet;
+                List<string> buttons = new List<string>();
+
+                foreach (ScriptDialogPacket.ButtonsBlock button in dialog.Buttons)
                 {
-                    OnChat(Helpers.FieldToString(chat.ChatData.Message)
-                            , chat.ChatData.Audible
-                            , chat.ChatData.ChatType
-                            , chat.ChatData.SourceType
-                            , Helpers.FieldToString(chat.ChatData.FromName)
-                            , chat.ChatData.SourceID
-                            , chat.ChatData.OwnerID
-                            , chat.ChatData.Position
-                            );
+                    buttons.Add(Helpers.FieldToString(button.ButtonLabel));
                 }
+
+                OnScriptDialog(Helpers.FieldToString(dialog.Data.Message),
+                    Helpers.FieldToString(dialog.Data.ObjectName),
+                    dialog.Data.ImageID,
+                    dialog.Data.ObjectID,
+                    Helpers.FieldToString(dialog.Data.FirstName),
+                    Helpers.FieldToString(dialog.Data.LastName),
+                    dialog.Data.ChatChannel,
+                    buttons);
             }
         }
 
