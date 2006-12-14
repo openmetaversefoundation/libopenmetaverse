@@ -133,18 +133,19 @@ namespace libsecondlife
         /// loss. For outgoing packets the sequence number will be 
         /// automatically set by the network layer as the packet is sent out.
         /// </summary>
-		public ushort Sequence
+		public uint Sequence
 		{
 			get
 			{
-				// The sequence number is the third and fourth bytes of the packet, stored 
+				// The sequence number is the second, third and fourth bytes of the packet, stored 
 				// in network order
-				return (ushort)(Data[2] * 256 + Data[3]);
+				return (uint)(Data[1] * 65536 + Data[2] * 256 + Data[3]);
 			}
 
 			set
 			{
-				Data[2] = (byte)(value / 256);
+				Data[1] = (byte)(value / 65536);
+				Data[2] = (byte)((value / 256) % 256);
 				Data[3] = (byte)(value % 256);
 			}
 		}
@@ -700,8 +701,8 @@ namespace libsecondlife
 											length += 16;
 											break;
 										case FieldType.LLQuaternion:
-											Array.Copy(((LLQuaternion)field).GetBytes(), 0, byteArray, length, 16);
-											length += 16;
+											Array.Copy(((LLQuaternion)field).GetBytes(), 0, byteArray, length, 12);
+											length += 12;
 											break;
 										case FieldType.IPADDR:
 											Array.Copy(((IPAddress)field).GetAddressBytes(), 0, byteArray, length, 4);

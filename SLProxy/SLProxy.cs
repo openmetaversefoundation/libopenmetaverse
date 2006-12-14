@@ -430,7 +430,7 @@ namespace SLProxy {
 				packet = simProxy.CheckAcks(packet, Direction.Incoming, ref length, ref needsCopy);
 
 				// modify sequence numbers to account for injections
-				ushort oldSequence = packet.Sequence;
+				uint oldSequence = packet.Sequence;
 				packet = simProxy.ModifySequence(packet, Direction.Incoming, ref length, ref needsCopy);
 
 				// keep track of sequence numbers
@@ -518,7 +518,7 @@ namespace SLProxy {
 		}
 
 		// SpoofAck: create an ACK for the given packet
-		public Packet SpoofAck(ushort sequence) {
+		public Packet SpoofAck(uint sequence) {
 			Hashtable blocks = new Hashtable();
 			Hashtable fields = new Hashtable();
 			fields["ID"] = (uint)sequence;
@@ -601,12 +601,12 @@ namespace SLProxy {
 			private IPEndPoint remoteEndPoint;
 			private Proxy proxy;
 			private Socket socket;
-			public ushort incomingSequence;
-			public ushort outgoingSequence;
+			public uint incomingSequence;
+			public uint outgoingSequence;
 			private ArrayList incomingInjections;
 			private ArrayList outgoingInjections;
-			private ushort incomingOffset = 0;
-			private ushort outgoingOffset = 0;
+			private uint incomingOffset = 0;
+			private uint outgoingOffset = 0;
 			private Hashtable incomingAcks;
 			private Hashtable outgoingAcks;
 			private ArrayList incomingSeenAcks;
@@ -682,7 +682,7 @@ namespace SLProxy {
 						outgoingSeenAcksPoint = outgoingSeenAcks.Count;
 					}
 
-					foreach (ushort id in incomingAcks.Keys)
+					foreach (uint id in incomingAcks.Keys)
 						if (!incomingSeenAcks.Contains(id)) {
 							Packet packet = (Packet)incomingAcks[id];
 							packet.Data[0] |= Helpers.MSG_RESENT;
@@ -692,7 +692,7 @@ namespace SLProxy {
 							SendPacket(packet, packet.Data.Length, false);
 						}
 
-					foreach (ushort id in outgoingAcks.Keys)
+					foreach (uint id in outgoingAcks.Keys)
 						if (!outgoingSeenAcks.Contains(id)) {
 							Packet packet = (Packet)outgoingAcks[id];
 							packet.Data[0] |= Helpers.MSG_RESENT;
@@ -750,7 +750,7 @@ namespace SLProxy {
 				packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
 
 				// modify sequence numbers to account for injections
-				ushort oldSequence = packet.Sequence;
+				uint oldSequence = packet.Sequence;
 				packet = ModifySequence(packet, Direction.Outgoing, ref length, ref needsCopy);
 
 				// keep track of sequence numbers
@@ -895,7 +895,7 @@ namespace SLProxy {
 					Hashtable blocks = PacketUtility.Unbuild(packet);
 					Hashtable newBlocks = new Hashtable();
 					foreach (Hashtable fields in blocks.Keys) {
-						ushort id = (ushort)((uint)fields["ID"]);
+						uint id = ((uint)fields["ID"]);
 #if DEBUG_SEQUENCE
 						string hrup = "Check !" + id;
 #endif
@@ -925,7 +925,7 @@ namespace SLProxy {
 					byte ackCount = packet.Data[length - 1];
 					for (int i = 0; i < ackCount;) {
 						int offset = length - (ackCount - i) * 4 - 1;
-						ushort ackID = (ushort)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8));
+						uint ackID = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8) + (packet.Data[offset + 1] << 16));
 #if DEBUG_SEQUENCE
 						string hrup = "Check @" + ackID;
 #endif
@@ -962,11 +962,11 @@ namespace SLProxy {
 			public Packet ModifySequence(Packet packet, Direction direction, ref int length, ref bool needsCopy) {
 				ArrayList ourInjections = direction == Direction.Outgoing ? outgoingInjections : incomingInjections;
 				ArrayList theirInjections = direction == Direction.Incoming ? outgoingInjections : incomingInjections;
-				ushort ourOffset = direction == Direction.Outgoing ? outgoingOffset : incomingOffset;
-				ushort theirOffset = direction == Direction.Incoming ? outgoingOffset : incomingOffset;
+				uint ourOffset = direction == Direction.Outgoing ? outgoingOffset : incomingOffset;
+				uint theirOffset = direction == Direction.Incoming ? outgoingOffset : incomingOffset;
 
-				ushort newSequence = (ushort)(packet.Sequence + ourOffset);
-				foreach (ushort injection in ourInjections)
+				uint newSequence = (packet.Sequence + ourOffset);
+				foreach (uint injection in ourInjections)
 					if (newSequence >= injection)
 						++newSequence;
 #if DEBUG_SEQUENCE
@@ -978,18 +978,19 @@ namespace SLProxy {
 					int ackCount = packet.Data[length - 1];
 					for (int i = 0; i < ackCount; ++i) {
 						int offset = length - (ackCount - i) * 4 - 1;
-						uint ackID = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8)) - theirOffset;
+						uint ackID = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8) + (packet.Data[offset + 1] << 16)) - theirOffset;
 #if DEBUG_SEQUENCE
-						uint hrup = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8));
+						uint hrup = (uint)(packet.Data[offset + 3] + (packet.Data[offset + 2] << 8) + (packet.Data[offset + 1] << 16));
 #endif
 						for (int j = theirInjections.Count - 1; j >= 0; --j)
-							if (ackID >= (ushort)theirInjections[j])
+							if (ackID >= (uint)theirInjections[j])
 								--ackID;
 #if DEBUG_SEQUENCE
 						Console.WriteLine("Mod @" + hrup + " = " + ackID);
 #endif
 						packet.Data[offset + 3] = (byte)(ackID % 256);
-						packet.Data[offset + 2] = (byte)(ackID / 256);
+						packet.Data[offset + 2] = (byte)((ackID / 256) % 256);
+						packet.Data[offset + 1] = (byte)(ackID / 65536);
 					}
 				}
 
@@ -1002,7 +1003,7 @@ namespace SLProxy {
 							uint hrup = (uint)fields["ID"];
 #endif
 							for (int i = theirInjections.Count - 1; i >= 0; --i)
-								if (ackID >= (ushort)theirInjections[i])
+								if (ackID >= (uint)theirInjections[i])
 									--ackID;
 #if DEBUG_SEQUENCE
 							Console.WriteLine("Mod !" + hrup + " = " + ackID);

@@ -37,6 +37,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
     <Compile Include="Commands\PacketLogCommand.cs" />
+    <Compile Include="Commands\SetAppearanceCommand.cs" />
     <Compile Include="Commands\ShoutCommand.cs" />
     <Compile Include="Commands\WhisperCommand.cs" />
     <Compile Include="Commands\ExportCommand.cs" />
