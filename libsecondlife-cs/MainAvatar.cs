@@ -448,8 +448,10 @@ namespace libsecondlife
         public void GiveMoney(LLUUID target, int amount, string description)
         {
             // 5001 - transaction type for av to av money transfers
-
-            GiveMoney(target, amount, description, 5001);
+            if (amount > 0)
+                GiveMoney(target, amount, description, 5001);
+            else
+                Client.Log("Attempted to pay zero or negative value " + amount, Helpers.LogLevel.Warning);
         }
 
         /// <summary>

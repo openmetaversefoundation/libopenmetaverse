@@ -659,16 +659,17 @@ namespace libsecondlife
         {
             get { return connected; }
         }
+
         /// <summary>
         /// An event for the connection to a simulator other than the currently
         /// occupied one disconnecting
         /// </summary>
-        public SimDisconnectCallback OnSimDisconnected;
+        public event SimDisconnectCallback OnSimDisconnected;
         /// <summary>
         /// An event for being logged out either through client request, server
         /// forced, or network error
         /// </summary>
-        public DisconnectCallback OnDisconnected;
+        public event DisconnectCallback OnDisconnected;
 
         private SecondLife Client;
         private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType,List<PacketCallback>>();
