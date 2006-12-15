@@ -171,6 +171,15 @@ namespace libsecondlife
         /// <summary></summary>
         public string ProfileURL;
 
+        /// <summary>Gets the local ID of the prim the avatar is sitting on,
+        /// zero if the avatar is not currently sitting</summary>
+        public uint SittingOn
+        {
+            get { return sittingOn; }
+        }
+
+        internal uint sittingOn = 0;
+
         protected const int CONTROL_AT_POS_INDEX = 0;
         protected const int CONTROL_AT_NEG_INDEX = 1;
         protected const int CONTROL_LEFT_POS_INDEX = 2;

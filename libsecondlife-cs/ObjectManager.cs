@@ -1020,6 +1020,8 @@ namespace libsecondlife
                                 avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
                                 // TODO: Parse the rest of the ObjectData byte array fields
 
+                                avatar.sittingOn = block.ParentID;
+
                                 ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
 
                                 avatar.ID = block.FullID;
