@@ -21,6 +21,7 @@ namespace libsecondlife.TestClient
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
         public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims = new Dictionary<Simulator, Dictionary<uint, PrimObject>>();
+        public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
         public Dictionary<uint, Avatar> Avatars = new Dictionary<uint,Avatar>();
         public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
         public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
@@ -92,6 +93,8 @@ namespace libsecondlife.TestClient
             client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             client.Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
             client.Self.OnInstantMessage += new InstantMessageCallback(Self_OnInstantMessage);
+
+            client.Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 
             client.Objects.RequestAllObjects = true;
 
@@ -378,6 +381,13 @@ Begin:
                     Avatars[avatar.LocalID].Rotation = avatar.Rotation;
                 }
             }
+        }
+
+        private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
+        {
+            AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
+
+            lock (Appearances) Appearances[appearance.Sender.ID] = appearance;
         }
 
         private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, 
