@@ -36,24 +36,37 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\EchoMasterCommand.cs" />
     <Compile Include="Commands\ExportOutfitCommand.cs" />
+    <Compile Include="Commands\FollowCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\IMCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Commands\ImportOutfitCommand.cs" />
+    <Compile Include="Commands\LoginCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Commands\LogoutCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Commands\PacketLogCommand.cs" />
+    <Compile Include="Commands\QuitCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Commands\SetAppearanceCommand.cs" />
+    <Compile Include="Commands\SetMasterCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Commands\ShoutCommand.cs" />
     <Compile Include="Commands\WhisperCommand.cs" />
     <Compile Include="Commands\ExportCommand.cs" />
-    <Compile Include="Commands\IMCommand.cs" />
     <Compile Include="Commands\ImportCommand.cs" />
     <Compile Include="Commands\LoadCommand.cs" />
-    <Compile Include="Commands\LoginCommand.cs" />
-    <Compile Include="Commands\LogoutCommand.cs" />
-    <Compile Include="Commands\WhoCommand.cs" />
-    <Compile Include="Commands\FollowCommand.cs" />
     <Compile Include="Commands\SayCommand.cs" />
     <Compile Include="Commands\JumpCommand.cs" />
     <Compile Include="Commands\GotoCommand.cs" />
-    <Compile Include="Commands\SetMasterCommand.cs" />
     <Compile Include="Commands\GiveAllCommand.cs" />
     <Compile Include="Commands\PrimCountCommand.cs" />
     <Compile Include="Commands\SitCommand.cs" />
@@ -61,7 +74,10 @@
     <Compile Include="Commands\UptimeCommand.cs" />
     <Compile Include="Commands\HelpCommand.cs" />
     <Compile Include="Commands\LocationCommand.cs" />
-    <Compile Include="Commands\QuitCommand.cs" />
+    <Compile Include="ClientManager.cs" />
+    <Compile Include="Commands\WhoCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="TestClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

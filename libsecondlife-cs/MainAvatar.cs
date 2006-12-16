@@ -1122,5 +1122,4 @@ namespace libsecondlife
             TeleportTimeout = true;
         }
     }
-
 }

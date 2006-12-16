@@ -16,12 +16,8 @@ namespace libsecondlife.TestClient
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
-            foreach (SecondLife client in TestClient.Clients.Values)
-            {
-                client.Network.Logout();
-            }
-
-            TestClient.Running = false;
+			TestClient.ClientManager.LogoutAll();
+            TestClient.ClientManager.Running = false;
             return "All avatars logged out";
 		}
     }

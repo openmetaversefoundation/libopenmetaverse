@@ -61,26 +61,34 @@ namespace libsecondlife.TestClient
             {
                 try
                 {
-                    XmlWriter writer = XmlWriter.Create(file);
-                    List<PrimObject> prims = new List<PrimObject>();
+					XmlWriterSettings settings = new XmlWriterSettings();
+					settings.Indent = true;
+                    XmlWriter writer = XmlWriter.Create(file, settings);
+					try
+					{
+						List<PrimObject> prims = new List<PrimObject>();
 
-                    lock (TestClient.SimPrims)
-                    {
-                        if (TestClient.SimPrims.ContainsKey(Client.Network.CurrentSim))
-                        {
-                            foreach (PrimObject prim in TestClient.SimPrims[Client.Network.CurrentSim].Values)
-                            {
-                                if (prim.LocalID == localid || prim.ParentID == localid)
-                                {
-                                    prims.Add(prim);
-                                    count++;
-                                }
-                            }
-                        }
-                    }
-                    //Serialize it!
-                    Helpers.PrimListToXml(prims, writer);
-                    writer.Close();
+						lock (TestClient.SimPrims)
+						{
+							if (TestClient.SimPrims.ContainsKey(Client.Network.CurrentSim))
+							{
+								foreach (PrimObject prim in TestClient.SimPrims[Client.Network.CurrentSim].Values)
+								{
+									if (prim.LocalID == localid || prim.ParentID == localid)
+									{
+										prims.Add(prim);
+										count++;
+									}
+								}
+							}
+						}
+						//Serialize it!
+						Helpers.PrimListToXml(prims, writer);
+					}
+					finally
+					{
+						writer.Close();
+					}
                 }
                 catch (Exception e)
                 {

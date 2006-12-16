@@ -52,7 +52,7 @@ namespace libsecondlife
         public ParcelManager Parcels;
         /// <summary>'Client's Avatar' Subsystem</summary>
         public MainAvatar Self;
-        /// <summary>Other Avatars Subsystem</summary>
+        /// <summary>Other AvatarList Subsystem</summary>
         public AvatarManager Avatars;
         /// <summary>Grid (aka simulator group) Subsystem</summary>
         public GridManager Grid;

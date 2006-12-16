@@ -11,7 +11,7 @@ namespace libsecondlife.TestClient
 		public SayCommand()
 		{
 			Name = "say";
-			Description = "Say something.";
+			Description = "Say something.  (usage: say (optional channel) whatever)";
 		}
 
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
@@ -25,15 +25,8 @@ namespace libsecondlife.TestClient
             }
             else if (args.Length > 1)
             {
-                try
-                {
-                    channel = Convert.ToInt32(args[0]);
-                    startIndex = 1;
-                }
-                catch (FormatException)
-                {
-                    channel = 0;
-                }
+                if (Int32.TryParse(args[0], out channel))
+					startIndex = 1;
             }
             
 			for (int i = startIndex; i < args.Length; i++) {

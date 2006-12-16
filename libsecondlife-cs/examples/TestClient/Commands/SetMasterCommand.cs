@@ -23,13 +23,13 @@ namespace libsecondlife.TestClient
 				masterName = masterName + args[ct] + " ";
 			TestClient.Master = masterName.TrimEnd();
 
-			foreach (Avatar av in TestClient.Avatars.Values)
+			foreach (Avatar av in TestClient.Avatars.AvatarList.Values)
 			{
-				if (av.Name == TestClient.Master)
-				{
-					Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
-					break;
-				}
+			    if (av.Name == TestClient.Master)
+			    {
+			        Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
+			        break;
+			    }
 			}
 
 			return "Master set to " + masterName;

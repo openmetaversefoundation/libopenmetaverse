@@ -18,7 +18,7 @@ namespace libsecondlife.TestClient
         {
             Arguments arguments = new Arguments(args);
 
-            TestClient tester;
+            ClientManager manager;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
             string master = "";
@@ -98,10 +98,12 @@ namespace libsecondlife.TestClient
                 }
             }
 
+			foreach (LoginDetails a in accounts)
+				a.Master = master;
+
             // Login the accounts and run the input loop
-            tester = new TestClient(accounts);
-            tester.Master = master;
-            tester.Run();
+            manager = new ClientManager(accounts);
+			manager.Run();
         }
     }
 }

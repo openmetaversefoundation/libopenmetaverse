@@ -17,9 +17,9 @@ namespace libsecondlife.TestClient
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
-			foreach (Avatar av in TestClient.Avatars.Values)
+			foreach (Avatar av in TestClient.Avatars.AvatarList.Values)
 			{
-				result.AppendFormat("\n{0} {1}", av.Name, av.GroupName);
+				result.AppendFormat("\n{0} {1} {2}/{3} ID: {4}", av.Name, av.GroupName, av.CurrentRegion.Name, av.Position, av.ID);
 			}
 
             return result.ToString();

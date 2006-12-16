@@ -13,7 +13,7 @@ namespace libsecondlife.TestClient
 			Name = "sit";
 			Description = "Attempt to sit on the closest prim";
 		}
-
+			
         public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
 		{
 		    PrimObject closest = null;

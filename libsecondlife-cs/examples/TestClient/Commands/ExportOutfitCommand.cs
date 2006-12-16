@@ -37,8 +37,17 @@ namespace libsecondlife.TestClient
                 {
                     try
                     {
-                        XmlWriter writer = XmlWriter.Create(args[1]);
-                        TestClient.Appearances[id].ToXml(writer);
+						XmlWriterSettings settings = new XmlWriterSettings();
+						settings.Indent = true;
+						XmlWriter writer = XmlWriter.Create(args[1], settings);
+						try
+						{
+							TestClient.Appearances[id].ToXml(writer);
+						}
+						finally
+						{
+							writer.Close();
+						}
                     }
                     catch (Exception e)
                     {

@@ -43,7 +43,7 @@ namespace libsecondlife.TestClient
 
         bool Follow(string name)
         {
-            foreach (Avatar av in TestClient.Avatars.Values)
+            foreach (Avatar av in TestClient.Avatars.AvatarList.Values)
             {
                 if (av.Name == name)
 				{

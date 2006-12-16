@@ -32,7 +32,7 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// Class to manage multiple Avatars
+    /// Class to manage multiple AvatarList
     /// </summary>
     public class AvatarManager
     {
@@ -71,8 +71,9 @@ namespace libsecondlife
         /// <summary>Triggered whenever a friend comes online or goes offline</summary>
         public event FriendNotificationCallback OnFriendNotification;
 
+        public Dictionary<LLUUID, Avatar> AvatarList;
+
         private SecondLife Client;
-        private Dictionary<LLUUID, Avatar> Avatars;
         private AgentNamesCallback OnAgentNames;
         private Dictionary<LLUUID, AvatarPropertiesCallback> AvatarPropertiesCallbacks;
 	    private Dictionary<LLUUID, AvatarStatisticsCallback> AvatarStatisticsCallbacks;
@@ -85,7 +86,7 @@ namespace libsecondlife
         public AvatarManager(SecondLife client)
         {
             Client = client;
-            Avatars = new Dictionary<LLUUID, Avatar>();
+            AvatarList = new Dictionary<LLUUID, Avatar>();
             //Callback Dictionaries
             AvatarPropertiesCallbacks = new Dictionary<LLUUID, AvatarPropertiesCallback>();
 	        AvatarStatisticsCallbacks = new Dictionary<LLUUID, AvatarStatisticsCallback>();
@@ -102,25 +103,25 @@ namespace libsecondlife
               
 
         /// <summary>
-        /// Add an Avatar into the Avatars Dictionary
+        /// Add an Avatar into the AvatarList Dictionary
         /// </summary>
         /// <param name="avatar">Filled-out Avatar class to insert</param>
         public void AddAvatar(Avatar avatar)
         {
-            lock (Avatars)
+            lock (AvatarList)
             {
-                Avatars[avatar.ID] = avatar;
+                AvatarList[avatar.ID] = avatar;
             }
         }
 
         /// <summary>
-        /// Used to search all known Avatars for a particular Avatar Key
+        /// Used to search all known AvatarList for a particular Avatar Key
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         public bool Contains(LLUUID id)
         {
-            return Avatars.ContainsKey(id);
+            return AvatarList.ContainsKey(id);
         }
 
         /// <summary>
@@ -170,11 +171,11 @@ namespace libsecondlife
         {
             string name = "";
 
-            lock (Avatars)
+            lock (AvatarList)
             {
-                if (Avatars.ContainsKey(id))
+                if (AvatarList.ContainsKey(id))
                 {
-                    name = Avatars[id].Name;
+                    name = AvatarList[id].Name;
                 }
             }
 
@@ -212,9 +213,9 @@ namespace libsecondlife
             // Fire callbacks for the ones we already have cached
             foreach (LLUUID id in ids)
             {
-                if (Avatars.ContainsKey(id))
+                if (AvatarList.ContainsKey(id))
                 {
-                    havenames[id] = Avatars[id].Name;
+                    havenames[id] = AvatarList[id].Name;
                 }
                 else
                 {
@@ -244,7 +245,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Process an incoming UUIDNameReply Packet and insert Full Names into the Avatars Dictionary
+        /// Process an incoming UUIDNameReply Packet and insert Full Names into the AvatarList Dictionary
         /// </summary>
         /// <param name="packet">Incoming Packet to process</param>
         /// <param name="simulator">Unused</param>
@@ -253,20 +254,20 @@ namespace libsecondlife
             Dictionary<LLUUID, string> names = new Dictionary<LLUUID, string>();
             UUIDNameReplyPacket reply = (UUIDNameReplyPacket)packet;
 
-            lock (Avatars)
+            lock (AvatarList)
             {
                 foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
                 {
-                    if (!Avatars.ContainsKey(block.ID))
+                    if (!AvatarList.ContainsKey(block.ID))
                     {
-                        Avatars[block.ID] = new Avatar();
-                        Avatars[block.ID].ID = block.ID;
+                        AvatarList[block.ID] = new Avatar();
+                        AvatarList[block.ID].ID = block.ID;
                     }
 
-                    Avatars[block.ID].Name = Helpers.FieldToString(block.FirstName) +
+                    AvatarList[block.ID].Name = Helpers.FieldToString(block.FirstName) +
                         " " + Helpers.FieldToString(block.LastName);
 
-                    names[block.ID] = Avatars[block.ID].Name;
+                    names[block.ID] = AvatarList[block.ID].Name;
                 }
             }
 
@@ -289,18 +290,18 @@ namespace libsecondlife
                 // If the agent is online...
                 foreach (OnlineNotificationPacket.AgentBlockBlock block in ((OnlineNotificationPacket)packet).AgentBlock)
                 {
-                    lock (Avatars)
+                    lock (AvatarList)
                     {
-                        if (!Avatars.ContainsKey(block.AgentID))
+                        if (!AvatarList.ContainsKey(block.AgentID))
                         {
                             // Mark this avatar for a name request
                             requestids.Add(block.AgentID);
 
-                            Avatars[block.AgentID] = new Avatar();
-                            Avatars[block.AgentID].ID = block.AgentID;
+                            AvatarList[block.AgentID] = new Avatar();
+                            AvatarList[block.AgentID].ID = block.AgentID;
                         }
 
-                        Avatars[block.AgentID].Online = true;
+                        AvatarList[block.AgentID].Online = true;
                     }
 
                     if (OnFriendNotification != null)
@@ -314,18 +315,18 @@ namespace libsecondlife
                 // If the agent is Offline...
                 foreach (OfflineNotificationPacket.AgentBlockBlock block in ((OfflineNotificationPacket)packet).AgentBlock)
                 {
-                    lock (Avatars)
+                    lock (AvatarList)
                     {
-                        if (!Avatars.ContainsKey(block.AgentID))
+                        if (!AvatarList.ContainsKey(block.AgentID))
                         {
                             // Mark this avatar for a name request
                             requestids.Add(block.AgentID);
 
-                            Avatars[block.AgentID] = new Avatar();
-                            Avatars[block.AgentID].ID = block.AgentID;
+                            AvatarList[block.AgentID] = new Avatar();
+                            AvatarList[block.AgentID].ID = block.AgentID;
                         }
 
-                        Avatars[block.AgentID].Online = false;
+                        AvatarList[block.AgentID].Online = false;
                     }
 
                     if (OnFriendNotification != null)
@@ -348,17 +349,17 @@ namespace libsecondlife
         private void AvatarStatisticsHandler(Packet packet, Simulator simulator)
         {
 	    AvatarStatisticsReplyPacket asr = (AvatarStatisticsReplyPacket)packet;
-            lock(Avatars)
+            lock(AvatarList)
             {
 		Avatar av;
-		if (!Avatars.ContainsKey(asr.AvatarData.AvatarID))
+		if (!AvatarList.ContainsKey(asr.AvatarData.AvatarID))
 		{
 			 av = new Avatar();
 			 av.ID = asr.AvatarData.AvatarID;
 		}
 		else
 		{
-			 av = Avatars[asr.AvatarData.AvatarID];
+			 av = AvatarList[asr.AvatarData.AvatarID];
 		}
 
                 foreach(AvatarStatisticsReplyPacket.StatisticsDataBlock b in asr.StatisticsData)
@@ -392,9 +393,9 @@ namespace libsecondlife
         {
             Avatar av;
             AvatarPropertiesReplyPacket reply = (AvatarPropertiesReplyPacket)packet;
-            lock(Avatars)
+            lock(AvatarList)
             {
-            if (!Avatars.ContainsKey(reply.AgentData.AvatarID))
+            if (!AvatarList.ContainsKey(reply.AgentData.AvatarID))
             {
                 //not in our "cache", create a new object
                 av = new Avatar();
@@ -402,7 +403,7 @@ namespace libsecondlife
             else
             {
                 //Cache hit, modify existing avatar
-                av = Avatars[reply.AgentData.AvatarID];
+                av = AvatarList[reply.AgentData.AvatarID];
             }
             av.ID = reply.AgentData.AvatarID;
             av.ProfileImage = reply.PropertiesData.ImageID;
@@ -419,7 +420,7 @@ namespace libsecondlife
             av.Transacted = reply.PropertiesData.Transacted;
             av.ProfileURL = Helpers.FieldToString(reply.PropertiesData.ProfileURL);
             //reassign in the cache
-            Avatars[av.ID] = av;
+            AvatarList[av.ID] = av;
             //Heaven forbid that we actually get a packet we didn't ask for.
             if (AvatarPropertiesCallbacks.ContainsKey(av.ID) && AvatarPropertiesCallbacks[av.ID] != null)
                 AvatarPropertiesCallbacks[av.ID](av);
@@ -458,9 +459,9 @@ namespace libsecondlife
         {
             AvatarInterestsReplyPacket airp = (AvatarInterestsReplyPacket)packet;
             Avatar av;
-            lock (Avatars)
+            lock (AvatarList)
             {
-                if (!Avatars.ContainsKey(airp.AgentData.AvatarID))
+                if (!AvatarList.ContainsKey(airp.AgentData.AvatarID))
                 {
                     //not in our "cache", create a new object
                     av = new Avatar();
@@ -469,7 +470,7 @@ namespace libsecondlife
                 else
                 {
                     //Cache hit, modify existing avatar
-                    av = Avatars[airp.AgentData.AvatarID];
+                    av = AvatarList[airp.AgentData.AvatarID];
                 }
                 //The rest of the properties, thanks LL.
                 av.WantToMask = airp.PropertiesData.WantToMask;
