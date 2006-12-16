@@ -32,7 +32,7 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
+    /// Class to manage multiple Avatars
     /// </summary>
     public class AvatarManager
     {
@@ -48,7 +48,7 @@ namespace libsecondlife
         /// <param name="names"></param>
         public delegate void AgentNamesCallback(Dictionary<LLUUID, string> names);
         /// <summary>
-        /// 
+        /// Triggered when Avatar properties are received (AvatarPropertiesReply)
         /// </summary>
         /// <param name="avatar"></param>
         public delegate void AvatarPropertiesCallback(Avatar avatar);
@@ -114,7 +114,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Used to search all known Avatars for a particular Avatar Key
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -124,7 +124,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Refresh Avatar Profile information
         /// </summary>
         /// <param name="a"></param>
         public void UpdateAvatar(Avatar a)
@@ -275,7 +275,11 @@ namespace libsecondlife
                 OnAgentNames(names);
             }
         }
-
+        /// <summary>
+        /// Handle incoming friend notifications
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void FriendNotificationHandler(Packet packet, Simulator simulator)
         {
             List<LLUUID> requestids = new List<LLUUID>();
@@ -336,7 +340,11 @@ namespace libsecondlife
                 BeginGetAvatarNames(requestids, null);
             }
         }
-
+        /// <summary>
+        /// Handles incoming avatar statistics. What are those ?
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void AvatarStatisticsHandler(Packet packet, Simulator simulator)
         {
 	    AvatarStatisticsReplyPacket asr = (AvatarStatisticsReplyPacket)packet;
@@ -375,7 +383,11 @@ namespace libsecondlife
 	                AvatarStatisticsCallbacks[av.ID](av);
             }
         }
-
+        /// <summary>
+        /// Process incoming Avatar properties (profile data)
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="sim"></param>
         private void AvatarPropertiesHandler(Packet packet, Simulator sim)
         {
             Avatar av;
@@ -413,7 +425,13 @@ namespace libsecondlife
                 AvatarPropertiesCallbacks[av.ID](av);
             }
         }
-
+        /// <summary>
+        /// Start a request for Avatar Properties
+        /// </summary>
+        /// <param name="avatarid"></param>
+        /// <param name="aic"></param>
+        /// <param name="asc"></param>
+        /// <param name="apc"></param>
         public void BeginAvatarPropertiesRequest(LLUUID avatarid, AvatarPropertiesCallback apc, AvatarStatisticsCallback asc, AvatarInterestsCallback aic)
         {
             //Set teh callback!
@@ -431,7 +449,11 @@ namespace libsecondlife
             //send the packet!
             Client.Network.SendPacket(aprp);
         }
-
+        /// <summary>
+        /// Process incoming Avatar Interests information
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void AvatarInterestsHandler(Packet packet, Simulator simulator)
         {
             AvatarInterestsReplyPacket airp = (AvatarInterestsReplyPacket)packet;

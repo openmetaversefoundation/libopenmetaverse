@@ -189,7 +189,7 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Begin process to get information for a Region
         /// </summary>
         /// <param name="name">Region Name you're requesting data for</param>
         /// <param name="grc">CallBack being used to process the response</param>

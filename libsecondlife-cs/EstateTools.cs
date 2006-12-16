@@ -36,7 +36,7 @@ namespace libsecondlife
 		private SecondLife Client;
 
         /// <summary>
-        /// 
+        /// Constructor for EstateTools class
         /// </summary>
         /// <param name="client"></param>
 		public EstateTools(SecondLife client)
@@ -45,9 +45,9 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Kick an Avatar from an estate
         /// </summary>
-        /// <param name="prey"></param>
+        /// <param name="prey">Key of Avatar to kick</param>
 		public void KickUser(LLUUID prey) 
 		{
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
@@ -63,9 +63,9 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Ban an Avatar from an estate
         /// </summary>
-        /// <param name="prey"></param>
+        /// <param name="prey">Key of Avatar to ban</param>
 		public void BanUser(LLUUID prey) 
 		{
             // FIXME:

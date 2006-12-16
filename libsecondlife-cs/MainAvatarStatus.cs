@@ -53,8 +53,13 @@ namespace libsecondlife
                 if (value && ((agentControls & control) != control)) agentControls ^= control;
                 else if (!value && ((agentControls & control) == control)) agentControls ^= control;
             }
-
+            /// <summary>
+            /// Holds control flags
+            /// </summary>
             public ControlStatus Controls;
+            /// <summary>
+            /// Holds camera flags
+            /// </summary>
             public CameraStatus Camera;
 
             /// <summary>Constructor for class MainAvatarStatus</summary>
@@ -67,7 +72,9 @@ namespace libsecondlife
             {
                 get { return agentControls; }
             }
-
+            /// <summary>
+            /// Send new AgentUpdate
+            /// </summary>
             public void SendUpdate()
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();

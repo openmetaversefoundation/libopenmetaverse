@@ -100,13 +100,13 @@ namespace libsecondlife
     {
         /// <summary></summary>
         None,
-        /// <summary></summary>
+        /// <summary>Teleport Start</summary>
         Start,
-        /// <summary></summary>
+        /// <summary>Teleport in Progress</summary>
         Progress,
-        /// <summary></summary>
+        /// <summary>Teleport Failed</summary>
         Failed,
-        /// <summary></summary>
+        /// <summary>Teleport Completed</summary>
         Finished
     }
 
@@ -253,33 +253,33 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Send an Instant Message
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="message"></param>
+        /// <param name="target">Key of Avatar</param>
+        /// <param name="message">Text Message being sent.</param>
         public void InstantMessage(LLUUID target, string message)
         {
             InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, message, null, LLUUID.Random());
         }
 
         /// <summary>
-        /// 
+        /// Send an Instant Message
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="message"></param>
-        /// <param name="IMSessionID"></param>
+        /// <param name="target">Key of Avatar</param>
+        /// <param name="message">Text Message being sent.</param>
+        /// <param name="IMSessionID">IM Session ID</param>
         public void InstantMessage(LLUUID target, string message, LLUUID IMSessionID)
         {
             InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, message, null, IMSessionID);
         }
 
         /// <summary>
-        /// 
+        /// Send an Instant Message
         /// </summary>
-        /// <param name="fromName"></param>
-        /// <param name="sessionID"></param>
-        /// <param name="target"></param>
-        /// <param name="message"></param>
+        /// <param name="fromName">Client's Avatar</param>
+        /// <param name="sessionID">SessionID of current connection to grid</param>
+        /// <param name="target">Key of Avatar</param>
+        /// <param name="message">Text Message being sent.</param>
         /// <param name="conferenceIDs"></param>
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
         {
@@ -291,10 +291,10 @@ namespace libsecondlife
         /// </summary>
         /// <param name="fromName">Client's Avatar</param>
         /// <param name="sessionID">SessionID of current connection to grid</param>
-        /// <param name="target">UUID of target Av.</param>
+        /// <param name="target">Key of Avatar</param>
         /// <param name="message">Text Message being sent.</param>
         /// <param name="conferenceIDs"></param>
-        /// <param name="IMSessionID"></param>
+        /// <param name="IMSessionID">IM Session ID</param>
         /// 
         /// TODO: Have fromName grabbed from elsewhere and remove argument, to prevent inadvertant spoofing.
         /// 
@@ -568,23 +568,23 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Start a teleport process
         /// </summary>
         /// <param name="regionHandle"></param>
-        /// <param name="position"></param>
-        /// <param name="tc"></param>
+        /// <param name="position">Position for Teleport</param>
+        /// <param name="tc">Callback ID</param>
         public void BeginTeleport(ulong regionHandle, LLVector3 position, TeleportCallback tc)
         {
             BeginTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z), tc);
         }
 
         /// <summary>
-        /// 
+        /// Start a teleport process
         /// </summary>
         /// <param name="regionHandle"></param>
-        /// <param name="position"></param>
-        /// <param name="lookAt"></param>
-        /// <param name="tc"></param>
+        /// <param name="position">Position for Teleport</param>
+        /// <param name="lookAt">Target to look at</param>
+        /// <param name="tc">Callback ID</param>
         public void BeginTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt, TeleportCallback tc)
         {
             OnBeginTeleport = tc;
@@ -602,10 +602,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Start a teleport process
         /// </summary>
         /// <param name="regionHandle"></param>
-        /// <param name="position"></param>
+        /// <param name="position">Position for Teleport</param>
         /// <returns></returns>
         public bool Teleport(ulong regionHandle, LLVector3 position)
         {
@@ -613,11 +613,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Start a teleport process
         /// </summary>
         /// <param name="regionHandle"></param>
-        /// <param name="position"></param>
-        /// <param name="lookAt"></param>
+        /// <param name="position">Position for Teleport</param>
+        /// <param name="lookAt">Target to look at</param>
         /// <returns></returns>
         public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
@@ -663,10 +663,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Generic Teleport Function
         /// </summary>
-        /// <param name="simName"></param>
-        /// <param name="position"></param>
+        /// <param name="simName">Region name</param>
+        /// <param name="position">Position for Teleport</param>
         /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position)
         {
@@ -675,11 +675,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Teleport Function
         /// </summary>
-        /// <param name="simName"></param>
-        /// <param name="position"></param>
-        /// <param name="lookAt"></param>
+        /// <param name="simName">Region name</param>
+        /// <param name="position">Position for Teleport</param>
+        /// <param name="lookAt">Target to look at</param>
         /// <returns></returns>
         public bool Teleport(string simName, LLVector3 position, LLVector3 lookAt)
         {
@@ -1014,10 +1014,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Handler for teleport Requests
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
+        /// <param name="packet">Packet</param>
+        /// <param name="simulator">Simulator</param>
         private void TeleportHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.TeleportStart)
@@ -1113,7 +1113,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Teleport Timer Event Handler
         /// </summary>
         /// <param name="source"></param>
         /// <param name="ea"></param>

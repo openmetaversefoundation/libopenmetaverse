@@ -111,7 +111,7 @@ namespace libsecondlife
         private System.Timers.Timer AckTimer;
 
         /// <summary>
-        /// 
+        /// Constructor for Simulator
         /// </summary>
         /// <param name="client"></param>
         /// <param name="callbacks"></param>
@@ -178,7 +178,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Disconnect a Simulator
         /// </summary>
         public void Disconnect()
         {
@@ -209,10 +209,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Sends a packet
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="incrementSequence"></param>
+        /// <param name="packet">Packet to be sent</param>
+        /// <param name="incrementSequence">Increment sequence number?</param>
         public void SendPacket(Packet packet, bool incrementSequence)
         {
             byte[] buffer;
@@ -319,9 +319,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Send Packet. Bytes !
         /// </summary>
-        /// <param name="payload"></param>
+        /// <param name="payload">payload</param>
         public void SendPacket(byte[] payload)
         {
             if (!connected)
@@ -338,7 +338,10 @@ namespace libsecondlife
                 Client.Log(e.ToString(), Helpers.LogLevel.Error);
             }
         }
-
+        /// <summary>
+        /// Returns Simulator Name as a String
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return Region.Name + " (" + ipEndPoint.ToString() + ")";
@@ -363,7 +366,9 @@ namespace libsecondlife
 
             SendPacket(ack, true);
         } */
-
+        /// <summary>
+        /// Sends out pending acknowledgements
+        /// </summary>
         private void SendAcks()
         {
             lock (PendingAcks)
@@ -395,7 +400,9 @@ namespace libsecondlife
                 }
             }
         }
-
+        /// <summary>
+        /// Resend unacknowledged packets
+        /// </summary>
         private void ResendUnacked()
         {
             if (connected)
@@ -418,7 +425,10 @@ namespace libsecondlife
                 }
             }
         }
-
+        /// <summary>
+        /// Callback handler for incomming data
+        /// </summary>
+        /// <param name="result"></param>
         private void OnReceivedData(IAsyncResult result)
         {
             Packet packet = null;

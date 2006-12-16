@@ -91,15 +91,15 @@ namespace libsecondlife
         public int PublicCount;
         /// <summary></summary>
         public int LocalID;
-        /// <summary></summary>
+        /// <summary>Key of land owner</summary>
         public LLUUID OwnerID;
-        /// <summary></summary>
+        /// <summary>Is the land group owned</summary>
         public bool IsGroupOwned;
         /// <summary></summary>
         public uint AuctionID;
-        /// <summary></summary>
+        /// <summary>Presumably for first land</summary>
         public bool ReservedNewbie;
-        /// <summary></summary>
+        /// <summary>Date land was claimed</summary>
         public int ClaimDate;
         /// <summary></summary>
         public int ClaimPrice;
@@ -109,25 +109,25 @@ namespace libsecondlife
         public LLVector3 AABBMin;
         /// <summary></summary>
         public LLVector3 AABBMax;
-        /// <summary></summary>
+        /// <summary>Bitmap describing land layout in 4x4m squares across the entire region</summary>
         public byte[] Bitmap;
-        /// <summary></summary>
+        /// <summary>Total land area</summary>
         public int Area;
         /// <summary></summary>
         public byte Status;
-        /// <summary></summary>
+        /// <summary>Max objects across region</summary>
         public int SimWideMaxObjects;
-        /// <summary></summary>
+        /// <summary>Total objects across region</summary>
         public int SimWideTotalObjects;
-        /// <summary></summary>
+        /// <summary>Max objects for parcel</summary>
         public int MaxObjects;
-        /// <summary></summary>
+        /// <summary>Total objects in parcel</summary>
         public int TotalObjects;
-        /// <summary></summary>
+        /// <summary>Total objects for owner</summary>
         public int OwnerObjects;
-        /// <summary></summary>
+        /// <summary>Total objects for group</summary>
         public int GroupObjects;
-        /// <summary></summary>
+        /// <summary>Total for other objects</summary>
         public int OtherObjects;
         /// <summary></summary>
         public float ParcelObjectBonus;
@@ -137,29 +137,29 @@ namespace libsecondlife
         public uint ParcelFlags;
         /// <summary></summary>
         public int SalePrice;
-        /// <summary></summary>
+        /// <summary>Parcel Name</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Parcel Description</summary>
         public string Desc;
-        /// <summary></summary>
+        /// <summary>URL For Music Stream</summary>
         public string MusicURL;
-        /// <summary></summary>
+        /// <summary>URL For other Media</summary>
         public string MediaURL;
-        /// <summary></summary>
+        /// <summary>Key to Picture for Media Placeholder</summary>
         public LLUUID MediaID;
         /// <summary></summary>
         public byte MediaAutoScale;
         /// <summary></summary>
         public LLUUID GroupID;
-        /// <summary></summary>
+        /// <summary>Price for a temporary pass</summary>
         public int PassPrice;
-        /// <summary></summary>
+        /// <summary>How long is pass valid for</summary>
         public float PassHours;
         /// <summary></summary>
         public byte Category;
-        /// <summary></summary>
+        /// <summary>Key of authorized buyer</summary>
         public LLUUID AuthBuyerID;
-        /// <summary></summary>
+        /// <summary>Key of parcel snapshot</summary>
         public LLUUID SnapshotID;
         /// <summary></summary>
         public LLVector3 UserLocation;

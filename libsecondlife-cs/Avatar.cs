@@ -128,25 +128,25 @@ namespace libsecondlife
         public LLQuaternion Rotation;
         /// <summary>Region (aka sim) the Avatar is in</summary>
         public Region CurrentRegion;
-        /// <summary></summary>
+        /// <summary>Date the Avatar was Born into Second Life</summary>
         public string BornOn;
-        /// <summary></summary>
+        /// <summary>Key pointing to the Profile Image</summary>
         public LLUUID ProfileImage;
-        /// <summary></summary>
+        /// <summary>Key of their Partner</summary>
         public LLUUID PartnerID;
-        /// <summary></summary>
+        /// <summary>Text from the About field in the Profile</summary>
         public string AboutText;
-        /// <summary></summary>
+        /// <summary>Bitmask representing Want To checkboxes</summary>
         public uint WantToMask;
-        /// <summary></summary>
+        /// <summary>Text field for Want To</summary>
         public string WantToText;
-        /// <summary></summary>
+        /// <summary>Bitmask representing Skills checkboxes</summary>
         public uint SkillsMask;
-        /// <summary></summary>
+        /// <summary>Text field for Skills</summary>
         public string SkillsText;
-        /// <summary></summary>
+        /// <summary>Text from the First Life field in the Profile</summary>
         public string FirstLifeText;
-        /// <summary></summary>
+        /// <summary>Key pointing to the First Life picture</summary>
         public LLUUID FirstLifeImage;
         /// <summary></summary>
         public bool Identified;
@@ -156,19 +156,19 @@ namespace libsecondlife
         public bool AllowPublish;
         /// <summary></summary>
         public bool MaturePublish;
-        /// <summary></summary>
+        /// <summary>Charter Member type, if applicable</summary>
         public string CharterMember;
-        /// <summary></summary>
+        /// <summary>Rating for Behavior</summary>
         public float Behavior;
-        /// <summary></summary>
+        /// <summary>Rating for Appearance</summary>
         public float Appearance;
-        /// <summary></summary>
+        /// <summary>Rating for Building</summary>
         public float Building;
-        /// <summary></summary>
+        /// <summary>Text from the Languages field in the Profile</summary>
         public string LanguagesText;
         /// <summary></summary>
         public TextureEntry Textures;
-        /// <summary></summary>
+        /// <summary>URL to load in Web Profile</summary>
         public string ProfileURL;
 
         /// <summary>Gets the local ID of the prim the avatar is sitting on,

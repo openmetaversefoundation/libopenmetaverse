@@ -31,25 +31,25 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
+    /// Avatar group management
     /// </summary>
     public class GroupMember
     {
-        /// <summary></summary>
+        /// <summary>Key of Group Member</summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Total land contribution</summary>
         public int Contribution;
-        /// <summary></summary>
+        /// <summary>Online status information</summary>
         public string OnlineStatus;
-        /// <summary></summary>
+        /// <summary>Abilities that the Group Member has</summary>
         public ulong Powers;
-        /// <summary></summary>
+        /// <summary>Current group title</summary>
         public string Title;
-        /// <summary></summary>
+        /// <summary>Is a group owner</summary>
         public bool IsOwner;
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
         /// <param name="id"></param>
         public GroupMember(LLUUID id)
@@ -59,25 +59,25 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Role manager for a group
     /// </summary>
     public class GroupRole
     {
-        /// <summary></summary>
+        /// <summary>Key of Role</summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Name of Role</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Group Title associated with Role</summary>
         public string Title;
-        /// <summary></summary>
+        /// <summary>Description of Role</summary>
         public string Description;
-        /// <summary></summary>
+        /// <summary>Abilities Associated with Role</summary>
         public ulong Powers;
 
         /// <summary>
-        /// 
+        /// Constructor for Group Roles
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Key associated with Group Role</param>
         public GroupRole(LLUUID id)
         {
             ID = id;
@@ -85,13 +85,13 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Class to represent Group Title
     /// </summary>
     public class GroupTitle
     {
-        /// <summary></summary>
+        /// <summary>Group Title</summary>
         public string Title;
-        /// <summary></summary>
+        /// <summary>Whether title is Active</summary>
         public bool Selected;
     }
 
@@ -100,23 +100,23 @@ namespace libsecondlife
     /// </summary>
     public class Group
     {
-        /// <summary></summary>
+        /// <summary>Key of Group</summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Key of Group Insignia</summary>
         public LLUUID InsigniaID;
-        /// <summary></summary>
+        /// <summary>Key of Group Founder</summary>
         public LLUUID FounderID;
-        /// <summary></summary>
+        /// <summary>Key of Group Role for Owners</summary>
         public LLUUID OwnerRole;
-        /// <summary></summary>
+        /// <summary>Name of Group</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Text of Group Charter</summary>
         public string Charter;
-        /// <summary></summary>
+        /// <summary>Title of "everyone" role</summary>
         public string MemberTitle;
-        /// <summary></summary>
+        /// <summary>Is the group open for enrolement to everyone</summary>
         public bool OpenEnrollment;
-        /// <summary></summary>
+        /// <summary>Will group show up in search</summary>
         public bool ShowInList;
         /// <summary></summary>
         public ulong Powers;
@@ -124,9 +124,9 @@ namespace libsecondlife
         public bool AcceptNotices;
         /// <summary></summary>
         public bool AllowPublish;
-        /// <summary></summary>
+        /// <summary>Is the group Mature</summary>
         public bool MaturePublish;
-        /// <summary></summary>
+        /// <summary>Cost of group membership</summary>
         public int MembershipFee;
         /// <summary></summary>
         public int Money;
@@ -138,9 +138,9 @@ namespace libsecondlife
         public int GroupRolesCount;
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Key of Group</param>
         public Group(LLUUID id)
         {
             ID = id;
@@ -158,21 +158,21 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// Profile of a group
     /// </summary>
     public class GroupProfile
     {
         /// <summary></summary>
         public LLUUID ID;
-        /// <summary></summary>
+        /// <summary>Key of Group Insignia</summary>
         public LLUUID InsigniaID;
-        /// <summary></summary>
+        /// <summary>Key of Group Founder</summary>
         public LLUUID FounderID;
-        /// <summary></summary>
+        /// <summary>Key of Group Role for Owners</summary>
         public LLUUID OwnerRole;
-        /// <summary></summary>
+        /// <summary>Name of Group</summary>
         public string Name;
-        /// <summary></summary>
+        /// <summary>Text of Group Charter</summary>
         public string Charter;
         /// <summary></summary>
         public string MemberTitle;
@@ -201,15 +201,15 @@ namespace libsecondlife
     }
 
     /// <summary>
-    /// 
+    /// A group Vote
     /// </summary>
     public class Vote
     {
-        /// <summary></summary>
+        /// <summary>Key of Avatar who created Vote</summary>
         public LLUUID Candidate;
-        /// <summary></summary>
+        /// <summary>Text of the Vote proposal</summary>
         public string VoteString;
-        /// <summary></summary>
+        /// <summary>Total number of votes</summary>
         public int NumVotes;
     }
 
