@@ -35,6 +35,7 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Commands\AppearanceCommand.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
     <Compile Include="Commands\EchoMasterCommand.cs" />
     <Compile Include="Commands\ExportOutfitCommand.cs" />
@@ -55,7 +56,6 @@
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\SetAppearanceCommand.cs" />
     <Compile Include="Commands\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>
