@@ -35,11 +35,11 @@ namespace libsecondlife
     /// <summary>
     /// Triggered on incoming chat messages
     /// </summary>
-    /// <param name="Message"></param>
-    /// <param name="Audible"></param>
-    /// <param name="Type"></param>
-    /// <param name="Sourcetype"></param>
-    /// <param name="FromName"></param>
+    /// <param name="Message">Text of chat message</param>
+    /// <param name="Audible">Is this normal audible chat or not.</param>
+    /// <param name="Type">Type of chat (whisper,shout,status,etc)</param>
+    /// <param name="Sourcetype">Type of source (Agent / Object / ???)</param>
+    /// <param name="FromName">Text name of sending Avatar/Object</param>
     /// <param name="ID"></param>
     public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
         string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
@@ -67,17 +67,17 @@ namespace libsecondlife
     /// <summary>
     /// Tiggered on incoming instant messages
     /// </summary>
-    /// <param name="fromAgentID"></param>
-    /// <param name="fromAgentName"></param>
-    /// <param name="toAgentID"></param>
-    /// <param name="parentEstateID"></param>
-    /// <param name="regionID"></param>
-    /// <param name="position"></param>
+    /// <param name="fromAgentID">Key of sender</param>
+    /// <param name="fromAgentName">Name of sender</param>
+    /// <param name="toAgentID">Key of destination Avatar</param>
+    /// <param name="parentEstateID">ID of originating Estate</param>
+    /// <param name="regionID">Key of originating Region</param>
+    /// <param name="position">Coordinates in originating Region</param>
     /// <param name="dialog"></param>
-    /// <param name="groupIM"></param>
-    /// <param name="imSessionID"></param>
-    /// <param name="timestamp"></param>
-    /// <param name="message"></param>
+    /// <param name="groupIM">Group IM session toggle</param>
+    /// <param name="imSessionID">Key of IM Session</param>
+    /// <param name="timestamp">Timestamp of message</param>
+    /// <param name="message">Text of message</param>
     /// <param name="offline"></param>
     /// <param name="binaryBucket"></param>
     public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
@@ -774,6 +774,7 @@ namespace libsecondlife
         /// <summary>
         /// Grabs an object
         /// </summary>
+        /// <param name="objectLocalID">Local ID of Object to grab</param>
         public void Grab(uint objectLocalID)
         {
             ObjectGrabPacket grab = new ObjectGrabPacket();
@@ -889,7 +890,7 @@ namespace libsecondlife
         ///   OnInstantMessage is defined call that with the appropriate arguments.
         /// </summary>
         /// <param name="packet">Incoming ImprovedInstantMessagePacket</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
         private void InstantMessageHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.ImprovedInstantMessage)
@@ -922,7 +923,7 @@ namespace libsecondlife
         ///   that with the appropriate arguments.
         /// </summary>
         /// <param name="packet">Incoming ChatFromSimulatorPacket</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
         private void ChatHandler(Packet packet, Simulator simulator)
         {
             if (OnChat != null)
@@ -940,7 +941,11 @@ namespace libsecondlife
                     );
             }
         }
-
+        /// <summary>
+        /// Used for parsing llDialog's
+        /// </summary>
+        /// <param name="packet">Incoming ScriptDialog packet</param>
+        /// <param name="simulator">Unused</param>
         private void ScriptDialogHandler(Packet packet, Simulator simulator)
         {
             if (OnScriptDialog != null)
@@ -968,7 +973,7 @@ namespace libsecondlife
         /// Update client's Position and LookAt from incoming packet
         /// </summary>
         /// <param name="packet">Incoming AgentMovementCompletePacket</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
         private void MovementCompleteHandler(Packet packet, Simulator simulator)
         {
             AgentMovementCompletePacket movement = (AgentMovementCompletePacket)packet;
@@ -981,7 +986,7 @@ namespace libsecondlife
         /// Update Client Avatar's health via incoming packet
         /// </summary>
         /// <param name="packet">Incoming HealthMessagePacket</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
         private void HealthHandler(Packet packet, Simulator simulator)
         {
             health = ((HealthMessagePacket)packet).HealthData.Health;
@@ -991,7 +996,7 @@ namespace libsecondlife
         /// Update Client Avatar's L$ balance from incoming packet
         /// </summary>
         /// <param name="packet">Incoming MoneyBalanceReplyPacket</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
         private void BalanceHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.MoneyBalanceReply)
@@ -1016,8 +1021,8 @@ namespace libsecondlife
         /// <summary>
         /// Handler for teleport Requests
         /// </summary>
-        /// <param name="packet">Packet</param>
-        /// <param name="simulator">Simulator</param>
+        /// <param name="packet">Incoming TeleportHandler packet</param>
+        /// <param name="simulator">Simulator sending teleport information</param>
         private void TeleportHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.TeleportStart)
@@ -1089,8 +1094,8 @@ namespace libsecondlife
                     else
                     {
                         // Sleep a little while so we can collect parcel information
-                        // FIXME: This doesn't belong in libsecondlife
-                        System.Threading.Thread.Sleep(1000);
+                        // NOTE: This doesn't belong in libsecondlife
+                        // System.Threading.Thread.Sleep(1000);
                     }
                 }
                 else
@@ -1113,7 +1118,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Teleport Timer Event Handler
+        /// Teleport Timer Event Handler. Used for enforcing timeouts.
         /// </summary>
         /// <param name="source"></param>
         /// <param name="ea"></param>

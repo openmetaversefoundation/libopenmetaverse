@@ -30,6 +30,9 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// Class for controlling various system settings.
+    /// </summary>
     public class Settings
     {
         /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
@@ -63,7 +66,10 @@ namespace libsecondlife
 
         private SecondLife Client;
         private int priceUpload = 0;
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="client">Client connection Object to use</param>
         public Settings(SecondLife client)
         {
             Client = client;
@@ -71,6 +77,11 @@ namespace libsecondlife
             Client.Network.RegisterCallback(Packets.PacketType.EconomyData, new NetworkManager.PacketCallback(EconomyDataHandler));
         }
 
+        /// <summary>
+        /// Presumably for outputting asset upload costs.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void EconomyDataHandler(Packet packet, Simulator simulator)
         {
             EconomyDataPacket econ = (EconomyDataPacket)packet;

@@ -253,7 +253,7 @@ namespace libsecondlife
         /// Populate Grid info based on data from MapBlockReplyPacket
         /// </summary>
         /// <param name="packet">Incoming MapBlockReplyPacket packet</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
 		private void MapBlockReplyHandler(Packet packet, Simulator simulator) 
 		{
 			GridRegion region;
@@ -301,7 +301,7 @@ namespace libsecondlife
         /// Get sim time from the appropriate packet
         /// </summary>
         /// <param name="packet">Incoming SimulatorViewerTimeMessagePacket from SL</param>
-        /// <param name="simulator">[UNUSED]</param>
+        /// <param name="simulator">Unused</param>
         private void TimeMessageHandler(Packet packet, Simulator simulator)
         {
             SunDirection = ((SimulatorViewerTimeMessagePacket)packet).TimeInfo.SunDirection;

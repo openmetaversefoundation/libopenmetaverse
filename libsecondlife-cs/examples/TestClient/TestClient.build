@@ -23,10 +23,10 @@
      - datetime::parse('01/01/2002'))))}" />
   <property
     name="assembly"
-    value="TestCommand"/>
+    value="TestClient"/>
   <property
     name="bin_dir"
-    value="../../bin" />
+    value="../../../bin" />
 
   <!-- default configuration -->
   <property
@@ -74,7 +74,7 @@
   <!-- build tasks -->
   <target
     name="build"
-    depends="init build-dll"
+    depends="init"
     description="Builds the binaries for the current configuration">
     <echo message="Build Directory is ${bin_dir}/" />
     <mkdir
