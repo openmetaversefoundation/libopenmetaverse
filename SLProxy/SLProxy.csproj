@@ -85,15 +85,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="legacy\Logger.cs" />
+    <Compile Include="legacy\Packet.cs" />
+    <Compile Include="legacy\ProtocolManager.cs" />
+    <Compile Include="legacy\SecondLife.cs" />
+    <Compile Include="legacy\Types.cs" />
+    <Compile Include="legacy\XmlRpcDeserializer.cs" />
+    <Compile Include="legacy\XmlRpcErrorCodes.cs" />
+    <Compile Include="legacy\XmlRpcException.cs" />
+    <Compile Include="legacy\XmlRpcRequest.cs" />
+    <Compile Include="legacy\XmlRpcRequestDeserializer.cs" />
+    <Compile Include="legacy\XmlRpcRequestSerializer.cs" />
+    <Compile Include="legacy\XmlRpcResponse.cs" />
+    <Compile Include="legacy\XmlRpcResponseDeserializer.cs" />
+    <Compile Include="legacy\XmlRpcResponseSerializer.cs" />
+    <Compile Include="legacy\XmlRpcSerializer.cs" />
+    <Compile Include="legacy\XmlRpcXmlTokens.cs" />
     <Compile Include="SLProxy.cs">
       <SubType>Code</SubType>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\libsecondlife-cs\libsecondlife.csproj">
-      <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
-      <Name>libsecondlife</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
