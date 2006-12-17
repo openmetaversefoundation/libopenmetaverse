@@ -40,9 +40,6 @@ Basic Stuff (Windows):
    nAnt (0.85) - http://nant.sourceforge.net/
    nUnit Framework (2.2.8 or greater) - http://www.nunit.org/
 
-3D Stuff (i.e. sceneviewer) for Windows:
-   XNA - http://msdn.microsoft.com/directx/XNA/default.aspx
-   XGE - http://msdn.microsoft.com/directx/xna/gse/
 
 If you are using Visual Studio or Visual C# Express you can simply open 
 the libsecondlife.sln solution file and begin compiling. It will complain 
