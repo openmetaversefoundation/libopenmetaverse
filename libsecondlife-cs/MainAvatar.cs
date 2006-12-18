@@ -117,8 +117,10 @@ namespace libsecondlife
     {
         /// <summary>Indicates a regular IM from another agent</summary>
         MessageFromAgent = 0,
-        /// <summary>Indicates that someone has given the user inventory</summary>
+        /// <summary>Indicates that someone has given the user an object</summary>
         GiveInventory = 4,
+        /// <summary>Indicates that someone has given the user a notecard</summary>
+        GiveNotecard = 9,
         /// <summary>Indicates that the IM is from an object</summary>
         MessageFromObject = 19,
         /// <summary>Indicates that the IM is a teleport invitation</summary>
