@@ -25,6 +25,7 @@
 	*/
 
 using System;
+using System.Timers;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -32,6 +33,7 @@ namespace libsecondlife
 {
     public partial class MainAvatar
     {
+        
         /// <summary> 
         /// Holds current camera and control key status
         /// </summary> 
@@ -40,7 +42,10 @@ namespace libsecondlife
 
             private SecondLife Client;
             private static uint agentControls;
-
+            /// <summary>
+            /// Timer for sending AgentUpdate packets, disabled by default
+            /// </summary>
+            public Timer UpdateTimer;
             private static bool getControlFlag(Avatar.AgentUpdateFlags flag)
             {
                 uint control = (uint)flag;
@@ -66,6 +71,21 @@ namespace libsecondlife
             public MainAvatarStatus(SecondLife client)
             {
                 Client = client;
+                UpdateTimer = new Timer();
+                UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
+                UpdateTimer.Interval = 500;
+                //Update Timer Disabled By Default --Jesse Malthus
+                UpdateTimer.Enabled = false;
+            }
+            /// <summary>
+            /// Event handler for UpdateTimer that sends an AgentUpdate packet
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            void UpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
+            {
+                //Send an AgentUpdate packet
+                SendUpdate();
             }
 
             public uint AgentControls
@@ -89,7 +109,7 @@ namespace libsecondlife
                 update.AgentData.ControlFlags = agentControls;
                 update.AgentData.Far = Camera.Far;
 
-                Client.Network.SendPacket(update);               
+                Client.Network.SendPacket(update);
             }
 
             public struct ControlStatus
