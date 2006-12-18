@@ -182,29 +182,35 @@ namespace libsecondlife
         /// </summary>
         public void Disconnect()
         {
-            connected = false;
+            if (!connected)
+            {
+                connected = false;
+                AckTimer.Stop();
 
-            // Send the CloseCircuit notice
-            CloseCircuitPacket close = new CloseCircuitPacket();
+                // Send the CloseCircuit notice
+                CloseCircuitPacket close = new CloseCircuitPacket();
 
-            try
-            {
-                Connection.Send(close.ToBytes());
-            }
-            catch (SocketException)
-            {
-                // There's a high probability of this failing if the network is
-                // disconnected, so don't even bother logging the error
-            }
+                if (Connection.Connected)
+                {
+                    try
+                    {
+                        Connection.Send(close.ToBytes());
+                    }
+                    catch (SocketException)
+                    {
+                        // There's a high probability of this failing if the network is
+                        // disconnected, so don't even bother logging the error
+                    }
+                }
 
-            try
-            {
-                // Shut the socket communication down
-                Connection.Shutdown(SocketShutdown.Both);
-            }
-            catch (SocketException e)
-            {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                try
+                {
+                    // Shut the socket communication down
+                    Connection.Shutdown(SocketShutdown.Both);
+                }
+                catch (SocketException)
+                {
+                }
             }
         }
 
@@ -221,9 +227,9 @@ namespace libsecondlife
             if (!connected && packet.Type != PacketType.UseCircuitCode)
             {
                 Client.Log("Trying to send a " + packet.Type.ToString() + " packet when the socket is closed",
-                    Helpers.LogLevel.Warning);
+                    Helpers.LogLevel.Info);
 
-                throw new NotConnectedException();
+                return;
             }
 
             if (packet.Header.AckList.Length > 0)
@@ -310,11 +316,12 @@ namespace libsecondlife
                     Connection.Send(buffer, bytes, SocketFlags.None);
                 }
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Client.Log("Tried to send a " + packet.Type.ToString() + " on a closed socket", 
+                    Helpers.LogLevel.Warning);
 
-                // FIXME: Assume this socket is dead and Disconnect()
+                Disconnect();
             }
         }
 
@@ -373,7 +380,7 @@ namespace libsecondlife
         {
             lock (PendingAcks)
             {
-                if (PendingAcks.Count > 0)
+                if (connected && PendingAcks.Count > 0)
                 {
                     if (PendingAcks.Count > 250)
                     {
@@ -1252,17 +1259,24 @@ namespace libsecondlife
         /// <param name="sim"></param>
         public void DisconnectSim(Simulator sim)
         {
-            sim.Disconnect();
-
-            // Fire the SimDisconnected event if a handler is registered
-            if (OnSimDisconnected != null)
+            if (sim != null)
             {
-                OnSimDisconnected(sim, DisconnectType.NetworkTimeout);
+                sim.Disconnect();
+
+                // Fire the SimDisconnected event if a handler is registered
+                if (OnSimDisconnected != null)
+                {
+                    OnSimDisconnected(sim, DisconnectType.NetworkTimeout);
+                }
+
+                lock (Simulators)
+                {
+                    Simulators.Remove(sim);
+                }
             }
-
-            lock (Simulators)
+            else
             {
-                Simulators.Remove(sim);
+                Client.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning);
             }
         }
 
@@ -1280,9 +1294,9 @@ namespace libsecondlife
                 foreach (Simulator simulator in Simulators)
                 {
                     // Don't disconnect the current sim, we'll use LogoutRequest for that
-                    if (simulator != CurrentSim)
+                    if (simulator != null && simulator != CurrentSim)
                     {
-                        simulator.Disconnect();
+                        DisconnectSim(simulator);
 
                         // Fire the SimDisconnected event if a handler is registered
                         if (OnSimDisconnected != null)
@@ -1295,8 +1309,11 @@ namespace libsecondlife
                 Simulators.Clear();
             }
 
-            CurrentSim.Disconnect();
-            CurrentSim = null;
+            if (CurrentSim != null)
+            {
+                DisconnectSim(CurrentSim);
+                CurrentSim = null;
+            }
         }
 
         private void SendInitialPackets()
@@ -1380,12 +1397,15 @@ namespace libsecondlife
                 {
                     foreach (Simulator sim in disconnectedSims)
                     {
-                        // This sim hasn't received any network traffic since the 
-                        // timer last elapsed, consider it disconnected
-                        Client.Log("Network timeout for simulator " + sim.Region.Name +
-                            ", disconnecting", Helpers.LogLevel.Warning);
+                        if (sim != null)
+                        {
+                            // This sim hasn't received any network traffic since the 
+                            // timer last elapsed, consider it disconnected
+                            Client.Log("Network timeout for simulator " + sim.Region.Name +
+                                ", disconnecting", Helpers.LogLevel.Warning);
 
-                        DisconnectSim(sim);
+                            DisconnectSim(sim);
+                        }
                     }
                 }
             }

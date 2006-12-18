@@ -342,11 +342,12 @@ namespace libsecondlife
         {
             /// <summary>Whispers (5m radius)</summary>
             Whisper = 0,
-            /// <summary>Normal chat (10/20m radius) - Why is this here twice?</summary>
+            /// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
             Normal = 1,
             /// <summary>Shouting! (100m radius)</summary>
             Shout = 2,
-            /// <summary>Normal chat (10/20m radius) - Why is this here twice?</summary>
+            /// <summary>Say chat (10/20m radius) - The official viewer will 
+            /// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
             Say = 3,
             /// <summary>Event message when an Avatar has begun to type</summary>
             StartTyping = 4,
@@ -1068,6 +1069,7 @@ namespace libsecondlife
                 Client.DebugLog("TeleportFinish received from " + simulator.ToString());
 
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
+                Simulator previousSim = Client.Network.CurrentSim;
 
                 // Connect to the new sim
                 Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort,
@@ -1084,6 +1086,9 @@ namespace libsecondlife
                     move.AgentData.SessionID = Client.Network.SessionID;
                     move.AgentData.CircuitCode = simulator.CircuitCode;
                     Client.Network.SendPacket(move, sim);
+
+                    // Disconnect from the previous sim
+                    Client.Network.DisconnectSim(previousSim);
 
                     Client.Log("Moved to new sim " + sim.ToString(), Helpers.LogLevel.Info);
 
