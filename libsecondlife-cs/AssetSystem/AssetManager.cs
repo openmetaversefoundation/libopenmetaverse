@@ -59,6 +59,9 @@ namespace libsecondlife.AssetSystem
 		{
 			slClient = client;
 
+            // need to make sure we don't keep around old AssetManagers connected to stale instances of SL
+            slClient.Network.OnDisconnected += new NetworkManager.DisconnectCallback(Network_OnDisconnected);
+
 			// Used to upload small assets, or as an initial start packet for large transfers
             slClient.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteCallbackHandler));
 			// Transfer Packets for downloading large assets
@@ -69,13 +72,24 @@ namespace libsecondlife.AssetSystem
             slClient.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferCallbackHandler));
 		}
 
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            // Remove this asset manager from the managers list.
+            AssetManager.AssetManagers.Remove(this.slClient.Network.AgentID);
+        }
+
         public static AssetManager GetAssetManager( SecondLife client )
         {
             lock (AssetManagers)
             {
                 if (AssetManagers.ContainsKey(client.Network.AgentID))
                 {
-                    return AssetManagers[client.Network.AgentID];
+                    AssetManager existingAssetManager = AssetManagers[client.Network.AgentID];
+                    if (existingAssetManager.slClient.Network.Connected == false)
+                    {
+                        existingAssetManager.slClient = client;
+                    }
+                    return existingAssetManager;
                 } else {
                     AssetManager am = new AssetManager(client);
                     AssetManagers[client.Network.AgentID] = am;
