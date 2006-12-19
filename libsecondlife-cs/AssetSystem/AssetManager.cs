@@ -43,8 +43,6 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
-        private static Dictionary<LLUUID,AssetManager> AssetManagers = new Dictionary<LLUUID,AssetManager>();
-
 		public const int SINK_FEE_IMAGE = 1;
 
 		private SecondLife slClient;
@@ -55,12 +53,13 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// </summary>
         /// <param name="client"></param>
-        private AssetManager(SecondLife client)
+        internal AssetManager(SecondLife client)
 		{
 			slClient = client;
 
-            // need to make sure we don't keep around old AssetManagers connected to stale instances of SL
+            // Need to know when we're Connected/Disconnected to clear state
             slClient.Network.OnDisconnected += new NetworkManager.DisconnectCallback(Network_OnDisconnected);
+            slClient.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
 
 			// Used to upload small assets, or as an initial start packet for large transfers
             slClient.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteCallbackHandler));
@@ -72,30 +71,20 @@ namespace libsecondlife.AssetSystem
             slClient.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferCallbackHandler));
 		}
 
-        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        void Network_OnConnected(object sender)
         {
-            // Remove this asset manager from the managers list.
-            AssetManager.AssetManagers.Remove(this.slClient.Network.AgentID);
+            ClearState();
         }
 
-        public static AssetManager GetAssetManager( SecondLife client )
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
-            lock (AssetManagers)
-            {
-                if (AssetManagers.ContainsKey(client.Network.AgentID))
-                {
-                    AssetManager existingAssetManager = AssetManagers[client.Network.AgentID];
-                    if (existingAssetManager.slClient.Network.Connected == false)
-                    {
-                        existingAssetManager.slClient = client;
-                    }
-                    return existingAssetManager;
-                } else {
-                    AssetManager am = new AssetManager(client);
-                    AssetManagers[client.Network.AgentID] = am;
-                    return am;
-                }
-            }
+            ClearState();
+        }
+
+        private void ClearState()
+        {
+            htDownloadRequests.Clear();
+            curUploadRequest = null;
         }
 
         /// <summary>

@@ -136,7 +136,7 @@ namespace Teleport
                 }
             }
 
-            Client.Self.OnTeleport += new TeleportCallback(Avatar_OnTeleportMessage);
+            Client.Self.OnTeleport += new TeleportCallback(Self_OnTeleport);
 
             DoneTeleporting = false;
             Client.Self.Teleport(RegionHandle, coords);
@@ -147,7 +147,7 @@ namespace Teleport
             }
         }
 
-        private void Avatar_OnTeleportMessage(Simulator currentSim, string message, TeleportStatus status)
+        void Self_OnTeleport(Simulator currentSim, string message, TeleportStatus status)
         {
             Console.WriteLine(message);
 

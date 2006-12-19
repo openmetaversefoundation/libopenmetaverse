@@ -11,13 +11,21 @@ namespace libsecondlife.InventorySystem
 	/// </summary>
     public class InventoryPacketHelper
 	{
-        private LLUUID AgentID;
-        private LLUUID SessionID;
+        private SecondLife Client;
 
-        public InventoryPacketHelper(LLUUID AgentID, LLUUID SessionID)
+        private LLUUID AgentID
+        {
+            get { return Client.Network.AgentID; }
+        }
+
+        private LLUUID SessionID
+        {
+            get { return Client.Network.SessionID; }
+        }
+
+        public InventoryPacketHelper(SecondLife client)
 		{
-            this.AgentID   = AgentID;
-            this.SessionID = SessionID;
+            Client = client;
 		}
 
 		public const int FETCH_INVENTORY_SORT_NAME = 0;

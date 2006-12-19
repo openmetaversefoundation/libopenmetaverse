@@ -27,6 +27,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 using libsecondlife;
 using libsecondlife.InventorySystem;
@@ -38,10 +39,8 @@ namespace IA_SimpleInventory
     /// </summary>
     public class SimpleInventory
     {
-        protected SecondLife client;
-        protected InventoryManager AgentInventory;
-
-        protected bool DownloadInventoryOnConnect = true;
+        private SecondLife client;
+        private ManualResetEvent ConnectedSignal = new ManualResetEvent(false);
 
         public static void Main(string[] args)
         {
@@ -53,9 +52,14 @@ namespace IA_SimpleInventory
             }
 
             SimpleInventory simple = new SimpleInventory();
-            simple.Connect(args[0], args[1], args[2]);
-            simple.doStuff();
-            simple.Disconnect();
+            if (simple.Connect(args[0], args[1], args[2]))
+            {
+                if (simple.ConnectedSignal.WaitOne(TimeSpan.FromMinutes(1), false))
+                {
+                    simple.doStuff();
+                    simple.Disconnect();
+                }
+            }
         }
 
         protected SimpleInventory()
@@ -63,6 +67,7 @@ namespace IA_SimpleInventory
             try
             {
                 client = new SecondLife();
+                client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
             }
             catch (Exception e)
             {
@@ -70,6 +75,11 @@ namespace IA_SimpleInventory
                 Console.WriteLine();
                 Console.WriteLine(e.ToString());
             }
+        }
+
+        void Network_OnConnected(object sender)
+        {
+            ConnectedSignal.Set();
         }
 
         protected bool Connect(string FirstName, string LastName, string Password)
@@ -80,7 +90,7 @@ namespace IA_SimpleInventory
             Dictionary<string, object> loginReply = new Dictionary<string, object>();
 
             // Login
-            if (!client.Network.Login(FirstName, LastName, Password, "createnotecard", "static.sprocket@gmail.com"))
+            if (!client.Network.Login(FirstName, LastName, Password, "IA_SimpleInventory", "static.sprocket@gmail.com"))
             {
                 // Login failed
                 Console.WriteLine("Error logging in: " + client.Network.LoginError);
@@ -92,22 +102,6 @@ namespace IA_SimpleInventory
             Console.WriteLine("AgentID:   " + client.Network.AgentID);
             Console.WriteLine("SessionID: " + client.Network.SessionID);
 
-            // Get Root Inventory Folder UUID
-            Console.WriteLine("Pulling root folder UUID from login data.");
-            ArrayList alInventoryRoot = (ArrayList)client.Network.LoginValues["inventory-root"];
-            Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
-            LLUUID agentRootFolderID = new LLUUID((string)htInventoryRoot["folder_id"]);
-
-            // Initialize Inventory Manager object
-            Console.WriteLine("Initializing Inventory Manager.");
-            AgentInventory = new InventoryManager(client, agentRootFolderID);
-
-            if (DownloadInventoryOnConnect)
-            {
-                // and request an inventory download
-                Console.WriteLine("Downloading Inventory.");
-                AgentInventory.DownloadInventory();
-            }
             return true;
         }
 
@@ -120,17 +114,19 @@ namespace IA_SimpleInventory
 
         protected void doStuff()
         {
+            // and request an inventory download
+            Console.WriteLine("Downloading Inventory.");
+            client.Inventory.DownloadInventory();
+
+
             Console.WriteLine("Dumping a copy of " + client.Self.FirstName + "'s inventory to the console.");
             Console.WriteLine();
 
-            if (AgentInventory != null)
-            {
-                InventoryFolder root = AgentInventory.getRootFolder();
+            InventoryFolder root = client.Inventory.getRootFolder();
 
-                if (root != null)
-                {
-                    Console.WriteLine(root.toXML(false));
-                }
+            if (root != null)
+            {
+                Console.WriteLine(root.toXML(false));
             }
         }
     }

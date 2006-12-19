@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using IA_SimpleInventory;
 
@@ -13,8 +14,12 @@ namespace IA_ImageTool
     /// <summary>
     /// Summary description for Class1.
     /// </summary>
-    class ImageTool : SimpleInventory
+    class ImageTool
     {
+        private SecondLife _Client;
+        private ManualResetEvent ConnectedSignal = new ManualResetEvent(false);
+
+
         private List<LLUUID> _ImageIDs = new List<LLUUID>();
         private string _FileName;
         private bool _Put;
@@ -24,7 +29,7 @@ namespace IA_ImageTool
         /// Used to upload/download images.
         /// </summary>
         [STAThread]
-        static new void Main(string[] args)
+        static void Main(string[] args)
         {
             if ( (File.Exists("libjasper.dll") == false) )
             {
@@ -94,17 +99,16 @@ namespace IA_ImageTool
 
             ImageTool it = new ImageTool(uuidList, filename, put, rate);
 
-            // Only download the inventory tree if we're planning on putting/uploading files.
-            it.DownloadInventoryOnConnect = put; 
 
             if (it.Connect(args[0], args[1], args[2]))
             {
-                it.doStuff();
-                it.Disconnect();
+                if (it.ConnectedSignal.WaitOne(TimeSpan.FromMinutes(1), false))
+                {
+                    it.doStuff();
 
-                System.Threading.Thread.Sleep(500);
+                    it.Disconnect();
+                }
 
-                Console.WriteLine("Done logging out.");
             }
         }
 
@@ -114,12 +118,62 @@ namespace IA_ImageTool
             _FileName = filename;
             _Put = put;
             _Rate = rate;
+
+            try
+            {
+                _Client = new SecondLife();
+                _Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+            }
+            catch (Exception e)
+            {
+                // Error initializing the client
+                Console.WriteLine();
+                Console.WriteLine(e.ToString());
+            }
+
         }
 
-        protected new void doStuff()
+        void Network_OnConnected(object sender)
+        {
+            ConnectedSignal.Set();
+        }
+
+        protected bool Connect(string FirstName, string LastName, string Password)
+        {
+            Console.WriteLine("Attempting to connect and login to SecondLife.");
+
+            // Setup Login to Second Life
+            Dictionary<string, object> loginReply = new Dictionary<string, object>();
+
+            // Login
+            if (!_Client.Network.Login(FirstName, LastName, Password, "ImageTool", "static.sprocket@gmail.com"))
+            {
+                // Login failed
+                Console.WriteLine("Error logging in: " + _Client.Network.LoginError);
+                return false;
+            }
+
+            // Login was successful
+            Console.WriteLine("Login was successful.");
+            Console.WriteLine("AgentID:   " + _Client.Network.AgentID);
+            Console.WriteLine("SessionID: " + _Client.Network.SessionID);
+
+            return true;
+        }
+
+        protected void Disconnect()
+        {
+            // Logout of Second Life
+            Console.WriteLine("Request logout");
+            _Client.Network.Logout();
+        }        
+
+        protected void doStuff()
         {
             if (_Put)
             {
+                
+
                 Console.WriteLine("Reading: " + _FileName);
 
                 byte[] j2cdata;
@@ -135,7 +189,7 @@ namespace IA_ImageTool
                 
 
                 Console.WriteLine("Connecting to your Texture folder...");
-                InventoryFolder iFolder = AgentInventory.getFolder("Textures");
+                InventoryFolder iFolder = _Client.Inventory.getFolder("Textures");
 
                 Console.WriteLine("Uploading Texture...");
                 InventoryImage image = iFolder.NewImage(_FileName, "ImageTool Upload", j2cdata);
@@ -162,7 +216,7 @@ namespace IA_ImageTool
 
                     try
                     {
-                        j2cdata = client.Images.RequestImage(ImageID);
+                        j2cdata = _Client.Images.RequestImage(ImageID);
 
                         int end = Environment.TickCount;
                         Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));

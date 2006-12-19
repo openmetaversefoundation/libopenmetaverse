@@ -18,28 +18,21 @@ namespace libsecondlife.AssetSystem
         private uint SerialNum = 1;
 
         private ManualResetEvent AgentWearablesSignal = null;
-        private AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
+
+        // This data defines all appearance info for an avatar
+        public AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
+        public SerializableDictionary<uint, float> AgentAppearanceParams = new SerializableDictionary<uint, float>();
+        public TextureEntry AgentTextureEntry = new TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
+
+
 
         public AppearanceManager(SecondLife client)
         {
             Client = client;
-            AManager = AssetManager.GetAssetManager(client);
+            AManager = client.Assets;
 
-            Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             RegisterCallbacks();
 
-        }
-
-        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
-        {
-            if (avatar.ID == Client.Network.AgentID)
-            {
-                Console.WriteLine("**********************");
-                Console.WriteLine("**********************");
-                Console.WriteLine("Saw Myself");
-                Console.WriteLine("**********************");
-                Console.WriteLine("**********************");
-            }
         }
 
         private void RegisterCallbacks()
@@ -61,33 +54,8 @@ namespace libsecondlife.AssetSystem
             return AgentWearablesData;
         }
 
-        public void SendAgentSetAppearance()
+        public void GetAvatarAppearanceInfoFromWearableAssets()
         {
-
-            TextureEntry textures = new TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
-
-            // Face 17 - Under Pants
-            // textures.CreateFace(17).TextureID = "b0bac26505cc7076202ba2a2e05fd172"; //Default Men's briefs
-
-            // Face 16 - Under Shirt
-            // textures.CreateFace(16).TextureID = "d283de852dc3dc07dc452e1bfd4cf193"; //Default Men's tank
-
-            // Face 11 - Eyes
-            // textures.CreateFace(11).TextureID = "3abd329a78478984ac1cb95f4ef35fbe"; //Default Eye
-
-            // Face 10 - 
-            // textures.CreateFace(10).TextureID = "c24403bc4569361852b31917ad733035"; //Default 
-
-            // Face 9 - 
-            // textures.CreateFace(9).TextureID = "a88225377555cf975720aa128e47f934"; //Default 
-
-            // Face 8 - 
-            // textures.CreateFace(8).TextureID = "472ccc472a4e2556d082f7bb708bcca7"; //Default 
-
-
-
-            Dictionary<uint, float> AgentAppearance = new Dictionary<uint, float>();
-
             foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in GetWearables())
             {
                 if (wdb.ItemID == LLUUID.Zero)
@@ -124,13 +92,12 @@ namespace libsecondlife.AssetSystem
 
                     foreach (KeyValuePair<uint, LLUUID> texture in bp.textures)
                     {
-                        Console.WriteLine(texture.Key + " : " + texture.Value);
-                        textures.CreateFace(texture.Key).TextureID = texture.Value;
+                        AgentTextureEntry.CreateFace(texture.Key).TextureID = texture.Value;
                     }
 
                     foreach (KeyValuePair<uint, float> kvp in bp.parameters)
                     {
-                        AgentAppearance[kvp.Key] = bp.parameters[kvp.Key];
+                        AgentAppearanceParams[kvp.Key] = bp.parameters[kvp.Key];
                     }
                 }
                 catch (Exception e)
@@ -145,46 +112,9 @@ namespace libsecondlife.AssetSystem
                 }
             }
 
-            
-            Dictionary<uint, byte> VisualParams = new Dictionary<uint, byte>();
 
-
-            float maxVal = 0;
-            float minVal = 0;
-            uint packetIdx = 0;
-            float range = 0;
-            float percentage = 0;
-            byte packetVal = 0;
-
-            foreach (KeyValuePair<uint, float> kvp in AgentAppearance)
-            {
-                packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
-                maxVal = BodyShapeParams.GetValueMax(kvp.Key);
-                minVal = BodyShapeParams.GetValueMin(kvp.Key);
-
-                range = maxVal - minVal;
-
-                percentage = (kvp.Value - minVal) / range;
-
-                packetVal = (byte)(percentage * (byte)255);
-
-                VisualParams[packetIdx] = packetVal;
-            }
-
-
-            AgentSetAppearancePacket p = new AgentSetAppearancePacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
-            p.AgentData.SerialNum = ++SerialNum;
-
-            float AV_Height_Range = 2.025506f - 1.50856f;
-            float AV_Height = 1.50856f + (((float)VisualParams[25] / 255.0f) * AV_Height_Range);
-
-            p.AgentData.Size = new LLVector3(0.45f, 0.6f, AV_Height);
-//            p.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.35187f);
-            //            p.ObjectData.TextureEntry = textures.ToBytes();
-
-            foreach( uint faceid in textures.FaceTextures.Keys )
+            // Correct the order of the textures
+            foreach (uint faceid in AgentTextureEntry.FaceTextures.Keys)
             {
                 switch (faceid)
                 {
@@ -210,22 +140,78 @@ namespace libsecondlife.AssetSystem
             }
 
             //Re-order texture faces to match Linden Labs internal data structure.
-            TextureEntry te2 = new TextureEntry(textures.DefaultTexture.TextureID);
-            te2.CreateFace(18).TextureID = textures.GetFace(18).TextureID;
-            te2.CreateFace(17).TextureID = textures.GetFace(17).TextureID;
-            te2.CreateFace(16).TextureID = textures.GetFace(16).TextureID;
-            te2.CreateFace(15).TextureID = textures.GetFace(15).TextureID;
-            te2.CreateFace(2).TextureID  = textures.GetFace(2).TextureID;
-            te2.CreateFace(12).TextureID = textures.GetFace(12).TextureID;
-            te2.CreateFace(7).TextureID = textures.GetFace(7).TextureID;
-            te2.CreateFace(6).TextureID = textures.GetFace(6).TextureID;
-            te2.CreateFace(5).TextureID = textures.GetFace(5).TextureID;
-            te2.CreateFace(4).TextureID = textures.GetFace(4).TextureID;
-            te2.CreateFace(3).TextureID = textures.GetFace(3).TextureID;
-            te2.CreateFace(1).TextureID = textures.GetFace(1).TextureID;
-            te2.CreateFace(0).TextureID = textures.GetFace(0).TextureID;
-            p.ObjectData.TextureEntry = te2.ToBytes();
+            TextureEntry te2 = new TextureEntry(AgentTextureEntry.DefaultTexture.TextureID);
+            te2.CreateFace(18).TextureID = AgentTextureEntry.GetFace(18).TextureID;
+            te2.CreateFace(17).TextureID = AgentTextureEntry.GetFace(17).TextureID;
+            te2.CreateFace(16).TextureID = AgentTextureEntry.GetFace(16).TextureID;
+            te2.CreateFace(15).TextureID = AgentTextureEntry.GetFace(15).TextureID;
+            te2.CreateFace(2).TextureID = AgentTextureEntry.GetFace(2).TextureID;
+            te2.CreateFace(12).TextureID = AgentTextureEntry.GetFace(12).TextureID;
+            te2.CreateFace(7).TextureID = AgentTextureEntry.GetFace(7).TextureID;
+            te2.CreateFace(6).TextureID = AgentTextureEntry.GetFace(6).TextureID;
+            te2.CreateFace(5).TextureID = AgentTextureEntry.GetFace(5).TextureID;
+            te2.CreateFace(4).TextureID = AgentTextureEntry.GetFace(4).TextureID;
+            te2.CreateFace(3).TextureID = AgentTextureEntry.GetFace(3).TextureID;
+            te2.CreateFace(1).TextureID = AgentTextureEntry.GetFace(1).TextureID;
+            te2.CreateFace(0).TextureID = AgentTextureEntry.GetFace(0).TextureID;
 
+            AgentTextureEntry = te2;
+        }
+
+        private Dictionary<uint, byte> GetAssetParamsAsVisualParams()
+        {
+            Dictionary<uint, byte> VisualParams = new Dictionary<uint, byte>();
+
+            float maxVal = 0;
+            float minVal = 0;
+            uint packetIdx = 0;
+            float range = 0;
+            float percentage = 0;
+            byte packetVal = 0;
+
+            foreach (KeyValuePair<uint, float> kvp in AgentAppearanceParams)
+            {
+                packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
+                maxVal = BodyShapeParams.GetValueMax(kvp.Key);
+                minVal = BodyShapeParams.GetValueMin(kvp.Key);
+
+                range = maxVal - minVal;
+
+                percentage = (kvp.Value - minVal) / range;
+
+                packetVal = (byte)(percentage * (byte)255);
+
+                VisualParams[packetIdx] = packetVal;
+            }
+
+            return VisualParams;
+        }
+
+        private LLVector3 GetAgentSizeFromVisualParams(Dictionary<uint, byte> VisualParams)
+        {
+            float AV_Height_Range = 2.025506f - 1.50856f;
+            float AV_Height = 1.50856f + (((float)VisualParams[25] / 255.0f) * AV_Height_Range);
+            return new LLVector3(0.45f, 0.6f, AV_Height);
+        }
+
+        public void SendAgentSetAppearance()
+        {
+            // Get latest appearance info
+            if (AgentAppearanceParams.Count == 0)
+            {
+                GetAvatarAppearanceInfoFromWearableAssets();
+            }
+
+            AgentSetAppearancePacket p = new AgentSetAppearancePacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            p.AgentData.SerialNum = ++SerialNum;
+
+            // Add Texture Data
+            p.ObjectData.TextureEntry = AgentTextureEntry.ToBytes();
+
+            // Add Visual Params
+            Dictionary<uint, byte> VisualParams = GetAssetParamsAsVisualParams();
             p.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
             for (uint i = 0; i < 218; i++)
             {
@@ -240,33 +226,22 @@ namespace libsecondlife.AssetSystem
                     uint paramid = GetParamID(i + 1);
                     float defaultValue = BodyShapeParams.GetValueDefault(paramid);
 
-                    maxVal = BodyShapeParams.GetValueMax(paramid);
-                    minVal = BodyShapeParams.GetValueMin(paramid);
+                    float minVal = BodyShapeParams.GetValueMin(paramid);
 
-                    range = maxVal - minVal;
+                    float range = BodyShapeParams.GetValueMax(paramid) - minVal;
 
-                    percentage = (defaultValue - minVal) / range;
+                    float percentage = (defaultValue - minVal) / range;
 
-                    packetVal = (byte)(percentage * (byte)255);
+                    byte packetVal = (byte)(percentage * (byte)255);
 
-                    // Console.WriteLine("Warning Visual Param not defined, IDX: " + (i+1));
-                    // Console.WriteLine("PID: " + paramid + " / Default: " + defaultValue);
                     p.VisualParam[i].ParamValue = packetVal;
                 }
             }
 
+            // Add Size Data
+            p.AgentData.Size = GetAgentSizeFromVisualParams(VisualParams);
+
             Client.Network.SendPacket(p);
-
-            Console.WriteLine("Default: " + textures.DefaultTexture.TextureID);
-
-            foreach (KeyValuePair<uint, TextureEntryFace> kvp in textures.FaceTextures)
-            {
-                Console.WriteLine(kvp.Key + " : " + kvp.Value.TextureID);
-            }
-
-
-            
-            Console.WriteLine(p);
         }
 
 

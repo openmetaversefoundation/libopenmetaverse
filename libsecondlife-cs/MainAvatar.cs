@@ -175,6 +175,9 @@ namespace libsecondlife
         public LLVector3 HomeLookAt = LLVector3.Zero;
         /// <summary>Used for camera and control key state tracking</summary>
         public MainAvatarStatus Status;
+        /// <summary>The UUID of your root inventory folder</summary>
+        public LLUUID InventoryRootFolderUUID;
+        
         
         /// <summary>Gets the health of the agent</summary>
         public float Health

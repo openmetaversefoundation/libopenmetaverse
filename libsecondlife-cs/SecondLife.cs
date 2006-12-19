@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using libsecondlife.Packets;
 using libsecondlife.AssetSystem;
+using libsecondlife.InventorySystem;
 
 namespace libsecondlife
 {
@@ -60,33 +61,18 @@ namespace libsecondlife
         public ObjectManager Objects;
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
+
+        /// <summary>Asset Subsystem</summary>
+        public AssetManager Assets;
+        /// <summary>Inventory Subsystem</summary>
+        public InventoryManager Inventory;
+        /// <summary>Image Subsystem</summary>
+        public ImageManager Images;
+
         /// <summary>Throttling Subsystem</summary>
         public AgentThrottle Throttle;
         /// <summary>Settings Subsystem</summary>
         public Settings Settings;
-
-        private ImageManager _ImageManager;
-        /// <summary>Image Subsystem</summary>
-        public ImageManager Images
-        {
-            get
-            {
-                if (_ImageManager == null)
-                {
-                    _ImageManager = new ImageManager(this);
-                    return _ImageManager;
-                }
-                else
-                {
-                    return _ImageManager;
-                }
-            }
-
-            set
-            {
-                _ImageManager = value;
-            }
-        }
 
         /// <summary>Triggered whenever a message is logged.
         /// If this is left null, log messages will go to 
@@ -107,6 +93,11 @@ namespace libsecondlife
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
+
+            Assets = new AssetManager(this);
+            Images = new ImageManager(this);
+            Inventory = new InventoryManager(this);
+
             Throttle = new AgentThrottle(this);
             Settings = new Settings(this);
         }

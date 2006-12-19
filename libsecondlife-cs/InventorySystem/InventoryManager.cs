@@ -27,6 +27,7 @@
 //#define DEBUG_PACKETS
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -46,6 +47,7 @@ namespace libsecondlife.InventorySystem
 
         // Reference to the SLClient Library
         private SecondLife slClient;
+        private ManualResetEvent InventoryManagerInitialized = new ManualResetEvent(false);
 
         // Reference to the Asset Manager
         private static AssetManager slAssetManager;
@@ -56,15 +58,12 @@ namespace libsecondlife.InventorySystem
 
         public InventoryPacketHelper InvPacketHelper = null;
 
-        // UUID of Root Inventory Folder
-        private LLUUID uuidRootFolder;
-
         // Setup a dictionary to easily lookup folders by UUID
         private Dictionary<LLUUID, InventoryFolder> htFoldersByUUID = new Dictionary<LLUUID, InventoryFolder>();
 
         // Setup a dictionary to track download progress
-        private Dictionary<LLUUID, DescendentRequest> htFolderDownloadStatus;
-        private List<DescendentRequest> alFolderRequestQueue;
+        private Dictionary<LLUUID, DownloadRequest_Folder> FolderDownloadStatus = new Dictionary<LLUUID, DownloadRequest_Folder>();
+        private List<DownloadRequest_Folder> alFolderRequestQueue = new List<DownloadRequest_Folder>();
 
         // Used to track current item being created
         private InventoryItem iiCreationInProgress;
@@ -73,19 +72,16 @@ namespace libsecondlife.InventorySystem
         private int LastPacketRecievedAtTick;
 
         // Each InventorySystem needs to be initialized with a client and root folder.
-        public InventoryManager(SecondLife client, LLUUID rootFolder)
+        public InventoryManager(SecondLife client)
         {
             slClient = client;
-            if (slAssetManager == null)
-            {
-                slAssetManager = AssetManager.GetAssetManager(slClient);
-            }
+            slAssetManager = slClient.Assets;
 
-            InvPacketHelper = new InventoryPacketHelper(slClient.Network.AgentID, slClient.Network.SessionID);
+            InvPacketHelper = new InventoryPacketHelper(slClient);
 
-            uuidRootFolder = rootFolder;
-
-            resetFoldersByUUID();
+            // Need to know what when we're connected/disconnected
+            slClient.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+            slClient.Network.OnDisconnected += new NetworkManager.DisconnectCallback(Network_OnDisconnected);
 
             // Setup the callback for Inventory Downloads
             slClient.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
@@ -95,25 +91,35 @@ namespace libsecondlife.InventorySystem
 
         }
 
-        // Used primarily for debugging and testing
-        public AssetManager getAssetManager()
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
-            // Console.WriteLine("It is not recommended that you access the asset manager directly");
-            return AssetManager;
+            // Clear out current state
+            ClearState();
         }
 
-        private void resetFoldersByUUID()
+        void Network_OnConnected(object sender)
         {
-            // Init folder structure with root
-            htFoldersByUUID = new Dictionary<LLUUID,InventoryFolder>();
+            // Clear out current state
+            ClearState();
+        }
 
-            InventoryFolder ifRootFolder = new InventoryFolder(this, "My Inventory", uuidRootFolder, null);
-            htFoldersByUUID[uuidRootFolder] = ifRootFolder;
+        private void ClearState()
+        {
+            htFoldersByUUID.Clear();
+            FolderDownloadStatus.Clear();
+            alFolderRequestQueue.Clear();
+
+            if (slClient.Self.InventoryRootFolderUUID != null)
+            {
+                // Init folder structure with root
+                InventoryFolder ifRootFolder = new InventoryFolder(this, "My Inventory", slClient.Self.InventoryRootFolderUUID, null);
+                htFoldersByUUID[slClient.Self.InventoryRootFolderUUID] = ifRootFolder;
+            }
         }
 
         public InventoryFolder getRootFolder()
         {
-            return htFoldersByUUID[uuidRootFolder];
+            return htFoldersByUUID[slClient.Self.InventoryRootFolderUUID];
         }
 
         public InventoryFolder getFolder(LLUUID folderID)
@@ -157,7 +163,7 @@ namespace libsecondlife.InventorySystem
         {
             string sCurFolder = qFolderPath.Dequeue();
 
-            foreach (InventoryBase ibFolder in ifRoot.alContents)
+            foreach (InventoryBase ibFolder in ifRoot._Contents)
             {
                 if (ibFolder is libsecondlife.InventorySystem.InventoryFolder)
                 {
@@ -178,14 +184,18 @@ namespace libsecondlife.InventorySystem
             return null;
         }
 
-        private void RequestFolder(DescendentRequest dr)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dr"></param>
+        internal void RequestFolder(DownloadRequest_Folder dr)
         {
             Packet packet = InvPacketHelper.FetchInventoryDescendents(
                             dr.FolderID
                             , dr.FetchFolders
                             , dr.FetchItems);
 
-            htFolderDownloadStatus[dr.FolderID] = dr;
+            FolderDownloadStatus[dr.FolderID] = dr;
 
             slClient.Network.SendPacket(packet);
         }
@@ -197,10 +207,10 @@ namespace libsecondlife.InventorySystem
 
             if (htFoldersByUUID.ContainsKey(ifolder.ParentID))
             {
-                if (((InventoryFolder)htFoldersByUUID[ifolder.ParentID]).alContents.Contains(ifolder) == false)
+                if (((InventoryFolder)htFoldersByUUID[ifolder.ParentID])._Contents.Contains(ifolder) == false)
                 {
                     // Add new folder to the contents of the parent folder.
-                    ((InventoryFolder)htFoldersByUUID[ifolder.ParentID]).alContents.Add(ifolder);
+                    ((InventoryFolder)htFoldersByUUID[ifolder.ParentID])._Contents.Add(ifolder);
                 }
             }
             else
@@ -317,7 +327,7 @@ namespace libsecondlife.InventorySystem
         internal void ItemRemove(InventoryItem iitem)
         {
             InventoryFolder ifolder = getFolder(iitem.FolderID);
-            ifolder.alContents.Remove(iitem);
+            ifolder._Contents.Remove(iitem);
 
             Packet packet = InvPacketHelper.RemoveInventoryItem(iitem.ItemID);
             slClient.Network.SendPacket(packet);
@@ -359,16 +369,16 @@ namespace libsecondlife.InventorySystem
 
         public void DownloadInventory()
         {
-            resetFoldersByUUID();
+            ClearState();
 
-            if (htFolderDownloadStatus == null)
+            if (FolderDownloadStatus == null)
             {
                 // Create status table
-                htFolderDownloadStatus = new Dictionary<LLUUID,DescendentRequest>();
+                FolderDownloadStatus = new Dictionary<LLUUID, DownloadRequest_Folder>();
             }
             else
             {
-                if (htFolderDownloadStatus.Count != 0)
+                if (FolderDownloadStatus.Count != 0)
                 {
                     throw new Exception("Inventory Download requested while previous download in progress.");
                 }
@@ -376,7 +386,7 @@ namespace libsecondlife.InventorySystem
 
             if (alFolderRequestQueue == null)
             {
-                alFolderRequestQueue = new List<DescendentRequest>();
+                alFolderRequestQueue = new List<DownloadRequest_Folder>();
             }
 
             // Set last packet received to now, just so out time-out timer works
@@ -384,13 +394,13 @@ namespace libsecondlife.InventorySystem
 
             // Send Packet requesting the root Folder, 
             // this should recurse through all folders
-            RequestFolder(new DescendentRequest(uuidRootFolder));
+            RequestFolder(new DownloadRequest_Folder(slClient.Self.InventoryRootFolderUUID));
 
-            while ((htFolderDownloadStatus.Count > 0) || (alFolderRequestQueue.Count > 0))
+            while ((FolderDownloadStatus.Count > 0) || (alFolderRequestQueue.Count > 0))
             {
-                if (htFolderDownloadStatus.Count == 0)
+                if (FolderDownloadStatus.Count == 0)
                 {
-                    DescendentRequest dr = alFolderRequestQueue[0];
+                    DownloadRequest_Folder dr = alFolderRequestQueue[0];
                     alFolderRequestQueue.RemoveAt(0);
                     RequestFolder(dr);
                 }
@@ -403,14 +413,14 @@ namespace libsecondlife.InventorySystem
 
                     // have to make a seperate list otherwise we run into modifying the original array
                     // while still enumerating it.
-                    List<DescendentRequest> alRestartList = new List<DescendentRequest>();
+                    List<DownloadRequest_Folder> alRestartList = new List<DownloadRequest_Folder>();
 
-                    //if (htFolderDownloadStatus[0] != null)
+                    //if (FolderDownloadStatus[0] != null)
                     //{
-                    //    Console.WriteLine(htFolderDownloadStatus[0].GetType());
+                    //    Console.WriteLine(FolderDownloadStatus[0].GetType());
                     //}
 
-                    foreach (DescendentRequest dr in htFolderDownloadStatus.Values)
+                    foreach (DownloadRequest_Folder dr in FolderDownloadStatus.Values)
                     {
                         Console.WriteLine(dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceivedAtTick);
 
@@ -418,7 +428,7 @@ namespace libsecondlife.InventorySystem
                     }
 
                     LastPacketRecievedAtTick = Environment.TickCount;
-                    foreach (DescendentRequest dr in alRestartList)
+                    foreach (DownloadRequest_Folder dr in alRestartList)
                     {
                         RequestFolder(dr);
                     }
@@ -477,20 +487,35 @@ namespace libsecondlife.InventorySystem
             }
         }
 
-
+        /// <summary>
+        /// Returned in response to a InventoryDescendantRequest.  Contains information about the
+        /// contents of a folder.
+        /// </summary>
+        /// <seealso cref="InventoryManager.RequestFolder"/>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         public void InventoryDescendentsHandler(Packet packet, Simulator simulator)
         {
             InventoryDescendentsPacket reply = (InventoryDescendentsPacket)packet;
 
+            // The UUID of this folder.
+            LLUUID uuidFolderID = reply.AgentData.FolderID;
+
+            // Get the original Descendent Request for this Packet
+            DownloadRequest_Folder dr = (DownloadRequest_Folder)FolderDownloadStatus[uuidFolderID];
+
+            // Update Inventory Manager's last tick point, used for timeouts and such
             LastPacketRecievedAtTick = Environment.TickCount;
 
+            // Some temp variables to be reused as we're parsing the packet
             InventoryItem invItem;
             InventoryFolder invFolder;
 
-            LLUUID uuidFolderID = LLUUID.Zero;
-
-            int iDescendentsExpected = int.MaxValue;
+            // Used to count the number of descendants received to see if we're finished or not.
+            int iDescendentsExpected = reply.AgentData.Descendents;
             int iDescendentsReceivedThisBlock = 0;
+
+
 
             foreach (InventoryDescendentsPacket.ItemDataBlock itemBlock in reply.ItemData)
             {
@@ -502,8 +527,8 @@ namespace libsecondlife.InventorySystem
 
                     if (itemBlock.ItemID == LLUUID.Zero)
                     {
-                        // this shouldn't ever happen, but unless you've uploaded an invalid item
-                        // to yourself while developping inventory code
+                        // this shouldn't ever happen, unless you've uploaded an invalid item
+                        // to yourself while developping inventory code :-(
                     }
                     else
                     {
@@ -511,7 +536,7 @@ namespace libsecondlife.InventorySystem
 
                         InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
 
-                        if (ifolder.alContents.Contains(invItem) == false)
+                        if (ifolder._Contents.Contains(invItem) == false)
                         {
                             if ((invItem.InvType == 7) && (invItem.Type == Asset.ASSET_TYPE_NOTECARD))
                             {
@@ -525,7 +550,7 @@ namespace libsecondlife.InventorySystem
                                 invItem = temp;
                             }
 
-                            ifolder.alContents.Add(invItem);
+                            ifolder._Contents.Add(invItem);
                         }
                     }
                 }
@@ -549,9 +574,9 @@ namespace libsecondlife.InventorySystem
 
                     // Add folder to Parent
                     InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invFolder.ParentID];
-                    if (ifolder.alContents.Contains(invFolder) == false)
+                    if (ifolder._Contents.Contains(invFolder) == false)
                     {
-                        ifolder.alContents.Add(invFolder);
+                        ifolder._Contents.Add(invFolder);
                     }
 
 
@@ -559,45 +584,45 @@ namespace libsecondlife.InventorySystem
                     htFoldersByUUID[invFolder.FolderID] = invFolder;
 
 
-                    // It's not the root, should be safe to "recurse"
-                    if (!invFolder.FolderID.Equals(uuidRootFolder))
+                    // Do we recurse?
+                    if (dr.Recurse)
                     {
-                        bool alreadyQueued = false;
-                        foreach (DescendentRequest dr in alFolderRequestQueue)
+                        // It's not the root, should be safe to "recurse"
+                        if (!invFolder.FolderID.Equals(slClient.Self.InventoryRootFolderUUID))
                         {
-                            if (dr.FolderID == invFolder.FolderID)
+                            bool alreadyQueued = false;
+                            foreach (DownloadRequest_Folder adr in alFolderRequestQueue)
                             {
-                                alreadyQueued = true;
-                                break;
+                                if (adr.FolderID == invFolder.FolderID)
+                                {
+                                    alreadyQueued = true;
+                                    break;
+                                }
                             }
-                        }
 
-                        if (!alreadyQueued)
-                        {
-                            alFolderRequestQueue.Add(new DescendentRequest(invFolder.FolderID));
+                            if (!alreadyQueued)
+                            {
+                                alFolderRequestQueue.Add(new DownloadRequest_Folder(invFolder.FolderID));
+                            }
                         }
                     }
                 }
             }
 
 
-            // Check how many descendents we're actually supposed to receive
-            iDescendentsExpected = reply.AgentData.Descendents;
-            uuidFolderID = reply.AgentData.FolderID;
 
             // Update download status for this folder
             if (iDescendentsReceivedThisBlock >= iDescendentsExpected)
             {
                 // We received all the descendents we're expecting for this folder
                 // in this packet, so go ahead and remove folder from status list.
-                htFolderDownloadStatus.Remove(uuidFolderID);
+                FolderDownloadStatus.Remove(uuidFolderID);
+                dr.RequestComplete.Set();
             }
             else
             {
                 // This one packet didn't have all the descendents we're expecting
                 // so update the total we're expecting, and update the total downloaded
-
-                DescendentRequest dr = (DescendentRequest)htFolderDownloadStatus[uuidFolderID];
                 dr.Expected = iDescendentsExpected;
                 dr.Received += iDescendentsReceivedThisBlock;
                 dr.LastReceivedAtTick = Environment.TickCount;
@@ -606,41 +631,15 @@ namespace libsecondlife.InventorySystem
                 {
                     // Looks like after updating, we have all the descendents, 
                     // remove from folder status.
-                    htFolderDownloadStatus.Remove(uuidFolderID);
+                    FolderDownloadStatus.Remove(uuidFolderID);
+                    dr.RequestComplete.Set();
                 }
                 else
                 {
-                    htFolderDownloadStatus[uuidFolderID] = dr;
+                    FolderDownloadStatus[uuidFolderID] = dr;
                     //					Console.WriteLine( uuidFolderID + " is expecting " + (iDescendentsExpected - iStatus[1]) + " more packets." );
                 }
             }
-        }
-
-        private class DescendentRequest
-        {
-            public LLUUID FolderID;
-
-            public int Expected = int.MaxValue;
-            public int Received = 0;
-            public int LastReceivedAtTick = 0;
-
-            public bool FetchFolders = true;
-            public bool FetchItems = true;
-
-            public DescendentRequest(LLUUID folderID)
-            {
-                FolderID = folderID;
-                LastReceivedAtTick = Environment.TickCount;
-            }
-
-            public DescendentRequest(LLUUID folderID, bool fetchFolders, bool fetchItems)
-            {
-                FolderID = folderID;
-                FetchFolders = fetchFolders;
-                FetchItems = fetchItems;
-                LastReceivedAtTick = Environment.TickCount;
-            }
-
         }
     }
 }

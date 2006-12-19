@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 using IA_SimpleInventory;
 using IA_ImageTool;
@@ -11,11 +12,14 @@ using libsecondlife.AssetSystem;
 
 namespace IA_MultiImageUpload
 {
-    class MultiImageUpload : SimpleInventory
+    class MultiImageUpload
     {
+        private SecondLife _Client;
+        private ManualResetEvent ConnectedSignal = new ManualResetEvent(false);
+
         protected string ImageDirectory;
 
-        static new void Main(string[] args)
+        static void Main(string[] args)
         {
             if (args.Length < 4)
             {
@@ -32,14 +36,31 @@ namespace IA_MultiImageUpload
             }
 
             MultiImageUpload app = new MultiImageUpload( fullpath );
-            app.Connect(args[0], args[1], args[2]);
-            app.doStuff();
-            app.Disconnect();
+            if (app.Connect(args[0], args[1], args[2]))
+            {
+                if (app.ConnectedSignal.WaitOne(TimeSpan.FromMinutes(1), false))
+                {
+                    app.doStuff();
+                    app.Disconnect();
+                }
+            }
         }
 
         public MultiImageUpload(string dir)
         {
             ImageDirectory = dir;
+            try
+            {
+                _Client = new SecondLife();
+                _Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+            }
+            catch (Exception e)
+            {
+                // Error initializing the client
+                Console.WriteLine();
+                Console.WriteLine(e.ToString());
+            }
+
         }
 
         public static void Usage()
@@ -47,9 +68,9 @@ namespace IA_MultiImageUpload
             System.Console.WriteLine("MultiImageUpload [FirstName] [LastName] [Password] [Directory]");
         }
 
-        protected new void doStuff()
+        protected void doStuff()
         {
-            InventoryFolder iFolder = AgentInventory.getFolder("Textures");
+            InventoryFolder iFolder = _Client.Inventory.getFolder("Textures");
             iFolder = iFolder.CreateFolder(Helpers.GetUnixTime().ToString());
 
             Console.WriteLine("Uploading images:");
@@ -78,6 +99,40 @@ namespace IA_MultiImageUpload
                     }
                 }
             }
+        }
+        void Network_OnConnected(object sender)
+        {
+            ConnectedSignal.Set();
+        }
+
+        protected bool Connect(string FirstName, string LastName, string Password)
+        {
+            Console.WriteLine("Attempting to connect and login to SecondLife.");
+
+            // Setup Login to Second Life
+            Dictionary<string, object> loginReply = new Dictionary<string, object>();
+
+            // Login
+            if (!_Client.Network.Login(FirstName, LastName, Password, "MultiImageUpload", "static.sprocket@gmail.com"))
+            {
+                // Login failed
+                Console.WriteLine("Error logging in: " + _Client.Network.LoginError);
+                return false;
+            }
+
+            // Login was successful
+            Console.WriteLine("Login was successful.");
+            Console.WriteLine("AgentID:   " + _Client.Network.AgentID);
+            Console.WriteLine("SessionID: " + _Client.Network.SessionID);
+
+            return true;
+        }
+
+        protected void Disconnect()
+        {
+            // Logout of Second Life
+            Console.WriteLine("Request logout");
+            _Client.Network.Logout();
         }
     }
 }

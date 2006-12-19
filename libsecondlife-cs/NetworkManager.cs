@@ -1154,6 +1154,13 @@ namespace libsecondlife
                 Client.Self.HomePosition = posVector;
                 Client.Self.HomeLookAt = lookatVector;
 
+                // Get Inventory Root Folder
+                Client.Log("Pulling root folder UUID from login data.", Helpers.LogLevel.Debug);
+                ArrayList alInventoryRoot = (ArrayList)LoginValues["inventory-root"];
+                Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
+                Client.Self.InventoryRootFolderUUID = new LLUUID((string)htInventoryRoot["folder_id"]);
+
+
                 // Connect to the sim given in the login reply
                 Simulator simulator = new Simulator(Client, this.Callbacks, (uint)(int)LoginValues["circuit_code"],
                     IPAddress.Parse((string)LoginValues["sim_ip"]), (int)LoginValues["sim_port"]);

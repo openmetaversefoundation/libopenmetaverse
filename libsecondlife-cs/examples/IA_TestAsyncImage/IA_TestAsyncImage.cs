@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+
 using IA_SimpleInventory;
 
 using libsecondlife;
@@ -10,76 +11,79 @@ using libsecondlife.AssetSystem;
 
 namespace IA_TestAsyncImage
 {
-    class TestAsync : SimpleInventory
+    class TestAsync
     {
-        ImageManager imgManager;
+        private SecondLife _Client;
+        private ManualResetEvent ConnectedSignal = new ManualResetEvent(false);
 
-        Queue<LLUUID> TextureQueue = new Queue<LLUUID>();
 
-        string OutputDirectory = "IA_TestAsyncImages";
+        private Queue<LLUUID> TextureQueue = new Queue<LLUUID>();
+
+        private string OutputDirectory = "IA_TestAsyncImages";
 
         [STAThread]
-        static new void Main(string[] args)
+        static void Main(string[] args)
         {
             TestAsync app = new TestAsync();
-            app.DownloadInventoryOnConnect = false;
 
-            app.client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(app.Objects_OnNewPrim);
-            app.client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(app.Objects_OnNewAvatar);
+            app._Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(app.Objects_OnNewPrim);
+            app._Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(app.Objects_OnNewAvatar);
 
 
             app.Connect(args[0], args[1], args[2]);
-            app.doStuff();
-            app.Disconnect();
-
-            System.Threading.Thread.Sleep(500);
-
+            if (app.ConnectedSignal.WaitOne(TimeSpan.FromMinutes(1), false))
+            {
+                app.doStuff();
+                app.Disconnect();
+            }
             Console.WriteLine("Done...");
+        }
+
+        public TestAsync()
+        {
+            try
+            {
+                _Client = new SecondLife();
+                _Client.Images = new ImageManager(_Client, ImageManager.CacheTypes.Disk, OutputDirectory);
+                _Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+            }
+            catch (Exception e)
+            {
+                // Error initializing the client
+                Console.WriteLine();
+                Console.WriteLine(e.ToString());
+            }
         }
 
         private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
-            if (imgManager == null)
+            if (avatar.FirstLifeImage != null)
             {
-                Console.WriteLine("ImageManager not ready yet, queueing Avatar textures.");
-                TextureQueue.Enqueue(avatar.FirstLifeImage);
-                TextureQueue.Enqueue(avatar.ProfileImage);
-
-                foreach (TextureEntryFace tef in avatar.Textures.FaceTextures.Values)
+                if (_Client.Images.isCachedImage(avatar.FirstLifeImage) == false)
                 {
-                    TextureQueue.Enqueue(tef.TextureID);
+                    _Client.Images.RequestImageAsync(avatar.FirstLifeImage);
                 }
             }
-            else
+
+            if (avatar.ProfileImage != null)
             {
-                if (avatar.FirstLifeImage != null)
+                if (_Client.Images.isCachedImage(avatar.FirstLifeImage) == false)
                 {
-                    if (imgManager.isCachedImage(avatar.FirstLifeImage) == false)
-                    {
-                        imgManager.RequestImageAsync(avatar.FirstLifeImage);
-                    }
+                    _Client.Images.RequestImageAsync(avatar.ProfileImage);
                 }
+            }
 
-                if (avatar.ProfileImage != null)
+            if (avatar.Textures != null)
+            {
+                foreach (TextureEntryFace tef in avatar.Textures.FaceTextures.Values)
                 {
-                    if (imgManager.isCachedImage(avatar.FirstLifeImage) == false)
+                    if (_Client.Images.isCachedImage(tef.TextureID) == false)
                     {
-                        imgManager.RequestImageAsync(avatar.ProfileImage);
+                        _Client.Images.RequestImageAsync(tef.TextureID);
                     }
-                }
-
-                if (avatar.Textures != null)
-                {
-                    foreach (TextureEntryFace tef in avatar.Textures.FaceTextures.Values)
+                    else
                     {
-                        if (imgManager.isCachedImage(tef.TextureID) == false)
-                        {
-                            imgManager.RequestImageAsync(tef.TextureID);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Already cached: " + tef.TextureID);
-                        }
+                        Console.WriteLine("Already cached: " + tef.TextureID);
                     }
                 }
             }
@@ -87,42 +91,29 @@ namespace IA_TestAsyncImage
 
         private void Objects_OnNewPrim(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
         {
-            if (imgManager == null)
+            if ((prim.Textures.DefaultTexture != null) && (prim.Textures.DefaultTexture.TextureID != null))
             {
-                Console.WriteLine("ImageManager not ready yet, queueing Prim textures.");
-                TextureQueue.Enqueue(prim.Textures.DefaultTexture.TextureID);
-
-                foreach (TextureEntryFace tef in prim.Textures.FaceTextures.Values)
+                if (_Client.Images.isCachedImage(prim.Textures.DefaultTexture.TextureID) == false)
                 {
-                    TextureQueue.Enqueue(tef.TextureID);
+                    _Client.Images.RequestImageAsync(prim.Textures.DefaultTexture.TextureID);
+                }
+                else
+                {
+                    Console.WriteLine("Already cached: " + prim.Textures.DefaultTexture.TextureID);
                 }
             }
-            else
+
+            if (prim.Textures.FaceTextures != null)
             {
-                if ((prim.Textures.DefaultTexture != null) && (prim.Textures.DefaultTexture.TextureID != null))
+                foreach (TextureEntryFace tef in prim.Textures.FaceTextures.Values)
                 {
-                    if (imgManager.isCachedImage(prim.Textures.DefaultTexture.TextureID) == false)
+                    if (_Client.Images.isCachedImage(tef.TextureID) == false)
                     {
-                        imgManager.RequestImageAsync(prim.Textures.DefaultTexture.TextureID);
+                        _Client.Images.RequestImageAsync(tef.TextureID);
                     }
                     else
                     {
-                        Console.WriteLine("Already cached: " + prim.Textures.DefaultTexture.TextureID);
-                    }
-                }
-
-                if (prim.Textures.FaceTextures != null)
-                {
-                    foreach (TextureEntryFace tef in prim.Textures.FaceTextures.Values)
-                    {
-                        if (imgManager.isCachedImage(tef.TextureID) == false)
-                        {
-                            imgManager.RequestImageAsync(tef.TextureID);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Already cached: " + tef.TextureID);
-                        }
+                        Console.WriteLine("Already cached: " + tef.TextureID);
                     }
                 }
             }
@@ -153,14 +144,14 @@ namespace IA_TestAsyncImage
             }
         }
 
-        protected new void doStuff()
+        protected void doStuff()
         {
-            imgManager = new ImageManager(client, ImageManager.CacheTypes.Disk, OutputDirectory);
-            imgManager.OnImageRetrieved += new ImageRetrievedCallback(NewImageRetrievedCallBack);
+            
+            _Client.Images.OnImageRetrieved += new ImageRetrievedCallback(NewImageRetrievedCallBack);
 
             while (TextureQueue.Count > 0)
             {
-                imgManager.RequestImageAsync(TextureQueue.Dequeue());
+                _Client.Images.RequestImageAsync(TextureQueue.Dequeue());
             }
 
             Console.WriteLine("Press any key to stop.");
@@ -182,6 +173,41 @@ namespace IA_TestAsyncImage
             {
                 File.WriteAllBytes(filename, JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
             }
+        }
+
+        void Network_OnConnected(object sender)
+        {
+            ConnectedSignal.Set();
+        }
+
+        protected bool Connect(string FirstName, string LastName, string Password)
+        {
+            Console.WriteLine("Attempting to connect and login to SecondLife.");
+
+            // Setup Login to Second Life
+            Dictionary<string, object> loginReply = new Dictionary<string, object>();
+
+            // Login
+            if (!_Client.Network.Login(FirstName, LastName, Password, "createnotecard", "static.sprocket@gmail.com"))
+            {
+                // Login failed
+                Console.WriteLine("Error logging in: " + _Client.Network.LoginError);
+                return false;
+            }
+
+            // Login was successful
+            Console.WriteLine("Login was successful.");
+            Console.WriteLine("AgentID:   " + _Client.Network.AgentID);
+            Console.WriteLine("SessionID: " + _Client.Network.SessionID);
+
+            return true;
+        }
+
+        protected void Disconnect()
+        {
+            // Logout of Second Life
+            Console.WriteLine("Request logout");
+            _Client.Network.Logout();
         }
     }
 }

@@ -37,8 +37,8 @@ namespace libsecondlife.InventorySystem
                     throw new Exception("Target Folder [" + value + "] does not exist.");
                 }
 
-                base.iManager.getFolder(this.FolderID).alContents.Remove(this);
-                iTargetFolder.alContents.Add(this);
+                base.iManager.getFolder(this.FolderID)._Contents.Remove(this);
+                iTargetFolder._Contents.Add(this);
 
                 _FolderID = value;
                 UpdateItem();
@@ -422,7 +422,7 @@ namespace libsecondlife.InventorySystem
         /// </summary>
         public void Delete()
         {
-            base.iManager.getFolder(this.FolderID).alContents.Remove(this);
+            base.iManager.getFolder(this.FolderID)._Contents.Remove(this);
             base.iManager.ItemRemove(this);
 
         }
