@@ -23,7 +23,7 @@ namespace libsecondlife.TestClient
 				masterName = masterName + args[ct] + " ";
 			TestClient.Master = masterName.TrimEnd();
 
-			foreach (Avatar av in TestClient.Avatars.AvatarList.Values)
+			foreach (Avatar av in TestClient.AvatarList.Values)
 			{
 			    if (av.Name == TestClient.Master)
 			    {

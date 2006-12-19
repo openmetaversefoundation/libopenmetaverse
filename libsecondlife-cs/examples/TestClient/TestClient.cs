@@ -13,6 +13,7 @@ namespace libsecondlife.TestClient
         public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims;
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
+        public Dictionary<uint, Avatar> AvatarList = new Dictionary<uint,Avatar>();
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
         public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
@@ -51,8 +52,8 @@ namespace libsecondlife.TestClient
             Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
             Objects.OnPrimMoved += new ObjectManager.PrimMovedCallback(Objects_OnPrimMoved);
             Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
-			//Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-			//Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
+			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
+			Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
             Self.OnInstantMessage += new InstantMessageCallback(Self_OnInstantMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
@@ -178,11 +179,11 @@ namespace libsecondlife.TestClient
                     SimPrims[simulator].Remove(objectID);
             }
 
-			//lock (AvatarList)
-			//{
-			//    if (AvatarList.ContainsKey(objectID))
-			//        AvatarList.Remove(objectID);
-			//}
+			lock (AvatarList)
+			{
+			    if (AvatarList.ContainsKey(objectID))
+			        AvatarList.Remove(objectID);
+			}
         }
 
         private void Objects_OnPrimMoved(Simulator simulator, PrimUpdate prim, ulong regionHandle, ushort timeDilation)
@@ -215,25 +216,25 @@ namespace libsecondlife.TestClient
             }
         }
 
-		//private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
-		//{
-		//    lock (AvatarList)
-		//    {
-		//        AvatarList[avatar.LocalID] = avatar;
-		//    }
-		//}
+		private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+		{
+		    lock (AvatarList)
+		    {
+		        AvatarList[avatar.LocalID] = avatar;
+		    }
+		}
 
-		//private void Objects_OnAvatarMoved(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation)
-		//{
-		//    lock (AvatarList)
-		//    {
-		//        if (AvatarList.ContainsKey(avatar.LocalID))
-		//        {
-		//            AvatarList[avatar.LocalID].Position = avatar.Position;
-		//            AvatarList[avatar.LocalID].Rotation = avatar.Rotation;
-		//        }
-		//    }
-		//}
+		private void Objects_OnAvatarMoved(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation)
+		{
+		    lock (AvatarList)
+		    {
+		        if (AvatarList.ContainsKey(avatar.LocalID))
+		        {
+		            AvatarList[avatar.LocalID].Position = avatar.Position;
+		            AvatarList[avatar.LocalID].Rotation = avatar.Rotation;
+		        }
+		    }
+		}
 
         private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
         {
