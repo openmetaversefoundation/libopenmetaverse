@@ -103,9 +103,9 @@ namespace libsecondlife.AssetSystem
                 {
                     Client.Log("ItemID: " + wdb.ItemID + Environment.NewLine +
                         "WearableType: " + wdb.WearableType + Environment.NewLine +
-                        "Retrieving as type: " + asset.Type + Environment.NewLine +
-                        e.ToString() + Environment.NewLine + 
-                        asset.AssetDataToString(), Helpers.LogLevel.Error);
+                        "Retrieving as type: " + wearableAsset.Type + Environment.NewLine +
+                        e.ToString() + Environment.NewLine +
+                        wearableAsset.AssetDataToString(), Helpers.LogLevel.Error);
                 }
             }
 

@@ -59,13 +59,6 @@ namespace libsecondlife.TestClient
             bool login = client.Network.Login(account.FirstName, account.LastName, account.Password, 
                 "TestClient", "contact@libsecondlife.org");
 
-            if (login)
-            {
-                // Set our appearance
-                //AppearanceManager appearance = new AppearanceManager(client);
-                //appearance.SendAgentSetAppearance();
-            }
-
             if (client.Network.Connected)
             {
                 Clients[client.Network.AgentID] = client;
