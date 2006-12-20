@@ -164,8 +164,9 @@ namespace libsecondlife.AssetSystem
             slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
+
             request.Completed.WaitOne();
 
             item.SetAssetData(request.AssetData);
@@ -190,7 +191,7 @@ namespace libsecondlife.AssetSystem
 			slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             request.Completed.WaitOne();
@@ -203,7 +204,7 @@ namespace libsecondlife.AssetSystem
         private void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
@@ -214,7 +215,7 @@ namespace libsecondlife.AssetSystem
         private void RequestXferCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             RequestXferPacket reply = (RequestXferPacket)packet;
@@ -228,7 +229,7 @@ namespace libsecondlife.AssetSystem
         private void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             ConfirmXferPacketPacket reply = (ConfirmXferPacketPacket)packet;
@@ -240,7 +241,7 @@ namespace libsecondlife.AssetSystem
         private void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             TransferInfoPacket reply = (TransferInfoPacket)packet;
@@ -276,7 +277,7 @@ namespace libsecondlife.AssetSystem
         private void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             TransferPacketPacket reply = (TransferPacketPacket)packet;

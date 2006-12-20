@@ -140,12 +140,11 @@ namespace libsecondlife.AssetSystem
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("ERROR: Disk Cache directory could not be established, defaulting to Memory Cache.");
-                    Console.WriteLine(e.Message);
+                    slClient.Log("Disk Cache directory could not be established, defaulting to Memory Cache: " + Environment.NewLine +
+                        e.ToString(), Helpers.LogLevel.Warning);
 
                     CacheType = CacheTypes.Memory;
                 }
-
             }
 
             // Image Packet Helpers
@@ -338,7 +337,7 @@ namespace libsecondlife.AssetSystem
         public void ImageDataCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             ImageDataPacket reply = (ImageDataPacket)packet;
@@ -395,7 +394,7 @@ namespace libsecondlife.AssetSystem
         public void ImagePacketCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             ImagePacketPacket reply = (ImagePacketPacket)packet;
@@ -447,7 +446,7 @@ namespace libsecondlife.AssetSystem
         public void ImageNotInDatabaseCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             ImageNotInDatabasePacket reply = (ImageNotInDatabasePacket)packet;

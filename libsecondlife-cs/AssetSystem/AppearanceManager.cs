@@ -84,7 +84,7 @@ namespace libsecondlife.AssetSystem
                 AManager.GetInventoryAsset(wearableAsset);
                 if (wearableAsset.AssetData.Length == 0)
                 {
-                    Console.WriteLine("Retrieval failed");
+                    Client.Log("Retrieval failed", Helpers.LogLevel.Warning);
                 }
 
                 try
@@ -101,13 +101,11 @@ namespace libsecondlife.AssetSystem
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("ItemID: " + wdb.ItemID);
-                    Console.WriteLine("WearableType : " + wdb.WearableType);
-                    Console.WriteLine("Retrieving as type: " + wearableAsset.Type);
-
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.WriteLine(wearableAsset.AssetDataToString());
+                    Client.Log("ItemID: " + wdb.ItemID + Environment.NewLine +
+                        "WearableType: " + wdb.WearableType + Environment.NewLine +
+                        "Retrieving as type: " + asset.Type + Environment.NewLine +
+                        e.ToString() + Environment.NewLine + 
+                        asset.AssetDataToString(), Helpers.LogLevel.Error);
                 }
             }
 
@@ -134,8 +132,10 @@ namespace libsecondlife.AssetSystem
                     case 18:
                         break;
                     default:
-                        Console.WriteLine("Unknown order for FaceID: " + faceid);
-                        Console.WriteLine("Your wearables define a face that we don't know the order of.  Please capture a AgentSetAppearance packet for your current outfit and submit to static.sprocket@gmail.com, thanks!");
+                        Client.Log("Unknown order for FaceID: " + faceid + Environment.NewLine +
+                            "Your wearables define a face that we don't know the order of.  Please " +
+                            "capture a AgentSetAppearance packet for your current outfit and submit to " +
+                            "static.sprocket@gmail.com, thanks!", Helpers.LogLevel.Info);
                         break;
                 }
             }
@@ -149,6 +149,7 @@ namespace libsecondlife.AssetSystem
             te2.CreateFace(14).TextureID = AgentTextureEntry.GetFace(14).TextureID;
             te2.CreateFace(13).TextureID = AgentTextureEntry.GetFace(13).TextureID;
             te2.CreateFace(12).TextureID = AgentTextureEntry.GetFace(12).TextureID;
+            // I wonder if shoes are somewhere in here?
             te2.CreateFace(7).TextureID = AgentTextureEntry.GetFace(7).TextureID;
             te2.CreateFace(6).TextureID = AgentTextureEntry.GetFace(6).TextureID;
             te2.CreateFace(5).TextureID = AgentTextureEntry.GetFace(5).TextureID;

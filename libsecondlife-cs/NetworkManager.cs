@@ -172,7 +172,6 @@ namespace libsecondlife
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
                 Client.Log(e.ToString(), Helpers.LogLevel.Error);
             }
         }

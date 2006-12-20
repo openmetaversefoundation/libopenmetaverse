@@ -275,7 +275,7 @@ namespace libsecondlife.InventorySystem
                     slClient.Network.SendPacket(packet);
 
 #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
 #endif
                 } while (!ItemCreationCompleted.WaitOne(5000, false));
             }
@@ -291,7 +291,7 @@ namespace libsecondlife.InventorySystem
             slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                Console.WriteLine(packet); 
+                slClient.DebugLog(packet); 
             #endif         
         }
 
@@ -301,7 +301,7 @@ namespace libsecondlife.InventorySystem
             slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                Console.WriteLine(packet); 
+                slClient.DebugLog(packet); 
             #endif         
         }
 
@@ -320,7 +320,7 @@ namespace libsecondlife.InventorySystem
             slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                Console.WriteLine(packet); 
+                slClient.DebugLog(packet); 
             #endif         
         }
 
@@ -333,7 +333,7 @@ namespace libsecondlife.InventorySystem
             slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                Console.WriteLine(packet); 
+                slClient.DebugLog(packet); 
             #endif         
         }
 
@@ -408,8 +408,10 @@ namespace libsecondlife.InventorySystem
                 int curTick = Environment.TickCount;
                 if ((curTick - LastPacketRecievedAtTick) > 10000)
                 {
-                    Console.WriteLine("Time-out while waiting for packets (" + ((curTick - LastPacketRecievedAtTick) / 1000) + " seconds since last packet)");
-                    Console.WriteLine("Current Status:");
+                    slClient.Log("Time-out while waiting for packets (" +
+                        ((curTick - LastPacketRecievedAtTick) / 1000) + " seconds since last packet)",
+                        Helpers.LogLevel.Warning);
+                    //Console.WriteLine("Current Status:");
 
                     // have to make a seperate list otherwise we run into modifying the original array
                     // while still enumerating it.
@@ -422,7 +424,7 @@ namespace libsecondlife.InventorySystem
 
                     foreach (DownloadRequest_Folder dr in FolderDownloadStatus.Values)
                     {
-                        Console.WriteLine(dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceivedAtTick);
+                        //Console.WriteLine(dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceivedAtTick);
 
                         alRestartList.Add(dr);
                     }
@@ -432,10 +434,9 @@ namespace libsecondlife.InventorySystem
                     {
                         RequestFolder(dr);
                     }
-
                 }
-                slClient.Tick();
 
+                slClient.Tick();
             }
         }
 
@@ -444,7 +445,7 @@ namespace libsecondlife.InventorySystem
         public void UpdateCreateInventoryItemHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet);
             #endif
 
             if (iiCreationInProgress != null)
@@ -482,7 +483,7 @@ namespace libsecondlife.InventorySystem
             }
             else
             {
-                Console.WriteLine(packet);
+                slClient.DebugLog(packet.ToString());
                 throw new Exception("Received a packet for item creation, but no such response was expected.  This is probably a bad thing...");
             }
         }

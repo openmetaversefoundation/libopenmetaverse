@@ -91,10 +91,9 @@ namespace libsecondlife.AssetSystem
 
             while (this.Completed.WaitOne(1000, true) == false && this.resendCount < 20) // only resend 20 times
             {
-                //Console.WriteLine("WaitOne() timeout while uploading");
                 if (this.SecondsSinceLastPacket > 2)
                 {
-                    Console.WriteLine("Resending Packet (more than 2 seconds since last confirm)");
+                    slClient.Log("Resending Packet (more than 2 seconds since last confirm)", Helpers.LogLevel.Info);
                     this.SendCurrentPacket();
                     resendCount++;
                 }
@@ -131,13 +130,13 @@ namespace libsecondlife.AssetSystem
             }
 
             slClient.Network.SendPacket(packet);
-#if DEBUG_PACKETS
-                Console.WriteLine(packet);
-#endif
-#if DEBUG_HEADERS
-                Console.WriteLine(packet.Header);
-#endif
 
+            #if DEBUG_PACKETS
+                slClient.DebugLog(packet);
+            #endif
+            #if DEBUG_HEADERS
+            slClient.DebugLog(packet.Header.ToString());
+            #endif
         }
 
         internal void RequestXfer(ulong XferID)
@@ -167,7 +166,6 @@ namespace libsecondlife.AssetSystem
 
         private void SendCurrentPacket()
         {
-            //            Console.WriteLine("Sending " + tr.CurrentPacket + " / " + tr.NumPackets);
             Packet uploadPacket;
 
             // technically we don't need this lock, because no state is updated here!
@@ -211,12 +209,12 @@ namespace libsecondlife.AssetSystem
 
             slClient.Network.SendPacket(uploadPacket);
 
-#if DEBUG_PACKETS
-                Console.WriteLine(uploadPacket);
-#endif
-#if DEBUG_HEADERS
-            Console.WriteLine(uploadPacket.Header);
-#endif
+            #if DEBUG_PACKETS
+                slClient.DebugLog(uploadPacket);
+            #endif
+            #if DEBUG_HEADERS
+                slClient.DebugLog(uploadPacket.Header.ToString());
+            #endif
         }
 
         internal void UploadComplete(LLUUID assetID, bool success)
@@ -230,7 +228,7 @@ namespace libsecondlife.AssetSystem
             else
                 StatusMsg = "Server returned failed";
 
-            Console.WriteLine("Upload Complete");
+            slClient.Log("Upload complete", Helpers.LogLevel.Info);
             Completed.Set();
         }
     }

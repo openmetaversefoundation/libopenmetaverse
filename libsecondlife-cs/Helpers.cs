@@ -223,6 +223,38 @@ namespace libsecondlife
             return System.Text.UTF8Encoding.UTF8.GetBytes(str);
         }
 
+        //public static byte[] HexStringToBytes(string hexString)
+        //{
+        //    string newString = "";
+        //    char c;
+
+        //    // remove all none A-F, 0-9, characters
+        //    for (int i = 0; i < hexString.Length; i++)
+        //    {
+        //        c = hexString[i];
+        //        if (IsHexDigit(c))
+        //            newString += c;
+        //    }
+
+        //    // if odd number of characters, discard last character
+        //    if (newString.Length % 2 != 0)
+        //    {
+        //        newString = newString.Substring(0, newString.Length - 1);
+        //    }
+
+        //    int byteLength = newString.Length / 2;
+        //    byte[] bytes = new byte[byteLength];
+        //    string hex;
+        //    int j = 0;
+        //    for (int i = 0; i < bytes.Length; i++)
+        //    {
+        //        hex = new String(new Char[] { newString[j], newString[j + 1] });
+        //        bytes[i] = HexToByte(hex);
+        //        j = j + 2;
+        //    }
+        //    return bytes;
+        //}
+
         public static uint GetUnixTime()
         {
             return (uint)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
