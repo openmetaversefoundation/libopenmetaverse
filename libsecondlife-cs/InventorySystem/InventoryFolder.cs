@@ -115,6 +115,22 @@ namespace libsecondlife.InventorySystem
             return dr;
         }
 
+        /// <summary>
+        /// Request a download of this folder's content information.
+        /// </summary>
+        /// <param name="Recurse">Indicate if we should recursively download content information.</param>
+        /// <param name="Items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
+        /// <returns>The Request object for this download</returns>
+        public DownloadRequest_Folder BeginDownloadContents(bool recurse, bool items)
+        {
+            _Contents.Clear();
+
+            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, items);
+            iManager.RequestFolder(dr);
+
+            return dr;
+        }
+
         public InventoryFolder CreateFolder(string name)
         {
             return base.iManager.FolderCreate(name, FolderID);
@@ -165,6 +181,11 @@ namespace libsecondlife.InventorySystem
             }
 
             return items;
+        }
+
+        public override string GetDisplayType()
+        {
+            return "Folder";
         }
 
         /// <summary>

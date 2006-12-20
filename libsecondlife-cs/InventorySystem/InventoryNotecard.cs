@@ -108,6 +108,12 @@ namespace libsecondlife.InventorySystem
 
 		}
 
+
+        public override string GetDisplayType()
+        {
+            return "Notecard";
+        }
+
         /// <summary>
         /// Output this item as XML
         /// </summary>

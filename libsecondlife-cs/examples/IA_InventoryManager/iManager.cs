@@ -30,9 +30,6 @@ namespace IA_InventoryManager
         private char[] cmdSeperators = { ' ' };
         private string curDirectory = "/";
 
-        private string TYPE_DIR  = "<DIR>  ";
-        private string TYPE_ITEM = "<ITEM> ";
-
         private SecondLife _Client;
         private AppearanceManager aManager;
 
@@ -77,6 +74,9 @@ namespace IA_InventoryManager
         private void doStuff()
         {
             System.Threading.Thread.Sleep(1000);
+
+            // Download directory tree
+            _Client.Inventory.getRootFolder().BeginDownloadContents(true, false);
 
             Console.WriteLine("==================================================================");
             Console.WriteLine("The Inventory Manager program provides a simple shell for working with your Second Life[tm] Avatar.");
@@ -217,7 +217,7 @@ namespace IA_InventoryManager
         private void help()
         {
             Console.WriteLine("Currently available commands are: ");
-            Console.WriteLine("LS          - List contents of the current directory.");
+            Console.WriteLine("LS          - List contents of the current directory. Options: /itemid /assetid /type");
             Console.WriteLine("CD          - Change directory.");
             Console.WriteLine("MKDIR       - Make a new directory.");
             Console.WriteLine("RMDIR       - Remove directory.");
@@ -686,6 +686,26 @@ namespace IA_InventoryManager
 
         private void ls(string[] cmdLine)
         {
+            bool displayType = false;
+            bool displayItemID = false;
+            bool displayAssetID = false;
+
+            foreach( string option in cmdLine )
+            {
+                if( option.ToLower().Equals("/itemid") )
+                {
+                    displayItemID = true;
+                }
+                if( option.ToLower().Equals("/assetid") )
+                {
+                    displayAssetID = true;
+                }
+                if( option.ToLower().Equals("/type") )
+                {
+                    displayType = true;
+                }
+            }
+
             Console.WriteLine("Contents of: " + curDirectory);
             Console.WriteLine("--------------------------------------------------");
             if (!curDirectory.Equals("/"))
@@ -700,12 +720,42 @@ namespace IA_InventoryManager
                 if (ib is InventoryFolder)
                 {
                     InventoryFolder folder = (InventoryFolder)ib;
-                    Console.WriteLine(TYPE_DIR + "<" + folder.FolderID.ToStringHyphenated() + "> " + folder.Name);
+                    StringBuilder output = new StringBuilder("[DIR] ");
+
+                    if( displayItemID )
+                    {
+                        output.Append("<itemid:" + folder.FolderID.ToStringHyphenated() + "> ");
+                    }
+                    if( displayType )
+                    {
+                        output.Append("<type:" + folder.GetDisplayType() + "> ");
+                    }
+
+                    output.Append(folder.Name);
+
+                    Console.WriteLine( output );
                 }
                 else
                 {
                     InventoryItem item = (InventoryItem)ib;
-                    Console.WriteLine(TYPE_ITEM + "<" + item.ItemID.ToStringHyphenated() + "> " + item.Name);
+                    StringBuilder output = new StringBuilder();
+
+                    if (displayItemID)
+                    {
+                        output.Append("<itemid:" + item.ItemID.ToStringHyphenated() + "> ");
+                    }
+                    if (displayAssetID)
+                    {
+                        output.Append("<assetid:" + item.AssetID.ToStringHyphenated() + "> ");
+                    }
+                    if (displayType)
+                    {
+                        output.Append("<type:" + item.GetDisplayType() + "> ");
+                    }
+
+                    output.Append(item.Name);
+
+                    Console.WriteLine(output);
                 }
             }
         }

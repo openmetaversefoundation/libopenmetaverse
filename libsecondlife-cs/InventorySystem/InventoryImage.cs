@@ -10,7 +10,6 @@ namespace libsecondlife.InventorySystem
 	/// </summary>
 	public class InventoryImage : InventoryItem
 	{
-
 		public byte[] J2CData
 		{
 			get
@@ -78,11 +77,11 @@ namespace libsecondlife.InventorySystem
 
 		override internal void SetAssetData( byte[] assetData )
 		{
-			if( Asset == null )
+			if( _Asset == null )
 			{
-				if( AssetID != null )
+				if( _AssetID != null )
 				{
-					_Asset = new AssetImage( AssetID, assetData );
+					_Asset = new AssetImage( _AssetID, assetData );
 				} 
 				else 
 				{
@@ -96,6 +95,12 @@ namespace libsecondlife.InventorySystem
 			}
 
 		}
+
+        public override string GetDisplayType()
+        {
+            return "Image";
+        }
+
 
         /// <summary>
         /// Output this image as XML

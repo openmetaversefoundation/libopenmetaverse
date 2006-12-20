@@ -550,6 +550,18 @@ namespace libsecondlife.InventorySystem
                                 invItem = temp;
                             }
 
+                            if ((invItem.InvType == 18) && 
+                                (
+                                    (invItem.Type == Asset.ASSET_TYPE_WEARABLE_BODY)
+                                    || (invItem.Type == Asset.ASSET_TYPE_WEARABLE_CLOTHING)
+                                )
+                               )
+
+                            {
+                                InventoryItem temp = new InventoryWearable(this, invItem);
+                                invItem = temp;
+                            }
+
                             ifolder._Contents.Add(invItem);
                         }
                     }

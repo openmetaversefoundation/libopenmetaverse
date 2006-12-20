@@ -6,7 +6,7 @@ using libsecondlife.Packets;
 
 namespace libsecondlife.AssetSystem
 {
-    public class BodyPart
+    class BodyPart_Deprecated
     {
         public string name = "";
         public uint type = 0;
@@ -33,7 +33,7 @@ namespace libsecondlife.AssetSystem
             return string.Format("{0:x8}", i);
         }
 
-        public static byte[] BodyPartToByteData(BodyPart bp)
+        public static byte[] BodyPartToByteData(BodyPart_Deprecated bp)
         {
             string data = "LLWearable version 22\n";
             data += bp.name + "\n\n";
@@ -88,9 +88,9 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static BodyPart ByteDataToBodyPart(byte[] data)
+        public static BodyPart_Deprecated ByteDataToBodyPart(byte[] data)
         {
-            BodyPart bp = new BodyPart(); 
+            BodyPart_Deprecated bp = new BodyPart_Deprecated(); 
 
             byte state = 0;
             const byte parameters_block = 4;
@@ -202,11 +202,11 @@ namespace libsecondlife.AssetSystem
 
             return bp;
         }
-        public BodyPart() { } //blank construction
+        public BodyPart_Deprecated() { } //blank construction
 
-        public BodyPart(byte[] data)
+        public BodyPart_Deprecated(byte[] data)
         {
-            BodyPart bp = BodyPart.ByteDataToBodyPart(data);
+            BodyPart_Deprecated bp = BodyPart_Deprecated.ByteDataToBodyPart(data);
             this.base_mask = bp.base_mask;
             this.creator_id = bp.creator_id;
             this.everyone_mask = bp.everyone_mask;

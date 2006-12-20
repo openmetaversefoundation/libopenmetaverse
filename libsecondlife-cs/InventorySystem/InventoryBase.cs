@@ -33,6 +33,11 @@ namespace libsecondlife.InventorySystem
         abstract public string toXML(bool outputAssets);
 
         /// <summary>
+        /// Get a short string describing this item's type
+        /// </summary>
+        abstract public string GetDisplayType();
+
+        /// <summary>
         /// Utility function to simply making text XML safe
         /// </summary>
         /// <param name="str"></param>

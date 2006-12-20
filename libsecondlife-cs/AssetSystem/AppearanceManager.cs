@@ -63,7 +63,8 @@ namespace libsecondlife.AssetSystem
                     continue;
                 }
 
-                sbyte Type = 13;
+
+                AssetWearable wearableAsset;
 
                 switch (wdb.WearableType)
                 {
@@ -71,44 +72,42 @@ namespace libsecondlife.AssetSystem
                     case 1:
                     case 2:
                     case 3:
-                        Type = 13;
+                        wearableAsset = new AssetWearable_Body(wdb.AssetID, null);
                         break;
                     default:
-                        Type = 5;
+                        wearableAsset = new AssetWearable_Clothing(wdb.AssetID, null);
                         break;
                 }
 
-                Asset asset = new Asset(wdb.AssetID, Type, null);
+                
 
-                AManager.GetInventoryAsset(asset);
-                if (asset.AssetData.Length == 0)
+                AManager.GetInventoryAsset(wearableAsset);
+                if (wearableAsset.AssetData.Length == 0)
                 {
                     Console.WriteLine("Retrieval failed");
                 }
 
                 try
                 {
-                    BodyPart bp = new BodyPart(asset.AssetData);
-
-                    foreach (KeyValuePair<uint, LLUUID> texture in bp.textures)
+                    foreach (KeyValuePair<uint, LLUUID> texture in wearableAsset.Textures)
                     {
                         AgentTextureEntry.CreateFace(texture.Key).TextureID = texture.Value;
                     }
 
-                    foreach (KeyValuePair<uint, float> kvp in bp.parameters)
+                    foreach (KeyValuePair<uint, float> kvp in wearableAsset.Parameters)
                     {
-                        AgentAppearanceParams[kvp.Key] = bp.parameters[kvp.Key];
+                        AgentAppearanceParams[kvp.Key] = kvp.Value;
                     }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine("ItemID: " + wdb.ItemID);
                     Console.WriteLine("WearableType : " + wdb.WearableType);
-                    Console.WriteLine("Retrieving as type: " + asset.Type);
+                    Console.WriteLine("Retrieving as type: " + wearableAsset.Type);
 
                     Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
-                    Console.WriteLine(asset.AssetDataToString());
+                    Console.WriteLine(wearableAsset.AssetDataToString());
                 }
             }
 
@@ -127,6 +126,8 @@ namespace libsecondlife.AssetSystem
                     case 6:
                     case 7:
                     case 12:
+                    case 13:
+                    case 14:
                     case 15:
                     case 16:
                     case 17:
@@ -145,13 +146,15 @@ namespace libsecondlife.AssetSystem
             te2.CreateFace(17).TextureID = AgentTextureEntry.GetFace(17).TextureID;
             te2.CreateFace(16).TextureID = AgentTextureEntry.GetFace(16).TextureID;
             te2.CreateFace(15).TextureID = AgentTextureEntry.GetFace(15).TextureID;
-            te2.CreateFace(2).TextureID = AgentTextureEntry.GetFace(2).TextureID;
+            te2.CreateFace(14).TextureID = AgentTextureEntry.GetFace(14).TextureID;
+            te2.CreateFace(13).TextureID = AgentTextureEntry.GetFace(13).TextureID;
             te2.CreateFace(12).TextureID = AgentTextureEntry.GetFace(12).TextureID;
             te2.CreateFace(7).TextureID = AgentTextureEntry.GetFace(7).TextureID;
             te2.CreateFace(6).TextureID = AgentTextureEntry.GetFace(6).TextureID;
             te2.CreateFace(5).TextureID = AgentTextureEntry.GetFace(5).TextureID;
             te2.CreateFace(4).TextureID = AgentTextureEntry.GetFace(4).TextureID;
             te2.CreateFace(3).TextureID = AgentTextureEntry.GetFace(3).TextureID;
+            te2.CreateFace(2).TextureID = AgentTextureEntry.GetFace(2).TextureID;
             te2.CreateFace(1).TextureID = AgentTextureEntry.GetFace(1).TextureID;
             te2.CreateFace(0).TextureID = AgentTextureEntry.GetFace(0).TextureID;
 

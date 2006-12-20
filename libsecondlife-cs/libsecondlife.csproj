@@ -99,7 +99,9 @@
     <Compile Include="AssetSystem\AssetPacketHelpers.cs" />
     <Compile Include="AssetSystem\AssetRequestDownload.cs" />
     <Compile Include="AssetSystem\AssetRequestUpload.cs" />
-    <Compile Include="AssetSystem\BodyPart.cs" />
+    <Compile Include="AssetSystem\AssetWearable.cs" />
+    <Compile Include="AssetSystem\AssetWearable_Body.cs" />
+    <Compile Include="AssetSystem\AssetWearable_Clothing.cs" />
     <Compile Include="AssetSystem\_BodyShapeParams_.cs" />
     <Compile Include="AssetSystem\ImageManager.cs" />
     <Compile Include="AssetSystem\ImagePacketHelpers.cs" />
@@ -108,6 +110,7 @@
     </Compile>
     <Compile Include="AvatarManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
+    <Compile Include="InventorySystem\InventoryWearable.cs" />
     <Compile Include="MainAvatarStatus.cs" />
     <Compile Include="MainAvatar.cs" />
     <Compile Include="EstateTools.cs">

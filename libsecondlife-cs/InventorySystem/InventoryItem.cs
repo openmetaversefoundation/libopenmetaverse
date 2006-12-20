@@ -450,6 +450,11 @@ namespace libsecondlife.InventorySystem
             }
         }
 
+        public override string GetDisplayType()
+        {
+            return "Unknown_Item";
+        }
+
         /// <summary>
         /// Output this item as XML
         /// </summary>
