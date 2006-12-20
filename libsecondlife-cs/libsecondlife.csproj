@@ -108,7 +108,6 @@
     </Compile>
     <Compile Include="AvatarManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
-    <Compile Include="InventorySystem\InventoryWearable.cs" />
     <Compile Include="MainAvatarStatus.cs" />
     <Compile Include="MainAvatar.cs" />
     <Compile Include="EstateTools.cs">

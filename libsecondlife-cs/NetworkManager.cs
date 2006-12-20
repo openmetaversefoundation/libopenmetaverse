@@ -182,7 +182,7 @@ namespace libsecondlife
         /// </summary>
         public void Disconnect()
         {
-            if (!connected)
+            if (connected)
             {
                 connected = false;
                 AckTimer.Stop();
@@ -199,7 +199,7 @@ namespace libsecondlife
                     catch (SocketException)
                     {
                         // There's a high probability of this failing if the network is
-                        // disconnected, so don't even bother logging the error
+                        // disconnecting, so don't even bother logging the error
                     }
                 }
 
