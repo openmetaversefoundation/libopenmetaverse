@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class LocationCommand: Command
     {
-		public LocationCommand()
+        SecondLife Client;
+
+        public LocationCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "location";
 			Description = "Show the location.";
 		}
 
-		public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
             return "CurrentSim: '" + Client.Network.CurrentSim.Region.Name + "' Position: " + Client.Self.Position.ToString();
 		}

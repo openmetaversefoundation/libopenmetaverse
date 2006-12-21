@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class WhisperCommand : Command
     {
-        public WhisperCommand()
+        SecondLife Client;
+
+        public WhisperCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "whisper";
             Description = "Whisper something.";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             int channel = 0;
             int startIndex = 0;

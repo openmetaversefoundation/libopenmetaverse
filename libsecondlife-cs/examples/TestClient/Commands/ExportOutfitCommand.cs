@@ -9,13 +9,18 @@ namespace libsecondlife.TestClient
 {
     public class ExportOutfitCommand : Command
     {
-        public ExportOutfitCommand()
+        SecondLife Client;
+
+        public ExportOutfitCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "exportoutfit";
             Description = "Exports an avatars outfit to an xml file. Usage: exportoutfit avataruuid outputfile.xml";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 2)
                 return "Usage: exportoutfit avataruuid outputfile.xml";

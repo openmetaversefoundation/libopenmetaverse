@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class SayCommand: Command
     {
-		public SayCommand()
+        SecondLife Client;
+
+        public SayCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "say";
 			Description = "Say something.  (usage: say (optional channel) whatever)";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
             int channel = 0;
             int startIndex = 0;

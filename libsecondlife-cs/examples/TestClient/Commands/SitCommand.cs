@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class SitCommand: Command
     {
-		public SitCommand()
+        SecondLife Client;
+
+        public SitCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "sit";
 			Description = "Attempt to sit on the closest prim";
 		}
 			
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 		    PrimObject closest = null;
 		    double closestDistance = Double.MaxValue;

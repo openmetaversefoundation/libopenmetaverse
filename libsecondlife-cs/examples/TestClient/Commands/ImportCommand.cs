@@ -29,6 +29,7 @@ namespace libsecondlife.TestClient
 
     public class ImportCommand : Command
     {
+        SecondLife Client;
         PrimObject currentPrim;
         LLVector3 currentPosition;
         SecondLife currentClient;
@@ -39,15 +40,18 @@ namespace libsecondlife.TestClient
         bool rezzingRootPrim = false;
         bool linking = false;
 
-        public ImportCommand()
+        public ImportCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "import";
             Description = "Import prims from an exported xml file. Usage: import [filename.xml]";
             primDone = new ManualResetEvent(false);
             registeredCreateEvent = false;
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: import inputfile.xml";

@@ -8,15 +8,19 @@ namespace libsecondlife.TestClient
 {
     public class GotoCommand: Command
     {
+        SecondLife Client;
         private bool EstateLookupFinished = false;
 
-		public GotoCommand()
+        public GotoCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "goto";
 			Description = "Teleport to a location (e.g. \"goto Hooper/100/100/30\")";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
                 return "usage: Destination should be specified as sim/x/y/z";

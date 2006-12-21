@@ -8,13 +8,14 @@ namespace libsecondlife.TestClient
 {
     public class LoginCommand : Command
     {
-        public LoginCommand()
+        public LoginCommand(TestClient testClient)
         {
+            TestClient = testClient;
             Name = "login";
             Description = "Logs in another avatar";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 3)
                 return "usage: login firstname lastname password";

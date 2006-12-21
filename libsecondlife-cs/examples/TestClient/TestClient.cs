@@ -68,10 +68,18 @@ namespace libsecondlife.TestClient
         {
             foreach (Type t in assembly.GetTypes())
             {
-                if (t.IsSubclassOf(typeof(Command)))
+                try
                 {
-                    Command command = (Command)t.GetConstructor(new Type[0]).Invoke(new object[0]);
-                    RegisterCommand(command);
+                    if (t.IsSubclassOf(typeof(Command)))
+                    {
+                        ConstructorInfo info = t.GetConstructor(new Type[] { typeof(TestClient) });
+                        Command command = (Command)info.Invoke(new object[] { this });
+                        RegisterCommand(command);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
                 }
             }
         }
@@ -80,7 +88,6 @@ namespace libsecondlife.TestClient
         {
 			if (!Commands.ContainsKey(command.Name.ToLower()))
 			{
-				command.TestClient = this;
 				Commands.Add(command.Name.ToLower(), command);
 			}
         }
@@ -131,7 +138,7 @@ namespace libsecondlife.TestClient
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);
-                string response = response = Commands[firstToken].Execute(this, args, fromAgentID);
+                string response = response = Commands[firstToken].Execute(args, fromAgentID);
 
                 if (response.Length > 0)
                 {

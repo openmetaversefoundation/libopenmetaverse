@@ -8,15 +8,19 @@ namespace libsecondlife.TestClient
 {
     public class SetMasterCommand: Command
     {
+        SecondLife Client;
 		public DateTime Created = DateTime.Now;
 
-		public SetMasterCommand()
+        public SetMasterCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "setMaster";
 			Description = "Sets the user name of the master user.  The master user can IM to run commands.";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			string masterName = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)

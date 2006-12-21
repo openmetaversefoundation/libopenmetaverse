@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class ShoutCommand : Command
     {
-        public ShoutCommand()
+        SecondLife Client;
+
+        public ShoutCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "shout";
             Description = "Shout something.";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             int channel = 0;
             int startIndex = 0;

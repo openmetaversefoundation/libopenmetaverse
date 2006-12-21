@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class GiveAllCommand: Command
     {
-		public GiveAllCommand()
+        SecondLife Client;
+
+		public GiveAllCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "giveAll";
 			Description = "Gives you all it's money.";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			if (fromAgentID == null)
 				return "Unable to send money to console.  This command only works when IMed.";

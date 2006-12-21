@@ -7,15 +7,19 @@ namespace libsecondlife.TestClient
 {
     public class ImCommand : Command
     {
+        SecondLife Client;
         bool DirLookupComplete = false;
 
-        public ImCommand()
+        public ImCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "im";
             Description = "Instant message someone. Usage: im [firstname] [lastname] [message]";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             return "FIXME";
             // How do we register the callback only once for each client?

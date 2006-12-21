@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -9,13 +10,22 @@ namespace libsecondlife.TestClient
 {
     public class ExportCommand : Command
     {
-        public ExportCommand()
+        SecondLife Client;
+        ManualResetEvent GotPermissionsEvent = new ManualResetEvent(false);
+        ObjectProperties Properties = null;
+        bool GotPermissions = false;
+
+        public ExportCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+            Client.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectProperties);
+
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 2)
                 return "Usage: export uuid outputfile.xml";
@@ -59,6 +69,31 @@ namespace libsecondlife.TestClient
             
             if (localid != 0)
             {
+                // Check for export permission first
+                Client.Objects.RequestObjectPropertiesFamily(Client.Network.CurrentSim, id);
+                GotPermissionsEvent.WaitOne(5000, false);
+
+                if (!GotPermissions)
+                {
+                    return "Couldn't fetch permissions for the requested object, try again";
+                }
+                else 
+                {
+                    GotPermissions = false;
+
+                    if (Properties == null)
+                    {
+                        return "Null object properties returned, may be a bug. Try again";
+                    }
+
+                    if (Properties.OwnerID != Client.Network.AgentID)
+                    {
+                        // We need a MasterID field, those exports should be allowed as well
+                        return "That object is owned by " + Properties.OwnerID + ", we don't have permission " +
+                            "to export it";
+                    }
+                }
+
                 try
                 {
 					XmlWriterSettings settings = new XmlWriterSettings();
@@ -108,6 +143,13 @@ namespace libsecondlife.TestClient
                     TestClient.SimPrims[Client.Network.CurrentSim].Count + 
                     "objects currently indexed in the current simulator";
             }
+        }
+
+        void Objects_OnObjectProperties(Simulator simulator, ObjectProperties properties)
+        {
+            Properties = properties;
+            GotPermissions = true;
+            GotPermissionsEvent.Set();
         }
     }
 }

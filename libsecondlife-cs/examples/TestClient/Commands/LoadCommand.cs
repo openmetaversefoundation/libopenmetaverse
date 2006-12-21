@@ -9,13 +9,18 @@ namespace libsecondlife.TestClient
 {
     public class LoadCommand: Command
     {
-		public LoadCommand()
+        SecondLife Client;
+
+        public LoadCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "load";
 			Description = "Loads commands from a dll. (Usage: load AssemblyNameWithoutExtension)";
 		}
 
-		public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			if (args.Length < 1)
 				return "Usage: load AssemblyNameWithoutExtension";

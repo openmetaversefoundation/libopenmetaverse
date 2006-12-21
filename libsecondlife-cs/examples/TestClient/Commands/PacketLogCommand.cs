@@ -8,18 +8,22 @@ namespace libsecondlife.TestClient
 {
     public class PacketLogCommand : Command
     {
+        SecondLife Client;
         List<Packet> Packets = new List<Packet>();
         bool Done = false;
         int Count = 0;
         int Total = 0;
 
-        public PacketLogCommand()
+        public PacketLogCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "packetlog";
             Description = "Logs a given number of packets to an xml file. Usage: packetlog 10 tenpackets.xml";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 2)
                 return "Usage: packetlog 10 tenpackets.xml";

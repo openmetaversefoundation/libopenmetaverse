@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class HelpCommand: Command
     {
-		public HelpCommand()
+        SecondLife Client;
+
+        public HelpCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "help";
 			Description = "Lists available commands.";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
 			result.AppendFormat("\n\nHELP\nClient accept teleport lures from master and group members.\n");

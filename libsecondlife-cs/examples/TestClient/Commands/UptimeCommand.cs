@@ -8,15 +8,19 @@ namespace libsecondlife.TestClient
 {
     public class UptimeCommand : Command
     {
+        SecondLife Client;
         public DateTime Created = DateTime.Now;
 
-        public UptimeCommand()
+        public UptimeCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "uptime";
             Description = "Shows the login name, login time and length of time logged on.";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             string name = Client.ToString();
             return "I am " + name + ", Up Since: " + Created + " (" + (DateTime.Now - Created) + ")";

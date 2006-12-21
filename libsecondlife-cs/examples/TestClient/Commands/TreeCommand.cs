@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class TreeCommand: Command
     {
-		public TreeCommand()
+        SecondLife Client;
+
+        public TreeCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "tree";
 			Description = "Rez a tree.";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 		    if (args.Length == 1)
 		    {

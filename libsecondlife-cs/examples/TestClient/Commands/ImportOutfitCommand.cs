@@ -10,15 +10,19 @@ namespace libsecondlife.TestClient
 {
     public class ImportOutfitCommand : Command
     {
+        SecondLife Client;
         private uint SerialNum = 1;
 
-        public ImportOutfitCommand()
+        public ImportOutfitCommand(TestClient testClient)
         {
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
             Name = "importoutfit";
             Description = "Imports an appearance from an xml file. Usage: importoutfit inputfile.xml";
         }
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 1)
                 return "Usage: importoutfit inputfile.xml";

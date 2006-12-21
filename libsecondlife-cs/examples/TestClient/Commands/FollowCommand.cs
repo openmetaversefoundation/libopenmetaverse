@@ -8,13 +8,18 @@ namespace libsecondlife.TestClient
 {
     public class FollowCommand: Command
     {
-		public FollowCommand()
+        SecondLife Client;
+
+		public FollowCommand(TestClient testClient)
 		{
+            TestClient = testClient;
+            Client = (SecondLife)TestClient;
+
 			Name = "follow";
 			Description = "Follow another avatar. (usage: follow [FirstName LastName])  If no target is set then will follow master.";
 		}
 
-        public override string Execute(SecondLife Client, string[] args, LLUUID fromAgentID)
+        public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			string target = String.Empty;
 			for (int ct = 0; ct < args.Length; ct++)
