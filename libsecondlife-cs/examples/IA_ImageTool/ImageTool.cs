@@ -186,7 +186,9 @@ namespace IA_ImageTool
                 {
                     j2cdata = KakaduWrap.ReadJ2CData(_FileName);
                 }
-                
+
+
+                _Client.Inventory.DownloadInventory();
 
                 Console.WriteLine("Connecting to your Texture folder...");
                 InventoryFolder iFolder = _Client.Inventory.getFolder("Textures");
