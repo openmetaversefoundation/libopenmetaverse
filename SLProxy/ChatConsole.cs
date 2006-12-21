@@ -3,6 +3,7 @@
  *   Typing on the console will send chat to Second Life.
  *
  * Copyright (c) 2006 Austin Jennings
+ * Modified by Andrew Ortman ("qode") on Decemeber 21, 2006 to work with the new pregen proxy.
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -29,6 +30,7 @@
 
 using SLProxy;
 using libsecondlife;
+using libsecondlife.Packets;
 using Nwc.XmlRpc;
 
 using System;
@@ -45,16 +47,14 @@ public class ChatConsole {
 
 	public static void Main(string[] args) {
 		// configure the proxy
-		client = new SecondLife("../data/keywords.txt", "../data/message_template.msg");
-		protocolManager = client.Protocol;
-		ProxyConfig proxyConfig = new ProxyConfig("ChatConsole", "austin.jennings@gmail.com", protocolManager, args);
+		ProxyConfig proxyConfig = new ProxyConfig("ChatConsole V2", "Austin Jennings / Andrew Ortman", args);
 		proxy = new Proxy(proxyConfig);
 
 		// set a delegate for when the client logs in
 		proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(Login));
 
 		// add a delegate for incoming chat
-		proxy.AddDelegate("ChatFromSimulator", Direction.Incoming, new PacketDelegate(ChatFromSimulator));
+		proxy.AddDelegate(PacketType.ChatFromSimulator, Direction.Incoming, new PacketDelegate(ChatFromSimulator));
 
 		// start the proxy
 		proxy.Start();
@@ -79,31 +79,25 @@ public class ChatConsole {
 			string message = Console.ReadLine();
 
 			// construct a ChatFromViewer packet
-			Hashtable blocks = new Hashtable();
-			Hashtable fields;
-			fields = new Hashtable();
-			fields["Channel"] = (int)0;
-			fields["Message"] = message;
-			fields["Type"] = (byte)1;
-			blocks[fields] = "ChatData";
-			fields = new Hashtable();
-			fields["AgentID"] = agentID;
-			fields["SessionID"] = sessionID;
-			blocks[fields] = "AgentData";
-			Packet chatPacket = PacketBuilder.BuildPacket("ChatFromViewer", protocolManager, blocks, Helpers.MSG_RELIABLE);
+            ChatFromViewerPacket chat = new ChatFromViewerPacket();
+            chat.ChatData.Channel = 0;
+            chat.ChatData.Message = Helpers.StringToField(message);
+            chat.ChatData.Type = (byte)1;
 
+            chat.AgentData.AgentID = agentID;
+            chat.AgentData.SessionID = sessionID;
 			// inject the packet
-			proxy.InjectPacket(chatPacket, Direction.Outgoing);
+			proxy.InjectPacket((Packet)chat, Direction.Outgoing);
 		}
 	}
 
 	private static Packet ChatFromSimulator(Packet packet, IPEndPoint sim) {
 		// deconstruct the packet
-		Hashtable blocks = PacketUtility.Unbuild(packet);
-		string message = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "Message"));
-		string name = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "FromName"));
-		byte audible = (byte)PacketUtility.GetField(blocks, "ChatData", "Audible");
-		byte type = (byte)PacketUtility.GetField(blocks, "ChatData", "ChatType");
+        ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
+        string message = Helpers.FieldToString(chat.ChatData.Message);
+        string name = Helpers.FieldToString(chat.ChatData.FromName);
+        byte audible = chat.ChatData.Audible;
+        byte type = chat.ChatData.ChatType;
 
 		// if this was a normal, audible message, write it to the console
 		if (audible != 0 && (type == 0 || type == 1 || type == 2))

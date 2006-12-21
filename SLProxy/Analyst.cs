@@ -3,6 +3,7 @@
  *   See the README for usage instructions.
  *
  * Copyright (c) 2006 Austin Jennings
+ * Modified by "qode" and "mcortez" on December 21st, 2006 to work with the new pregen 
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -30,6 +31,7 @@
 using SLProxy;
 using libsecondlife;
 using Nwc.XmlRpc;
+using libsecondlife.Packets;
 
 using System;
 using System.Collections;
@@ -39,8 +41,6 @@ using System.Net;
 using System.Text.RegularExpressions;
 
 public class Analyst {
-	private static SecondLife client;
-	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
 	private static Hashtable commandDelegates = new Hashtable();
 	private static Hashtable loggedPackets = new Hashtable();
@@ -51,10 +51,8 @@ public class Analyst {
 	private static bool logLogin = false;
 
 	public static void Main(string[] args) {
-		// configure the proxy
-		client = new SecondLife("../data/keywords.txt", "../data/message_template.msg");
-		protocolManager = client.Protocol;
-		ProxyConfig proxyConfig = new ProxyConfig("Analyst", "austin.jennings@gmail.com", protocolManager, args);
+		
+		ProxyConfig proxyConfig = new ProxyConfig("Analyst V2", "Austin Jennings / Andrew Ortman", args);
 		proxy = new Proxy(proxyConfig);
 
 		// build the table of /command delegates
@@ -65,8 +63,8 @@ public class Analyst {
 		proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
 
 		// add a delegate for outgoing chat
-		proxy.AddDelegate("ChatFromViewer", Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
-		proxy.AddDelegate("ChatFromViewer", Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
+		proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
+		proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
 
 		//  handle command line arguments
 		foreach (string arg in args)
@@ -103,7 +101,7 @@ public class Analyst {
 
 	// ChatFromViewerIn: incoming ChatFromViewer delegate; shouldn't be possible, but just in case...
 	private static Packet ChatFromViewerIn(Packet packet, IPEndPoint sim) {
-		if (loggedPackets.Contains("ChatFromViewer") || modifiedPackets.Contains("ChatFromViewer"))
+		if (loggedPackets.Contains(PacketType.ChatFromViewer) || modifiedPackets.Contains(PacketType.ChatFromViewer))
 			// user has asked to log or modify this packet
 			return Analyze(packet, sim, Direction.Incoming);
 		else
@@ -114,8 +112,8 @@ public class Analyst {
 	// ChatFromViewerOut: outgoing ChatFromViewer delegate; check for Analyst commands
 	private static Packet ChatFromViewerOut(Packet packet, IPEndPoint sim) {
 		// deconstruct the packet
-		Hashtable blocks = PacketUtility.Unbuild(packet);
-		string message = DataConvert.toChoppedString(PacketUtility.GetField(blocks, "ChatData", "Message"));
+		ChatFromViewerPacket cpacket = (ChatFromViewerPacket) packet;
+		string message = System.Text.Encoding.UTF8.GetString(cpacket.ChatData.Message).Replace("\0", "");
 
 		if (message.Length > 1 && message[0] == '/') {
 			string[] words = message.Split(' ');
@@ -126,7 +124,7 @@ public class Analyst {
 			}
 		}
 
-		if (loggedPackets.Contains("ChatFromViewer") || modifiedPackets.Contains("ChatFromViewer"))
+		if (loggedPackets.Contains(PacketType.ChatFromViewer) || modifiedPackets.Contains(PacketType.ChatFromViewer))
 			// user has asked to log or modify this packet
 			return Analyze(packet, sim, Direction.Outgoing);
 		else
@@ -142,10 +140,15 @@ public class Analyst {
 		commandDelegates["/log"] = new CommandDelegate(CmdLog);
 		commandDelegates["/-log"] = new CommandDelegate(CmdNoLog);
 		commandDelegates["/grep"] = new CommandDelegate(CmdGrep);
-		commandDelegates["/set"] = new CommandDelegate(CmdSet);
-		commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
-		commandDelegates["/inject"] = new CommandDelegate(CmdInject);
-		commandDelegates["/in"] = new CommandDelegate(CmdInject);
+		//commandDelegates["/set"] = new CommandDelegate(CmdSet);
+		//commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
+		// commandDelegates["/inject"] = new CommandDelegate(CmdInject);
+		// commandDelegates["/in"] = new CommandDelegate(CmdInject);
+	}
+
+	private static PacketType packetTypeFromName(string name) {
+		Type packetTypeType = typeof(PacketType);
+		return (PacketType)Enum.ToObject(packetTypeType, (int)packetTypeType.GetField(name).GetValue(packetTypeType));
 	}
 
 	// CmdLog: handle a /log command
@@ -156,10 +159,11 @@ public class Analyst {
 			LogAll();
 			SayToUser("logging all packets");
 		} else {
-			loggedPackets[words[1]] = null;
+			PacketType pType = packetTypeFromName(words[1]);
+			loggedPackets[pType] = null;
 			if (words[1] != "ChatFromViewer") {
-				proxy.AddDelegate(words[1], Direction.Incoming, new PacketDelegate(AnalyzeIn));
-				proxy.AddDelegate(words[1], Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+				proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+				proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
 			}
 			SayToUser("logging " + words[1]);
 		}
@@ -173,12 +177,13 @@ public class Analyst {
 			NoLogAll();
 			SayToUser("stopped logging all packets");
 		} else {
-			loggedPackets.Remove(words[1]);
+			PacketType pType = packetTypeFromName(words[1]);
+			loggedPackets.Remove(pType);
 
 			if (!modifiedPackets.Contains(words[1])) {
 				if (words[1] != "ChatFromViewer") {
-					proxy.RemoveDelegate(words[1], Direction.Incoming);
-					proxy.RemoveDelegate(words[1], Direction.Outgoing);
+					proxy.RemoveDelegate(pType, Direction.Incoming);
+					proxy.RemoveDelegate(pType, Direction.Outgoing);
 				}
 			}
 
@@ -199,7 +204,7 @@ public class Analyst {
 		}
 	}
 
-	// CmdSet: handle a /set command
+/*	// CmdSet: handle a /set command
 	private static void CmdSet(string[] words) {
 		if (words.Length < 5)
 			SayToUser("Usage: /set <packet name> <block> <field> <value>");
@@ -264,8 +269,9 @@ public class Analyst {
 			SayToUser("stopped setting " + words[1] + "." + words[2] + "." + words[3]);
 		} else
 			SayToUser("Usage: /-set <packet name> <block> <field>");
-	}
+	} */
 
+/*
 	// CmdInject: handle an /inject command
 	private static void CmdInject(string[] words) {
 		if (words.Length < 2)
@@ -334,7 +340,7 @@ public class Analyst {
 							if (lineValue == "$Value")
 								fields[lineField] = MagicCast(name, block, lineField, value);
 							else if (lineValue == "$UUID")
-								fields[lineField] = new LLUUID(true);
+								fields[lineField] = LLUUID.Random();
 							else if (lineValue == "$AgentID")
 								fields[lineField] = agentID;
 							else if (lineValue == "$SessionID")
@@ -374,23 +380,19 @@ public class Analyst {
 					sr.Close();
 			}
 		}
-	}
+	} */
 
 	// SayToUser: send a message to the user as in-world chat
 	private static void SayToUser(string message) {
-		Hashtable blocks = new Hashtable();
-		Hashtable fields;
-		fields = new Hashtable();
-		fields["FromName"] = "Analyst";
-		fields["SourceID"] = new LLUUID(true);
-		fields["OwnerID"] = agentID;
-		fields["SourceType"] = (byte)2;
-		fields["ChatType"] = (byte)1;
-		fields["Audible"] = (byte)1;
-		fields["Position"] = new LLVector3(0, 0, 0);
-		fields["Message"] = message;
-		blocks[fields] = "ChatData";
-		Packet packet = PacketBuilder.BuildPacket("ChatFromSimulator", protocolManager, blocks, Helpers.MSG_RELIABLE);
+		ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
+		packet.ChatData.FromName = Helpers.StringToField("Analyst");
+		packet.ChatData.SourceID = LLUUID.Random();
+		packet.ChatData.OwnerID = agentID;
+		packet.ChatData.SourceType = (byte)2;
+		packet.ChatData.ChatType = (byte)1;
+		packet.ChatData.Audible = (byte)1;
+		packet.ChatData.Position = new LLVector3(0, 0, 0);
+		packet.ChatData.Message = Helpers.StringToField(message);
 		proxy.InjectPacket(packet, Direction.Incoming);
 	}
 
@@ -398,6 +400,7 @@ public class Analyst {
 	private struct BlockField {
 		public string block;
 		public string field;
+		
 
 		public BlockField(string block, string field) {
 			this.block = block;
@@ -405,7 +408,7 @@ public class Analyst {
 		}
 	}
 
-	// MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
+/*	// MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
 	private static object MagicCast(string name, string block, string field, string value) {
 		MapPacket packetMap;
 		try {
@@ -524,7 +527,7 @@ public class Analyst {
 		}
 
 		throw new Exception("unknown block " + name + "." + block);
-	}
+	} */
 
 	// AnalyzeIn: analyze an incoming packet
 	private static Packet AnalyzeIn(Packet packet, IPEndPoint endPoint) {
@@ -538,7 +541,7 @@ public class Analyst {
 
 	// Analyze: modify and/or log a pocket
 	private static Packet Analyze(Packet packet, IPEndPoint endPoint, Direction direction) {
-		if (modifiedPackets.Contains(packet.Layout.Name))
+		/* if (modifiedPackets.Contains(packet.Layout.Name))
 			try {
 				Hashtable changes = (Hashtable)modifiedPackets[packet.Layout.Name];
 				Hashtable blocks = PacketUtility.Unbuild(packet);
@@ -548,9 +551,9 @@ public class Analyst {
 			} catch (Exception e) {
 				Console.WriteLine("failed to modify " + packet.Layout.Name + ": " + e.Message);
 				Console.WriteLine(e.StackTrace);
-			}
+			} */
 
-		if (loggedPackets.Contains(packet.Layout.Name))
+		if (loggedPackets.Contains(packet.Type))
 			LogPacket(packet, endPoint, direction);
 
 		return packet;
@@ -558,27 +561,49 @@ public class Analyst {
 
 	// LogAll: register logging delegates for all packets
 	private static void LogAll() {
-		RegisterDelegates(proxy, protocolManager.LowMaps);
-		RegisterDelegates(proxy, protocolManager.MediumMaps);
-		RegisterDelegates(proxy, protocolManager.HighMaps);
+		Type packetTypeType = typeof(PacketType);
+		System.Reflection.MemberInfo[] packetTypes =  packetTypeType.GetMembers();
+		
+		for(int i = 0; i < packetTypes.Length; i++) {
+			if(packetTypes[i].MemberType == System.Reflection.MemberTypes.Field) {
+				string name = packetTypes[i].Name;
+				PacketType pType = packetTypeFromName(name);
+				loggedPackets[pType] = null;
+				if (name != "ChatFromViewer") {
+					proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+					proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+				}
+			}
+		}
 	}
 
 	// NoLogAll: unregister logging delegates for all packets
 	private static void NoLogAll() {
-		UnregisterDelegates(proxy, protocolManager.LowMaps);
-		UnregisterDelegates(proxy, protocolManager.MediumMaps);
-		UnregisterDelegates(proxy, protocolManager.HighMaps);
+		Type packetTypeType = typeof(PacketType);
+		System.Reflection.MemberInfo[] packetTypes =  packetTypeType.GetMembers();
+		
+		for(int i = 0; i < packetTypes.Length; i++) {
+			if(packetTypes[i].MemberType == System.Reflection.MemberTypes.Field) {
+				string name = packetTypes[i].Name;
+				PacketType pType = packetTypeFromName(name);
+				loggedPackets.Remove(pType);
+				if (name != "ChatFromViewer") {
+					proxy.RemoveDelegate(pType, Direction.Incoming);
+					proxy.RemoveDelegate(pType, Direction.Outgoing);
+				}
+			}
+		}
 	}
 
-	// RegisterDelegates: register delegates for each packet in an array of packet maps
+	/* // RegisterDelegates: register delegates for each packet in an array of packet maps
 	private static void RegisterDelegates(Proxy proxy, MapPacket[] maps) {
 		foreach (MapPacket map in maps)
 			if (map != null) {
 				loggedPackets[map.Name] = null;
 
 				if (map.Name != "ChatFromViewer") {
-					proxy.AddDelegate(map.Name, Direction.Incoming, new PacketDelegate(AnalyzeIn));
-					proxy.AddDelegate(map.Name, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+					proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+					proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
 				}
 			}
 	}
@@ -594,11 +619,11 @@ public class Analyst {
 					proxy.RemoveDelegate(map.Name, Direction.Outgoing);
 				}
 			}
-	}
+	} */
 
 	// LogPacket: dump a packet to the console
 	private static void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction) {
-		if (logGrep != null) {
+		/* if (logGrep != null) {
 			bool match = false;
 			foreach (Block block in packet.Blocks())
 				foreach (Field field in block.Fields) {
@@ -626,13 +651,13 @@ public class Analyst {
 				}
 			if (!match)
 				return;
-		}
+		} */
 
 		Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
 				 ,direction == Direction.Incoming ? "<--" : "-->"
 				 ,endPoint
-				 ,packet.Sequence
-				 ,InterpretOptions(packet.Data[0])
+				 ,packet.Header.Sequence
+				 ,InterpretOptions(packet.Header.Flags)
 				 ,Environment.NewLine
 				 ,packet
 				 );

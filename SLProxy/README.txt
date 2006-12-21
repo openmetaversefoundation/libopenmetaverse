@@ -1,3 +1,15 @@
+NOTE: THIS DEVELOPER BRANCH IS THE NEW PREGEN SLPROXY. THIS DOCUMENT
+MAY NOT BE UP TO DATE WITH THE NEW VERSION.
+
+Public Source - Release Canidate 1
+
+MODIFICATIONS BY "ALPHA ZAIUS" / ANDREW ORTMAN. QODE IN EFNET: #LIBSL
+AND #LIBSL-DEV
+
+SPECIAL THANKS TO "mcortez" IN EFNET (#libsl-dev) FOR A HELPFUL PATCH
+TO ANALYST AND SLPROXY-PREGEN TO KICKSTART ITS TESTING.
+
+---------------------------------------------------------------------
 SLProxy is a library that works in conjunction with libsecondlife to
 allow applications to wedge themselves between the official Second
 Life client and servers.  SLProxy applications can inspect and modify

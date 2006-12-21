@@ -57,11 +57,11 @@
       output="${bin_dir}/SLProxy.dll">
       <sources failonempty="true">
         <include name="SLProxy.cs" />
-        <include name="legacy/*.cs" />
+        <!-- <include name="legacy/*.cs" /> -->
       </sources>
-      <!-- <references basedir="${bin_dir}/">
+      <references basedir="${bin_dir}/">
         <include name="libsecondlife.dll"/>
-      </references> -->
+      </references>
     </csc>
     <copy todir="${bin_dir}" overwrite="true">
 		<fileset basedir="../data">
@@ -83,7 +83,7 @@
         <include name="Analyst.cs" />
       </sources>
       <references basedir="${bin_dir}/">
-        <!-- <include name="libsecondlife.dll"/> -->
+        <include name="libsecondlife.dll"/>
         <include name="SLProxy.dll"/>
       </references>
     </csc>
@@ -102,7 +102,7 @@
         <include name="ChatConsole.cs" />
       </sources>
       <references basedir="${bin_dir}/">
-        <!-- <include name="libsecondlife.dll"/> -->
+        <include name="libsecondlife.dll"/>
         <include name="SLProxy.dll"/>
       </references>
     </csc>

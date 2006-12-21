@@ -83,6 +83,10 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
+    <ProjectReference Include="..\libsecondlife-cs\libsecondlife.csproj">
+      <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
+      <Name>libsecondlife</Name>
+    </ProjectReference>
     <ProjectReference Include="SLProxy.csproj">
       <Name>SLProxy</Name>
       <Project>{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}</Project>
