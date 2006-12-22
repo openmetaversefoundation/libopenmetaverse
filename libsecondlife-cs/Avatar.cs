@@ -71,17 +71,17 @@ namespace libsecondlife
             AGENT_CONTROL_FAST_LEFT = 0x1 << CONTROL_FAST_LEFT_INDEX,
             /// <summary>ORed with AGENT_CONTROL_UP_* if the keyboard is being used</summary>
             AGENT_CONTROL_FAST_UP = 0x1 << CONTROL_FAST_UP_INDEX,
-            /// <summary></summary>
+            /// <summary>Fly</summary>
             AGENT_CONTROL_FLY = 0x1 << CONTROL_FLY_INDEX,
             /// <summary></summary>
             AGENT_CONTROL_STOP = 0x1 << CONTROL_STOP_INDEX,
-            /// <summary></summary>
+            /// <summary>Finish our current animation</summary>
             AGENT_CONTROL_FINISH_ANIM = 0x1 << CONTROL_FINISH_ANIM_INDEX,
-            /// <summary></summary>
+            /// <summary>Stand up from the ground or a prim seat</summary>
             AGENT_CONTROL_STAND_UP = 0x1 << CONTROL_STAND_UP_INDEX,
-            /// <summary></summary>
+            /// <summary>Sit on the ground at our current location</summary>
             AGENT_CONTROL_SIT_ON_GROUND = 0x1 << CONTROL_SIT_ON_GROUND_INDEX,
-            /// <summary></summary>
+            /// <summary>Whether mouselook is currently enabled</summary>
             AGENT_CONTROL_MOUSELOOK = 0x1 << CONTROL_MOUSELOOK_INDEX,
             /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
             AGENT_CONTROL_NUDGE_AT_POS = 0x1 << CONTROL_NUDGE_AT_POS_INDEX,
@@ -112,64 +112,104 @@ namespace libsecondlife
             AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
         }
 
-        /// <summary>The Avatar's UUID, asset server</summary>
-        public LLUUID ID;
-        /// <summary>Avatar ID in Region (sim) it is in</summary>
-        public uint LocalID;
-        /// <summary>Full Name of Avatar</summary>
-        public string Name;
-        /// <summary>Active Group of Avatar</summary>
-        public string GroupName;
-        /// <summary>Online Status of Avatar</summary>
-        public bool Online;
-        /// <summary>Location of Avatar (x,y,z probably)</summary>
-        public LLVector3 Position;
-        /// <summary>Rotational Position of Avatar</summary>
-        public LLQuaternion Rotation;
-        /// <summary>Region (aka sim) the Avatar is in</summary>
-        public Region CurrentRegion;
-        /// <summary>Date the Avatar was Born into Second Life</summary>
-        public string BornOn;
-        /// <summary>Key pointing to the Profile Image</summary>
-        public LLUUID ProfileImage;
-        /// <summary>Key of their Partner</summary>
-        public LLUUID PartnerID;
-        /// <summary>Text from the About field in the Profile</summary>
-        public string AboutText;
-        /// <summary>Bitmask representing Want To checkboxes</summary>
-        public uint WantToMask;
-        /// <summary>Text field for Want To</summary>
-        public string WantToText;
-        /// <summary>Bitmask representing Skills checkboxes</summary>
-        public uint SkillsMask;
-        /// <summary>Text field for Skills</summary>
-        public string SkillsText;
-        /// <summary>Text from the First Life field in the Profile</summary>
-        public string FirstLifeText;
-        /// <summary>Key pointing to the First Life picture</summary>
-        public LLUUID FirstLifeImage;
-        /// <summary></summary>
-        public bool Identified;
-        /// <summary></summary>
-        public bool Transacted;
-        /// <summary></summary>
-        public bool AllowPublish;
-        /// <summary></summary>
-        public bool MaturePublish;
-        /// <summary>Charter Member type, if applicable</summary>
-        public string CharterMember;
-        /// <summary>Rating for Behavior</summary>
-        public float Behavior;
-        /// <summary>Rating for Appearance</summary>
-        public float Appearance;
-        /// <summary>Rating for Building</summary>
-        public float Building;
-        /// <summary>Text from the Languages field in the Profile</summary>
-        public string LanguagesText;
-        /// <summary></summary>
-        public TextureEntry Textures;
-        /// <summary>URL to load in Web Profile</summary>
-        public string ProfileURL;
+        /// <summary>
+        /// Positive and negative ratings
+        /// </summary>
+        public struct Statistics
+        {
+            /// <summary>Positive ratings for Behavior</summary>
+            public int BehaviorPositive;
+            /// <summary>Negative ratings for Behavior</summary>
+            public int BehaviorNegative;
+            /// <summary>Positive ratings for Appearance</summary>
+            public int AppearancePositive;
+            /// <summary>Negative ratings for Appearance</summary>
+            public int AppearanceNegative;
+            /// <summary>Positive ratings for Building</summary>
+            public int BuildingPositive;
+            /// <summary>Negative ratings for Building</summary>
+            public int BuildingNegative;
+        }
+
+        /// <summary>
+        /// Avatar properties including about text, profile URL, image IDs and 
+        /// publishing settings
+        /// </summary>
+        public struct Properties
+        {
+            /// <summary>Should this profile be published on the web</summary>
+            public bool AllowPublish;
+            /// <summary>First Life about text</summary>
+            public string FirstLifeText;
+            /// <summary>First Life image ID</summary>
+            public LLUUID FirstLifeImage;
+            /// <summary></summary>
+            public LLUUID Partner;
+            /// <summary></summary>
+            public string AboutText;
+            /// <summary></summary>
+            public string BornOn;
+            /// <summary></summary>
+            public string CharterMember;
+            /// <summary>Profile image ID</summary>
+            public LLUUID ProfileImage;
+            /// <summary>Is this a mature profile</summary>
+            public bool MaturePublish;
+            /// <summary></summary>
+            public bool Identified;
+            /// <summary></summary>
+            public bool Transacted;
+            /// <summary>Web URL for this profile</summary>
+            public string ProfileURL;
+        }
+
+        /// <summary>
+        /// Avatar interests including spoken languages, skills, and "want to"
+        /// choices
+        /// </summary>
+        public struct Interests
+        {
+            /// <summary>Languages profile field</summary>
+            public string LanguagesText;
+            /// <summary></summary>
+            public uint SkillsMask;
+            /// <summary></summary>
+            public string SkillsText;
+            /// <summary></summary>
+            public uint WantToMask;
+            /// <summary></summary>
+            public string WantToText;
+        }
+
+
+        /// <summary>UUID for this avatar</summary>
+        public LLUUID ID = LLUUID.Zero;
+        /// <summary>Temporary ID for this avatar, local to the current region</summary>
+        public uint LocalID = 0;
+        /// <summary>Full name</summary>
+        public string Name = String.Empty;
+        /// <summary>Active group</summary>
+        public string GroupName = String.Empty;
+        /// <summary>Online status</summary>
+        public bool Online = false;
+        /// <summary>Positive and negative ratings</summary>
+        public Statistics ProfileStatistics = new Statistics();
+        /// <summary>Avatar properties including about text, profile URL, image IDs and 
+        /// publishing settings</summary>
+        public Properties ProfileProperties = new Properties();
+        /// <summary>Avatar interests including spoken languages, skills, and "want to"
+        /// choices</summary>
+        public Interests ProfileInterests = new Interests();
+        /// <summary>Local location, relative to the sim or what the avatar is
+        /// sitting on</summary>
+        public LLVector3 Position = LLVector3.Zero;
+        /// <summary>Rotational position, relative to the sim or what the avatar
+        /// is sitting on</summary>
+        public LLQuaternion Rotation = LLQuaternion.Identity;
+        /// <summary>Region the avatar is in</summary>
+        public Region CurrentRegion = null;
+        /// <summary>Textures for this avatars clothing</summary>
+        public TextureEntry Textures = new TextureEntry();
 
         /// <summary>Gets the local ID of the prim the avatar is sitting on,
         /// zero if the avatar is not currently sitting</summary>
@@ -180,39 +220,42 @@ namespace libsecondlife
 
         internal uint sittingOn = 0;
 
-        protected const int CONTROL_AT_POS_INDEX = 0;
-        protected const int CONTROL_AT_NEG_INDEX = 1;
-        protected const int CONTROL_LEFT_POS_INDEX = 2;
-        protected const int CONTROL_LEFT_NEG_INDEX = 3;
-        protected const int CONTROL_UP_POS_INDEX = 4;
-        protected const int CONTROL_UP_NEG_INDEX = 5;
-        protected const int CONTROL_PITCH_POS_INDEX = 6;
-        protected const int CONTROL_PITCH_NEG_INDEX = 7;
-        protected const int CONTROL_YAW_POS_INDEX = 8;
-        protected const int CONTROL_YAW_NEG_INDEX = 9;
-        protected const int CONTROL_FAST_AT_INDEX = 10;
-        protected const int CONTROL_FAST_LEFT_INDEX = 11;
-        protected const int CONTROL_FAST_UP_INDEX = 12;
-        protected const int CONTROL_FLY_INDEX = 13;
-        protected const int CONTROL_STOP_INDEX = 14;
-        protected const int CONTROL_FINISH_ANIM_INDEX = 15;
-        protected const int CONTROL_STAND_UP_INDEX = 16;
-        protected const int CONTROL_SIT_ON_GROUND_INDEX = 17;
-        protected const int CONTROL_MOUSELOOK_INDEX = 18;
-        protected const int CONTROL_NUDGE_AT_POS_INDEX = 19;
-        protected const int CONTROL_NUDGE_AT_NEG_INDEX = 20;
-        protected const int CONTROL_NUDGE_LEFT_POS_INDEX = 21;
-        protected const int CONTROL_NUDGE_LEFT_NEG_INDEX = 22;
-        protected const int CONTROL_NUDGE_UP_POS_INDEX = 23;
-        protected const int CONTROL_NUDGE_UP_NEG_INDEX = 24;
-        protected const int CONTROL_TURN_LEFT_INDEX = 25;
-        protected const int CONTROL_TURN_RIGHT_INDEX = 26;
-        protected const int CONTROL_AWAY_INDEX = 27;
-        protected const int CONTROL_LBUTTON_DOWN_INDEX = 28;
-        protected const int CONTROL_LBUTTON_UP_INDEX = 29;
-        protected const int CONTROL_ML_LBUTTON_DOWN_INDEX = 30;
-        protected const int CONTROL_ML_LBUTTON_UP_INDEX = 31;
-        protected const int TOTAL_CONTROLS = 32;
-    }
+        private const int CONTROL_AT_POS_INDEX = 0;
+        private const int CONTROL_AT_NEG_INDEX = 1;
+        private const int CONTROL_LEFT_POS_INDEX = 2;
+        private const int CONTROL_LEFT_NEG_INDEX = 3;
+        private const int CONTROL_UP_POS_INDEX = 4;
+        private const int CONTROL_UP_NEG_INDEX = 5;
+        private const int CONTROL_PITCH_POS_INDEX = 6;
+        private const int CONTROL_PITCH_NEG_INDEX = 7;
+        private const int CONTROL_YAW_POS_INDEX = 8;
+        private const int CONTROL_YAW_NEG_INDEX = 9;
+        private const int CONTROL_FAST_AT_INDEX = 10;
+        private const int CONTROL_FAST_LEFT_INDEX = 11;
+        private const int CONTROL_FAST_UP_INDEX = 12;
+        private const int CONTROL_FLY_INDEX = 13;
+        private const int CONTROL_STOP_INDEX = 14;
+        private const int CONTROL_FINISH_ANIM_INDEX = 15;
+        private const int CONTROL_STAND_UP_INDEX = 16;
+        private const int CONTROL_SIT_ON_GROUND_INDEX = 17;
+        private const int CONTROL_MOUSELOOK_INDEX = 18;
+        private const int CONTROL_NUDGE_AT_POS_INDEX = 19;
+        private const int CONTROL_NUDGE_AT_NEG_INDEX = 20;
+        private const int CONTROL_NUDGE_LEFT_POS_INDEX = 21;
+        private const int CONTROL_NUDGE_LEFT_NEG_INDEX = 22;
+        private const int CONTROL_NUDGE_UP_POS_INDEX = 23;
+        private const int CONTROL_NUDGE_UP_NEG_INDEX = 24;
+        private const int CONTROL_TURN_LEFT_INDEX = 25;
+        private const int CONTROL_TURN_RIGHT_INDEX = 26;
+        private const int CONTROL_AWAY_INDEX = 27;
+        private const int CONTROL_LBUTTON_DOWN_INDEX = 28;
+        private const int CONTROL_LBUTTON_UP_INDEX = 29;
+        private const int CONTROL_ML_LBUTTON_DOWN_INDEX = 30;
+        private const int CONTROL_ML_LBUTTON_UP_INDEX = 31;
+        private const int TOTAL_CONTROLS = 32;
 
+        public Avatar()
+        {
+        }
+    }
 }

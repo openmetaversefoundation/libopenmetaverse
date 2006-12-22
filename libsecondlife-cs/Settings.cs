@@ -47,6 +47,9 @@ namespace libsecondlife
         /// we assume the sequence number just rolls over? Or maybe the 
         /// protocol isn't able to sustain a connection past that</summary>
         public readonly int MAX_SEQUENCE = 0xFFFFFF;
+        /// <summary>Number of milliseconds before a teleport attempt will time
+        /// out</summary>
+        public readonly int TELEPORT_TIMEOUT = 18 * 1000;
 
         /// <summary>The maximum size of the sequence number inbox, used to
         /// check for resent and/or duplicate packets</summary>

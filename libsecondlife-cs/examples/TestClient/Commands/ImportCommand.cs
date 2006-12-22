@@ -74,9 +74,9 @@ namespace libsecondlife.TestClient
                     prims.Add(prim.LocalID, prim);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return "Deserialize failed: " + ex.ToString();
+                return "Failed to import the object XML file, maybe it doesn't exist or is in the wrong format?";
             }
 
             if (!registeredCreateEvent)

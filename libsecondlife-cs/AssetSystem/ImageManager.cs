@@ -42,14 +42,14 @@ namespace libsecondlife.AssetSystem
     public delegate void ImageRetrievedCallback(LLUUID id, byte[] data, bool cached, string statusmsg); //this delegate is called when an image completed.
 
     /// <summary>
-	/// Manages the uploading and downloading of Images from SecondLife
-	/// </summary>
-	public class ImageManager
-	{
+    /// Manages the uploading and downloading of Images from SecondLife
+    /// </summary>
+    public class ImageManager
+    {
 
         private SecondLife slClient;
 
-        public enum CacheTypes {None, Memory, Disk};
+        public enum CacheTypes { None, Memory, Disk };
         private CacheTypes CacheType;
         private string CacheDirectory = "ImageCache";
         private Dictionary<LLUUID, Byte[]> CacheTable = new Dictionary<LLUUID, byte[]>();
@@ -57,40 +57,40 @@ namespace libsecondlife.AssetSystem
 
         private ImagePacketHelpers ImagePacketHelper;
 
-		private Dictionary<LLUUID, TransferRequest> htDownloadRequests = new Dictionary<LLUUID,TransferRequest>();
+        private Dictionary<LLUUID, TransferRequest> htDownloadRequests = new Dictionary<LLUUID, TransferRequest>();
 
         public ImageRetrievedCallback OnImageRetrieved;
 
-		private class TransferRequest
-		{
+        private class TransferRequest
+        {
             public ManualResetEvent ReceivedHeaderPacket = new ManualResetEvent(false);
             public ManualResetEvent Completed = new ManualResetEvent(false);
 
-			public bool Status;
-			public string StatusMsg;
+            public bool Status;
+            public string StatusMsg;
 
-			public uint Size;
-			public uint Received;
-			public uint LastPacket;
-			public byte[] AssetData;
+            public uint Size;
+            public uint Received;
+            public uint LastPacket;
+            public byte[] AssetData;
 
             public int BaseDataReceived;
 
-			public TransferRequest()
-			{
-				Status		= false;
-				StatusMsg	= "";
+            public TransferRequest()
+            {
+                Status = false;
+                StatusMsg = "";
 
-				AssetData	= null;
+                AssetData = null;
                 BaseDataReceived = 0;
-			}
-		}
+            }
+        }
 
         /// <summary>
         /// </summary>
         /// <param name="client"></param>
         public ImageManager(SecondLife client)
-		{
+        {
             Init(client, CacheTypes.None, null);
         }
 
@@ -251,7 +251,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="ImageID">The Image's AssetID</param>
         public byte[] RequestImage(LLUUID ImageID)
-		{
+        {
             byte[] imgData = CachedImage(ImageID);
             if (imgData != null)
             {
@@ -280,17 +280,17 @@ namespace libsecondlife.AssetSystem
             }
 
             // Wait for transfer to complete.
-            tr.Completed.WaitOne();
+            tr.Completed.WaitOne(20000, false);
 
-			if( tr.Status == true )
-			{
-				return tr.AssetData;
-			} 
-			else 
-			{
-				throw new Exception( "RequestImage: " + tr.StatusMsg );
-			}
-		}
+            if (tr.Status == true)
+            {
+                return tr.AssetData;
+            }
+            else
+            {
+                throw new Exception("RequestImage: " + tr.StatusMsg);
+            }
+        }
 
         /// <summary>
         /// Requests an image from SecondLife.
@@ -335,17 +335,17 @@ namespace libsecondlife.AssetSystem
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
         public void ImageDataCallbackHandler(Packet packet, Simulator simulator)
-		{
-            #if DEBUG_PACKETS
+        {
+#if DEBUG_PACKETS
                 slClient.DebugLog(packet);
-            #endif
+#endif
 
             ImageDataPacket reply = (ImageDataPacket)packet;
 
-			LLUUID ImageID = reply.ImageID.ID;
-// unused?		ushort Packets = reply.ImageID.Packets;
-			uint   Size    = reply.ImageID.Size;
-			byte[] Data    = reply.ImageData.Data;
+            LLUUID ImageID = reply.ImageID.ID;
+            // unused?		ushort Packets = reply.ImageID.Packets;
+            uint Size = reply.ImageID.Size;
+            byte[] Data = reply.ImageData.Data;
 
             // Lookup the request that this packet is for
             TransferRequest tr;
@@ -363,28 +363,28 @@ namespace libsecondlife.AssetSystem
             }
 
             // Initialize the request so that it's data buffer is the right size for the image
-			tr.Size = Size;
-			tr.AssetData = new byte[tr.Size];
+            tr.Size = Size;
+            tr.AssetData = new byte[tr.Size];
             tr.BaseDataReceived = Data.Length;
 
             // Copy the first block of image data into the request.
-			Array.Copy(Data, 0, tr.AssetData, tr.Received, Data.Length);
-			tr.Received += (uint)Data.Length;
+            Array.Copy(Data, 0, tr.AssetData, tr.Received, Data.Length);
+            tr.Received += (uint)Data.Length;
 
             // Mark that the TransferRequest has received this header packet
             tr.ReceivedHeaderPacket.Set();
 
-			// If we've gotten all the data, mark it completed.
-			if( tr.Received >= tr.Size )
-			{
-				tr.Status	 = true;
+            // If we've gotten all the data, mark it completed.
+            if (tr.Received >= tr.Size)
+            {
+                tr.Status = true;
                 tr.Completed.Set();
 
                 // Fire off image downloaded event
                 CacheImage(ImageID, tr.AssetData);
                 FireImageRetrieved(ImageID, tr.AssetData, false);
-			}
-		}
+            }
+        }
 
         /// <summary>
         /// Handles the remaining Image data that did not fit in the initial ImageData packet
@@ -392,13 +392,13 @@ namespace libsecondlife.AssetSystem
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
         public void ImagePacketCallbackHandler(Packet packet, Simulator simulator)
-		{
-            #if DEBUG_PACKETS
+        {
+#if DEBUG_PACKETS
                 slClient.DebugLog(packet);
-            #endif
+#endif
 
             ImagePacketPacket reply = (ImagePacketPacket)packet;
-            
+
             LLUUID ImageID = reply.ImageID.ID;
 
             // Lookup the request for this packet
@@ -407,11 +407,11 @@ namespace libsecondlife.AssetSystem
             {
                 tr = (TransferRequest)htDownloadRequests[ImageID];
             }
-			if( tr == null )
-			{
+            if (tr == null)
+            {
                 // Received a packet that doesn't belong to any requests in our queue, strange...
-				return;
-			}
+                return;
+            }
 
 
             // TODO: Received data should probably be put into a temporary collection that's indected by ImageID.Packet
@@ -428,42 +428,42 @@ namespace libsecondlife.AssetSystem
             Array.Copy(reply.ImageData.Data, 0, tr.AssetData, tr.BaseDataReceived + (1000 * (reply.ImageID.Packet - 1)), reply.ImageData.Data.Length);
             tr.Received += (uint)reply.ImageData.Data.Length;
 
-			// If we've gotten all the data, mark it completed.
-			if( tr.Received >= tr.Size )
-			{
+            // If we've gotten all the data, mark it completed.
+            if (tr.Received >= tr.Size)
+            {
                 tr.Status = true;
                 tr.Completed.Set();
 
                 // Fire off image downloaded event
                 CacheImage(ImageID, tr.AssetData);
                 FireImageRetrieved(ImageID, tr.AssetData, false);
-			}		
-		}
+            }
+        }
 
         /// <summary>
         ///
         /// </summary>
         public void ImageNotInDatabaseCallbackHandler(Packet packet, Simulator simulator)
         {
-            #if DEBUG_PACKETS
+#if DEBUG_PACKETS
                 slClient.DebugLog(packet);
-            #endif
+#endif
 
             ImageNotInDatabasePacket reply = (ImageNotInDatabasePacket)packet;
 
             LLUUID ImageID = reply.ImageID.ID;
 
             // Lookup the request for this packet
-			TransferRequest tr;
+            TransferRequest tr;
             lock (htDownloadRequests)
             {
                 tr = (TransferRequest)htDownloadRequests[ImageID];
             }
-			if( tr == null )
-			{
+            if (tr == null)
+            {
                 // Received a packet that doesn't belong to any requests in our queue, strange...
-				return;
-			}
+                return;
+            }
 
             tr.Status = false;
             tr.StatusMsg = "Image not in database";

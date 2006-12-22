@@ -33,20 +33,21 @@ using libsecondlife.InventorySystem;
 namespace libsecondlife
 {
     /// <summary>
-    /// Callback used for client apps to receive log messages from
-    /// libsecondlife
-    /// </summary>
-    /// <param name="message"></param>
-    /// <param name="level"></param>
-    public delegate void LogCallback(string message, Helpers.LogLevel level);
-
-    /// <summary>
     /// Main class to expose Second Life functionality to clients. All of the
     /// classes needed for sending and receiving data are accessible through 
     /// this class.
     /// </summary>
     public class SecondLife
     {
+        /// <summary>
+        /// Callback used for client apps to receive log messages from
+        /// libsecondlife
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="level"></param>
+        public delegate void LogCallback(string message, Helpers.LogLevel level);
+
+
         /// <summary>Networking Subsystem</summary>
         public NetworkManager Network;
         /// <summary>Parcel (subdivided simulator lots) Subsystem</summary>
@@ -61,14 +62,12 @@ namespace libsecondlife
         public ObjectManager Objects;
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
-
         /// <summary>Asset Subsystem</summary>
         public AssetManager Assets;
         /// <summary>Inventory Subsystem</summary>
         public InventoryManager Inventory;
         /// <summary>Image Subsystem</summary>
         public ImageManager Images;
-
         /// <summary>Throttling Subsystem</summary>
         public AgentThrottle Throttle;
         /// <summary>Settings Subsystem</summary>
@@ -86,20 +85,19 @@ namespace libsecondlife
         /// </summary>
         public SecondLife()
         {
+            // These are order-dependant
             Network = new NetworkManager(this);
+            Settings = new Settings(this);
             Parcels = new ParcelManager(this);
             Self = new MainAvatar(this);
             Avatars = new AvatarManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
-
             Assets = new AssetManager(this);
             Images = new ImageManager(this);
             Inventory = new InventoryManager(this);
-
             Throttle = new AgentThrottle(this);
-            Settings = new Settings(this);
         }
 
         /// <summary>

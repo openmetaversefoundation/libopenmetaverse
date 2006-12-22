@@ -32,6 +32,7 @@ namespace libsecondlife.TestClient
                 XmlReader reader = XmlReader.Create(args[0]);
                 XmlSerializer serializer = new XmlSerializer(typeof(Packet));
                 AvatarAppearancePacket appearance = (AvatarAppearancePacket)serializer.Deserialize(reader);
+                reader.Close();
 
                 AgentSetAppearancePacket set = new AgentSetAppearancePacket();
 
@@ -58,9 +59,9 @@ namespace libsecondlife.TestClient
 
                 Client.Network.SendPacket(set);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return e.ToString();
+                return "Failed to import the appearance XML file, maybe it doesn't exist or is in the wrong format?";
             }
 
             return "Imported " + args[0] + " and sent an AgentSetAppearance packet";

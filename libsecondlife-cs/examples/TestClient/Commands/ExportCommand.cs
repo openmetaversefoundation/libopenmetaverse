@@ -99,6 +99,7 @@ namespace libsecondlife.TestClient
 					XmlWriterSettings settings = new XmlWriterSettings();
 					settings.Indent = true;
                     XmlWriter writer = XmlWriter.Create(file, settings);
+
 					try
 					{
 						List<PrimObject> prims = new List<PrimObject>();

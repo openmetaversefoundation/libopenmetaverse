@@ -60,7 +60,7 @@ namespace IA_InventoryManager
             {
                 _Client = new SecondLife();
                 _Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
-                _Client.Self.OnTeleport += new TeleportCallback(Self_OnTeleport);
+                _Client.Self.OnTeleport += new MainAvatar.TeleportCallback(Self_OnTeleport);
             }
             catch (Exception e)
             {
@@ -212,7 +212,7 @@ namespace IA_InventoryManager
             
         }
 
-        void Self_OnTeleport(Simulator currentSim, string message, TeleportStatus status)
+        void Self_OnTeleport(Simulator currentSim, string message, MainAvatar.TeleportStatus status)
         {
             Console.WriteLine("Teleport Completed");
             StandUpStraight();

@@ -89,7 +89,7 @@ namespace SLIRC
             try
             {
                 client = new SecondLife();
-                client.Self.OnChat += new ChatCallback(Avatar_OnChat);
+                client.Self.OnChat += new MainAvatar.ChatCallback(Avatar_OnChat);
                 grpLogin.Enabled = true;
             }
             catch (Exception error)

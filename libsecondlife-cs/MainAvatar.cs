@@ -33,113 +33,135 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// Triggered on incoming chat messages
-    /// </summary>
-    /// <param name="Message">Text of chat message</param>
-    /// <param name="Audible">Is this normal audible chat or not.</param>
-    /// <param name="Type">Type of chat (whisper,shout,status,etc)</param>
-    /// <param name="Sourcetype">Type of source (Agent / Object / ???)</param>
-    /// <param name="FromName">Text name of sending Avatar/Object</param>
-    /// <param name="ID"></param>
-    public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
-        string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
-
-    /// <summary>
-    /// Triggered when a script pops up a dialog box
-    /// </summary>
-    /// <param name="message">The dialog box message</param>
-    /// <param name="objectName">Name of the object that sent the dialog</param>
-    /// <param name="imageID">Image to be displayed in the dialog</param>
-    /// <param name="objectID">ID of the object that sent the dialog</param>
-    /// <param name="firstName">First name of the object owner</param>
-    /// <param name="lastName">Last name of the object owner</param>
-    /// <param name="chatChannel">Chat channel that the object is communicating on</param>
-    /// <param name="buttons">List of button labels</param>
-    public delegate void ScriptDialogCallback(string message, string objectName, LLUUID imageID,
-        LLUUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons);
-
-    /// <summary>
-    /// Triggered when the L$ account balance for this avatar changes
-    /// </summary>
-    /// <param name="balance">The new account balance</param>
-    public delegate void BalanceCallback(int balance);
-
-    /// <summary>
-    /// Tiggered on incoming instant messages
-    /// </summary>
-    /// <param name="fromAgentID">Key of sender</param>
-    /// <param name="fromAgentName">Name of sender</param>
-    /// <param name="toAgentID">Key of destination Avatar</param>
-    /// <param name="parentEstateID">ID of originating Estate</param>
-    /// <param name="regionID">Key of originating Region</param>
-    /// <param name="position">Coordinates in originating Region</param>
-    /// <param name="dialog"></param>
-    /// <param name="groupIM">Group IM session toggle</param>
-    /// <param name="imSessionID">Key of IM Session</param>
-    /// <param name="timestamp">Timestamp of message</param>
-    /// <param name="message">Text of message</param>
-    /// <param name="offline"></param>
-    /// <param name="binaryBucket"></param>
-    public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
-        LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
-        byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
-        byte offline, byte[] binaryBucket);
-
-    /// <summary>
-    /// Triggered for any status updates of a teleport (progress, failed, succeeded)
-    /// </summary>
-    /// <param name="currentSim">The simulator the avatar is currently residing in</param>
-    /// <param name="message">A message about the current teleport status</param>
-    /// <param name="status">The current status of the teleport</param>
-    public delegate void TeleportCallback(Simulator currentSim, string message, TeleportStatus status);
-
-    /// <summary>
-    /// Current teleport status
-    /// </summary>
-    public enum TeleportStatus
-    {
-        /// <summary></summary>
-        None,
-        /// <summary>Teleport Start</summary>
-        Start,
-        /// <summary>Teleport in Progress</summary>
-        Progress,
-        /// <summary>Teleport Failed</summary>
-        Failed,
-        /// <summary>Teleport Completed</summary>
-        Finished
-    }
-
-    /// <summary>
-    /// Special commands used in Instant Messages
-    /// </summary>
-    public enum InstantMessageDialog
-    {
-        /// <summary>Indicates a regular IM from another agent</summary>
-        MessageFromAgent = 0,
-        /// <summary>Indicates that someone has given the user an object</summary>
-        GiveInventory = 4,
-        /// <summary>Indicates that someone has given the user a notecard</summary>
-        GiveNotecard = 9,
-        /// <summary>Indicates that the IM is from an object</summary>
-        MessageFromObject = 19,
-        /// <summary>Indicates that the IM is a teleport invitation</summary>
-        RequestTeleport = 22,
-        /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
-        AcceptTeleport = 23,
-        /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
-        DenyTeleport = 24,
-        /// <summary>Indicates that a user has started typing</summary>
-        StartTyping = 41,
-        /// <summary>Indicates that a user has stopped typing</summary>
-        StopTyping = 42
-    }
-
-    /// <summary>
     /// Class to hold Client Avatar's data
     /// </summary>
     public partial class MainAvatar
     {
+        /// <summary>
+        /// Current teleport status
+        /// </summary>
+        public enum TeleportStatus
+        {
+            /// <summary></summary>
+            None,
+            /// <summary>Teleport Start</summary>
+            Start,
+            /// <summary>Teleport in Progress</summary>
+            Progress,
+            /// <summary>Teleport Failed</summary>
+            Failed,
+            /// <summary>Teleport Completed</summary>
+            Finished
+        }
+
+        /// <summary>
+        /// Special commands used in Instant Messages
+        /// </summary>
+        public enum InstantMessageDialog
+        {
+            /// <summary>Indicates a regular IM from another agent</summary>
+            MessageFromAgent = 0,
+            /// <summary>Indicates that someone has given the user an object</summary>
+            GiveInventory = 4,
+            /// <summary>Indicates that someone has given the user a notecard</summary>
+            GiveNotecard = 9,
+            /// <summary>Indicates that the IM is from an object</summary>
+            MessageFromObject = 19,
+            /// <summary>Indicates that the IM is a teleport invitation</summary>
+            RequestTeleport = 22,
+            /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+            AcceptTeleport = 23,
+            /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+            DenyTeleport = 24,
+            /// <summary>Indicates that a user has started typing</summary>
+            StartTyping = 41,
+            /// <summary>Indicates that a user has stopped typing</summary>
+            StopTyping = 42
+        }
+
+        /// <summary>
+        /// Conversion type to denote Chat Packet types in an easier-to-understand format
+        /// </summary>
+        public enum ChatType
+        {
+            /// <summary>Whispers (5m radius)</summary>
+            Whisper = 0,
+            /// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
+            Normal = 1,
+            /// <summary>Shouting! (100m radius)</summary>
+            Shout = 2,
+            /// <summary>Say chat (10/20m radius) - The official viewer will 
+            /// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
+            Say = 3,
+            /// <summary>Event message when an Avatar has begun to type</summary>
+            StartTyping = 4,
+            /// <summary>Event message when an Avatar has stopped typing</summary>
+            StopTyping = 5
+        }
+
+
+        /// <summary>
+        /// Triggered on incoming chat messages
+        /// </summary>
+        /// <param name="Message">Text of chat message</param>
+        /// <param name="Audible">Is this normal audible chat or not.</param>
+        /// <param name="Type">Type of chat (whisper,shout,status,etc)</param>
+        /// <param name="Sourcetype">Type of source (Agent / Object / ???)</param>
+        /// <param name="FromName">Text name of sending Avatar/Object</param>
+        /// <param name="ID"></param>
+        public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
+            string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
+
+        /// <summary>
+        /// Triggered when a script pops up a dialog box
+        /// </summary>
+        /// <param name="message">The dialog box message</param>
+        /// <param name="objectName">Name of the object that sent the dialog</param>
+        /// <param name="imageID">Image to be displayed in the dialog</param>
+        /// <param name="objectID">ID of the object that sent the dialog</param>
+        /// <param name="firstName">First name of the object owner</param>
+        /// <param name="lastName">Last name of the object owner</param>
+        /// <param name="chatChannel">Chat channel that the object is communicating on</param>
+        /// <param name="buttons">List of button labels</param>
+        public delegate void ScriptDialogCallback(string message, string objectName, LLUUID imageID,
+            LLUUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons);
+
+        /// <summary>
+        /// Triggered when the L$ account balance for this avatar changes
+        /// </summary>
+        /// <param name="balance">The new account balance</param>
+        public delegate void BalanceCallback(int balance);
+
+        /// <summary>
+        /// Tiggered on incoming instant messages
+        /// </summary>
+        /// <param name="fromAgentID">Key of sender</param>
+        /// <param name="fromAgentName">Name of sender</param>
+        /// <param name="toAgentID">Key of destination Avatar</param>
+        /// <param name="parentEstateID">ID of originating Estate</param>
+        /// <param name="regionID">Key of originating Region</param>
+        /// <param name="position">Coordinates in originating Region</param>
+        /// <param name="dialog"></param>
+        /// <param name="groupIM">Group IM session toggle</param>
+        /// <param name="imSessionID">Key of IM Session</param>
+        /// <param name="timestamp">Timestamp of message</param>
+        /// <param name="message">Text of message</param>
+        /// <param name="offline"></param>
+        /// <param name="binaryBucket"></param>
+        public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
+            LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
+            byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
+            byte offline, byte[] binaryBucket);
+
+        /// <summary>
+        /// Triggered for any status updates of a teleport (progress, failed, succeeded)
+        /// </summary>
+        /// <param name="currentSim">The simulator the avatar is currently residing in</param>
+        /// <param name="message">A message about the current teleport status</param>
+        /// <param name="status">The current status of the teleport</param>
+        public delegate void TeleportCallback(Simulator currentSim, string message, TeleportStatus status);
+
+
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
@@ -156,11 +178,23 @@ namespace libsecondlife
         /// <summary>Your (client) Avatar ID, local to Region/sim</summary>
         public uint LocalID;
         /// <summary>Avatar First Name (i.e. Philip)</summary>
-        public string FirstName = "";
+        public string FirstName = String.Empty;
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
-        public string LastName = "";
-        /// <summary></summary>
-        public string TeleportMessage;
+        public string LastName = String.Empty;
+        /// <summary>Positive and negative ratings</summary>
+        /// <remarks>This information is read-only and any changes will not be
+        /// reflected on the server</remarks>
+        public Avatar.Statistics ProfileStatistics = new Avatar.Statistics();
+        /// <summary>Avatar properties including about text, profile URL, image IDs and 
+        /// publishing settings</summary>
+        /// <remarks>If you change fields in this struct, the changes will not
+        /// be reflected on the server until you call SetAvatarInformation</remarks>
+        public Avatar.Properties ProfileProperties = new Avatar.Properties();
+        /// <summary>Avatar interests including spoken languages, skills, and "want to"
+        /// choices</summary>
+        /// <remarks>If you change fields in this struct, the changes will not
+        /// be reflected on the server until you call SetAvatarInformation</remarks>
+        public Avatar.Interests ProfileInterests = new Avatar.Interests();
         /// <summary>Current position of avatar</summary>
         public LLVector3 Position = LLVector3.Zero;
         /// <summary>Current rotation of avatar</summary>
@@ -198,6 +232,9 @@ namespace libsecondlife
             get { return sittingOn; }
         }
 
+        internal uint sittingOn = 0;
+        internal string teleportMessage = String.Empty;
+
         private SecondLife Client;
         private TeleportCallback OnBeginTeleport;
         private TeleportStatus TeleportStat;
@@ -207,17 +244,14 @@ namespace libsecondlife
         private float health = 0.0f;
         private int balance = 0;
 
-        internal uint sittingOn = 0;
-
         /// <summary>
-        /// Constructor, aka 'CallBack Central' - Setup callbacks for packets related to our avatar
+        /// Constructor, setup callbacks for packets related to our avatar
         /// </summary>
         /// <param name="client"></param>
         public MainAvatar(SecondLife client)
         {
             NetworkManager.PacketCallback callback;
             Client = client;
-            TeleportMessage = "";
 
             Status = new MainAvatarStatus(Client);
 
@@ -240,7 +274,8 @@ namespace libsecondlife
             // Script dialog callback
             Client.Network.RegisterCallback(PacketType.ScriptDialog, new NetworkManager.PacketCallback(ScriptDialogHandler));
 
-            TeleportTimer = new Timer(18000);
+            // Teleport timeout timer
+            TeleportTimer = new Timer(Client.Settings.TELEPORT_TIMEOUT);
             TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
             TeleportTimeout = false;
 
@@ -292,17 +327,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Generate an Instant Message (full arguments)
+        /// Send an Instant Message
         /// </summary>
-        /// <param name="fromName">Client's Avatar</param>
-        /// <param name="sessionID">SessionID of current connection to grid</param>
+        /// <param name="fromName">The name this IM will show up as being from</param>
+        /// <param name="sessionID">Session ID of current connection to grid</param>
         /// <param name="target">Key of Avatar</param>
-        /// <param name="message">Text Message being sent.</param>
+        /// <param name="message">Text message being sent</param>
         /// <param name="conferenceIDs"></param>
-        /// <param name="IMSessionID">IM Session ID</param>
-        /// 
-        /// TODO: Have fromName grabbed from elsewhere and remove argument, to prevent inadvertant spoofing.
-        /// 
+        /// <param name="IMSessionID">IM session ID (to differentiate between IM windows)</param>
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message,
             LLUUID[] conferenceIDs, LLUUID IMSessionID)
         {
@@ -335,33 +367,51 @@ namespace libsecondlife
             //TODO: Allow region id to be correctly set by caller or fetched from Client.*
             im.MessageBlock.RegionID = LLUUID.Zero;
 
-
             // Send the message
             Client.Network.SendPacket(im);
         }
 
         /// <summary>
-        /// Conversion type to denote Chat Packet types in an easier-to-understand format
+        /// Synchronize the local profile and interests information to the server
         /// </summary>
-        public enum ChatType
+        public void SetAvatarInformation()
         {
-            /// <summary>Whispers (5m radius)</summary>
-            Whisper = 0,
-            /// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
-            Normal = 1,
-            /// <summary>Shouting! (100m radius)</summary>
-            Shout = 2,
-            /// <summary>Say chat (10/20m radius) - The official viewer will 
-            /// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
-            Say = 3,
-            /// <summary>Event message when an Avatar has begun to type</summary>
-            StartTyping = 4,
-            /// <summary>Event message when an Avatar has stopped typing</summary>
-            StopTyping = 5
+            // Basic profile properties
+            AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
+
+            apup.AgentData = new AvatarPropertiesUpdatePacket.AgentDataBlock();
+            apup.AgentData.AgentID = this.ID;
+            apup.AgentData.SessionID = Client.Network.SessionID;
+
+            apup.PropertiesData = new AvatarPropertiesUpdatePacket.PropertiesDataBlock();
+            apup.PropertiesData.AllowPublish = this.ProfileProperties.AllowPublish;
+            apup.PropertiesData.FLAboutText = Helpers.StringToField(this.ProfileProperties.FirstLifeText);
+            apup.PropertiesData.FLImageID = this.ProfileProperties.FirstLifeImage;
+            apup.PropertiesData.ImageID = this.ProfileProperties.ProfileImage;
+            apup.PropertiesData.MaturePublish = this.ProfileProperties.MaturePublish;
+            apup.PropertiesData.ProfileURL = Helpers.StringToField(this.ProfileProperties.ProfileURL);
+
+            // Interests
+            AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
+
+            aiup.AgentData = new AvatarInterestsUpdatePacket.AgentDataBlock();
+            aiup.AgentData.AgentID = this.ID;
+            aiup.AgentData.SessionID = Client.Network.SessionID;
+
+            aiup.PropertiesData = new AvatarInterestsUpdatePacket.PropertiesDataBlock();
+            aiup.PropertiesData.LanguagesText = Helpers.StringToField(this.ProfileInterests.LanguagesText);
+            aiup.PropertiesData.SkillsMask = this.ProfileInterests.SkillsMask;
+            aiup.PropertiesData.SkillsText = Helpers.StringToField(this.ProfileInterests.SkillsText);
+            aiup.PropertiesData.WantToMask = this.ProfileInterests.WantToMask;
+            aiup.PropertiesData.WantToText = Helpers.StringToField(this.ProfileInterests.WantToText);
+
+            //Send packets
+            Client.Network.SendPacket(apup);
+            Client.Network.SendPacket(aiup);
         }
 
         /// <summary>
-        /// Send a Chat message.
+        /// Send a chat message
         /// </summary>
         /// <param name="message">The Message you're sending out.</param>
         /// <param name="channel">Channel number (0 would be default 'Say' message, other numbers 
@@ -655,14 +705,14 @@ namespace libsecondlife
 
             if (TeleportTimeout)
             {
-                TeleportMessage = "Teleport timed out.";
+                teleportMessage = "Teleport timed out.";
                 TeleportStat = TeleportStatus.Failed;
 
-                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat); }
+                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
             }
             else
             {
-                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat); }
+                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
             }
 
             return (TeleportStat == TeleportStatus.Finished);
@@ -722,9 +772,9 @@ namespace libsecondlife
 
             if (OnTeleport != null)
             {
-                TeleportMessage = "Unable to resolve name: " + simName;
+                teleportMessage = "Unable to resolve name: " + simName;
                 TeleportStat = TeleportStatus.Failed;
-                OnTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
+                OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
             }
 
             return false;
@@ -1035,36 +1085,36 @@ namespace libsecondlife
             {
                 Client.DebugLog("TeleportStart received from " + simulator.ToString());
 
-                TeleportMessage = "Teleport started";
+                teleportMessage = "Teleport started";
                 TeleportStat = TeleportStatus.Start;
 
                 if (OnBeginTeleport != null)
                 {
-                    OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
+                    OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
                 }
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
                 Client.DebugLog("TeleportProgress received from " + simulator.ToString());
 
-                TeleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
+                teleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
                 TeleportStat = TeleportStatus.Progress;
 
                 if (OnBeginTeleport != null)
                 {
-                    OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
+                    OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
                 }
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
                 Client.DebugLog("TeleportFailed received from " + simulator.ToString());
 
-                TeleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
+                teleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
                 TeleportStat = TeleportStatus.Failed;
 
                 if (OnBeginTeleport != null)
                 {
-                    OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
+                    OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
                 }
 
                 OnBeginTeleport = null;
@@ -1082,7 +1132,7 @@ namespace libsecondlife
 
                 if (sim != null)
                 {
-                    TeleportMessage = "Teleport finished";
+                    teleportMessage = "Teleport finished";
                     TeleportStat = TeleportStatus.Finished;
 
                     // Move the avatar in to the new sim
@@ -1099,7 +1149,7 @@ namespace libsecondlife
 
                     if (OnBeginTeleport != null)
                     {
-                        OnBeginTeleport(sim, TeleportMessage, TeleportStat);
+                        OnBeginTeleport(sim, teleportMessage, TeleportStat);
                     }
                     else
                     {
@@ -1110,16 +1160,16 @@ namespace libsecondlife
                 }
                 else
                 {
-                    TeleportMessage = "Failed to connect to the new sim after a teleport";
+                    teleportMessage = "Failed to connect to the new sim after a teleport";
                     TeleportStat = TeleportStatus.Failed;
 
                     // FIXME: Set the previous CurrentSim to the current simulator again
 
-                    Client.Log(TeleportMessage, Helpers.LogLevel.Warning);
+                    Client.Log(teleportMessage, Helpers.LogLevel.Warning);
 
                     if (OnBeginTeleport != null)
                     {
-                        OnBeginTeleport(Client.Network.CurrentSim, TeleportMessage, TeleportStat);
+                        OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
                     }
                 }
 

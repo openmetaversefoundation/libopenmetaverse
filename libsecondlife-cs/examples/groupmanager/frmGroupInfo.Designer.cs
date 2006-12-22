@@ -731,7 +731,6 @@ namespace groupmanager
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Group Information";
-            this.Load += new System.EventHandler(this.frmGroupInfo_Load);
             this.tabs.ResumeLayout(false);
             this.tabGeneral.ResumeLayout(false);
             this.tabGeneral.PerformLayout();

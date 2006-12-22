@@ -57,19 +57,19 @@ namespace IA_TestAsyncImage
 
         private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
-            if (avatar.FirstLifeImage != null)
+            if (avatar.ProfileProperties.FirstLifeImage != null)
             {
-                if (_Client.Images.isCachedImage(avatar.FirstLifeImage) == false)
+                if (_Client.Images.isCachedImage(avatar.ProfileProperties.FirstLifeImage) == false)
                 {
-                    _Client.Images.RequestImageAsync(avatar.FirstLifeImage);
+                    _Client.Images.RequestImageAsync(avatar.ProfileProperties.FirstLifeImage);
                 }
             }
 
-            if (avatar.ProfileImage != null)
+            if (avatar.ProfileProperties.ProfileImage != null)
             {
-                if (_Client.Images.isCachedImage(avatar.FirstLifeImage) == false)
+                if (_Client.Images.isCachedImage(avatar.ProfileProperties.FirstLifeImage) == false)
                 {
-                    _Client.Images.RequestImageAsync(avatar.ProfileImage);
+                    _Client.Images.RequestImageAsync(avatar.ProfileProperties.ProfileImage);
                 }
             }
 

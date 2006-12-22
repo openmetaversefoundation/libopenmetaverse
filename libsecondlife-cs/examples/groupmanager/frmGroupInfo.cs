@@ -11,29 +11,44 @@ using libsecondlife.AssetSystem;
 
 namespace groupmanager
 {
+    public class GroupMemberData
+    {
+        public LLUUID ID;
+        public string Name;
+        public string Title;
+        public string LastOnline;
+        public ulong Powers;
+        public bool IsOwner;
+        public int Contribution;
+    }
+
     public partial class frmGroupInfo : Form
     {
         Group Group;
         SecondLife Client;
-        GroupProfile Profile;
-        Dictionary<LLUUID, GroupMember> Members;
-        Dictionary<LLUUID, GroupTitle> Titles;
-        Dictionary<LLUUID, GroupMemberData> MemberData;
-        Dictionary<LLUUID, string> Names;
+        GroupProfile Profile = new GroupProfile();
+        Dictionary<LLUUID, GroupMember> Members = new Dictionary<LLUUID,GroupMember>();
+        Dictionary<LLUUID, GroupTitle> Titles = new Dictionary<LLUUID,GroupTitle>();
+        Dictionary<LLUUID, GroupMemberData> MemberData = new Dictionary<LLUUID, GroupMemberData>();
+        Dictionary<LLUUID, string> Names = new Dictionary<LLUUID, string>();
         
         public frmGroupInfo(Group group, SecondLife client)
         {
+            InitializeComponent();
+
+            while (!IsHandleCreated)
+            {
+                // Force handle creation
+                IntPtr temp = Handle;
+            }
+
             Group = group;
             Client = client;
-            Profile = new GroupProfile();
-            MemberData = new Dictionary<LLUUID, GroupMemberData>();
-            Names = new Dictionary<LLUUID, string>();
 
-            InitializeComponent();
-        }
+            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
 
-        private void frmGroupInfo_Load(object sender, EventArgs e)
-        {
+            // Request the group information
+
             Client.Groups.BeginGetGroupProfile(Group.ID,
                 new GroupManager.GroupProfileCallback(GroupProfileHandler));
 
@@ -50,8 +65,6 @@ namespace groupmanager
 
             Invoke(new MethodInvoker(UpdateProfile));
 
-            // Waterdrop: new LLUUID("c77a1c21-e604-7d2c-2c89-5539ce853466")
-
             byte[] j2cdata;
             if (Group.InsigniaID != null)
             {
@@ -59,7 +72,7 @@ namespace groupmanager
             }
             else
             {
-                // TODO: Add somekind of 
+                // ???
                 j2cdata = Client.Images.RequestImage("c77a1c21-e604-7d2c-2c89-5539ce853466");
             }
 
@@ -84,10 +97,10 @@ namespace groupmanager
             numFee.Value = Profile.MembershipFee;
             chkMature.Checked = Profile.MaturePublish;
 
-            Client.Avatars.BeginGetAvatarName(Profile.FounderID, new AvatarManager.AgentNamesCallback(AgentNamesHandler));
+            Client.Avatars.RequestAvatarName(Profile.FounderID);
         }
 
-        private void AgentNamesHandler(Dictionary<LLUUID, string> names)
+        private void AvatarNamesHandler(Dictionary<LLUUID, string> names)
         {
             lock (Names)
             {
@@ -102,8 +115,6 @@ namespace groupmanager
 
         private void UpdateNames()
         {
-            GroupMemberData member;
-
             lock (Names)
             {
                 if (Profile.FounderID != null && Names.ContainsKey(Profile.FounderID))
@@ -120,8 +131,7 @@ namespace groupmanager
                             MemberData[name.Key] = new GroupMemberData();
                         }
 
-                        member = MemberData[name.Key];
-                        member.Name = name.Value;
+                        MemberData[name.Key].Name = name.Value;
                     }
                 }
             }
@@ -209,7 +219,7 @@ namespace groupmanager
                 }
             }
 
-            Client.Avatars.BeginGetAvatarNames(requestids, new AvatarManager.AgentNamesCallback(AgentNamesHandler));
+            Client.Avatars.RequestAvatarNames(requestids);
         }
 
         private void GroupTitlesHandler(Dictionary<LLUUID, GroupTitle> titles)
@@ -223,25 +233,5 @@ namespace groupmanager
         {
             ;
         }
-
-        //private void BytesToFile(byte[] bytes, string filename)
-        //{
-        //    FileStream filestream = new FileStream(filename, FileMode.Create);
-        //    BinaryWriter writer = new BinaryWriter(filestream);
-        //    writer.Write(bytes);
-        //    writer.Close();
-        //    filestream.Close();
-        //}
-    }
-
-    public class GroupMemberData
-    {
-        public LLUUID ID;
-        public string Name;
-        public string Title;
-        public string LastOnline;
-        public ulong Powers;
-        public bool IsOwner;
-        public int Contribution;
     }
 }

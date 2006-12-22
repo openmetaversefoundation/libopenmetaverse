@@ -39,8 +39,6 @@ using System.Net;
 using System.Threading;
 
 public class ChatConsole {
-	private static SecondLife client;
-	private static ProtocolManager protocolManager;
 	private static Proxy proxy;
 	private static LLUUID agentID;
 	private static LLUUID sessionID;

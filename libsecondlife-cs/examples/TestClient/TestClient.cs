@@ -54,7 +54,7 @@ namespace libsecondlife.TestClient
             Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
 			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
 			Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
-            Self.OnInstantMessage += new InstantMessageCallback(Self_OnInstantMessage);
+            Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 

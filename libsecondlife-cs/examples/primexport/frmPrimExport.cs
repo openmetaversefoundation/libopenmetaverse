@@ -299,7 +299,7 @@ namespace primexport
             InitializeComponent();
 
             client = new SecondLife();
-            client.OnLogMessage += new LogCallback(client_OnLogMessage);
+            client.OnLogMessage += new SecondLife.LogCallback(client_OnLogMessage);
             client.Objects.RequestAllObjects = true;
             client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(PrimSeen);
             client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(AvatarSeen);
