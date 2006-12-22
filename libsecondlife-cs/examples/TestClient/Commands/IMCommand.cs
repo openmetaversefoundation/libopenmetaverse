@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -8,12 +9,16 @@ namespace libsecondlife.TestClient
     public class ImCommand : Command
     {
         SecondLife Client;
-        bool DirLookupComplete = false;
+        string ToAvatarName = String.Empty;
+        ManualResetEvent NameSearchEvent = new ManualResetEvent(false);
+        Dictionary<string, LLUUID> Name2Key = new Dictionary<string, LLUUID>();
 
         public ImCommand(TestClient testClient)
         {
             TestClient = testClient;
             Client = (SecondLife)TestClient;
+
+            Client.Avatars.OnAvatarNameSearch += new AvatarManager.AvatarNameSearchCallback(Avatars_OnAvatarNameSearch);
 
             Name = "im";
             Description = "Instant message someone. Usage: im [firstname] [lastname] [message]";
@@ -21,65 +26,50 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            return "FIXME";
-            // How do we register the callback only once for each client?
-
             if (args.Length < 3)
                 return "Usage: im [firstname] [lastname] [message]";
 
-            string toAgentName = args[0] + " " + args[1];
+            ToAvatarName = args[0] + " " + args[1];
 
+            // Build the message
             string message = String.Empty;
             for (int ct = 2; ct < args.Length; ct++)
                 message += args[ct] + " ";
             message = message.TrimEnd();
             if (message.Length > 1023) message = message.Remove(1023);
 
-            if (!TestClient.SharedValues.ContainsKey("name2key"))
+            if (!Name2Key.ContainsKey(ToAvatarName.ToLower()))
             {
-                // Initialize the shared name2key dictionary
-                TestClient.SharedValues["name2key"] = new Dictionary<string, LLUUID>();
+                // Send the Query
+                Client.Avatars.RequestAvatarNameSearch(ToAvatarName, LLUUID.Random());
+
+                NameSearchEvent.WaitOne(6000, false);
             }
 
-            Dictionary<string, LLUUID> name2key = (Dictionary<string, LLUUID>)TestClient.SharedValues["name2key"];
-
-            if (name2key.ContainsKey(toAgentName))
+            if (Name2Key.ContainsKey(ToAvatarName.ToLower()))
             {
-                if (name2key[toAgentName] != LLUUID.Zero)
-                {
-                    Client.Self.InstantMessage(name2key[toAgentName], message);
-                    return "IM sent to " + name2key[toAgentName].ToStringHyphenated();
-                }
-                else
-                {
-                    return "Lookup failed for " + toAgentName;
-                }
+                LLUUID id = Name2Key[ToAvatarName.ToLower()];
+
+                Client.Self.InstantMessage(id, message, id);
+                return "Instant Messaged " + id.ToStringHyphenated() + " with message: " + message;
             }
             else
             {
-                // Send the Query
-                DirFindQueryPacket find = new DirFindQueryPacket();
-                find.AgentData.AgentID = Client.Network.AgentID;
-                find.AgentData.SessionID = Client.Network.SessionID;
-                find.QueryData.QueryFlags = 1;
-                find.QueryData.QueryText = Helpers.StringToField(toAgentName);
-                find.QueryData.QueryID = new LLUUID("00000000000000000000000000000001");
-                find.QueryData.QueryStart = 0;
-
-                Client.Network.SendPacket(find);
-
-                while (!DirLookupComplete)
-                {
-                    // Wait for 
-                }
+                return "Name lookup for " + ToAvatarName + " failed";
             }
-
-            return "ERROR: IM TERMINATED";
         }
 
-        private void OnDirFindReply(Simulator simulator, Packet packet)
+        void Avatars_OnAvatarNameSearch(LLUUID queryID, Dictionary<LLUUID, string> avatars)
         {
-            ;
+            foreach (KeyValuePair<LLUUID, string> kvp in avatars)
+            {
+                if (kvp.Value.ToLower() == ToAvatarName.ToLower())
+                {
+                    Name2Key[ToAvatarName.ToLower()] = kvp.Key;
+                    NameSearchEvent.Set();
+                    return;
+                }
+            }
         }
     }
 }
