@@ -32,6 +32,7 @@ using SLProxy;
 using libsecondlife;
 using Nwc.XmlRpc;
 using libsecondlife.Packets;
+using System.Reflection;
 
 using System;
 using System.Collections;
@@ -44,14 +45,18 @@ public class Analyst {
 	private static Proxy proxy;
 	private static Hashtable commandDelegates = new Hashtable();
 	private static Hashtable loggedPackets = new Hashtable();
-	private static string logGrep = null;
+	// private static string logGrep = null;
 	private static Hashtable modifiedPackets = new Hashtable();
 	private static LLUUID agentID;
 	private static LLUUID sessionID;
 	private static bool logLogin = false;
+	private static Assembly libslAssembly;
 
 	public static void Main(string[] args) {
 		
+		libslAssembly = Assembly.Load("libsecondlife");
+		if(libslAssembly == null) throw new Exception("Assembly load exception");
+
 		ProxyConfig proxyConfig = new ProxyConfig("Analyst V2", "Austin Jennings / Andrew Ortman", args);
 		proxy = new Proxy(proxyConfig);
 
@@ -139,16 +144,18 @@ public class Analyst {
 	private static void InitializeCommandDelegates() {
 		commandDelegates["/log"] = new CommandDelegate(CmdLog);
 		commandDelegates["/-log"] = new CommandDelegate(CmdNoLog);
-		commandDelegates["/grep"] = new CommandDelegate(CmdGrep);
-		//commandDelegates["/set"] = new CommandDelegate(CmdSet);
-		//commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
-		// commandDelegates["/inject"] = new CommandDelegate(CmdInject);
-		// commandDelegates["/in"] = new CommandDelegate(CmdInject);
+		// commandDelegates["/grep"] = new CommandDelegate(CmdGrep);
+		commandDelegates["/set"] = new CommandDelegate(CmdSet);
+		commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
+		commandDelegates["/inject"] = new CommandDelegate(CmdInject);
+		commandDelegates["/in"] = new CommandDelegate(CmdInject);
 	}
 
 	private static PacketType packetTypeFromName(string name) {
 		Type packetTypeType = typeof(PacketType);
-		return (PacketType)Enum.ToObject(packetTypeType, (int)packetTypeType.GetField(name).GetValue(packetTypeType));
+		System.Reflection.FieldInfo f = packetTypeType.GetField(name);
+		if(f == null) throw new ArgumentException("Bad packet type");
+		return (PacketType)Enum.ToObject(packetTypeType, (int)f.GetValue(packetTypeType));
 	}
 
 	// CmdLog: handle a /log command
@@ -159,7 +166,13 @@ public class Analyst {
 			LogAll();
 			SayToUser("logging all packets");
 		} else {
-			PacketType pType = packetTypeFromName(words[1]);
+			PacketType pType;
+			try {
+				pType = packetTypeFromName(words[1]);
+			} catch(ArgumentException e) {
+				SayToUser("Bad packet name: "+words[1]);
+				return;
+			}
 			loggedPackets[pType] = null;
 			if (words[1] != "ChatFromViewer") {
 				proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
@@ -191,7 +204,7 @@ public class Analyst {
 		}
 	}
 
-	// CmdGrep: handle a /grep command
+/*	// CmdGrep: handle a /grep command
 	private static void CmdGrep(string[] words) {
 		if (words.Length == 1) {
 			logGrep = null;
@@ -202,13 +215,21 @@ public class Analyst {
 			logGrep = String.Join(" ", regexArray);
 			SayToUser("filtering log with " + logGrep);
 		}
-	}
+	} */
 
-/*	// CmdSet: handle a /set command
+	// CmdSet: handle a /set command
 	private static void CmdSet(string[] words) {
 		if (words.Length < 5)
 			SayToUser("Usage: /set <packet name> <block> <field> <value>");
 		else {
+			PacketType pType;
+			try {
+				pType = packetTypeFromName(words[1]);
+			} catch(ArgumentException e) {
+				SayToUser("Bad packet name: "+words[1]);
+				return;
+			}
+
 			string[] valueArray = new string[words.Length - 4];
 			Array.Copy(words, 4, valueArray, 0, words.Length - 4);
 			string valueString = String.Join(" ", valueArray);
@@ -221,17 +242,17 @@ public class Analyst {
 			}
 
 			Hashtable fields;
-			if (modifiedPackets.Contains(words[1]))
-				fields = (Hashtable)modifiedPackets[words[1]];
+			if (modifiedPackets.Contains(pType))
+				fields = (Hashtable)modifiedPackets[pType];
 			else
 				fields = new Hashtable();
 
 			fields[new BlockField(words[2], words[3])] = value;
-			modifiedPackets[words[1]] = fields;
+			modifiedPackets[pType] = fields;
 
 			if (words[1] != "ChatFromViewer") {
-				proxy.AddDelegate(words[1], Direction.Incoming, new PacketDelegate(AnalyzeIn));
-				proxy.AddDelegate(words[1], Direction.Outgoing, new PacketDelegate(AnalyzeOut));
+				proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
+				proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
 			}
 
 			SayToUser("setting " + words[1] + "." + words[2] + "." + words[3] + " = " + valueString);
@@ -241,26 +262,35 @@ public class Analyst {
 	// CmdNoSet: handle a /-set command
 	private static void CmdNoSet(string[] words) {
 		if (words.Length == 2 && words[1] == "*") {
-			foreach (string name in modifiedPackets.Keys)
-				if (!loggedPackets.Contains(name) && name != "ChatFromViewer") {
-					proxy.RemoveDelegate(name, Direction.Incoming);
-					proxy.RemoveDelegate(name, Direction.Outgoing);
+			foreach (PacketType pType in modifiedPackets.Keys)
+				if (!loggedPackets.Contains(pType) && pType != PacketType.ChatFromViewer) {
+					proxy.RemoveDelegate(pType, Direction.Incoming);
+					proxy.RemoveDelegate(pType, Direction.Outgoing);
 				}
 			modifiedPackets = new Hashtable();
 
 			SayToUser("stopped setting all fields");
 		} else if (words.Length == 4) {
-			if (modifiedPackets.Contains(words[1])) {
-				Hashtable fields = (Hashtable)modifiedPackets[words[1]];
+			PacketType pType;
+			try {
+				pType = packetTypeFromName(words[1]);
+			} catch(ArgumentException e) {
+				SayToUser("Bad packet name: "+words[1]);
+				return;
+			}
+
+
+			if (modifiedPackets.Contains(pType)) {
+				Hashtable fields = (Hashtable)modifiedPackets[pType];
 				fields.Remove(new BlockField(words[2], words[3]));
 
 				if (fields.Count == 0) {
-					modifiedPackets.Remove(words[1]);
+					modifiedPackets.Remove(pType);
 
-					if (!loggedPackets.Contains(words[1])) {
+					if (!loggedPackets.Contains(pType)) {
 						if (words[1] != "ChatFromViewer") {
-							proxy.RemoveDelegate(words[1], Direction.Incoming);
-							proxy.RemoveDelegate(words[1], Direction.Outgoing);
+							proxy.RemoveDelegate(pType, Direction.Incoming);
+							proxy.RemoveDelegate(pType, Direction.Outgoing);
 						}
 					}
 				}
@@ -269,9 +299,9 @@ public class Analyst {
 			SayToUser("stopped setting " + words[1] + "." + words[2] + "." + words[3]);
 		} else
 			SayToUser("Usage: /-set <packet name> <block> <field>");
-	} */
+	} 
 
-/*
+
 	// CmdInject: handle an /inject command
 	private static void CmdInject(string[] words) {
 		if (words.Length < 2)
@@ -285,9 +315,12 @@ public class Analyst {
 			StreamReader sr = null;
 			Direction direction = Direction.Incoming;
 			string name = null;
-			Hashtable blocks = new Hashtable();
+			//Hashtable blocks = new Hashtable();
 			string block = null;
-			Hashtable fields = new Hashtable();
+			object blockObj = null;
+			//Hashtable fields = new Hashtable();
+			Type packetClass = null;
+			Packet packet = null;
 
 			try {
 				fs = File.OpenRead(words[1] + ".packet");
@@ -317,13 +350,24 @@ public class Analyst {
 						}
 
 						name = lineName;
+						packetClass = libslAssembly.GetType("libsecondlife.Packets."+name+"Packet");
+						if(packetClass == null) throw new Exception("Couldn't get class "+name+"Packet");
+						ConstructorInfo ctr = packetClass.GetConstructor(new Type[] { });
+						if(ctr == null) throw new Exception("Couldn't get suitable constructor for "+name+"Packet");
+						packet = (Packet) ctr.Invoke(new object[] { });
+						Console.WriteLine("Created new "+name+"Packet");
 					} else {
 						match = (new Regex(@"^\s*\[(\w+)\]\s*$")).Match(line);
 						if (match.Success) {
-							if (block != null)
-								blocks[fields] = block;
+							//FIXME: support variable blocks
+
 							block = match.Groups[1].Captures[0].ToString();
-							fields = new Hashtable();
+							FieldInfo blockField = packetClass.GetField(block);
+							if(blockField == null) throw new Exception("Couldn't get "+name+"Packet."+block);
+							blockObj = blockField.GetValue(packet);
+							if(blockObj == null) throw new Exception("Got "+name+"Packet."+block+" == null");
+							Console.WriteLine("Got block "+name+"Packet."+block);
+
 							continue;
 						}
 
@@ -336,18 +380,21 @@ public class Analyst {
 						if (match.Success) {
 							string lineField = match.Groups[1].Captures[0].ToString();
 							string lineValue = match.Groups[2].Captures[0].ToString();
+							object fval;
 
+							//FIXME: use of MagicCast inefficient
 							if (lineValue == "$Value")
-								fields[lineField] = MagicCast(name, block, lineField, value);
+								fval = MagicCast(name, block, lineField, value);
 							else if (lineValue == "$UUID")
-								fields[lineField] = LLUUID.Random();
+								fval = LLUUID.Random();
 							else if (lineValue == "$AgentID")
-								fields[lineField] = agentID;
+								fval = agentID;
 							else if (lineValue == "$SessionID")
-								fields[lineField] = sessionID;
+								fval = sessionID;
 							else
-								fields[lineField] = MagicCast(name, block, lineField, lineValue);
+								fval = MagicCast(name, block, lineField, lineValue);
 
+							MagicSetField(blockObj,lineField,fval);
 							continue;
 						}
 
@@ -361,18 +408,15 @@ public class Analyst {
 					return;
 				}
 
-				if (block != null)
-					blocks[fields] = block;
-
-				byte flags = Helpers.MSG_RELIABLE;
-				if (protocolManager.Command(name).Encoded)
-					flags |= Helpers.MSG_ZEROCODED;
-				Packet packet = PacketBuilder.BuildPacket(name, protocolManager, blocks, flags);
+				packet.Header.Flags |= Helpers.MSG_RELIABLE;
+				//if (protocolManager.Command(name).Encoded)
+				//	packet.Header.Flags |= Helpers.MSG_ZEROCODED;
 				proxy.InjectPacket(packet, direction);
 
 				SayToUser("injected " + words[1]);
 			} catch (Exception e) {
 				SayToUser("failed to inject " + words[1] + ": " + e.Message);
+				Console.WriteLine("failed to inject " + words[1] + ": " + e.Message + "\n" + e.StackTrace);
 			} finally {
 				if (fs != null)
 					fs.Close();
@@ -380,7 +424,7 @@ public class Analyst {
 					sr.Close();
 			}
 		}
-	} */
+	}
 
 	// SayToUser: send a message to the user as in-world chat
 	private static void SayToUser(string message) {
@@ -408,99 +452,132 @@ public class Analyst {
 		}
 	}
 
-/*	// MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
+	private static void MagicSetField(object obj, string field, object val) {
+		Type cls = obj.GetType();
+
+		FieldInfo fieldInf = cls.GetField(field);
+		if(fieldInf == null) {
+			PropertyInfo prop = cls.GetProperty(field);
+			if(prop == null) throw new Exception("Couldn't find field "+cls.Name+"."+field);
+			prop.SetValue(obj,val,null);
+			//throw new Exception("FIXME: can't set properties");
+		} else {
+			fieldInf.SetValue(obj,val);
+		}
+		
+	}
+
+	// MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
 	private static object MagicCast(string name, string block, string field, string value) {
-		MapPacket packetMap;
-		try {
+		Type packetClass = libslAssembly.GetType("libsecondlife.Packets."+name+"Packet");
+		if(packetClass == null) throw new Exception("Couldn't get class "+name+"Packet");
+/*		try {
 			packetMap = protocolManager.Command(name);
 		} catch {
 			throw new Exception("unkown packet " + name);
+		} */
+
+
+		//FIXME: support variable blocks
+
+		FieldInfo blockField = packetClass.GetField(block);
+		if(blockField == null) throw new Exception("Couldn't get "+name+"Packet."+block);
+		Type blockClass = blockField.FieldType;
+		if(blockClass.IsArray) blockClass = blockClass.GetElementType();
+		Console.WriteLine("DEBUG: "+blockClass.Name);
+
+		FieldInfo fieldField = blockClass.GetField(field); PropertyInfo fieldProp = null;
+		Type fieldClass = null;
+		if(fieldField == null) {
+			fieldProp = blockClass.GetProperty(field);
+			if(fieldProp == null) throw new Exception("Couldn't get "+name+"Packet."+block+"."+field);
+			fieldClass = fieldProp.PropertyType;
+		} else {
+			fieldClass = fieldField.FieldType;
 		}
-
-		foreach (MapBlock blockMap in packetMap.Blocks) {
-			if (blockMap.Name != block)
-				continue;
-
-			foreach (MapField fieldMap in blockMap.Fields) {
-				if (fieldMap.Name != field)
-					continue;
-
-				try {
+		
+		try {
+			if(fieldClass == typeof(byte)) {
+				return Convert.ToByte(value);
+			} else if(fieldClass == typeof(ushort)) {
+				return Convert.ToUInt16(value);
+			} else if(fieldClass == typeof(uint)) {
+				return Convert.ToUInt32(value);
+			} else if(fieldClass == typeof(ulong)) {
+				return Convert.ToUInt64(value);
+			} else if(fieldClass == typeof(sbyte)) {
+				return Convert.ToSByte(value);
+			} else if(fieldClass == typeof(short)) {
+				return Convert.ToInt16(value);
+			} else if(fieldClass == typeof(int)) {
+				return Convert.ToInt32(value);
+			} else if(fieldClass == typeof(long)) {
+				return Convert.ToInt64(value);
+			} else if(fieldClass == typeof(float)) {
+				return Convert.ToSingle(value);
+			} else if(fieldClass == typeof(double)) {
+				return Convert.ToDouble(value);
+			} else if(fieldClass == typeof(LLUUID)) {
+				return new LLUUID(value);
+			} else if(fieldClass == typeof(bool)) {
+				if (value.ToLower() == "true")
+					return true;
+				else if (value.ToLower() == "false")
+					return false;
+				else
+					throw new Exception();
+			} else if(fieldClass == typeof(byte[])) {
+				return Helpers.StringToField(value);
+			} else if(fieldClass == typeof(LLVector3)) {
+				Match vector3Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
+				if (!vector3Match.Success)
+					throw new Exception();
+				return new LLVector3
+					(Convert.ToSingle(vector3Match.Groups[1].Captures[0].ToString())
+					,Convert.ToSingle(vector3Match.Groups[2].Captures[0].ToString())
+					,Convert.ToSingle(vector3Match.Groups[3].Captures[0].ToString())
+					);
+			} else if(fieldClass == typeof(LLVector3d)) {
+				Match vector3dMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
+				if (!vector3dMatch.Success)
+					throw new Exception();
+				return new LLVector3d
+					(Convert.ToDouble(vector3dMatch.Groups[1].Captures[0].ToString())
+					,Convert.ToDouble(vector3dMatch.Groups[2].Captures[0].ToString())
+					,Convert.ToDouble(vector3dMatch.Groups[3].Captures[0].ToString())
+					);
+			} else if(fieldClass == typeof(LLVector4)) {
+				Match vector4Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
+				if (!vector4Match.Success)
+					throw new Exception();
+				float vector4X = Convert.ToSingle(vector4Match.Groups[1].Captures[0].ToString());
+				float vector4Y = Convert.ToSingle(vector4Match.Groups[2].Captures[0].ToString());
+				float vector4Z = Convert.ToSingle(vector4Match.Groups[3].Captures[0].ToString());
+				float vector4S = Convert.ToSingle(vector4Match.Groups[4].Captures[0].ToString());
+				byte[] vector4Bytes = new byte[16];
+				Array.Copy(BitConverter.GetBytes(vector4X), 0, vector4Bytes,  0, 4);
+				Array.Copy(BitConverter.GetBytes(vector4Y), 0, vector4Bytes,  4, 4);
+				Array.Copy(BitConverter.GetBytes(vector4Z), 0, vector4Bytes,  8, 4);
+				Array.Copy(BitConverter.GetBytes(vector4S), 0, vector4Bytes, 12, 4);
+				return new LLVector4(vector4Bytes, 0);
+			} else if(fieldClass == typeof(LLQuaternion)) {
+				Match quaternionMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
+				if (!quaternionMatch.Success)
+					throw new Exception();
+				return new LLQuaternion
+					(Convert.ToSingle(quaternionMatch.Groups[1].Captures[0].ToString())
+					,Convert.ToSingle(quaternionMatch.Groups[2].Captures[0].ToString())
+					,Convert.ToSingle(quaternionMatch.Groups[3].Captures[0].ToString())
+					);
+			} else {
+				throw new Exception("unsupported field type " + fieldClass);
+			}
+		} catch {
+			throw new Exception("unable to interpret " + value + " as " + fieldClass);
+		}
+/*				try {
 					switch (fieldMap.Type) {
-						case FieldType.U8:
-							return Convert.ToByte(value);
-						case FieldType.U16:
-							return Convert.ToUInt16(value);
-						case FieldType.U32:
-							return Convert.ToUInt32(value);
-						case FieldType.U64: // XXX: verify endianness
-							ulong ulongVal = Convert.ToUInt64(value);
-							return new U64((uint)((ulongVal >> 32) % 4294967296), (uint)(ulongVal % 4294967296));
-						case FieldType.S8:
-							return Convert.ToSByte(value);
-						case FieldType.S16:
-							return Convert.ToInt16(value);
-						case FieldType.S32:
-							return Convert.ToInt32(value);
-						case FieldType.S64:
-							return Convert.ToInt64(value);
-						case FieldType.F32:
-							return Convert.ToSingle(value);
-						case FieldType.F64:
-							return Convert.ToDouble(value);
-						case FieldType.LLUUID:
-							return new LLUUID(value);
-						case FieldType.BOOL:
-							if (value.ToLower() == "true")
-								return true;
-							else if (value.ToLower() == "false")
-								return false;
-							else
-								throw new Exception();
 						case FieldType.LLVector3:
-							Match vector3Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-							if (!vector3Match.Success)
-								throw new Exception();
-							return new LLVector3
-								(Convert.ToSingle(vector3Match.Groups[1].Captures[0].ToString())
-								,Convert.ToSingle(vector3Match.Groups[2].Captures[0].ToString())
-								,Convert.ToSingle(vector3Match.Groups[3].Captures[0].ToString())
-								);
-						case FieldType.LLVector3d:
-							Match vector3dMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-							if (!vector3dMatch.Success)
-								throw new Exception();
-							return new LLVector3d
-								(Convert.ToDouble(vector3dMatch.Groups[1].Captures[0].ToString())
-								,Convert.ToDouble(vector3dMatch.Groups[2].Captures[0].ToString())
-								,Convert.ToDouble(vector3dMatch.Groups[3].Captures[0].ToString())
-								);
-						case FieldType.LLVector4:
-							Match vector4Match = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-							if (!vector4Match.Success)
-								throw new Exception();
-							float vector4X = Convert.ToSingle(vector4Match.Groups[1].Captures[0].ToString());
-							float vector4Y = Convert.ToSingle(vector4Match.Groups[2].Captures[0].ToString());
-							float vector4Z = Convert.ToSingle(vector4Match.Groups[3].Captures[0].ToString());
-							float vector4S = Convert.ToSingle(vector4Match.Groups[4].Captures[0].ToString());
-							byte[] vector4Bytes = new byte[16];
-							Array.Copy(BitConverter.GetBytes(vector4X), 0, vector4Bytes,  0, 4);
-							Array.Copy(BitConverter.GetBytes(vector4Y), 0, vector4Bytes,  4, 4);
-							Array.Copy(BitConverter.GetBytes(vector4Z), 0, vector4Bytes,  8, 4);
-							Array.Copy(BitConverter.GetBytes(vector4S), 0, vector4Bytes, 12, 4);
-							return new LLVector4(vector4Bytes, 0);
-						case FieldType.LLQuaternion:
-							Match quaternionMatch = (new Regex(@"<\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*,\s*(-?[0-9.]+)\s*>")).Match(value);
-							if (!quaternionMatch.Success)
-								throw new Exception();
-							float quaternionX = Convert.ToSingle(quaternionMatch.Groups[1].Captures[0].ToString());
-							float quaternionY = Convert.ToSingle(quaternionMatch.Groups[2].Captures[0].ToString());
-							float quaternionZ = Convert.ToSingle(quaternionMatch.Groups[3].Captures[0].ToString());
-							byte[] quaternionBytes = new byte[12];
-							Array.Copy(BitConverter.GetBytes(quaternionX), 0, quaternionBytes,  0, 4);
-							Array.Copy(BitConverter.GetBytes(quaternionY), 0, quaternionBytes,  4, 4);
-							Array.Copy(BitConverter.GetBytes(quaternionZ), 0, quaternionBytes,  8, 4);
-							return new LLQuaternion(quaternionBytes, 0);
 						case FieldType.IPADDR:
 							return IPAddress.Parse(value);
 						case FieldType.IPPORT:
@@ -526,8 +603,8 @@ public class Analyst {
 			throw new Exception("unknown field " + name + "." + block + "." + field);
 		}
 
-		throw new Exception("unknown block " + name + "." + block);
-	} */
+		throw new Exception("unknown block " + name + "." + block); */
+	}
 
 	// AnalyzeIn: analyze an incoming packet
 	private static Packet AnalyzeIn(Packet packet, IPEndPoint endPoint) {
@@ -541,17 +618,23 @@ public class Analyst {
 
 	// Analyze: modify and/or log a pocket
 	private static Packet Analyze(Packet packet, IPEndPoint endPoint, Direction direction) {
-		/* if (modifiedPackets.Contains(packet.Layout.Name))
+		if (modifiedPackets.Contains(packet.Type))
 			try {
-				Hashtable changes = (Hashtable)modifiedPackets[packet.Layout.Name];
-				Hashtable blocks = PacketUtility.Unbuild(packet);
-				foreach (BlockField blockField in changes.Keys)
-					PacketUtility.SetField(blocks, blockField.block, blockField.field, changes[blockField]);
-				packet = PacketBuilder.BuildPacket(packet.Layout.Name, protocolManager, blocks, packet.Data[0]);
+				Hashtable changes = (Hashtable)modifiedPackets[packet.Type];
+				Type packetClass = packet.GetType();
+	
+				foreach (BlockField bf in changes.Keys) {
+					//FIXME: support variable blocks
+
+					FieldInfo blockField = packetClass.GetField(bf.block);
+					//Type blockClass = blockField.FieldType;
+					object blockObject = blockField.GetValue(packet);
+					MagicSetField(blockObject,bf.field,changes[blockField]);
+				}
 			} catch (Exception e) {
-				Console.WriteLine("failed to modify " + packet.Layout.Name + ": " + e.Message);
+				Console.WriteLine("failed to modify " + packet.Type + ": " + e.Message);
 				Console.WriteLine(e.StackTrace);
-			} */
+			}
 
 		if (loggedPackets.Contains(packet.Type))
 			LogPacket(packet, endPoint, direction);
@@ -565,7 +648,7 @@ public class Analyst {
 		System.Reflection.MemberInfo[] packetTypes =  packetTypeType.GetMembers();
 		
 		for(int i = 0; i < packetTypes.Length; i++) {
-			if(packetTypes[i].MemberType == System.Reflection.MemberTypes.Field) {
+			if(packetTypes[i].MemberType == System.Reflection.MemberTypes.Field && packetTypes[i].DeclaringType == packetTypeType) {
 				string name = packetTypes[i].Name;
 				PacketType pType = packetTypeFromName(name);
 				loggedPackets[pType] = null;
@@ -583,7 +666,7 @@ public class Analyst {
 		System.Reflection.MemberInfo[] packetTypes =  packetTypeType.GetMembers();
 		
 		for(int i = 0; i < packetTypes.Length; i++) {
-			if(packetTypes[i].MemberType == System.Reflection.MemberTypes.Field) {
+			if(packetTypes[i].MemberType == System.Reflection.MemberTypes.Field  && packetTypes[i].DeclaringType == packetTypeType) {
 				string name = packetTypes[i].Name;
 				PacketType pType = packetTypeFromName(name);
 				loggedPackets.Remove(pType);
@@ -594,32 +677,6 @@ public class Analyst {
 			}
 		}
 	}
-
-	/* // RegisterDelegates: register delegates for each packet in an array of packet maps
-	private static void RegisterDelegates(Proxy proxy, MapPacket[] maps) {
-		foreach (MapPacket map in maps)
-			if (map != null) {
-				loggedPackets[map.Name] = null;
-
-				if (map.Name != "ChatFromViewer") {
-					proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
-					proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
-				}
-			}
-	}
-
-	// UnregisterDelegates: unregister delegates for each packet in an array of packet maps
-	private static void UnregisterDelegates(Proxy proxy, MapPacket[] maps) {
-		foreach (MapPacket map in maps)
-			if (map != null) {
-				loggedPackets.Remove(map.Name);
-
-				if (map.Name != "ChatFromViewer") {
-					proxy.RemoveDelegate(map.Name, Direction.Incoming);
-					proxy.RemoveDelegate(map.Name, Direction.Outgoing);
-				}
-			}
-	} */
 
 	// LogPacket: dump a packet to the console
 	private static void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction) {
