@@ -41,59 +41,79 @@ namespace libsecondlife.AssetSystem
             Client.Network.RegisterCallback(libsecondlife.Packets.PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateCallbackHandler));
         }
 
+
+        public void Wear(List<InventoryWearable> wearables)
+        {
+        }
+
+
+        /// <summary>
+        /// Equivalent to the SL "Replace Outfit" command.  All clothing is removed, and replaced with wearables in given folder.  Body wearables will be replaced if provided.
+        /// </summary>
+        /// <param name="outfitFolder">Contains the wearable items to put on.</param>
         public void WearOutfit(InventoryFolder outfitFolder)
         {
+            WearOutfit(outfitFolder, 10000);
+        }
+
+
+        /// <summary>
+        /// Equivalent to the SL "Replace Outfit" command.  All clothing is removed, and replaced with wearables in given folder.  Body wearables will be replaced if provided.
+        /// </summary>
+        /// <param name="outfitFolder">Contains the wearable items to put on.</param>
+        /// <param name="TimeOut">How long to wait for outfit directory information to download</param>
+        public void WearOutfit(InventoryFolder outfitFolder, int TimeOut)
+        {
             // Refresh download of outfit folder
-            if (!outfitFolder.BeginDownloadContents(false).RequestComplete.WaitOne(30000, false))
+            if (!outfitFolder.BeginDownloadContents(false).RequestComplete.WaitOne(TimeOut, false))
             {
                 Console.WriteLine("An error occured while downloads the folder contents of : " + outfitFolder.Name);
             }
 
-            byte NumPieces = 0;
-
-            AgentIsNowWearingPacket nowWearing = new AgentIsNowWearingPacket();
-            nowWearing.AgentData.AgentID = Client.Network.AgentID;
-            nowWearing.AgentData.SessionID = Client.Network.SessionID;
-
-            nowWearing.WearableData = new AgentIsNowWearingPacket.WearableDataBlock[13];
-            for (byte i = 0; i <= 12; i++)
+            // Make sure we have some Wearable Data to start with.
+            if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
             {
-                nowWearing.WearableData[i] = new AgentIsNowWearingPacket.WearableDataBlock();
-                nowWearing.WearableData[i].WearableType = i;
-                nowWearing.WearableData[i].ItemID = LLUUID.Zero;
+                GetWearables();
             }
 
-            outfitFolder.BeginDownloadContents(false).RequestComplete.WaitOne(3000, false);
+            // Flush the cached clothing wearables so we can redefine them
+            for (byte i = 4; i <= 12; i++)
+            {
+                AgentWearablesData[i].ItemID  = LLUUID.Zero;
+                AgentWearablesData[i].AssetID = LLUUID.Zero;
+            }
+
+            // Replace with wearables from Outfit folder
             foreach (InventoryBase ib in outfitFolder.GetContents())
             {
                 if (ib is InventoryWearable)
                 {
                     InventoryWearable iw = (InventoryWearable)ib;
                     byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
-                    nowWearing.WearableData[type].ItemID = iw.ItemID;
-                    NumPieces++;
+                    AgentWearablesData[type].ItemID  = iw.ItemID;
+                    AgentWearablesData[type].AssetID = iw.AssetID;
                 }
             }
 
-            // Flush the cached agent wearables so we can redefine them
-            AgentWearablesData = new AgentWearablesUpdatePacket.WearableDataBlock[NumPieces];
-            byte WearableDataEntry = 0;
-
+            // Create AgentIsNowWearing Packet, and send it
+            AgentIsNowWearingPacket nowWearing = new AgentIsNowWearingPacket();
+            nowWearing.AgentData.AgentID = Client.Network.AgentID;
+            nowWearing.AgentData.SessionID = Client.Network.SessionID;
+            nowWearing.WearableData = new AgentIsNowWearingPacket.WearableDataBlock[13];
             for (byte i = 0; i <= 12; i++)
             {
-                if (nowWearing.WearableData[i].ItemID != LLUUID.Zero)
-                {
-                    AgentWearablesData[WearableDataEntry] = new AgentWearablesUpdatePacket.WearableDataBlock();
-                    nowWearing.WearableData[WearableDataEntry].WearableType = nowWearing.WearableData[i].WearableType;
-                    nowWearing.WearableData[WearableDataEntry].ItemID = nowWearing.WearableData[i].ItemID;
-                    WearableDataEntry++;
-                }
+                nowWearing.WearableData[i] = new AgentIsNowWearingPacket.WearableDataBlock();
+                nowWearing.WearableData[i].WearableType = i;
+                nowWearing.WearableData[i].ItemID = AgentWearablesData[i].ItemID;
             }
 
             Client.Network.SendPacket(nowWearing);
 
-            // Update Appearance Info
+
+            // Update local Appearance Info
             GetAvatarAppearanceInfoFromWearableAssets();
+
+            // Send updated AgentSetAppearance to the grid
             SendAgentSetAppearance();
         }
 

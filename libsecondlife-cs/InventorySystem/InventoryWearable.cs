@@ -11,7 +11,7 @@ namespace libsecondlife.InventorySystem
 	public class InventoryWearable : InventoryItem
 	{
         // Wearable Inventory/Asset constants
-        public enum WearableAssetType { Socks = 7, Eyes = 3, Gloves = 9, Hair = 2, Pants = 5, Shape = 0, Shirt = 4, Shoes = 6, Skin = 1, Jacket = 8, Skirt = 12, Underpants = 11 };
+        public enum WearableAssetType { Shape = 0, Skin = 1, Hair = 2, Eyes = 3, Socks = 7, Gloves = 9, Pants = 5, Shirt = 4, Shoes = 6, Jacket = 8, Skirt = 12, Underpants = 11 };
         public enum WearableType : sbyte { Clothing = 5, Body = 13 };
 
 

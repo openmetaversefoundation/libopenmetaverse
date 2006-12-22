@@ -182,8 +182,8 @@ namespace IA_InventoryManager
                         xml(curCmdLine);
                         break;
 
-                    case "getlook":
-                        getlook();
+                    case "setlook":
+                        setlook();
                         break;
 
                     case "saveav":
@@ -276,6 +276,7 @@ namespace IA_InventoryManager
             }
 
             aManager.WearOutfit(iFolder);
+
         }
 
         private void savewearables(string[] cmdLine)
@@ -424,14 +425,21 @@ namespace IA_InventoryManager
             _Client.Network.SendPacket(p);
         }
 
-        private void getlook()
+        private void setlook()
         {
             if (aManager == null)
             {
                 aManager = new AppearanceManager(_Client);
             }
 
-            aManager.SendAgentSetAppearance();
+            AgentWearablesUpdatePacket.WearableDataBlock[] wdbs = aManager.GetWearables();
+
+            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in wdbs)
+            {
+                Console.WriteLine(wdb.WearableType + " : " + wdb.ItemID);
+            }
+
+            // aManager.SendAgentSetAppearance();
 
         }
 
