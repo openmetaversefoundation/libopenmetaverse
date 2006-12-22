@@ -153,7 +153,6 @@
         <fileset basedir="bin">
           <include name="*.exe" />
           <include name="*.dll" />
-          <include name="message_template.msg" />
 		</fileset>
       </copy>
     </if>
