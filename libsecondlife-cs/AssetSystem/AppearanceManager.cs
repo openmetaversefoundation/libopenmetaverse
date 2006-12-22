@@ -41,11 +41,46 @@ namespace libsecondlife.AssetSystem
             Client.Network.RegisterCallback(libsecondlife.Packets.PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateCallbackHandler));
         }
 
-
-        public void Wear(List<InventoryWearable> wearables)
+        /// <summary>
+        /// Add a single wearable to your outfit, replacing if nessesary.
+        /// </summary>
+        /// <param name="wearable"></param>
+        public void Wear(InventoryWearable wearable)
         {
+            List<InventoryWearable> x = new List<InventoryWearable>();
+            x.Add(wearable);
+            Wear(x);
         }
 
+        /// <summary>
+        /// Add the specified wearables to your outfit, replace existing ones if nessesary.
+        /// </summary>
+        /// <param name="wearables"></param>
+        public void Wear(List<InventoryWearable> wearables)
+        {
+            // Make sure we have some Wearable Data to start with.
+            if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
+            {
+                GetWearables();
+            }
+
+            // Update with specified wearables
+            foreach (InventoryWearable iw in wearables)
+            {
+                byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
+                AgentWearablesData[type].ItemID = iw.ItemID;
+                AgentWearablesData[type].AssetID = iw.AssetID;
+            }
+
+            // Create AgentIsNowWearing Packet, and send it
+            SendAgentIsNowWearing();
+
+            // Update local Appearance Info
+            GetAvatarAppearanceInfoFromWearableAssets();
+
+            // Send updated AgentSetAppearance to the grid
+            SendAgentSetAppearance();
+        }
 
         /// <summary>
         /// Equivalent to the SL "Replace Outfit" command.  All clothing is removed, and replaced with wearables in given folder.  Body wearables will be replaced if provided.
@@ -65,7 +100,7 @@ namespace libsecondlife.AssetSystem
         public void WearOutfit(InventoryFolder outfitFolder, int TimeOut)
         {
             // Refresh download of outfit folder
-            if (!outfitFolder.BeginDownloadContents(false).RequestComplete.WaitOne(TimeOut, false))
+            if (!outfitFolder.RequestDownloadContents(false).RequestComplete.WaitOne(TimeOut, false))
             {
                 Console.WriteLine("An error occured while downloads the folder contents of : " + outfitFolder.Name);
             }
@@ -96,6 +131,20 @@ namespace libsecondlife.AssetSystem
             }
 
             // Create AgentIsNowWearing Packet, and send it
+            SendAgentIsNowWearing();
+
+            // Update local Appearance Info
+            GetAvatarAppearanceInfoFromWearableAssets();
+
+            // Send updated AgentSetAppearance to the grid
+            SendAgentSetAppearance();
+        }
+
+        /// <summary>
+        /// Creates and sends an AgentIsNowWearing packet based on the local cached AgentWearablesData array.
+        /// </summary>
+        private void SendAgentIsNowWearing()
+        {
             AgentIsNowWearingPacket nowWearing = new AgentIsNowWearingPacket();
             nowWearing.AgentData.AgentID = Client.Network.AgentID;
             nowWearing.AgentData.SessionID = Client.Network.SessionID;
@@ -108,13 +157,6 @@ namespace libsecondlife.AssetSystem
             }
 
             Client.Network.SendPacket(nowWearing);
-
-
-            // Update local Appearance Info
-            GetAvatarAppearanceInfoFromWearableAssets();
-
-            // Send updated AgentSetAppearance to the grid
-            SendAgentSetAppearance();
         }
 
         public AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()

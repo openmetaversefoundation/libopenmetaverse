@@ -73,10 +73,11 @@ namespace IA_InventoryManager
 
         private void doStuff()
         {
-            System.Threading.Thread.Sleep(1000);
+            // Setup Appearance Manager
+            aManager = new AppearanceManager(_Client);
 
             // Download directory tree
-            _Client.Inventory.getRootFolder().BeginDownloadContents(true, false);
+            _Client.Inventory.getRootFolder().RequestDownloadContents(true, false);
 
             Console.WriteLine("==================================================================");
             Console.WriteLine("The Inventory Manager program provides a simple shell for working with your Second Life[tm] Avatar.");
@@ -270,10 +271,6 @@ namespace IA_InventoryManager
                 Console.WriteLine("Could not find directory: " + targetDir);
                 return;
             }
-            if (aManager == null)
-            {
-                aManager = new AppearanceManager(_Client);
-            }
 
             aManager.WearOutfit(iFolder);
 
@@ -281,11 +278,6 @@ namespace IA_InventoryManager
 
         private void savewearables(string[] cmdLine)
         {
-            if (aManager == null)
-            {
-                aManager = new AppearanceManager(_Client);
-            }
-
             // Get Wearable Data
             AgentWearablesUpdatePacket.WearableDataBlock[] wdbs = aManager.GetWearables();
             List<AgentWearablesUpdatePacket.WearableDataBlock> WearablesList = new List<AgentWearablesUpdatePacket.WearableDataBlock>();
@@ -352,11 +344,6 @@ namespace IA_InventoryManager
 
         private void saveavatar(string[] cmdLine)
         {
-            if (aManager == null)
-            {
-                aManager = new AppearanceManager(_Client);
-            }
-
             AgentWearablesUpdatePacket.WearableDataBlock[] wdbs = aManager.GetWearables();
             aManager.GetAvatarAppearanceInfoFromWearableAssets();
 
@@ -427,19 +414,7 @@ namespace IA_InventoryManager
 
         private void setlook()
         {
-            if (aManager == null)
-            {
-                aManager = new AppearanceManager(_Client);
-            }
-
-            AgentWearablesUpdatePacket.WearableDataBlock[] wdbs = aManager.GetWearables();
-
-            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in wdbs)
-            {
-                Console.WriteLine(wdb.WearableType + " : " + wdb.ItemID);
-            }
-
-            // aManager.SendAgentSetAppearance();
+            aManager.SendAgentSetAppearance();
 
         }
 
@@ -465,7 +440,7 @@ namespace IA_InventoryManager
 
             InventoryBase itemOfInterest = null;
 
-            iFolder.BeginDownloadContents(false).RequestComplete.WaitOne(15000,false);
+            iFolder.RequestDownloadContents(false).RequestComplete.WaitOne(15000,false);
             foreach (InventoryBase ib in iFolder.GetContents())
             {
                 if (ib is InventoryFolder)
@@ -474,7 +449,7 @@ namespace IA_InventoryManager
                     if (folder.Name.Equals(cmdLine[1]) || folder.FolderID.Equals(uuid))
                     {
                         // Refresh the folder tree for this folder before outputing it.
-                        folder.BeginDownloadContents(true).RequestComplete.WaitOne(30000, false);
+                        folder.RequestDownloadContents(true).RequestComplete.WaitOne(30000, false);
                         itemOfInterest = folder;
                         break;
                     }
@@ -620,7 +595,7 @@ namespace IA_InventoryManager
                 // Asset for an item in inventory
                 InventoryFolder iFolder = _Client.Inventory.getFolder(curDirectory);
 
-                iFolder.BeginDownloadContents(false).RequestComplete.WaitOne(15000, false);
+                iFolder.RequestDownloadContents(false).RequestComplete.WaitOne(15000, false);
                 foreach (InventoryBase ib in iFolder.GetContents())
                 {
                     if (ib is InventoryItem)
@@ -773,7 +748,7 @@ namespace IA_InventoryManager
             }
 
             InventoryFolder iFolder = _Client.Inventory.getFolder(curDirectory);
-            iFolder.BeginDownloadContents(false).RequestComplete.WaitOne(15000, false);
+            iFolder.RequestDownloadContents(false).RequestComplete.WaitOne(15000, false);
             foreach (InventoryBase ib in iFolder.GetContents())
             {
                 if (ib is InventoryFolder)

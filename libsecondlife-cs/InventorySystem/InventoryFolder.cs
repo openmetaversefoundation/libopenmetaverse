@@ -105,7 +105,7 @@ namespace libsecondlife.InventorySystem
         /// </summary>
         /// <param name="Recurse">Indicate if we should recursively download content information.</param>
         /// <returns>The Request object for this download</returns>
-        public DownloadRequest_Folder BeginDownloadContents(bool recurse)
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse)
         {
             _Contents.Clear();
 
@@ -121,7 +121,7 @@ namespace libsecondlife.InventorySystem
         /// <param name="Recurse">Indicate if we should recursively download content information.</param>
         /// <param name="Items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
         /// <returns>The Request object for this download</returns>
-        public DownloadRequest_Folder BeginDownloadContents(bool recurse, bool items)
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool items)
         {
             _Contents.Clear();
 
