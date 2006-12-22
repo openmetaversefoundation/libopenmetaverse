@@ -103,7 +103,7 @@ namespace libsecondlife.InventorySystem
 			} 
 			else 
 			{
-				_Asset.AssetData = assetData;
+				_Asset.SetAssetData(assetData);
 			}
 
 		}

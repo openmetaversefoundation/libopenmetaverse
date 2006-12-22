@@ -78,7 +78,7 @@ namespace libsecondlife.AssetSystem
 
             CurrentPacket = 0;
             resendCount = 0;
-            _NumPackets = asset.AssetData.Length / 1000;
+            _NumPackets = asset._AssetData.Length / 1000;
             if (_NumPackets < 1)
             {
                 _NumPackets = 1;
@@ -120,7 +120,7 @@ namespace libsecondlife.AssetSystem
         {
             Packet packet;
 
-            if (this.MyAsset.AssetData.Length > 1000)
+            if (this.MyAsset._AssetData.Length > 1000)
             {
                 packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(this.MyAsset, this.TransactionID);
             }
@@ -175,7 +175,7 @@ namespace libsecondlife.AssetSystem
                 uint packetNum = CurrentPacket; 
                 if (packetNum == 0)
                 {
-                    if (MyAsset.AssetData.Length <= 1000)
+                    if (MyAsset._AssetData.Length <= 1000)
                         throw new Exception("Should not use xfer for small assets");
                     int dataSize = 1000;
 
@@ -183,24 +183,24 @@ namespace libsecondlife.AssetSystem
 
                     // Prefix the first Xfer packet with the data length
                     // FIXME: Apply endianness patch
-                    Array.Copy(BitConverter.GetBytes((int)MyAsset.AssetData.Length), 0, packetData, 0, 4);
-                    Array.Copy(MyAsset.AssetData, 0, packetData, 4, dataSize);
+                    Array.Copy(BitConverter.GetBytes((int)MyAsset._AssetData.Length), 0, packetData, 0, 4);
+                    Array.Copy(MyAsset._AssetData, 0, packetData, 4, dataSize);
 
                     uploadPacket = AssetPacketHelpers.SendXferPacket(XferID, packetData, packetNum);
                 }
                 else if (packetNum < this.NumPackets)
                 {
                     byte[] packetData = new byte[1000];
-                    Array.Copy(this.MyAsset.AssetData, packetNum * 1000, packetData, 0, 1000);
+                    Array.Copy(this.MyAsset._AssetData, packetNum * 1000, packetData, 0, 1000);
 
                     uploadPacket = AssetPacketHelpers.SendXferPacket(this.XferID, packetData, packetNum);
                 }
                 else
                 {
                     // The last packet has to be handled slightly differently
-                    int lastLen = this.MyAsset.AssetData.Length - (this.NumPackets * 1000);
+                    int lastLen = this.MyAsset._AssetData.Length - (this.NumPackets * 1000);
                     byte[] packetData = new byte[lastLen];
-                    Array.Copy(this.MyAsset.AssetData, this.NumPackets * 1000, packetData, 0, lastLen);
+                    Array.Copy(this.MyAsset._AssetData, this.NumPackets * 1000, packetData, 0, lastLen);
 
                     uint lastPacket = (uint)int.MaxValue + (uint)this.NumPackets + (uint)1;
                     uploadPacket = AssetPacketHelpers.SendXferPacket(this.XferID, packetData, lastPacket);

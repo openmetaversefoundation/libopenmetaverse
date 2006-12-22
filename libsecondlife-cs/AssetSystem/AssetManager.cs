@@ -196,7 +196,7 @@ namespace libsecondlife.AssetSystem
 
             request.Completed.WaitOne();
 
-            asset.AssetData = request.AssetData;
+            asset.SetAssetData(request.AssetData);
             
 		}
 

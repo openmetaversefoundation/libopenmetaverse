@@ -93,9 +93,8 @@ namespace libsecondlife.InventorySystem
             }
             else
             {
-                Asset.AssetData = assetData;
+                _Asset.SetAssetData(assetData);
             }
-
         }
 
         public override string GetDisplayType()

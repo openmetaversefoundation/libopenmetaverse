@@ -34,22 +34,8 @@ namespace libsecondlife.AssetSystem
 	/// <summary>
     /// Asset for wearables such as Socks, Eyes, Gloves, Hair, Pants, Shape, Shirt, Shoes, Skin, Jacket, Skirt, Underpants
 	/// </summary>
-	internal class AssetWearable : Asset
+	public class AssetWearable : Asset
 	{
-		public new byte[] AssetData
-		{
-			get
-			{
-				return base.AssetData;
-			}
-
-            set
-            {
-                base.AssetData = value;
-                UpdateFromAssetData();
-            }
-		}
-
         private string _Name = "";
         public string Name
         {
@@ -57,15 +43,17 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Name = value;
+                UpdateAssetData();
             }
         }
-        private uint _TypeFromAsset = 0;
-        public uint TypeFromAsset
+        private byte _TypeFromAsset = 0;
+        public byte TypeFromAsset
         {
             get { return _TypeFromAsset; }
             set
             {
                 _TypeFromAsset = value;
+                UpdateAssetData();
             }
         }
 
@@ -76,6 +64,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Sale_Type = value;
+                UpdateAssetData();
             }
         }
 
@@ -86,6 +75,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Sale_Price = value;
+                UpdateAssetData();
             }
         }
 
@@ -96,6 +86,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Creator_ID = value;
+                UpdateAssetData();
             }
         }
         private LLUUID _Owner_ID = new LLUUID();
@@ -105,6 +96,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Owner_ID = value;
+                UpdateAssetData();
             }
         }
         private LLUUID _Last_Owner_ID = new LLUUID();
@@ -114,6 +106,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Last_Owner_ID = value;
+                UpdateAssetData();
             }
         }
         private LLUUID _Group_ID = new LLUUID();
@@ -123,6 +116,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Group_ID = value;
+                UpdateAssetData();
             }
         }
 
@@ -133,6 +127,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Permission_Base_Mask = value;
+                UpdateAssetData();
             }
         }
 
@@ -143,6 +138,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Permission_Owner_Mask = value;
+                UpdateAssetData();
             }
         }
 
@@ -153,6 +149,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Permission_Group_Mask = value;
+                UpdateAssetData();
             }
         }
 
@@ -163,6 +160,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Permission_Everyone_Mask = value;
+                UpdateAssetData();
             }
         }
 
@@ -173,6 +171,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Permission_Next_Owner_Mask = value;
+                UpdateAssetData();
             }
         }
 
@@ -183,6 +182,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Parameters = value;
+                UpdateAssetData();
             }
         }
 
@@ -193,6 +193,7 @@ namespace libsecondlife.AssetSystem
             set
             {
                 _Textures = value;
+                UpdateAssetData();
             }
         }
 
@@ -204,6 +205,7 @@ namespace libsecondlife.AssetSystem
         public AssetWearable(LLUUID assetID, sbyte assetType, byte[] assetData)
             : base(assetID, assetType, false, assetData)
 		{
+            UpdateFromAssetData();
 		}
 
         /// <summary>
@@ -213,11 +215,17 @@ namespace libsecondlife.AssetSystem
         /// <returns></returns>
         internal void UpdateFromAssetData()
         {
+            if ( AssetData == null)
+            {
+                return;
+            }
+
             byte state = 0;
             const byte parameters_block = 4;
             const byte textures_block = 6;
 
             Exception Corrupted = new Exception("Corrupted Body Part data");
+
             string whole_enchilada = System.Text.Encoding.ASCII.GetString(AssetData);
 
             //this seperates the whole enchilada into two, the header and the body.
@@ -252,7 +260,7 @@ namespace libsecondlife.AssetSystem
                 {
                     if (block.StartsWith("type "))
                     {
-                        this._TypeFromAsset = uint.Parse(block.Substring(5));
+                        this._TypeFromAsset = byte.Parse(block.Substring(5));
                     }
                     else
                     {
@@ -370,7 +378,7 @@ namespace libsecondlife.AssetSystem
                 data += "\n" + texture.Key + " " + texture.Value.ToStringHyphenated();
             }
 
-            this.AssetData = System.Text.Encoding.ASCII.GetBytes(data.ToCharArray());
+            _AssetData = System.Text.Encoding.ASCII.GetBytes(data.ToCharArray());
         }
 
         private static string intToHex(uint i)
@@ -378,5 +386,13 @@ namespace libsecondlife.AssetSystem
             return string.Format("{0:x8}", i);
         }
 
+        public override void SetAssetData(byte[] data)
+        {
+            _AssetData = data;
+            if ( (_AssetData != null) && (_AssetData.Length > 0) )
+            {
+                UpdateFromAssetData();
+            }
+        }
 	}
 }

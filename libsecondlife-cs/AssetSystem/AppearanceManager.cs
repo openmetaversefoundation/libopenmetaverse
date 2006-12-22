@@ -4,6 +4,7 @@ using System.Threading;
 
 using libsecondlife;
 using libsecondlife.AssetSystem;
+using libsecondlife.InventorySystem;
 using libsecondlife.Packets;
 
 
@@ -40,6 +41,62 @@ namespace libsecondlife.AssetSystem
             Client.Network.RegisterCallback(libsecondlife.Packets.PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateCallbackHandler));
         }
 
+        public void WearOutfit(InventoryFolder outfitFolder)
+        {
+            // Refresh download of outfit folder
+            if (!outfitFolder.BeginDownloadContents(false).RequestComplete.WaitOne(30000, false))
+            {
+                Console.WriteLine("An error occured while downloads the folder contents of : " + outfitFolder.Name);
+            }
+
+            byte NumPieces = 0;
+
+            AgentIsNowWearingPacket nowWearing = new AgentIsNowWearingPacket();
+            nowWearing.AgentData.AgentID = Client.Network.AgentID;
+            nowWearing.AgentData.SessionID = Client.Network.SessionID;
+
+            nowWearing.WearableData = new AgentIsNowWearingPacket.WearableDataBlock[13];
+            for (byte i = 0; i <= 12; i++)
+            {
+                nowWearing.WearableData[i] = new AgentIsNowWearingPacket.WearableDataBlock();
+                nowWearing.WearableData[i].WearableType = i;
+                nowWearing.WearableData[i].ItemID = LLUUID.Zero;
+            }
+
+            outfitFolder.BeginDownloadContents(false).RequestComplete.WaitOne(3000, false);
+            foreach (InventoryBase ib in outfitFolder.GetContents())
+            {
+                if (ib is InventoryWearable)
+                {
+                    InventoryWearable iw = (InventoryWearable)ib;
+                    byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
+                    nowWearing.WearableData[type].ItemID = iw.ItemID;
+                    NumPieces++;
+                }
+            }
+
+            // Flush the cached agent wearables so we can redefine them
+            AgentWearablesData = new AgentWearablesUpdatePacket.WearableDataBlock[NumPieces];
+            byte WearableDataEntry = 0;
+
+            for (byte i = 0; i <= 12; i++)
+            {
+                if (nowWearing.WearableData[i].ItemID != LLUUID.Zero)
+                {
+                    AgentWearablesData[WearableDataEntry] = new AgentWearablesUpdatePacket.WearableDataBlock();
+                    nowWearing.WearableData[WearableDataEntry].WearableType = nowWearing.WearableData[i].WearableType;
+                    nowWearing.WearableData[WearableDataEntry].ItemID = nowWearing.WearableData[i].ItemID;
+                    WearableDataEntry++;
+                }
+            }
+
+            Client.Network.SendPacket(nowWearing);
+
+            // Update Appearance Info
+            GetAvatarAppearanceInfoFromWearableAssets();
+            SendAgentSetAppearance();
+        }
+
         public AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()
         {
             AgentWearablesSignal = new ManualResetEvent(false);
@@ -56,7 +113,8 @@ namespace libsecondlife.AssetSystem
 
         public void GetAvatarAppearanceInfoFromWearableAssets()
         {
-            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in GetWearables())
+            AgentWearablesUpdatePacket.WearableDataBlock[] wdbs = GetWearables();
+            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in wdbs)
             {
                 if (wdb.ItemID == LLUUID.Zero)
                 {
@@ -80,11 +138,10 @@ namespace libsecondlife.AssetSystem
                 }
 
                 
-
                 AManager.GetInventoryAsset(wearableAsset);
-                if (wearableAsset.AssetData.Length == 0)
+                if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
                 {
-                    Client.Log("Retrieval failed", Helpers.LogLevel.Warning);
+                    Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
                 }
 
                 try
@@ -186,6 +243,7 @@ namespace libsecondlife.AssetSystem
                 packetVal = (byte)(percentage * (byte)255);
 
                 VisualParams[packetIdx] = packetVal;
+
             }
 
             return VisualParams;
@@ -193,9 +251,16 @@ namespace libsecondlife.AssetSystem
 
         private LLVector3 GetAgentSizeFromVisualParams(Dictionary<uint, byte> VisualParams)
         {
-            float AV_Height_Range = 2.025506f - 1.50856f;
-            float AV_Height = 1.50856f + (((float)VisualParams[25] / 255.0f) * AV_Height_Range);
-            return new LLVector3(0.45f, 0.6f, AV_Height);
+            if (VisualParams.ContainsKey(25))
+            {
+                float AV_Height_Range = 2.025506f - 1.50856f;
+                float AV_Height = 1.50856f + (((float)VisualParams[25] / 255.0f) * AV_Height_Range);
+                return new LLVector3(0.45f, 0.6f, AV_Height);
+            }
+            else
+            {
+                return new LLVector3(0.45f, 0.6f, 1.0f);
+            }
         }
 
         public void SendAgentSetAppearance()

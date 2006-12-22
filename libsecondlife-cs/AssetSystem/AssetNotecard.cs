@@ -64,7 +64,7 @@ namespace libsecondlife.AssetSystem
         public AssetNotecard(LLUUID assetID, byte[] assetData)
             : base(assetID, Asset.ASSET_TYPE_NOTECARD, false, null)
 		{
-			base.AssetData = assetData;
+			_AssetData = assetData;
 
 			string temp	= System.Text.Encoding.UTF8.GetString(assetData).Trim();
 
@@ -108,7 +108,7 @@ namespace libsecondlife.AssetSystem
 			byte[] assetData = new byte[stringBytes.Length + 1];
 			Array.Copy(stringBytes, 0, assetData, 0, stringBytes.Length);
 
-			base.AssetData = assetData;
+			SetAssetData( assetData );
 		}
 	}
 }

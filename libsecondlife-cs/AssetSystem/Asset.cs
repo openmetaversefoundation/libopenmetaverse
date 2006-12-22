@@ -46,15 +46,14 @@ namespace libsecondlife.AssetSystem
 		public bool Tempfile;
 
 
-		private byte[] assetdata;
-		public byte[] AssetData
-		{
-			get { return assetdata; }
-			set
-			{
-				assetdata = value;
-			}
-		}
+		internal byte[] _AssetData;
+        public byte[] AssetData
+        {
+            get
+            {
+                return _AssetData;
+            }
+        }
 
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace libsecondlife.AssetSystem
 			AssetID		= assetID;
 			Type		= (sbyte)type;
 			Tempfile	= tempfile;
-			AssetData	= assetData;
+			_AssetData	= assetData;
 		}
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace libsecondlife.AssetSystem
 			AssetID		= assetID;
 			Type		= (sbyte)type;
 			Tempfile	= false;
-			AssetData	= assetData;
+			_AssetData	= assetData;
 		}
 
         /// <summary>
@@ -89,7 +88,12 @@ namespace libsecondlife.AssetSystem
         /// </summary>
 		public string AssetDataToString()
 		{
-            return Helpers.FieldToString((byte[])AssetData);
+            return Helpers.FieldToString((byte[])_AssetData);
 		}
+
+        public virtual void SetAssetData(byte[] data)
+        {
+            _AssetData = data;
+        }
 	}
 }

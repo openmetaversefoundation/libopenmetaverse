@@ -91,7 +91,7 @@ namespace libsecondlife.InventorySystem
 			} 
 			else 
 			{
-				Asset.AssetData = assetData;
+				Asset.SetAssetData(assetData);
 			}
 
 		}

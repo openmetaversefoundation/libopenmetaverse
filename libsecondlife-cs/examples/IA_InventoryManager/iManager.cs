@@ -198,6 +198,10 @@ namespace IA_InventoryManager
                         loadwearables(curCmdLine);
                         break;
 
+                    case "outfit":
+                        outfit(curCmdLine);
+                        break;
+
                     default:
                         Console.WriteLine("Unknown command '" + curCmdLine[0] + "'.");
                         Console.WriteLine("Type HELP for a list of available commands.");
@@ -231,6 +235,47 @@ namespace IA_InventoryManager
             Console.WriteLine("SAVEW       - Serialize your current wearables.");
             Console.WriteLine("LOADW       - Load a previously serialized wearables.");
             Console.WriteLine("QUIT        - Exit the Inventory Manager.");
+        }
+
+        private void outfit(string[] cmdLine)
+        {
+            if (cmdLine.Length < 2 )
+            {
+                Console.WriteLine("Usage: outfit [folder]");
+                return;
+            }
+
+            // Resolve outfit folder
+            string targetDir = "";
+
+            if (cmdLine[1].StartsWith("/"))
+            {
+                targetDir += combineCmdArg(cmdLine);
+            }
+            else
+            {
+                if (!curDirectory.Equals("/"))
+                {
+                    targetDir = curDirectory + "/";
+
+                }
+
+                targetDir += combineCmdArg(cmdLine);
+            }
+
+            InventoryFolder iFolder = _Client.Inventory.getFolder(targetDir);
+
+            if (iFolder == null)
+            {
+                Console.WriteLine("Could not find directory: " + targetDir);
+                return;
+            }
+            if (aManager == null)
+            {
+                aManager = new AppearanceManager(_Client);
+            }
+
+            aManager.WearOutfit(iFolder);
         }
 
         private void savewearables(string[] cmdLine)
@@ -385,7 +430,6 @@ namespace IA_InventoryManager
             {
                 aManager = new AppearanceManager(_Client);
             }
-
 
             aManager.SendAgentSetAppearance();
 
@@ -550,11 +594,18 @@ namespace IA_InventoryManager
             if (cmdLine.Length == 3)
             {
                 // Arbitrary Asset
-                Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
+                try
+                {
+                    Asset asset = new Asset(cmdLine[2], sbyte.Parse(cmdLine[1]), null);
 
-                _Client.Assets.GetInventoryAsset(asset);
+                    _Client.Assets.GetInventoryAsset(asset);
 
-                Console.WriteLine(asset.AssetDataToString());
+                    Console.WriteLine(asset.AssetDataToString());
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Unable to find an asset with a UUID of: " + cmdLine[2]);
+                }
             }
             else
             {

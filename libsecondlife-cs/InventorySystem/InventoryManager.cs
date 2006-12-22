@@ -411,21 +411,14 @@ namespace libsecondlife.InventorySystem
                     slClient.Log("Time-out while waiting for packets (" +
                         ((curTick - LastPacketRecievedAtTick) / 1000) + " seconds since last packet)",
                         Helpers.LogLevel.Warning);
-                    //Console.WriteLine("Current Status:");
 
                     // have to make a seperate list otherwise we run into modifying the original array
                     // while still enumerating it.
                     List<DownloadRequest_Folder> alRestartList = new List<DownloadRequest_Folder>();
 
-                    //if (FolderDownloadStatus[0] != null)
-                    //{
-                    //    Console.WriteLine(FolderDownloadStatus[0].GetType());
-                    //}
 
                     foreach (DownloadRequest_Folder dr in FolderDownloadStatus.Values)
                     {
-                        //Console.WriteLine(dr.FolderID + " " + dr.Expected + " / " + dr.Received + " / " + dr.LastReceivedAtTick);
-
                         alRestartList.Add(dr);
                     }
 
@@ -650,7 +643,6 @@ namespace libsecondlife.InventorySystem
                 else
                 {
                     FolderDownloadStatus[uuidFolderID] = dr;
-                    //					Console.WriteLine( uuidFolderID + " is expecting " + (iDescendentsExpected - iStatus[1]) + " more packets." );
                 }
             }
         }

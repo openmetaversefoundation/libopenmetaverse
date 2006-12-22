@@ -130,7 +130,6 @@ namespace libsecondlife.InventorySystem
                 {
                     if ((AssetID != null) && (AssetID != LLUUID.Zero))
                     {
-                        Console.WriteLine("Asset not downloaded yet, requesting...");
                         base.iManager.AssetManager.GetInventoryAsset(this);
                         return Asset;
                     }
@@ -446,7 +445,7 @@ namespace libsecondlife.InventorySystem
             }
             else
             {
-                _Asset.AssetData = assetData;
+                _Asset.SetAssetData(assetData);
             }
         }
 

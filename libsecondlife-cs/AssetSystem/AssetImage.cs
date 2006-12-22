@@ -39,7 +39,7 @@ namespace libsecondlife.AssetSystem
 		{
 			get
 			{
-				return base.AssetData;
+				return AssetData;
 			}
 		}
 
