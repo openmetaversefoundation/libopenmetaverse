@@ -23,7 +23,6 @@
 
   <!-- build sets -->
   <fileset id="apps">
-    <include name="applications/TestBot/*.build" />
     <include name="applications/Decoder/*.build" />
     <include name="applications/SLIRC/*.build" />
     <include name="SLProxy/*.build" />
