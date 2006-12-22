@@ -3,7 +3,8 @@
  *   See the README for usage instructions.
  *
  * Copyright (c) 2006 Austin Jennings
- * Modified by "qode" and "mcortez" on December 21st, 2006 to work with the new pregen 
+ * Modified by "qode" and "mcortez" on December 21st, 2006 to work with the new
+ * pregen
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
