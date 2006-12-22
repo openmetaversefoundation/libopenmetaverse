@@ -77,7 +77,7 @@ namespace libsecondlife
         private Dictionary<LLUUID, AvatarPropertiesCallback> AvatarPropertiesCallbacks;
 	    private Dictionary<LLUUID, AvatarStatisticsCallback> AvatarStatisticsCallbacks;
         private Dictionary<LLUUID, AvatarInterestsCallback> AvatarInterestsCallbacks;
-
+        private Dictionary<LLUUID, ManualResetEvent> ManualResetEvents;
         /// <summary>
         /// Represents other avatars
         /// </summary>
@@ -90,6 +90,8 @@ namespace libsecondlife
             AvatarPropertiesCallbacks = new Dictionary<LLUUID, AvatarPropertiesCallback>();
 	        AvatarStatisticsCallbacks = new Dictionary<LLUUID, AvatarStatisticsCallback>();
             AvatarInterestsCallbacks = new Dictionary<LLUUID, AvatarInterestsCallback>();
+            //ManualResetEvent Dictionary
+            ManualResetEvents = new Dictionary<LLUUID, ManualResetEvent>();
             // Friend notification callback
             NetworkManager.PacketCallback callback = new NetworkManager.PacketCallback(FriendNotificationHandler);
             Client.Network.RegisterCallback(PacketType.OnlineNotification, callback);
@@ -180,6 +182,33 @@ namespace libsecondlife
 
             return name;
         }
+        /// <summary>
+        /// Get an avatar's name, either from the cache or request it.
+        /// This function does block.
+        /// </summary>
+        /// <param name="key">Key to look up</param>
+        /// <returns></returns>
+        public string GetAvatarName(LLUUID key)
+        {    
+            //Short circuit the cache lookup in GetAvatarNames
+            string name = LocalAvatarNameLookup(key);
+            if (name != "") return name;
+
+            //Add to the dictionary
+            ManualResetEvents.Add(key, new ManualResetEvent(false));
+
+            //Call function
+            BeginGetAvatarName(key, null);
+            
+            //Start the blocking
+            ManualResetEvents[key].WaitOne();
+            
+            //Clean up
+            ManualResetEvents[key] = null;
+
+            //Return
+            return Avatars[key].Name;
+        }
 
         /// <summary>
         /// 
@@ -191,7 +220,6 @@ namespace libsecondlife
 
             List<LLUUID> ids = new List<LLUUID>();
             ids.Add(id);
-
             BeginGetAvatarNames(ids, anc);
         }
 
@@ -215,6 +243,12 @@ namespace libsecondlife
                 if (Avatars.ContainsKey(id))
                 {
                     havenames[id] = Avatars[id].Name;
+                    //Short circuit the lookup process
+                    if (ManualResetEvents.ContainsKey(id))
+                    {
+                        ManualResetEvents[id].Set();
+                        return;
+                    }
                 }
                 else
                 {
@@ -225,6 +259,7 @@ namespace libsecondlife
             if (havenames.Count > 0 && OnAgentNames != null)
             {
                 OnAgentNames(havenames);
+
             }
 
             if (neednames.Count > 0)
@@ -252,7 +287,7 @@ namespace libsecondlife
         {
             Dictionary<LLUUID, string> names = new Dictionary<LLUUID, string>();
             UUIDNameReplyPacket reply = (UUIDNameReplyPacket)packet;
-
+            
             lock (Avatars)
             {
                 foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
@@ -267,6 +302,11 @@ namespace libsecondlife
                         " " + Helpers.FieldToString(block.LastName);
 
                     names[block.ID] = Avatars[block.ID].Name;
+                    if (ManualResetEvents.ContainsKey(block.ID))
+                    {
+                        //Stop Blocking
+                        ManualResetEvents[block.ID].Set();
+                    }
                 }
             }
 
