@@ -10,6 +10,10 @@ namespace libsecondlife.TestClient
 {
     public class TestClient : SecondLife
     {
+        public delegate void PrimCreatedCallback(Simulator simulator, PrimObject prim);
+
+        public event PrimCreatedCallback OnPrimCreated;
+
         public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims;
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
@@ -18,11 +22,8 @@ namespace libsecondlife.TestClient
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
         public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
         public bool Running = true;
-	    public string Master = "";
+	    public string Master = String.Empty;
 		public ClientManager ClientManager;
-
-        public delegate void PrimCreatedCallback(Simulator simulator, PrimObject prim);
-        public event PrimCreatedCallback OnPrimCreated;
 
         private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
@@ -30,7 +31,6 @@ namespace libsecondlife.TestClient
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private int DrawDistance = 64;
         private System.Timers.Timer updateTimer;
-
 
         /// <summary>
         /// 

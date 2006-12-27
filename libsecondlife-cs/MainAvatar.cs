@@ -384,6 +384,7 @@ namespace libsecondlife
             apup.AgentData.SessionID = Client.Network.SessionID;
 
             apup.PropertiesData = new AvatarPropertiesUpdatePacket.PropertiesDataBlock();
+            apup.PropertiesData.AboutText = Helpers.StringToField(this.ProfileProperties.AboutText);
             apup.PropertiesData.AllowPublish = this.ProfileProperties.AllowPublish;
             apup.PropertiesData.FLAboutText = Helpers.StringToField(this.ProfileProperties.FirstLifeText);
             apup.PropertiesData.FLImageID = this.ProfileProperties.FirstLifeImage;

@@ -37,8 +37,10 @@
     <Compile Include="Command.cs" />
     <Compile Include="Commands\AppearanceCommand.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
+    <Compile Include="Commands\CloneProfileCommand.cs" />
     <Compile Include="Commands\EchoMasterCommand.cs" />
     <Compile Include="Commands\ExportOutfitCommand.cs" />
+    <Compile Include="Commands\FindSimCommand.cs" />
     <Compile Include="Commands\FollowCommand.cs">
       <SubType>Code</SubType>
     </Compile>
