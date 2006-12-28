@@ -1,0 +1,25 @@
+<Combine name="libsecondlife" fileversion="2.0" outputpath="./build/bin/" MakePkgConfig="False" MakeLibPC="False">
+  <Configurations active="Debug">
+    <Configuration name="Debug" ctype="CombineConfiguration">
+      <Entry build="True" name="libsecondlife" configuration="Debug" />
+      <Entry build="True" name="libsecondlife.Tests" configuration="Debug" />
+      <Entry build="True" name="libsecondlife.Utilities" configuration="Debug" />
+    </Configuration>
+    <Configuration name="Release" ctype="CombineConfiguration">
+      <Entry build="True" name="libsecondlife" configuration="Release" />
+      <Entry build="True" name="libsecondlife.Tests" configuration="Release" />
+      <Entry build="True" name="libsecondlife.Utilities" configuration="Release" />
+    </Configuration>
+  </Configurations>
+  <DeployTargets />
+  <StartMode startupentry="libsecondlife" single="True">
+    <Execute type="None" entry="libsecondlife" />
+    <Execute type="None" entry="libsecondlife.Tests" />
+    <Execute type="None" entry="libsecondlife.Utilities" />
+  </StartMode>
+  <Entries>
+    <Entry filename="./libsecondlife.mdp" />
+    <Entry filename="./libsecondlife.Tests/libsecondlife.Tests.mdp" />
+    <Entry filename="./libsecondlife.Utilities/libsecondlife.Utilities.mdp" />
+  </Entries>
+</Combine>
