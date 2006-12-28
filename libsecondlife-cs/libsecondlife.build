@@ -85,7 +85,6 @@
 					<attribute type="AssemblyTitleAttribute" value="libsecondlife" />
 					<attribute type="AssemblyDescriptionAttribute" value="Networking layer for Second Life" />
 					<attribute type="AssemblyCopyrightAttribute" value="Copyright © libsecondlife 2006" />
-					<attribute type="ApplicationNameAttribute" value="libsecondlife" />
 				</attributes>
 			</asminfo>
 		</if>
