@@ -75,20 +75,16 @@
 				<imports>
 					<import name="System" />
 					<import name="System.Reflection" />
-					<import name="System.EnterpriseServices" />
 					<import name="System.Runtime.InteropServices" />
 				</imports>
 				<attributes>
 					<attribute type="ComVisibleAttribute" value="false" />
-					<attribute type="CLSCompliantAttribute" value="true" />
+					<attribute type="CLSCompliantAttribute" value="false" />
 					<attribute type="AssemblyVersionAttribute" value="${CCNetLabel}" />
 					<attribute type="AssemblyTitleAttribute" value="libsecondlife" />
 					<attribute type="AssemblyDescriptionAttribute" value="Networking layer for Second Life" />
 					<attribute type="AssemblyCopyrightAttribute" value="Copyright © libsecondlife 2006" />
 				</attributes>
-				<references>
-					<include name="System.EnterpriseServices.dll" />
-				</references>
 			</asminfo>
 		</if>
 
