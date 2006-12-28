@@ -70,7 +70,6 @@ public class Analyst
         proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
 
         // add a delegate for outgoing chat
-        proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Incoming, new PacketDelegate(ChatFromViewerIn));
         proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
 
         //  handle command line arguments
@@ -110,17 +109,6 @@ public class Analyst
         }
     }
 
-    // ChatFromViewerIn: incoming ChatFromViewer delegate; shouldn't be possible, but just in case...
-    private static Packet ChatFromViewerIn(Packet packet, IPEndPoint sim)
-    {
-        if (loggedPackets.Contains(PacketType.ChatFromViewer) || modifiedPackets.Contains(PacketType.ChatFromViewer))
-            // user has asked to log or modify this packet
-            return Analyze(packet, sim, Direction.Incoming);
-        else
-            // return the packet unmodified
-            return packet;
-    }
-
     // ChatFromViewerOut: outgoing ChatFromViewer delegate; check for Analyst commands
     private static Packet ChatFromViewerOut(Packet packet, IPEndPoint sim)
     {
@@ -138,13 +126,8 @@ public class Analyst
                 return null;
             }
         }
-
-        if (loggedPackets.Contains(PacketType.ChatFromViewer) || modifiedPackets.Contains(PacketType.ChatFromViewer))
-            // user has asked to log or modify this packet
-            return Analyze(packet, sim, Direction.Outgoing);
-        else
-            // return the packet unmodified
-            return packet;
+	
+	return packet;
     }
 
     // CommandDelegate: specifies a callback delegate for a /command
@@ -193,11 +176,8 @@ public class Analyst
                 return;
             }
             loggedPackets[pType] = null;
-            if (words[1] != "ChatFromViewer")
-            {
-                proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
-                proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
-            }
+            proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
+            proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(LogPacketOut));
             SayToUser("logging " + words[1]);
         }
     }
@@ -217,15 +197,8 @@ public class Analyst
             PacketType pType = packetTypeFromName(words[1]);
             loggedPackets.Remove(pType);
 
-            if (!modifiedPackets.Contains(words[1]))
-            {
-                if (words[1] != "ChatFromViewer")
-                {
-                    proxy.RemoveDelegate(pType, Direction.Incoming);
-                    proxy.RemoveDelegate(pType, Direction.Outgoing);
-                }
-            }
-
+	    proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
+            proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(LogPacketOut));
             SayToUser("stopped logging " + words[1]);
         }
     }
@@ -284,11 +257,8 @@ public class Analyst
             fields[new BlockField(words[2], words[3])] = value;
             modifiedPackets[pType] = fields;
 
-            if (words[1] != "ChatFromViewer")
-            {
-                proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
-                proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
-            }
+            proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
+            proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
 
             SayToUser("setting " + words[1] + "." + words[2] + "." + words[3] + " = " + valueString);
         }
@@ -300,10 +270,9 @@ public class Analyst
         if (words.Length == 2 && words[1] == "*")
         {
             foreach (PacketType pType in modifiedPackets.Keys)
-                if (!loggedPackets.Contains(pType) && pType != PacketType.ChatFromViewer)
                 {
-                    proxy.RemoveDelegate(pType, Direction.Incoming);
-                    proxy.RemoveDelegate(pType, Direction.Outgoing);
+                    proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
+                    proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
                 }
             modifiedPackets = new Hashtable();
 
@@ -332,14 +301,8 @@ public class Analyst
                 {
                     modifiedPackets.Remove(pType);
 
-                    if (!loggedPackets.Contains(pType))
-                    {
-                        if (words[1] != "ChatFromViewer")
-                        {
-                            proxy.RemoveDelegate(pType, Direction.Incoming);
-                            proxy.RemoveDelegate(pType, Direction.Outgoing);
-                        }
-                    }
+                    proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
+                    proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
                 }
             }
 
@@ -410,21 +373,36 @@ public class Analyst
                         ConstructorInfo ctr = packetClass.GetConstructor(new Type[] { });
                         if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + name + "Packet");
                         packet = (Packet)ctr.Invoke(new object[] { });
-                        Console.WriteLine("Created new " + name + "Packet");
+                        //Console.WriteLine("Created new " + name + "Packet");
                     }
                     else
                     {
                         match = (new Regex(@"^\s*\[(\w+)\]\s*$")).Match(line);
                         if (match.Success)
                         {
-                            //FIXME: support variable blocks
-
                             block = match.Groups[1].Captures[0].ToString();
                             FieldInfo blockField = packetClass.GetField(block);
                             if (blockField == null) throw new Exception("Couldn't get " + name + "Packet." + block);
-                            blockObj = blockField.GetValue(packet);
+			    Type blockClass = blockField.FieldType;
+			    if (blockClass.IsArray)
+			    {
+				blockClass = blockClass.GetElementType();
+				ConstructorInfo ctr = blockClass.GetConstructor(new Type[] { });
+				if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + blockClass.Name);
+				blockObj = ctr.Invoke(new object[] { });
+				object[] arr = (object[])blockField.GetValue(packet);
+				object[] narr = (object[])Array.CreateInstance(blockClass, arr.Length + 1);
+				Array.Copy(arr,narr,arr.Length);
+				narr[arr.Length] = blockObj;
+				blockField.SetValue(packet,narr);
+				//Console.WriteLine("Added block "+block);
+			    } 
+			    else
+			    {
+				blockObj = blockField.GetValue(packet);
+			    }
                             if (blockObj == null) throw new Exception("Got " + name + "Packet." + block + " == null");
-                            Console.WriteLine("Got block " + name + "Packet." + block);
+                            //Console.WriteLine("Got block " + name + "Packet." + block);
 
                             continue;
                         }
@@ -543,20 +521,12 @@ public class Analyst
     {
         Type packetClass = libslAssembly.GetType("libsecondlife.Packets." + name + "Packet");
         if (packetClass == null) throw new Exception("Couldn't get class " + name + "Packet");
-        /*		try {
-                    packetMap = protocolManager.Command(name);
-                } catch {
-                    throw new Exception("unkown packet " + name);
-                } */
-
-
-        //FIXME: support variable blocks
 
         FieldInfo blockField = packetClass.GetField(block);
         if (blockField == null) throw new Exception("Couldn't get " + name + "Packet." + block);
         Type blockClass = blockField.FieldType;
         if (blockClass.IsArray) blockClass = blockClass.GetElementType();
-        Console.WriteLine("DEBUG: " + blockClass.Name);
+        // Console.WriteLine("DEBUG: " + blockClass.Name);
 
         FieldInfo fieldField = blockClass.GetField(field); PropertyInfo fieldProp = null;
         Type fieldClass = null;
@@ -719,20 +689,20 @@ public class Analyst
                 throw new Exception("unknown block " + name + "." + block); */
     }
 
-    // AnalyzeIn: analyze an incoming packet
-    private static Packet AnalyzeIn(Packet packet, IPEndPoint endPoint)
+    // ModifyIn: modify an incoming packet
+    private static Packet ModifyIn(Packet packet, IPEndPoint endPoint)
     {
-        return Analyze(packet, endPoint, Direction.Incoming);
+        return Modify(packet, endPoint, Direction.Incoming);
     }
 
-    // AnalyzeOut: analyze an outgoing packet
-    private static Packet AnalyzeOut(Packet packet, IPEndPoint endPoint)
+    // ModifyOut: modify an outgoing packet
+    private static Packet ModifyOut(Packet packet, IPEndPoint endPoint)
     {
-        return Analyze(packet, endPoint, Direction.Outgoing);
+        return Modify(packet, endPoint, Direction.Outgoing);
     }
 
-    // Analyze: modify and/or log a packet
-    private static Packet Analyze(Packet packet, IPEndPoint endPoint, Direction direction)
+    // Modify: modify a packet
+    private static Packet Modify(Packet packet, IPEndPoint endPoint, Direction direction)
     {
         if (modifiedPackets.Contains(packet.Type))
         {
@@ -758,9 +728,20 @@ public class Analyst
             }
         }
 
-        if (loggedPackets.Contains(packet.Type))
-            LogPacket(packet, endPoint, direction);
+        return packet;
+    }
 
+    // LogPacketIn: log an incoming packet
+    private static Packet LogPacketIn(Packet packet, IPEndPoint endPoint)
+    {
+	LogPacket(packet, endPoint, Direction.Incoming);
+        return packet;
+    }
+
+    // LogPacketOut: log an outgoing packet
+    private static Packet LogPacketOut(Packet packet, IPEndPoint endPoint)
+    {
+	LogPacket(packet, endPoint, Direction.Outgoing);
         return packet;
     }
 
@@ -788,11 +769,8 @@ public class Analyst
 
                 loggedPackets[pType] = null;
 
-                if (pType != PacketType.ChatFromViewer)
-                {
-                    proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(AnalyzeIn));
-                    proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(AnalyzeOut));
-                }
+                proxy.AddDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
+                proxy.AddDelegate(pType, Direction.Outgoing, new PacketDelegate(LogPacketOut));
             }
         }
     }
@@ -821,11 +799,8 @@ public class Analyst
 
                 loggedPackets.Remove(pType);
 
-                if (pType != PacketType.ChatFromViewer)
-                {
-                    proxy.RemoveDelegate(pType, Direction.Incoming);
-                    proxy.RemoveDelegate(pType, Direction.Outgoing);
-                }
+                proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
+                proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(LogPacketOut));
             }
         }
     }

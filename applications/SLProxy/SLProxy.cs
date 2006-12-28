@@ -208,13 +208,38 @@ namespace SLProxy {
 
 		// AddDelegate: add callback packetDelegate for packets of type packetName going direction
 		public void AddDelegate(PacketType packetType, Direction direction, PacketDelegate packetDelegate) { lock(this) {
-			(direction == Direction.Incoming ? incomingDelegates : outgoingDelegates)[packetType] = packetDelegate;
+			Dictionary<PacketType, List<PacketDelegate>> delegates = (direction == Direction.Incoming ? incomingDelegates : outgoingDelegates);
+			if (!delegates.ContainsKey(packetType)) {
+				delegates[packetType] = new List<PacketDelegate>();
+			}
+			List<PacketDelegate> delegateArray = delegates[packetType];
+			if(!delegateArray.Contains(packetDelegate)) {
+				delegateArray.Add(packetDelegate);
+			}
 		}}
 
 		// RemoveDelegate: remove callback for packets of type packetName going direction
-		public void RemoveDelegate(PacketType packetType, Direction direction) { lock(this) {
-			(direction == Direction.Incoming ? incomingDelegates : outgoingDelegates).Remove(packetType);
+		public void RemoveDelegate(PacketType packetType, Direction direction, PacketDelegate packetDelegate) { lock(this) {
+			Dictionary<PacketType, List<PacketDelegate>> delegates = (direction == Direction.Incoming ? incomingDelegates : outgoingDelegates);
+			if (!delegates.ContainsKey(packetType)) {
+				return;
+			}
+			List<PacketDelegate> delegateArray = delegates[packetType];
+			if(delegateArray.Contains(packetDelegate)) {
+				delegateArray.Remove(packetDelegate);
+			}
 		}}
+
+		private Packet callDelegates(Dictionary<PacketType, List<PacketDelegate>> delegates, Packet packet, IPEndPoint remoteEndPoint) {
+			PacketType origType = packet.Type;
+			foreach (PacketDelegate del in delegates[origType]) {
+				packet = del(packet, remoteEndPoint);
+
+				// FIXME: how should we handle the packet type changing?
+				if(packet == null || packet.Type != origType) break;
+			}
+			return packet;
+		}
 
 		// InjectPacket: send packet to the client or server when direction is Incoming or Outgoing, respectively
 		public void InjectPacket(Packet packet, Direction direction) { lock(this) {
@@ -376,8 +401,8 @@ namespace SLProxy {
 		private Hashtable proxyHandlers = new Hashtable();
 		private XmlRpcRequestDelegate loginRequestDelegate = null;
 		private XmlRpcResponseDelegate loginResponseDelegate = null;
-		private Hashtable incomingDelegates = new Hashtable();
-		private Hashtable outgoingDelegates = new Hashtable();
+		private Dictionary<PacketType, List<PacketDelegate>> incomingDelegates = new Dictionary<PacketType, List<PacketDelegate>>();
+		private Dictionary<PacketType, List<PacketDelegate>> outgoingDelegates = new Dictionary<PacketType, List<PacketDelegate>>();
 		private ArrayList queuedIncomingInjections = new ArrayList();
 		private ArrayList queuedOutgoingInjections = new ArrayList();
 
@@ -452,7 +477,7 @@ namespace SLProxy {
 				}
 
 				// pass the packet to any callback delegates
-				if (incomingDelegates.Contains(packet.Type)) {
+				if (incomingDelegates.ContainsKey(packet.Type)) {
 					/* if (needsZero) {
 						length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
 						packet.Header.Data = zeroBuffer;
@@ -466,7 +491,7 @@ namespace SLProxy {
 					}
 
 					try {
-						Packet newPacket = ((PacketDelegate)incomingDelegates[packet.Type])(packet, (IPEndPoint)remoteEndPoint);
+						Packet newPacket = callDelegates(incomingDelegates, packet, (IPEndPoint)remoteEndPoint);
 						if (newPacket == null) {
 							if ((packet.Header.Flags & Helpers.MSG_RELIABLE) != 0)
 								simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
@@ -766,7 +791,7 @@ namespace SLProxy {
 				}
 
 				// pass the packet to any callback delegates
-				if (proxy.outgoingDelegates.Contains(packet.Type)) {
+				if (proxy.outgoingDelegates.ContainsKey(packet.Type)) {
 					/* if (packet.Header.Zerocoded) {
 						length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
 						packet.Header.Data = zeroBuffer;
@@ -780,7 +805,7 @@ namespace SLProxy {
 					}
 
 					try {
-						Packet newPacket = ((PacketDelegate)proxy.outgoingDelegates[packet.Type])(packet, remoteEndPoint);
+						Packet newPacket = proxy.callDelegates(proxy.outgoingDelegates, packet, remoteEndPoint);
 						if (newPacket == null) {
 							if ((packet.Header.Flags & Helpers.MSG_RELIABLE) != 0)
 								Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
@@ -952,10 +977,8 @@ namespace SLProxy {
 #endif
 					}
 					if (ackCount == 0) {
-						byte[] newData = new byte[length -= 1];
-						Array.Copy(packet.Header.Data, 0, newData, 0, length);
-						newData[0] ^= Helpers.MSG_APPENDED_ACKS;
-						packet.Header.Data = newData;
+						packet.Header.Flags ^= Helpers.MSG_APPENDED_ACKS;
+						packet.Header.AckList = new uint[0];
 					}
 				}
 
