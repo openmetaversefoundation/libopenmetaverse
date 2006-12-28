@@ -86,6 +86,9 @@
 					<attribute type="AssemblyDescriptionAttribute" value="Networking layer for Second Life" />
 					<attribute type="AssemblyCopyrightAttribute" value="Copyright © libsecondlife 2006" />
 				</attributes>
+				<references>
+					<include name="System.EnterpriseServices.dll" />
+				</references>
 			</asminfo>
 		</if>
 
