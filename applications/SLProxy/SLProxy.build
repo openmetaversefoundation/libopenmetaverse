@@ -8,7 +8,7 @@
 
   <!-- global project settings -->
   <xmlpeek
-    file="../libsecondlife.build"
+    file="../../libsecondlife.build"
     xpath="/project/property[@name = 'project.version']/@value"
     property="project.version" />
   <property name="build.number"
@@ -107,12 +107,6 @@
       </references>
     </csc>
   </target>
-
-  <!-- <target name="build-libsl-dll" description="Builds libsecondlife dll">
-    <nant
-      buildfile="../../libsecondlife-cs/libsecondlife.build"
-      target="${project.config} build"/>
-  </target> -->
 
   <target name="clean" depends="init"
     description="Deletes the current configuration">
