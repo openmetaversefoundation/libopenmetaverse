@@ -15,7 +15,7 @@
      value="${math::abs(math::floor(timespan::get-total-days(datetime::now()
      - datetime::parse('01/01/2002'))))}" />
   <property name="assembly" value="SLProxy"/>
-  <property name="bin_dir"  value="../bin" />
+  <property name="bin_dir"  value="../../bin" />
 
   <!-- default configuration -->
   <property name="project.config" value="debug" /> <!-- debug|release -->
@@ -63,11 +63,6 @@
         <include name="libsecondlife.dll"/>
       </references>
     </csc>
-    <copy todir="${bin_dir}" overwrite="true">
-		<fileset basedir="../data">
-          <include name="message_template.msg" />
-        </fileset>
-      </copy>
   </target>
 
   <target name="build-analyst"
