@@ -691,10 +691,12 @@ namespace libsecondlife
         private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType,List<PacketCallback>>();
         private List<Simulator> Simulators = new List<Simulator>();
         private System.Timers.Timer DisconnectTimer;
+        private System.Timers.Timer LogoutTimer;
         private bool connected;
 
         private const int NetworkTrafficTimeout = 15000;
         private const int LoginTimeout = 60000;
+        private const int LogoutTimeout = 10000;
 
         /// <summary>
         /// 
@@ -711,6 +713,7 @@ namespace libsecondlife
             RegisterCallback(PacketType.ParcelOverlay, new PacketCallback(ParcelOverlayHandler));
             RegisterCallback(PacketType.EnableSimulator, new PacketCallback(EnableSimulatorHandler));
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
+            RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
 
             // Disconnect a sim if no network traffic has been received for 15 seconds
             DisconnectTimer = new System.Timers.Timer(NetworkTrafficTimeout);
@@ -941,6 +944,15 @@ namespace libsecondlife
         /// </summary>
         /// <remarks>Uses the ConnectedCallback delegate.</remarks>
         public event ConnectedCallback OnConnected;
+        /// <summary>
+        /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
+        /// </summary>
+        /// <param name="InventoryData">A dictionary representing received data Key is ItemID and Value is NewAssetID</param>
+        public delegate void LogoutCallback(Dictionary<LLUUID, LLUUID> InventoryData );
+        /// <summary>
+        /// Event raised when a logout is confirmed by the simulator
+        /// </summary>
+        public event LogoutCallback OnLogoutReply;
 
         /// <summary>
         /// 
@@ -1226,7 +1238,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Trigger the logout process ( three step process !)
         /// </summary>
         public void Logout()
         {
@@ -1245,11 +1257,61 @@ namespace libsecondlife
             LogoutRequestPacket logout = new LogoutRequestPacket();
             logout.AgentData.AgentID = AgentID;
             logout.AgentData.SessionID = SessionID;
-
             CurrentSim.SendPacket(logout, true);
+            LogoutTimer = new System.Timers.Timer(LogoutTimeout);
+            LogoutTimer.Elapsed += new ElapsedEventHandler(LogoutTimer_Elapsed);
+            LogoutTimer.Start();
+        }
+        /// <summary>
+        /// Called to deal with LogoutReply packet and fires off callback
+        /// </summary>
+        /// <param name="packet">Full packet of type LogoutReplyPacket</param>
+        /// <param name="simulator"></param>
+        private void LogoutReplyHandler(Packet packet, Simulator simulator)
+        {
+            if ( packet.Type == PacketType.LogoutReply) {
+                LogoutReplyPacket logoutPacket = (LogoutReplyPacket)packet;
+                if ((logoutPacket.AgentData.SessionID == SessionID) && (logoutPacket.AgentData.AgentID == AgentID))
+                {
+                    Client.Log("Logout negotiated with server", Helpers.LogLevel.Debug);
+                    //deal with callbacks, if any
+                    if (OnLogoutReply != null)
+                    {
+                        Dictionary<LLUUID, LLUUID> callbackDict = new Dictionary<LLUUID, LLUUID>();
 
-            // TODO: We should probably check if the server actually received the logout request
-
+                        foreach (LogoutReplyPacket.InventoryDataBlock InventoryData in logoutPacket.InventoryData)
+                        {
+                            callbackDict.Add(InventoryData.ItemID, InventoryData.NewAssetID);
+                        }
+                        OnLogoutReply(callbackDict);
+                    }
+                    FinalizeLogout();
+                }
+                else
+                {
+                    Client.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning);
+                }
+            }
+        }
+        /// <summary>
+        /// Triggered if a LogoutReply is not received
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="ev"></param>
+        public void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
+        {
+            Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
+            FinalizeLogout();
+        }
+        /// <summary>
+        /// Finalize the logout procedure. Close down sockets, etc.
+        /// </summary>
+        private void FinalizeLogout()
+        {
+            //insist on shutdown (just in case)
+            LogoutDemandPacket logoutDemand = new LogoutDemandPacket();
+            logoutDemand.LogoutBlock.SessionID = SessionID;
+            CurrentSim.SendPacket(logoutDemand, true);
             // Shutdown the network layer
             Shutdown();
 
@@ -1342,6 +1404,7 @@ namespace libsecondlife
             // TODO: A movement class should be handling this
             Client.Self.SetAlwaysRun(false);
         }
+
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
