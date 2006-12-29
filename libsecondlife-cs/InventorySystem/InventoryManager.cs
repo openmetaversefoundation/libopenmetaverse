@@ -117,7 +117,7 @@ namespace libsecondlife.InventorySystem
             }
         }
 
-        public InventoryFolder getRootFolder()
+        public InventoryFolder GetRootFolder()
         {
             return htFoldersByUUID[slClient.Self.InventoryRootFolderUUID];
         }
@@ -139,7 +139,7 @@ namespace libsecondlife.InventorySystem
 
             if (sFolderPath.Length == 0)
             {
-                return getRootFolder();
+                return GetRootFolder();
             }
 
             char[] seperators = { '/' };
@@ -156,7 +156,7 @@ namespace libsecondlife.InventorySystem
         }
         private InventoryFolder getFolder(Queue<string> qFolderPath)
         {
-            return getFolder(qFolderPath, getRootFolder());
+            return getFolder(qFolderPath, GetRootFolder());
         }
 
         private InventoryFolder getFolder(Queue<string> qFolderPath, InventoryFolder ifRoot)

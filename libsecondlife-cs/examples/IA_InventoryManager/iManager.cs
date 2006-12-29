@@ -27,6 +27,8 @@ namespace IA_InventoryManager
     /// </summary>
     class iManager
     {
+
+
         private char[] cmdSeperators = { ' ' };
         private string curDirectory = "/";
 
@@ -37,6 +39,7 @@ namespace IA_InventoryManager
 
         static void Main(string[] args)
         {
+            
             if (args.Length < 3)
             {
                 Console.WriteLine("Usage: Inventory [first] [last] [password]");
@@ -77,7 +80,7 @@ namespace IA_InventoryManager
             aManager = new AppearanceManager(_Client);
 
             // Download directory tree
-            _Client.Inventory.getRootFolder().RequestDownloadContents(true, false);
+            _Client.Inventory.GetRootFolder().RequestDownloadContents(true, false);
 
             Console.WriteLine("==================================================================");
             Console.WriteLine("The Inventory Manager program provides a simple shell for working with your Second Life[tm] Avatar.");
@@ -263,6 +266,7 @@ namespace IA_InventoryManager
 
                 targetDir += combineCmdArg(cmdLine);
             }
+
 
             InventoryFolder iFolder = _Client.Inventory.getFolder(targetDir);
 

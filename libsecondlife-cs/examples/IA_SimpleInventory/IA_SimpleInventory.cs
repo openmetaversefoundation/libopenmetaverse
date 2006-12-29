@@ -122,7 +122,7 @@ namespace IA_SimpleInventory
             Console.WriteLine("Dumping a copy of " + client.Self.FirstName + "'s inventory to the console.");
             Console.WriteLine();
 
-            InventoryFolder root = client.Inventory.getRootFolder();
+            InventoryFolder root = client.Inventory.GetRootFolder();
 
             if (root != null)
             {

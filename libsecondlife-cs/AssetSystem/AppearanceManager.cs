@@ -159,6 +159,10 @@ namespace libsecondlife.AssetSystem
             Client.Network.SendPacket(nowWearing);
         }
 
+        /// <summary>
+        /// Request from the server what wearables we're currently wearing.  Update cached info.
+        /// </summary>
+        /// <returns>The wearable info for what we're currently wearing</returns>
         public AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()
         {
             AgentWearablesSignal = new ManualResetEvent(false);
@@ -173,10 +177,18 @@ namespace libsecondlife.AssetSystem
             return AgentWearablesData;
         }
 
+        /// <summary>
+        /// Update the local Avatar Appearance information based on the contents of the assets as defined in the cached wearable data info.
+        /// </summary>
         public void GetAvatarAppearanceInfoFromWearableAssets()
         {
-            AgentWearablesUpdatePacket.WearableDataBlock[] wdbs = GetWearables();
-            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in wdbs)
+            // Only request wearable data, if we have to.
+            if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
+            {
+                GetWearables();
+            }
+
+            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in AgentWearablesData)
             {
                 if (wdb.ItemID == LLUUID.Zero)
                 {
@@ -281,6 +293,11 @@ namespace libsecondlife.AssetSystem
             AgentTextureEntry = te2;
         }
 
+        /// <summary>
+        /// Convert the morph params as they are stored in assets, to the byte values needed for
+        /// AgentSetAppearance packet
+        /// </summary>
+        /// <returns>Visual Param information for AgentSetAppearance packets</returns>
         private Dictionary<uint, byte> GetAssetParamsAsVisualParams()
         {
             Dictionary<uint, byte> VisualParams = new Dictionary<uint, byte>();
@@ -311,6 +328,11 @@ namespace libsecondlife.AssetSystem
             return VisualParams;
         }
 
+        /// <summary>
+        /// Determine agent size for AgentSetAppearance based on Visual Param data.
+        /// </summary>
+        /// <param name="VisualParams"></param>
+        /// <returns></returns>
         private LLVector3 GetAgentSizeFromVisualParams(Dictionary<uint, byte> VisualParams)
         {
             if (VisualParams.ContainsKey(25))
@@ -325,6 +347,9 @@ namespace libsecondlife.AssetSystem
             }
         }
 
+        /// <summary>
+        /// Send an AgentSetAppearance packet to the server to update your appearance.
+        /// </summary>
         public void SendAgentSetAppearance()
         {
             // Get latest appearance info
@@ -385,9 +410,14 @@ namespace libsecondlife.AssetSystem
             AgentWearablesSignal.Set();
         }
 
-        public static uint GetAgentSetAppearanceIndex(uint AgentSetAppearanceIdx)
+        /// <summary>
+        /// Convert a Visual Params index number from the ParamID provided in Assets and from avatar_lad.xml
+        /// </summary>
+        /// <param name="AssetParamID"></param>
+        /// <returns></returns>
+        private static uint GetAgentSetAppearanceIndex(uint AssetParamID)
         {
-            switch (AgentSetAppearanceIdx)
+            switch (AssetParamID)
             {
                 case 1: return 1;
                 case 2: return 2;
@@ -609,13 +639,18 @@ namespace libsecondlife.AssetSystem
                 case 923: return 218;
 
                 default:
-                    throw new Exception("We don't have a mapping for AgentSetAppearanceIdx " + AgentSetAppearanceIdx + " yet...");
+                    throw new Exception("Unknown Asset/Avatar_lad.xml ParamID: " + AssetParamID);
             }
         }
 
-        public static uint GetParamID(uint ParamID)
+        /// <summary>
+        /// Get the Asset ParamID (avatar_lad.xml) value based on a Visual Param index from AgentSetApperance
+        /// </summary>
+        /// <param name="VisualParamIdx"></param>
+        /// <returns></returns>
+        public static uint GetParamID(uint VisualParamIdx)
         {
-            switch (ParamID)
+            switch (VisualParamIdx)
             {
                 case 1: return 1;
                 case 2: return 2;
@@ -837,7 +872,7 @@ namespace libsecondlife.AssetSystem
                 case 218: return 923;
 
                 default:
-                    throw new Exception("We don't have a mapping for ParamID " + ParamID + " yet...");
+                    throw new Exception("Unknown Visual Param (AgentSetApperance) index: " + VisualParamIdx);
             }
         }
     }
