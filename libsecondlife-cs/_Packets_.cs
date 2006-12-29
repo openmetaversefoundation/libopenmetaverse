@@ -752,6 +752,7 @@ namespace libsecondlife.Packets
         MapItemRequest,
         MapItemReply,
         SendPostcard,
+        ParcelMediaCommandMessage,
         ParcelMediaUpdate,
         LandStatRequest,
         LandStatReply,
@@ -1187,6 +1188,7 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(MapItemRequestPacket))]
     [XmlInclude(typeof(MapItemReplyPacket))]
     [XmlInclude(typeof(SendPostcardPacket))]
+    [XmlInclude(typeof(ParcelMediaCommandMessagePacket))]
     [XmlInclude(typeof(ParcelMediaUpdatePacket))]
     [XmlInclude(typeof(LandStatRequestPacket))]
     [XmlInclude(typeof(LandStatReplyPacket))]
@@ -1640,6 +1642,7 @@ namespace libsecondlife.Packets
                         case 476: return PacketType.MapItemRequest;
                         case 477: return PacketType.MapItemReply;
                         case 478: return PacketType.SendPostcard;
+                        case 487: return PacketType.ParcelMediaCommandMessage;
                         case 488: return PacketType.ParcelMediaUpdate;
                         case 489: return PacketType.LandStatRequest;
                         case 490: return PacketType.LandStatReply;
@@ -2108,6 +2111,7 @@ namespace libsecondlife.Packets
                         case 476: return new MapItemRequestPacket(header, bytes, ref i);
                         case 477: return new MapItemReplyPacket(header, bytes, ref i);
                         case 478: return new SendPostcardPacket(header, bytes, ref i);
+                        case 487: return new ParcelMediaCommandMessagePacket(header, bytes, ref i);
                         case 488: return new ParcelMediaUpdatePacket(header, bytes, ref i);
                         case 489: return new LandStatRequestPacket(header, bytes, ref i);
                         case 490: return new LandStatReplyPacket(header, bytes, ref i);
@@ -67578,6 +67582,117 @@ namespace libsecondlife.Packets
         {
             string output = "--- SendPostcard ---" + Environment.NewLine;
                 output += AgentData.ToString() + "" + Environment.NewLine;
+            return output;
+        }
+
+    }
+
+    /// <exclude/>
+    public class ParcelMediaCommandMessagePacket : Packet
+    {
+        /// <exclude/>
+        [XmlType("parcelmediacommandmessage_commandblock")]
+        public class CommandBlockBlock
+        {
+            public uint Command;
+            public float Time;
+            public uint Flags;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 12;
+                }
+            }
+
+            public CommandBlockBlock() { }
+            public CommandBlockBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    Command = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
+                    Time = BitConverter.ToSingle(bytes, i); i += 4;
+                    Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                byte[] ba;
+                bytes[i++] = (byte)(Command % 256);
+                bytes[i++] = (byte)((Command >> 8) % 256);
+                bytes[i++] = (byte)((Command >> 16) % 256);
+                bytes[i++] = (byte)((Command >> 24) % 256);
+                ba = BitConverter.GetBytes(Time);
+                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
+                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                bytes[i++] = (byte)(Flags % 256);
+                bytes[i++] = (byte)((Flags >> 8) % 256);
+                bytes[i++] = (byte)((Flags >> 16) % 256);
+                bytes[i++] = (byte)((Flags >> 24) % 256);
+            }
+
+            public override string ToString()
+            {
+                string output = "-- CommandBlock --" + Environment.NewLine;
+                output += "Command: " + Command.ToString() + "" + Environment.NewLine;
+                output += "Time: " + Time.ToString() + "" + Environment.NewLine;
+                output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
+                output = output.Trim();
+                return output;
+            }
+        }
+
+        private Header header;
+        public override Header Header { get { return header; } set { header = value; } }
+        public override PacketType Type { get { return PacketType.ParcelMediaCommandMessage; } }
+        public CommandBlockBlock CommandBlock;
+
+        public ParcelMediaCommandMessagePacket()
+        {
+            Header = new LowHeader();
+            Header.ID = 487;
+            Header.Reliable = true;
+            CommandBlock = new CommandBlockBlock();
+        }
+
+        public ParcelMediaCommandMessagePacket(byte[] bytes, ref int i)
+        {
+            int packetEnd = bytes.Length - 1;
+            Header = new LowHeader(bytes, ref i, ref packetEnd);
+            CommandBlock = new CommandBlockBlock(bytes, ref i);
+        }
+
+        public ParcelMediaCommandMessagePacket(Header head, byte[] bytes, ref int i)
+        {
+            Header = head;
+            CommandBlock = new CommandBlockBlock(bytes, ref i);
+        }
+
+        public override byte[] ToBytes()
+        {
+            int length = 8;
+            length += CommandBlock.Length;;
+            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
+            byte[] bytes = new byte[length];
+            int i = 0;
+            header.ToBytes(bytes, ref i);
+            CommandBlock.ToBytes(bytes, ref i);
+            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
+            return bytes;
+        }
+
+        public override string ToString()
+        {
+            string output = "--- ParcelMediaCommandMessage ---" + Environment.NewLine;
+                output += CommandBlock.ToString() + "" + Environment.NewLine;
             return output;
         }
 

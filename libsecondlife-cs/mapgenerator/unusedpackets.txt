@@ -115,4 +115,3 @@ RpcScriptReplyInbound
 MailTaskSimRequest
 MailTaskSimReply
 ScriptMailRegistration
-ParcelMediaCommandMessage
