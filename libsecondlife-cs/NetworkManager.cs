@@ -1251,7 +1251,6 @@ namespace libsecondlife
             Client.Log("Logging out", Helpers.LogLevel.Info);
 
             DisconnectTimer.Stop();
-            connected = false;
 
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
@@ -1308,6 +1307,8 @@ namespace libsecondlife
         /// </summary>
         private void FinalizeLogout()
         {
+            LogoutTimer.Stop();
+            connected = false;
             //insist on shutdown (just in case)
             LogoutDemandPacket logoutDemand = new LogoutDemandPacket();
             logoutDemand.LogoutBlock.SessionID = SessionID;

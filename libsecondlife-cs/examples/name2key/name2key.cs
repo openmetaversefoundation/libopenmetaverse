@@ -103,6 +103,13 @@ namespace name2key
 			}
 
 			client.Network.Logout();
+
+            waiting = true;
+            while (waiting)
+            {
+                waiting = client.Network.Connected;
+                client.Tick();
+            }
 		}
 	}
 }
