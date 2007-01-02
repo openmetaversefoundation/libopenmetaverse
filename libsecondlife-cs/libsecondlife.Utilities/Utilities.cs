@@ -6,6 +6,75 @@ using libsecondlife.Packets;
 
 namespace libsecondlife.Utilities
 {
+    public static class Realism
+    {
+        public static LLUUID TypingAnimation = new LLUUID("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
+
+        /// <summary>
+        ///  A psuedo-realistic chat function that uses the typing sound and
+        /// animation, types at three characters per second, and randomly 
+        /// pauses. This function will block until the message has been sent
+        /// </summary>
+        /// <param name="client">A reference to the client that will chat</param>
+        /// <param name="message">The chat message to send</param>
+        public static void Chat(SecondLife client, string message)
+        {
+            Chat(client, message, MainAvatar.ChatType.Normal, 3);
+        }
+
+        /// <summary>
+        /// A psuedo-realistic chat function that uses the typing sound and
+        /// animation, types at a given rate, and randomly pauses. This 
+        /// function will block until the message has been sent
+        /// </summary>
+        /// <param name="client">A reference to the client that will chat</param>
+        /// <param name="message">The chat message to send</param>
+        /// <param name="type">The chat type (usually Normal, Whisper or Shout)</param>
+        /// <param name="cps">Characters per second rate for chatting</param>
+        public static void Chat(SecondLife client, string message, MainAvatar.ChatType type, int cps)
+        {
+            Random rand = new Random();
+            int characters = 0;
+            bool typing = true;
+
+            // Start typing
+            client.Self.Chat("", 0, MainAvatar.ChatType.StartTyping);
+            client.Self.AnimationStart(TypingAnimation);
+
+            while (characters < message.Length)
+            {
+                if (!typing)
+                {
+                    // Start typing again
+                    client.Self.Chat("", 0, MainAvatar.ChatType.StartTyping);
+                    client.Self.AnimationStart(TypingAnimation);
+                    typing = true;
+                }
+                else
+                {
+                    // Randomly pause typing
+                    if (rand.Next(10) >= 9)
+                    {
+                        client.Self.Chat("", 0, MainAvatar.ChatType.StopTyping);
+                        client.Self.AnimationStop(TypingAnimation);
+                        typing = false;
+                    }
+                }
+
+                // Sleep for a second and increase the amount of characters we've typed
+                System.Threading.Thread.Sleep(1000);
+                characters += cps;
+            }
+
+            // Send the message
+            client.Self.Chat(message, 0, type);
+
+            // Stop typing
+            client.Self.Chat("", 0, MainAvatar.ChatType.StopTyping);
+            client.Self.AnimationStop(TypingAnimation);
+        }
+    }
+
     /// <summary>
     /// Keeps an up to date inventory of the currently seen objects in each
     /// simulator
@@ -177,6 +246,229 @@ namespace libsecondlife.Utilities
                             NameLookupEvents[kvp.Key].Set();
                     }
                 }
+            }
+        }
+    }
+
+    public class AssetTransfer
+    {
+        public LLUUID ID = LLUUID.Zero;
+        public ushort PacketCount = 0;
+        public uint Size = 0;
+        public byte[] AssetData = new byte[0];
+        public int Transferred = 0;
+        public bool Success = false;
+    }
+
+    public class ImageTransfer : AssetTransfer
+    {
+        public int Codec = 0;
+        public bool NotFound = false;
+
+        internal ManualResetEvent HeaderReceivedEvent = new ManualResetEvent(false);
+        internal int InitialDataSize = 0;
+    }
+
+    public class AssetManager
+    {
+        private SecondLife Client;
+
+        public AssetManager(SecondLife client)
+        {
+            Client = client;
+
+            //Client.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
+            //// Transfer Packets for downloading large assets
+            //Client.Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoHandler));
+            //Client.Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketHandler));
+            //// Xfer packets for uploading large assets
+            //Client.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
+            //Client.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
+        }
+    }
+
+    public class ImageManager
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="image"></param>
+        public delegate void ImageReceivedCallback(ImageTransfer image);
+
+        public event ImageReceivedCallback OnImageReceived;
+
+        private SecondLife Client;
+        private Dictionary<LLUUID, ImageTransfer> Transfers = new Dictionary<LLUUID, ImageTransfer>();
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="client">A reference to the SecondLife client to use</param>
+        public ImageManager(SecondLife client)
+        {
+            Client = client;
+
+            Client.Network.RegisterCallback(PacketType.ImageData, new NetworkManager.PacketCallback(ImageDataHandler));
+            Client.Network.RegisterCallback(PacketType.ImagePacket, new NetworkManager.PacketCallback(ImagePacketHandler));
+            Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, new NetworkManager.PacketCallback(ImageNotInDatabaseHandler));
+        }
+
+        /// <summary>
+        /// Initiate an image download. This is an asynchronous function
+        /// </summary>
+        /// <param name="imageID">The image to download</param>
+        public void RequestImage(LLUUID imageID, float priority)
+        {
+            if (!Transfers.ContainsKey(imageID))
+            {
+                ImageTransfer transfer = new ImageTransfer();
+                transfer.ID = imageID;
+
+                // Add this transfer to the dictionary
+                lock (Transfers) Transfers[transfer.ID] = transfer;
+
+                // Build and send the request packet
+                RequestImagePacket request = new RequestImagePacket();
+                request.AgentData.AgentID = Client.Network.AgentID;
+                request.AgentData.SessionID = Client.Network.SessionID;
+                request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
+                request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
+                request.RequestImage[0].DiscardLevel = 0;
+                request.RequestImage[0].DownloadPriority = priority;
+                request.RequestImage[0].Packet = 0;
+                request.RequestImage[0].Image = imageID;
+                request.RequestImage[0].Type = 0; // TODO: What is this?
+
+                Client.Network.SendPacket(request);
+            }
+            else
+            {
+                Client.Log("RequestImage() called for an image we are already downloading, ignoring",
+                    Helpers.LogLevel.Info);
+            }
+        }
+
+        /// <summary>
+        /// Handles the Image Data packet which includes the ID and Size of the image,
+        /// along with the first block of data for the image. If the image is small enough
+        /// there will be no additional packets
+        /// </summary>
+        public void ImageDataHandler(Packet packet, Simulator simulator)
+        {
+            ImageDataPacket data = (ImageDataPacket)packet;
+
+            if (Transfers.ContainsKey(data.ImageID.ID))
+            {
+                ImageTransfer transfer = Transfers[data.ImageID.ID];
+
+                transfer.Codec = data.ImageID.Codec;
+                transfer.PacketCount = data.ImageID.Packets;
+                transfer.Size = data.ImageID.Size;
+                transfer.AssetData = new byte[transfer.Size];
+                Array.Copy(data.ImageData.Data, transfer.AssetData, data.ImageData.Data.Length);
+                transfer.InitialDataSize = data.ImageData.Data.Length;
+                transfer.Transferred += data.ImageData.Data.Length;
+
+                // Check if we downloaded the full image
+                if (transfer.Transferred >= transfer.Size)
+                {
+                    lock (Transfers) Transfers.Remove(transfer.ID);
+                    transfer.Success = true;
+
+                    if (OnImageReceived != null)
+                    {
+                        OnImageReceived(transfer);
+                    }
+                }
+            }
+            else
+            {
+                Client.Log("Received an ImageData packet for an image we didn't request, ID: " + data.ImageID.ID,
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Handles the remaining Image data that did not fit in the initial ImageData packet
+        /// </summary>
+        public void ImagePacketHandler(Packet packet, Simulator simulator)
+        {
+            ImagePacketPacket image = (ImagePacketPacket)packet;
+
+            if (Transfers.ContainsKey(image.ImageID.ID))
+            {
+                ImageTransfer transfer = Transfers[image.ImageID.ID];
+
+                if (transfer.Size == 0)
+                {
+                    // We haven't received the header yet, block until it's received or times out
+                    transfer.HeaderReceivedEvent.WaitOne(1000 * 20, false);
+
+                    if (transfer.Size == 0)
+                    {
+
+                        Client.Log("Timed out while waiting for the image header to download for " +
+                            transfer.ID, Helpers.LogLevel.Warning);
+
+                        lock (Transfers) Transfers.Remove(transfer.ID);
+
+                        // Fire the event with our transfer that contains Success = false;
+                        if (OnImageReceived != null)
+                        {
+                            OnImageReceived(transfer);
+                        }
+
+                        return;
+                    }
+                }
+
+                // The header is downloaded, we can insert this data in to the proper position
+                Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
+                transfer.Transferred += image.ImageData.Data.Length;
+
+                // Check if we downloaded the full image
+                if (transfer.Transferred >= transfer.Size)
+                {
+                    transfer.Success = true;
+                    lock (Transfers) Transfers.Remove(transfer.ID);
+
+                    if (OnImageReceived != null)
+                    {
+                        OnImageReceived(transfer);
+                    }
+                }
+            }
+            else
+            {
+                Client.Log("Received an ImagePacket packet for an image we didn't request, ID: " + image.ImageID.ID,
+                    Helpers.LogLevel.Warning);
+            }
+        }
+
+        /// <summary>
+        /// The requested image does not exist on the asset server
+        /// </summary>
+        public void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
+        {
+            ImageNotInDatabasePacket notin = (ImageNotInDatabasePacket)packet;
+
+            if (Transfers.ContainsKey(notin.ImageID.ID))
+            {
+                ImageTransfer transfer = Transfers[notin.ImageID.ID];
+
+                transfer.NotFound = true;
+                lock (Transfers) Transfers.Remove(transfer.ID);
+
+                // Fire the event with our transfer that contains Success = false;
+                if (OnImageReceived != null)
+                {
+                    OnImageReceived(transfer);
+                }
+            }
+            else
+            {
+                Client.Log("Received an ImageNotInDatabase packet for an image we didn't request, ID: " +
+                    notin.ImageID.ID, Helpers.LogLevel.Warning);
             }
         }
     }

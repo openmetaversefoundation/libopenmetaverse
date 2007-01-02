@@ -581,6 +581,30 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Send an AgentAnimation packet that toggles a single animation on
+        /// </summary>
+        /// <param name="animation">The animation to start playing</param>
+        public void AnimationStart(LLUUID animation)
+        {
+            Dictionary<LLUUID, bool> animations = new Dictionary<LLUUID, bool>();
+            animations[animation] = true;
+
+            Animate(animations);
+        }
+
+        /// <summary>
+        /// Send an AgentAnimation packet that toggles a single animation off
+        /// </summary>
+        /// <param name="animation">The animation to stop playing</param>
+        public void AnimationStop(LLUUID animation)
+        {
+            Dictionary<LLUUID, bool> animations = new Dictionary<LLUUID, bool>();
+            animations[animation] = false;
+
+            Animate(animations);
+        }
+
+        /// <summary>
         /// Send an AgentAnimation packet that will toggle animations on or off
         /// </summary>
         /// <param name="animations">A list of animation UUIDs, and whether to
