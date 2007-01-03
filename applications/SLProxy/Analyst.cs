@@ -42,107 +42,45 @@ using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 
-public class Analyst
+public class Analyst : ProxyPlugin
 {
-    private static Proxy proxy;
-    private static Hashtable commandDelegates = new Hashtable();
-    private static Hashtable loggedPackets = new Hashtable();
-    // private static string logGrep = null;
-    private static Hashtable modifiedPackets = new Hashtable();
-    private static LLUUID agentID;
-    private static LLUUID sessionID;
-    private static bool logLogin = false;
-    private static Assembly libslAssembly;
+    private ProxyFrame frame;
+    private Proxy proxy;
+    private Hashtable loggedPackets = new Hashtable();
+    // private string logGrep = null;
+    private Hashtable modifiedPackets = new Hashtable();
+    private Assembly libslAssembly;
 
-    public static void Main(string[] args)
+    public Analyst(ProxyFrame frame)
+    {
+	this.frame = frame; this.proxy = frame.proxy;
+    }
+
+    public override void Init()
     {
         libslAssembly = Assembly.Load("libsecondlife");
         if (libslAssembly == null) throw new Exception("Assembly load exception");
 
-        ProxyConfig proxyConfig = new ProxyConfig("Analyst V2", "Austin Jennings / Andrew Ortman", args);
-        proxy = new Proxy(proxyConfig);
 
         // build the table of /command delegates
         InitializeCommandDelegates();
 
-        // add delegates for login
-        proxy.SetLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
-        proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
-
-        // add a delegate for outgoing chat
-        proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));
-
         //  handle command line arguments
-        foreach (string arg in args)
+        foreach (string arg in frame.Args)
             if (arg == "--log-all")
                 LogAll();
-            else if (arg == "--log-login")
-                logLogin = true;
-
-        // start the proxy
-        proxy.Start();
     }
-
-    // LoginRequest: dump a login request to the console
-    private static void LoginRequest(XmlRpcRequest request)
-    {
-        if (logLogin)
-        {
-            Console.WriteLine("==> Login Request");
-            Console.WriteLine(request);
-        }
-    }
-
-    // Loginresponse: dump a login response to the console
-    private static void LoginResponse(XmlRpcResponse response)
-    {
-        Hashtable values = (Hashtable)response.Value;
-        if (values.Contains("agent_id"))
-            agentID = new LLUUID((string)values["agent_id"]);
-        if (values.Contains("session_id"))
-            sessionID = new LLUUID((string)values["session_id"]);
-
-        if (logLogin)
-        {
-            Console.WriteLine("<== Login Response");
-            Console.WriteLine(response);
-        }
-    }
-
-    // ChatFromViewerOut: outgoing ChatFromViewer delegate; check for Analyst commands
-    private static Packet ChatFromViewerOut(Packet packet, IPEndPoint sim)
-    {
-        // deconstruct the packet
-        ChatFromViewerPacket cpacket = (ChatFromViewerPacket)packet;
-        string message = System.Text.Encoding.UTF8.GetString(cpacket.ChatData.Message).Replace("\0", "");
-
-        if (message.Length > 1 && message[0] == '/')
-        {
-            string[] words = message.Split(' ');
-            if (commandDelegates.Contains(words[0]))
-            {
-                // this is an Analyst command; act on it and drop the chat packet
-                ((CommandDelegate)commandDelegates[words[0]])(words);
-                return null;
-            }
-        }
-	
-	return packet;
-    }
-
-    // CommandDelegate: specifies a callback delegate for a /command
-    private delegate void CommandDelegate(string[] words);
 
     // InitializeCommandDelegates: configure Analyst's commands
-    private static void InitializeCommandDelegates()
+    private void InitializeCommandDelegates()
     {
-        commandDelegates["/log"] = new CommandDelegate(CmdLog);
-        commandDelegates["/-log"] = new CommandDelegate(CmdNoLog);
-        // commandDelegates["/grep"] = new CommandDelegate(CmdGrep);
-        commandDelegates["/set"] = new CommandDelegate(CmdSet);
-        commandDelegates["/-set"] = new CommandDelegate(CmdNoSet);
-        commandDelegates["/inject"] = new CommandDelegate(CmdInject);
-        commandDelegates["/in"] = new CommandDelegate(CmdInject);
+        frame.AddCommand("/log",  new ProxyFrame.CommandDelegate(CmdLog));
+        frame.AddCommand("/-log", new ProxyFrame.CommandDelegate(CmdNoLog));
+        // frame.AddCommand("/grep", new ProxyFrame.CommandDelegate(CmdGrep));
+        frame.AddCommand("/set", new ProxyFrame.CommandDelegate(CmdSet));
+        frame.AddCommand("/-set", new ProxyFrame.CommandDelegate(CmdNoSet));
+        frame.AddCommand("/inject", new ProxyFrame.CommandDelegate(CmdInject));
+        frame.AddCommand("/in", new ProxyFrame.CommandDelegate(CmdInject));
     }
 
     private static PacketType packetTypeFromName(string name)
@@ -154,7 +92,7 @@ public class Analyst
     }
 
     // CmdLog: handle a /log command
-    private static void CmdLog(string[] words)
+    private void CmdLog(string[] words)
     {
         if (words.Length != 2)
             SayToUser("Usage: /log <packet name>");
@@ -183,7 +121,7 @@ public class Analyst
     }
 
     // CmdNoLog: handle a /-log command
-    private static void CmdNoLog(string[] words)
+    private void CmdNoLog(string[] words)
     {
         if (words.Length != 2)
             SayToUser("Usage: /-log <packet name>");
@@ -204,7 +142,7 @@ public class Analyst
     }
 
     /*	// CmdGrep: handle a /grep command
-        private static void CmdGrep(string[] words) {
+        private void CmdGrep(string[] words) {
             if (words.Length == 1) {
                 logGrep = null;
                 SayToUser("stopped filtering logs");
@@ -217,7 +155,7 @@ public class Analyst
         } */
 
     // CmdSet: handle a /set command
-    private static void CmdSet(string[] words)
+    private void CmdSet(string[] words)
     {
         if (words.Length < 5)
             SayToUser("Usage: /set <packet name> <block> <field> <value>");
@@ -265,7 +203,7 @@ public class Analyst
     }
 
     // CmdNoSet: handle a /-set command
-    private static void CmdNoSet(string[] words)
+    private void CmdNoSet(string[] words)
     {
         if (words.Length == 2 && words[1] == "*")
         {
@@ -314,7 +252,7 @@ public class Analyst
 
 
     // CmdInject: handle an /inject command
-    private static void CmdInject(string[] words)
+    private void CmdInject(string[] words)
     {
         if (words.Length < 2)
             SayToUser("Usage: /inject <packet file> [value]");
@@ -426,9 +364,9 @@ public class Analyst
                             else if (lineValue == "$UUID")
                                 fval = LLUUID.Random();
                             else if (lineValue == "$AgentID")
-                                fval = agentID;
+                                fval = frame.AgentID;
                             else if (lineValue == "$SessionID")
-                                fval = sessionID;
+                                fval = frame.SessionID;
                             else
                                 fval = MagicCast(name, block, lineField, lineValue);
 
@@ -470,12 +408,12 @@ public class Analyst
     }
 
     // SayToUser: send a message to the user as in-world chat
-    private static void SayToUser(string message)
+    private void SayToUser(string message)
     {
         ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
         packet.ChatData.FromName = Helpers.StringToField("Analyst");
         packet.ChatData.SourceID = LLUUID.Random();
-        packet.ChatData.OwnerID = agentID;
+        packet.ChatData.OwnerID = frame.AgentID;
         packet.ChatData.SourceType = (byte)2;
         packet.ChatData.ChatType = (byte)1;
         packet.ChatData.Audible = (byte)1;
@@ -517,7 +455,7 @@ public class Analyst
     }
 
     // MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
-    private static object MagicCast(string name, string block, string field, string value)
+    private object MagicCast(string name, string block, string field, string value)
     {
         Type packetClass = libslAssembly.GetType("libsecondlife.Packets." + name + "Packet");
         if (packetClass == null) throw new Exception("Couldn't get class " + name + "Packet");
@@ -690,19 +628,19 @@ public class Analyst
     }
 
     // ModifyIn: modify an incoming packet
-    private static Packet ModifyIn(Packet packet, IPEndPoint endPoint)
+    private Packet ModifyIn(Packet packet, IPEndPoint endPoint)
     {
         return Modify(packet, endPoint, Direction.Incoming);
     }
 
     // ModifyOut: modify an outgoing packet
-    private static Packet ModifyOut(Packet packet, IPEndPoint endPoint)
+    private Packet ModifyOut(Packet packet, IPEndPoint endPoint)
     {
         return Modify(packet, endPoint, Direction.Outgoing);
     }
 
     // Modify: modify a packet
-    private static Packet Modify(Packet packet, IPEndPoint endPoint, Direction direction)
+    private Packet Modify(Packet packet, IPEndPoint endPoint, Direction direction)
     {
         if (modifiedPackets.Contains(packet.Type))
         {
@@ -732,21 +670,21 @@ public class Analyst
     }
 
     // LogPacketIn: log an incoming packet
-    private static Packet LogPacketIn(Packet packet, IPEndPoint endPoint)
+    private Packet LogPacketIn(Packet packet, IPEndPoint endPoint)
     {
 	LogPacket(packet, endPoint, Direction.Incoming);
         return packet;
     }
 
     // LogPacketOut: log an outgoing packet
-    private static Packet LogPacketOut(Packet packet, IPEndPoint endPoint)
+    private Packet LogPacketOut(Packet packet, IPEndPoint endPoint)
     {
 	LogPacket(packet, endPoint, Direction.Outgoing);
         return packet;
     }
 
     // LogAll: register logging delegates for all packets
-    private static void LogAll()
+    private void LogAll()
     {
         Type packetTypeType = typeof(PacketType);
         System.Reflection.MemberInfo[] packetTypes = packetTypeType.GetMembers();
@@ -776,7 +714,7 @@ public class Analyst
     }
 
     // NoLogAll: unregister logging delegates for all packets
-    private static void NoLogAll()
+    private void NoLogAll()
     {
         Type packetTypeType = typeof(PacketType);
         System.Reflection.MemberInfo[] packetTypes = packetTypeType.GetMembers();
@@ -806,7 +744,7 @@ public class Analyst
     }
 
     // LogPacket: dump a packet to the console
-    private static void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
+    private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
         /* if (logGrep != null) {
             bool match = false;

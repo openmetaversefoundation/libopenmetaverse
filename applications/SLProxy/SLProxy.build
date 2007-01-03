@@ -43,7 +43,7 @@
   </target>
 
   <!-- build tasks -->
-  <target name="build" depends="build-analyst build-chatconsole"
+  <target name="build" depends="build-analyst build-chatconsole build-main"
      description="build analyst and chatconsole">
   </target>
 
@@ -57,6 +57,7 @@
       output="${bin_dir}/SLProxy.dll">
       <sources failonempty="true">
         <include name="SLProxy.cs" />
+        <include name="SLProxyLoader.cs" />
         <!-- <include name="legacy/*.cs" /> -->
       </sources>
       <references basedir="${bin_dir}/">
@@ -65,17 +66,36 @@
     </csc>
   </target>
 
-  <target name="build-analyst"
+  <target name="build-analyst" depends="init build-slproxy"
+    description="Builds the binaries for the current configuration">
+    <echo message="Build Directory is ${bin_dir}/" />
+    <mkdir dir="${bin_dir}" failonerror="false" />
+    <csc
+      target="library"
+      debug="${build.debug}"
+      output="${bin_dir}/Analyst.dll">
+      <sources failonempty="true">
+        <include name="Analyst.cs" />
+        <!-- <include name="legacy/*.cs" /> -->
+      </sources>
+      <references basedir="${bin_dir}/">
+        <include name="libsecondlife.dll"/>
+        <include name="SLProxy.dll"/>
+      </references>
+    </csc>
+  </target>
+
+  <target name="build-main"
     depends="init build-slproxy"
-    description="build SLProxy Analyst">
+    description="build SLProxy main">
     <echo message="Build Directory is ${bin_dir}/" />
     <mkdir dir="${bin_dir}" failonerror="false" />
     <csc
       target="exe"
       debug="${build.debug}"
-      output="${bin_dir}/Analyst.exe">
+      output="${bin_dir}/Proxy.exe">
       <sources failonempty="true">
-        <include name="Analyst.cs" />
+        <include name="SLProxyMain.cs" />
       </sources>
       <references basedir="${bin_dir}/">
         <include name="libsecondlife.dll"/>
