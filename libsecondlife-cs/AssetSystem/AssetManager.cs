@@ -38,6 +38,36 @@ using System.Threading;
 
 namespace libsecondlife.AssetSystem
 {
+    public enum AssetPermission : uint
+    {
+        All = 0x7FFFFFFF,
+        Copy = 0x00008000,
+        Modify = 0x00004000,
+        Transfer = 0x00002000,
+        Move = 0x00080000
+    }
+
+    public class AssetPermissionException : Exception 
+    {
+        private InventoryItem _Item;
+        public InventoryItem Item 
+        {
+            get { return _Item; }
+        }
+        private SecondLife _Client;
+        public SecondLife Client
+        {
+            get { return _Client; }
+        }
+
+        public AssetPermissionException(InventoryItem item, SecondLife client, string message)
+            : base (message)
+        {
+            _Item = item;
+            _Client = client;
+        }
+    }
+
 	/// <summary>
 	/// Summary description for AssetManager.
 	/// </summary>
@@ -138,6 +168,11 @@ namespace libsecondlife.AssetSystem
         /// <param name="item"></param>
 		public void GetInventoryAsset( InventoryItem item )
 		{
+            if ( (item.OwnerMask & (uint)AssetPermission.Copy) == 0 )
+                throw new AssetPermissionException(item, slClient, "Asset data refused, Copy permission needed.");
+            if ( (item.OwnerMask & (uint)AssetPermission.Modify) == 0 && (item.Type == 10) )
+                throw new AssetPermissionException(item, slClient, "Asset data refused, Modify permission needed for scripts.");
+
 			LLUUID TransferID = LLUUID.Random();
 
             AssetRequestDownload request = new AssetRequestDownload(TransferID);

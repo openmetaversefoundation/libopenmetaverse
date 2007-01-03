@@ -544,6 +544,12 @@ namespace libsecondlife.InventorySystem
                                 invItem = temp;
                             }
 
+                            if ( (invItem.InvType == 10) && (invItem.Type == Asset.ASSET_TYPE_SCRIPT) )
+                            {
+                                InventoryItem temp = new InventoryScript(this, invItem);
+                                invItem = temp;
+                            }
+
                             if ((invItem.InvType == 18) && 
                                 (
                                     (invItem.Type == Asset.ASSET_TYPE_WEARABLE_BODY)

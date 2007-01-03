@@ -39,6 +39,7 @@ namespace libsecondlife.AssetSystem
         public const sbyte ASSET_TYPE_IMAGE    = 0;
         public const sbyte ASSET_TYPE_WEARABLE_BODY = 13;
         public const sbyte ASSET_TYPE_WEARABLE_CLOTHING = 5;
+        public const sbyte ASSET_TYPE_SCRIPT = 10;
 
 		public LLUUID AssetID;
 
