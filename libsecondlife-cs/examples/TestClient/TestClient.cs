@@ -31,6 +31,8 @@ namespace libsecondlife.TestClient
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private int DrawDistance = 64;
         private System.Timers.Timer updateTimer;
+        public int regionX;
+        public int regionY;
 
         /// <summary>
         /// 
@@ -233,6 +235,8 @@ namespace libsecondlife.TestClient
 
 		private void Objects_OnAvatarMoved(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation)
 		{
+		    regionX = (int)(regionHandle >> 32);
+		    regionY = (int)(regionHandle & 0xFFFFFFFF);
 		    lock (AvatarList)
 		    {
 		        if (AvatarList.ContainsKey(avatar.LocalID))
