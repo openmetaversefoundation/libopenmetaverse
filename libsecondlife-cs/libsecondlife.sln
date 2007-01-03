@@ -34,8 +34,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libjaspernet", "..\libjaspe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_TestAsyncImage", "examples\IA_TestAsyncImage\IA_TestAsyncImage.csproj", "{A4F59DE9-E382-401D-AA8D-4557779D764E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLIRC", "..\applications\SLIRC\SLIRC.csproj", "{8855EB2F-BC4C-485A-A577-0989EB16BFDC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_MultiImageUpload", "examples\IA_MultiImageUpload\IA_MultiImageUpload.csproj", "{8598E42A-DCBC-4224-9503-5694F17B2F45}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyPartMorphGenerator", "examples\BodyPartMorphGenerator\BodyPartMorphGenerator.csproj", "{98C44481-3F15-4305-840D-037EA0D9C221}"
@@ -166,12 +164,6 @@ Global
 		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
 		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4F59DE9-E382-401D-AA8D-4557779D764E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8855EB2F-BC4C-485A-A577-0989EB16BFDC}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
-		{8855EB2F-BC4C-485A-A577-0989EB16BFDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8855EB2F-BC4C-485A-A577-0989EB16BFDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8855EB2F-BC4C-485A-A577-0989EB16BFDC}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
-		{8855EB2F-BC4C-485A-A577-0989EB16BFDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8855EB2F-BC4C-485A-A577-0989EB16BFDC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8598E42A-DCBC-4224-9503-5694F17B2F45}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
 		{8598E42A-DCBC-4224-9503-5694F17B2F45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8598E42A-DCBC-4224-9503-5694F17B2F45}.Debug|Any CPU.Build.0 = Debug|Any CPU

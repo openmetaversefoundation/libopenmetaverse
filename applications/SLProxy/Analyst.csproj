@@ -97,6 +97,8 @@
     <Compile Include="Analyst.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SLProxyLoader.cs" />
+    <Compile Include="SLProxyMain.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
