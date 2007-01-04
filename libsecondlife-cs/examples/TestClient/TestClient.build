@@ -87,6 +87,7 @@
       <sources failonempty="true">
 	      <include name="*.cs" />
 	      <include name="Commands/*.cs" />
+	      <exclude name="Commands/TtsCommand.cs" />
       </sources>
       <references basedir="${bin_dir}/">
         <include name="libsecondlife.dll"/>
