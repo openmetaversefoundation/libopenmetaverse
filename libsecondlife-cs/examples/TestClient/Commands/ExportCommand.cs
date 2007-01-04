@@ -10,16 +10,13 @@ namespace libsecondlife.TestClient
 {
     public class ExportCommand : Command
     {
-        SecondLife Client;
         ManualResetEvent GotPermissionsEvent = new ManualResetEvent(false);
         ObjectProperties Properties = null;
         bool GotPermissions = false;
 
         public ExportCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-            Client.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectProperties);
+            testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectProperties);
 
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
@@ -44,11 +41,11 @@ namespace libsecondlife.TestClient
                 return "Usage: export uuid outputfile.xml";
             }
             
-            lock (TestClient.SimPrims)
+            lock (Client.SimPrims)
             {
-                if (TestClient.SimPrims.ContainsKey(Client.Network.CurrentSim))
+                if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
                 {
-                    foreach (PrimObject prim in TestClient.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (PrimObject prim in Client.SimPrims[Client.Network.CurrentSim].Values)
                     {
                         if (prim.ID == id)
                         {
@@ -104,11 +101,11 @@ namespace libsecondlife.TestClient
 					{
 						List<PrimObject> prims = new List<PrimObject>();
 
-						lock (TestClient.SimPrims)
+						lock (Client.SimPrims)
 						{
-							if (TestClient.SimPrims.ContainsKey(Client.Network.CurrentSim))
+							if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
 							{
-								foreach (PrimObject prim in TestClient.SimPrims[Client.Network.CurrentSim].Values)
+								foreach (PrimObject prim in Client.SimPrims[Client.Network.CurrentSim].Values)
 								{
 									if (prim.LocalID == localid || prim.ParentID == localid)
 									{
@@ -141,7 +138,7 @@ namespace libsecondlife.TestClient
             else
             {
                 return "Couldn't find UUID " + id.ToString() + " in the " + 
-                    TestClient.SimPrims[Client.Network.CurrentSim].Count + 
+                    Client.SimPrims[Client.Network.CurrentSim].Count + 
                     "objects currently indexed in the current simulator";
             }
         }

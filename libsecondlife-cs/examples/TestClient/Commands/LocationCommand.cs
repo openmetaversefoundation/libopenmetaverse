@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class LocationCommand: Command
     {
-        SecondLife Client;
-
         public LocationCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "location";
 			Description = "Show the location.";
 		}

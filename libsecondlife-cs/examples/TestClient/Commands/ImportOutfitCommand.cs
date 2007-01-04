@@ -10,14 +10,10 @@ namespace libsecondlife.TestClient
 {
     public class ImportOutfitCommand : Command
     {
-        SecondLife Client;
         private uint SerialNum = 1;
 
         public ImportOutfitCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "importoutfit";
             Description = "Imports an appearance from an xml file. Usage: importoutfit inputfile.xml";
         }

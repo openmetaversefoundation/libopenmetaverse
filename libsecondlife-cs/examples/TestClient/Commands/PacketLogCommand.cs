@@ -8,7 +8,6 @@ namespace libsecondlife.TestClient
 {
     public class PacketLogCommand : Command
     {
-        SecondLife Client;
         List<Packet> Packets = new List<Packet>();
         bool Done = false;
         int Count = 0;
@@ -16,9 +15,6 @@ namespace libsecondlife.TestClient
 
         public PacketLogCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "packetlog";
             Description = "Logs a given number of packets to an xml file. Usage: packetlog 10 tenpackets.xml";
         }

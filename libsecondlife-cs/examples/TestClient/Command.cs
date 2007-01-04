@@ -10,7 +10,7 @@ namespace libsecondlife.TestClient
     {
 		public string Name;
 		public string Description;
-		public TestClient TestClient;
+		public TestClient Client;
 
 		public abstract string Execute(string[] args, LLUUID fromAgentID);
 
@@ -22,7 +22,7 @@ namespace libsecondlife.TestClient
 		/// <summary>
 		/// Called twice per second, when Command.Active is set to true.
 		/// </summary>
-		public virtual void Think(SecondLife Client)
+		public virtual void Think()
 		{
 		}
     }

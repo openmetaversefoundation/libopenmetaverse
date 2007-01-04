@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class ShoutCommand : Command
     {
-        SecondLife Client;
-
         public ShoutCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "shout";
             Description = "Shout something.";
         }

@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class GiveAllCommand: Command
     {
-        SecondLife Client;
-
 		public GiveAllCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "giveAll";
 			Description = "Gives you all it's money.";
 		}

@@ -8,14 +8,10 @@ namespace libsecondlife.TestClient
 {
     public class UptimeCommand : Command
     {
-        SecondLife Client;
         public DateTime Created = DateTime.Now;
 
         public UptimeCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "uptime";
             Description = "Shows the login name, login time and length of time logged on.";
         }

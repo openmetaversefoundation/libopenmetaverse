@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class SayCommand: Command
     {
-        SecondLife Client;
-
         public SayCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "say";
 			Description = "Say something.  (usage: say (optional channel) whatever)";
 		}

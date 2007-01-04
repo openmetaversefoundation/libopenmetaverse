@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class WhoCommand: Command
     {
-        SecondLife Client;
-
         public WhoCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "who";
 			Description = "Lists seen avatars.";
 		}
@@ -22,7 +17,7 @@ namespace libsecondlife.TestClient
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
 			StringBuilder result = new StringBuilder();
-			foreach (Avatar av in TestClient.AvatarList.Values)
+			foreach (Avatar av in Client.AvatarList.Values)
 			{
 				result.AppendFormat("\n{0} {1} {2}/{3} ID: {4}", av.Name, av.GroupName, av.CurrentRegion != null ? av.CurrentRegion.Name : String.Empty, av.Position, av.ID);
 			}

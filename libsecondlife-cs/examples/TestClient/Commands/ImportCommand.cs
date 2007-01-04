@@ -29,7 +29,6 @@ namespace libsecondlife.TestClient
 
     public class ImportCommand : Command
     {
-        SecondLife Client;
         PrimObject currentPrim;
         LLVector3 currentPosition;
         SecondLife currentClient;
@@ -42,9 +41,6 @@ namespace libsecondlife.TestClient
 
         public ImportCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "import";
             Description = "Import prims from an exported xml file. Usage: import [filename.xml]";
             primDone = new ManualResetEvent(false);
@@ -81,7 +77,7 @@ namespace libsecondlife.TestClient
 
             if (!registeredCreateEvent)
             {
-                TestClient.OnPrimCreated += new TestClient.PrimCreatedCallback(TestClient_OnPrimCreated);
+                Client.OnPrimCreated += new TestClient.PrimCreatedCallback(TestClient_OnPrimCreated);
                 registeredCreateEvent = true;
             }
 

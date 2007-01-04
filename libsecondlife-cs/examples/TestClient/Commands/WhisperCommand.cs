@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class WhisperCommand : Command
     {
-        SecondLife Client;
-
         public WhisperCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "whisper";
             Description = "Whisper something.";
         }

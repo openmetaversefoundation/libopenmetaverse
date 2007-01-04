@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class JumpCommand: Command
     {
-        SecondLife Client;
-
         public JumpCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "jump";
 			Description = "Teleports to the specified height. (e.g. \"jump 1000\")";
 		}

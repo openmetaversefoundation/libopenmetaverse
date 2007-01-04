@@ -10,7 +10,6 @@ namespace libsecondlife.TestClient
     {
         public LoginCommand(TestClient testClient)
         {
-            TestClient = testClient;
             Name = "login";
             Description = "Logs in another avatar";
         }
@@ -20,7 +19,7 @@ namespace libsecondlife.TestClient
             if (args.Length != 3)
                 return "usage: login firstname lastname password";
 
-            SecondLife newClient = TestClient.ClientManager.Login(args);
+            SecondLife newClient = Client.ClientManager.Login(args);
 
             if (newClient.Network.Connected)
             {

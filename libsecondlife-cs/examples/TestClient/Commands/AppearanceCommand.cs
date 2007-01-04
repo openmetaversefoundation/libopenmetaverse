@@ -9,14 +9,10 @@ namespace libsecondlife.TestClient
 {
     public class SetAppearanceCommand : Command
     {
-        SecondLife Client;
         AppearanceManager aManager;
 
 		public SetAppearanceCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "setapp";
             Description = "Set appearance to what's stored in the DB.";
         }

@@ -7,13 +7,8 @@ namespace libsecondlife.TestClient
 {
     public class BalanceCommand: Command
     {
-        SecondLife Client;
-
         public BalanceCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "balance";
 			Description = "Shows the amount of L$.";
 		}

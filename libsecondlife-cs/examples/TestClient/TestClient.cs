@@ -88,6 +88,7 @@ namespace libsecondlife.TestClient
 
         private void RegisterCommand(Command command)
         {
+			command.Client = this;
 			if (!Commands.ContainsKey(command.Name.ToLower()))
 			{
 				Commands.Add(command.Name.ToLower(), command);
@@ -159,7 +160,7 @@ namespace libsecondlife.TestClient
 
             foreach (Command c in Commands.Values)
                 if (c.Active)
-                    c.Think(this);
+                    c.Think();
         }
 
         private void AgentDataUpdateHandler(Packet packet, Simulator sim)

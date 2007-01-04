@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class TreeCommand: Command
     {
-        SecondLife Client;
-
         public TreeCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "tree";
 			Description = "Rez a tree.";
 		}
@@ -33,7 +28,7 @@ namespace libsecondlife.TestClient
 		            treePosition.Z += 3.0f;
 
 		            Client.Objects.AddTree(Client.Network.CurrentSim, new LLVector3(0.5f, 0.5f, 0.5f),
-		                LLQuaternion.Identity, treePosition, tree, TestClient.GroupID, false);
+		                LLQuaternion.Identity, treePosition, tree, Client.GroupID, false);
 
 		            return "Attempted to rez a " + treeName + " tree";
 		        }

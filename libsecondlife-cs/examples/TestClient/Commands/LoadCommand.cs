@@ -9,13 +9,8 @@ namespace libsecondlife.TestClient
 {
     public class LoadCommand: Command
     {
-        SecondLife Client;
-
         public LoadCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "load";
 			Description = "Loads commands from a dll. (Usage: load AssemblyNameWithoutExtension)";
 		}
@@ -26,7 +21,7 @@ namespace libsecondlife.TestClient
 				return "Usage: load AssemblyNameWithoutExtension";
 
 			string filename = AppDomain.CurrentDomain.BaseDirectory + args[0] + ".dll";
-			TestClient.RegisterAllCommands(Assembly.LoadFile(filename));
+			Client.RegisterAllCommands(Assembly.LoadFile(filename));
             return "Assembly " + filename + " loaded.";
 		}
     }

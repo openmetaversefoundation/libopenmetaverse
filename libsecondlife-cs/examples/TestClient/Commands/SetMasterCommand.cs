@@ -8,14 +8,10 @@ namespace libsecondlife.TestClient
 {
     public class SetMasterCommand: Command
     {
-        SecondLife Client;
 		public DateTime Created = DateTime.Now;
 
         public SetMasterCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "setMaster";
 			Description = "Sets the user name of the master user.  The master user can IM to run commands.";
 		}
@@ -25,11 +21,11 @@ namespace libsecondlife.TestClient
 			string masterName = String.Empty;
 			for (int ct = 0; ct < args.Length;ct++)
 				masterName = masterName + args[ct] + " ";
-			TestClient.Master = masterName.TrimEnd();
+			Client.Master = masterName.TrimEnd();
 
-			foreach (Avatar av in TestClient.AvatarList.Values)
+			foreach (Avatar av in Client.AvatarList.Values)
 			{
-			    if (av.Name == TestClient.Master)
+			    if (av.Name == Client.Master)
 			    {
 			        Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
 			        break;

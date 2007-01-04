@@ -8,14 +8,10 @@ namespace libsecondlife.TestClient
 {
     public class FindSimCommand : Command
     {
-        SecondLife Client;
         Dictionary<SecondLife, bool> GridDataCached = new Dictionary<SecondLife, bool>();
 
         public FindSimCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "findsim";
             Description = "Searches for a simulator and returns information about it. Usage: findsim [Simulator Name]";
         }

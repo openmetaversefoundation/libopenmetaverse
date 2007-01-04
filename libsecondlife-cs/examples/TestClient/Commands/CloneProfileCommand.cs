@@ -8,7 +8,6 @@ namespace libsecondlife.TestClient
 {
     public class CloneProfileCommand : Command
     {
-        SecondLife Client;
         Avatar.Properties Properties;
         Avatar.Interests Interests;
         bool ReceivedProperties = false;
@@ -17,11 +16,8 @@ namespace libsecondlife.TestClient
 
         public CloneProfileCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
-            Client.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
-            Client.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
+            testClient.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
+            testClient.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
 
             Name = "cloneprofile";
             Description = "Clones another avatars profile as closely as possible. WARNING: This command will " +

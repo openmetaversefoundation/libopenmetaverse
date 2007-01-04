@@ -8,14 +8,10 @@ namespace libsecondlife.TestClient
 {
     public class GotoCommand: Command
     {
-        SecondLife Client;
         private bool EstateLookupFinished = false;
 
         public GotoCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "goto";
 			Description = "Teleport to a location (e.g. \"goto Hooper/100/100/30\")";
 		}

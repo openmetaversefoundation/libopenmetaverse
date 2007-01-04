@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class PrimCountCommand: Command
     {
-        SecondLife Client;
-
         public PrimCountCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "primCount";
 			Description = "Shows the number of prims that have been received.";
 		}
@@ -23,9 +18,9 @@ namespace libsecondlife.TestClient
 		{
             int count = 0;
 
-            lock (TestClient.SimPrims)
+            lock (Client.SimPrims)
             {
-                foreach (Dictionary<uint, PrimObject> prims in TestClient.SimPrims.Values)
+                foreach (Dictionary<uint, PrimObject> prims in Client.SimPrims.Values)
                 {
                     count += prims.Count;
                 }

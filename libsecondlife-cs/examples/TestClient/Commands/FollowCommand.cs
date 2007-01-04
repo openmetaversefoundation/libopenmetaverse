@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class FollowCommand: Command
     {
-        SecondLife Client;
-
 		public FollowCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "follow";
 			Description = "Follow another avatar. (usage: follow [FirstName LastName])  If no target is set then will follow master.";
 		}
@@ -27,7 +22,7 @@ namespace libsecondlife.TestClient
 			target = target.TrimEnd();
 
 			if (target.Length == 0)
-				target = TestClient.Master;
+				target = Client.Master;
 
             if (target.Length > 0)
             {
@@ -48,7 +43,7 @@ namespace libsecondlife.TestClient
 
         bool Follow(string name)
         {
-            foreach (Avatar av in TestClient.AvatarList.Values)
+            foreach (Avatar av in Client.AvatarList.Values)
             {
                 if (av.Name == name)
 				{
@@ -61,14 +56,14 @@ namespace libsecondlife.TestClient
             return false;
         }
 
-		public override void Think(SecondLife Client)
+		public override void Think()
 		{
             if (Helpers.VecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
             {
                 //move toward target
-           	LLVector3 avPos = followAvatar.Position; 
-		Client.Self.AutoPilot((ulong)avPos.X + (ulong)TestClient.regionX, (ulong)avPos.Y + (ulong)TestClient.regionY, avPos.Z);
-	    }
+           		LLVector3 avPos = followAvatar.Position; 
+				Client.Self.AutoPilot((ulong)avPos.X + (ulong)Client.regionX, (ulong)avPos.Y + (ulong)Client.regionY, avPos.Z);
+			}
 			//else
 			//{
 			//    //stop at current position
@@ -76,7 +71,7 @@ namespace libsecondlife.TestClient
 			//    client.Self.AutoPilot((ulong)myPos.x, (ulong)myPos.y, myPos.Z);
 			//}
 
-			base.Think(Client);
+			base.Think();
 		}
 
     }

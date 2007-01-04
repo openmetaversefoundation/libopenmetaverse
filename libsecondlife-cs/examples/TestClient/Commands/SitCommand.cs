@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class SitCommand: Command
     {
-        SecondLife Client;
-
         public SitCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "sit";
 			Description = "Attempt to sit on the closest prim";
 		}
@@ -24,11 +19,11 @@ namespace libsecondlife.TestClient
 		    PrimObject closest = null;
 		    double closestDistance = Double.MaxValue;
 
-		    lock (TestClient.SimPrims)
+		    lock (Client.SimPrims)
 		    {
-                if (TestClient.SimPrims.ContainsKey(Client.Network.CurrentSim))
+                if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
                 {
-                    foreach (PrimObject p in TestClient.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (PrimObject p in Client.SimPrims[Client.Network.CurrentSim].Values)
                     {
                         float distance = Helpers.VecDist(Client.Self.Position, p.Position);
 

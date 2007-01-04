@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class LogoutCommand : Command
     {
-        SecondLife Client;
-
         public LogoutCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "logout";
             Description = "Log this avatar out";
         }
@@ -22,7 +17,7 @@ namespace libsecondlife.TestClient
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
             string name = Client.ToString();
-			TestClient.ClientManager.Logout(TestClient);
+			Client.ClientManager.Logout(Client);
             return "Logged " + name + " out";
         }
     }

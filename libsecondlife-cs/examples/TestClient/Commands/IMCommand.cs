@@ -8,17 +8,13 @@ namespace libsecondlife.TestClient
 {
     public class ImCommand : Command
     {
-        SecondLife Client;
         string ToAvatarName = String.Empty;
         ManualResetEvent NameSearchEvent = new ManualResetEvent(false);
         Dictionary<string, LLUUID> Name2Key = new Dictionary<string, LLUUID>();
 
         public ImCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
-            Client.Avatars.OnAvatarNameSearch += new AvatarManager.AvatarNameSearchCallback(Avatars_OnAvatarNameSearch);
+            testClient.Avatars.OnAvatarNameSearch += new AvatarManager.AvatarNameSearchCallback(Avatars_OnAvatarNameSearch);
 
             Name = "im";
             Description = "Instant message someone. Usage: im [firstname] [lastname] [message]";

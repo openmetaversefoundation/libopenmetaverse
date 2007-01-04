@@ -8,13 +8,8 @@ namespace libsecondlife.TestClient
 {
     public class EchoMasterCommand: Command
     {
-        SecondLife Client;
-
         public EchoMasterCommand(TestClient testClient)
 		{
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
 			Name = "echoMaster";
 			Description = "Repeat everything that master says.";
 		}
@@ -37,9 +32,9 @@ namespace libsecondlife.TestClient
 
 		void Self_OnChat(string message, byte audible, byte type, byte sourcetype, string fromName, LLUUID id, LLUUID ownerid, LLVector3 position)
 		{
-			if (message.Length > 0 && TestClient.Master == fromName)
+			if (message.Length > 0 && Client.Master == fromName)
 			{
-			    TestClient.Self.Chat(message, 0, MainAvatar.ChatType.Normal);
+			    Client.Self.Chat(message, 0, MainAvatar.ChatType.Normal);
 			}
 		}
     }

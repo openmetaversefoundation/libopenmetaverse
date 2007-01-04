@@ -9,13 +9,8 @@ namespace libsecondlife.TestClient
 {
     public class ExportOutfitCommand : Command
     {
-        SecondLife Client;
-
         public ExportOutfitCommand(TestClient testClient)
         {
-            TestClient = testClient;
-            Client = (SecondLife)TestClient;
-
             Name = "exportoutfit";
             Description = "Exports an avatars outfit to an xml file. Usage: exportoutfit avataruuid outputfile.xml";
         }
@@ -36,9 +31,9 @@ namespace libsecondlife.TestClient
                 return "Usage: exportoutfit avataruuid outputfile.xml";
             }
 
-            lock (TestClient.Appearances)
+            lock (Client.Appearances)
             {
-                if (TestClient.Appearances.ContainsKey(id))
+                if (Client.Appearances.ContainsKey(id))
                 {
                     try
                     {
@@ -47,7 +42,7 @@ namespace libsecondlife.TestClient
 						XmlWriter writer = XmlWriter.Create(args[1], settings);
 						try
 						{
-							TestClient.Appearances[id].ToXml(writer);
+							Client.Appearances[id].ToXml(writer);
 						}
 						finally
 						{
