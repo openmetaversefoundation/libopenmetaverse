@@ -77,7 +77,7 @@ namespace libsecondlife.InventorySystem
         /// </summary>
         /// <param name="InventoryFolder">The Inventory Folder that was updated</param>
         /// <param name="e"></param>
-        public delegate void On_RequestDownloadContents_Finished(object InventoryFolder, EventArgs e);
+        public delegate void On_RequestDownloadContents_Finished(object iFolder, EventArgs e);
         public event On_RequestDownloadContents_Finished RequestDownloadFinishedEvent;
 
         // Each InventorySystem needs to be initialized with a client and root folder.
@@ -443,7 +443,12 @@ namespace libsecondlife.InventorySystem
         }
 
         #region libsecondlife callback handlers
-
+        
+        /// <summary>
+        /// This is called in response to an item creation request
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         public void UpdateCreateInventoryItemHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
@@ -491,7 +496,7 @@ namespace libsecondlife.InventorySystem
         }
 
         /// <summary>
-        /// Returned in response to a InventoryDescendantRequest.  Contains information about the
+        /// Returned in response to a FetchInventoryDescendents request.  Contains information about the
         /// contents of a folder.
         /// </summary>
         /// <seealso cref="InventoryManager.RequestFolder"/>
@@ -631,39 +636,23 @@ namespace libsecondlife.InventorySystem
             }
 
 
+            // Update total number of descendants expected , and update the total downloaded
+            dr.Expected = iDescendentsExpected;
+            dr.Received += iDescendentsReceivedThisBlock;
+            dr.LastReceivedAtTick = Environment.TickCount;
 
-            // Update download status for this folder
-            if (iDescendentsReceivedThisBlock >= iDescendentsExpected)
+            // Check if we're finished
+            if (dr.Received >= dr.Expected)
             {
-                // We received all the descendents we're expecting for this folder
-                // in this packet, so go ahead and remove folder from status list.
+                // Looks like after updating, we have all the descendents, 
+                // remove from folder status.
                 FolderDownloadStatus.Remove(uuidFolderID);
                 dr.RequestComplete.Set();
-            }
-            else
-            {
-                // This one packet didn't have all the descendents we're expecting
-                // so update the total we're expecting, and update the total downloaded
-                dr.Expected = iDescendentsExpected;
-                dr.Received += iDescendentsReceivedThisBlock;
-                dr.LastReceivedAtTick = Environment.TickCount;
-
-                if (dr.Received >= dr.Expected)
+                if (RequestDownloadFinishedEvent != null)
                 {
-                    // Looks like after updating, we have all the descendents, 
-                    // remove from folder status.
-                    FolderDownloadStatus.Remove(uuidFolderID);
-                    dr.RequestComplete.Set();
-                    if (RequestDownloadFinishedEvent != null)
-                    {
-                        DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
-                        e.DownloadRequest = dr;
-                        RequestDownloadFinishedEvent(InvFolderUpdating, e);
-                    }
-                }
-                else
-                {
-                    FolderDownloadStatus[uuidFolderID] = dr;
+                    DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
+                    e.DownloadRequest = dr;
+                    RequestDownloadFinishedEvent(InvFolderUpdating, e);
                 }
             }
         }
