@@ -14,11 +14,6 @@ namespace libsecondlife.InventorySystem
         public string Name
         {
             get { return _Name; }
-            set
-            {
-                _Name = value;
-                base.iManager.FolderRename(this);
-            }
         }
 
 
@@ -28,22 +23,10 @@ namespace libsecondlife.InventorySystem
             get { return _FolderID; }
         }
 
-        private LLUUID _ParentID;
+        internal LLUUID _ParentID;
         public LLUUID ParentID
         {
             get { return _ParentID; }
-            set
-            {
-                InventoryFolder ifParent = iManager.getFolder(this.ParentID);
-                ifParent._Contents.Remove(this);
-
-                ifParent = iManager.getFolder(value);
-                ifParent._Contents.Add(this);
-
-                this._ParentID = value;
-
-                base.iManager.FolderMove(this, value);
-            }
         }
 
         internal sbyte _Type;
@@ -54,6 +37,7 @@ namespace libsecondlife.InventorySystem
 
         internal List<InventoryBase> _Contents = new List<InventoryBase>();
 
+        #region Constructors
         internal InventoryFolder(InventoryManager manager)
             : base(manager)
         {
@@ -80,15 +64,7 @@ namespace libsecondlife.InventorySystem
             this._ParentID = parentID;
             this._Type = Type;
         }
-
-        internal InventoryFolder(InventoryManager manager, Dictionary<string, string> htData)
-            : base(manager)
-        {
-            this._Name = htData["name"];
-            this._FolderID = new LLUUID(htData["folder_id"]);
-            this._ParentID = new LLUUID(htData["parent_id"]);
-            this._Type = sbyte.Parse(htData["type_default"].ToString());
-        }
+        #endregion
 
         /// <summary>
         /// Get the contents of this folder
@@ -103,28 +79,17 @@ namespace libsecondlife.InventorySystem
         /// Request a download of this folder's content information.
         /// </summary>
         /// <param name="Recurse">Indicate if we should recursively download content information.</param>
-        /// <returns>The Request object for this download</returns>
-        public DownloadRequest_Folder RequestDownloadContents(bool recurse)
-        {
-            _Contents.Clear();
-
-            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse);
-            iManager.RequestFolder(dr);
-
-            return dr;
-        }
-
-        /// <summary>
-        /// Request a download of this folder's content information.
-        /// </summary>
-        /// <param name="Recurse">Indicate if we should recursively download content information.</param>
         /// <param name="Items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
+        /// <param name="Clear">Indicate if item data should be downloaded too (true), or only folders(false)</param>
         /// <returns>The Request object for this download</returns>
-        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool items)
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear)
         {
-            _Contents.Clear();
+            if (clear)
+            {
+                iManager.FolderClearContents(this, folders, items);
+            }
 
-            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, items);
+            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, true, items);
             iManager.RequestFolder(dr);
 
             return dr;
@@ -132,7 +97,7 @@ namespace libsecondlife.InventorySystem
 
         public InventoryFolder CreateFolder(string name)
         {
-            return base.iManager.FolderCreate(name, FolderID);
+            return iManager.FolderCreate(name, FolderID);
         }
 
         public void Delete()
@@ -148,17 +113,17 @@ namespace libsecondlife.InventorySystem
 
         public void MoveTo(LLUUID newParentID)
         {
-            this.ParentID = newParentID;
+            iManager.FolderMove(this, newParentID);
         }
 
         public InventoryNotecard NewNotecard(string name, string description, string body)
         {
-            return base.iManager.NewNotecard(name, description, body, this.FolderID);
+            return iManager.NewNotecard(name, description, body, this.FolderID);
         }
 
         public InventoryImage NewImage(string name, string description, byte[] j2cdata)
         {
-            return base.iManager.NewImage(name, description, j2cdata, this.FolderID);
+            return iManager.NewImage(name, description, j2cdata, this.FolderID);
         }
 
         public List<InventoryBase> GetItemByName(string name)
@@ -210,6 +175,5 @@ namespace libsecondlife.InventorySystem
 
             return output;
         }
-
     }
 }

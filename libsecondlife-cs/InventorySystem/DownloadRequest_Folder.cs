@@ -21,22 +21,10 @@ namespace libsecondlife.InventorySystem
 
         public ManualResetEvent RequestComplete = new ManualResetEvent(false);
 
-        public DownloadRequest_Folder(LLUUID folderID)
+        public DownloadRequest_Folder(LLUUID folderID, bool recurse, bool fetchFolders, bool fetchItems)
         {
             FolderID = folderID;
-            LastReceivedAtTick = Environment.TickCount;
-        }
-
-        public DownloadRequest_Folder(LLUUID folderID, bool recurse)
-        {
-            FolderID = folderID;
-            LastReceivedAtTick = Environment.TickCount;
             Recurse = recurse;
-        }
-
-        public DownloadRequest_Folder(LLUUID folderID, bool fetchFolders, bool fetchItems)
-        {
-            FolderID = folderID;
             FetchFolders = fetchFolders;
             FetchItems = fetchItems;
             LastReceivedAtTick = Environment.TickCount;
