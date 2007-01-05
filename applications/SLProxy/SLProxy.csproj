@@ -89,6 +89,7 @@
     <Compile Include="SLProxy.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SLProxyLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\libsecondlife-cs\libsecondlife.csproj">

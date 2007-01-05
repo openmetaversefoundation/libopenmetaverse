@@ -108,7 +108,7 @@ public class Analyst : ProxyPlugin
             {
                 pType = packetTypeFromName(words[1]);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 SayToUser("Bad packet name: " + words[1]);
                 return;
@@ -166,7 +166,7 @@ public class Analyst : ProxyPlugin
             {
                 pType = packetTypeFromName(words[1]);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 SayToUser("Bad packet name: " + words[1]);
                 return;
@@ -223,7 +223,7 @@ public class Analyst : ProxyPlugin
             {
                 pType = packetTypeFromName(words[1]);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 SayToUser("Bad packet name: " + words[1]);
                 return;
