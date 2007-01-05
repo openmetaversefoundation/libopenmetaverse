@@ -71,6 +71,15 @@ namespace libsecondlife.InventorySystem
 
         private int LastPacketRecievedAtTick;
 
+
+        /// <summary>
+        /// Download event singalling that folder contents have been downloaded.
+        /// </summary>
+        /// <param name="InventoryFolder">The Inventory Folder that was updated</param>
+        /// <param name="e"></param>
+        public delegate void On_RequestDownloadContents_Finished(object InventoryFolder, EventArgs e);
+        public event On_RequestDownloadContents_Finished RequestDownloadFinishedEvent;
+
         // Each InventorySystem needs to be initialized with a client and root folder.
         public InventoryManager(SecondLife client)
         {
@@ -433,7 +442,7 @@ namespace libsecondlife.InventorySystem
             }
         }
 
-
+        #region libsecondlife callback handlers
 
         public void UpdateCreateInventoryItemHandler(Packet packet, Simulator simulator)
         {
@@ -498,12 +507,15 @@ namespace libsecondlife.InventorySystem
             // Get the original Descendent Request for this Packet
             DownloadRequest_Folder dr = (DownloadRequest_Folder)FolderDownloadStatus[uuidFolderID];
 
+            // Get the Inventory folder that we'll be updating
+            InventoryFolder InvFolderUpdating = (InventoryFolder)htFoldersByUUID[uuidFolderID];
+
             // Update Inventory Manager's last tick point, used for timeouts and such
             LastPacketRecievedAtTick = Environment.TickCount;
 
             // Some temp variables to be reused as we're parsing the packet
-            InventoryItem invItem;
-            InventoryFolder invFolder;
+            InventoryItem TempInvItem;
+            InventoryFolder TempInvFolder;
 
             // Used to count the number of descendants received to see if we're finished or not.
             int iDescendentsExpected = reply.AgentData.Descendents;
@@ -526,43 +538,41 @@ namespace libsecondlife.InventorySystem
                     }
                     else
                     {
-                        invItem = new InventoryItem(this, itemBlock);
+                        TempInvItem = new InventoryItem(this, itemBlock);
 
-                        InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invItem.FolderID];
-
-                        if (ifolder._Contents.Contains(invItem) == false)
+                        if (InvFolderUpdating._Contents.Contains(TempInvItem) == false)
                         {
-                            if ((invItem.InvType == 7) && (invItem.Type == Asset.ASSET_TYPE_NOTECARD))
+                            if ((TempInvItem.InvType == 7) && (TempInvItem.Type == Asset.ASSET_TYPE_NOTECARD))
                             {
-                                InventoryItem temp = new InventoryNotecard(this, invItem);
-                                invItem = temp;
+                                InventoryItem temp = new InventoryNotecard(this, TempInvItem);
+                                TempInvItem = temp;
                             }
 
-                            if ((invItem.InvType == 0) && (invItem.Type == Asset.ASSET_TYPE_IMAGE))
+                            if ((TempInvItem.InvType == 0) && (TempInvItem.Type == Asset.ASSET_TYPE_IMAGE))
                             {
-                                InventoryItem temp = new InventoryImage(this, invItem);
-                                invItem = temp;
+                                InventoryItem temp = new InventoryImage(this, TempInvItem);
+                                TempInvItem = temp;
                             }
 
-                            if ( (invItem.InvType == 10) && (invItem.Type == Asset.ASSET_TYPE_SCRIPT) )
+                            if ( (TempInvItem.InvType == 10) && (TempInvItem.Type == Asset.ASSET_TYPE_SCRIPT) )
                             {
-                                InventoryItem temp = new InventoryScript(this, invItem);
-                                invItem = temp;
+                                InventoryItem temp = new InventoryScript(this, TempInvItem);
+                                TempInvItem = temp;
                             }
 
-                            if ((invItem.InvType == 18) && 
+                            if ((TempInvItem.InvType == 18) && 
                                 (
-                                    (invItem.Type == Asset.ASSET_TYPE_WEARABLE_BODY)
-                                    || (invItem.Type == Asset.ASSET_TYPE_WEARABLE_CLOTHING)
+                                    (TempInvItem.Type == Asset.ASSET_TYPE_WEARABLE_BODY)
+                                    || (TempInvItem.Type == Asset.ASSET_TYPE_WEARABLE_CLOTHING)
                                 )
                                )
 
                             {
-                                InventoryItem temp = new InventoryWearable(this, invItem);
-                                invItem = temp;
+                                InventoryItem temp = new InventoryWearable(this, TempInvItem);
+                                TempInvItem = temp;
                             }
 
-                            ifolder._Contents.Add(invItem);
+                            InvFolderUpdating._Contents.Add(TempInvItem);
                         }
                     }
                 }
@@ -580,32 +590,31 @@ namespace libsecondlife.InventorySystem
                 // the "filler" block will not have a name
                 if (folderBlock.Name.Length != 0)
                 {
-                    invFolder = new InventoryFolder(this, name, folderid, parentid);
+                    TempInvFolder = new InventoryFolder(this, name, folderid, parentid);
 
                     iDescendentsReceivedThisBlock++;
 
                     // Add folder to Parent
-                    InventoryFolder ifolder = (InventoryFolder)htFoldersByUUID[invFolder.ParentID];
-                    if (ifolder._Contents.Contains(invFolder) == false)
+                    if (InvFolderUpdating._Contents.Contains(TempInvFolder) == false)
                     {
-                        ifolder._Contents.Add(invFolder);
+                        InvFolderUpdating._Contents.Add(TempInvFolder);
                     }
 
 
                     // Add folder to UUID Lookup
-                    htFoldersByUUID[invFolder.FolderID] = invFolder;
+                    htFoldersByUUID[TempInvFolder.FolderID] = TempInvFolder;
 
 
                     // Do we recurse?
                     if (dr.Recurse)
                     {
                         // It's not the root, should be safe to "recurse"
-                        if (!invFolder.FolderID.Equals(slClient.Self.InventoryRootFolderUUID))
+                        if (!TempInvFolder.FolderID.Equals(slClient.Self.InventoryRootFolderUUID))
                         {
                             bool alreadyQueued = false;
                             foreach (DownloadRequest_Folder adr in alFolderRequestQueue)
                             {
-                                if (adr.FolderID == invFolder.FolderID)
+                                if (adr.FolderID == TempInvFolder.FolderID)
                                 {
                                     alreadyQueued = true;
                                     break;
@@ -614,7 +623,7 @@ namespace libsecondlife.InventorySystem
 
                             if (!alreadyQueued)
                             {
-                                alFolderRequestQueue.Add(new DownloadRequest_Folder(invFolder.FolderID));
+                                alFolderRequestQueue.Add(new DownloadRequest_Folder(TempInvFolder.FolderID));
                             }
                         }
                     }
@@ -645,6 +654,12 @@ namespace libsecondlife.InventorySystem
                     // remove from folder status.
                     FolderDownloadStatus.Remove(uuidFolderID);
                     dr.RequestComplete.Set();
+                    if (RequestDownloadFinishedEvent != null)
+                    {
+                        DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
+                        e.DownloadRequest = dr;
+                        RequestDownloadFinishedEvent(InvFolderUpdating, e);
+                    }
                 }
                 else
                 {
@@ -652,5 +667,6 @@ namespace libsecondlife.InventorySystem
                 }
             }
         }
+        #endregion
     }
 }

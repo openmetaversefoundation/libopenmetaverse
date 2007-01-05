@@ -54,7 +54,6 @@ namespace libsecondlife.InventorySystem
 
         internal List<InventoryBase> _Contents = new List<InventoryBase>();
 
-
         internal InventoryFolder(InventoryManager manager)
             : base(manager)
         {
