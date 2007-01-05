@@ -69,6 +69,7 @@ namespace libsecondlife
 
         private SecondLife Client;
         private int priceUpload = 0;
+
         /// <summary>
         /// Constructor
         /// </summary>

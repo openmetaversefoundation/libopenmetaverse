@@ -237,7 +237,7 @@ namespace libsecondlife
         public MainAvatarStatus Status;
         /// <summary>The UUID of your root inventory folder</summary>
         public LLUUID InventoryRootFolderUUID;
-        
+
         
         /// <summary>Gets the health of the agent</summary>
         public float Health
@@ -456,11 +456,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Set the height and the width of your avatar. This is used to scale
-        /// the avatar mesh.
+        /// Set the height and the width of the client window. This is used
+        /// by the server to build a virtual camera frustum for our avatar
         /// </summary>
-        /// <param name="height">New height of the avatar</param>
-        /// <param name="width">New width of the avatar</param>
+        /// <param name="height">New height of the viewer window</param>
+        /// <param name="width">New width of the viewer window</param>
         public void SetHeightWidth(ushort height, ushort width)
         {
             AgentHeightWidthPacket heightwidth = new AgentHeightWidthPacket();
@@ -958,6 +958,22 @@ namespace libsecondlife
             leave.GroupData.GroupID = groupID;
 
             Client.Network.SendPacket(leave);
+        }
+
+        /// <summary>
+        /// Set our current active group
+        /// </summary>
+        /// <param name="groupID">The group we are a member of that we want to 
+        /// activate</param>
+        public void ActivateGroup(LLUUID groupID)
+        {
+            ActivateGroupPacket activate = new ActivateGroupPacket();
+
+            activate.AgentData.AgentID = Client.Network.AgentID;
+            activate.AgentData.SessionID = Client.Network.SessionID;
+            activate.AgentData.GroupID = groupID;
+
+            Client.Network.SendPacket(activate);
         }
 
         /// <summary>

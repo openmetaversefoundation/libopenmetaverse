@@ -103,12 +103,23 @@ namespace libsecondlife.Utilities
         protected SecondLife Client;
         protected Dictionary<LLUUID, Avatar> avatars = new Dictionary<LLUUID,Avatar>();
         protected Dictionary<LLUUID, ManualResetEvent> NameLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
+        protected Dictionary<LLUUID, ManualResetEvent> StatisticsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
+        protected Dictionary<LLUUID, ManualResetEvent> PropertiesLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
+        protected Dictionary<LLUUID, ManualResetEvent> InterestsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
+        protected Dictionary<LLUUID, ManualResetEvent> GroupsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
 
         public AvatarTracker(SecondLife client)
         {
             Client = client;
 
             Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
+            Client.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
+            Client.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
+            Client.Avatars.OnAvatarStatistics += new AvatarManager.AvatarStatisticsCallback(Avatars_OnAvatarStatistics);
+            Client.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
+
+            Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
+            Client.Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
         }
 
         /// <summary>
@@ -119,6 +130,22 @@ namespace libsecondlife.Utilities
         public bool Contains(LLUUID id)
         {
             return avatars.ContainsKey(id);
+        }
+
+        public Dictionary<LLUUID, Avatar> SimLocalAvatars()
+        {
+            Dictionary<LLUUID, Avatar> local = new Dictionary<LLUUID, Avatar>();
+
+            lock (avatars)
+            {
+                foreach (Avatar avatar in avatars.Values)
+                {
+                    if (avatar.CurrentRegion == Client.Network.CurrentSim.Region)
+                        local[avatar.ID] = avatar;
+                }
+            }
+
+            return local;
         }
 
         /// <summary>
@@ -213,6 +240,76 @@ namespace libsecondlife.Utilities
         //    }
         //}
 
+        public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.Properties properties, 
+            out Avatar.Statistics statistics, out List<LLUUID> groups)
+        {
+            // Do a local lookup first
+            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null && 
+                avatars[id].ProfileProperties.BornOn != String.Empty)
+            {
+                interests = avatars[id].ProfileInterests;
+                properties = avatars[id].ProfileProperties;
+                statistics = avatars[id].ProfileStatistics;
+                groups = avatars[id].Groups;
+
+                return true;
+            }
+
+            // Create the ManualResetEvents
+            lock (PropertiesLookupEvents)
+                if (!PropertiesLookupEvents.ContainsKey(id))
+                    PropertiesLookupEvents[id] = new ManualResetEvent(false);
+            lock (InterestsLookupEvents)
+                if (!InterestsLookupEvents.ContainsKey(id))
+                    InterestsLookupEvents[id] = new ManualResetEvent(false);
+            lock (StatisticsLookupEvents)
+                if (!StatisticsLookupEvents.ContainsKey(id))
+                    StatisticsLookupEvents[id] = new ManualResetEvent(false);
+            lock (GroupsLookupEvents)
+                if (!GroupsLookupEvents.ContainsKey(id))
+                    GroupsLookupEvents[id] = new ManualResetEvent(false);
+
+            // Request the avatar profile
+            Client.Avatars.RequestAvatarProperties(id);
+
+            // Wait for all of the events to complete
+            PropertiesLookupEvents[id].WaitOne(5000, false);
+            InterestsLookupEvents[id].WaitOne(5000, false);
+            StatisticsLookupEvents[id].WaitOne(5000, false);
+            GroupsLookupEvents[id].WaitOne(5000, false);
+
+            // Destroy the ManualResetEvents
+            lock (PropertiesLookupEvents)
+                PropertiesLookupEvents.Remove(id);
+            lock (InterestsLookupEvents)
+                InterestsLookupEvents.Remove(id);
+            lock (StatisticsLookupEvents)
+                StatisticsLookupEvents.Remove(id);
+            lock (GroupsLookupEvents)
+                GroupsLookupEvents.Remove(id);
+
+            // If we got a filled in profile return everything
+            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null && 
+                avatars[id].ProfileProperties.BornOn != String.Empty)
+            {
+                interests = avatars[id].ProfileInterests;
+                properties = avatars[id].ProfileProperties;
+                statistics = avatars[id].ProfileStatistics;
+                groups = avatars[id].Groups;
+
+                return true;
+            }
+            else
+            {
+                interests = new Avatar.Interests();
+                properties = new Avatar.Properties();
+                statistics = new Avatar.Statistics();
+                groups = null;
+
+                return false;
+            }
+        }
+
         /// <summary>
         /// This function will only check if the avatar name exists locally,
         /// it will not do any networking calls to fetch the name
@@ -229,6 +326,19 @@ namespace libsecondlife.Utilities
             }
         }
 
+        void Objects_OnAvatarMoved(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation)
+        {
+            // TODO:
+        }
+
+        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+        {
+            lock (avatars)
+            {
+                avatars[avatar.ID] = avatar;
+            }
+        }
+
         private void Avatars_OnAvatarNames(Dictionary<LLUUID, string> names)
         {
             lock (avatars)
@@ -240,13 +350,74 @@ namespace libsecondlife.Utilities
 
                     avatars[kvp.Key].Name = kvp.Value;
 
-                    lock (NameLookupEvents)
-                    {
-                        if (NameLookupEvents.ContainsKey(kvp.Key))
-                            NameLookupEvents[kvp.Key].Set();
-                    }
+                    if (NameLookupEvents.ContainsKey(kvp.Key))
+                        NameLookupEvents[kvp.Key].Set();
                 }
             }
+        }
+
+        void Avatars_OnAvatarStatistics(LLUUID avatarID, Avatar.Statistics statistics)
+        {
+            lock (avatars)
+            {
+                if (!avatars.ContainsKey(avatarID))
+                    avatars[avatarID] = new Avatar();
+
+                avatars[avatarID].ProfileStatistics = statistics;
+            }
+
+            if (StatisticsLookupEvents.ContainsKey(avatarID))
+                StatisticsLookupEvents[avatarID].Set();
+        }
+
+        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.Properties properties)
+        {
+            lock (avatars)
+            {
+                if (!avatars.ContainsKey(avatarID))
+                    avatars[avatarID] = new Avatar();
+
+                avatars[avatarID].ProfileProperties = properties;
+            }
+
+            if (PropertiesLookupEvents.ContainsKey(avatarID))
+                PropertiesLookupEvents[avatarID].Set();
+        }
+
+        void Avatars_OnAvatarInterests(LLUUID avatarID, Avatar.Interests interests)
+        {
+            lock (avatars)
+            {
+                if (!avatars.ContainsKey(avatarID))
+                    avatars[avatarID] = new Avatar();
+
+                avatars[avatarID].ProfileInterests = interests;
+            }
+
+            if (InterestsLookupEvents.ContainsKey(avatarID))
+                InterestsLookupEvents[avatarID].Set();
+        }
+
+        void Avatars_OnAvatarGroups(LLUUID avatarID, AvatarGroupsReplyPacket.GroupDataBlock[] groups)
+        {
+            List<LLUUID> groupList = new List<LLUUID>();
+
+            foreach (AvatarGroupsReplyPacket.GroupDataBlock block in groups)
+            {
+                // TODO: We just toss away all the other information here, seems like a waste...
+                groupList.Add(block.GroupID);
+            }
+
+            lock (avatars)
+            {
+                if (!avatars.ContainsKey(avatarID))
+                    avatars[avatarID] = new Avatar();
+
+                avatars[avatarID].Groups = groupList;
+            }
+
+            if (GroupsLookupEvents.ContainsKey(avatarID))
+                GroupsLookupEvents[avatarID].Set();
         }
     }
 

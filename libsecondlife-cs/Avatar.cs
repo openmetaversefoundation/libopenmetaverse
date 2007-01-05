@@ -129,6 +129,10 @@ namespace libsecondlife
             public int BuildingPositive;
             /// <summary>Negative ratings for Building</summary>
             public int BuildingNegative;
+            /// <summary>Positive ratings given by this avatar</summary>
+            public int GivenPositive;
+            /// <summary>Negative ratings given by this avatar</summary>
+            public int GivenNegative;
         }
 
         /// <summary>
@@ -190,6 +194,8 @@ namespace libsecondlife
         public string Name = String.Empty;
         /// <summary>Active group</summary>
         public string GroupName = String.Empty;
+        /// <summary>Groups that this avatar is a member of</summary>
+        public List<LLUUID> Groups = new List<LLUUID>();
         /// <summary>Online status</summary>
         public bool Online = false;
         /// <summary>Positive and negative ratings</summary>

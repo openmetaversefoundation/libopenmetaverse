@@ -259,7 +259,7 @@ namespace libsecondlife.TestClient
             LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, 
             string message, byte offline, byte[] binaryBucket)
         {
-            if (Master.Length > 0)
+            if (Master != null && Master.Length > 0)
             {
                 if (fromAgentName.ToLower().Trim() != Master.ToLower().Trim())
                 {

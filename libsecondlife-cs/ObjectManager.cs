@@ -1011,9 +1011,9 @@ namespace libsecondlife
                             {
                                 Avatar avatar = new Avatar();
 
-                                string FirstName = "";
-                                string LastName = "";
-                                string GroupName = "";
+                                string FirstName = String.Empty;
+                                string LastName = String.Empty;
+                                string GroupName = String.Empty;
 
                                 //avatar.CollisionPlane = new LLQuaternion(block.ObjectData, 0);
                                 avatar.Position = new LLVector3(block.ObjectData, 16);
@@ -1248,7 +1248,7 @@ namespace libsecondlife
 
                             if ((flags & CompressedFlags.HasText) != 0)
                             {
-                                string text = "";
+                                string text = String.Empty;
                                 while (block.Data[i] != 0)
                                 {
                                     text += (char)block.Data[i];
@@ -1263,7 +1263,7 @@ namespace libsecondlife
                             }
                             else
                             {
-                                prim.Text = "";
+                                prim.Text = String.Empty;
                             }
 
                             if ((flags & CompressedFlags.HasParticles) != 0)
@@ -1301,7 +1301,7 @@ namespace libsecondlife
                             {
                                 // Get the attachment string
                                 // Example: "AttachItemID STRING RW SV fa9a5ab8-1bad-b449-9873-cf5b803e664e"
-                                string text = "";
+                                string text = String.Empty;
                                 while (block.Data[i] != 0)
                                 {
                                     text += (char)block.Data[i];
@@ -1313,7 +1313,7 @@ namespace libsecondlife
                             }
                             else
                             {
-                                prim.Name = "";
+                                prim.Name = String.Empty;
                             }
 
                             if ((flags & CompressedFlags.Unknown1) != 0)

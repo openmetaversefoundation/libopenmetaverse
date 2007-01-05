@@ -402,10 +402,11 @@ namespace libsecondlife.AssetSystem
             LLUUID ImageID = reply.ImageID.ID;
 
             // Lookup the request for this packet
-            TransferRequest tr;
+            TransferRequest tr = null;
             lock (htDownloadRequests)
             {
-                tr = (TransferRequest)htDownloadRequests[ImageID];
+                if (htDownloadRequests.ContainsKey(ImageID))
+                    tr = (TransferRequest)htDownloadRequests[ImageID];
             }
             if (tr == null)
             {
@@ -454,11 +455,13 @@ namespace libsecondlife.AssetSystem
             LLUUID ImageID = reply.ImageID.ID;
 
             // Lookup the request for this packet
-            TransferRequest tr;
+            TransferRequest tr = null;
             lock (htDownloadRequests)
             {
-                tr = (TransferRequest)htDownloadRequests[ImageID];
+                if (htDownloadRequests.ContainsKey(ImageID))
+                    tr = (TransferRequest)htDownloadRequests[ImageID];
             }
+
             if (tr == null)
             {
                 // Received a packet that doesn't belong to any requests in our queue, strange...

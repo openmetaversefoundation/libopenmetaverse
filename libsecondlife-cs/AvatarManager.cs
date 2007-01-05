@@ -67,6 +67,12 @@ namespace libsecondlife
         /// <param name="properties"></param>
         public delegate void AvatarPropertiesCallback(LLUUID avatarID, Avatar.Properties properties);
         /// <summary>
+        /// Triggered when an avatar group list is received (AvatarGroupsReply)
+        /// </summary>
+        /// <param name="avatarID"></param>
+        /// <param name="groupBlock"></param>
+        public delegate void AvatarGroupsCallback(LLUUID avatarID, AvatarGroupsReplyPacket.GroupDataBlock[] groups);
+        /// <summary>
         /// Triggered when a name search reply is received (AvatarPickerReply)
         /// </summary>
         /// <param name="queryID"></param>
@@ -84,6 +90,8 @@ namespace libsecondlife
         public event AvatarInterestsCallback OnAvatarInterests;
         /// <summary></summary>
         public event AvatarPropertiesCallback OnAvatarProperties;
+        /// <summary></summary>
+        public event AvatarGroupsCallback OnAvatarGroups;
         /// <summary></summary>
         public event AvatarNameSearchCallback OnAvatarNameSearch;
 
@@ -106,6 +114,9 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
             Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
             Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new NetworkManager.PacketCallback(AvatarInterestsHandler));
+
+            // Avatar group callback
+            Client.Network.RegisterCallback(PacketType.AvatarGroupsReply, new NetworkManager.PacketCallback(AvatarGroupsHandler));
 
             // Other callbacks
             Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
@@ -255,6 +266,10 @@ namespace libsecondlife
                             stats.AppearancePositive = b.Positive;
                             stats.AppearanceNegative = b.Negative;
                             break;
+                        case "Given":
+                            stats.GivenPositive = b.Positive;
+                            stats.GivenNegative = b.Negative;
+                            break;
                         default:
                             Client.Log("Got an AvatarStatistics block with the name " + n, Helpers.LogLevel.Warning);
                             break;
@@ -314,12 +329,24 @@ namespace libsecondlife
             }
         }
 
+        private void AvatarGroupsHandler(Packet packet, Simulator simulator)
+        {
+            if (OnAvatarGroups != null)
+            {
+                AvatarGroupsReplyPacket groups = (AvatarGroupsReplyPacket)packet;
+
+                // FIXME: Build a little struct to represent the groups.GroupData blocks so we keep
+                // libsecondlife.Packets abstracted away
+                OnAvatarGroups(groups.AgentData.AvatarID, groups.GroupData);
+            }
+        }
+
         private void AvatarPickerReplyHandler(Packet packet, Simulator simulator)
         {
             if (OnAvatarNameSearch != null)
             {
                 AvatarPickerReplyPacket reply = (AvatarPickerReplyPacket)packet;
-                Dictionary<LLUUID, string> avatars = new Dictionary<LLUUID,string>();
+                Dictionary<LLUUID, string> avatars = new Dictionary<LLUUID, string>();
 
                 foreach (AvatarPickerReplyPacket.DataBlock block in reply.Data)
                 {

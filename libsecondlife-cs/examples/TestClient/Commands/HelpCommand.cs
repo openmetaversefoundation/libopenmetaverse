@@ -20,7 +20,7 @@ namespace libsecondlife.TestClient
 			result.AppendFormat("\n\nHELP\nClient accept teleport lures from master and group members.\n");
 			foreach (Command c in Client.Commands.Values)
 			{
-				result.AppendFormat("{0} - {1}\n", c.Name, c.Description);
+				result.AppendFormat(" * {0} - {1}\n", c.Name, c.Description);
 			}
 
             return result.ToString();
