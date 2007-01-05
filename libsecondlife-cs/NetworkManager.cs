@@ -93,6 +93,7 @@ namespace libsecondlife
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
         private uint Sequence = 0;
+        private object SequenceLock = new object();
         private byte[] RecvBuffer = new byte[4096];
         private byte[] ZeroBuffer = new byte[8192];
         private byte[] ZeroOutBuffer = new byte[4096];
@@ -244,11 +245,14 @@ namespace libsecondlife
             if (incrementSequence)
             {
                 // Set the sequence number
-                if (Sequence > Client.Settings.MAX_SEQUENCE)
-                    Sequence = 1;
-                else
-                    Sequence++;
-                packet.Header.Sequence = Sequence;
+                lock (SequenceLock)
+                {
+                    if (Sequence > Client.Settings.MAX_SEQUENCE)
+                        Sequence = 1;
+                    else
+                        Sequence++;
+                    packet.Header.Sequence = Sequence;
+                }
 
                 if (packet.Header.Reliable)
                 {
@@ -325,25 +329,42 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Send Packet. Bytes !
+        /// Send a raw byte array payload as a packet
         /// </summary>
-        /// <param name="payload">payload</param>
-        public void SendPacket(byte[] payload)
+        /// <param name="payload">The packet payload</param>
+        /// <param name="setSequence">Whether the second, third, and fourth bytes
+        /// should be modified to the current stream sequence number</param>
+        public void SendPacket(byte[] payload, bool setSequence)
         {
-            if (!connected)
+            if (connected)
             {
-                throw new NotConnectedException();
-            }
+                try
+                {
+                    if (setSequence && payload.Length > 3)
+                    {
+                        lock (SequenceLock)
+                        {
+                            payload[1] = (byte)(Sequence >> 16);
+                            payload[2] = (byte)(Sequence >> 8);
+                            payload[3] = (byte)(Sequence % 256);
+                            Sequence++;
+                        }
+                    }
 
-            try
-            {
-                Connection.Send(payload, payload.Length, SocketFlags.None);
+                    Connection.Send(payload, payload.Length, SocketFlags.None);
+                }
+                catch (SocketException e)
+                {
+                    Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                }
             }
-            catch (SocketException e)
+            else
             {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+                Client.Log("Attempted to send a " + payload.Length + " byte payload when " +
+                    "we are disconnected", Helpers.LogLevel.Warning);
             }
         }
+
         /// <summary>
         /// Returns Simulator Name as a String
         /// </summary>
@@ -353,25 +374,6 @@ namespace libsecondlife
             return Region.Name + " (" + ipEndPoint.ToString() + ")";
         }
 
-/*        private void SendAck(uint id)
-        {
-            PacketAckPacket ack = new PacketAckPacket();
-
-            ack.Packets = new PacketAckPacket.PacketsBlock[1];
-            ack.Packets[0] = new PacketAckPacket.PacketsBlock();
-            ack.Packets[0].ID = id;
-            ack.Header.Reliable = false;
-
-            lock (PendingAcks)
-            {
-                if (PendingAcks.ContainsKey(id))
-                {
-                    PendingAcks.Remove(id);
-                }
-            }
-
-            SendPacket(ack, true);
-        } */
         /// <summary>
         /// Sends out pending acknowledgements
         /// </summary>
@@ -792,15 +794,18 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="payload"></param>
-        public void SendPacket(byte[] payload)
+        /// <param name="setSequence">Whether to set the second, third, and fourth
+        /// bytes of the payload to the current sequence number</param>
+        public void SendPacket(byte[] payload, bool setSequence)
         {
-            if (CurrentSim != null)
+            if (connected && CurrentSim != null)
             {
-                CurrentSim.SendPacket(payload);
+                CurrentSim.SendPacket(payload, setSequence);
             }
             else
             {
-                throw new NotConnectedException();
+                Client.Log("Trying to send a " + payload.Length + " payload " +
+                    "when we're not connected", Helpers.LogLevel.Warning);
             }
         }
 
