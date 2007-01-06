@@ -396,6 +396,16 @@ namespace libsecondlife
 		}
 
         /// <summary>
+        /// Get the distance to point
+        /// </summary>
+        /// <param name="Pt"></param>
+        /// <returns></returns>
+        public double GetDistanceTo(LLVector3 Pt)
+        {
+            return Math.Sqrt(((X - Pt.X) * (X - Pt.X)) + ((Y - Pt.Y) * (Y - Pt.Y)) + ((Z - Pt.Z) * (Z - Pt.Z)));
+        }
+
+        /// <summary>
         /// Get a formatted string representation of the vector
         /// </summary>
         /// <returns>A string representation of the vector, similar to the LSL
@@ -521,6 +531,17 @@ namespace libsecondlife
 		}
 
         /// <summary>
+        /// Create a double precision vector from a float vector
+        /// </summary>
+        /// <param name="llv3"></param>
+        public LLVector3d(LLVector3 llv3)
+        {
+            X = llv3.X;
+            Y = llv3.Y;
+            Z = llv3.Z;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="byteArray"></param>
@@ -547,6 +568,73 @@ namespace libsecondlife
                 Z = BitConverter.ToDouble(byteArray, pos + 16);
             }
 		}
+
+        /// <summary>
+        /// A hash of the vector, used by .NET for hash tables
+        /// </summary>
+        /// <returns>The hashes of the individual components XORed together</returns>
+        public override int GetHashCode()
+        {
+            return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
+        public override bool Equals(object o)
+        {
+            if (!(o is LLVector3d)) return false;
+
+            LLVector3d vector = (LLVector3d)o;
+
+            return (X == vector.X && Y == vector.Y && Z == vector.Z);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator ==(LLVector3d lhs, LLVector3d rhs)
+        {
+            // If both are null, or both are same instance, return true
+            if (System.Object.ReferenceEquals(lhs, rhs))
+            {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)lhs == null) || ((object)rhs == null))
+            {
+                return false;
+            }
+
+            return (lhs.X == rhs.X && lhs.Y == rhs.Y && lhs.Z == rhs.Z);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static bool operator !=(LLVector3d lhs, LLVector3d rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        /// <summary>
+        /// Get the distance to point
+        /// </summary>
+        /// <param name="Pt"></param>
+        /// <returns></returns>
+        public double GetDistanceTo(LLVector3d Pt)
+        {
+            return Math.Sqrt(((X - Pt.X) * (X - Pt.X)) + ((Y - Pt.Y) * (Y - Pt.Y)) + ((Z - Pt.Z) * (Z - Pt.Z)));
+        }
 
         /// <summary>
         /// 
