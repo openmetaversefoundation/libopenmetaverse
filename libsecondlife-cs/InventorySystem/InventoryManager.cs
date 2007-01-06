@@ -569,6 +569,20 @@ namespace libsecondlife.InventorySystem
         #endregion
 
         #region Misc
+
+        internal void ItemRezObject(InventoryItem item, Simulator TargetSim, LLVector3 TargetPos)
+        {
+            Packet packet = InvPacketHelper.RezObject(item, TargetPos);
+            if (TargetSim == null)
+            {
+                slClient.Network.SendPacket(packet);
+            }
+            else
+            {
+                slClient.Network.SendPacket(packet, TargetSim);
+            }
+        }
+
         /// <summary>
         /// Request the download of a folder's contents
         /// </summary>

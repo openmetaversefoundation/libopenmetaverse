@@ -334,6 +334,58 @@ namespace libsecondlife.InventorySystem
             return p;
 		}
 
+
+        public Packet RezObject(InventoryItem iitem, LLVector3 TargetPos)
+        {
+            if (iitem.Type != 6)
+            {
+                Client.Log("RezObject has only been tested with items of type 6", Helpers.LogLevel.Warning);
+            }
+
+            RezObjectPacket p = new RezObjectPacket();
+            p.AgentData.AgentID = AgentID;
+            p.AgentData.SessionID = SessionID;
+            p.AgentData.GroupID = LLUUID.Zero;
+
+            p.InventoryData.TransactionID = LLUUID.Random();
+
+            p.InventoryData.GroupOwned   = iitem.GroupOwned;
+            p.InventoryData.CRC          = iitem.CRC;
+            p.InventoryData.CreationDate = iitem.CreationDate;
+			p.InventoryData.SaleType	 = iitem.SaleType;
+			p.InventoryData.BaseMask	 = iitem.BaseMask;
+            p.InventoryData.Name         = Helpers.StringToField(iitem.Name);
+			p.InventoryData.InvType		 = iitem.InvType;
+			p.InventoryData.Type			= iitem.Type;
+			p.InventoryData.GroupID		 = iitem.GroupID;
+			p.InventoryData.SalePrice	 = iitem.SalePrice;
+			p.InventoryData.OwnerID		 = iitem.OwnerID;
+			p.InventoryData.CreatorID	 = iitem.CreatorID;
+			p.InventoryData.ItemID		 = iitem.ItemID;
+			p.InventoryData.FolderID	 = iitem.FolderID;
+            p.InventoryData.EveryoneMask = iitem.EveryoneMask;
+            p.InventoryData.Description  = Helpers.StringToField(iitem.Description);
+			p.InventoryData.Flags		 = iitem.Flags;
+			p.InventoryData.NextOwnerMask= iitem.NextOwnerMask;
+			p.InventoryData.GroupMask	 = iitem.GroupMask;
+			p.InventoryData.OwnerMask	 = iitem.OwnerMask;
+
+	        p.RezData.FromTaskID = LLUUID.Zero;
+		    p.RezData.BypassRaycast = 1;
+		    p.RezData.RayStart = Client.Self.Position;
+            p.RezData.RayEnd = TargetPos;
+		    p.RezData.RayTargetID = LLUUID.Zero;
+		    p.RezData.RayEndIsIntersection = false;
+		    p.RezData.RezSelected = false;
+		    p.RezData.RemoveItem = false;
+		    p.RezData.ItemFlags = iitem.Flags;
+		    p.RezData.GroupMask = iitem.GroupMask;
+		    p.RezData.EveryoneMask = iitem.EveryoneMask;
+            p.RezData.NextOwnerMask = iitem.NextOwnerMask;
+
+            return p;
+        }
+
 /*
 			// Confirm InventoryUpdate CRC
 			uint test = libsecondlife.Packets.InventoryPackets.InventoryUpdateCRC

@@ -421,10 +421,21 @@ namespace libsecondlife.InventorySystem
         /// </summary>
         public void Delete()
         {
-            base.iManager.getFolder(this.FolderID)._Contents.Remove(this);
-            base.iManager.ItemRemove(this);
+            iManager.getFolder(this.FolderID)._Contents.Remove(this);
+            iManager.ItemRemove(this);
 
         }
+
+        public void RezObject(LLVector3 TargetPos)
+        {
+            RezObject(TargetPos, null);
+        }
+
+        public void RezObject(LLVector3 TargetPos, Simulator TargetSim)
+        {
+            iManager.ItemRezObject(this, TargetSim, TargetPos);
+        }
+
 
         /// <summary>
         /// </summary>
