@@ -633,6 +633,11 @@ namespace libsecondlife
         /// <param name="message">If we were logged out by the simulator, this 
         /// is a message explaining why</param>
         public delegate void DisconnectCallback(DisconnectType reason, string message);
+        /// <summary>
+        /// Triggered when CurrentSim changes
+        /// </summary>
+        /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
+        public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
 
         /// <summary>
         /// Explains why a simulator or the grid disconnected from us
@@ -688,6 +693,10 @@ namespace libsecondlife
         /// forced, or network error
         /// </summary>
         public event DisconnectCallback OnDisconnected;
+        /// <summary>
+        /// An event for when CurrentSim changes
+        /// </summary>
+        public event CurrentSimChangedCallback OnCurrentSimChanged;
 
         private SecondLife Client;
         private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType,List<PacketCallback>>();
@@ -1187,7 +1196,9 @@ namespace libsecondlife
                 }
 
                 simulator.Region.Handle = regionHandle;
+                Simulator OldSim = CurrentSim;
                 CurrentSim = simulator;
+                if (OnCurrentSimChanged != null) OnCurrentSimChanged(OldSim);
 
                 // Simulator is successfully connected, add it to the list and set it as default
                 Simulators.Add(simulator);
@@ -1234,7 +1245,10 @@ namespace libsecondlife
 
             if (setDefault)
             {
+                Simulator OldSim = CurrentSim;
                 CurrentSim = simulator;
+                if (OnCurrentSimChanged != null) OnCurrentSimChanged(OldSim);
+
             }
 
             DisconnectTimer.Start();
@@ -1386,7 +1400,9 @@ namespace libsecondlife
             if (CurrentSim != null)
             {
                 DisconnectSim(CurrentSim);
+                Simulator OldSim = CurrentSim;
                 CurrentSim = null;
+                if (OnCurrentSimChanged != null) OnCurrentSimChanged(OldSim);
             }
         }
 
