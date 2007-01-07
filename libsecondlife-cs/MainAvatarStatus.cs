@@ -291,7 +291,7 @@ namespace libsecondlife
                 // Lets set some default camera values
                 Camera.BodyRotation = LLQuaternion.Identity;
                 Camera.HeadRotation = LLQuaternion.Identity;
-                Camera.CameraCenter = Client.Self.Position;
+                Camera.CameraCenter = new LLVector3(128,128,20); // this cannot be set to Client.Self.Position because this is constructed before we're in-world
                 Camera.CameraAtAxis = new LLVector3(0, 0.9999f, 0);
                 Camera.CameraLeftAxis = new LLVector3(0.9999f, 0, 0);
                 Camera.CameraUpAxis = new LLVector3(0, 0, 0.9999f);
