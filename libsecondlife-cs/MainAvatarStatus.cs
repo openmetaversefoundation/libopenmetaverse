@@ -75,6 +75,15 @@ namespace libsecondlife
                 UpdateTimer.Interval = 500;
                 //Update Timer Disabled By Default --Jesse Malthus
                 UpdateTimer.Enabled = false;
+
+                //Lets set some defaults...
+                Camera.BodyRotation = LLQuaternion.Identity;
+                Camera.HeadRotation = LLQuaternion.Identity;
+                Camera.CameraCenter = new LLVector3(128,128,20);
+                Camera.CameraAtAxis = new LLVector3(0, 0.9999f, 0);
+                Camera.CameraLeftAxis = new LLVector3(0.9999f, 0, 0);
+                Camera.CameraUpAxis = new LLVector3(0, 0, 0.9999f);
+                Camera.Far = 128.0f;
             }
             /// <summary>
             /// Event handler for UpdateTimer that sends an AgentUpdate packet
