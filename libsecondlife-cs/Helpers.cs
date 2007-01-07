@@ -255,9 +255,31 @@ namespace libsecondlife
         //    return bytes;
         //}
 
+        /// <summary>
+        /// Gets a unix timestamp for the current time
+        /// </summary>
+        /// <returns>An unsigned integer representing a unix timestamp for now</returns>
         public static uint GetUnixTime()
         {
             return (uint)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
+        }
+
+        /// <summary>
+        /// Convert a unix timestamp to a native DateTime format
+        /// </summary>
+        /// <param name="timestamp">An unsigned integer representing a unix
+        /// timestamp</param>
+        /// <returns>A DateTime object containing the same time specified in
+        /// the given timestamp</returns>
+        public static DateTime UnixTimeToDateTime(uint timestamp)
+        {
+            // Make a DateTime equivalent to the UNIX Epoch
+            System.DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+
+            // Add the number of seconds in our UNIX timestamp
+            dateTime = dateTime.AddSeconds(timestamp);
+
+            return dateTime;
         }
 
         /// <summary>

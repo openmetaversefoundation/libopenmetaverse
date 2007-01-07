@@ -772,15 +772,6 @@ namespace libsecondlife
         /// <summary>W value</summary>
         [XmlAttribute("w"), DefaultValue(0)] public float W;
 
-		///// <summary>
-		///// Default constructor, initializes to no rotation (0,0,0,1)
-		///// </summary>
-		//public LLQuaternion()
-		//{
-		//    X = Y = Z = 0.0f;
-		//    W = 1.0f;
-		//}
-
         /// <summary>
         /// Build a quaternion object from a byte array
         /// </summary>
@@ -860,12 +851,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Build a quaternion from individual float values
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <param name="w"></param>
+        /// <param name="x">X value</param>
+        /// <param name="y">Y value</param>
+        /// <param name="z">Z value</param>
+        /// <param name="w">W value</param>
 		public LLQuaternion(float x, float y, float z, float w)
 		{
 			X = x;
@@ -875,9 +866,10 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// 
+        /// Normalize this quaternion and serialize it to a byte array
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A 12 byte array containing normalized X, Y, and Z floating
+        /// point values in order using little endian byte ordering</returns>
 		public byte[] GetBytes()
 		{
             byte[] bytes = new byte[12];
@@ -932,7 +924,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Comparison operator
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
@@ -956,7 +948,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Not comparison operator
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
@@ -967,7 +959,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Multiplication operator
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>

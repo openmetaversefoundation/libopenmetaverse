@@ -110,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AvatarManager.cs" />
+    <Compile Include="DirectoryManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
     <Compile Include="InventorySystem\InventoryScript.cs" />
     <Compile Include="InventorySystem\InventoryWearable.cs" />

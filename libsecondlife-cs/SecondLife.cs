@@ -68,9 +68,14 @@ namespace libsecondlife
         public InventoryManager Inventory;
         /// <summary>Image Subsystem</summary>
         public ImageManager Images;
-        /// <summary>Throttling Subsystem</summary>
+        /// <summary>Directory searches including classifieds, people, land 
+        /// sales, etc</summary>
+        public DirectoryManager Directory;
+        /// <summary>Throttling total bandwidth usage, or allocating bandwidth
+        /// for specific data stream types</summary>
         public AgentThrottle Throttle;
-        /// <summary>Settings Subsystem</summary>
+        /// <summary>Settings class including constant values and changeable
+        /// parameters for everything</summary>
         public Settings Settings;
 
         /// <summary>Triggered whenever a message is logged.
