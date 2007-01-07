@@ -50,7 +50,7 @@ namespace libsecondlife
         // might be iterating through them or modifying them when internally 
         // we are doing the opposite. The best way to fix this will be 
         // privatizing and adding helper functions to access the dictionary
-        public Dictionary<int, Parcel> Parcels;
+        public Dictionary<int, Parcel> Parcels = new Dictionary<int, Parcel>();
 
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
@@ -59,12 +59,12 @@ namespace libsecondlife
         /// <summary></summary>
         public string Name = "";
         /// <summary></summary>
-        public byte[] ParcelOverlay;
+        public byte[] ParcelOverlay = new byte[4096];
         /// <summary></summary>
         public int ParcelOverlaysReceived;
         /// <summary>64x64 Array of parcels which have been successfully downloaded 
         /// (and their LocalID's, 0 = Null)</summary>
-        public int[,] ParcelMarked;
+        public int[,] ParcelMarked = new int[64, 64];
         /// <summary>Flag to indicate whether we are downloading a sim's parcels</summary>
         public bool ParcelDownloading;
         /// <summary>Flag to indicate whether to get Dwell values automatically (NOT USED YET). Call Parcel.GetDwell() instead</summary>
@@ -138,10 +138,6 @@ namespace libsecondlife
         {
             Estate = new EstateTools(client);
             Client = client;
-            ParcelOverlay = new byte[4096];
-            ParcelMarked = new int[64, 64];
-
-            Parcels = new Dictionary<int, Parcel>();
         }
 
         /// <summary>

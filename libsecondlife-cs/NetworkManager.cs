@@ -555,39 +555,48 @@ namespace libsecondlife
 
             // Fire the registered packet events
             #region FireCallbacks
-            try
+            if (Callbacks.ContainsKey(packet.Type))
             {
-                if (Callbacks.ContainsKey(packet.Type))
-                {
-                    List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
+                List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
 
-                    // Fire any registered callbacks
-                    foreach (NetworkManager.PacketCallback callback in callbackArray)
+                // Fire any registered callbacks
+                foreach (NetworkManager.PacketCallback callback in callbackArray)
+                {
+                    if (callback != null)
                     {
-                        if (callback != null)
+                        try
                         {
                             callback(packet, this);
                         }
-                    }
-                }
-
-                if (Callbacks.ContainsKey(PacketType.Default))
-                {
-                    List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
-
-                    // Fire any registered callbacks
-                    foreach (NetworkManager.PacketCallback callback in callbackArray)
-                    {
-                        if (callback != null)
+                        catch (Exception e)
                         {
-                            callback(packet, this);
+                            Client.Log("Caught an exception in a packet callback: " + e.ToString(), 
+                                Helpers.LogLevel.Error);
                         }
                     }
                 }
             }
-            catch (Exception e)
+
+            if (Callbacks.ContainsKey(PacketType.Default))
             {
-                Client.Log("Caught an exception in a packet callback: " + e.ToString(), Helpers.LogLevel.Warning);
+                List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
+
+                // Fire any registered callbacks
+                foreach (NetworkManager.PacketCallback callback in callbackArray)
+                {
+                    if (callback != null)
+                    {
+                        try
+                        {
+                            callback(packet, this);
+                        }
+                        catch (Exception e)
+                        {
+                            Client.Log("Caught an exception in a packet callback: " + e.ToString(),
+                                Helpers.LogLevel.Error);
+                        }
+                    }
+                }
             }
             #endregion FireCallbacks
         }
@@ -1215,10 +1224,32 @@ namespace libsecondlife
                 SendInitialPackets();
                 
                 // Fire an event for connecting to the grid
-                if (OnConnected != null) OnConnected(this.Client);
+                if (OnConnected != null)
+                {
+                    try
+                    {
+                        OnConnected(this.Client);
+                    }
+                    catch (Exception e)
+                    {
+                        Client.Log("Caught an exception in the OnConnected() callback: " + e.ToString(),
+                            Helpers.LogLevel.Error);
+                    }
+                }
 
                 // Fire an event that the current simulator has changed
-                if (OnCurrentSimChanged != null) OnCurrentSimChanged(oldSim);
+                if (OnCurrentSimChanged != null)
+                {
+                    try
+                    {
+                        OnCurrentSimChanged(oldSim);
+                    }
+                    catch (Exception e)
+                    {
+                        Client.Log("Caught an exception in OnCurrentSimChanged(): " + e.ToString(),
+                            Helpers.LogLevel.Error);
+                    }
+                }
 
                 return true;
             }
@@ -1313,7 +1344,16 @@ namespace libsecondlife
                         {
                             callbackDict.Add(InventoryData.ItemID, InventoryData.NewAssetID);
                         }
-                        OnLogoutReply(callbackDict);
+
+                        try
+                        {
+                            OnLogoutReply(callbackDict);
+                        }
+                        catch (Exception e)
+                        {
+                            Client.Log("Caught an exception in OnLogoutReply(): " + e.ToString(),
+                                Helpers.LogLevel.Error);
+                        }
                     }
                     FinalizeLogout();
                 }
@@ -1349,7 +1389,15 @@ namespace libsecondlife
 
             if (OnDisconnected != null)
             {
-                OnDisconnected(DisconnectType.ClientInitiated, "");
+                try
+                {
+                    OnDisconnected(DisconnectType.ClientInitiated, "");
+                }
+                catch (Exception e)
+                {
+                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
+                        Helpers.LogLevel.Error);
+                }
             }
         }
 
@@ -1366,7 +1414,15 @@ namespace libsecondlife
                 // Fire the SimDisconnected event if a handler is registered
                 if (OnSimDisconnected != null)
                 {
-                    OnSimDisconnected(sim, DisconnectType.NetworkTimeout);
+                    try
+                    {
+                        OnSimDisconnected(sim, DisconnectType.NetworkTimeout);
+                    }
+                    catch (Exception e)
+                    {
+                        Client.Log("Caught an exception in OnSimDisconnected(): " + e.ToString(),
+                            Helpers.LogLevel.Error);
+                    }
                 }
 
                 lock (Simulators)
@@ -1399,9 +1455,20 @@ namespace libsecondlife
                         DisconnectSim(simulator);
 
                         // Fire the SimDisconnected event if a handler is registered
+                        // FIXME: This is a recipe for disaster. Firing an event when we 
+                        // are locking is just inviting someone to call a function that 
+                        // locks in Simulators and deadlocks the library
                         if (OnSimDisconnected != null)
                         {
-                            OnSimDisconnected(simulator, DisconnectType.NetworkTimeout);
+                            try
+                            {
+                                OnSimDisconnected(simulator, DisconnectType.NetworkTimeout);
+                            }
+                            catch (Exception e)
+                            {
+                                Client.Log("Caught an exception in OnSimDisconnected(): " + e.ToString(),
+                                    Helpers.LogLevel.Error);
+                            }
                         }
                     }
                 }
@@ -1416,7 +1483,18 @@ namespace libsecondlife
                 DisconnectSim(CurrentSim);
                 CurrentSim = null;
 
-                if (OnCurrentSimChanged != null) OnCurrentSimChanged(oldSim);
+                if (OnCurrentSimChanged != null)
+                {
+                    try
+                    {
+                        OnCurrentSimChanged(oldSim);
+                    }
+                    catch (Exception e)
+                    {
+                        Client.Log("Caught an exception in OnCurrentSimChanged(): " + e.ToString(),
+                            Helpers.LogLevel.Error);
+                    }
+                }
             }
         }
 
@@ -1463,7 +1541,15 @@ namespace libsecondlife
 
                     if (OnDisconnected != null)
                     {
-                        OnDisconnected(DisconnectType.NetworkTimeout, "");
+                        try
+                        {
+                            OnDisconnected(DisconnectType.NetworkTimeout, "");
+                        }
+                        catch (Exception e)
+                        {
+                            Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
+                                Helpers.LogLevel.Error);
+                        }
                     }
 
                     // We're completely logged out and shut down, leave this function
@@ -1531,8 +1617,6 @@ namespace libsecondlife
             reply.AgentData.SessionID = SessionID;
             reply.RegionInfo.Flags = 0;
             SendPacket(reply, simulator);
-
-            // TODO: Do we need to send an AgentUpdate to each sim upon connection?
 
             RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
 
@@ -1610,7 +1694,15 @@ namespace libsecondlife
 
             if (OnDisconnected != null)
             {
-                OnDisconnected(DisconnectType.ServerInitiated, message);
+                try
+                {
+                    OnDisconnected(DisconnectType.ServerInitiated, message);
+                }
+                catch (Exception e)
+                {
+                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
+                        Helpers.LogLevel.Error);
+                }
             }
         }
     }

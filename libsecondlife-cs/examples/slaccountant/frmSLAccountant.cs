@@ -354,25 +354,39 @@ namespace SLAccountant
             frm.ShowDialog();
 		}
 
+        private delegate void StringParamInvoker(string value);
+        private delegate void ListViewItemParamInvoker(ListViewItem item);
+
+        private void UpdateBalance(string value)
+        {
+            lblBalance.Text = value;
+        }
+
+        private void AddFindItem(ListViewItem item)
+        {
+            lock (lstFind)
+            {
+                lstFind.Items.Add(item);
+            }
+        }
+
 		private void BalanceHandler(Packet packet, Simulator simulator)
 		{
-            lblBalance.Text = ((MoneyBalanceReplyPacket)packet).MoneyData.MoneyBalance.ToString();
+            string value = ((MoneyBalanceReplyPacket)packet).MoneyData.MoneyBalance.ToString();
+            this.BeginInvoke(new StringParamInvoker(UpdateBalance), new object[] { value });
 		}
 
 		private void DirPeopleHandler(Packet packet, Simulator simulator)
 		{
             DirPeopleReplyPacket reply = (DirPeopleReplyPacket)packet;
 
-            lock (lstFind)
+            foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
             {
+                ListViewItem listItem = new ListViewItem(new string[] { 
+                Helpers.FieldToString(block.FirstName) + " " + Helpers.FieldToString(block.LastName), 
+                (block.Online ? "Yes" : "No"), block.AgentID.ToString() });
 
-                foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
-                {
-                    ListViewItem listItem = new ListViewItem(new string[] { 
-                    Helpers.FieldToString(block.FirstName) + " " + Helpers.FieldToString(block.LastName), 
-                    (block.Online ? "Yes" : "No"), block.AgentID.ToString() });
-                    lstFind.Items.Add(listItem);
-                }
+                this.BeginInvoke(new ListViewItemParamInvoker(AddFindItem), new object[] { listItem });
             }
 		}
 
@@ -399,10 +413,7 @@ namespace SLAccountant
 				{
 					Random rand = new Random();
 					
-					lblName.Text = client.Network.LoginValues["first_name"] + " " + 
-						client.Network.LoginValues["last_name"];
-
-                    client.Self.SetHeightWidth((ushort)rand.Next(0, 65535), (ushort)rand.Next(0, 65535));
+					lblName.Text = client.ToString();
 
                     // AgentSetAppearance
                     AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
@@ -420,6 +431,9 @@ namespace SLAccountant
                     appearance.ObjectData.TextureEntry = new byte[0];
 
                     client.Network.SendPacket(appearance);
+
+                    // Request our balance
+                    client.Self.RequestBalance();
 
 					txtFind.Enabled = cmdFind.Enabled = true;
 					txtTransfer.Enabled = cmdTransfer.Enabled = true;
@@ -458,7 +472,7 @@ namespace SLAccountant
             query.QueryData.QueryText = Helpers.StringToField(txtFind.Text);
             query.Header.Reliable = true;
 
-            client.Network.SendPacket((Packet)query);
+            client.Network.SendPacket(query);
 		}
 
 		private void cmdTransfer_Click(object sender, System.EventArgs e)
