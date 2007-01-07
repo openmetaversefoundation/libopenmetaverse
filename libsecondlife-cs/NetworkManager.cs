@@ -1196,21 +1196,30 @@ namespace libsecondlife
                 }
 
                 simulator.Region.Handle = regionHandle;
-                Simulator OldSim = CurrentSim;
+                Simulator oldSim = CurrentSim;
                 CurrentSim = simulator;
-                if (OnCurrentSimChanged != null) OnCurrentSimChanged(OldSim);
 
                 // Simulator is successfully connected, add it to the list and set it as default
                 Simulators.Add(simulator);
 
+                // Mark that we are now officially connected to the grid
+                connected = true;
+
+                // Start a timer that checks if we've been disconnected
+                DisconnectTimer.Start();
+
                 // Move our agent in to the sim to complete the connection
                 Client.Self.CompleteAgentMovement(simulator);
 
+                // Send a couple packets that are useful right after login
                 SendInitialPackets();
-
-                DisconnectTimer.Start();
-                connected = true;
+                
+                // Fire an event for connecting to the grid
                 if (OnConnected != null) OnConnected(this.Client);
+
+                // Fire an event that the current simulator has changed
+                if (OnCurrentSimChanged != null) OnCurrentSimChanged(oldSim);
+
                 return true;
             }
             catch (Exception e)
@@ -1243,16 +1252,19 @@ namespace libsecondlife
                 Simulators.Add(simulator);
             }
 
+            // Mark that we are connected to the grid (in case we weren't before)
+            connected = true;
+
+            // Start a timer that checks if we've been disconnected
+            DisconnectTimer.Start();
+
             if (setDefault)
             {
-                Simulator OldSim = CurrentSim;
+                Simulator oldSim = CurrentSim;
                 CurrentSim = simulator;
-                if (OnCurrentSimChanged != null) OnCurrentSimChanged(OldSim);
-
+                if (OnCurrentSimChanged != null && simulator != oldSim) OnCurrentSimChanged(oldSim);
             }
 
-            DisconnectTimer.Start();
-            connected = true;
             return simulator;
         }
 
@@ -1399,10 +1411,12 @@ namespace libsecondlife
 
             if (CurrentSim != null)
             {
+                Simulator oldSim = CurrentSim;
+
                 DisconnectSim(CurrentSim);
-                Simulator OldSim = CurrentSim;
                 CurrentSim = null;
-                if (OnCurrentSimChanged != null) OnCurrentSimChanged(OldSim);
+
+                if (OnCurrentSimChanged != null) OnCurrentSimChanged(oldSim);
             }
         }
 
@@ -1410,9 +1424,6 @@ namespace libsecondlife
         {
             // Request the economy data
             SendPacket(new EconomyDataRequestPacket());
-
-            // TODO: Should the appearance manager be handling this?
-            //Client.Avatar.SetHeightWidth(676, 909);
 
             // TODO: A movement class should be handling this
             Avatar.AgentUpdateFlags controlFlags = Avatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
@@ -1426,7 +1437,6 @@ namespace libsecondlife
             // TODO: A movement class should be handling this
             Client.Self.SetAlwaysRun(false);
         }
-
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {

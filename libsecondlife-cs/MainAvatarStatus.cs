@@ -39,7 +39,6 @@ namespace libsecondlife
         /// </summary> 
         public class MainAvatarStatus
         {
-
             private SecondLife Client;
             private static uint agentControls;
             /// <summary>
@@ -98,6 +97,8 @@ namespace libsecondlife
             public void SendUpdate()
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();
+                update.Header.Reliable = false;
+
                 update.AgentData.AgentID = Client.Network.AgentID;
                 update.AgentData.SessionID = Client.Network.SessionID;
                 update.AgentData.HeadRotation = Camera.HeadRotation;
