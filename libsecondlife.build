@@ -47,15 +47,19 @@
 
   <target name="debug" description="Configures a debug build">
     <property name="build.debug" value="true" />
-    <property name="package.name"
-      value="${project::get-name()}-${project.version}-${project.config}" />
+    <property name="package.name" value="${project::get-name()}-${project.version}-${project.config}" />
+    <if propertyexists="CCNetLabel">
+      <property name="package.name" value="${project::get-name()}-${CCNetLabel}-${project.config}" />
+    </if>
   </target>
 
   <target name="release" description="Configures a release build">
     <property name="project.config" value="release" />
     <property name="build.debug"    value="false"/>
-    <property name="package.name"
-      value="${project::get-name()}-${project.version}" />
+    <property name="package.name" value="${project::get-name()}-${project.version}" />
+    <if propertyexists="CCNetLabel">
+      <property name="package.name" value="${project::get-name()}-${CCNetLabel}-${project.config}" />
+    </if>
   </target>
 
   <target name="dist" description="Configures a distribution package">
