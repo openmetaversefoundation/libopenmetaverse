@@ -69,6 +69,10 @@
     <property name="archive.dir" value="${temp.dir}/${project::get-name()}-${project.version}" />
     <property name="srcarchive.name" value="${project::get-name()}-${project.version}-src.zip" />
     <property name="srcarchive.dir" value="${temp.dir}/${project::get-name()}-${project.version}-src" />
+    
+    <if propertyexists="CCNetLabel">
+      <property name="srcarchive.name" value="${project::get-name()}-${CCNetLabel}-src.zip" />
+    </if>
   </target>
 
   <!-- <target name="src" description="Configures a source package">
