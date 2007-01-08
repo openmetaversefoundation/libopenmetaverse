@@ -1028,7 +1028,16 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         private void CoarseLocationHandler(Packet packet, Simulator simulator)
         {
-            // TODO: This will be useful one day
+            if (packet.Type == PacketType.CoarseLocationUpdate)
+	    {
+                CoarseLocationUpdatePacket p = (CoarseLocationUpdatePacket) packet;
+
+                if (p.Index.You < 0 || p.Index.You >= p.Location.Length) return;
+                /* 1.5 and 6 represent a 50% fudge factor (hysteresis) -- bushing */
+                if (Math.Abs(Position.X-p.Location[p.Index.You].X) > 1.5) Position.X=p.Location[p.Index.You].X;
+                if (Math.Abs(Position.Y-p.Location[p.Index.You].Y) > 1.5) Position.Y=p.Location[p.Index.You].Y;
+                if (Math.Abs(Position.Z-(p.Location[p.Index.You].Z*4)) > 6) Position.Z=p.Location[p.Index.You].Z*4;
+            }
         }
 
         /// <summary>
