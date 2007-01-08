@@ -62,22 +62,27 @@
     <property name="dist" value="true" />
     <property name="src"  value="false" />
     <property name="archive.name" value="${package.name}.zip" />
-    <property name="archive.dir"
-      value="${temp.dir}/${project::get-name()}-${project.version}" />
+    <property name="archive.dir" value="${temp.dir}/${project::get-name()}-${project.version}" />
+    <property name="srcarchive.name" value="${project::get-name()}-${project.version}-src.zip" />
+    <property name="srcarchive.dir" value="${temp.dir}/${project::get-name()}-${project.version}-src" />
   </target>
 
-  <target name="src" description="Configures a source package">
+  <!-- <target name="src" description="Configures a source package">
     <property name="package.config" value="src" />
     <property name="dist"           value="false" />
     <property name="src"            value="true" />
     <property name="archive.dir"
       value="${temp.dir}/${project::get-name()}-${project.version}" />
     <property name="archive.name"
-      value="${project::get-name()}-${project.version}.src.zip" />
-  </target>
+      value="${project::get-name()}-${project.version}-src.zip" />
+  </target> -->
 
   <zipfileset id="archive.set" basedir="${temp.dir}">
       <include name="${project::get-name()}-${project.version}/**" />
+  </zipfileset>
+  
+  <zipfileset id="srcarchive.set" basedir="${temp.dir}">
+      <include name="${project::get-name()}-${project.version}-src/**" />
   </zipfileset>
 
   <!-- build tasks -->
@@ -130,16 +135,20 @@
 
   <target name="package" depends="init init-package"
     description="Creates a zip archive for the current configuration">
-    <delete file="${archive.name}" failonerror="false" />
-    <if test="${src}">
-      <mkdir dir="${archive.dir}" failonerror="false" />
-      <copy todir="${archive.dir}" overwrite="true">
+    
+    <delete file="${archive.name}" failonerror="true" />
+    <delete file="${srcarchive.name}" failonerror="true" />
+    
+    <!-- <if test="${src}"> -->
+      <mkdir dir="${srcarchive.dir}" failonerror="false" />
+      <copy todir="${srcarchive.dir}" overwrite="true">
         <fileset basedir=".">
           <include name="**" />
           <exclude name="*.zip" />
         </fileset>
       </copy>
-    </if>
+    <!-- </if> -->
+    
     <if test="${dist}">
       <call target="build" />
       <mkdir dir="${archive.dir}" failonerror="false" />
@@ -153,14 +162,21 @@
         <fileset basedir="bin">
           <include name="*.exe" />
           <include name="*.dll" />
-		</fileset>
+		    </fileset>
       </copy>
     </if>
+    
     <zip zipfile="${archive.name}">
       <fileset refid="archive.set" />
     </zip>
+    
+    <zip zipfile="${srcarchive.name}">
+      <fileset refid="srcarchive.set" />
+    </zip>
+    
     <delete dir="${archive.dir}" failonerror="false" />
     <echo message="Created archive at file://${project::get-base-directory()}/${archive.name}" />
+    <echo message="Created archive at file://${project::get-base-directory()}/${srcarchive.name}" />
   </target>
   
   <target name="doc" depends="build"
