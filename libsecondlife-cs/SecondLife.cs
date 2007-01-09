@@ -117,9 +117,10 @@ namespace libsecondlife
         /// <summary>
         /// A simple sleep function that will allow pending threads to run
         /// </summary>
+        /// <remarks>NOTE - just use System.Threading.Thread.Sleep(1); in your code =O</remarks>
         public void Tick()
         {
-            System.Threading.Thread.Sleep(0);
+            System.Threading.Thread.Sleep(1);
         }
 
         /// <summary>

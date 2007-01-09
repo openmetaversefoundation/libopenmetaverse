@@ -155,8 +155,9 @@ namespace libsecondlife
                 if ((bytes[i] < 0x20 || bytes[i] > 0x7E) && bytes[i] != 0x09
                     && bytes[i] != 0x0D && bytes[i] != 0x0A && bytes[i] != 0x00)
                 {
-                    printable = false;
-                    break;
+                    //printable = false;
+                    // break;
+                    bytes[i] = 0x20;
                 }
             }
 
@@ -210,6 +211,32 @@ namespace libsecondlife
 
             return output;
         }
+
+        public static string FieldToFilteredString(byte[] bytes, char filterChar)
+        {
+            if ((int)filterChar > 255)
+            {
+                Console.WriteLine("FieldToFilteredString error - filterChar overflow");
+                return null;
+            }
+            string output = "";
+            bool printable = true;
+
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                // Check if there are any unprintable characters in the array
+                if ((bytes[i] < 0x20 || bytes[i] > 0x7E) && bytes[i] != 0x09
+                    && bytes[i] != 0x0D && bytes[i] != 0x0A && bytes[i] != 0x00)
+                {
+                    bytes[i] = (byte)filterChar;
+                }
+            }
+
+            output += System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
+
+            return output;
+        }
+
 
         /// <summary>
         /// Convert a UTF8 string to a byte array
