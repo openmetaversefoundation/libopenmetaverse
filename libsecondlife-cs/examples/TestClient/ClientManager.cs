@@ -21,7 +21,6 @@ namespace libsecondlife.TestClient
         public Dictionary<LLUUID, SecondLife> Clients = new Dictionary<LLUUID, SecondLife>();
         public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims = new Dictionary<Simulator, Dictionary<uint, PrimObject>>();
 
-		public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
         public bool Running = true;
 
         /// <summary>

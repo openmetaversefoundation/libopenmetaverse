@@ -39,7 +39,9 @@
     <Compile Include="Commands\AppearanceCommand.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
-    <Compile Include="Commands\InventoryCommand.cs" />
+    <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
+    <Compile Include="Commands\Inventory\WearCommand.cs" />
+    <Compile Include="Commands\Inventory\InventoryCommand.cs" />
     <Compile Include="Commands\TtsCommand.cs" />
     <Compile Include="Commands\EchoMasterCommand.cs" />
     <Compile Include="Commands\ExportOutfitCommand.cs" />

@@ -9,8 +9,6 @@ namespace libsecondlife.TestClient
 {
     public class SetAppearanceCommand : Command
     {
-        AppearanceManager aManager;
-
 		public SetAppearanceCommand(TestClient testClient)
         {
             Name = "setapp";
@@ -19,10 +17,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            if (aManager == null)
-                aManager = new AppearanceManager(Client);
-
-            aManager.SendAgentSetAppearance();
+			Client.Appearance.SendAgentSetAppearance();
             return "Done.";
         }
     }

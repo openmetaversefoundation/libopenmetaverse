@@ -20,8 +20,9 @@ namespace libsecondlife.TestClient
         public Dictionary<uint, Avatar> AvatarList = new Dictionary<uint,Avatar>();
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
-        public Dictionary<string, object> SharedValues = new Dictionary<string, object>();
-        public bool Running = true;
+		public AppearanceManager Appearance;
+
+		public bool Running = true;
 	    public string Master = String.Empty;
 		public ClientManager ClientManager;
 
@@ -61,6 +62,7 @@ namespace libsecondlife.TestClient
 
             Objects.RequestAllObjects = true;
 
+			Appearance = new AppearanceManager(this);
 
             updateTimer.Start();
         }
@@ -290,10 +292,12 @@ namespace libsecondlife.TestClient
                 {
 					if (dialog == (byte)MainAvatar.InstantMessageDialog.InventoryOffered)
 					{
+						// unfortunatly this is purely cosmetic and has nothing to do with the actual inventory transfer, which is always accepted
 						Console.WriteLine("Accepting inventory offer.");
 						Self.InstantMessage(fromAgentID, MainAvatar.InstantMessageDialog.InventoryAccepted);
 					}
-                    DoCommand(message, fromAgentID, imSessionID);
+					else
+	                    DoCommand(message, fromAgentID, imSessionID);
                 }
             }
             else
