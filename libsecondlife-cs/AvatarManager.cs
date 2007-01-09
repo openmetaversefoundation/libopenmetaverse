@@ -159,9 +159,6 @@ namespace libsecondlife
         /// Start a request for Avatar Properties
         /// </summary>
         /// <param name="avatarid"></param>
-        /// <param name="aic"></param>
-        /// <param name="asc"></param>
-        /// <param name="apc"></param>
         public void RequestAvatarProperties(LLUUID avatarid)
         {
             AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();

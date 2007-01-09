@@ -211,7 +211,6 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// Converts byte[] data from a data transfer into a bodypart class
         /// </summary>
-        /// <param name="data"></param>
         /// <returns></returns>
         internal void UpdateFromAssetData()
         {

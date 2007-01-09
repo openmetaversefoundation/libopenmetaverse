@@ -152,7 +152,7 @@ namespace libsecondlife.Utilities
         /// Get an avatar's name, either from the cache or request it.
         /// This function is blocking
         /// </summary>
-        /// <param name="key">Avatar key to look up</param>
+        /// <param name="id">Avatar key to look up</param>
         /// <returns>The avatar name, or String.Empty if the lookup failed</returns>
         public string GetAvatarName(LLUUID id)
         {
@@ -191,10 +191,6 @@ namespace libsecondlife.Utilities
         //    BeginGetAvatarNames(ids);
         //}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ids"></param>
         //public void BeginGetAvatarNames(List<LLUUID> ids)
         //{
         //    Dictionary<LLUUID, string> havenames = new Dictionary<LLUUID, string>();

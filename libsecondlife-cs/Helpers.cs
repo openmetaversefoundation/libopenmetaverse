@@ -220,7 +220,6 @@ namespace libsecondlife
                 return null;
             }
             string output = "";
-            bool printable = true;
 
             for (int i = 0; i < bytes.Length; ++i)
             {

@@ -78,9 +78,9 @@ namespace libsecondlife.InventorySystem
         /// <summary>
         /// Request a download of this folder's content information.
         /// </summary>
-        /// <param name="Recurse">Indicate if we should recursively download content information.</param>
-        /// <param name="Items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
-        /// <param name="Clear">Indicate if item data should be downloaded too (true), or only folders(false)</param>
+        /// <param name="recurse">Indicate if we should recursively download content information.</param>
+        /// <param name="items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
+        /// <param name="clear">Indicate if item data should be downloaded too (true), or only folders(false)</param>
         /// <returns>The Request object for this download</returns>
         public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear)
         {

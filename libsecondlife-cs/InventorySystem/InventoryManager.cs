@@ -207,8 +207,7 @@ namespace libsecondlife.InventorySystem
         /// <summary>
         /// Recursive helper function for public InventoryFolder getFolder(String sFolderPath)
         /// </summary>
-        /// <see cref="getFolder(string sFolderPath)"/>
-        /// <param name="qFolderPath"></param>
+        /// <param name="qFolderPath">Queue<\string\></param>
         /// <returns></returns>
         private InventoryFolder getFolder(Queue<string> qFolderPath)
         {
@@ -253,8 +252,8 @@ namespace libsecondlife.InventorySystem
         /// <summary>
         /// Create a folder
         /// </summary>
-        /// <param name="IncomingName"></param>
-        /// <param name="IncomingParentID"></param>
+        /// <param name="name"></param>
+        /// <param name="parentid"></param>
         /// <returns></returns>
         internal InventoryFolder FolderCreate(String name, LLUUID parentid)
         {
