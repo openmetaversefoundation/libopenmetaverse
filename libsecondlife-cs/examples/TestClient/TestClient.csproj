@@ -37,21 +37,14 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands\AppearanceCommand.cs" />
-    <Compile Include="Commands\BalanceCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
+    <Compile Include="Commands\Inventory\BalanceCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
+    <Compile Include="Commands\Inventory\GiveAllCommand.cs" />
     <Compile Include="Commands\Inventory\WearCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
-    <Compile Include="Commands\TtsCommand.cs" />
-    <Compile Include="Commands\EchoMasterCommand.cs" />
     <Compile Include="Commands\ExportOutfitCommand.cs" />
     <Compile Include="Commands\FindSimCommand.cs" />
-    <Compile Include="Commands\FollowCommand.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Commands\IMCommand.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Commands\ImportOutfitCommand.cs" />
     <Compile Include="Commands\LoginCommand.cs">
       <SubType>Code</SubType>
@@ -59,6 +52,16 @@
     <Compile Include="Commands\LogoutCommand.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Commands\Communication\EchoMasterCommand.cs" />
+    <Compile Include="Commands\Communication\IMCommand.cs" />
+    <Compile Include="Commands\Communication\SayCommand.cs" />
+    <Compile Include="Commands\Communication\ShoutCommand.cs" />
+    <Compile Include="Commands\Communication\WhisperCommand.cs" />
+    <Compile Include="Commands\Movement\FollowCommand.cs" />
+    <Compile Include="Commands\Movement\GotoCommand.cs" />
+    <Compile Include="Commands\Movement\JumpCommand.cs" />
+    <Compile Include="Commands\Movement\LocationCommand.cs" />
+    <Compile Include="Commands\Movement\SitCommand.cs" />
     <Compile Include="Commands\PacketLogCommand.cs" />
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
@@ -66,21 +69,13 @@
     <Compile Include="Commands\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\ShoutCommand.cs" />
-    <Compile Include="Commands\WhisperCommand.cs" />
     <Compile Include="Commands\ExportCommand.cs" />
     <Compile Include="Commands\ImportCommand.cs" />
     <Compile Include="Commands\LoadCommand.cs" />
-    <Compile Include="Commands\SayCommand.cs" />
-    <Compile Include="Commands\JumpCommand.cs" />
-    <Compile Include="Commands\GotoCommand.cs" />
-    <Compile Include="Commands\GiveAllCommand.cs" />
     <Compile Include="Commands\PrimCountCommand.cs" />
-    <Compile Include="Commands\SitCommand.cs" />
     <Compile Include="Commands\TreeCommand.cs" />
     <Compile Include="Commands\UptimeCommand.cs" />
     <Compile Include="Commands\HelpCommand.cs" />
-    <Compile Include="Commands\LocationCommand.cs" />
     <Compile Include="ClientManager.cs" />
     <Compile Include="Commands\WhoCommand.cs">
       <SubType>Code</SubType>

@@ -283,7 +283,7 @@ namespace libsecondlife.TestClient
 
             if (Self.ID == toAgentID)
             {				
-                if (dialog == (byte)MainAvatar.InstantMessageDialog.LureUser)
+                if (dialog == (byte)MainAvatar.InstantMessageDialog.RequestTeleport)
                 {
                     Console.WriteLine("Accepting teleport lure.");
                     Self.TeleportLureRespond(fromAgentID, true);
