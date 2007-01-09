@@ -48,6 +48,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsole", "..\applicati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxy", "..\applications\SLProxy\Proxy.csproj", "{0516E1A7-D062-4830-859C-6FD0E4F84E75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "camper", "..\camper\camper.csproj", "{D4179343-FD6E-47BC-B925-1038E67EE791}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "forsalegrabber", "..\forsalegrabber\forsalegrabber.csproj", "{62CF06A3-EE4F-499D-B492-581CAB92CACE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET 1.1 = Debug|.NET 1.1
@@ -202,6 +206,18 @@ Global
 		{0516E1A7-D062-4830-859C-6FD0E4F84E75}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
 		{0516E1A7-D062-4830-859C-6FD0E4F84E75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0516E1A7-D062-4830-859C-6FD0E4F84E75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4179343-FD6E-47BC-B925-1038E67EE791}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
+		{D4179343-FD6E-47BC-B925-1038E67EE791}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4179343-FD6E-47BC-B925-1038E67EE791}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4179343-FD6E-47BC-B925-1038E67EE791}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
+		{D4179343-FD6E-47BC-B925-1038E67EE791}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4179343-FD6E-47BC-B925-1038E67EE791}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62CF06A3-EE4F-499D-B492-581CAB92CACE}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
+		{62CF06A3-EE4F-499D-B492-581CAB92CACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62CF06A3-EE4F-499D-B492-581CAB92CACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62CF06A3-EE4F-499D-B492-581CAB92CACE}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
+		{62CF06A3-EE4F-499D-B492-581CAB92CACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62CF06A3-EE4F-499D-B492-581CAB92CACE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

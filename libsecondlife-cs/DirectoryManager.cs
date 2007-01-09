@@ -64,6 +64,19 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// The type of land to be searched for in a DirLandQuery
+        /// </summary>
+        public enum LandFlags
+        {
+            /// <summary>Include everything</summary>
+            All = 0,
+            /// <summary>PG land only</summary>
+            PGOnly = 2048,
+            /// <summary>Mature land only</summary>
+            MatureOnly = 16384
+        }
+
+        /// <summary>
         /// A classified ad in Second Life
         /// </summary>
         public struct Classified
@@ -86,26 +99,106 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="classifieds"></param>
-        public delegate void ClassifiedReplyCallback(List<Classified> classifieds);
+        public struct ClassifiedFull
+        {
+            /// <summary></summary>
+            public Classified Classified;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public struct ParcelSale
+        {
+            /// <summary></summary>
+            public LLUUID ParcelID;
+            /// <summary></summary>
+            public string Name;
+            /// <summary></summary>
+            public int SalePrice;
+            /// <summary></summary>
+            public int ActualArea;
+            /// <summary></summary>
+            public bool ReservedNewbie;
+            /// <summary></summary>
+            public bool ForSale;
+            /// <summary></summary>
+            public bool Auction;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public struct ParcelSaleFull
+        {
+            /// <summary></summary>
+            public ParcelSale ParcelSale;
+            /// <summary></summary>
+            public string SimName;
+            /// <summary></summary>
+            public int BillableArea;
+            /// <summary></summary>
+            public float GlobalX;
+            /// <summary></summary>
+            public float GlobalY;
+            /// <summary></summary>
+            public float GlobalZ;
+            /// <summary></summary>
+            public string Description;
+            /// <summary></summary>
+            public LLUUID OwnerID;
+            /// <summary></summary>
+            public LLUUID SnapshotID;
+            /// <summary></summary>
+            public LLUUID AuctionID;
+            /// <summary></summary>
+            public int Flags;
+            /// <summary></summary>
+            public int Dwell;
+        }
 
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="queryID"></param>
+        /// <param name="classifieds"></param>
+        public delegate void ClassifiedReplyCallback(LLUUID queryID, List<Classified> classifieds);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queryID"></param>
+        /// <param name="sales"></param>
+        public delegate void LandReplyCallback(LLUUID queryID, List<ParcelSale> sales);
+
+
+        /// <summary></summary>
         public event ClassifiedReplyCallback OnClassifiedReply;
+        /// <summary></summary>
+        public event LandReplyCallback OnLandReply;
 
 
         private SecondLife Client;
 
-
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="client">Reference to the client</param>
         public DirectoryManager(SecondLife client)
         {
             Client = client;
 
             Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="searchText"></param>
+        /// <param name="categories"></param>
+        /// <param name="mature"></param>
+        /// <returns></returns>
         public LLUUID StartClassifiedSearch(string searchText, ClassifiedCategories categories, bool mature)
         {
             DirClassifiedQueryPacket query = new DirClassifiedQueryPacket();
@@ -117,6 +210,30 @@ namespace libsecondlife
             query.QueryData.QueryFlags = (uint)(mature ? 0 : 2);
             query.QueryData.QueryID = queryID;
             query.QueryData.QueryText = Helpers.StringToField(searchText);
+
+            Client.Network.SendPacket(query);
+
+            return queryID;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public LLUUID StartLandSearch(bool auction, bool forSale, bool reservedNewbie, LandFlags flags)
+        {
+            DirLandQueryPacket query = new DirLandQueryPacket();
+            LLUUID queryID = LLUUID.Random();
+
+            query.AgentData.AgentID = Client.Network.AgentID;
+            query.AgentData.SessionID = Client.Network.SessionID;
+            query.QueryData.Auction = auction;
+            query.QueryData.ForSale = forSale;
+            query.QueryData.ReservedNewbie = reservedNewbie;
+            query.QueryData.QueryFlags = (uint)flags;
+            query.QueryData.QueryID = queryID;
 
             Client.Network.SendPacket(query);
 
@@ -144,7 +261,33 @@ namespace libsecondlife
                     classifieds.Add(classified);
                 }
 
-                OnClassifiedReply(classifieds);
+                OnClassifiedReply(reply.QueryData.QueryID, classifieds);
+            }
+        }
+
+        private void DirLandReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnLandReply != null)
+            {
+                DirLandReplyPacket reply = (DirLandReplyPacket)packet;
+                List<ParcelSale> sales = new List<ParcelSale>();
+
+                foreach (DirLandReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
+                {
+                    ParcelSale sale = new ParcelSale();
+
+                    sale.ActualArea = block.ActualArea;
+                    sale.Auction = block.Auction;
+                    sale.ForSale = block.ForSale;
+                    sale.Name = Helpers.FieldToString(block.Name);
+                    sale.ParcelID = block.ParcelID;
+                    sale.ReservedNewbie = block.ReservedNewbie;
+                    sale.SalePrice = block.SalePrice;
+
+                    sales.Add(sale);
+                }
+
+                OnLandReply(reply.QueryData.QueryID, sales);
             }
         }
     }

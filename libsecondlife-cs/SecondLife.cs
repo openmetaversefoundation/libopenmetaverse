@@ -102,6 +102,7 @@ namespace libsecondlife
             Assets = new AssetManager(this);
             Images = new ImageManager(this);
             Inventory = new InventoryManager(this);
+            Directory = new DirectoryManager(this);
             Throttle = new AgentThrottle(this);
         }
 
