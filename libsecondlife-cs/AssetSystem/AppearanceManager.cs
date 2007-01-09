@@ -13,6 +13,25 @@ namespace libsecondlife.AssetSystem
 {
     public class AppearanceManager
     {
+    	public enum	WearableType
+		{
+			Shape = 0,
+			Skin = 1,
+			Hair = 2,
+			Eyes = 3,
+			Shirt = 4,
+			Pants = 5,
+			Shoes = 6,
+			Socks = 7,
+			Jacket = 8,
+			Gloves = 9,
+			Undershirt = 10,
+			Underpants = 11,
+			Skirt = 12,
+			Count = 13,
+			Invalid = 255
+		};
+    
         private SecondLife Client;
         private AssetManager AManager;
 

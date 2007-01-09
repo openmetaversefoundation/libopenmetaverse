@@ -40,44 +40,61 @@ namespace libsecondlife
         /// <summary>None of the primary flags are enabled</summary>
         None = 0,
         /// <summary>Whether physics are enabled for this object</summary>
-        Physics = 1 << 0,
+        Physics = 0x00000001,
         /// <summary></summary>
-        CreateSelected = 1 << 1,
-        Unknown1 = 1 << 2,
-        Unknown2 = 1 << 3,
-        Unknown3 = 1 << 4,
-        Unknown4 = 1 << 5,
-        Script = 1 << 6,
+        CreateSelected = 0x00000002,
+        /// <summary></summary>
+        ObjectModify = 0x00000004,
+        /// <summary></summary>
+        ObjectCopy = 0x00000008,
+        /// <summary></summary>
+        ObjectAnyOwner = 0x00000010,
+        /// <summary></summary>
+        ObjectYouOwner = 0x00000020,
+        /// <summary></summary>
+        Scripted = 0x00000040,
         /// <summary>Whether this object contains an active touch script</summary>
-        Touch = 1 << 7,
-        Unknown5 = 1 << 8,
+        Touch = 0x00000080,
+        /// <summary></summary>
+        ObjectMove = 0x00000100,
         /// <summary>Whether this object can receive payments</summary>
-        Money = 1 << 9,
+        Money = 0x00000200,
         /// <summary>Whether this object is phantom (no collisions)</summary>
-        Phantom = 1 << 10,
-        Unknown6 = 1 << 11,
-        Unknown7 = 1 << 12,
-        Unknown8 = 1 << 13,
-        Unknown9 = 1 << 14,
-        Unknown10 = 1 << 15,
-        Unknown11 = 1 << 16,
-        Unknown12 = 1 << 17,
-        Unknown13 = 1 << 18,
-        Unknown14 = 1 << 19,
-        Unknown15 = 1 << 20,
-        Unknown16 = 1 << 21,
-        Unknown17 = 1 << 22,
-        Unknown18 = 1 << 23,
-        Unknown19 = 1 << 24,
-        Unknown20 = 1 << 25,
-        Unknown21 = 1 << 26,
-        Unknown22 = 1 << 27,
-        Unknown23 = 1 << 28,
-        Unknown24 = 1 << 29,
-        /// <summary>Whether this object is temporary</summary>
-        Temp = 1 << 30,
-        Unknown25 = 1 << 31,
-        Unknown26 = 1 << 32
+        Phantom = 0x00000400,
+        /// <summary></summary>
+        InventoryEmpty = 0x00000800,
+        /// <summary></summary>
+        JointHinge = 0x00001000,
+        /// <summary></summary>
+        JointP2P = 0x00002000,
+        /// <summary></summary>
+        JointLP2P = 0x00004000,
+        /// <summary>Deprecated</summary>
+        JointWheel = 0x00008000,
+        /// <summary></summary>
+        AllowInventoryDrop = 0x00010000,
+        /// <summary></summary>
+        ObjectTransfer = 0x00020000,
+        /// <summary></summary>
+        ObjectGroupOwned = 0x00040000,
+        /// <summary>Deprecated</summary>
+        ObjectYouOfficer = 0x00080000,
+        /// <summary></summary>
+        CameraDecoupled = 0x00100000,
+        /// <summary></summary>
+        AnimSource = 0x00200000,
+        /// <summary></summary>
+        CameraSource = 0x00400000,
+        /// <summary></summary>
+        CastShadows = 0x00800000,
+        /// <summary></summary>
+        ObjectOwnerModify = 0x10000000,
+        /// <summary></summary>
+        TemporaryOnRez = 0x20000000,
+        /// <summary></summary>
+        Temporary = 0x40000000,
+        /// <summary></summary>
+        ZlibCompressed = 0x80000000
     }
 
     /// <summary>
