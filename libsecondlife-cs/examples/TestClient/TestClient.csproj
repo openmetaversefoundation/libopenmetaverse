@@ -39,7 +39,8 @@
     <Compile Include="Commands\AppearanceCommand.cs" />
     <Compile Include="Commands\BalanceCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
-    <Compile Include="Commands\DownloadCommand.cs" />
+    <Compile Include="Commands\InventoryCommand.cs" />
+    <Compile Include="Commands\TtsCommand.cs" />
     <Compile Include="Commands\EchoMasterCommand.cs" />
     <Compile Include="Commands\ExportOutfitCommand.cs" />
     <Compile Include="Commands\FindSimCommand.cs" />
@@ -60,12 +61,10 @@
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\ResearchCommand.cs" />
     <Compile Include="Commands\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\ShoutCommand.cs" />
-    <Compile Include="Commands\TtsCommand.cs" />
     <Compile Include="Commands\WhisperCommand.cs" />
     <Compile Include="Commands\ExportCommand.cs" />
     <Compile Include="Commands\ImportCommand.cs" />

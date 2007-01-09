@@ -46,7 +46,6 @@ namespace libsecondlife.TestClient
 
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
-
             Debug = false;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
@@ -281,14 +280,19 @@ namespace libsecondlife.TestClient
             Console.WriteLine("<IM>" + fromAgentName + ": " + message);
 
             if (Self.ID == toAgentID)
-            {
-                if (dialog == 22)
+            {				
+                if (dialog == (byte)MainAvatar.InstantMessageDialog.LureUser)
                 {
-                    Console.WriteLine("Accepting teleport lure");
+                    Console.WriteLine("Accepting teleport lure.");
                     Self.TeleportLureRespond(fromAgentID, true);
                 }
                 else
                 {
+					if (dialog == (byte)MainAvatar.InstantMessageDialog.InventoryOffered)
+					{
+						Console.WriteLine("Accepting inventory offer.");
+						Self.InstantMessage(fromAgentID, MainAvatar.InstantMessageDialog.InventoryAccepted);
+					}
                     DoCommand(message, fromAgentID, imSessionID);
                 }
             }
