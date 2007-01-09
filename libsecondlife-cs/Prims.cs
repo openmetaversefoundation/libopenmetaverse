@@ -35,7 +35,7 @@ namespace libsecondlife
     /// Primary parameters for primitives such as Physics Enabled or Phantom
     /// </summary>
     [Flags]
-    public enum ObjectFlags
+    public enum ObjectFlags : uint
     {
         /// <summary>None of the primary flags are enabled</summary>
         None = 0,

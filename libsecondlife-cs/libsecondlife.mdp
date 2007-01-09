@@ -84,6 +84,9 @@
     <File name="./InventorySystem/InventoryNotecard.cs" subtype="Code" buildaction="Compile" />
     <File name="./InventorySystem/InventoryPacketHelper.cs" subtype="Code" buildaction="Compile" />
     <File name="./InventorySystem/InventoryWearable.cs" subtype="Code" buildaction="Compile" />
+    <File name="./DirectoryManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryScript.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetScript.cs" subtype="Code" buildaction="Compile" />
   </Contents>
   <References>
     <ProjectReference type="Gac" localcopy="True" refto="System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
