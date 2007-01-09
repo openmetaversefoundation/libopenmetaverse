@@ -65,84 +65,121 @@ namespace libsecondlife
 			MessageBox = 1,
 			/// <summary>You've been invited to join a group.</summary>
 			GroupInvitation = 3,
+
             /// <summary>Indicates that someone has given the user an object</summary>
-            /// <remarks>Soon to be deprecated</remarks>
+            /// <remarks>Soon to be depreceated</remarks>
             GiveInventory = 4,
-			/// <summary>Inventory offer</summary>
+			/// <summary>Agent inventory offer.</summary>
 			InventoryOffered = 4,
-            /// <summary>An avatar has accepted your inventory offer</summary>
 			InventoryAccepted = 5,
-            /// <summary>An avatar has declined your inventory offer</summary>
 			InventoryDeclined = 6,
+
 			/// <summary>Group vote</summary>
 			GroupVote = 7,
-            /// <summary>Indicates that someone has given us a notecard</summary>
+            //TODO - figure out the TaskInventory* bit
+            /// <summary>Indicates that someone has given the user a notecard</summary>
             GiveNotecard = 9,
-			/// <summary>Unknown</summary>
+			/// <summary>Task inventory offer.</summary>
 			TaskInventoryOffered = 9,
-            /// <summary>Unknown</summary>
 			TaskInventoryAccepted = 10,
-            /// <summary>Unknown</summary>
 			TaskInventoryDeclined = 11,
-			/// <summary>Unknown</summary>
+
+			/// <summary>Copied as pending, type LLNOTHINGSPECIAL, for new users
+			/// used by offline tools</summary>
 			NewUserDefault = 12,
-			/// <summary>Start a session, or add users to a session</summary>
+
+			//
+			// session based messaging - the way that people usually actually
+			// communicate with each other.
+			//
+
+			/// <summary>Start a session, or add users to a session.</summary>
 			SessionAdd = 13,
+
 			/// <summary>Start a session, but don't prune offline users</summary>
 			SessionOfflineAdd = 14,
-			/// <summary>Start a session with your group</summary>
+
+			/// <summary>start a session with your gruop</summary>
 			SessionGroupStart = 15,
-			/// <summary>Start a session without a calling card (finder or objects)</summary>
+
+			/// <summary>start a session without a calling card (finder or objects)</summary>
 			SessionCardlessStart = 16,
-			/// <summary>Send a message to a session</summary>
+
+			/// <summary>send a message to a session.</summary>
 			SessionSend = 17,
-			/// <summary>Leave a session</summary>
+
+			/// <summary>leave a session</summary>
 			SessionDrop = 18,
+
             /// <summary>Indicates that the IM is from an object</summary>
             MessageFromObject = 19,
+
 			/// <summary>sent an IM to a busy user, this is the auto response</summary>
 			BusyAutoResponse = 20,
+
 			/// <summary>Shows the message in the console and chat history</summary>
 			ConsoleAndChatHistory = 21,
-			/// <summary>IM Types used for luring your friends</summary>
+
+			/// <summary>IM Types used for luring your friends.</summary>
             RequestTeleport = 22,
-            /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+            /// <summary>Response sent to the agent which inititiated a teleport invitation.</summary>
             AcceptTeleport = 23,
-            /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+            /// <summary>Response sent to the agent which inititiated a teleport invitation.</summary>
             DenyTeleport = 24,
-            /// <summary>Only useful if you have Linden permissions</summary>
+            /// <summary>
+            /// It will be fun once we can actually use this one.
+            /// </summary>
             GodLikeRequestTeleport = 25,
-			/// <summary>IM to tell the user to go to an URL</summary>
+
+			/// <summary>IM to tell the user to go to an URL.</summary>
 			GotoUrl = 28,
-			/// <summary>IM for help</summary>
+
+			/// <summary>IM for help from the GAURDIANANGELS.</summary>
 			Session911Start = 29,
-			/// <summary>IM sent automatically on call for help, sends a lure 
-            /// to each Helper reached</summary>
+
+			/// <summary>IM sent automatically on call for help, 
+			/// sends a lure to each Helper reached</summary>
 			Lure911 = 30,
-			/// <summary>Like an IM but won't go to email</summary>
+
+			/// <summary>Like an IM but won't go to email.</summary>
 			FromTaskAsAlert = 31,
-			/// <summary>IM from a group officer to all group members</summary>
+
+			/// <summary>IM from group officer to all group members.</summary>
 			GroupNotice = 32,
-			/// <summary>Unknown</summary>
+
+			/// <summary> </summary>
 			GroupNoticeInventoryAccepted = 33,
-            /// <summary>Unknown</summary>
+			
+			/// <summary> </summary>
 			GroupNoticeInventoryDeclined = 34,
-			/// <summary>Accept a group invitation</summary>
+
+			/// <summary> </summary>
 			GroupInvitationAccept = 35,
-			/// <summary>Decline a group invitation</summary>
+
+			/// <summary> </summary>
 			GroupInvitationDecline = 36,
-            /// <summary>Unknown</summary>
+
+			/// <summary> </summary>
 			GroupNoticeRequested = 37,
-			/// <summary>An avatar is offering you friendship</summary>
+
+			/// <summary> </summary>
 			FriendshipOffered = 38,
-			/// <summary>An avatar has accepted your friendship offer</summary>
+
+			/// <summary> </summary>
 			FriendshipAccepted = 39,
-			/// <summary>An avatar has declined your friendship offer</summary>
+
+			/// <summary> </summary>
 			FriendshipDeclined = 40,
+
             /// <summary>Indicates that a user has started typing</summary>
             StartTyping = 41,
             /// <summary>Indicates that a user has stopped typing</summary>
             StopTyping = 42
+
+
+
+
+
         }
 
         /// <summary>

@@ -98,9 +98,9 @@ namespace libsecondlife
         private SecondLife Client;
 
         /// <summary>
-        /// Default constructor
+        /// Represents other avatars
         /// </summary>
-        /// <param name="client">Reference to the client</param>
+        /// <param name="client"></param>
         public AvatarManager(SecondLife client)
         {
             Client = client;
