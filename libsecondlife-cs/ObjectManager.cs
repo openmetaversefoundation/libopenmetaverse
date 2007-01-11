@@ -187,6 +187,8 @@ namespace libsecondlife
         public enum AttachmentPoint
         {
             /// <summary></summary>
+            Default = 0,
+            /// <summary></summary>
             Chest = 1,
             /// <summary></summary>
             Skull,
@@ -223,7 +225,7 @@ namespace libsecondlife
             /// <summary></summary>
             RightUpperArm,
             /// <summary></summary>
-            RightForarm,
+            RightForearm,
             /// <summary></summary>
             LeftUpperArm,
             /// <summary></summary>

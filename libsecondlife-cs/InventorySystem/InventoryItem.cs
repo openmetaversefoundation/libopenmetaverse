@@ -426,16 +426,49 @@ namespace libsecondlife.InventorySystem
 
         }
 
+        /// <summary>
+        /// Attempt to rez this inventory item at the given point
+        /// </summary>
+        /// <param name="TargetPos">Region/Sim coordinates</param>
         public void RezObject(LLVector3 TargetPos)
         {
             RezObject(TargetPos, null);
         }
 
+        /// <summary>
+        /// Attempt to rez this inventory item at the given point, in the given simulator
+        /// </summary>
+        /// <param name="TargetPos">Region/Sim coords</param>
+        /// <param name="TargetSim"></param>
         public void RezObject(LLVector3 TargetPos, Simulator TargetSim)
         {
             iManager.ItemRezObject(this, TargetSim, TargetPos);
         }
 
+        /// <summary>
+        /// Attempt to attach this item
+        /// </summary>
+        public void Attach()
+        {
+            Attach(0); //Use default attach point.
+        }
+
+        /// <summary>
+        /// Attempt to attach this item.
+        /// </summary>
+        /// <param name="AttachmentPt">Where to attach to</param>
+        public void Attach(ObjectManager.AttachmentPoint AttachmentPt)
+        {
+            iManager.ItemRezAttach(this, 0);
+        }
+
+        /// <summary>
+        /// Attempt to detach this item
+        /// </summary>
+        public void Detach()
+        {
+            iManager.ItemDetach(this);
+        }
 
         /// <summary>
         /// </summary>

@@ -589,6 +589,27 @@ namespace libsecondlife.InventorySystem
         }
 
         /// <summary>
+        /// Attempt to rez and attach an inventory item 
+        /// </summary>
+        /// <param name="Item"></param>
+        /// <param name="AttachmentPt"></param>
+        internal void ItemRezAttach(InventoryItem Item, ObjectManager.AttachmentPoint AttachmentPt)
+        {
+            Packet p = InvPacketHelper.RezSingleAttachmentFromInv(Item, AttachmentPt);
+            slClient.Network.SendPacket(p);
+        }
+
+        /// <summary>
+        /// Attempt to detach and return an item to your inventory
+        /// </summary>
+        /// <param name="Item"></param>
+        internal void ItemDetach(InventoryItem Item)
+        {
+            Packet p = InvPacketHelper.DetachAttachmentIntoInv(Item.ItemID);
+            slClient.Network.SendPacket(p);
+        }
+
+        /// <summary>
         /// Request the download of a folder's contents
         /// </summary>
         /// <param name="dr"></param>

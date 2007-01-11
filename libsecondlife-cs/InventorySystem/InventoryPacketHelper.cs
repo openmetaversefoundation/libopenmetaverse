@@ -386,6 +386,41 @@ namespace libsecondlife.InventorySystem
             return p;
         }
 
+        public Packet RezSingleAttachmentFromInv(InventoryItem item)
+        {
+            return RezSingleAttachmentFromInv(item, 0); // Use default point
+        }
+
+        public Packet RezSingleAttachmentFromInv(InventoryItem item, ObjectManager.AttachmentPoint AttachmentPt)
+        {
+            RezSingleAttachmentFromInvPacket p = new RezSingleAttachmentFromInvPacket();
+            p.AgentData.AgentID = AgentID;
+            p.AgentData.SessionID = SessionID;
+
+            p.ObjectData.Description = Helpers.StringToField(item.Description);
+            p.ObjectData.EveryoneMask = item.EveryoneMask;
+            p.ObjectData.GroupMask = item.GroupMask;
+            p.ObjectData.ItemFlags = item.Flags;
+            p.ObjectData.ItemID = item.ItemID;
+            p.ObjectData.Name = Helpers.StringToField(item.Name);
+            p.ObjectData.NextOwnerMask = item.NextOwnerMask;
+            p.ObjectData.OwnerID = item.OwnerID;
+
+            p.ObjectData.AttachmentPt = (byte)AttachmentPt; // Default;
+
+
+            return p;
+        }
+
+        public Packet DetachAttachmentIntoInv( LLUUID ItemID )
+        {
+            DetachAttachmentIntoInvPacket p = new DetachAttachmentIntoInvPacket();
+            p.ObjectData.AgentID = AgentID;
+            p.ObjectData.ItemID = ItemID;
+
+            return p;
+        }
+
 /*
 			// Confirm InventoryUpdate CRC
 			uint test = libsecondlife.Packets.InventoryPackets.InventoryUpdateCRC
