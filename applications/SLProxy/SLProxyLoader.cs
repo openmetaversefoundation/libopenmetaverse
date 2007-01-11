@@ -83,8 +83,10 @@ namespace SLProxy {
 		}
 	    }
 
-	    public void LoadPlugin(string name) {
-		Assembly assembly = Assembly.LoadFile(name);
+	    public void LoadPlugin(string name) 
+        {
+
+            Assembly assembly = Assembly.LoadFile(Path.GetFullPath(name));
             	foreach (Type t in assembly.GetTypes())
             	{
 	                try
