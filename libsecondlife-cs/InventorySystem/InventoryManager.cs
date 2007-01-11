@@ -569,6 +569,12 @@ namespace libsecondlife.InventorySystem
 
         #region Misc
 
+        /// <summary>
+        /// Rez the given item into the given sim.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="TargetSim">You can specify null to use the current sim</param>
+        /// <param name="TargetPos">Position is in Region coordinates</param>
         internal void ItemRezObject(InventoryItem item, Simulator TargetSim, LLVector3 TargetPos)
         {
             Packet packet = InvPacketHelper.RezObject(item, TargetPos);
@@ -602,6 +608,7 @@ namespace libsecondlife.InventorySystem
         /// Downloads your entire inventory structure.
         /// </summary>
         /// <remarks>Not recommended!  This can take a long time for larger downloads and is subject to timeouts</remarks>
+        [Obsolete("This is a big nasty evil blocking function that you shouldn't use any more.")]
         public void DownloadInventory()
         {
             ClearState();
