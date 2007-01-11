@@ -17,11 +17,10 @@
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>false</DelaySign>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>SLProxy</RootNamespace>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <StartupObject>
-    </StartupObject>
+    <StartupObject>ProxyMain</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -86,10 +85,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analyst.cs" />
     <Compile Include="SLProxy.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SLProxyLoader.cs" />
+    <Compile Include="SLProxyMain.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\libsecondlife-cs\libsecondlife.csproj">
