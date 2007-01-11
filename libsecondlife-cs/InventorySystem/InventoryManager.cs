@@ -594,12 +594,13 @@ namespace libsecondlife.InventorySystem
         /// <param name="dr"></param>
         internal void RequestFolder(DownloadRequest_Folder dr)
         {
+            
+            FolderDownloadStatus[dr.FolderID] = dr;
+
             Packet packet = InvPacketHelper.FetchInventoryDescendents(
                             dr.FolderID
                             , dr.FetchFolders
                             , dr.FetchItems);
-
-            FolderDownloadStatus[dr.FolderID] = dr;
 
             slClient.Network.SendPacket(packet);
         }
