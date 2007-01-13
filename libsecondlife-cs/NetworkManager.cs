@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
+using System.Threading;
 using Nwc.XmlRpc;
 using Nii.JSON;
 using libsecondlife.Packets;
@@ -715,8 +716,8 @@ namespace libsecondlife
         private bool connected;
 
         private const int NetworkTrafficTimeout = 15000;
-        private const int LoginTimeout = 60000;
-        private const int LogoutTimeout = 10000;
+		
+		ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// 
@@ -735,7 +736,7 @@ namespace libsecondlife
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
 
-            // Disconnect a sim if no network traffic has been received for 15 seconds
+            // Disconnect a sim if we exceed our threshold
             DisconnectTimer = new System.Timers.Timer(NetworkTrafficTimeout);
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
         }
@@ -1058,7 +1059,7 @@ namespace libsecondlife
 
             try
             {
-                result = (XmlRpcResponse)xmlrpc.Send(url, LoginTimeout);
+                result = (XmlRpcResponse)xmlrpc.Send(url, Client.Settings.LOGIN_TIMEOUT);
             }
             catch (Exception e)
             {
@@ -1298,11 +1299,19 @@ namespace libsecondlife
 
             return simulator;
         }
+		
+		public void Logout()
+		{
+			RequestLogout();
+			LogoutReplyEvent.WaitOne(100, false);
+			
+			
+		}
 
         /// <summary>
         /// Trigger the logout process ( three step process !)
         /// </summary>
-        public void Logout()
+        public void RequestLogout()
         {
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
@@ -1319,7 +1328,7 @@ namespace libsecondlife
             logout.AgentData.AgentID = AgentID;
             logout.AgentData.SessionID = SessionID;
             CurrentSim.SendPacket(logout, true);
-            LogoutTimer = new System.Timers.Timer(LogoutTimeout);
+            LogoutTimer = new System.Timers.Timer(Client.Settings.LOGOUT_TIMEOUT);
             LogoutTimer.Elapsed += new ElapsedEventHandler(LogoutTimer_Elapsed);
             LogoutTimer.Start();
         }
@@ -1344,7 +1353,6 @@ namespace libsecondlife
                         {
                             callbackDict.Add(InventoryData.ItemID, InventoryData.NewAssetID);
                         }
-
                         try
                         {
                             OnLogoutReply(callbackDict);
@@ -1386,7 +1394,8 @@ namespace libsecondlife
             CurrentSim.SendPacket(logoutDemand, true);
             // Shutdown the network layer
             Shutdown();
-
+			//incase we are blocking in Logout()
+			LogoutReplyEvent.Set();
             if (OnDisconnected != null)
             {
                 try

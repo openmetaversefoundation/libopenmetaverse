@@ -368,7 +368,8 @@ namespace libsecondlife
         private Dictionary<LLUUID, GroupTitlesCallback> GroupTitlesCallbacks;
         private Dictionary<LLUUID, GroupAccountSummaryCallback> GroupAccountSummaryCallbacks;
         private Dictionary<LLUUID, GroupAccountDetailsCallback> GroupAccountDetailsCallbacks;
-        private Dictionary<LLUUID, GroupAccountTransactionsCallback> GroupAccountTransactionsCallbacks;
+		//TODO - presumably someone created this Dictionary so they could use it.
+        //private Dictionary<LLUUID, GroupAccountTransactionsCallback> GroupAccountTransactionsCallbacks;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>> GroupMembersCaches;
         /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
@@ -391,7 +392,7 @@ namespace libsecondlife
             GroupTitlesCallbacks = new Dictionary<LLUUID, GroupTitlesCallback>();
             GroupAccountSummaryCallbacks = new Dictionary<LLUUID, GroupAccountSummaryCallback>();
             GroupAccountDetailsCallbacks = new Dictionary<LLUUID, GroupAccountDetailsCallback>();
-            GroupAccountTransactionsCallbacks = new Dictionary<LLUUID, GroupAccountTransactionsCallback>();
+            //GroupAccountTransactionsCallbacks = new Dictionary<LLUUID, GroupAccountTransactionsCallback>();
 
             GroupMembersCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>>();
             GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();

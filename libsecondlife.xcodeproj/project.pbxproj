@@ -16,7 +16,6 @@
 		4054E3110B57351700B0667D /* AssetManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2BD0B57343500B0667D /* AssetManager.cs */; };
 		4054E3120B57351700B0667D /* AssetNotecard.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2BE0B57343500B0667D /* AssetNotecard.cs */; };
 		4054E3130B57351700B0667D /* AssetPacketHelpers.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2BF0B57343500B0667D /* AssetPacketHelpers.cs */; };
-		4054E3140B57351700B0667D /* AssetRequestDownload.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2C00B57343500B0667D /* AssetRequestDownload.cs */; };
 		4054E3150B57351700B0667D /* AssetRequestUpload.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2C10B57343500B0667D /* AssetRequestUpload.cs */; };
 		4054E3160B57351700B0667D /* AssetScript.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2C20B57343500B0667D /* AssetScript.cs */; };
 		4054E3170B57351700B0667D /* AssetWearable.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2C30B57343500B0667D /* AssetWearable.cs */; };
@@ -133,6 +132,7 @@
 		4054E45E0B575BE200B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		4054E46E0B575CD500B0667D /* ParcelDownload.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E46D0B575CD500B0667D /* ParcelDownload.cs */; };
 		4054E46F0B575D1400B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		40F258A30B586E8D003B627A /* AssetRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F258A20B586E8D003B627A /* AssetRequest.cs */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -197,7 +197,6 @@
 		4054E2BD0B57343500B0667D /* AssetManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetManager.cs; sourceTree = "<group>"; };
 		4054E2BE0B57343500B0667D /* AssetNotecard.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetNotecard.cs; sourceTree = "<group>"; };
 		4054E2BF0B57343500B0667D /* AssetPacketHelpers.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetPacketHelpers.cs; sourceTree = "<group>"; };
-		4054E2C00B57343500B0667D /* AssetRequestDownload.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetRequestDownload.cs; sourceTree = "<group>"; };
 		4054E2C10B57343500B0667D /* AssetRequestUpload.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetRequestUpload.cs; sourceTree = "<group>"; };
 		4054E2C20B57343500B0667D /* AssetScript.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetScript.cs; sourceTree = "<group>"; };
 		4054E2C30B57343500B0667D /* AssetWearable.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetWearable.cs; sourceTree = "<group>"; };
@@ -315,6 +314,7 @@
 		4054E45B0B575BD600B0667D /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
 		4054E4650B575CA000B0667D /* ParcelDownload.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = ParcelDownload.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E46D0B575CD500B0667D /* ParcelDownload.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ParcelDownload.cs; path = "libsecondlife-cs/examples/ParcelDownload/ParcelDownload.cs"; sourceTree = "<group>"; };
+		40F258A20B586E8D003B627A /* AssetRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssetRequest.cs; path = "libsecondlife-cs/AssetSystem/AssetRequest.cs"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -390,6 +390,7 @@
 		4054E2B50B5733D200B0667D /* libsecondlife-cs */ = {
 			isa = PBXGroup;
 			children = (
+				40F258A20B586E8D003B627A /* AssetRequest.cs */,
 				4054E2B60B57343500B0667D /* _Packets_.cs */,
 				4054E2B70B57343500B0667D /* AssemblyInfo.cs */,
 				4054E2B80B57343500B0667D /* AssetSystem */,
@@ -431,7 +432,6 @@
 				4054E2BD0B57343500B0667D /* AssetManager.cs */,
 				4054E2BE0B57343500B0667D /* AssetNotecard.cs */,
 				4054E2BF0B57343500B0667D /* AssetPacketHelpers.cs */,
-				4054E2C00B57343500B0667D /* AssetRequestDownload.cs */,
 				4054E2C10B57343500B0667D /* AssetRequestUpload.cs */,
 				4054E2C20B57343500B0667D /* AssetScript.cs */,
 				4054E2C30B57343500B0667D /* AssetWearable.cs */,
@@ -845,7 +845,6 @@
 				4054E3110B57351700B0667D /* AssetManager.cs in Sources */,
 				4054E3120B57351700B0667D /* AssetNotecard.cs in Sources */,
 				4054E3130B57351700B0667D /* AssetPacketHelpers.cs in Sources */,
-				4054E3140B57351700B0667D /* AssetRequestDownload.cs in Sources */,
 				4054E3150B57351700B0667D /* AssetRequestUpload.cs in Sources */,
 				4054E3160B57351700B0667D /* AssetScript.cs in Sources */,
 				4054E3170B57351700B0667D /* AssetWearable.cs in Sources */,
@@ -908,6 +907,7 @@
 				4054E3500B57351700B0667D /* XmlRpcServer.cs in Sources */,
 				4054E3510B57351700B0667D /* XmlRpcSystemObject.cs in Sources */,
 				4054E3520B57351700B0667D /* XmlRpcXmlTokens.cs in Sources */,
+				40F258A30B586E8D003B627A /* AssetRequest.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
