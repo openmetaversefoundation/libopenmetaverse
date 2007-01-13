@@ -97,12 +97,12 @@
     <Compile Include="AssetSystem\AssetManager.cs" />
     <Compile Include="AssetSystem\AssetNotecard.cs" />
     <Compile Include="AssetSystem\AssetPacketHelpers.cs" />
-    <Compile Include="AssetSystem\AssetRequestDownload.cs" />
     <Compile Include="AssetSystem\AssetRequestUpload.cs" />
     <Compile Include="AssetSystem\AssetScript.cs" />
     <Compile Include="AssetSystem\AssetWearable.cs" />
     <Compile Include="AssetSystem\AssetWearable_Body.cs" />
     <Compile Include="AssetSystem\AssetWearable_Clothing.cs" />
+    <Compile Include="AssetSystem\AssetRequest.cs" />
     <Compile Include="AssetSystem\_BodyShapeParams_.cs" />
     <Compile Include="AssetSystem\ImageManager.cs" />
     <Compile Include="AssetSystem\ImagePacketHelpers.cs" />

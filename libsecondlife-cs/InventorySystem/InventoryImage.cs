@@ -22,8 +22,12 @@ namespace libsecondlife.InventorySystem
 				{
                     if ((AssetID != null) && (AssetID != LLUUID.Zero))
 					{
-						base.iManager.AssetManager.GetInventoryAsset( this );
-						return ((AssetImage)Asset).J2CData;
+                        AssetRequestDownload request = base.iManager.AssetManager.RequestInventoryAsset(this);
+                        if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
+                        {
+                            throw new Exception("Asset (" + AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ") for " + this.Name);
+                        }
+                        return ((AssetImage)Asset).J2CData;
 					}
 				}
 

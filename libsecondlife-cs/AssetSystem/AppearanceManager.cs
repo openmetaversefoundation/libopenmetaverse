@@ -32,12 +32,12 @@ namespace libsecondlife.AssetSystem
 			Invalid = 255
 		};
     
-        private SecondLife Client;
-        private AssetManager AManager;
+        protected SecondLife Client;
+        protected AssetManager AManager;
 
-        private uint SerialNum = 1;
+        protected uint SerialNum = 1;
 
-        private ManualResetEvent AgentWearablesSignal = null;
+        protected ManualResetEvent AgentWearablesSignal = null;
 
         // This data defines all appearance info for an avatar
         public AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
@@ -45,20 +45,20 @@ namespace libsecondlife.AssetSystem
         public TextureEntry AgentTextureEntry = new TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
 
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
         public AppearanceManager(SecondLife client)
         {
             Client = client;
             AManager = client.Assets;
 
-            RegisterCallbacks();
-
-        }
-
-        private void RegisterCallbacks()
-        {
             Client.Network.RegisterCallback(libsecondlife.Packets.PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateCallbackHandler));
+
         }
+
+        #region Wear Stuff
 
         /// <summary>
         /// Add a single wearable to your outfit, replacing if nessesary.
@@ -159,10 +159,13 @@ namespace libsecondlife.AssetSystem
             SendAgentSetAppearance();
         }
 
+        #endregion
+
+
         /// <summary>
         /// Creates and sends an AgentIsNowWearing packet based on the local cached AgentWearablesData array.
         /// </summary>
-        private void SendAgentIsNowWearing()
+        protected void SendAgentIsNowWearing()
         {
             AgentIsNowWearingPacket nowWearing = new AgentIsNowWearingPacket();
             nowWearing.AgentData.AgentID = Client.Network.AgentID;
@@ -182,7 +185,7 @@ namespace libsecondlife.AssetSystem
         /// Request from the server what wearables we're currently wearing.  Update cached info.
         /// </summary>
         /// <returns>The wearable info for what we're currently wearing</returns>
-        public AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()
+        protected AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()
         {
             AgentWearablesSignal = new ManualResetEvent(false);
 
@@ -199,7 +202,7 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// Update the local Avatar Appearance information based on the contents of the assets as defined in the cached wearable data info.
         /// </summary>
-        public void GetAvatarAppearanceInfoFromWearableAssets()
+        protected void GetAvatarAppearanceInfoFromWearableAssets()
         {
             // Only request wearable data, if we have to.
             if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
@@ -230,8 +233,12 @@ namespace libsecondlife.AssetSystem
                         break;
                 }
 
-                
-                AManager.GetInventoryAsset(wearableAsset);
+                AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset);
+                if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
+                {
+                    throw new Exception("Asset (" + wearableAsset.AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ")");
+                }
+
                 if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
                 {
                     Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
@@ -313,60 +320,6 @@ namespace libsecondlife.AssetSystem
         }
 
         /// <summary>
-        /// Convert the morph params as they are stored in assets, to the byte values needed for
-        /// AgentSetAppearance packet
-        /// </summary>
-        /// <returns>Visual Param information for AgentSetAppearance packets</returns>
-        private Dictionary<uint, byte> GetAssetParamsAsVisualParams()
-        {
-            Dictionary<uint, byte> VisualParams = new Dictionary<uint, byte>();
-
-            float maxVal = 0;
-            float minVal = 0;
-            uint packetIdx = 0;
-            float range = 0;
-            float percentage = 0;
-            byte packetVal = 0;
-
-            foreach (KeyValuePair<uint, float> kvp in AgentAppearanceParams)
-            {
-                packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
-                maxVal = BodyShapeParams.GetValueMax(kvp.Key);
-                minVal = BodyShapeParams.GetValueMin(kvp.Key);
-
-                range = maxVal - minVal;
-
-                percentage = (kvp.Value - minVal) / range;
-
-                packetVal = (byte)(percentage * (byte)255);
-
-                VisualParams[packetIdx] = packetVal;
-
-            }
-
-            return VisualParams;
-        }
-
-        /// <summary>
-        /// Determine agent size for AgentSetAppearance based on Visual Param data.
-        /// </summary>
-        /// <param name="VisualParams"></param>
-        /// <returns></returns>
-        private LLVector3 GetAgentSizeFromVisualParams(Dictionary<uint, byte> VisualParams)
-        {
-            if (VisualParams.ContainsKey(25))
-            {
-                float AV_Height_Range = 2.025506f - 1.50856f;
-                float AV_Height = 1.50856f + (((float)VisualParams[25] / 255.0f) * AV_Height_Range);
-                return new LLVector3(0.45f, 0.6f, AV_Height);
-            }
-            else
-            {
-                return new LLVector3(0.45f, 0.6f, 1.0f);
-            }
-        }
-
-        /// <summary>
         /// Send an AgentSetAppearance packet to the server to update your appearance.
         /// </summary>
         public void SendAgentSetAppearance()
@@ -420,6 +373,63 @@ namespace libsecondlife.AssetSystem
         }
 
 
+        /// <summary>
+        /// Convert the morph params as they are stored in assets, to the byte values needed for
+        /// AgentSetAppearance packet
+        /// </summary>
+        /// <returns>Visual Param information for AgentSetAppearance packets</returns>
+        protected Dictionary<uint, byte> GetAssetParamsAsVisualParams()
+        {
+            Dictionary<uint, byte> VisualParams = new Dictionary<uint, byte>();
+
+            float maxVal = 0;
+            float minVal = 0;
+            uint packetIdx = 0;
+            float range = 0;
+            float percentage = 0;
+            byte packetVal = 0;
+
+            foreach (KeyValuePair<uint, float> kvp in AgentAppearanceParams)
+            {
+                packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
+                maxVal = BodyShapeParams.GetValueMax(kvp.Key);
+                minVal = BodyShapeParams.GetValueMin(kvp.Key);
+
+                range = maxVal - minVal;
+
+                percentage = (kvp.Value - minVal) / range;
+
+                packetVal = (byte)(percentage * (byte)255);
+
+                VisualParams[packetIdx] = packetVal;
+
+            }
+
+            return VisualParams;
+        }
+
+        /// <summary>
+        /// Determine agent size for AgentSetAppearance based on Visual Param data.
+        /// </summary>
+        /// <param name="VisualParams"></param>
+        /// <returns></returns>
+        protected LLVector3 GetAgentSizeFromVisualParams(Dictionary<uint, byte> VisualParams)
+        {
+            if (VisualParams.ContainsKey(25))
+            {
+                float AV_Height_Range = 2.025506f - 1.50856f;
+                float AV_Height = 1.50856f + (((float)VisualParams[25] / 255.0f) * AV_Height_Range);
+                return new LLVector3(0.45f, 0.6f, AV_Height);
+            }
+            else
+            {
+                return new LLVector3(0.45f, 0.6f, 1.0f);
+            }
+        }
+
+
+
+        #region Callback Handlers
 
         private void AgentWearablesUpdateCallbackHandler(Packet packet, Simulator simulator)
         {
@@ -429,12 +439,16 @@ namespace libsecondlife.AssetSystem
             AgentWearablesSignal.Set();
         }
 
+        #endregion
+
+        #region Lookup Tables
+
         /// <summary>
         /// Convert a Visual Params index number from the ParamID provided in Assets and from avatar_lad.xml
         /// </summary>
         /// <param name="AssetParamID"></param>
         /// <returns></returns>
-        private static uint GetAgentSetAppearanceIndex(uint AssetParamID)
+        protected static uint GetAgentSetAppearanceIndex(uint AssetParamID)
         {
             switch (AssetParamID)
             {
@@ -667,7 +681,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="VisualParamIdx"></param>
         /// <returns></returns>
-        public static uint GetParamID(uint VisualParamIdx)
+        protected static uint GetParamID(uint VisualParamIdx)
         {
             switch (VisualParamIdx)
             {
@@ -894,5 +908,7 @@ namespace libsecondlife.AssetSystem
                     throw new Exception("Unknown Visual Param (AgentSetApperance) index: " + VisualParamIdx);
             }
         }
+
+        #endregion
     }
 }

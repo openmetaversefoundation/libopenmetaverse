@@ -697,6 +697,11 @@ namespace libsecondlife.InventorySystem
             }
         }
 
+        protected void FireRequestDownloadFinishedEvent(object o, EventArgs e)
+        {
+            RequestDownloadFinishedEvent(o, e);
+        }
+
         #endregion
 
         #region libsecondlife callback handlers
@@ -948,7 +953,7 @@ namespace libsecondlife.InventorySystem
                 {
                     DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
                     e.DownloadRequest = dr;
-                    RequestDownloadFinishedEvent(InvFolderUpdating, e);
+                    FireRequestDownloadFinishedEvent(InvFolderUpdating, e);
                 }
             }
         }

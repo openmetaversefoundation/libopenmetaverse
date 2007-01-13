@@ -39,109 +39,87 @@ using System.Threading;
 
 namespace libsecondlife.AssetSystem
 {
-    class AssetRequestUpload
+    public class AssetRequestUpload : AssetRequest
     {
-        public ManualResetEvent Completed = new ManualResetEvent(false);
-		public bool Status;
-		public string StatusMsg;
+        protected SecondLife _Client;
+        protected readonly int _MaxResendAttempts = 20;
 
-        public Asset MyAsset;
+        protected ulong _XferID;
 
-        public LLUUID TransactionID;
-        public ulong XferID;
+        protected int _ResendCount;
+        protected uint _CurrentPacket;
 
-        SecondLife slClient;
+        protected int _NumPackets2Send; 
 
-        public int resendCount;
-        public uint CurrentPacket;
-        private uint _LastPacketTime;
-        public uint LastPacketTime
+        public AssetRequestUpload(SecondLife Client, LLUUID TransID, Asset Asset2Upload) : base(Client.Assets, TransID, Asset2Upload)
         {
-            get { return _LastPacketTime; }
-        }
-
-        public uint SecondsSinceLastPacket
-        {
-            get { return Helpers.GetUnixTime() - _LastPacketTime; }
-        }
-
-        private int _NumPackets; 
-        public int NumPackets { get { return _NumPackets; } }
-
-        public AssetRequestUpload(SecondLife slClient, LLUUID TransID, Asset asset)
-        {
-            this.slClient = slClient;
-            TransactionID = TransID;
-            UpdateLastPacketTime();
-
-            MyAsset = asset;
-
-            CurrentPacket = 0;
-            resendCount = 0;
-            _NumPackets = asset._AssetData.Length / 1000;
-            if (_NumPackets < 1)
+            if ((AssetBeingTransferd._AssetData == null) || (AssetBeingTransferd._AssetData.Length == 0))
             {
-                _NumPackets = 1;
+                throw new Exception("Asset data cannot be null.");
+            }
+
+            _Client = Client;
+
+            _CurrentPacket = 0;
+            _ResendCount = 0;
+            _NumPackets2Send = AssetBeingTransferd._AssetData.Length / 1000;
+            if (_NumPackets2Send < 1)
+            {
+                _NumPackets2Send = 1;
             }
         }
 
         internal LLUUID DoUpload()
         {
-            this.SendFirstPacket();
+            SendFirstPacket();
 
-            while (this.Completed.WaitOne(1000, true) == false && this.resendCount < 20) // only resend 20 times
+            while ((_Completed.WaitOne(1000, true) == false) && (_ResendCount < _MaxResendAttempts))
             {
                 if (this.SecondsSinceLastPacket > 2)
                 {
-                    slClient.Log("Resending Packet (more than 2 seconds since last confirm)", Helpers.LogLevel.Info);
+                    _Client.Log("Resending Packet (more than 2 seconds since last confirm)", Helpers.LogLevel.Info);
                     this.SendCurrentPacket();
-                    resendCount++;
+                    _ResendCount++;
                 }
             }
 
 
-            if (this.Status == false)
+            if (_Status == RequestStatus.Failure)
             {
-                throw new Exception(this.StatusMsg);
+                throw new Exception(_StatusMsg);
             }
             else
             {
-                return this.TransactionID;
+                return _TransactionID;
             }
         }
 
-        public void UpdateLastPacketTime()
-        {
-            _LastPacketTime = Helpers.GetUnixTime();
-        }
-
-
-        internal void SendFirstPacket()
+        protected void SendFirstPacket()
         {
             Packet packet;
 
-            if (this.MyAsset._AssetData.Length > 1000)
+            if (AssetBeingTransferd._AssetData.Length > 1000)
             {
-                packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(this.MyAsset, this.TransactionID);
+                packet = AssetPacketHelpers.AssetUploadRequestHeaderOnly(AssetBeingTransferd, _TransactionID);
             }
             else
             {
-                packet = AssetPacketHelpers.AssetUploadRequest(this.MyAsset, this.TransactionID);
+                packet = AssetPacketHelpers.AssetUploadRequest(AssetBeingTransferd, _TransactionID);
             }
 
-            slClient.Network.SendPacket(packet);
+            _Client.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
                 slClient.DebugLog(packet);
             #endif
             #if DEBUG_HEADERS
-            slClient.DebugLog(packet.Header.ToString());
+            _Client.DebugLog(packet.Header.ToString());
             #endif
         }
 
         internal void RequestXfer(ulong XferID)
         {
-            this.XferID = XferID; 
+            _XferID = XferID; 
             // Setup to send the first packet
             SendCurrentPacket();
         }
@@ -151,11 +129,11 @@ namespace libsecondlife.AssetSystem
             // TODO should check that this is the same transfer?
             this.UpdateLastPacketTime();
 
-            if (PacketNumConfirmed == CurrentPacket)
+            if (PacketNumConfirmed == _CurrentPacket)
             {
                 // Increment Packet #
-                this.CurrentPacket++;
-                this.resendCount = 0;
+                this._CurrentPacket++;
+                this._ResendCount = 0;
                 SendCurrentPacket();
             }
             else
@@ -164,72 +142,72 @@ namespace libsecondlife.AssetSystem
             }
         }
 
-        private void SendCurrentPacket()
+        protected void SendCurrentPacket()
         {
             Packet uploadPacket;
 
-            // technically we don't need this lock, because no state is updated here!
-            // lock (this) 
+            // THREADING: snapshot this num so we use a consistent value throughout
+            uint packetNum = _CurrentPacket; 
+            if (packetNum == 0)
             {
-                // THREADING: snapshot this num so we use a consistent value throughout
-                uint packetNum = CurrentPacket; 
-                if (packetNum == 0)
+                if (AssetBeingTransferd._AssetData.Length <= 1000)
                 {
-                    if (MyAsset._AssetData.Length <= 1000)
-                        throw new Exception("Should not use xfer for small assets");
-                    int dataSize = 1000;
-
-                    byte[] packetData = new byte[dataSize + 4]; // Extra space is for leading data length bytes
-
-                    // Prefix the first Xfer packet with the data length
-                    // FIXME: Apply endianness patch
-                    Array.Copy(BitConverter.GetBytes((int)MyAsset._AssetData.Length), 0, packetData, 0, 4);
-                    Array.Copy(MyAsset._AssetData, 0, packetData, 4, dataSize);
-
-                    uploadPacket = AssetPacketHelpers.SendXferPacket(XferID, packetData, packetNum);
+                    throw new Exception("Should not use xfer for small assets");
                 }
-                else if (packetNum < this.NumPackets)
-                {
-                    byte[] packetData = new byte[1000];
-                    Array.Copy(this.MyAsset._AssetData, packetNum * 1000, packetData, 0, 1000);
+                int dataSize = 1000;
 
-                    uploadPacket = AssetPacketHelpers.SendXferPacket(this.XferID, packetData, packetNum);
-                }
-                else
-                {
-                    // The last packet has to be handled slightly differently
-                    int lastLen = this.MyAsset._AssetData.Length - (this.NumPackets * 1000);
-                    byte[] packetData = new byte[lastLen];
-                    Array.Copy(this.MyAsset._AssetData, this.NumPackets * 1000, packetData, 0, lastLen);
+                byte[] packetData = new byte[dataSize + 4]; // Extra space is for leading data length bytes
 
-                    uint lastPacket = (uint)int.MaxValue + (uint)this.NumPackets + (uint)1;
-                    uploadPacket = AssetPacketHelpers.SendXferPacket(this.XferID, packetData, lastPacket);
-                }
+                // Prefix the first Xfer packet with the data length
+                // FIXME: Apply endianness patch
+                Array.Copy(BitConverter.GetBytes((int)AssetBeingTransferd._AssetData.Length), 0, packetData, 0, 4);
+                Array.Copy(AssetBeingTransferd._AssetData, 0, packetData, 4, dataSize);
+
+                uploadPacket = AssetPacketHelpers.SendXferPacket(_XferID, packetData, packetNum);
+            }
+            else if (packetNum < _NumPackets2Send)
+            {
+                byte[] packetData = new byte[1000];
+                Array.Copy(AssetBeingTransferd._AssetData, packetNum * 1000, packetData, 0, 1000);
+
+                uploadPacket = AssetPacketHelpers.SendXferPacket(_XferID, packetData, packetNum);
+            }
+            else
+            {
+                // The last packet has to be handled slightly differently
+                int lastLen = this.AssetBeingTransferd._AssetData.Length - (_NumPackets2Send * 1000);
+                byte[] packetData = new byte[lastLen];
+                Array.Copy(this.AssetBeingTransferd._AssetData, _NumPackets2Send * 1000, packetData, 0, lastLen);
+
+                uint lastPacket = (uint)int.MaxValue + (uint)_NumPackets2Send + (uint)1;
+                uploadPacket = AssetPacketHelpers.SendXferPacket(_XferID, packetData, lastPacket);
             }
 
-            slClient.Network.SendPacket(uploadPacket);
+            _Client.Network.SendPacket(uploadPacket);
 
             #if DEBUG_PACKETS
                 slClient.DebugLog(uploadPacket);
             #endif
             #if DEBUG_HEADERS
-                slClient.DebugLog(uploadPacket.Header.ToString());
+                _Client.DebugLog(uploadPacket.Header.ToString());
             #endif
         }
 
-        internal void UploadComplete(LLUUID assetID, bool success)
+        internal void UploadComplete(LLUUID assetID, RequestStatus success)
         {
-            MyAsset.AssetID = assetID;
-            this.Status = success;
+            AssetBeingTransferd.AssetID = assetID;
             UpdateLastPacketTime();
+            _Client.Log("Upload complete", Helpers.LogLevel.Info);
 
-            if (Status)
-                StatusMsg = "Success";
+            if (_Status == RequestStatus.Success)
+            {
+                MarkCompleted(success, "Success");
+            }
             else
-                StatusMsg = "Server returned failed";
+            {
+                MarkCompleted(success, "Server returned failed");
+            }
 
-            slClient.Log("Upload complete", Helpers.LogLevel.Info);
-            Completed.Set();
         }
     }
 }

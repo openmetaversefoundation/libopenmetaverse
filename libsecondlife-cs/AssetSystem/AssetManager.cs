@@ -73,10 +73,19 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
-		private SecondLife slClient;
+		protected SecondLife slClient;
 
-        private AssetRequestUpload curUploadRequest = null;
-        private Dictionary<LLUUID, AssetRequestDownload> htDownloadRequests = new Dictionary<LLUUID, AssetRequestDownload>();
+        protected AssetRequestUpload curUploadRequest = null;
+        protected Dictionary<LLUUID, AssetRequestDownload> htDownloadRequests = new Dictionary<LLUUID, AssetRequestDownload>();
+
+        public readonly static int DefaultTimeout = 15000;
+
+        /// <summary>
+        /// Event singaling an asset transfer request has completed.
+        /// </summary>
+        /// <param name="request"></param>
+        public delegate void On_TransferRequestCompleted(AssetRequest request);
+        public event On_TransferRequestCompleted TransferRequestCompletedEvent;
 
         /// <summary>
         /// </summary>
@@ -97,31 +106,27 @@ namespace libsecondlife.AssetSystem
 			// XFer packets for uploading large assets
             slClient.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketCallbackHandler));
             slClient.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferCallbackHandler));
-		}
+        }
 
-        void Network_OnConnected(object sender)
+        #region State Handling
+        private void Network_OnConnected(object sender)
         {
             ClearState();
         }
 
-        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
             ClearState();
         }
 
-        private void ClearState()
+        protected void ClearState()
         {
             htDownloadRequests.Clear();
             curUploadRequest = null;
         }
+        #endregion
 
-        /// <summary>
-        /// Handle the appropriate sink fee associated with an asset upload
-        /// </summary>
-        public void SinkFee()
-		{
-            slClient.Self.GiveMoney(LLUUID.Zero, slClient.Settings.UPLOAD_COST, "Image Upload");
-		}
+        #region Asset Uploading 
 
         /// <summary>
         /// Upload an asset to Second Life
@@ -150,13 +155,25 @@ namespace libsecondlife.AssetSystem
             {
                 curUploadRequest = null;
             }
-		}
+        }
+
+        /// <summary>
+        /// Handle the appropriate sink fee associated with an asset upload
+        /// </summary>
+        protected void SinkFee()
+        {
+            slClient.Self.GiveMoney(LLUUID.Zero, slClient.Settings.UPLOAD_COST, "Image Upload");
+        }
+
+        #endregion
+
+        #region Download Assets
 
         /// <summary>
         /// Get the Asset data for an item, must be used when requesting a Notecard
         /// </summary>
         /// <param name="item"></param>
-		public void GetInventoryAsset( InventoryItem item )
+        public AssetRequestDownload RequestInventoryAsset(InventoryItem item)
 		{
             if ( (item.OwnerMask & (uint)AssetPermission.Copy) == 0 )
                 throw new AssetPermissionException(item, slClient, "Asset data refused, Copy permission needed.");
@@ -165,9 +182,7 @@ namespace libsecondlife.AssetSystem
 
 			LLUUID TransferID = LLUUID.Random();
 
-            AssetRequestDownload request = new AssetRequestDownload(TransferID);
-            request.Size = int.MaxValue; // Number of bytes expected
-            request.Received = 0; // Number of bytes received
+            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID, item._Asset);
             request.UpdateLastPacketTime(); // last time we recevied a packet for this request
 
             htDownloadRequests[TransferID] = request;
@@ -189,25 +204,21 @@ namespace libsecondlife.AssetSystem
             slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
-            request.Completed.WaitOne();
-
-            item.SetAssetData(request.AssetData);
-		}
+            return request;
+        }
 
         /// <summary>
         /// Get Asset data, works with BodyShapes (type 13) but does not work with Notecards(type 7)
         /// </summary>
         /// <param name="asset"></param>
-        public void GetInventoryAsset(Asset asset)
+        public AssetRequestDownload RequestInventoryAsset(Asset asset)
 		{
 			LLUUID TransferID = LLUUID.Random();
 
-            AssetRequestDownload request = new AssetRequestDownload(TransferID);
-            request.Size = int.MaxValue; // Number of bytes expected
-            request.Received = 0; // Number of bytes received
+            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID, asset);
             request.UpdateLastPacketTime(); // last time we recevied a packet for this request
 
             htDownloadRequests[TransferID] = request;
@@ -216,31 +227,69 @@ namespace libsecondlife.AssetSystem
 			slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+            slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
-            request.Completed.WaitOne();
+            return request;
 
-            asset.SetAssetData(request.AssetData);
-            
-		}
+        }
 
+        #endregion
+
+        #region Event Generation
+        internal void FireTransferRequestCompletedEvent(AssetRequest request)
+        {
+            TransferRequestCompletedEvent(request);
+        }
+        #endregion
+
+        #region Deprecated Methods
+        /// <summary>
+        /// Get the Asset data for an item, must be used when requesting a Notecard
+        /// </summary>
+        /// <param name="item"></param>
+        [Obsolete("Use RequestInventoryAsset instead.", false)]
+        public void GetInventoryAsset(InventoryItem item)
+        {
+            RequestInventoryAsset(item).Wait(-1);
+        }
+
+        /// <summary>
+        /// Get Asset data, works with BodyShapes (type 13) but does not work with Notecards(type 7)
+        /// </summary>
+        /// <param name="asset"></param>
+        [Obsolete("Use RequestInventoryAsset instead.", false)]
+        public void GetInventoryAsset(Asset asset)
+        {
+            RequestInventoryAsset(asset).Wait(-1);
+        }
+        #endregion
+
+        #region Callback Handlers
 
         private void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
+            if (reply.AssetBlock.Success)
+            {
+                curUploadRequest.UploadComplete(reply.AssetBlock.UUID, AssetRequest.RequestStatus.Success);
+            }
+            else
+            {
+                curUploadRequest.UploadComplete(reply.AssetBlock.UUID, AssetRequest.RequestStatus.Failure);
+            }
 
-            curUploadRequest.UploadComplete(reply.AssetBlock.UUID, reply.AssetBlock.Success);
+            TransferRequestCompletedEvent(curUploadRequest);
 		}
 
         private void RequestXferCallbackHandler(Packet packet, Simulator simulator)
 		{
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
             RequestXferPacket reply = (RequestXferPacket)packet;
@@ -254,7 +303,7 @@ namespace libsecondlife.AssetSystem
         private void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
             ConfirmXferPacketPacket reply = (ConfirmXferPacketPacket)packet;
@@ -263,10 +312,11 @@ namespace libsecondlife.AssetSystem
         }
 
 
+        // Download stuff
         private void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
             TransferInfoPacket reply = (TransferInfoPacket)packet;
@@ -276,33 +326,29 @@ namespace libsecondlife.AssetSystem
             int Status = reply.TransferInfo.Status;
 
             // Lookup the request for this packet
-            AssetRequestDownload request = htDownloadRequests[TransferID];
-            if (request == null)
+            if (!htDownloadRequests.ContainsKey(TransferID))
             {
+                slClient.Log("Received unexpected TransferInfo packet." + Environment.NewLine + packet.ToString(), Helpers.LogLevel.Warning);
                 return;
             }
+            AssetRequestDownload request = htDownloadRequests[TransferID];
 
             // Mark it as either not found or update the request information
             if (Status == -2)
             {
-                request.Status = false;
-                request.StatusMsg = "Asset Status -2 :: Likely Status Not Found";
-
-                request.Size = 0;
-                request.AssetData = new byte[0];
-                request.Completed.Set();
+                request.SetExpectedSize(Size);
+                request.Fail("Asset Status -2 :: Likely Status Not Found");
             }
             else
             {
-                request.Size = Size;
-                request.AssetData = new byte[Size];
+                request.SetExpectedSize(Size);
             }
         }
 
         private void TransferPacketCallbackHandler(Packet packet, Simulator simulator)
         {
             #if DEBUG_PACKETS
-                slClient.DebugLog(packet);
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
             TransferPacketPacket reply = (TransferPacketPacket)packet;
@@ -311,31 +357,18 @@ namespace libsecondlife.AssetSystem
             byte[] Data = reply.TransferData.Data;
 
 
-            // Append data to data received.
-            AssetRequestDownload request = htDownloadRequests[TransferID];
-            if (request == null)
+            // Lookup the request for this packet
+            if (!htDownloadRequests.ContainsKey(TransferID))
             {
+                slClient.Log("Received unexpected TransferPacket packet." + Environment.NewLine + packet.ToString(), Helpers.LogLevel.Warning);
                 return;
             }
+            AssetRequestDownload request = htDownloadRequests[TransferID];
 
-            // Add data to data dictionary.
-            request.AssetDataReceived[reply.TransferData.Packet] = Data;
-            request.Received += Data.Length;
-
-
-
-            // If we've gotten all the data, mark it completed.
-            if (request.Received >= request.Size)
-            {
-                int curPos = 0;
-                foreach (KeyValuePair<int,byte[]> kvp in request.AssetDataReceived)
-                {
-                    Array.Copy(kvp.Value, 0, request.AssetData, curPos, kvp.Value.Length);
-                    curPos += kvp.Value.Length;
-                }
-
-                request.Completed.Set();
-            }
+            // Append data to data received.
+            request.AddDownloadedData(reply.TransferData.Packet, Data);
         }
-	}
+
+        #endregion
+    }
 }
