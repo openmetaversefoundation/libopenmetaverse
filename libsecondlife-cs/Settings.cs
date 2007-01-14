@@ -52,10 +52,9 @@ namespace libsecondlife
         public readonly int TELEPORT_TIMEOUT = 18 * 1000;
 		
 		/// <summary>Number of milliseconds before NetworkManager.Logout() will time out</summary>
-		public readonly int LOGOUT_TIMEOUT = 5 * 1000;
+		public int LOGOUT_TIMEOUT = 5 * 1000;
 		/// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-		public readonly int LOGIN_TIMEOUT = 10 * 1000;
-		
+		public int LOGIN_TIMEOUT = 30 * 1000;
         /// <summary>The maximum size of the sequence number inbox, used to
         /// check for resent and/or duplicate packets</summary>
         public int INBOX_SIZE = 100;

@@ -1205,7 +1205,6 @@ namespace libsecondlife
                     return false;
                 }
 
-                simulator.Region.Handle = regionHandle;
                 Simulator oldSim = CurrentSim;
                 CurrentSim = simulator;
 
@@ -1300,22 +1299,27 @@ namespace libsecondlife
             return simulator;
         }
 		
+        /// <summary>
+        /// Initiate a blocking logout request. This will return when the logout
+        /// handshake has completed or when Settings.LOGOUT_TIMEOUT has expired
+        /// and a LogoutDemand packet has been sent
+        /// </summary>
 		public void Logout()
 		{
+            LogoutReplyEvent.Reset();
 			RequestLogout();
-			LogoutReplyEvent.WaitOne(100, false);
-			
-			
+            LogoutReplyEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false);
 		}
 
         /// <summary>
-        /// Trigger the logout process ( three step process !)
+        /// Initiate the logout process (three step process!)
         /// </summary>
         public void RequestLogout()
         {
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
             {
+                LogoutReplyEvent.Set();
                 return;
             }
 
@@ -1328,49 +1332,12 @@ namespace libsecondlife
             logout.AgentData.AgentID = AgentID;
             logout.AgentData.SessionID = SessionID;
             CurrentSim.SendPacket(logout, true);
+
             LogoutTimer = new System.Timers.Timer(Client.Settings.LOGOUT_TIMEOUT);
             LogoutTimer.Elapsed += new ElapsedEventHandler(LogoutTimer_Elapsed);
             LogoutTimer.Start();
         }
-        /// <summary>
-        /// Called to deal with LogoutReply packet and fires off callback
-        /// </summary>
-        /// <param name="packet">Full packet of type LogoutReplyPacket</param>
-        /// <param name="simulator"></param>
-        private void LogoutReplyHandler(Packet packet, Simulator simulator)
-        {
-            if ( packet.Type == PacketType.LogoutReply) {
-                LogoutReplyPacket logoutPacket = (LogoutReplyPacket)packet;
-                if ((logoutPacket.AgentData.SessionID == SessionID) && (logoutPacket.AgentData.AgentID == AgentID))
-                {
-                    Client.Log("Logout negotiated with server", Helpers.LogLevel.Debug);
-                    //deal with callbacks, if any
-                    if (OnLogoutReply != null)
-                    {
-                        Dictionary<LLUUID, LLUUID> callbackDict = new Dictionary<LLUUID, LLUUID>();
 
-                        foreach (LogoutReplyPacket.InventoryDataBlock InventoryData in logoutPacket.InventoryData)
-                        {
-                            callbackDict.Add(InventoryData.ItemID, InventoryData.NewAssetID);
-                        }
-                        try
-                        {
-                            OnLogoutReply(callbackDict);
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in OnLogoutReply(): " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
-                    }
-                    FinalizeLogout();
-                }
-                else
-                {
-                    Client.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning);
-                }
-            }
-        }
         /// <summary>
         /// Triggered if a LogoutReply is not received
         /// </summary>
@@ -1379,23 +1346,32 @@ namespace libsecondlife
         public void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
             Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
+            ForceLogout();
+        }
+
+        /// <summary>
+        /// Uses a LogoutDemand packet to force initiate a logout
+        /// </summary>
+        public void ForceLogout()
+        {
+            // Insist on shutdown
+            LogoutDemandPacket logoutDemand = new LogoutDemandPacket();
+            logoutDemand.LogoutBlock.SessionID = SessionID;
+            CurrentSim.SendPacket(logoutDemand, true);
+
             FinalizeLogout();
         }
+
         /// <summary>
         /// Finalize the logout procedure. Close down sockets, etc.
         /// </summary>
         private void FinalizeLogout()
         {
             LogoutTimer.Stop();
-            connected = false;
-            //insist on shutdown (just in case)
-            LogoutDemandPacket logoutDemand = new LogoutDemandPacket();
-            logoutDemand.LogoutBlock.SessionID = SessionID;
-            CurrentSim.SendPacket(logoutDemand, true);
+
             // Shutdown the network layer
             Shutdown();
-			//incase we are blocking in Logout()
-			LogoutReplyEvent.Set();
+
             if (OnDisconnected != null)
             {
                 try
@@ -1408,6 +1384,9 @@ namespace libsecondlife
                         Helpers.LogLevel.Error);
                 }
             }
+
+            // In case we are blocking in Logout()
+            LogoutReplyEvent.Set();
         }
 
         /// <summary>
@@ -1505,6 +1484,8 @@ namespace libsecondlife
                     }
                 }
             }
+
+            connected = false;
         }
 
         private void SendInitialPackets()
@@ -1604,6 +1585,47 @@ namespace libsecondlife
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Called to deal with LogoutReply packet and fires off callback
+        /// </summary>
+        /// <param name="packet">Full packet of type LogoutReplyPacket</param>
+        /// <param name="simulator"></param>
+        private void LogoutReplyHandler(Packet packet, Simulator simulator)
+        {
+            LogoutReplyPacket logout = (LogoutReplyPacket)packet;
+
+            if ((logout.AgentData.SessionID == SessionID) && (logout.AgentData.AgentID == AgentID))
+            {
+                Client.Log("Logout negotiated with server", Helpers.LogLevel.Debug);
+
+                // Deal with callbacks, if any
+                if (OnLogoutReply != null)
+                {
+                    Dictionary<LLUUID, LLUUID> callbackDict = new Dictionary<LLUUID, LLUUID>();
+
+                    foreach (LogoutReplyPacket.InventoryDataBlock InventoryData in logout.InventoryData)
+                    {
+                        callbackDict.Add(InventoryData.ItemID, InventoryData.NewAssetID);
+                    }
+                    try
+                    {
+                        OnLogoutReply(callbackDict);
+                    }
+                    catch (Exception e)
+                    {
+                        Client.Log("Caught an exception in OnLogoutReply(): " + e.ToString(),
+                            Helpers.LogLevel.Error);
+                    }
+                }
+
+                FinalizeLogout();
+            }
+            else
+            {
+                Client.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning);
             }
         }
 

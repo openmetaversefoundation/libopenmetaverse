@@ -758,6 +758,84 @@ namespace libsecondlife
 	}
 
     /// <summary>
+    /// An 8-bit color structure including an alpha channel
+    /// </summary>
+    [Serializable]
+    public struct LLColor
+    {
+        /// <summary>Red</summary>
+        [XmlAttribute("r"), DefaultValue(0)]
+        public byte R;
+        /// <summary>Green</summary>
+        [XmlAttribute("g"), DefaultValue(0)]
+        public byte G;
+        /// <summary>Blue</summary>
+        [XmlAttribute("b"), DefaultValue(0)]
+        public byte B;
+        /// <summary>Alpha</summary>
+        [XmlAttribute("a"), DefaultValue(0)]
+        public byte A;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="g"></param>
+        /// <param name="b"></param>
+        /// <param name="a"></param>
+        public LLColor(byte r, byte g, byte b, byte a)
+        {
+            R = r;
+            G = g;
+            B = b;
+            A = a;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteArray"></param>
+        /// <param name="pos"></param>
+        public LLColor(byte[] byteArray, int pos)
+		{
+            R = byteArray[pos];
+            G = byteArray[pos + 1];
+            B = byteArray[pos + 2];
+            A = byteArray[pos + 3];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetBytes()
+        {
+            byte[] byteArray = new byte[4];
+
+            byteArray[0] = R;
+            byteArray[1] = G;
+            byteArray[2] = B;
+            byteArray[3] = A;
+
+            return byteArray;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "<" + R.ToString() + ", " + G.ToString() + ", " + B.ToString() + ", " + A.ToString() + ">";
+        }
+
+        /// <summary>
+        /// An LLColor with a value of 0,0,0,255
+        /// </summary>
+        public readonly static LLColor Black = new LLColor(0, 0, 0, 255);
+    }
+
+    /// <summary>
     /// A quaternion, used for rotations
     /// </summary>
     [Serializable]

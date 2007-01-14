@@ -57,7 +57,7 @@ namespace libsecondlife
         /// <summary>
         /// Special commands used in Instant Messages
         /// </summary>
-        public enum InstantMessageDialog
+        public enum InstantMessageDialog : byte
         {
             /// <summary>Indicates a regular IM from another agent</summary>
             MessageFromAgent = 0,
@@ -148,7 +148,7 @@ namespace libsecondlife
         /// <summary>
         /// Conversion type to denote Chat Packet types in an easier-to-understand format
         /// </summary>
-        public enum ChatType
+        public enum ChatType : byte
         {
             /// <summary>Whispers (5m radius)</summary>
             Whisper = 0,
@@ -163,6 +163,92 @@ namespace libsecondlife
             StartTyping = 4,
             /// <summary>Event message when an Avatar has stopped typing</summary>
             StopTyping = 5
+        }
+
+        /// <summary>
+        /// Effect type used in ViewerEffect packets
+        /// </summary>
+        public enum EffectType : byte
+	    {
+            /// <summary>Place floating text above an object</summary>
+		    Text = 0,
+            /// <summary>Unknown, probably places an icon above an object</summary>
+		    Icon,
+            /// <summary>Unknown</summary>
+		    Connector,
+            /// <summary>Unknown</summary>
+		    FlexibleObject,
+            /// <summary>Unknown</summary>
+		    AnimalControls,
+            /// <summary>Unknown</summary>
+		    AnimationObject,
+            /// <summary>Unknown</summary>
+		    Cloth,
+            /// <summary>Project a beam from a source to a destination, such as
+            /// the one used when editing an object</summary>
+		    Beam,
+            /// <summary>Not implemented yet</summary>
+		    Glow,
+            /// <summary>Unknown</summary>
+		    Point,
+            /// <summary>Unknown</summary>
+		    Trail,
+            /// <summary>Create a swirl of particles around an object</summary>
+		    Sphere,
+            /// <summary>Unknown</summary>
+		    Spiral,
+            /// <summary>Unknown</summary>
+		    Edit,
+            /// <summary>Cause an avatar to look at an object</summary>
+		    LookAt,
+            /// <summary>Cause an avatar to point at an object</summary>
+		    PointAt
+	    }
+
+        /// <summary>
+        /// The action an avatar is doing when looking at something, used in 
+        /// ViewerEffect packets for the LookAt effect
+        /// </summary>
+        public enum LookAtTarget : byte
+        {
+            /// <summary></summary>
+	        None,
+            /// <summary></summary>
+            Idle,
+            /// <summary></summary>
+            AutoListen,
+            /// <summary></summary>
+            FreeLook,
+            /// <summary></summary>
+            Respond,
+            /// <summary></summary>
+            Hover,
+            /// <summary>Deprecated</summary>
+            Conversation,
+            /// <summary></summary>
+            Select,
+            /// <summary></summary>
+            Focus,
+            /// <summary></summary>
+            Mouselook,
+            /// <summary></summary>
+            Clear
+        }
+
+        /// <summary>
+        /// The action an avatar is doing when pointing at something, used in
+        /// ViewerEffect packets for the PointAt effect
+        /// </summary>
+        public enum PointAtType : byte
+        {
+            /// <summary></summary>
+            None,
+            /// <summary></summary>
+            Select,
+            /// <summary></summary>
+            Grab,
+            /// <summary></summary>
+            Clear
         }
 
 
@@ -387,6 +473,9 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupHandler));
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(DropGroupHandler));
+
+            // Viewer effect callback
+            Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
         }
 
         /// <summary>
@@ -491,6 +580,43 @@ namespace libsecondlife
 
             // Send the message
             Client.Network.SendPacket(im);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sourceAvatar"></param>
+        /// <param name="targetObject"></param>
+        /// <param name="globalOffset"></param>
+        /// <param name="type"></param>
+        public void PointAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, PointAtType type)
+        {
+            ViewerEffectPacket effect = new ViewerEffectPacket();
+            effect.Effect = new ViewerEffectPacket.EffectBlock[1];
+            effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
+            effect.Effect[0].Color = LLColor.Black.GetBytes();
+            effect.Effect[0].Duration = (type == PointAtType.Clear) ? 0.0f : Single.MaxValue / 4.0f;
+            effect.Effect[0].ID = LLUUID.Random();
+            effect.Effect[0].Type = (byte)EffectType.PointAt;
+
+            byte[] typeData = new byte[57];
+            if (sourceAvatar != null)
+                Array.Copy(sourceAvatar.GetBytes(), typeData, 16);
+            if (targetObject != null)
+                Array.Copy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Array.Copy(globalOffset.GetBytes(), 0, typeData, 32, 24);
+            typeData[56] = 7; //(byte)type;
+
+            effect.Effect[0].TypeData = typeData;
+
+            Client.Network.SendPacket(effect);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void LookAtEffect()
+        {
         }
 
         /// <summary>
@@ -1163,6 +1289,7 @@ namespace libsecondlife
                     );
             }
         }
+
         /// <summary>
         /// Used for parsing llDialog's
         /// </summary>
@@ -1192,7 +1319,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Update client's Position and LookAt from incoming packet
+        /// Update client's Position, LookAt and region handle from incoming packet
         /// </summary>
         /// <param name="packet">Incoming AgentMovementCompletePacket</param>
         /// <param name="simulator">Unused</param>
@@ -1202,6 +1329,7 @@ namespace libsecondlife
 
             this.Position = movement.Data.Position;
             this.LookAt = movement.Data.LookAt;
+            simulator.Region.Handle = movement.Data.RegionHandle;
         }
 
         /// <summary>
@@ -1265,6 +1393,118 @@ namespace libsecondlife
             if (OnBalanceUpdated != null)
             {
                 OnBalanceUpdated(balance);
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming effect
+        /// </summary>
+        private void ViewerEffectHandler(Packet packet, Simulator simulator)
+        {
+            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
+
+            foreach (ViewerEffectPacket.EffectBlock block in effect.Effect)
+            {
+                EffectType type;
+
+                try
+                {
+                    type = (EffectType)block.Type;
+                }
+                catch (Exception)
+                {
+                    Client.Log("Received a ViewerEffect block with an unknown type " + block.Type, 
+                        Helpers.LogLevel.Warning);
+                    continue;
+                }
+
+                //LLColor color;
+                //if (block.Color.Length == 4)
+                //{
+                //    color = new LLColor(block.Color, 0);
+                //}
+                //else
+                //{
+                //    Client.Log("Received a ViewerEffect.EffectBlock.Color array with " + block.Color.Length + " bytes",
+                //        Helpers.LogLevel.Warning);
+                //    color = new LLColor();
+                //}
+
+                // Each ViewerEffect type uses it's own custom binary format for additional data. Fun eh?
+                switch (type)
+                {
+                    case EffectType.Text:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Icon:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Connector:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.FlexibleObject:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.AnimalControls:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.AnimationObject:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Cloth:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Beam:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Glow:
+                        Client.Log("Received a Glow ViewerEffect which is not implemented yet",
+                            Helpers.LogLevel.Warning);
+                        break;
+		            case EffectType.Point:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Trail:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Sphere:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Spiral:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.Edit:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+		            case EffectType.LookAt:
+                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case EffectType.PointAt:
+                        if (block.TypeData.Length == 57)
+                        {
+                            LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
+                            LLUUID targetObject = new LLUUID(block.TypeData, 16);
+                            LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
+                            PointAtType pointAt;
+                            try
+                            {
+                                pointAt = (PointAtType)block.TypeData[56];
+                            }
+                            catch (Exception)
+                            {
+                                Client.Log("Unrecognized PointAtType " + block.TypeData[56], Helpers.LogLevel.Warning);
+                                pointAt = PointAtType.Clear;
+                            }
+
+                            // TODO: Create OnAvatarPointAt event and call it here
+                        }
+                        else
+                        {
+                            Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
+                                block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                        }
+                        break;
+                }
             }
         }
 
