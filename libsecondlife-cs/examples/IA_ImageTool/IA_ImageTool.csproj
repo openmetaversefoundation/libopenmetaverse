@@ -43,10 +43,6 @@
       <Project>{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}</Project>
       <Name>libjaspernet</Name>
     </ProjectReference>
-    <ProjectReference Include="..\IA_SimpleInventory\IA_SimpleInventory.csproj">
-      <Project>{E464B963-46E3-4E1A-A36F-9C640C880E68}</Project>
-      <Name>IA_SimpleInventory</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\libsecondlife.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Name>libsecondlife</Name>

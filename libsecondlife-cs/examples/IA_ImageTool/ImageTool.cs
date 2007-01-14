@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
-using IA_SimpleInventory;
-
 using libsecondlife;
 using libsecondlife.InventorySystem;
 using libsecondlife.AssetSystem;
@@ -187,8 +185,12 @@ namespace IA_ImageTool
                     j2cdata = KakaduWrap.ReadJ2CData(_FileName);
                 }
 
-
-                _Client.Inventory.DownloadInventory();
+                if (!_Client.Inventory.GetRootFolder().RequestDownloadContents(true, false, false, false).RequestComplete.WaitOne(5000, false))
+                {
+                    Console.WriteLine("timeout while downloading root folders, aborting.");
+                    return;
+                }
+                
 
                 Console.WriteLine("Connecting to your Texture folder...");
                 InventoryFolder iFolder = _Client.Inventory.getFolder("Textures");

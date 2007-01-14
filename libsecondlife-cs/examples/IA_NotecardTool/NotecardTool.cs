@@ -30,7 +30,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 
-using IA_SimpleInventory;
 using libsecondlife;
 using libsecondlife.InventorySystem;
 
