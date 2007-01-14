@@ -243,6 +243,31 @@ namespace libsecondlife.InventorySystem
                 }
             }
 
+            // Try updating the current level's child folders, then look again
+            if (ifRoot.RequestDownloadContents(false, true, false, false).RequestComplete.WaitOne(1000, false))
+            {
+                foreach (InventoryBase ibFolder in ifRoot._Contents)
+                {
+                    if (ibFolder is libsecondlife.InventorySystem.InventoryFolder)
+                    {
+                        if (((InventoryFolder)ibFolder).Name.Equals(sCurFolder))
+                        {
+                            // NOTE: We only found it because we did a folder download, 
+                            // perhaps we should initiate a recursive download at this point
+
+                            if (qFolderPath.Count == 0)
+                            {
+                                return (InventoryFolder)ibFolder;
+                            }
+                            else
+                            {
+                                return getFolder(qFolderPath, (InventoryFolder)ibFolder);
+                            }
+                        }
+                    }
+                }
+            }
+
             return null;
         }
         #endregion
@@ -699,7 +724,10 @@ namespace libsecondlife.InventorySystem
 
         protected void FireRequestDownloadFinishedEvent(object o, EventArgs e)
         {
-            RequestDownloadFinishedEvent(o, e);
+            if (RequestDownloadFinishedEvent != null)
+            {
+                RequestDownloadFinishedEvent(o, e);
+            }
         }
 
         #endregion
