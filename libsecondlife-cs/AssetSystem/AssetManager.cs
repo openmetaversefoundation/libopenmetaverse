@@ -239,7 +239,10 @@ namespace libsecondlife.AssetSystem
         #region Event Generation
         internal void FireTransferRequestCompletedEvent(AssetRequest request)
         {
-            TransferRequestCompletedEvent(request);
+            if (TransferRequestCompletedEvent != null)
+            {
+                TransferRequestCompletedEvent(request);
+            }
         }
         #endregion
 
