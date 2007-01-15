@@ -71,7 +71,7 @@ namespace libsecondlife.AssetSystem
 
             public uint Size;
             public uint Received;
-            public uint LastPacket;
+            public uint TimeOfLastPacket;
             public byte[] AssetData;
 
             public int BaseDataReceived;
@@ -266,7 +266,7 @@ namespace libsecondlife.AssetSystem
                     tr = new TransferRequest();
                     tr.Size = int.MaxValue; // Number of bytes expected
                     tr.Received = 0; // Number of bytes received
-                    tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
+                    tr.TimeOfLastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
 
                     htDownloadRequests[ImageID] = tr;
 
@@ -280,7 +280,18 @@ namespace libsecondlife.AssetSystem
             }
 
             // Wait for transfer to complete.
-            tr.Completed.WaitOne(20000, false);
+            while( !tr.Completed.WaitOne(10000, false) ) //If it times out, then check, otherwise loop again until WaitOne returns true
+            {
+                slClient.Log("Warning long running texture download: " + ImageID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                Console.WriteLine("Downloaded : " + tr.Received);
+                if( (Helpers.GetUnixTime() - tr.TimeOfLastPacket) > 10 )
+                {
+                    tr.Status = false;
+                    tr.StatusMsg = "Timeout while downloading image.";
+                    slClient.Log(tr.StatusMsg, Helpers.LogLevel.Error);
+                    tr.Completed.Set();
+                }
+            }
 
             if (tr.Status == true)
             {
@@ -316,7 +327,7 @@ namespace libsecondlife.AssetSystem
                     TransferRequest tr = new TransferRequest();
                     tr.Size = int.MaxValue; // Number of bytes expected
                     tr.Received = 0; // Number of bytes received
-                    tr.LastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
+                    tr.TimeOfLastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
 
                     htDownloadRequests[ImageID] = tr;
 
@@ -351,12 +362,10 @@ namespace libsecondlife.AssetSystem
             TransferRequest tr;
             lock (htDownloadRequests)
             {
-                try
+                if( htDownloadRequests.ContainsKey(ImageID) )
                 {
                     tr = htDownloadRequests[ImageID];
-                }
-                catch (Exception)
-                {
+                } else {
                     // Received a packet for an image we didn't request...
                     return;
                 }
@@ -373,6 +382,8 @@ namespace libsecondlife.AssetSystem
 
             // Mark that the TransferRequest has received this header packet
             tr.ReceivedHeaderPacket.Set();
+
+            tr.TimeOfLastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
 
             // If we've gotten all the data, mark it completed.
             if (tr.Received >= tr.Size)
@@ -406,12 +417,14 @@ namespace libsecondlife.AssetSystem
             lock (htDownloadRequests)
             {
                 if (htDownloadRequests.ContainsKey(ImageID))
+                {
                     tr = (TransferRequest)htDownloadRequests[ImageID];
-            }
-            if (tr == null)
-            {
-                // Received a packet that doesn't belong to any requests in our queue, strange...
-                return;
+                }
+                else
+                {
+                    // Received a packet that doesn't belong to any requests in our queue, strange...
+                    return;
+                }
             }
 
 
@@ -423,11 +436,19 @@ namespace libsecondlife.AssetSystem
             // happens tr.AssetData will be null.  Implimenting the above TODO should fix this.
 
             // Wait until we've received the header packet for this image, which creates the AssetData array
-            tr.ReceivedHeaderPacket.WaitOne();
+            if (!tr.ReceivedHeaderPacket.WaitOne(15000,false))
+            {
+                tr.Status = false;
+                tr.StatusMsg = "Failed to receive Image Header packet in a timely manor, aborting.";
+                slClient.Log(tr.StatusMsg, Helpers.LogLevel.Error);
+                tr.Completed.Set();
+            }
 
             // Add this packet's data to the request.
             Array.Copy(reply.ImageData.Data, 0, tr.AssetData, tr.BaseDataReceived + (1000 * (reply.ImageID.Packet - 1)), reply.ImageData.Data.Length);
             tr.Received += (uint)reply.ImageData.Data.Length;
+
+            tr.TimeOfLastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request
 
             // If we've gotten all the data, mark it completed.
             if (tr.Received >= tr.Size)
@@ -459,13 +480,14 @@ namespace libsecondlife.AssetSystem
             lock (htDownloadRequests)
             {
                 if (htDownloadRequests.ContainsKey(ImageID))
+                {
                     tr = (TransferRequest)htDownloadRequests[ImageID];
-            }
-
-            if (tr == null)
-            {
-                // Received a packet that doesn't belong to any requests in our queue, strange...
-                return;
+                }
+                else
+                {
+                    // Received a packet that doesn't belong to any requests in our queue, strange...
+                    return;
+                }
             }
 
             tr.Status = false;
@@ -476,12 +498,12 @@ namespace libsecondlife.AssetSystem
             FireImageRetrieved(ImageID, null, false, tr.StatusMsg);
         }
 
-        private void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached)
+        protected void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached)
         {
             FireImageRetrieved(ImageID, ImageData, cached, "");
         }
 
-        private void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached, string status)
+        protected void FireImageRetrieved(LLUUID ImageID, byte[] ImageData, bool cached, string status)
         {
             if (OnImageRetrieved != null)
             {
