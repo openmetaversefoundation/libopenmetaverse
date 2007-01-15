@@ -16,14 +16,12 @@ namespace IA_ImageTool
     {
         private SecondLife _Client;
         private ManualResetEvent ConnectedSignal = new ManualResetEvent(false);
-        private ManualResetEvent ImageDownloaded = new ManualResetEvent(false);
 
 
         private List<LLUUID> _ImageIDs = new List<LLUUID>();
         private string _FileName;
         private bool _Put;
         private double _Rate;
-        byte[] j2cdata = new byte[0];
 
         /// <summary>
         /// Used to upload/download images.
@@ -203,9 +201,6 @@ namespace IA_ImageTool
             }
             else
             {
-                libsecondlife.Utilities.ImageManager manager = new libsecondlife.Utilities.ImageManager(_Client);
-                manager.OnImageReceived += new libsecondlife.Utilities.ImageManager.ImageReceivedCallback(manager_OnImageReceived);
-
                 foreach( LLUUID ImageID in _ImageIDs )
                 {
                     string FileName;
@@ -220,27 +215,27 @@ namespace IA_ImageTool
 
                     Console.WriteLine("Downloading: " + ImageID);
 
+                    int start = Environment.TickCount;
+                    byte[] j2cdata;
+
                     try
                     {
-                        manager.RequestImage(ImageID, 100000.0f);
+                        j2cdata = _Client.Images.RequestImage(ImageID);
 
-                        ImageDownloaded.WaitOne(1000 * 60 * 3, false);
+                        int end = Environment.TickCount;
+                        Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));
 
-                        if (j2cdata.Length > 0)
-                        {
-                            Console.WriteLine("Writing to " + FileName + ".j2c");
-                            File.WriteAllBytes(FileName + ".j2c", j2cdata);
+                        Console.WriteLine("Image Data Length :" + j2cdata.Length);
 
-                            Console.WriteLine("Writing to: " + FileName + ".tif");
-                            File.WriteAllBytes(FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
+                        Console.WriteLine("Writing to: " + FileName + ".tif");
+                        File.WriteAllBytes(FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
 
-                            Console.WriteLine("Writing to: " + FileName + ".tga");
-                            File.WriteAllBytes(FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
-                        }
+                        Console.WriteLine("Writing to: " + FileName + ".tga");
+                        File.WriteAllBytes(FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("ERROR: Can't download image: " + e.Message);
+                        Console.WriteLine("ERROR: Can't download image :: " + e.Message);
                     }
                 }
 
@@ -248,16 +243,6 @@ namespace IA_ImageTool
 
             Console.WriteLine("Done...");
 
-        }
-
-        void manager_OnImageReceived(libsecondlife.Utilities.ImageTransfer image)
-        {
-            Console.WriteLine("Image download finished. Sucess=" + image.Success + ", PacketCount=" + image.PacketCount +
-                ", Codec=" + image.Codec + ", ID=" + image.ID);
-
-            j2cdata = image.AssetData;
-
-            ImageDownloaded.Set();
         }
 
         protected static void Usage()
