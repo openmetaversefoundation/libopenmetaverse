@@ -14,8 +14,8 @@ namespace libsecondlife.InventorySystem
 		{
 			get
 			{
-				if( Asset != null ) 
-				{
+                if (_Asset != null)
+                {
 					return ((AssetImage)Asset).J2CData;
 				} 
 				else 

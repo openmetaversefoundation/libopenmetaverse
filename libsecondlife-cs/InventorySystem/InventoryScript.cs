@@ -11,7 +11,7 @@ namespace libsecondlife.InventorySystem
         {
             get
             {
-                if ( Asset != null )
+                if (_Asset != null)
                 {
                     return ((AssetScript)Asset).Source;
                 }
