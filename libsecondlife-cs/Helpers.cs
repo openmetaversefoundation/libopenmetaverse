@@ -124,6 +124,23 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Convert an integer to a byte array in little endian format
+        /// </summary>
+        /// <param name="x">The integer to convert</param>
+        /// <returns>A four byte little endian array</returns>
+        public static byte[] IntToBytes(int x)
+        {
+            byte[] bytes = new byte[4];
+
+            bytes[0]= (byte)(x % 256);
+            bytes[1] = (byte)((x >> 8) % 256);
+            bytes[2] = (byte)((x >> 16) % 256);
+            bytes[3] = (byte)((x >> 24) % 256);
+
+            return bytes;
+        }
+
+        /// <summary>
         /// Convert a variable length field (byte array) to a string.
         /// </summary>
         /// <remarks>If the byte array has unprintable characters in it, a 

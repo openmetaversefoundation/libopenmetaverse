@@ -605,7 +605,38 @@ namespace libsecondlife
             if (targetObject != null)
                 Array.Copy(targetObject.GetBytes(), 0, typeData, 16, 16);
             Array.Copy(globalOffset.GetBytes(), 0, typeData, 32, 24);
-            typeData[56] = 7; //(byte)type;
+            typeData[56] = (byte)type;
+
+            effect.Effect[0].TypeData = typeData;
+
+            Client.Network.SendPacket(effect);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sourceAvatar"></param>
+        /// <param name="targetObject"></param>
+        /// <param name="globalOffset"></param>
+        /// <param name="color"></param>
+        /// <param name="duration"></param>
+        public void BeamEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LLColor color, 
+            float duration)
+        {
+            ViewerEffectPacket effect = new ViewerEffectPacket();
+            effect.Effect = new ViewerEffectPacket.EffectBlock[1];
+            effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
+            effect.Effect[0].Color = color.GetBytes();
+            effect.Effect[0].Duration = duration;
+            effect.Effect[0].ID = LLUUID.Random();
+            effect.Effect[0].Type = (byte)EffectType.Beam;
+
+            byte[] typeData = new byte[56];
+            if (sourceAvatar != null)
+                Array.Copy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
+            if (targetObject != null)
+                Array.Copy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Array.Copy(globalOffset.GetBytes(), 0, typeData, 32, 24);
 
             effect.Effect[0].TypeData = typeData;
 
