@@ -6,7 +6,7 @@ namespace libslupdater
 {
     public class Updater
     {
-        public const string CheckURI = "http://www.libsecondlife.org/ccnet/update/check.php";
+        public const string CheckURI = "http://www.libsecondlife.org/ccnet/update/";
 
         private bool busy = false;
         public bool Busy
@@ -40,6 +40,14 @@ namespace libslupdater
         public int UpdateProcess()
         {
             // Call UpdateProcessBegin and wait for a response, return the response
+            return 0;
+        }
+    }
+
+    public class Program
+    {
+        static int Main(string[] args)
+        {
             return 0;
         }
     }
