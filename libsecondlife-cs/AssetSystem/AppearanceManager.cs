@@ -233,11 +233,12 @@ namespace libsecondlife.AssetSystem
                         break;
                 }
 
-                AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset);
+                AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
                 if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
                 {
                     throw new Exception("Asset (" + wearableAsset.AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ")");
                 }
+                wearableAsset.SetAssetData(request.GetAssetData());
 
                 if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
                 {

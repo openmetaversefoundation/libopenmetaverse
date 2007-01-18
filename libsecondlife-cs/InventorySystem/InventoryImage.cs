@@ -27,6 +27,8 @@ namespace libsecondlife.InventorySystem
                         {
                             throw new Exception("Asset (" + AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ") for " + this.Name);
                         }
+                        _Asset = new AssetImage(AssetID, request.GetAssetData());
+
                         return ((AssetImage)Asset).J2CData;
 					}
 				}

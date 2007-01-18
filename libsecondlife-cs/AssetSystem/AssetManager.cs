@@ -90,7 +90,7 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// </summary>
         /// <param name="client"></param>
-        internal AssetManager(SecondLife client)
+        public AssetManager(SecondLife client)
 		{
 			slClient = client;
 
@@ -172,6 +172,7 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// Get the Asset data for an item, must be used when requesting a Notecard
         /// </summary>
+        /// <remarks>It is the responsibility of the calling party to retrieve the asset data from the request object when it is compelte.</remarks>
         /// <param name="item"></param>
         public AssetRequestDownload RequestInventoryAsset(InventoryItem item)
 		{
@@ -182,7 +183,7 @@ namespace libsecondlife.AssetSystem
 
 			LLUUID TransferID = LLUUID.Random();
 
-            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID, item._Asset);
+            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID);
             request.UpdateLastPacketTime(); // last time we recevied a packet for this request
 
             htDownloadRequests[TransferID] = request;
@@ -213,17 +214,16 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// Get Asset data, works with BodyShapes (type 13) but does not work with Notecards(type 7)
         /// </summary>
-        /// <param name="asset"></param>
-        public AssetRequestDownload RequestInventoryAsset(Asset asset)
+        public AssetRequestDownload RequestInventoryAsset(LLUUID AssetID, sbyte Type)
 		{
 			LLUUID TransferID = LLUUID.Random();
 
-            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID, asset);
+            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID);
             request.UpdateLastPacketTime(); // last time we recevied a packet for this request
 
             htDownloadRequests[TransferID] = request;
 
-            Packet packet = AssetPacketHelpers.TransferRequestDirect(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, asset.AssetID, asset.Type);
+            Packet packet = AssetPacketHelpers.TransferRequestDirect(slClient.Network.SessionID, slClient.Network.AgentID, TransferID, AssetID, Type);
 			slClient.Network.SendPacket(packet);
 
             #if DEBUG_PACKETS
@@ -264,7 +264,9 @@ namespace libsecondlife.AssetSystem
         [Obsolete("Use RequestInventoryAsset instead.", false)]
         public void GetInventoryAsset(Asset asset)
         {
-            RequestInventoryAsset(asset).Wait(-1);
+            AssetRequestDownload request = RequestInventoryAsset(asset.AssetID, asset.Type);
+            request.Wait(-1);
+            asset.SetAssetData(request.GetAssetData());
         }
         #endregion
 

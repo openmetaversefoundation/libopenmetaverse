@@ -81,6 +81,18 @@ namespace libsecondlife.AssetSystem
             UpdateLastPacketTime();
         }
 
+        public AssetRequest(AssetManager Manager, LLUUID TransID)
+        {
+            _AssetManager = Manager;
+            _TransactionID = TransID;
+            AssetBeingTransferd = null;
+
+            _Size = int.MaxValue;
+
+            UpdateLastPacketTime();
+        }
+
+
         public void UpdateLastPacketTime()
         {
             _LastPacketTime = Helpers.GetUnixTime();
@@ -127,8 +139,8 @@ namespace libsecondlife.AssetSystem
         protected int _Received;
         protected SortedList<int, byte[]> _AssetDataReceived = new SortedList<int, byte[]>();
 
-        public AssetRequestDownload(AssetManager Manager, LLUUID TransID, Asset Asset2Update)
-            : base(Manager, TransID, Asset2Update)
+        public AssetRequestDownload(AssetManager Manager, LLUUID TransID)
+            : base(Manager, TransID)
         {
             _Received = 0;
         }
@@ -151,8 +163,6 @@ namespace libsecondlife.AssetSystem
                     curPos += kvp.Value.Length;
                 }
 
-                AssetBeingTransferd.SetAssetData(_AssetData);
-
                 MarkCompleted(AssetRequestDownload.RequestStatus.Success, "Download Completed");
             }
 
@@ -162,6 +172,15 @@ namespace libsecondlife.AssetSystem
         {
             _Size = size;
             _AssetData = new byte[_Size];
+        }
+
+        /// <summary>
+        /// Get the asset data downloaded by this request.
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetAssetData()
+        {
+            return _AssetData;
         }
     }
 }

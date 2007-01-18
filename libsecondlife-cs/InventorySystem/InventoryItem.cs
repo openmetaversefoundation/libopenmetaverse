@@ -135,6 +135,7 @@ namespace libsecondlife.InventorySystem
                         {
                             throw new Exception("Asset (" + AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ") for " + this.Name);
                         }
+                        _Asset = new Asset(AssetID, Type, request.GetAssetData());
                         return Asset;
                     }
                 }
