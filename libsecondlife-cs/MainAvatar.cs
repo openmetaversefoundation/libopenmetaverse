@@ -1645,7 +1645,11 @@ namespace libsecondlife
 
                 // Connect to the new sim
 				String seedcaps = Encoding.UTF8.GetString(finish.Info.SeedCapability).Replace("\x00","");
-                Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort,
+				//look we are^H^H^Hshould work on little and big endian
+				int after = IPAddress.NetworkToHostOrder((int)finish.Info.SimIP);
+				IPAddress SimIP = new IPAddress(after);
+				
+                Simulator sim = Client.Network.Connect(SimIP, finish.Info.SimPort,
                     simulator.CircuitCode, true, seedcaps);
 
                 if (sim != null)
