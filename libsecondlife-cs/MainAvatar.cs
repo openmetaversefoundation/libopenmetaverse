@@ -1068,6 +1068,7 @@ namespace libsecondlife
                         // Request the region info again
                         Client.Grid.AddSim(simName);
 
+                        // FIXME: We shouldn't be sleeping in the library at all, hopefully this goes away soon
                         System.Threading.Thread.Sleep(1000);
                     }
                 }

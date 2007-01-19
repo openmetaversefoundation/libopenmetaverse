@@ -131,17 +131,13 @@ namespace libsecondlife
 
 			if(!Regions.ContainsKey(name))
 			{
-                // FIXME: This needs to be converted to Caps
-                Client.Log("Caps for map layer requests needs to be implemented, this function is currently broken!",
-                    Helpers.LogLevel.Error);
+                MapNameRequestPacket map = new MapNameRequestPacket();
 
-                //MapNameRequestPacket map = new MapNameRequestPacket();
+                map.AgentData.AgentID = Client.Network.AgentID;
+                map.AgentData.SessionID = Client.Network.SessionID;
+                map.NameData.Name = Helpers.StringToField(name);
 
-                //map.AgentData.AgentID = Client.Network.AgentID;
-                //map.AgentData.SessionID = Client.Network.SessionID;
-                //map.NameData.Name = Helpers.StringToField(name);
-
-                //Client.Network.SendPacket(map);
+                Client.Network.SendPacket(map);
 			}
 		}
 
