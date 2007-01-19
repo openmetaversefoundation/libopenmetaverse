@@ -31,6 +31,7 @@ namespace libsecondlife.TestClient
         private LLVector3 left = new LLVector3(0.9999f, 0, 0);
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private int DrawDistance = 64;
+		internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
         private System.Timers.Timer updateTimer;
         public int regionX;
         public int regionY;
@@ -116,11 +117,12 @@ namespace libsecondlife.TestClient
 
 		public void DoCommand(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
         {
-            string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
-            string firstToken = tokens[0].ToLower();
+			string[] tokens = Parsing.ParseArguments(cmd);//cmd.Trim().Split(new char[] { ' ', '\t' });
 
             if (tokens.Length == 0)
                 return;
+				
+			string firstToken = tokens[0].ToLower();
 
             // "all balance" will send the balance command to all currently logged in bots
 			if (firstToken == "all" && tokens.Length > 1)
