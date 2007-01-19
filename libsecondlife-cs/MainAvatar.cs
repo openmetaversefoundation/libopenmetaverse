@@ -490,7 +490,7 @@ namespace libsecondlife
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
 	        // Event queue callback (used for Caps teleports currently)
-	        Client.Network.RegisterEventCallback(new NetworkManager.EventQueueCallback(EventQueueHandler));
+	        Client.Network.RegisterEventCallback(new Caps.EventQueueCallback(EventQueueHandler));
         }
 
         /// <summary>

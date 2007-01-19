@@ -80,6 +80,7 @@
     <Compile Include="Commands\WhoCommand.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Parsing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="TestClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

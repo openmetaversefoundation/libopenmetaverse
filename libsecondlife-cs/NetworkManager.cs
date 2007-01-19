@@ -53,15 +53,33 @@ namespace libsecondlife
     /// </summary>
     public class Caps
     {
+        /// <summary>
+        /// Triggered when an event is received via the EventQueueGet capability;
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="body"></param>
+        public delegate void EventQueueCallback(string message, object body);
+
+        /// <summary>Reference to the SecondLife client this system is connected to</summary>
         public SecondLife Client;
+        /// <summary>Reference to the region this system is connected to</summary>
         public Region Region;
+
+
         private string Seedcaps;
         private StringDictionary Capabilities = new StringDictionary();
         private bool Dead = false;
         private Thread EventThread;
-        private List<NetworkManager.EventQueueCallback> Callbacks;
+        private List<EventQueueCallback> Callbacks;
 
-        public Caps(SecondLife client, Region region, string seedcaps, List<NetworkManager.EventQueueCallback> callbacks)
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="region"></param>
+        /// <param name="seedcaps"></param>
+        /// <param name="callbacks"></param>
+        public Caps(SecondLife client, Region region, string seedcaps, List<EventQueueCallback> callbacks)
         {
             Client = client; Region = region;
             this.Seedcaps = seedcaps; Callbacks = callbacks;
@@ -90,7 +108,9 @@ namespace libsecondlife
         {
             bool gotresp = false; long ack = 0;
             string cap = Capabilities["EventQueueGet"];
+
             while (!Dead)
+            {
                 try
                 {
                     Hashtable req = new Hashtable();
@@ -116,23 +136,28 @@ namespace libsecondlife
 
                         if (!Dead)
                         {
-                            foreach (NetworkManager.EventQueueCallback callback in Callbacks)
-                                callback(msg, body);
+                            foreach (EventQueueCallback callback in Callbacks)
+                            {
+                                try { callback(msg, body); }
+                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            }
                         }
                     }
                 }
                 catch (WebException e)
                 {
-                    // perfectly normal
-                    Client.Log("In EventQueueGet: " + e.Message, Helpers.LogLevel.Info);
+                    // Perfectly normal
+                    Client.DebugLog("EventQueueGet: " + e.Message);
                 }
+            }
         }
 
         private static object LLSDRequest(string uri, object req)
         {
             byte[] data = LLSD.LLSDSerialize(req);
             WebRequest wreq = WebRequest.Create(uri);
-            wreq.Method = "POST"; wreq.ContentLength = data.Length;
+            wreq.Method = "POST";
+            wreq.ContentLength = data.Length;
             Stream reqStream = wreq.GetRequestStream();
             reqStream.Write(data, 0, data.Length);
             reqStream.Close();
@@ -164,7 +189,7 @@ namespace libsecondlife
 
     /// <summary>
     /// Simulator is a wrapper for a network connection to a simulator and the
-    /// Region class representing the block of land in the metaverse.
+    /// Region class representing the block of land in the metaverse
     /// </summary>
     public class Simulator
     {
@@ -177,14 +202,14 @@ namespace libsecondlife
 
         /// <summary>
         /// Used internally to track sim disconnections, do not modify this 
-        /// variable.
+        /// variable
         /// </summary>
         public bool DisconnectCandidate = false;
 
         /// <summary>
         /// The ID number associated with this particular connection to the 
         /// simulator, used to emulate TCP connections. This is used 
-        /// internally for packets that have a CircuitCode field.
+        /// internally for packets that have a CircuitCode field
         /// </summary>
         public uint CircuitCode
         {
@@ -193,7 +218,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// The IP address and port of the server.
+        /// The IP address and port of the server
         /// </summary>
         public IPEndPoint IPEndPoint
         {
@@ -202,7 +227,7 @@ namespace libsecondlife
 
         /// <summary>
         /// A boolean representing whether there is a working connection to the
-        /// simulator or not.
+        /// simulator or not
         /// </summary>
         public bool Connected
         {
@@ -746,12 +771,6 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         public delegate void PacketCallback(Packet packet, Simulator simulator);
         /// <summary>
-        /// Triggered when an event is received via the EventQueueGet capability;
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="body"></param>
-        public delegate void EventQueueCallback(string message, object body);
-        /// <summary>
         /// Triggered when a simulator other than the simulator that is currently
         /// being occupied disconnects for whatever reason
         /// </summary>
@@ -842,7 +861,7 @@ namespace libsecondlife
         private System.Timers.Timer DisconnectTimer;
         private System.Timers.Timer LogoutTimer;
         private bool connected;
-        private List<EventQueueCallback> EventQueueCallbacks = new List<EventQueueCallback>();
+        private List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
 
         private const int NetworkTrafficTimeout = 15000;
 
@@ -917,7 +936,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="callback"></param>
-        public void RegisterEventCallback(EventQueueCallback callback)
+        public void RegisterEventCallback(Caps.EventQueueCallback callback)
         {
             EventQueueCallbacks.Add(callback);
         }
@@ -1620,20 +1639,15 @@ namespace libsecondlife
 
                 if (OnCurrentSimChanged != null)
                 {
-                    try
-                    {
-                        OnCurrentSimChanged(oldSim);
-                    }
-                    catch (Exception e)
-                    {
-                        Client.Log("Caught an exception in OnCurrentSimChanged(): " + e.ToString(),
-                            Helpers.LogLevel.Error);
-                    }
+                    try { OnCurrentSimChanged(oldSim); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
+
             if (CurrentCaps != null)
             {
-                CurrentCaps.Disconnect(); CurrentCaps = null;
+                CurrentCaps.Disconnect();
+                CurrentCaps = null;
             }
 
             connected = false;

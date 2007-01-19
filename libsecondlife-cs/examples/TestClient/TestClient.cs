@@ -117,7 +117,7 @@ namespace libsecondlife.TestClient
 
 		public void DoCommand(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
         {
-			string[] tokens = Parsing.ParseArguments(cmd);//cmd.Trim().Split(new char[] { ' ', '\t' });
+			string[] tokens = Parsing.ParseArguments(cmd);
 
             if (tokens.Length == 0)
                 return;
