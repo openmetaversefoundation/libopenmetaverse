@@ -11,7 +11,6 @@ namespace libsecondlife.TestClient.Commands.Movement {
         public override string Execute(string[] args, LLUUID fromAgentID) {
             if (args.Length != 3)
                 return "usage: moveto x y z";
-            Region curRegion = Client.Network.CurrentSim.Region;
             float x = Client.Self.Position.X + Client.regionX;
             float y = Client.Self.Position.Y + Client.regionY;
             float z = Client.Self.Position.Z;

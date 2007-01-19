@@ -111,8 +111,11 @@ namespace libsecondlife.TestClient
                 {
                     // HACK: Offset the root prim position so it's not lying on top of the original
                     // We need a more elaborate solution for importing with relative or absolute offsets
+					linkset.RootPrim.Position = Client.Self.Position; 
                     linkset.RootPrim.Position.Z += 3.0f;
                     currentPosition = linkset.RootPrim.Position;
+					// A better solution would move the bot to the desired position.
+                    // or to check if we are within a certain distance of the desired position.
 
                     // Rez the root prim with no rotation
                     LLQuaternion rootRotation = linkset.RootPrim.Rotation;
@@ -209,6 +212,7 @@ namespace libsecondlife.TestClient
             primDone.Set();
         }
 
+		/* It's not like these were being used
         void OnUnknownAttribute(object obj, XmlAttributeEventArgs args)
         {
             // This hasn't happened for me
@@ -232,5 +236,6 @@ namespace libsecondlife.TestClient
             // This hasn't happened for me
             Console.WriteLine("OnUnreferenced: " + args.UnreferencedObject.ToString());
         }
+		*/
     }
 }

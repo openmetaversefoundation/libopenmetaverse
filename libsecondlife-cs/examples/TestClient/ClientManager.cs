@@ -55,8 +55,9 @@ namespace libsecondlife.TestClient
 			client.SimPrims = SimPrims;
 			client.Master = account.Master;
 
-            bool login = client.Network.Login(account.FirstName, account.LastName, account.Password, 
-                "TestClient", "contact@libsecondlife.org");
+            if ( ! client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", "contact@libsecondlife.org") ) {
+				Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " + client.Network.LoginError);
+			}
 
             if (client.Network.Connected)
             {
@@ -68,11 +69,6 @@ namespace libsecondlife.TestClient
                 client.Throttle.Total = 0.0f;
                 client.Throttle.Task = 1536000.0f;
                 client.Throttle.Set();
-            }
-            else
-            {
-                Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName +
-                    ": " + client.Network.LoginError);
             }
 
             return client;

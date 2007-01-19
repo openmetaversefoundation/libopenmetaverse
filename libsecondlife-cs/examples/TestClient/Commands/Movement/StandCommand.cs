@@ -31,7 +31,7 @@ namespace libsecondlife.TestClient
         {
             AgentUpdatePacket p = new AgentUpdatePacket();
             p.AgentData.Far = DRAW_DISTANCE;
-            LLVector3 myPos = client.Self.Position;
+            //LLVector3 myPos = client.Self.Position;
             p.AgentData.CameraCenter = new LLVector3(0, 0, 0);
             p.AgentData.CameraAtAxis = new LLVector3(0, 0, 0);
             p.AgentData.CameraLeftAxis = new LLVector3(0, 0, 0);

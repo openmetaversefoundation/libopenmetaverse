@@ -411,6 +411,12 @@ namespace libsecondlife
         {
             get { return sittingOn; }
         }
+		
+		/// <summary>Gets the UUID of the active group.</summary>
+		public LLUUID ActiveGroup
+		{
+			get { return activeGroup; }
+		}
 
         internal uint sittingOn = 0;
         internal string teleportMessage = String.Empty;
@@ -423,6 +429,7 @@ namespace libsecondlife
         private uint HeightWidthGenCounter;
         private float health = 0.0f;
         private int balance = 0;
+		private LLUUID activeGroup;
 
         /// <summary>
         /// Constructor, setup callbacks for packets related to our avatar
@@ -478,6 +485,9 @@ namespace libsecondlife
 
             // Viewer effect callback
             Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
+			
+			//Agent Update Callback
+			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
 	        // Event queue callback (used for Caps teleports currently)
 	        Client.Network.RegisterEventCallback(new NetworkManager.EventQueueCallback(EventQueueHandler));
@@ -1399,6 +1409,14 @@ namespace libsecondlife
             }
         }
 
+        public void AgentDataUpdateHandler(Packet packet, Simulator simulator)
+        {
+            AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
+            if (p.AgentData.AgentID == simulator.Client.Network.AgentID) {
+                activeGroup = p.AgentData.ActiveGroupID;
+            }
+        }
+		
         private void DropGroupHandler(Packet packet, Simulator simulator)
         {
             if (OnGroupDropped != null)
@@ -1621,7 +1639,7 @@ namespace libsecondlife
                 Simulator previousSim = Client.Network.CurrentSim;
 
                 // Connect to the new sim
-		String seedcaps = Encoding.UTF8.GetString(finish.Info.SeedCapability).Replace("\x00","");
+				String seedcaps = Encoding.UTF8.GetString(finish.Info.SeedCapability).Replace("\x00","");
                 Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort,
                     simulator.CircuitCode, true, seedcaps);
 

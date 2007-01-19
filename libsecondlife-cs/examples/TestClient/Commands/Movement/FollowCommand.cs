@@ -38,7 +38,6 @@ namespace libsecondlife.TestClient
 		}
 
         const float DISTANCE_BUFFER = 3.0f;
-        string followName;
 		Avatar followAvatar;
 
         bool Follow(string name)
@@ -47,7 +46,6 @@ namespace libsecondlife.TestClient
             {
                 if (av.Name == name)
 				{
-		            followName = name;
 					followAvatar = av;
 					Active = true;
 	                return true;
