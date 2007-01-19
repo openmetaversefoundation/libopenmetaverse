@@ -39,6 +39,7 @@ namespace libsecondlife
     /// </summary>
     public partial class MainAvatar
     {
+        #region Enums
         /// <summary>
         /// Current teleport status
         /// </summary>
@@ -253,7 +254,9 @@ namespace libsecondlife
             Clear
         }
 
+        #endregion
 
+        #region Callbacks & Events
         /// <summary>
         /// Triggered on incoming chat messages
         /// </summary>
@@ -352,6 +355,8 @@ namespace libsecondlife
         public event LeaveGroupCallback OnLeaveGroup;
         /// <summary>Callback for informing the avatar that it is no longer a member of a group</summary>
         public event GroupDroppedCallback OnGroupDropped;
+
+        #endregion
 
         /// <summary>Your (client) Avatar UUID, asset server</summary>
         public LLUUID ID = LLUUID.Zero;

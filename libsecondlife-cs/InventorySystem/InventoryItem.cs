@@ -130,7 +130,6 @@ namespace libsecondlife.InventorySystem
                 {
                     if ((AssetID != null) && (AssetID != LLUUID.Zero))
                     {
-                        Console.WriteLine("Using the base asset download");
                         AssetRequestDownload request = base.iManager.AssetManager.RequestInventoryAsset(this);
                         if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
                         {

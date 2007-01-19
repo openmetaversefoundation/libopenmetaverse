@@ -88,6 +88,7 @@ namespace libsecondlife
     /// </summary>
     public class ObjectManager
     {
+        #region CallBack Definitions
         /// <summary>
         /// 
         /// </summary>
@@ -161,6 +162,10 @@ namespace libsecondlife
         /// <param name="sittingOn">The local ID of the object that is being sat
         /// on. If this is zero the avatar is not sitting on an object</param>
         public delegate void AvatarSitChanged(Simulator simulator, uint sittingOn);
+
+        #endregion
+
+        #region Object/Prim Enums
 
         /// <summary>
         /// 
@@ -345,6 +350,10 @@ namespace libsecondlife
             undergrowth_1
         }
 
+        #endregion
+
+        #region Events
+
         /// <summary>
         /// This event will be raised for every ObjectUpdate block that 
         /// contains a prim that isn't attached to an avatar.
@@ -419,9 +428,12 @@ namespace libsecondlife
         /// the full object info will automatically be requested.
         /// </summary>
         /// 
+
+        #endregion
+
         public bool RequestAllObjects = false;        
 
-        private SecondLife Client;
+        protected SecondLife Client;
 
         /// <summary>
         /// Instantiates a new ObjectManager class. This class should only be accessed
@@ -431,7 +443,27 @@ namespace libsecondlife
         public ObjectManager(SecondLife client)
         {
             Client = client;
+            RegisterCallbacks();
+        }
 
+        /// <summary>
+        /// Instantiates a new ObjectManager class. This class should only be accessed
+        /// through SecondLife.Objects, client applications should never create their own
+        /// </summary>
+        /// <remarks>This constructor allows a subclass to determine if callbacks should be registered here or not.</remarks>
+        /// <param name="client">A reference to the client</param>
+        protected ObjectManager(SecondLife client, bool registerCallbacks)
+        {
+            Client = client;
+
+            if (registerCallbacks)
+            {
+                RegisterCallbacks();
+            }
+        }
+
+        protected void RegisterCallbacks()
+        {
             Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(UpdateHandler));
             Client.Network.RegisterCallback(PacketType.ImprovedTerseObjectUpdate, new NetworkManager.PacketCallback(TerseUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, new NetworkManager.PacketCallback(CompressedUpdateHandler));
@@ -439,6 +471,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, new NetworkManager.PacketCallback(ObjectPropertiesFamilyHandler));
         }
+
+        #region Action Methods
 
         /// <summary>
         /// Request object information from the sim, primarily used for stale 
@@ -868,35 +902,16 @@ namespace libsecondlife
             Client.Network.SendPacket(properties, simulator);
         }
 
-        private void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
-        {
-            // FIXME: This needs to be reworked completely. It fails on anything containing unicode
-            // (which would break FieldToString as well), or name strings that don't contain the 
-            // most common attributes which is all we handle right now.
-            string[] lines = name.Split('\n');
+        #endregion
+        
+        #region Packet Handlers
 
-            foreach (string line in lines)
-            {
-                if (line.Substring(0, 19) == "Title STRING RW SV ")
-                {
-                    groupName = line.Substring(19);
-                }
-                else if (line.Substring(0, 23) == "FirstName STRING RW SV ")
-                {
-                    firstName = line.Substring(23);
-                }
-                else if (line.Substring(0, 22) == "LastName STRING RW SV ")
-                {
-                    lastName = line.Substring(22);
-                }
-                else
-                {
-                    Client.Log("Unhandled line in an avatar name: " + line, Helpers.LogLevel.Warning);
-                }
-            }
-        }
-
-        private void UpdateHandler(Packet packet, Simulator simulator)
+        /// <summary>
+        /// Used for new prims, or significant changes to existing prims
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        protected void UpdateHandler(Packet packet, Simulator simulator)
         {
             if (OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
             {
@@ -969,21 +984,15 @@ namespace libsecondlife
 
                             if (prim.Name.StartsWith("AttachItemID"))
                             {
-                                if (OnNewAttachment != null)
-                                {
-                                    OnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
+                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
                             else if (block.PCode == (byte)PCode.Tree || block.PCode == (byte)PCode.Grass)
                             {
-                                if (OnNewFoliage != null)
-                                {
-                                    OnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
+                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
-                            else if (OnNewPrim != null)
+                            else 
                             {
-                                OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
 
                             break;
@@ -999,13 +1008,13 @@ namespace libsecondlife
                                 // TODO: Parse the rest of the ObjectData byte array fields
 
                                 // Detect if we are sitting or standing
-                                uint oldSittingOn = Client.Self.sittingOn;
-                                Client.Self.sittingOn = block.ParentID;
+                                uint oldSittingOn = Client.Self.SittingOn;
 
                                 // Fire the callback for our sitting orientation changing
-                                if (Client.Self.sittingOn != oldSittingOn && OnAvatarSitChanged != null)
+                                if (block.ParentID != oldSittingOn)
                                 {
-                                    OnAvatarSitChanged(simulator, Client.Self.sittingOn);
+                                    SetAvatarSelfSittingOn(block.ParentID);
+                                    FireOnAvatarSitChanged(simulator, Client.Self.SittingOn);
                                 }
                             }
 
@@ -1022,7 +1031,7 @@ namespace libsecondlife
                                 avatar.Rotation = new LLQuaternion(block.ObjectData, 52, true);
                                 // TODO: Parse the rest of the ObjectData byte array fields
 
-                                avatar.sittingOn = block.ParentID;
+                                SetAvatarSittingOn(avatar, block.ParentID);
 
                                 ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
 
@@ -1035,10 +1044,7 @@ namespace libsecondlife
 
                                 avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
 
-                                if (OnNewAvatar != null)
-                                {
-                                    OnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
+                                FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
                             break;
                         case (byte)PCode.ParticleSystem:
@@ -1052,7 +1058,12 @@ namespace libsecondlife
             }
         }
 
-        private void TerseUpdateHandler(Packet packet, Simulator simulator)
+        /// <summary>
+        /// Usually called when an Prim moves.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        protected void TerseUpdateHandler(Packet packet, Simulator simulator)
         {
             float x, y, z, w;
             uint localid;
@@ -1146,10 +1157,7 @@ namespace libsecondlife
                     avupdate.RotationVelocity = RotationVelocity;
                     avupdate.Textures = new TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
-                    if (OnAvatarMoved != null)
-                    {
-                        OnAvatarMoved(simulator, avupdate, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                    }
+                    FireOnAvatarMoved(simulator, avupdate, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                 }
                 else
                 {
@@ -1168,17 +1176,16 @@ namespace libsecondlife
                     primupdate.RotationVelocity = RotationVelocity;
                     primupdate.Textures = new TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
-                    if (OnPrimMoved != null)
-                    {
-                        OnPrimMoved(simulator, primupdate, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                    }
+                    FireOnPrimMoved(simulator, primupdate, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                 }
             }
         }
 
+
+
 #pragma warning disable 0219 // disable "value assigned but never used" while this function is incomplete
 
-        private void CompressedUpdateHandler(Packet packet, Simulator simulator)
+        protected void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
             if (OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)
             {
@@ -1373,21 +1380,15 @@ namespace libsecondlife
                             // Fire the appropriate callback
                             if ((flags & CompressedFlags.Attachment) != 0)
                             {
-                                if (OnNewAttachment != null)
-                                {
-                                    OnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
+                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
                             else if ((flags & CompressedFlags.Tree) != 0)
                             {
-                                if (OnNewFoliage != null)
-                                {
-                                    OnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
+                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
                             else if (OnNewPrim != null)
                             {
-                                OnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
                             #endregion Prim
                         }
@@ -1413,7 +1414,7 @@ namespace libsecondlife
         }
 #pragma warning restore 0219
 
-        private void CachedUpdateHandler(Packet packet, Simulator simulator)
+        protected void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
             if (RequestAllObjects)
             {
@@ -1430,13 +1431,74 @@ namespace libsecondlife
             }
         }
 
-        private void KillObjectHandler(Packet packet, Simulator simulator)
+        protected void KillObjectHandler(Packet packet, Simulator simulator)
         {
-            if (OnObjectKilled != null)
+            foreach (KillObjectPacket.ObjectDataBlock block in ((KillObjectPacket)packet).ObjectData)
             {
-                foreach (KillObjectPacket.ObjectDataBlock block in ((KillObjectPacket)packet).ObjectData)
+                FireOnObjectKilled(simulator, block.ID);
+            }
+        }
+
+        protected void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
+        {
+            ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
+            ObjectProperties props = new ObjectProperties();
+
+            props.BaseMask = op.ObjectData.BaseMask;
+            props.Category = op.ObjectData.Category;
+            props.Description = Helpers.FieldToString(op.ObjectData.Description);
+            props.EveryoneMask = op.ObjectData.EveryoneMask;
+            props.GroupID = op.ObjectData.GroupID;
+            props.GroupMask = op.ObjectData.GroupMask;
+            props.LastOwnerID = op.ObjectData.LastOwnerID;
+            props.Name = Helpers.FieldToString(op.ObjectData.Name);
+            props.NextOwnerMask = op.ObjectData.NextOwnerMask;
+            props.ObjectID = op.ObjectData.ObjectID;
+            props.OwnerID = op.ObjectData.OwnerID;
+            props.OwnerMask = op.ObjectData.OwnerMask;
+            props.OwnershipCost = op.ObjectData.OwnershipCost;
+            props.SalePrice = op.ObjectData.SalePrice;
+            props.SaleType = op.ObjectData.SaleType;
+
+            FireOnObjectProperties(sim, props);
+        }
+
+        #endregion
+
+        #region Utility Functions
+        protected void SetAvatarSelfSittingOn(uint localid)
+        {
+            Client.Self.sittingOn = localid;
+        }
+        protected void SetAvatarSittingOn(Avatar av, uint localid)
+        {
+            av.sittingOn = localid;
+        }
+
+        protected void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
+        {
+            // FIXME: This needs to be reworked completely. It fails on anything containing unicode
+            // (which would break FieldToString as well), or name strings that don't contain the 
+            // most common attributes which is all we handle right now.
+            string[] lines = name.Split('\n');
+
+            foreach (string line in lines)
+            {
+                if (line.Substring(0, 19) == "Title STRING RW SV ")
                 {
-                    OnObjectKilled(simulator, block.ID);
+                    groupName = line.Substring(19);
+                }
+                else if (line.Substring(0, 23) == "FirstName STRING RW SV ")
+                {
+                    firstName = line.Substring(23);
+                }
+                else if (line.Substring(0, 22) == "LastName STRING RW SV ")
+                {
+                    lastName = line.Substring(22);
+                }
+                else
+                {
+                    Client.Log("Unhandled line in an avatar name: " + line, Helpers.LogLevel.Warning);
                 }
             }
         }
@@ -1452,7 +1514,7 @@ namespace libsecondlife
         /// <param name="lower">The lower quantization range</param>
         /// <param name="upper">The upper quantization range</param>
         /// <returns>A 32-bit floating point representation of the dequantized value</returns>
-        private float Dequantize(byte[] byteArray, int pos, float lower, float upper)
+        protected float Dequantize(byte[] byteArray, int pos, float lower, float upper)
         {
             ushort value = (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
             float QV = (float)value;
@@ -1460,32 +1522,82 @@ namespace libsecondlife
             float QF = range / 65536.0F;
             return (float)((QV * QF - (0.5F * range)) + QF);
         }
+        #endregion
 
-        private void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
+        #region Event Notification
+
+        protected void FireOnObjectProperties(Simulator sim, ObjectProperties props)
         {
             if (OnObjectProperties != null)
             {
-                ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
-                ObjectProperties props = new ObjectProperties();
-
-                props.BaseMask = op.ObjectData.BaseMask;
-                props.Category = op.ObjectData.Category;
-                props.Description = Helpers.FieldToString(op.ObjectData.Description);
-                props.EveryoneMask = op.ObjectData.EveryoneMask;
-                props.GroupID = op.ObjectData.GroupID;
-                props.GroupMask = op.ObjectData.GroupMask;
-                props.LastOwnerID = op.ObjectData.LastOwnerID;
-                props.Name = Helpers.FieldToString(op.ObjectData.Name);
-                props.NextOwnerMask = op.ObjectData.NextOwnerMask;
-                props.ObjectID = op.ObjectData.ObjectID;
-                props.OwnerID = op.ObjectData.OwnerID;
-                props.OwnerMask = op.ObjectData.OwnerMask;
-                props.OwnershipCost = op.ObjectData.OwnershipCost;
-                props.SalePrice = op.ObjectData.SalePrice;
-                props.SaleType = op.ObjectData.SaleType;
-
                 OnObjectProperties(sim, props);
             }
         }
+
+        protected void FireOnObjectKilled(Simulator simulator, uint localid)
+        {
+            if (OnObjectKilled != null)
+            {
+                OnObjectKilled(simulator, localid);
+            }
+        }
+
+        protected void FireOnNewPrim(Simulator simulator, PrimObject prim, ulong RegionHandle, ushort TimeDilation)
+        {
+            if (OnNewPrim != null)
+            {
+                OnNewPrim(simulator, prim, RegionHandle, TimeDilation);
+            }
+        }
+
+        protected void FireOnNewFoliage(Simulator simulator, PrimObject prim, ulong RegionHandle, ushort TimeDilation)
+        {
+            if (OnNewFoliage != null)
+            {
+                OnNewFoliage(simulator, prim, RegionHandle, TimeDilation);
+            }
+        }
+
+        protected void FireOnNewAttachment(Simulator simulator, PrimObject prim, ulong RegionHandle, ushort TimeDilation)
+        {
+            if (OnNewAttachment != null)
+            {
+                OnNewAttachment(simulator, prim, RegionHandle, TimeDilation);
+            }
+        }
+
+        protected void FireOnAvatarSitChanged(Simulator simulator, uint LocalID)
+        {
+            if (OnAvatarSitChanged != null)
+            {
+                OnAvatarSitChanged(simulator, Client.Self.sittingOn);
+            }
+        }
+
+        protected void FireOnNewAvatar(Simulator simulator, Avatar avatar, ulong RegionHandle, ushort TimeDilation)
+        {
+            if (OnNewAvatar != null)
+            {
+                OnNewAvatar(simulator, avatar, RegionHandle, TimeDilation);
+            }
+        }
+
+        protected void FireOnPrimMoved(Simulator simulator, PrimUpdate primupdate, ulong RegionHandle, ushort TimeDilation)
+        {
+            if (OnPrimMoved != null)
+            {
+                OnPrimMoved(simulator, primupdate, RegionHandle, TimeDilation);
+            }
+        }
+
+        protected void FireOnAvatarMoved(Simulator simulator, AvatarUpdate avupdate, ulong RegionHandle, ushort TimeDilation)
+        {
+            if (OnAvatarMoved != null)
+            {
+                OnAvatarMoved(simulator, avupdate, RegionHandle, TimeDilation);
+            }
+        }
+
+        #endregion
     }
 }
