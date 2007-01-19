@@ -175,12 +175,23 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Convert a variable length field (byte array) to a string.
+        /// Convert a variable length field (byte array) to a UTF8 string
+        /// </summary>
+        /// <param name="bytes">The byte array to convert to a string</param>
+        /// <returns>A UTF8 string</returns>
+        public static string FieldToUTF8String(byte[] bytes)
+        {
+            return UTF8Encoding.UTF8.GetString(bytes);
+        }
+
+        /// <summary>
+        /// Convert a variable length field (byte array) to a string
         /// </summary>
         /// <remarks>If the byte array has unprintable characters in it, a 
         /// hex dump will be put in the string instead</remarks>
         /// <param name="bytes">The byte array to convert to a string</param>
-        /// <returns>A UTF8 string, minus the null terminator</returns>
+        /// <returns>An ASCII string or a string containing a hex dump, minus 
+        /// the null terminator</returns>
         public static string FieldToString(byte[] bytes)
         {
             return FieldToString(bytes, "");
@@ -188,13 +199,14 @@ namespace libsecondlife
 
         /// <summary>
         /// Convert a variable length field (byte array) to a string, with a
-        /// field name prepended to each line of the output.
+        /// field name prepended to each line of the output
         /// </summary>
         /// <remarks>If the byte array has unprintable characters in it, a 
         /// hex dump will be put in the string instead</remarks>
         /// <param name="bytes">The byte array to convert to a string</param>
         /// <param name="fieldName">A field name to prepend to each line of output</param>
-        /// <returns>A UTF8 string, minus the null terminator</returns>
+        /// <returns>An ASCII string or a string containing a hex dump, minus 
+        /// the null terminator</returns>
         public static string FieldToString(byte[] bytes, string fieldName)
         {
             string output = "";
@@ -206,9 +218,8 @@ namespace libsecondlife
                 if ((bytes[i] < 0x20 || bytes[i] > 0x7E) && bytes[i] != 0x09
                     && bytes[i] != 0x0D && bytes[i] != 0x0A && bytes[i] != 0x00)
                 {
-                    //printable = false;
-                    // break;
-                    bytes[i] = 0x20;
+                    printable = false;
+                    break;
                 }
             }
 

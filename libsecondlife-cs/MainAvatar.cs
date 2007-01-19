@@ -1301,7 +1301,7 @@ namespace libsecondlife
                 {
                     OnInstantMessage(
                         im.AgentData.AgentID
-                        , Helpers.FieldToString(im.MessageBlock.FromAgentName),
+                        , Helpers.FieldToUTF8String(im.MessageBlock.FromAgentName),
                         im.MessageBlock.ToAgentID
                         , im.MessageBlock.ParentEstateID
                         , im.MessageBlock.RegionID
@@ -1310,7 +1310,7 @@ namespace libsecondlife
                         , im.MessageBlock.FromGroup
                         , im.MessageBlock.ID
                         , new DateTime(im.MessageBlock.Timestamp)
-                        , Helpers.FieldToString(im.MessageBlock.Message)
+                        , Helpers.FieldToUTF8String(im.MessageBlock.Message)
                         , im.MessageBlock.Offline
                         , im.MessageBlock.BinaryBucket
                         );
@@ -1330,11 +1330,11 @@ namespace libsecondlife
             {
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
-                OnChat(Helpers.FieldToFilteredString(chat.ChatData.Message, new char())
+                OnChat(Helpers.FieldToUTF8String(chat.ChatData.Message)
                     , chat.ChatData.Audible
                     , chat.ChatData.ChatType
                     , chat.ChatData.SourceType
-                    , Helpers.FieldToString(chat.ChatData.FromName)
+                    , Helpers.FieldToUTF8String(chat.ChatData.FromName)
                     , chat.ChatData.SourceID
                     , chat.ChatData.OwnerID
                     , chat.ChatData.Position
@@ -1359,12 +1359,12 @@ namespace libsecondlife
                     buttons.Add(Helpers.FieldToString(button.ButtonLabel));
                 }
 
-                OnScriptDialog(Helpers.FieldToString(dialog.Data.Message),
+                OnScriptDialog(Helpers.FieldToUTF8String(dialog.Data.Message),
                     Helpers.FieldToString(dialog.Data.ObjectName),
                     dialog.Data.ImageID,
                     dialog.Data.ObjectID,
-                    Helpers.FieldToString(dialog.Data.FirstName),
-                    Helpers.FieldToString(dialog.Data.LastName),
+                    Helpers.FieldToUTF8String(dialog.Data.FirstName),
+                    Helpers.FieldToUTF8String(dialog.Data.LastName),
                     dialog.Data.ChatChannel,
                     buttons);
             }

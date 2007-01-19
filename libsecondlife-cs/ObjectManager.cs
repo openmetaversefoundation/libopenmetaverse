@@ -1530,7 +1530,8 @@ namespace libsecondlife
         {
             if (OnObjectProperties != null)
             {
-                OnObjectProperties(sim, props);
+                try { OnObjectProperties(sim, props); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1538,7 +1539,8 @@ namespace libsecondlife
         {
             if (OnObjectKilled != null)
             {
-                OnObjectKilled(simulator, localid);
+                try { OnObjectKilled(simulator, localid); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1546,7 +1548,8 @@ namespace libsecondlife
         {
             if (OnNewPrim != null)
             {
-                OnNewPrim(simulator, prim, RegionHandle, TimeDilation);
+                try { OnNewPrim(simulator, prim, RegionHandle, TimeDilation); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1554,7 +1557,8 @@ namespace libsecondlife
         {
             if (OnNewFoliage != null)
             {
-                OnNewFoliage(simulator, prim, RegionHandle, TimeDilation);
+                try { OnNewFoliage(simulator, prim, RegionHandle, TimeDilation); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1562,7 +1566,8 @@ namespace libsecondlife
         {
             if (OnNewAttachment != null)
             {
-                OnNewAttachment(simulator, prim, RegionHandle, TimeDilation);
+                try { OnNewAttachment(simulator, prim, RegionHandle, TimeDilation); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1570,7 +1575,8 @@ namespace libsecondlife
         {
             if (OnAvatarSitChanged != null)
             {
-                OnAvatarSitChanged(simulator, Client.Self.sittingOn);
+                try { OnAvatarSitChanged(simulator, Client.Self.sittingOn); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1578,7 +1584,8 @@ namespace libsecondlife
         {
             if (OnNewAvatar != null)
             {
-                OnNewAvatar(simulator, avatar, RegionHandle, TimeDilation);
+                try { OnNewAvatar(simulator, avatar, RegionHandle, TimeDilation); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1586,7 +1593,8 @@ namespace libsecondlife
         {
             if (OnPrimMoved != null)
             {
-                OnPrimMoved(simulator, primupdate, RegionHandle, TimeDilation);
+                try { OnPrimMoved(simulator, primupdate, RegionHandle, TimeDilation); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -1594,7 +1602,8 @@ namespace libsecondlife
         {
             if (OnAvatarMoved != null)
             {
-                OnAvatarMoved(simulator, avupdate, RegionHandle, TimeDilation);
+                try { OnAvatarMoved(simulator, avupdate, RegionHandle, TimeDilation); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
