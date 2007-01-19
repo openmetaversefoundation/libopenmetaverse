@@ -26,12 +26,14 @@
 
 using System;
 using System.Timers;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
-using System.Threading;
+using System.IO;
 using Nwc.XmlRpc;
 using Nii.JSON;
 using libsecondlife.Packets;
@@ -43,6 +45,122 @@ namespace libsecondlife
     /// without a network connection.
     /// </summary>
     public class NotConnectedException : ApplicationException { }
+
+    /// <summary>
+    /// Capabilities is the name of the bi-directional HTTP REST protocol that
+    /// Second Life uses to communicate transactions such as teleporting or
+    /// asset transfers
+    /// </summary>
+    public class Caps
+    {
+        public SecondLife Client;
+        public Region Region;
+        private string Seedcaps;
+        private StringDictionary Capabilities = new StringDictionary();
+        private bool Dead = false;
+        private Thread EventThread;
+        private List<NetworkManager.EventQueueCallback> Callbacks;
+
+        public Caps(SecondLife client, Region region, string seedcaps, List<NetworkManager.EventQueueCallback> callbacks)
+        {
+            Client = client; Region = region;
+            this.Seedcaps = seedcaps; Callbacks = callbacks;
+            ArrayList req = new ArrayList();
+            req.Add("MapLayer");
+            req.Add("MapLayerGod");
+            req.Add("NewAgentInventory");
+            req.Add("EventQueueGet");
+            Hashtable resp = (Hashtable)LLSDRequest(seedcaps, req);
+
+            foreach (string cap in resp.Keys)
+            {
+                Client.Log("Got cap " + cap + ": " + (string)resp[cap], Helpers.LogLevel.Info);
+                Capabilities[cap] = (string)resp[cap];
+            }
+
+            if (Capabilities.ContainsKey("EventQueueGet"))
+            {
+                Client.Log("Running event queue", Helpers.LogLevel.Info);
+                EventThread = new Thread(new ThreadStart(EventQueue));
+                EventThread.Start();
+            }
+        }
+
+        private void EventQueue()
+        {
+            bool gotresp = false; long ack = 0;
+            string cap = Capabilities["EventQueueGet"];
+            while (!Dead)
+                try
+                {
+                    Hashtable req = new Hashtable();
+
+                    if (gotresp)
+                        req["ack"] = ack;
+                    else
+                        req["ack"] = null;
+
+                    req["done"] = false;
+
+                    Hashtable resp = (Hashtable)LLSDRequest(cap, req);
+                    ack = (long)resp["id"];
+                    gotresp = true;
+                    ArrayList events = (ArrayList)resp["events"];
+
+                    foreach (Hashtable evt in events)
+                    {
+                        string msg = (string)evt["message"];
+                        object body = (object)evt["body"];
+
+                        Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
+
+                        if (!Dead)
+                        {
+                            foreach (NetworkManager.EventQueueCallback callback in Callbacks)
+                                callback(msg, body);
+                        }
+                    }
+                }
+                catch (WebException e)
+                {
+                    // perfectly normal
+                    Client.Log("In EventQueueGet: " + e.Message, Helpers.LogLevel.Info);
+                }
+        }
+
+        private static object LLSDRequest(string uri, object req)
+        {
+            byte[] data = LLSD.LLSDSerialize(req);
+            WebRequest wreq = WebRequest.Create(uri);
+            wreq.Method = "POST"; wreq.ContentLength = data.Length;
+            Stream reqStream = wreq.GetRequestStream();
+            reqStream.Write(data, 0, data.Length);
+            reqStream.Close();
+            HttpWebResponse wresp = (HttpWebResponse)wreq.GetResponse();
+            Stream respStream = wresp.GetResponseStream();
+            int read; int length = 0;
+            byte[] respBuf = new byte[256];
+
+            do
+            {
+                read = respStream.Read(respBuf, length, 256);
+
+                if (read > 0)
+                {
+                    length += read;
+                    Array.Resize(ref respBuf, length + 256);
+                }
+            } while (read > 0);
+
+            Array.Resize(ref respBuf, length);
+            return LLSD.LLSDDeserialize(respBuf);
+        }
+
+        public void Disconnect()
+        {
+            Dead = true;
+        }
+    }
 
     /// <summary>
     /// Simulator is a wrapper for a network connection to a simulator and the
@@ -322,7 +440,7 @@ namespace libsecondlife
             }
             catch (SocketException)
             {
-                Client.Log("Tried to send a " + packet.Type.ToString() + " on a closed socket", 
+                Client.Log("Tried to send a " + packet.Type.ToString() + " on a closed socket",
                     Helpers.LogLevel.Warning);
 
                 Disconnect();
@@ -571,7 +689,7 @@ namespace libsecondlife
                         }
                         catch (Exception e)
                         {
-                            Client.Log("Caught an exception in a packet callback: " + e.ToString(), 
+                            Client.Log("Caught an exception in a packet callback: " + e.ToString(),
                                 Helpers.LogLevel.Error);
                         }
                     }
@@ -628,6 +746,12 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         public delegate void PacketCallback(Packet packet, Simulator simulator);
         /// <summary>
+        /// Triggered when an event is received via the EventQueueGet capability;
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="body"></param>
+        public delegate void EventQueueCallback(string message, object body);
+        /// <summary>
         /// Triggered when a simulator other than the simulator that is currently
         /// being occupied disconnects for whatever reason
         /// </summary>
@@ -681,10 +805,14 @@ namespace libsecondlife
         /// </summary>
         public Simulator CurrentSim;
         /// <summary>
+        /// The capabilities for the current simulator
+        /// </summary>
+        public Caps CurrentCaps;
+        /// <summary>
         /// The complete dictionary of all the login values returned by the 
         /// RPC login server, converted to native data types wherever possible
         /// </summary>
-        public Dictionary<string, object> LoginValues = new Dictionary<string,object>();
+        public Dictionary<string, object> LoginValues = new Dictionary<string, object>();
         /// <summary>
         /// Shows whether the network layer is logged in to the grid or not
         /// </summary>
@@ -709,15 +837,16 @@ namespace libsecondlife
         public event CurrentSimChangedCallback OnCurrentSimChanged;
 
         private SecondLife Client;
-        private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType,List<PacketCallback>>();
+        private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         private List<Simulator> Simulators = new List<Simulator>();
         private System.Timers.Timer DisconnectTimer;
         private System.Timers.Timer LogoutTimer;
         private bool connected;
+        private List<EventQueueCallback> EventQueueCallbacks = new List<EventQueueCallback>();
 
         private const int NetworkTrafficTimeout = 15000;
-		
-		ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
+
+        ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// 
@@ -787,6 +916,15 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="callback"></param>
+        public void RegisterEventCallback(EventQueueCallback callback)
+        {
+            EventQueueCallbacks.Add(callback);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="packet"></param>
         public void SendPacket(Packet packet)
         {
@@ -851,7 +989,7 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
             string password, string userAgent, string author)
         {
             return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last",
@@ -867,7 +1005,7 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
             string password, string startLocation, string userAgent, string author, bool md5pass)
         {
             return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", startLocation,
@@ -887,8 +1025,8 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
-            string password, string mac, string startLocation, string platform, 
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
+            string password, string mac, string startLocation, string platform,
             string viewerDigest, string userAgent, string author)
         {
             return DefaultLoginValues(firstName, lastName, password, mac, startLocation,
@@ -912,9 +1050,9 @@ namespace libsecondlife
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
         /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName, 
-            string password, string mac, string startLocation, int major, int minor, int patch, 
-            int build, string platform, string viewerDigest, string userAgent, string author, 
+        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
+            string password, string mac, string startLocation, int major, int minor, int patch,
+            int build, string platform, string viewerDigest, string userAgent, string author,
             bool md5pass)
         {
             Dictionary<string, object> values = new Dictionary<string, object>();
@@ -972,7 +1110,7 @@ namespace libsecondlife
         /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
         /// </summary>
         /// <param name="InventoryData">A dictionary representing received data Key is ItemID and Value is NewAssetID</param>
-        public delegate void LogoutCallback(Dictionary<LLUUID, LLUUID> InventoryData );
+        public delegate void LogoutCallback(Dictionary<LLUUID, LLUUID> InventoryData);
         /// <summary>
         /// Event raised when a logout is confirmed by the simulator
         /// </summary>
@@ -1217,12 +1355,17 @@ namespace libsecondlife
                 // Start a timer that checks if we've been disconnected
                 DisconnectTimer.Start();
 
+                if (LoginValues.ContainsKey("seed_capability") && (string)LoginValues["seed_capability"] != "")
+                {
+                    CurrentCaps = new Caps(Client, simulator.Region, (string)LoginValues["seed_capability"], EventQueueCallbacks);
+                }
+
                 // Move our agent in to the sim to complete the connection
                 Client.Self.CompleteAgentMovement(simulator);
 
                 // Send a couple packets that are useful right after login
                 SendInitialPackets();
-                
+
                 // Fire an event for connecting to the grid
                 if (OnConnected != null)
                 {
@@ -1268,7 +1411,7 @@ namespace libsecondlife
         /// <param name="circuitCode"></param>
         /// <param name="setDefault"></param>
         /// <returns></returns>
-        public Simulator Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault)
+        public Simulator Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault, string seedcaps)
         {
             Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode, ip, (int)port);
 
@@ -1293,23 +1436,27 @@ namespace libsecondlife
             {
                 Simulator oldSim = CurrentSim;
                 CurrentSim = simulator;
+                if (CurrentCaps != null) CurrentCaps.Disconnect();
+                CurrentCaps = null;
+                if (seedcaps != null && seedcaps != "")
+                    CurrentCaps = new Caps(Client, simulator.Region, seedcaps, EventQueueCallbacks);
                 if (OnCurrentSimChanged != null && simulator != oldSim) OnCurrentSimChanged(oldSim);
             }
 
             return simulator;
         }
-		
+
         /// <summary>
         /// Initiate a blocking logout request. This will return when the logout
         /// handshake has completed or when Settings.LOGOUT_TIMEOUT has expired
         /// and a LogoutDemand packet has been sent
         /// </summary>
-		public void Logout()
-		{
+        public void Logout()
+        {
             LogoutReplyEvent.Reset();
-			RequestLogout();
+            RequestLogout();
             LogoutReplyEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false);
-		}
+        }
 
         /// <summary>
         /// Initiate the logout process (three step process!)
@@ -1483,6 +1630,10 @@ namespace libsecondlife
                             Helpers.LogLevel.Error);
                     }
                 }
+            }
+            if (CurrentCaps != null)
+            {
+                CurrentCaps.Disconnect(); CurrentCaps = null;
             }
 
             connected = false;

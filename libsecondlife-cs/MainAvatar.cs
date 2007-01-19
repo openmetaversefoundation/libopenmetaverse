@@ -27,7 +27,9 @@
 using System;
 using System.Timers;
 using System.Net;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -476,6 +478,9 @@ namespace libsecondlife
 
             // Viewer effect callback
             Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
+
+	        // Event queue callback (used for Caps teleports currently)
+	        Client.Network.RegisterEventCallback(new NetworkManager.EventQueueCallback(EventQueueHandler));
         }
 
         /// <summary>
@@ -1427,6 +1432,29 @@ namespace libsecondlife
             }
         }
 
+	    private void EventQueueHandler(string message, object body)
+        {
+	        if(message == "TeleportFinish")
+            {
+		        Hashtable tpt = (Hashtable)body;
+		        Hashtable info = (Hashtable)tpt["Info"];
+
+		        // FIXME: quick and dirty hack
+		        TeleportFinishPacket packet = new TeleportFinishPacket();
+
+		        packet.Info.SimIP = Helpers.BytesToUInt((byte[])info["SimIP"]);
+                packet.Info.LocationID = Helpers.BytesToUInt((byte[])info["LocationID"]);
+                packet.Info.TeleportFlags = Helpers.BytesToUInt((byte[])info["TeleportFlags"]);
+		        packet.Info.AgentID = (LLUUID)info["AgentID"];
+                packet.Info.RegionHandle = Helpers.BytesToUInt64((byte[])info["RegionHandle"]);
+		        packet.Info.SeedCapability = Helpers.StringToField((string)info["SeedCapability"]);
+		        packet.Info.SimPort = (ushort)(long)info["SimPort"];
+		        packet.Info.SimAccess = (byte)(long)info["SimAccess"];
+
+		        TeleportHandler(packet,Client.Network.CurrentSim);
+	        }
+	    }
+
         /// <summary>
         /// Process an incoming effect
         /// </summary>
@@ -1592,8 +1620,9 @@ namespace libsecondlife
                 Simulator previousSim = Client.Network.CurrentSim;
 
                 // Connect to the new sim
+		String seedcaps = Encoding.UTF8.GetString(finish.Info.SeedCapability).Replace("\x00","");
                 Simulator sim = Client.Network.Connect(new IPAddress((long)finish.Info.SimIP), finish.Info.SimPort,
-                    simulator.CircuitCode, true);
+                    simulator.CircuitCode, true, seedcaps);
 
                 if (sim != null)
                 {

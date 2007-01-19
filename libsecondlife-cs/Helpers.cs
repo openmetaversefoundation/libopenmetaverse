@@ -141,6 +141,40 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Convert the first four bytes of the given array in little endian
+        /// ordering to an unsigned integer
+        /// </summary>
+        /// <param name="bytes">An array four bytes or longer</param>
+        /// <returns>An unsigned integer, will be zero if the array contains
+        /// less than four bytes</returns>
+        public static uint BytesToUInt(byte[] bytes)
+        {
+            if (bytes.Length < 4) return 0;
+            return (uint)(bytes[3] + (bytes[2] << 8) + (bytes[1] << 16) + (bytes[0] << 24));
+        }
+
+        /// <summary>
+        /// Convert the first eight bytes of the given array in little endian
+        /// ordering to an unsigned 64-bit integer
+        /// </summary>
+        /// <param name="bytes">An array eight bytes or longer</param>
+        /// <returns>An unsigned 64-bit integer, will be zero if the array
+        /// contains less than eight bytes</returns>
+        public static ulong BytesToUInt64(byte[] bytes)
+        {
+            if (bytes.Length < 8) return 0;
+            return (ulong)
+                ((ulong)bytes[7] +
+                ((ulong)bytes[6] << 8) +
+                ((ulong)bytes[5] << 16) +
+                ((ulong)bytes[4] << 24) +
+                ((ulong)bytes[3] << 32) +
+                ((ulong)bytes[2] << 40) +
+                ((ulong)bytes[1] << 48) +
+                ((ulong)bytes[0] << 56));
+        }
+
+        /// <summary>
         /// Convert a variable length field (byte array) to a string.
         /// </summary>
         /// <remarks>If the byte array has unprintable characters in it, a 
@@ -253,25 +287,69 @@ namespace libsecondlife
             return output;
         }
 
-
         /// <summary>
-        /// Convert a UTF8 string to a byte array
+        /// Converts a byte array to a string containing hexadecimal characters
         /// </summary>
-        /// <param name="str">The string to convert to a byte array</param>
-        /// <returns>A null-terminated byte array</returns>
-        public static byte[] StringToField(string str)
+        /// <param name="bytes">The byte array to convert to a string</param>
+        /// <param name="fieldName">The name of the field to prepend to each
+        /// line of the string</param>
+        /// <returns>A string containing hexadecimal characters on multiple
+        /// lines. Each line is prepended with the field name</returns>
+        public static string FieldToHexString(byte[] bytes, string fieldName)
         {
-            if (str.Length == 0) { return new byte[0]; }
-            if (!str.EndsWith("\0")) { str += "\0"; }
-            return System.Text.UTF8Encoding.UTF8.GetBytes(str);
+            string output = "";
+            for (int i = 0; i < bytes.Length; i += 16)
+            {
+                if (i != 0) { output += "\n"; }
+                if (fieldName != "") { output += fieldName + ": "; }
+
+                for (int j = 0; j < 16; j++)
+                {
+                    if ((i + j) < bytes.Length)
+                    {
+                        string s = String.Format("{0:X} ", bytes[i + j]);
+                        if (s.Length == 2)
+                        {
+                            s = "0" + s;
+                        }
+
+                        output += s;
+                    }
+                    else
+                    {
+                        output += "   ";
+                    }
+                }
+
+                for (int j = 0; j < 16 && (i + j) < bytes.Length; j++)
+                {
+                    if (bytes[i + j] >= 0x20 && bytes[i + j] < 0x7E)
+                    {
+                        output += (char)bytes[i + j];
+                    }
+                    else
+                    {
+                        output += ".";
+                    }
+                }
+            }
+            return output;
         }
 
-        //public static byte[] HexStringToBytes(string hexString)
+        /// <summary>
+        /// Converts a string containing hexadecimal characters to a byte array
+        /// </summary>
+        /// <param name="hexString">String containing hexadecimal characters</param>
+        /// <returns>The converted byte array</returns>
+        //public static byte[] HexStringToField(string hexString)
         //{
         //    string newString = "";
         //    char c;
 
-        //    // remove all none A-F, 0-9, characters
+        //    // FIXME: For each line of the string, if a colon is found
+        //    // remove everything before it
+
+        //    // remove all non A-F, 0-9, characters
         //    for (int i = 0; i < hexString.Length; i++)
         //    {
         //        c = hexString[i];
@@ -297,6 +375,18 @@ namespace libsecondlife
         //    }
         //    return bytes;
         //}
+
+        /// <summary>
+        /// Convert a UTF8 string to a byte array
+        /// </summary>
+        /// <param name="str">The string to convert to a byte array</param>
+        /// <returns>A null-terminated byte array</returns>
+        public static byte[] StringToField(string str)
+        {
+            if (str.Length == 0) { return new byte[0]; }
+            if (!str.EndsWith("\0")) { str += "\0"; }
+            return System.Text.UTF8Encoding.UTF8.GetBytes(str);
+        }
 
         /// <summary>
         /// Gets a unix timestamp for the current time

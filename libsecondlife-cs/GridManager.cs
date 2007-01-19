@@ -131,13 +131,17 @@ namespace libsecondlife
 
 			if(!Regions.ContainsKey(name))
 			{
-                MapNameRequestPacket map = new MapNameRequestPacket();
+                // FIXME: This needs to be converted to Caps
+                Client.Log("Caps for map layer requests needs to be implemented, this function is currently broken!",
+                    Helpers.LogLevel.Error);
 
-                map.AgentData.AgentID = Client.Network.AgentID;
-                map.AgentData.SessionID = Client.Network.SessionID;
-                map.NameData.Name = Helpers.StringToField(name);
+                //MapNameRequestPacket map = new MapNameRequestPacket();
 
-                Client.Network.SendPacket(map);
+                //map.AgentData.AgentID = Client.Network.AgentID;
+                //map.AgentData.SessionID = Client.Network.SessionID;
+                //map.NameData.Name = Helpers.StringToField(name);
+
+                //Client.Network.SendPacket(map);
 			}
 		}
 
@@ -235,6 +239,7 @@ namespace libsecondlife
             {
                 AddSim(name);
 
+                // FIXME: We shouldn't be sleeping in a library call, hopefully this goes away soon
                 System.Threading.Thread.Sleep(1000);
 
                 if (Regions.ContainsKey(name))

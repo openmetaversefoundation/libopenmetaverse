@@ -66,7 +66,6 @@
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\ResearchCommand.cs" />
     <Compile Include="Commands\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -89,6 +88,10 @@
     <ProjectReference Include="..\..\libsecondlife.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Name>libsecondlife</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\libsecondlife.Utilities\libsecondlife.Utilities.csproj">
+      <Project>{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}</Project>
+      <Name>libsecondlife.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
