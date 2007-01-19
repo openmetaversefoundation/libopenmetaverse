@@ -108,14 +108,15 @@ namespace libsecondlife.Utilities.Assets
     {
         /// <summary></summary>
         Unknown = 0,
+        /// <summary>Request arbitrary system files off the server</summary>
+        [Obsolete]
+        File = 1,
+        /// <summary>Request assets from the asset server</summary>
+        Asset = 2,
         /// <summary></summary>
-        File,
+        SimInventoryItem = 3,
         /// <summary></summary>
-        Asset,
-        /// <summary></summary>
-        SimInventoryItem,
-        /// <summary></summary>
-        SimEstate
+        SimEstate = 4
     }
 
     /// <summary>

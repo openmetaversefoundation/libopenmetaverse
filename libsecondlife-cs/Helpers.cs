@@ -263,6 +263,12 @@ namespace libsecondlife
             return output;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="filterChar"></param>
+        /// <returns></returns>
         public static string FieldToFilteredString(byte[] bytes, char filterChar)
         {
             if ((int)filterChar > 255)

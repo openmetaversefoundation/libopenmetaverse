@@ -416,4 +416,106 @@ namespace libsecondlife.Utilities
                 GroupsLookupEvents[avatarID].Set();
         }
     }
+
+    public class ParcelDownloader
+    {
+        private SecondLife Client;
+        /// <summary>Dictionary of 64x64 arrays of parcels which have been successfully downloaded 
+        /// for each simulator (and their LocalID's, 0 = Null)</summary>
+        private Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
+        private Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="client">A reference to the SecondLife client</param>
+        public ParcelDownloader(SecondLife client)
+        {
+            Client = client;
+
+            Client.Parcels.OnParcelProperties += new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
+        }
+
+        public void DownloadSimParcels(Simulator simulator)
+        {
+            lock (ParcelMarked)
+            {
+                if (!ParcelMarked.ContainsKey(simulator))
+                {
+                    ParcelMarked[simulator] = new int[64, 64];
+                    Parcels[simulator] = new Dictionary<int, Parcel>();
+                }
+            }
+
+            Client.Parcels.ParcelPropertiesRequest(simulator, 0.0f, 0.0f, 0.0f, 0.0f, -10000, false);
+        }
+
+        private void Parcels_OnParcelProperties(Parcel parcel)
+        {
+            if (ParcelMarked.ContainsKey(parcel.Simulator))
+            {
+                int x, y, index, subindex;
+                byte val;
+                bool hasTriggered = false;
+                int[,] markers = ParcelMarked[parcel.Simulator];
+                Dictionary<int, Parcel> parcels = Parcels[parcel.Simulator];
+
+                // Mark this area as downloaded
+                for (x = 0; x < 64; x++)
+                {
+                    for (y = 0; y < 64; y++)
+                    {
+                        if (markers[y, x] == 0)
+                        {
+                            index = ((x * 64) + y);
+                            subindex = index % 8;
+                            index /= 8;
+
+                            val = parcel.Bitmap[index];
+
+                            markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
+                        }
+                    }
+                }
+
+                for (x = 0; x < 64; x++)
+                {
+                    for (y = 0; y < 64; y++)
+                    {
+                        if (markers[x, y] == 0)
+                        {
+                            Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
+                                (y * 4.0f) + 4.0f,
+                                (x * 4.0f) + 4.0f,
+                                (y * 4.0f),
+                                (x * 4.0f),
+                                -10000,
+                                false);
+
+                            hasTriggered = true;
+                            goto Done;
+                        }
+                    }
+                }
+
+            Done:
+
+                if (!parcels.ContainsKey(parcel.LocalID))
+                {
+                    parcels[parcel.LocalID] = parcel;
+                }
+
+                // This map is complete, fire callback
+                if (!hasTriggered)
+                {
+                    // FIXME: Fire a callback indicating we finished downloading all the parcels
+                }
+            }
+            else
+            {
+                Client.Log("ParcelDownloader: Got parcel properties from a sim we're not downloading",
+                    Helpers.LogLevel.Info);
+            }
+        }
+    }
 }

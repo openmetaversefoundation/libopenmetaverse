@@ -31,27 +31,10 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="region"></param>
-    public delegate void ParcelCompleteCallback(Region region);
-
-    /// <summary>
     /// Represents a region (also known as a sim) in Second Life.
     /// </summary>
     public class Region
     {
-        /// <summary></summary>
-        public event ParcelCompleteCallback OnParcelCompletion;
-
-        // FIXME: This whole setup is fscked in a really bad way. We can't be 
-        // locking on a publically accessible container, and we shouldn't have
-        // publically accessible containers anyways because external programs 
-        // might be iterating through them or modifying them when internally 
-        // we are doing the opposite. The best way to fix this will be 
-        // privatizing and adding helper functions to access the dictionary
-        public Dictionary<int, Parcel> Parcels = new Dictionary<int, Parcel>();
-
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
@@ -62,13 +45,6 @@ namespace libsecondlife
         public byte[] ParcelOverlay = new byte[4096];
         /// <summary></summary>
         public int ParcelOverlaysReceived;
-        /// <summary>64x64 Array of parcels which have been successfully downloaded 
-        /// (and their LocalID's, 0 = Null)</summary>
-        public int[,] ParcelMarked = new int[64, 64];
-        /// <summary>Flag to indicate whether we are downloading a sim's parcels</summary>
-        public bool ParcelDownloading;
-        /// <summary>Flag to indicate whether to get Dwell values automatically (NOT USED YET). Call Parcel.GetDwell() instead</summary>
-        public bool ParcelDwell;
         /// <summary></summary>
         public float TerrainHeightRange00;
         /// <summary></summary>
@@ -111,7 +87,7 @@ namespace libsecondlife
         public EstateTools Estate;
 
         /// <summary></summary>
-        /// <remarks>This may cause your code to block while the GridRegion data is fetched for the 1st time.</remarks>
+        /// <remarks>This may cause your code to block while the GridRegion data is fetched for the first time</remarks>
         private GridRegion _GridRegionData = null;
         public GridRegion GridRegionData
         {
@@ -160,9 +136,6 @@ namespace libsecondlife
             Handle = handle;
             Name = name;
             ParcelOverlay = new byte[4096];
-            ParcelMarked = new int[64, 64];
-            ParcelDownloading = false;
-            ParcelDwell = false;
 
             TerrainHeightRange00 = heightList[0];
             TerrainHeightRange01 = heightList[1];
@@ -228,46 +201,6 @@ namespace libsecondlife
 
             // FIXME: Region needs a reference to it's parent Simulator
             //Client.Network.SendPacket((Packet)join, this.Simulator);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void FillParcels()
-        {
-            // Begins filling parcels
-            ParcelDownloading = true;
-
-            ParcelPropertiesRequestPacket tPacket = new ParcelPropertiesRequestPacket();
-            tPacket.AgentData.AgentID = Client.Self.ID;
-            tPacket.AgentData.SessionID = Client.Network.SessionID;
-            tPacket.ParcelData.SequenceID = -10000;
-            tPacket.ParcelData.West = 0.0f;
-            tPacket.ParcelData.South = 0.0f;
-            tPacket.ParcelData.East = 0.0f;
-            tPacket.ParcelData.North = 0.0f;
-
-            Client.Network.SendPacket((Packet)tPacket);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ResetParcelDownload()
-        {
-            Parcels = new Dictionary<int, Parcel>();
-            ParcelMarked = new int[64, 64];
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void FilledParcels()
-        {
-            if (OnParcelCompletion != null)
-            {
-                OnParcelCompletion(this);
-            }
         }
 
         /// <summary>

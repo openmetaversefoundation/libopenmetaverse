@@ -64,6 +64,77 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum DirFindFlags
+        {
+            /// <summary></summary>
+            People = 1 << 0,
+            /// <summary></summary>
+            Online = 1 << 1,
+            /// <summary></summary>
+            [Obsolete]
+            Places = 1 << 2,
+            /// <summary></summary>
+            Events = 1 << 3,
+            /// <summary></summary>
+            Groups = 1 << 4,
+            /// <summary></summary>
+            DateEvents = 1 << 5,
+            /// <summary></summary>
+            AgentOwned = 1 << 6,
+            /// <summary></summary>
+            ForSale = 1 << 7,
+            /// <summary></summary>
+            GroupOwned = 1 << 8,
+            /// <summary></summary>
+            [Obsolete]
+            Auction = 1 << 9,
+            /// <summary></summary>
+            DwellSort = 1 << 10,
+            /// <summary></summary>
+            PgSimsOnly = 1 << 11,
+            /// <summary></summary>
+            PicturesOnly = 1 << 12,
+            /// <summary></summary>
+            PgEventsOnly = 1 << 13,
+            /// <summary></summary>
+            MatureSimsOnly = 1 << 14,
+            /// <summary></summary>
+            SortAsc = 1 << 15,
+            /// <summary></summary>
+            PricesSort = 1 << 16,
+            /// <summary></summary>
+            PerMeterSort = 1 << 17,
+            /// <summary></summary>
+            AreaSort = 1 << 18,
+            /// <summary></summary>
+            NameSort = 1 << 19,
+            /// <summary></summary>
+            LimitByPrice = 1 << 20,
+            /// <summary></summary>
+            LimitByArea = 1 << 21
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum SearchTypeFlags
+        {
+            /// <summary></summary>
+            Auction = 1 << 0,
+            /// <summary></summary>
+            Newbie = 1 << 1,
+            /// <summary></summary>
+            Mainland = 1 << 2,
+            /// <summary></summary>
+            Estate = 1 << 3
+        }
+
+
+        /// <summary>
         /// A classified ad in Second Life
         /// </summary>
         public struct Classified
@@ -84,16 +155,65 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// A parcel retrieved from the dataserver such as results from the 
+        /// "For-Sale" listings
+        /// </summary>
+        public struct DirectoryParcel
+        {
+            /// <summary></summary>
+            public LLUUID ID;
+            /// <summary></summary>
+            public string Name;
+            /// <summary></summary>
+            public int ActualArea;
+            /// <summary></summary>
+            public int SalePrice;
+            /// <summary></summary>
+            public bool Auction;
+            /// <summary></summary>
+            public bool ForSale;
+            /// <summary></summary>
+            public bool ReservedNewbie;
+        }
+
+        /*/// <summary></summary>
+        public LLUUID OwnerID;
+        /// <summary></summary>
+        public LLUUID SnapshotID;
+        /// <summary></summary>
+        public ulong RegionHandle;
+        /// <summary></summary>
+        public string SimName;
+        /// <summary></summary>
+        public string Desc;
+        /// <summary></summary>
+        public LLVector3 GlobalPosition;
+        /// <summary></summary>
+        public LLVector3 SimPosition;
+        /// <summary></summary>
+        public float Dwell;*/
+
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="classifieds"></param>
         public delegate void ClassifiedReplyCallback(List<Classified> classifieds);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dirParcels"></param>
+        public delegate void DirLandReplyCallback(List<DirectoryParcel> dirParcels);
 
 
         /// <summary>
         /// 
         /// </summary>
         public event ClassifiedReplyCallback OnClassifiedReply;
+        /// <summary>
+        /// 
+        /// </summary>
+        public event DirLandReplyCallback OnDirLandReply;
 
 
         private SecondLife Client;
@@ -104,6 +224,7 @@ namespace libsecondlife
             Client = client;
 
             Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
         }
 
         public LLUUID StartClassifiedSearch(string searchText, ClassifiedCategories categories, bool mature)
@@ -117,6 +238,35 @@ namespace libsecondlife
             query.QueryData.QueryFlags = (uint)(mature ? 0 : 2);
             query.QueryData.QueryID = queryID;
             query.QueryData.QueryText = Helpers.StringToField(searchText);
+
+            Client.Network.SendPacket(query);
+
+            return queryID;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="findFlags"></param>
+        /// <param name="typeFlags"></param>
+        /// <param name="priceLimit"></param>
+        /// <param name="areaLimit"></param>
+        /// <param name="queryStart"></param>
+        /// <returns></returns>
+        public LLUUID StartLandSearch(DirFindFlags findFlags, SearchTypeFlags typeFlags, int priceLimit,
+            int areaLimit, int queryStart)
+        {
+            LLUUID queryID = LLUUID.Random();
+
+            DirLandQueryPacket query = new DirLandQueryPacket();
+            query.AgentData.AgentID = Client.Network.AgentID;
+            query.AgentData.SessionID = Client.Network.SessionID;
+            query.QueryData.Area = areaLimit;
+            query.QueryData.Price = priceLimit;
+            query.QueryData.QueryStart = queryStart;
+            query.QueryData.SearchType = (uint)typeFlags;
+            query.QueryData.QueryFlags = (uint)findFlags;
+            query.QueryData.QueryID = queryID;
 
             Client.Network.SendPacket(query);
 
@@ -144,7 +294,35 @@ namespace libsecondlife
                     classifieds.Add(classified);
                 }
 
-                OnClassifiedReply(classifieds);
+                try { OnClassifiedReply(classifieds); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void DirLandReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnDirLandReply != null)
+            {
+                List<DirectoryParcel> parcelsForSale = new List<DirectoryParcel>();
+                DirLandReplyPacket reply = (DirLandReplyPacket)packet;
+
+                foreach (DirLandReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
+                {
+                    DirectoryParcel dirParcel = new DirectoryParcel();
+
+                    dirParcel.ActualArea = block.ActualArea;
+                    dirParcel.ID = block.ParcelID;
+                    dirParcel.Name = Helpers.FieldToString(block.Name);
+                    dirParcel.SalePrice = block.SalePrice;
+                    dirParcel.Auction = block.Auction;
+                    dirParcel.ForSale = block.ForSale;
+                    dirParcel.ReservedNewbie = block.ReservedNewbie;
+
+                    parcelsForSale.Add(dirParcel);
+                }
+
+                try { OnDirLandReply(parcelsForSale); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
     }

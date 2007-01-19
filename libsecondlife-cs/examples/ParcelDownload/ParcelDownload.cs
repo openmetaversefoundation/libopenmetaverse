@@ -30,57 +30,41 @@ using libsecondlife;
 
 namespace ParcelDownloader
 {
-	/// <summary>
-	/// Summary description for ParcelDownload.
-	/// </summary>
 	class ParcelDownload
 	{
-		static SecondLife client;
-
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
 		[STAThread]
 		static void Main(string[] args)
 		{
-
 			if (args.Length < 3)
 			{
-				Console.WriteLine("Usage: ParcelDownloader [loginfirstname] [loginlastname] [password]");
+				Console.WriteLine("Usage: ParcelDownloader [firstname] [lastname] [password]");
 				return;
 			}
 
-			client = new SecondLife();
+			SecondLife client = new SecondLife();
 
-            Dictionary<string, object> loginParams = client.Network.DefaultLoginValues(args[0], args[1], args[2], 
-                "00:00:00:00:00:00", "last", "Win", "0", "ParcelDownload", "Adam \"Zaius\" Frisby <adam@gwala.net>");
-
-			if (!client.Network.Login(loginParams))
+			if (!client.Network.Login(args[0], args[1], args[2], "ParcelDownload", "libsecondlife"))
 			{
 				// Login failed
 				Console.WriteLine("ERROR: " + client.Network.LoginError);
 				return;
 			}
 
-			// The magic happens in these three lines
-			client.Network.CurrentSim.Region.FillParcels();			// Tell libsl to download parcels
-			System.Threading.Thread.Sleep(10000);		// Give it some time to do it
-			client.Tick();								// Let things happen
+			// FIXME: Use libsecondlife.Utilities to download parcel information from the current sim
 
 			// Dump some info about our parcels
-            foreach (int pkey in client.Network.CurrentSim.Region.Parcels.Keys) 
-			{
-                Parcel parcel = (Parcel)client.Network.CurrentSim.Region.Parcels[pkey];
-				// Probably should comment this out :-)
-                //parcel.Buy(client, false, LLUUID.Zero);
-				Console.WriteLine("<Parcel>");
-				Console.WriteLine("\tName: " + parcel.Name);
-				Console.WriteLine("\tSize: " + parcel.Area);
-				Console.WriteLine("\tDesc: " + parcel.Desc);
-			}
+            //foreach (int pkey in client.Network.CurrentSim.Region.Parcels.Keys) 
+            //{
+            //    Parcel parcel = (Parcel)client.Network.CurrentSim.Region.Parcels[pkey];
+            //    // Probably should comment this out :-)
+            //    //parcel.Buy(client, false, LLUUID.Zero);
+            //    Console.WriteLine("<Parcel>");
+            //    Console.WriteLine("\tName: " + parcel.Name);
+            //    Console.WriteLine("\tSize: " + parcel.Area);
+            //    Console.WriteLine("\tDesc: " + parcel.Desc);
+            //}
 
 			client.Network.Logout();
-			return;
 		}
 	}
 }

@@ -1109,8 +1109,8 @@ namespace libsecondlife
         /// <summary>
         /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
         /// </summary>
-        /// <param name="InventoryData">A dictionary representing received data Key is ItemID and Value is NewAssetID</param>
-        public delegate void LogoutCallback(Dictionary<LLUUID, LLUUID> InventoryData);
+        /// <param name="inventoryItems"></param>
+        public delegate void LogoutCallback(List<LLUUID> inventoryItems);
         /// <summary>
         /// Event raised when a logout is confirmed by the simulator
         /// </summary>
@@ -1755,21 +1755,15 @@ namespace libsecondlife
                 // Deal with callbacks, if any
                 if (OnLogoutReply != null)
                 {
-                    Dictionary<LLUUID, LLUUID> callbackDict = new Dictionary<LLUUID, LLUUID>();
+                    List<LLUUID> itemIDs = new List<LLUUID>();
 
                     foreach (LogoutReplyPacket.InventoryDataBlock InventoryData in logout.InventoryData)
                     {
-                        callbackDict.Add(InventoryData.ItemID, InventoryData.NewAssetID);
+                        itemIDs.Add(InventoryData.ItemID);
                     }
-                    try
-                    {
-                        OnLogoutReply(callbackDict);
-                    }
-                    catch (Exception e)
-                    {
-                        Client.Log("Caught an exception in OnLogoutReply(): " + e.ToString(),
-                            Helpers.LogLevel.Error);
-                    }
+
+                    try { OnLogoutReply(itemIDs); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
                 FinalizeLogout();

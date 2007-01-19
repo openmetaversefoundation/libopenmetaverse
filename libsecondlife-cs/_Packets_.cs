@@ -741,7 +741,6 @@ namespace libsecondlife.Packets
         UpdateUserInfo,
         GodExpungeUser,
         StartParcelRemoveAck,
-        InitiateUpload,
         InitiateDownload,
         SystemMessage,
         MapLayerRequest,
@@ -1177,7 +1176,6 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(UpdateUserInfoPacket))]
     [XmlInclude(typeof(GodExpungeUserPacket))]
     [XmlInclude(typeof(StartParcelRemoveAckPacket))]
-    [XmlInclude(typeof(InitiateUploadPacket))]
     [XmlInclude(typeof(InitiateDownloadPacket))]
     [XmlInclude(typeof(SystemMessagePacket))]
     [XmlInclude(typeof(MapLayerRequestPacket))]
@@ -1631,21 +1629,20 @@ namespace libsecondlife.Packets
                         case 457: return PacketType.UpdateUserInfo;
                         case 458: return PacketType.GodExpungeUser;
                         case 466: return PacketType.StartParcelRemoveAck;
-                        case 468: return PacketType.InitiateUpload;
-                        case 469: return PacketType.InitiateDownload;
-                        case 470: return PacketType.SystemMessage;
-                        case 471: return PacketType.MapLayerRequest;
-                        case 472: return PacketType.MapLayerReply;
-                        case 473: return PacketType.MapBlockRequest;
-                        case 474: return PacketType.MapNameRequest;
-                        case 475: return PacketType.MapBlockReply;
-                        case 476: return PacketType.MapItemRequest;
-                        case 477: return PacketType.MapItemReply;
-                        case 478: return PacketType.SendPostcard;
-                        case 487: return PacketType.ParcelMediaCommandMessage;
-                        case 488: return PacketType.ParcelMediaUpdate;
-                        case 489: return PacketType.LandStatRequest;
-                        case 490: return PacketType.LandStatReply;
+                        case 468: return PacketType.InitiateDownload;
+                        case 469: return PacketType.SystemMessage;
+                        case 470: return PacketType.MapLayerRequest;
+                        case 471: return PacketType.MapLayerReply;
+                        case 472: return PacketType.MapBlockRequest;
+                        case 473: return PacketType.MapNameRequest;
+                        case 474: return PacketType.MapBlockReply;
+                        case 475: return PacketType.MapItemRequest;
+                        case 476: return PacketType.MapItemReply;
+                        case 477: return PacketType.SendPostcard;
+                        case 486: return PacketType.ParcelMediaCommandMessage;
+                        case 487: return PacketType.ParcelMediaUpdate;
+                        case 488: return PacketType.LandStatRequest;
+                        case 489: return PacketType.LandStatReply;
                         case 65530: return PacketType.SecuredTemplateChecksumRequest;
                         case 65531: return PacketType.PacketAck;
                         case 65532: return PacketType.OpenCircuit;
@@ -2100,21 +2097,20 @@ namespace libsecondlife.Packets
                         case 457: return new UpdateUserInfoPacket(header, bytes, ref i);
                         case 458: return new GodExpungeUserPacket(header, bytes, ref i);
                         case 466: return new StartParcelRemoveAckPacket(header, bytes, ref i);
-                        case 468: return new InitiateUploadPacket(header, bytes, ref i);
-                        case 469: return new InitiateDownloadPacket(header, bytes, ref i);
-                        case 470: return new SystemMessagePacket(header, bytes, ref i);
-                        case 471: return new MapLayerRequestPacket(header, bytes, ref i);
-                        case 472: return new MapLayerReplyPacket(header, bytes, ref i);
-                        case 473: return new MapBlockRequestPacket(header, bytes, ref i);
-                        case 474: return new MapNameRequestPacket(header, bytes, ref i);
-                        case 475: return new MapBlockReplyPacket(header, bytes, ref i);
-                        case 476: return new MapItemRequestPacket(header, bytes, ref i);
-                        case 477: return new MapItemReplyPacket(header, bytes, ref i);
-                        case 478: return new SendPostcardPacket(header, bytes, ref i);
-                        case 487: return new ParcelMediaCommandMessagePacket(header, bytes, ref i);
-                        case 488: return new ParcelMediaUpdatePacket(header, bytes, ref i);
-                        case 489: return new LandStatRequestPacket(header, bytes, ref i);
-                        case 490: return new LandStatReplyPacket(header, bytes, ref i);
+                        case 468: return new InitiateDownloadPacket(header, bytes, ref i);
+                        case 469: return new SystemMessagePacket(header, bytes, ref i);
+                        case 470: return new MapLayerRequestPacket(header, bytes, ref i);
+                        case 471: return new MapLayerReplyPacket(header, bytes, ref i);
+                        case 472: return new MapBlockRequestPacket(header, bytes, ref i);
+                        case 473: return new MapNameRequestPacket(header, bytes, ref i);
+                        case 474: return new MapBlockReplyPacket(header, bytes, ref i);
+                        case 475: return new MapItemRequestPacket(header, bytes, ref i);
+                        case 476: return new MapItemReplyPacket(header, bytes, ref i);
+                        case 477: return new SendPostcardPacket(header, bytes, ref i);
+                        case 486: return new ParcelMediaCommandMessagePacket(header, bytes, ref i);
+                        case 487: return new ParcelMediaUpdatePacket(header, bytes, ref i);
+                        case 488: return new LandStatRequestPacket(header, bytes, ref i);
+                        case 489: return new LandStatReplyPacket(header, bytes, ref i);
                         case 65530: return new SecuredTemplateChecksumRequestPacket(header, bytes, ref i);
                         case 65531: return new PacketAckPacket(header, bytes, ref i);
                         case 65532: return new OpenCircuitPacket(header, bytes, ref i);
@@ -5497,6 +5493,7 @@ namespace libsecondlife.Packets
             public LLUUID QueryID;
             public uint Category;
             public uint QueryFlags;
+            public int QueryStart;
             private byte[] _querytext;
             public byte[] QueryText
             {
@@ -5514,7 +5511,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 24;
+                    int length = 28;
                     if (QueryText != null) { length += 1 + QueryText.Length; }
                     return length;
                 }
@@ -5529,6 +5526,7 @@ namespace libsecondlife.Packets
                     QueryID = new LLUUID(bytes, i); i += 16;
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _querytext = new byte[length];
                     Array.Copy(bytes, i, _querytext, 0, length); i += length;
@@ -5551,6 +5549,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 24) % 256);
+                bytes[i++] = (byte)(QueryStart % 256);
+                bytes[i++] = (byte)((QueryStart >> 8) % 256);
+                bytes[i++] = (byte)((QueryStart >> 16) % 256);
+                bytes[i++] = (byte)((QueryStart >> 24) % 256);
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
                 Array.Copy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
@@ -5562,6 +5564,7 @@ namespace libsecondlife.Packets
                 output += "QueryID: " + QueryID.ToString() + "" + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
+                output += "QueryStart: " + QueryStart.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(QueryText, "QueryText") + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -7454,18 +7457,19 @@ namespace libsecondlife.Packets
         [XmlType("dirlandquery_querydata")]
         public class QueryDataBlock
         {
-            public bool ReservedNewbie;
-            public bool ForSale;
+            public uint SearchType;
+            public int Area;
             public LLUUID QueryID;
-            public bool Auction;
             public uint QueryFlags;
+            public int Price;
+            public int QueryStart;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 23;
+                    return 36;
                 }
             }
 
@@ -7474,11 +7478,12 @@ namespace libsecondlife.Packets
             {
                 try
                 {
-                    ReservedNewbie = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    ForSale = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                    SearchType = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    Area = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     QueryID = new LLUUID(bytes, i); i += 16;
-                    Auction = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    Price = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
                 {
@@ -7488,25 +7493,39 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)((ReservedNewbie) ? 1 : 0);
-                bytes[i++] = (byte)((ForSale) ? 1 : 0);
+                bytes[i++] = (byte)(SearchType % 256);
+                bytes[i++] = (byte)((SearchType >> 8) % 256);
+                bytes[i++] = (byte)((SearchType >> 16) % 256);
+                bytes[i++] = (byte)((SearchType >> 24) % 256);
+                bytes[i++] = (byte)(Area % 256);
+                bytes[i++] = (byte)((Area >> 8) % 256);
+                bytes[i++] = (byte)((Area >> 16) % 256);
+                bytes[i++] = (byte)((Area >> 24) % 256);
                 if(QueryID == null) { Console.WriteLine("Warning: QueryID is null, in " + this.GetType()); }
                 Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)((Auction) ? 1 : 0);
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 24) % 256);
+                bytes[i++] = (byte)(Price % 256);
+                bytes[i++] = (byte)((Price >> 8) % 256);
+                bytes[i++] = (byte)((Price >> 16) % 256);
+                bytes[i++] = (byte)((Price >> 24) % 256);
+                bytes[i++] = (byte)(QueryStart % 256);
+                bytes[i++] = (byte)((QueryStart >> 8) % 256);
+                bytes[i++] = (byte)((QueryStart >> 16) % 256);
+                bytes[i++] = (byte)((QueryStart >> 24) % 256);
             }
 
             public override string ToString()
             {
                 string output = "-- QueryData --" + Environment.NewLine;
-                output += "ReservedNewbie: " + ReservedNewbie.ToString() + "" + Environment.NewLine;
-                output += "ForSale: " + ForSale.ToString() + "" + Environment.NewLine;
+                output += "SearchType: " + SearchType.ToString() + "" + Environment.NewLine;
+                output += "Area: " + Area.ToString() + "" + Environment.NewLine;
                 output += "QueryID: " + QueryID.ToString() + "" + Environment.NewLine;
-                output += "Auction: " + Auction.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
+                output += "Price: " + Price.ToString() + "" + Environment.NewLine;
+                output += "QueryStart: " + QueryStart.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -22078,68 +22097,6 @@ namespace libsecondlife.Packets
     public class UserReportPacket : Packet
     {
         /// <exclude/>
-        [XmlType("userreport_meancollision")]
-        public class MeanCollisionBlock
-        {
-            public float Mag;
-            public uint Time;
-            public LLUUID Perp;
-            public byte Type;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 25;
-                }
-            }
-
-            public MeanCollisionBlock() { }
-            public MeanCollisionBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
-                    Mag = BitConverter.ToSingle(bytes, i); i += 4;
-                    Time = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    Perp = new LLUUID(bytes, i); i += 16;
-                    Type = (byte)bytes[i++];
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                byte[] ba;
-                ba = BitConverter.GetBytes(Mag);
-                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = (byte)(Time % 256);
-                bytes[i++] = (byte)((Time >> 8) % 256);
-                bytes[i++] = (byte)((Time >> 16) % 256);
-                bytes[i++] = (byte)((Time >> 24) % 256);
-                if(Perp == null) { Console.WriteLine("Warning: Perp is null, in " + this.GetType()); }
-                Array.Copy(Perp.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = Type;
-            }
-
-            public override string ToString()
-            {
-                string output = "-- MeanCollision --" + Environment.NewLine;
-                output += "Mag: " + Mag.ToString() + "" + Environment.NewLine;
-                output += "Time: " + Time.ToString() + "" + Environment.NewLine;
-                output += "Perp: " + Perp.ToString() + "" + Environment.NewLine;
-                output += "Type: " + Type.ToString() + "" + Environment.NewLine;
-                output = output.Trim();
-                return output;
-            }
-        }
-
-        /// <exclude/>
         [XmlType("userreport_reportdata")]
         public class ReportDataBlock
         {
@@ -22166,6 +22123,7 @@ namespace libsecondlife.Packets
                     else { _versionstring = new byte[value.Length]; Array.Copy(value, _versionstring, value.Length); }
                 }
             }
+            public LLUUID AbuseRegionID;
             public byte CheckFlags;
             public byte Category;
             private byte[] _summary;
@@ -22180,6 +22138,18 @@ namespace libsecondlife.Packets
                 }
             }
             public byte ReportType;
+            public LLUUID AbuserID;
+            private byte[] _abuseregionname;
+            public byte[] AbuseRegionName
+            {
+                get { return _abuseregionname; }
+                set
+                {
+                    if (value == null) { _abuseregionname = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _abuseregionname = new byte[value.Length]; Array.Copy(value, _abuseregionname, value.Length); }
+                }
+            }
             public LLUUID ScreenshotID;
             public LLVector3 Position;
 
@@ -22188,10 +22158,11 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 47;
+                    int length = 79;
                     if (Details != null) { length += 2 + Details.Length; }
                     if (VersionString != null) { length += 1 + VersionString.Length; }
                     if (Summary != null) { length += 1 + Summary.Length; }
+                    if (AbuseRegionName != null) { length += 1 + AbuseRegionName.Length; }
                     return length;
                 }
             }
@@ -22209,12 +22180,17 @@ namespace libsecondlife.Packets
                     length = (ushort)bytes[i++];
                     _versionstring = new byte[length];
                     Array.Copy(bytes, i, _versionstring, 0, length); i += length;
+                    AbuseRegionID = new LLUUID(bytes, i); i += 16;
                     CheckFlags = (byte)bytes[i++];
                     Category = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _summary = new byte[length];
                     Array.Copy(bytes, i, _summary, 0, length); i += length;
                     ReportType = (byte)bytes[i++];
+                    AbuserID = new LLUUID(bytes, i); i += 16;
+                    length = (ushort)bytes[i++];
+                    _abuseregionname = new byte[length];
+                    Array.Copy(bytes, i, _abuseregionname, 0, length); i += length;
                     ScreenshotID = new LLUUID(bytes, i); i += 16;
                     Position = new LLVector3(bytes, i); i += 12;
                 }
@@ -22235,12 +22211,19 @@ namespace libsecondlife.Packets
                 if(VersionString == null) { Console.WriteLine("Warning: VersionString is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VersionString.Length;
                 Array.Copy(VersionString, 0, bytes, i, VersionString.Length); i += VersionString.Length;
+                if(AbuseRegionID == null) { Console.WriteLine("Warning: AbuseRegionID is null, in " + this.GetType()); }
+                Array.Copy(AbuseRegionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = CheckFlags;
                 bytes[i++] = Category;
                 if(Summary == null) { Console.WriteLine("Warning: Summary is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Summary.Length;
                 Array.Copy(Summary, 0, bytes, i, Summary.Length); i += Summary.Length;
                 bytes[i++] = ReportType;
+                if(AbuserID == null) { Console.WriteLine("Warning: AbuserID is null, in " + this.GetType()); }
+                Array.Copy(AbuserID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(AbuseRegionName == null) { Console.WriteLine("Warning: AbuseRegionName is null, in " + this.GetType()); }
+                bytes[i++] = (byte)AbuseRegionName.Length;
+                Array.Copy(AbuseRegionName, 0, bytes, i, AbuseRegionName.Length); i += AbuseRegionName.Length;
                 if(ScreenshotID == null) { Console.WriteLine("Warning: ScreenshotID is null, in " + this.GetType()); }
                 Array.Copy(ScreenshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -22252,10 +22235,13 @@ namespace libsecondlife.Packets
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(Details, "Details") + "" + Environment.NewLine;
                 output += Helpers.FieldToString(VersionString, "VersionString") + "" + Environment.NewLine;
+                output += "AbuseRegionID: " + AbuseRegionID.ToString() + "" + Environment.NewLine;
                 output += "CheckFlags: " + CheckFlags.ToString() + "" + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(Summary, "Summary") + "" + Environment.NewLine;
                 output += "ReportType: " + ReportType.ToString() + "" + Environment.NewLine;
+                output += "AbuserID: " + AbuserID.ToString() + "" + Environment.NewLine;
+                output += Helpers.FieldToString(AbuseRegionName, "AbuseRegionName") + "" + Environment.NewLine;
                 output += "ScreenshotID: " + ScreenshotID.ToString() + "" + Environment.NewLine;
                 output += "Position: " + Position.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -22314,7 +22300,6 @@ namespace libsecondlife.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.UserReport; } }
-        public MeanCollisionBlock[] MeanCollision;
         public ReportDataBlock ReportData;
         public AgentDataBlock AgentData;
 
@@ -22324,7 +22309,6 @@ namespace libsecondlife.Packets
             Header.ID = 161;
             Header.Reliable = true;
             Header.Zerocoded = true;
-            MeanCollision = new MeanCollisionBlock[0];
             ReportData = new ReportDataBlock();
             AgentData = new AgentDataBlock();
         }
@@ -22333,10 +22317,6 @@ namespace libsecondlife.Packets
         {
             int packetEnd = bytes.Length - 1;
             Header = new LowHeader(bytes, ref i, ref packetEnd);
-            int count = (int)bytes[i++];
-            MeanCollision = new MeanCollisionBlock[count];
-            for (int j = 0; j < count; j++)
-            { MeanCollision[j] = new MeanCollisionBlock(bytes, ref i); }
             ReportData = new ReportDataBlock(bytes, ref i);
             AgentData = new AgentDataBlock(bytes, ref i);
         }
@@ -22344,10 +22324,6 @@ namespace libsecondlife.Packets
         public UserReportPacket(Header head, byte[] bytes, ref int i)
         {
             Header = head;
-            int count = (int)bytes[i++];
-            MeanCollision = new MeanCollisionBlock[count];
-            for (int j = 0; j < count; j++)
-            { MeanCollision[j] = new MeanCollisionBlock(bytes, ref i); }
             ReportData = new ReportDataBlock(bytes, ref i);
             AgentData = new AgentDataBlock(bytes, ref i);
         }
@@ -22356,14 +22332,10 @@ namespace libsecondlife.Packets
         {
             int length = 8;
             length += ReportData.Length;            length += AgentData.Length;;
-            length++;
-            for (int j = 0; j < MeanCollision.Length; j++) { length += MeanCollision[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
-            bytes[i++] = (byte)MeanCollision.Length;
-            for (int j = 0; j < MeanCollision.Length; j++) { MeanCollision[j].ToBytes(bytes, ref i); }
             ReportData.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
@@ -22373,10 +22345,6 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UserReport ---" + Environment.NewLine;
-            for (int j = 0; j < MeanCollision.Length; j++)
-            {
-                output += MeanCollision[j].ToString() + "" + Environment.NewLine;
-            }
                 output += ReportData.ToString() + "" + Environment.NewLine;
                 output += AgentData.ToString() + "" + Environment.NewLine;
             return output;
@@ -24832,6 +24800,17 @@ namespace libsecondlife.Packets
         {
             public LLUUID TransferID;
             public int Size;
+            private byte[] _params;
+            public byte[] Params
+            {
+                get { return _params; }
+                set
+                {
+                    if (value == null) { _params = null; return; }
+                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    else { _params = new byte[value.Length]; Array.Copy(value, _params, value.Length); }
+                }
+            }
             public int ChannelType;
             public int TargetType;
             public int Status;
@@ -24841,17 +24820,23 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    return 32;
+                    int length = 32;
+                    if (Params != null) { length += 2 + Params.Length; }
+                    return length;
                 }
             }
 
             public TransferInfoBlock() { }
             public TransferInfoBlock(byte[] bytes, ref int i)
             {
+                int length;
                 try
                 {
                     TransferID = new LLUUID(bytes, i); i += 16;
                     Size = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
+                    _params = new byte[length];
+                    Array.Copy(bytes, i, _params, 0, length); i += length;
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TargetType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Status = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -24870,6 +24855,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Size >> 8) % 256);
                 bytes[i++] = (byte)((Size >> 16) % 256);
                 bytes[i++] = (byte)((Size >> 24) % 256);
+                if(Params == null) { Console.WriteLine("Warning: Params is null, in " + this.GetType()); }
+                bytes[i++] = (byte)(Params.Length % 256);
+                bytes[i++] = (byte)((Params.Length >> 8) % 256);
+                Array.Copy(Params, 0, bytes, i, Params.Length); i += Params.Length;
                 bytes[i++] = (byte)(ChannelType % 256);
                 bytes[i++] = (byte)((ChannelType >> 8) % 256);
                 bytes[i++] = (byte)((ChannelType >> 16) % 256);
@@ -24889,6 +24878,7 @@ namespace libsecondlife.Packets
                 string output = "-- TransferInfo --" + Environment.NewLine;
                 output += "TransferID: " + TransferID.ToString() + "" + Environment.NewLine;
                 output += "Size: " + Size.ToString() + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Params, "Params") + "" + Environment.NewLine;
                 output += "ChannelType: " + ChannelType.ToString() + "" + Environment.NewLine;
                 output += "TargetType: " + TargetType.ToString() + "" + Environment.NewLine;
                 output += "Status: " + Status.ToString() + "" + Environment.NewLine;
@@ -38783,7 +38773,6 @@ namespace libsecondlife.Packets
         [XmlType("logoutreply_inventorydata")]
         public class InventoryDataBlock
         {
-            public LLUUID NewAssetID;
             public LLUUID ItemID;
 
             [XmlIgnore]
@@ -38791,7 +38780,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    return 32;
+                    return 16;
                 }
             }
 
@@ -38800,7 +38789,6 @@ namespace libsecondlife.Packets
             {
                 try
                 {
-                    NewAssetID = new LLUUID(bytes, i); i += 16;
                     ItemID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -38811,8 +38799,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                if(NewAssetID == null) { Console.WriteLine("Warning: NewAssetID is null, in " + this.GetType()); }
-                Array.Copy(NewAssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(ItemID == null) { Console.WriteLine("Warning: ItemID is null, in " + this.GetType()); }
                 Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
@@ -38820,7 +38806,6 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- InventoryData --" + Environment.NewLine;
-                output += "NewAssetID: " + NewAssetID.ToString() + "" + Environment.NewLine;
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -40043,13 +40028,14 @@ namespace libsecondlife.Packets
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
+            public LLUUID TransactionID;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 32;
+                    return 48;
                 }
             }
 
@@ -40060,6 +40046,7 @@ namespace libsecondlife.Packets
                 {
                     AgentID = new LLUUID(bytes, i); i += 16;
                     SessionID = new LLUUID(bytes, i); i += 16;
+                    TransactionID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
                 {
@@ -40073,6 +40060,8 @@ namespace libsecondlife.Packets
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(TransactionID == null) { Console.WriteLine("Warning: TransactionID is null, in " + this.GetType()); }
+                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40080,6 +40069,7 @@ namespace libsecondlife.Packets
                 string output = "-- AgentData --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "SessionID: " + SessionID.ToString() + "" + Environment.NewLine;
+                output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40290,13 +40280,14 @@ namespace libsecondlife.Packets
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
+            public LLUUID TransactionID;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 32;
+                    return 48;
                 }
             }
 
@@ -40307,6 +40298,7 @@ namespace libsecondlife.Packets
                 {
                     AgentID = new LLUUID(bytes, i); i += 16;
                     SessionID = new LLUUID(bytes, i); i += 16;
+                    TransactionID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
                 {
@@ -40320,6 +40312,8 @@ namespace libsecondlife.Packets
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(TransactionID == null) { Console.WriteLine("Warning: TransactionID is null, in " + this.GetType()); }
+                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40327,6 +40321,7 @@ namespace libsecondlife.Packets
                 string output = "-- AgentData --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "SessionID: " + SessionID.ToString() + "" + Environment.NewLine;
+                output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40537,13 +40532,14 @@ namespace libsecondlife.Packets
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
+            public LLUUID TransactionID;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 32;
+                    return 48;
                 }
             }
 
@@ -40554,6 +40550,7 @@ namespace libsecondlife.Packets
                 {
                     AgentID = new LLUUID(bytes, i); i += 16;
                     SessionID = new LLUUID(bytes, i); i += 16;
+                    TransactionID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
                 {
@@ -40567,6 +40564,8 @@ namespace libsecondlife.Packets
                 Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
                 Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(TransactionID == null) { Console.WriteLine("Warning: TransactionID is null, in " + this.GetType()); }
+                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40574,6 +40573,7 @@ namespace libsecondlife.Packets
                 string output = "-- AgentData --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "SessionID: " + SessionID.ToString() + "" + Environment.NewLine;
+                output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -65497,184 +65497,6 @@ namespace libsecondlife.Packets
     }
 
     /// <exclude/>
-    public class InitiateUploadPacket : Packet
-    {
-        /// <exclude/>
-        [XmlType("initiateupload_filedata")]
-        public class FileDataBlock
-        {
-            private byte[] _sourcefilename;
-            public byte[] SourceFilename
-            {
-                get { return _sourcefilename; }
-                set
-                {
-                    if (value == null) { _sourcefilename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sourcefilename = new byte[value.Length]; Array.Copy(value, _sourcefilename, value.Length); }
-                }
-            }
-            private byte[] _basefilename;
-            public byte[] BaseFilename
-            {
-                get { return _basefilename; }
-                set
-                {
-                    if (value == null) { _basefilename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _basefilename = new byte[value.Length]; Array.Copy(value, _basefilename, value.Length); }
-                }
-            }
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    int length = 0;
-                    if (SourceFilename != null) { length += 1 + SourceFilename.Length; }
-                    if (BaseFilename != null) { length += 1 + BaseFilename.Length; }
-                    return length;
-                }
-            }
-
-            public FileDataBlock() { }
-            public FileDataBlock(byte[] bytes, ref int i)
-            {
-                int length;
-                try
-                {
-                    length = (ushort)bytes[i++];
-                    _sourcefilename = new byte[length];
-                    Array.Copy(bytes, i, _sourcefilename, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _basefilename = new byte[length];
-                    Array.Copy(bytes, i, _basefilename, 0, length); i += length;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                if(SourceFilename == null) { Console.WriteLine("Warning: SourceFilename is null, in " + this.GetType()); }
-                bytes[i++] = (byte)SourceFilename.Length;
-                Array.Copy(SourceFilename, 0, bytes, i, SourceFilename.Length); i += SourceFilename.Length;
-                if(BaseFilename == null) { Console.WriteLine("Warning: BaseFilename is null, in " + this.GetType()); }
-                bytes[i++] = (byte)BaseFilename.Length;
-                Array.Copy(BaseFilename, 0, bytes, i, BaseFilename.Length); i += BaseFilename.Length;
-            }
-
-            public override string ToString()
-            {
-                string output = "-- FileData --" + Environment.NewLine;
-                output += Helpers.FieldToString(SourceFilename, "SourceFilename") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(BaseFilename, "BaseFilename") + "" + Environment.NewLine;
-                output = output.Trim();
-                return output;
-            }
-        }
-
-        /// <exclude/>
-        [XmlType("initiateupload_agentdata")]
-        public class AgentDataBlock
-        {
-            public LLUUID AgentID;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 16;
-                }
-            }
-
-            public AgentDataBlock() { }
-            public AgentDataBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    AgentID = new LLUUID(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                if(AgentID == null) { Console.WriteLine("Warning: AgentID is null, in " + this.GetType()); }
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-            }
-
-            public override string ToString()
-            {
-                string output = "-- AgentData --" + Environment.NewLine;
-                output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output = output.Trim();
-                return output;
-            }
-        }
-
-        private Header header;
-        public override Header Header { get { return header; } set { header = value; } }
-        public override PacketType Type { get { return PacketType.InitiateUpload; } }
-        public FileDataBlock FileData;
-        public AgentDataBlock AgentData;
-
-        public InitiateUploadPacket()
-        {
-            Header = new LowHeader();
-            Header.ID = 468;
-            Header.Reliable = true;
-            FileData = new FileDataBlock();
-            AgentData = new AgentDataBlock();
-        }
-
-        public InitiateUploadPacket(byte[] bytes, ref int i)
-        {
-            int packetEnd = bytes.Length - 1;
-            Header = new LowHeader(bytes, ref i, ref packetEnd);
-            FileData = new FileDataBlock(bytes, ref i);
-            AgentData = new AgentDataBlock(bytes, ref i);
-        }
-
-        public InitiateUploadPacket(Header head, byte[] bytes, ref int i)
-        {
-            Header = head;
-            FileData = new FileDataBlock(bytes, ref i);
-            AgentData = new AgentDataBlock(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 8;
-            length += FileData.Length;            length += AgentData.Length;;
-            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            header.ToBytes(bytes, ref i);
-            FileData.ToBytes(bytes, ref i);
-            AgentData.ToBytes(bytes, ref i);
-            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override string ToString()
-        {
-            string output = "--- InitiateUpload ---" + Environment.NewLine;
-                output += FileData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-            return output;
-        }
-
-    }
-
-    /// <exclude/>
     public class InitiateDownloadPacket : Packet
     {
         /// <exclude/>
@@ -65807,7 +65629,7 @@ namespace libsecondlife.Packets
         public InitiateDownloadPacket()
         {
             Header = new LowHeader();
-            Header.ID = 469;
+            Header.ID = 468;
             Header.Reliable = true;
             FileData = new FileDataBlock();
             AgentData = new AgentDataBlock();
@@ -65992,7 +65814,7 @@ namespace libsecondlife.Packets
         public SystemMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 470;
+            Header.ID = 469;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
@@ -66127,7 +65949,7 @@ namespace libsecondlife.Packets
         public MapLayerRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 471;
+            Header.ID = 470;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -66300,7 +66122,7 @@ namespace libsecondlife.Packets
         public MapLayerReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 472;
+            Header.ID = 471;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             LayerData = new LayerDataBlock[0];
@@ -66493,7 +66315,7 @@ namespace libsecondlife.Packets
         public MapBlockRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 473;
+            Header.ID = 472;
             Header.Reliable = true;
             PositionData = new PositionDataBlock();
             AgentData = new AgentDataBlock();
@@ -66675,7 +66497,7 @@ namespace libsecondlife.Packets
         public MapNameRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 474;
+            Header.ID = 473;
             Header.Reliable = true;
             NameData = new NameDataBlock();
             AgentData = new AgentDataBlock();
@@ -66875,7 +66697,7 @@ namespace libsecondlife.Packets
         public MapBlockReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 475;
+            Header.ID = 474;
             Header.Reliable = true;
             Data = new DataBlock[0];
             AgentData = new AgentDataBlock();
@@ -67066,7 +66888,7 @@ namespace libsecondlife.Packets
         public MapItemRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 476;
+            Header.ID = 475;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             AgentData = new AgentDataBlock();
@@ -67311,7 +67133,7 @@ namespace libsecondlife.Packets
         public MapItemReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 477;
+            Header.ID = 476;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             Data = new DataBlock[0];
@@ -67547,7 +67369,7 @@ namespace libsecondlife.Packets
         public SendPostcardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 478;
+            Header.ID = 477;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -67658,7 +67480,7 @@ namespace libsecondlife.Packets
         public ParcelMediaCommandMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 487;
+            Header.ID = 486;
             Header.Reliable = true;
             CommandBlock = new CommandBlockBlock();
         }
@@ -67777,7 +67599,7 @@ namespace libsecondlife.Packets
         public ParcelMediaUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 488;
+            Header.ID = 487;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -67957,7 +67779,7 @@ namespace libsecondlife.Packets
         public LandStatRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 489;
+            Header.ID = 488;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             AgentData = new AgentDataBlock();
@@ -68192,7 +68014,7 @@ namespace libsecondlife.Packets
         public LandStatReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 490;
+            Header.ID = 489;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             ReportData = new ReportDataBlock[0];
@@ -70271,6 +70093,7 @@ namespace libsecondlife.Packets
         public class ObjectDataBlock
         {
             public int OwnershipCost;
+            public ulong CreationDate;
             public byte AggregatePermTexturesOwner;
             private byte[] _sitname;
             public byte[] SitName
@@ -70352,7 +70175,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 166;
+                    int length = 174;
                     if (SitName != null) { length += 1 + SitName.Length; }
                     if (Name != null) { length += 1 + Name.Length; }
                     if (TextureID != null) { length += 1 + TextureID.Length; }
@@ -70369,6 +70192,7 @@ namespace libsecondlife.Packets
                 try
                 {
                     OwnershipCost = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    CreationDate = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     AggregatePermTexturesOwner = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _sitname = new byte[length];
@@ -70417,6 +70241,14 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((OwnershipCost >> 8) % 256);
                 bytes[i++] = (byte)((OwnershipCost >> 16) % 256);
                 bytes[i++] = (byte)((OwnershipCost >> 24) % 256);
+                bytes[i++] = (byte)(CreationDate % 256);
+                bytes[i++] = (byte)((CreationDate >> 8) % 256);
+                bytes[i++] = (byte)((CreationDate >> 16) % 256);
+                bytes[i++] = (byte)((CreationDate >> 24) % 256);
+                bytes[i++] = (byte)((CreationDate >> 32) % 256);
+                bytes[i++] = (byte)((CreationDate >> 40) % 256);
+                bytes[i++] = (byte)((CreationDate >> 48) % 256);
+                bytes[i++] = (byte)((CreationDate >> 56) % 256);
                 bytes[i++] = AggregatePermTexturesOwner;
                 if(SitName == null) { Console.WriteLine("Warning: SitName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SitName.Length;
@@ -70488,6 +70320,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
                 output += "OwnershipCost: " + OwnershipCost.ToString() + "" + Environment.NewLine;
+                output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "AggregatePermTexturesOwner: " + AggregatePermTexturesOwner.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(SitName, "SitName") + "" + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
