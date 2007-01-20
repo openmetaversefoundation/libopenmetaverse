@@ -194,7 +194,7 @@ namespace libsecondlife
         /// <returns>A UTF8 string</returns>
         public static string FieldToUTF8String(byte[] bytes)
         {
-            if (bytes[bytes.Length - 1] == 0x00)
+            if (bytes.Length > 0 && bytes[bytes.Length - 1] == 0x00)
                 return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1);
             else
                 return UTF8Encoding.UTF8.GetString(bytes);
