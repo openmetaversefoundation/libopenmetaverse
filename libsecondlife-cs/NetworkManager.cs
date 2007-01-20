@@ -65,10 +65,10 @@ namespace libsecondlife
         /// <summary>Reference to the region this system is connected to</summary>
         public Region Region;
 
+        internal bool Dead = false;
 
         private string Seedcaps;
         private StringDictionary Capabilities = new StringDictionary();
-        private bool Dead = false;
         private Thread EventThread;
         private List<EventQueueCallback> Callbacks;
 

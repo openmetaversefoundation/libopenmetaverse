@@ -1466,7 +1466,7 @@ namespace libsecondlife
 		        // FIXME: quick and dirty hack
 		        TeleportFinishPacket packet = new TeleportFinishPacket();
 
-		        packet.Info.SimIP = Helpers.BytesToUInt((byte[])info["SimIP"]);
+		        packet.Info.SimIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
                 packet.Info.LocationID = Helpers.BytesToUInt((byte[])info["LocationID"]);
                 packet.Info.TeleportFlags = Helpers.BytesToUInt((byte[])info["TeleportFlags"]);
 		        packet.Info.AgentID = (LLUUID)info["AgentID"];
@@ -1475,7 +1475,10 @@ namespace libsecondlife
 		        packet.Info.SimPort = (ushort)(long)info["SimPort"];
 		        packet.Info.SimAccess = (byte)(long)info["SimAccess"];
 
-		        TeleportHandler(packet,Client.Network.CurrentSim);
+                Console.WriteLine("Received a TeleportFinish event, SimIP: " + new IPAddress(packet.Info.SimIP) + 
+                    ", LocationID: " + packet.Info.LocationID + ", RegionHandle: " + packet.Info.RegionHandle);
+
+		        TeleportHandler(packet, Client.Network.CurrentSim);
 	        }
 	    }
 
@@ -1644,12 +1647,12 @@ namespace libsecondlife
                 Simulator previousSim = Client.Network.CurrentSim;
 
                 // Connect to the new sim
-				String seedcaps = Encoding.UTF8.GetString(finish.Info.SeedCapability).Replace("\x00","");
-				//look we are^H^H^Hshould work on little and big endian
-				int after = IPAddress.NetworkToHostOrder((int)finish.Info.SimIP);
-				IPAddress SimIP = new IPAddress(after);
+                string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
+                IPAddress simIP = new IPAddress(finish.Info.SimIP);
+
+                Client.Network.CurrentCaps.Dead = true;
 				
-                Simulator sim = Client.Network.Connect(SimIP, finish.Info.SimPort,
+                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort,
                     simulator.CircuitCode, true, seedcaps);
 
                 if (sim != null)

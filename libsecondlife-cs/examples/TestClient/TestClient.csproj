@@ -66,6 +66,9 @@
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Commands\ResearchCommand.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Commands\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>

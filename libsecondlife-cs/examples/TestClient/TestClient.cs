@@ -21,20 +21,21 @@ namespace libsecondlife.TestClient
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
 		public AppearanceManager Appearance;
-
 		public bool Running = true;
 	    public string Master = String.Empty;
 		public ClientManager ClientManager;
+        public int regionX;
+        public int regionY;
+
+        //internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
 
         private LLQuaternion bodyRotation = LLQuaternion.Identity;
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
         private LLVector3 left = new LLVector3(0.9999f, 0, 0);
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private int DrawDistance = 64;
-		internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
         private System.Timers.Timer updateTimer;
-        public int regionX;
-        public int regionY;
+        
 
         /// <summary>
         /// 

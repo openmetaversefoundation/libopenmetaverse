@@ -154,6 +154,19 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Convert the first four bytes of the given array in big endian
+        /// ordering to an unsigned integer
+        /// </summary>
+        /// <param name="bytes">An array four bytes or longer</param>
+        /// <returns>An unsigned integer, will be zero if the array contains
+        /// less than four bytes</returns>
+        public static uint BytesToUIntBig(byte[] bytes)
+        {
+            if (bytes.Length < 4) return 0;
+            return (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
+        }
+
+        /// <summary>
         /// Convert the first eight bytes of the given array in little endian
         /// ordering to an unsigned 64-bit integer
         /// </summary>
@@ -181,7 +194,10 @@ namespace libsecondlife
         /// <returns>A UTF8 string</returns>
         public static string FieldToUTF8String(byte[] bytes)
         {
-            return UTF8Encoding.UTF8.GetString(bytes);
+            if (bytes[bytes.Length - 1] == 0x00)
+                return UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1);
+            else
+                return UTF8Encoding.UTF8.GetString(bytes);
         }
 
         /// <summary>

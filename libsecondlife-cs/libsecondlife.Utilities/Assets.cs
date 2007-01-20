@@ -91,7 +91,7 @@ namespace libsecondlife.Utilities.Assets
     /// <summary>
     /// 
     /// </summary>
-    public enum ChannelType
+    public enum ChannelType : int
     {
         /// <summary></summary>
         Unknown = 0,
@@ -104,7 +104,7 @@ namespace libsecondlife.Utilities.Assets
     /// <summary>
     /// 
     /// </summary>
-    public enum SourceType
+    public enum SourceType : int
     {
         /// <summary></summary>
         Unknown = 0,
@@ -122,7 +122,7 @@ namespace libsecondlife.Utilities.Assets
     /// <summary>
     /// 
     /// </summary>
-    public enum TargetType
+    public enum TargetType : int
     {
         /// <summary></summary>
         Unknown = 0,
@@ -298,80 +298,74 @@ namespace libsecondlife.Utilities.Assets
 
         private void TransferPacketHandler(Packet packet, Simulator simulator)
         {
-            TransferPacketPacket asset = (TransferPacketPacket)packet;
-
-            Console.WriteLine(asset.ToString());
-
-            if (Transfers.ContainsKey(asset.TransferData.TransferID))
+            if (OnAssetReceived != null)
             {
-                AssetTransfer transfer = Transfers[asset.TransferData.TransferID];
+                TransferPacketPacket asset = (TransferPacketPacket)packet;
+                Console.WriteLine(asset.ToString());
 
-                if (transfer.Size == 0)
+                if (Transfers.ContainsKey(asset.TransferData.TransferID))
                 {
-                    // We haven't received the header yet, block until it's received or times out
-                    transfer.HeaderReceivedEvent.WaitOne(1000 * 20, false);
+                    AssetTransfer transfer = Transfers[asset.TransferData.TransferID];
 
                     if (transfer.Size == 0)
                     {
-                        Client.Log("Timed out while waiting for the asset header to download for " +
-                            transfer.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                        // We haven't received the header yet, block until it's received or times out
+                        transfer.HeaderReceivedEvent.WaitOne(1000 * 20, false);
 
-                        lock (Transfers) Transfers.Remove(transfer.ID);
-
-                        // Fire the event with our transfer that contains Success = false;
-                        if (OnAssetReceived != null)
+                        if (transfer.Size == 0)
                         {
+                            Client.Log("Timed out while waiting for the asset header to download for " +
+                                transfer.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+
+                            lock (Transfers) Transfers.Remove(transfer.ID);
+
+                            // Fire the event with our transfer that contains Success = false;
                             try { OnAssetReceived(transfer); }
                             catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+
+                            return;
                         }
+                    }
+
+                    // This assumes that every transfer packet except the last one is exactly 1000 bytes,
+                    // hopefully that is a safe assumption to make
+                    if (asset.TransferData.Data.Length == 1000 ||
+                        transfer.Transferred + asset.TransferData.Data.Length >= transfer.Size)
+                    {
+                        Array.Copy(asset.TransferData.Data, 0, transfer.AssetData, 1000 * (asset.TransferData.Packet - 1),
+                            asset.TransferData.Data.Length);
+                        transfer.Transferred += asset.TransferData.Data.Length;
+                    }
+                    else
+                    {
+                        Client.Log("Received a TransferPacket with a data length of " + asset.TransferData.Data.Length +
+                            " bytes!", Helpers.LogLevel.Error);
+
+                        // fire the even with out transfer that contains Success = false;
+                        try { OnAssetReceived(transfer); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
 
                         return;
                     }
-                }
 
-                // This assumes that every transfer packet except the last one is exactly 1000 bytes,
-                // hopefully that is a safe assumption to make
-                if (asset.TransferData.Data.Length == 1000)
-                {
-                    Array.Copy(asset.TransferData.Data, 0, transfer.AssetData, 1000 * (asset.TransferData.Packet - 1),
-                        asset.TransferData.Data.Length);
-                    transfer.Transferred += 1000;
+                    Client.DebugLog("Received " + asset.TransferData.Data.Length + "/" + transfer.Transferred +
+                        "/" + transfer.Size + " bytes for asset " + transfer.ID.ToStringHyphenated());
+
+                    // Check if we downloaded the full asset
+                    if (transfer.Transferred >= transfer.Size)
+                    {
+                        transfer.Success = true;
+                        lock (Transfers) Transfers.Remove(transfer.ID);
+
+                        try { OnAssetReceived(transfer); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
                 }
                 else
                 {
-                    Client.Log("Received a TransferPacket with a data length of " + asset.TransferData.Data.Length +
-                        " bytes!", Helpers.LogLevel.Error);
-
-                    // fire the even with out transfer that contains Success = false;
-                    if (OnAssetReceived != null)
-                    {
-                        try { OnAssetReceived(transfer); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                    }
-
-                    return;
+                    Client.Log("Received a TransferPacket packet for an asset we didn't request, TransferID: " +
+                        asset.TransferData.TransferID, Helpers.LogLevel.Warning);
                 }
-
-                Client.DebugLog("Received " + asset.TransferData.Data.Length + "/" + transfer.Transferred +
-                    "/" + transfer.Size + " bytes for asset " + transfer.ID.ToStringHyphenated());
-
-                // Check if we downloaded the full asset
-                if (transfer.Transferred >= transfer.Size)
-                {
-                    transfer.Success = true;
-                    lock (Transfers) Transfers.Remove(transfer.ID);
-
-                    if (OnAssetReceived != null)
-                    {
-                        try { OnAssetReceived(transfer); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                    }
-                }
-            }
-            else
-            {
-                Client.Log("Received a TransferPacket packet for an asset we didn't request, TransferID: " +
-                    asset.TransferData.TransferID, Helpers.LogLevel.Warning);
             }
         }
     }
