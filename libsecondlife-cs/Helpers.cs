@@ -46,6 +46,8 @@ namespace libsecondlife
         public const byte MSG_RELIABLE = 0x40;
         /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
         public const byte MSG_ZEROCODED = 0x80;
+        /// <summary>Used for converting a byte to a variable range float</summary>
+        public const float OneOverByteMax = 1.0f / (float)byte.MaxValue;
 
         /// <summary>
         /// Passed to SecondLife.Log() to identify the severity of a log entry
@@ -185,6 +187,57 @@ namespace libsecondlife
                 ((ulong)bytes[2] << 40) +
                 ((ulong)bytes[1] << 48) +
                 ((ulong)bytes[0] << 56));
+        }
+
+        /// <summary>
+        /// Convert a float value to a byte given a minimum and maximum range
+        /// </summary>
+        /// <param name="val">Value to convert to a byte</param>
+        /// <param name="lower">Minimum value range</param>
+        /// <param name="upper">Maximum value range</param>
+        /// <returns>A single byte representing the original float value</returns>
+        public static byte FloatToByte(float val, float lower, float upper)
+        {
+            val = Clamp(val, lower, upper);
+            // Normalize the value
+            val -= lower;
+            val /= (upper - lower);
+
+            return (byte)Math.Floor(val * (float)byte.MaxValue);
+        }
+
+        /// <summary>
+        /// Convert a byte to a float value given a minimum and maximum range
+        /// </summary>
+        /// <param name="val">Byte to convert to a float value</param>
+        /// <param name="lower">Minimum value range</param>
+        /// <param name="upper">Maximum value range</param>
+        /// <returns>A float value inclusively between lower and upper</returns>
+        public static float ByteToFloat(byte val, float lower, float upper)
+        {
+            float fval = (float)val * OneOverByteMax;
+            float delta = (upper - lower);
+            fval *= delta;
+            fval += lower;
+
+            // Test for values very close to zero
+            float error = delta * OneOverByteMax;
+            if (Math.Abs(fval) < error)
+                fval = 0.0f;
+
+            return fval;
+        }
+
+        /// <summary>
+        /// Clamp a given value between a range
+        /// </summary>
+        /// <param name="val">Value to clamp</param>
+        /// <param name="lower">Minimum allowable value</param>
+        /// <param name="upper">Maximum allowable value</param>
+        /// <returns>A value inclusively between lower and upper</returns>
+        public static float Clamp(float val, float lower, float upper)
+        {
+            return Math.Min(Math.Max(val, lower), upper);
         }
 
         /// <summary>

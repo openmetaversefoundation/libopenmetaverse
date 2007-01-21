@@ -221,16 +221,12 @@ namespace libsecondlife.Utilities.Assets
         /// <param name="priority"></param>
         public void RequestAsset(LLUUID assetID, AssetType type, ChannelType channel, SourceType source, float priority)
         {
-            // TODO: Should we make this function reusable for changing download priorities?
-
             AssetTransfer transfer = new AssetTransfer();
             transfer.ID = LLUUID.Random();
             transfer.AssetID = assetID;
             transfer.Priority = priority;
             transfer.Channel = channel;
             transfer.Source = source;
-
-            Console.WriteLine("transfer.ID: " + transfer.ID.ToString());
 
             // Add this transfer to the dictionary
             lock (Transfers) Transfers[transfer.ID] = transfer;
@@ -267,32 +263,44 @@ namespace libsecondlife.Utilities.Assets
 
         private void TransferInfoHandler(Packet packet, Simulator simulator)
         {
-            TransferInfoPacket info = (TransferInfoPacket)packet;
-
-            if (Transfers.ContainsKey(info.TransferInfo.TransferID))
+            if (OnAssetReceived != null)
             {
-                AssetTransfer transfer = Transfers[info.TransferInfo.TransferID];
-                ChannelType channel = ChannelType.Unknown;
-                StatusCode status = StatusCode.Unknown;
-                TargetType target = TargetType.Unknown;
+                TransferInfoPacket info = (TransferInfoPacket)packet;
 
-                // Attempt to recover enumeration values out of the integers
-                channel = (ChannelType)info.TransferInfo.ChannelType;
-                status = (StatusCode)info.TransferInfo.Status;
-                target = (TargetType)info.TransferInfo.TargetType;
+                if (Transfers.ContainsKey(info.TransferInfo.TransferID))
+                {
+                    AssetTransfer transfer = Transfers[info.TransferInfo.TransferID];
+                    ChannelType channel = ChannelType.Unknown;
+                    StatusCode status = StatusCode.Unknown;
+                    TargetType target = TargetType.Unknown;
 
-                transfer.Channel = channel;
-                transfer.Status = status;
-                transfer.Target = target;
-                transfer.Size = info.TransferInfo.Size;
-                transfer.AssetData = new byte[transfer.Size];
-            }
-            else
-            {
-                Client.Log("Received a TransferInfo packet for an asset we didn't request, TransferID: " + 
-                    info.TransferInfo.TransferID, Helpers.LogLevel.Warning);
+                    // Attempt to recover enumeration values out of the integers
+                    channel = (ChannelType)info.TransferInfo.ChannelType;
+                    status = (StatusCode)info.TransferInfo.Status;
+                    target = (TargetType)info.TransferInfo.TargetType;
 
-                Console.WriteLine(info.ToString());
+                    transfer.Channel = channel;
+                    transfer.Status = status;
+                    transfer.Target = target;
+                    transfer.Size = info.TransferInfo.Size;
+                    transfer.AssetData = new byte[transfer.Size];
+
+                    // TODO: Once we support mid-transfer status checking and aborting this
+                    // will need to become smarter
+                    if (transfer.Status != StatusCode.OK)
+                    {
+                        lock (Transfers) Transfers.Remove(transfer.ID);
+
+                        // Fire the event with our transfer that contains Success = false;
+                        try { OnAssetReceived(transfer); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+                }
+                else
+                {
+                    Client.Log("Received a TransferInfo packet for an asset we didn't request, TransferID: " +
+                        info.TransferInfo.TransferID, Helpers.LogLevel.Warning);
+                }
             }
         }
 
@@ -301,7 +309,6 @@ namespace libsecondlife.Utilities.Assets
             if (OnAssetReceived != null)
             {
                 TransferPacketPacket asset = (TransferPacketPacket)packet;
-                Console.WriteLine(asset.ToString());
 
                 if (Transfers.ContainsKey(asset.TransferData.TransferID))
                 {
@@ -339,7 +346,9 @@ namespace libsecondlife.Utilities.Assets
                     else
                     {
                         Client.Log("Received a TransferPacket with a data length of " + asset.TransferData.Data.Length +
-                            " bytes!", Helpers.LogLevel.Error);
+                            " bytes! Bailing out...", Helpers.LogLevel.Error);
+
+                        lock (Transfers) Transfers.Remove(transfer.ID);
 
                         // fire the even with out transfer that contains Success = false;
                         try { OnAssetReceived(transfer); }
