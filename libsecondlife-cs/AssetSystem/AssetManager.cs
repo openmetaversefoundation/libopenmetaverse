@@ -288,7 +288,11 @@ namespace libsecondlife.AssetSystem
                 curUploadRequest.UploadComplete(reply.AssetBlock.UUID, AssetRequest.RequestStatus.Failure);
             }
 
-            TransferRequestCompletedEvent(curUploadRequest);
+            if (TransferRequestCompletedEvent != null)
+            {
+                try { TransferRequestCompletedEvent(curUploadRequest); }
+                catch (Exception e) { slClient.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
 		}
 
         private void RequestXferCallbackHandler(Packet packet, Simulator simulator)

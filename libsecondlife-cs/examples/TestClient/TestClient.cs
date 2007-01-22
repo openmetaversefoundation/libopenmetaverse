@@ -59,6 +59,7 @@ namespace libsecondlife.TestClient
 			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
 			Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
+            this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 
@@ -177,6 +178,11 @@ namespace libsecondlife.TestClient
 
                 sim.Client.Groups.BeginGetGroupMembers(GroupID, new GroupManager.GroupMembersCallback(OnGroupMembers));
             }
+        }
+
+        private void TestClient_OnLogMessage(string message, Helpers.LogLevel level)
+        {
+            Console.WriteLine("<" + this.ToString() + "> " + level.ToString() + ": " + message);
         }
 
         private void OnGroupMembers(Dictionary<LLUUID, GroupMember> members)

@@ -183,7 +183,6 @@ namespace libsecondlife.Utilities.Appearance
 
         private SecondLife Client;
         private AssetManager Assets;
-        private int WearablesSerialNum = 0;
 
 
         /// <summary>

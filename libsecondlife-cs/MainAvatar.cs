@@ -427,7 +427,6 @@ namespace libsecondlife
         internal string teleportMessage = String.Empty;
 
         private SecondLife Client;
-        private TeleportCallback OnBeginTeleport;
         private TeleportStatus TeleportStat;
         private Timer TeleportTimer;
         private bool TeleportTimeout;
@@ -946,10 +945,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="regionHandle"></param>
         /// <param name="position">Position for Teleport</param>
-        /// <param name="tc">Callback ID</param>
-        public void BeginTeleport(ulong regionHandle, LLVector3 position, TeleportCallback tc)
+        public void BeginTeleport(ulong regionHandle, LLVector3 position)
         {
-            BeginTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z), tc);
+            BeginTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
         }
 
         /// <summary>
@@ -958,11 +956,8 @@ namespace libsecondlife
         /// <param name="regionHandle"></param>
         /// <param name="position">Position for Teleport</param>
         /// <param name="lookAt">Target to look at</param>
-        /// <param name="tc">Callback ID</param>
-        public void BeginTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt, TeleportCallback tc)
+        public void BeginTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            OnBeginTeleport = tc;
-
             TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
             teleport.AgentData.AgentID = Client.Network.AgentID;
             teleport.AgentData.SessionID = Client.Network.SessionID;
@@ -1475,7 +1470,7 @@ namespace libsecondlife
 		        packet.Info.SimPort = (ushort)(long)info["SimPort"];
 		        packet.Info.SimAccess = (byte)(long)info["SimAccess"];
 
-                Console.WriteLine("Received a TeleportFinish event, SimIP: " + new IPAddress(packet.Info.SimIP) + 
+                Client.DebugLog("Received a TeleportFinish event, SimIP: " + new IPAddress(packet.Info.SimIP) + 
                     ", LocationID: " + packet.Info.LocationID + ", RegionHandle: " + packet.Info.RegionHandle);
 
 		        TeleportHandler(packet, Client.Network.CurrentSim);
@@ -1608,9 +1603,10 @@ namespace libsecondlife
                 teleportMessage = "Teleport started";
                 TeleportStat = TeleportStatus.Start;
 
-                if (OnBeginTeleport != null)
+                if (OnTeleport != null)
                 {
-                    OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
+                    try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
             else if (packet.Type == PacketType.TeleportProgress)
@@ -1620,9 +1616,10 @@ namespace libsecondlife
                 teleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
                 TeleportStat = TeleportStatus.Progress;
 
-                if (OnBeginTeleport != null)
+                if (OnTeleport != null)
                 {
-                    OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
+                    try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
             else if (packet.Type == PacketType.TeleportFailed)
@@ -1632,12 +1629,11 @@ namespace libsecondlife
                 teleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
                 TeleportStat = TeleportStatus.Failed;
 
-                if (OnBeginTeleport != null)
+                if (OnTeleport != null)
                 {
-                    OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
+                    try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
-
-                OnBeginTeleport = null;
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
@@ -1672,9 +1668,10 @@ namespace libsecondlife
 
                     Client.Log("Moved to new sim " + sim.ToString(), Helpers.LogLevel.Info);
 
-                    if (OnBeginTeleport != null)
+                    if (OnTeleport != null)
                     {
-                        OnBeginTeleport(sim, teleportMessage, TeleportStat);
+                        try { OnTeleport(sim, teleportMessage, TeleportStat); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                     else
                     {
@@ -1692,13 +1689,12 @@ namespace libsecondlife
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
 
-                    if (OnBeginTeleport != null)
+                    if (OnTeleport != null)
                     {
-                        OnBeginTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
+                        try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
-
-                OnBeginTeleport = null;
             }
         }
 

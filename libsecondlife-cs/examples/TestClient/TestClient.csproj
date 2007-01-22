@@ -38,6 +38,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="Commands\AppearanceCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
+    <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />

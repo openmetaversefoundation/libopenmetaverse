@@ -214,7 +214,7 @@ namespace libsecondlife.AssetSystem
         /// <returns></returns>
         internal void UpdateFromAssetData()
         {
-            if ( AssetData == null)
+            if ( AssetData == null || AssetData.Length == 0)
             {
                 return;
             }

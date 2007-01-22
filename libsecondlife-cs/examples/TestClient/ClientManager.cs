@@ -112,8 +112,6 @@ namespace libsecondlife.TestClient
 
 		private void PrintPrompt()
 		{
-			//Console.Write(String.Format("{0} {1} - {2}> ", client.Self.FirstName, client.Self.LastName, client.Network.CurrentSim.Region.Name));
-
             int online = 0;
 
             foreach (SecondLife client in Clients.Values)
