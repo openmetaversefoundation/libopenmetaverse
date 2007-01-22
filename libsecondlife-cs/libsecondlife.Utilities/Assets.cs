@@ -95,10 +95,10 @@ namespace libsecondlife.Utilities.Assets
     {
         /// <summary></summary>
         Unknown = 0,
-        /// <summary></summary>
-        Misc,
-        /// <summary></summary>
-        Asset
+        /// <summary>Unknown</summary>
+        Misc = 1,
+        /// <summary>Virtually all asset transfers use this channel</summary>
+        Asset = 2
     }
 
     /// <summary>
@@ -108,12 +108,12 @@ namespace libsecondlife.Utilities.Assets
     {
         /// <summary></summary>
         Unknown = 0,
-        /// <summary>Request arbitrary system files off the server</summary>
+        /// <summary>Arbitrary system files off the server</summary>
         [Obsolete]
         File = 1,
-        /// <summary>Request assets from the asset server</summary>
+        /// <summary>Asset from the asset server</summary>
         Asset = 2,
-        /// <summary></summary>
+        /// <summary>Inventory item</summary>
         SimInventoryItem = 3,
         /// <summary></summary>
         SimEstate = 4
@@ -216,44 +216,76 @@ namespace libsecondlife.Utilities.Assets
         /// </summary>
         /// <param name="assetID"></param>
         /// <param name="type"></param>
-        /// <param name="channel"></param>
-        /// <param name="source"></param>
         /// <param name="priority"></param>
-        public void RequestAsset(LLUUID assetID, AssetType type, ChannelType channel, SourceType source, float priority)
+        public void RequestAsset(LLUUID assetID, AssetType type, float priority)
         {
             AssetTransfer transfer = new AssetTransfer();
             transfer.ID = LLUUID.Random();
             transfer.AssetID = assetID;
             transfer.Priority = priority;
-            transfer.Channel = channel;
-            transfer.Source = source;
+            transfer.Channel = ChannelType.Asset;
+            transfer.Source = SourceType.Asset;
 
             // Add this transfer to the dictionary
             lock (Transfers) Transfers[transfer.ID] = transfer;
 
             // Build the request packet and send it
             TransferRequestPacket request = new TransferRequestPacket();
-            request.TransferInfo.ChannelType = (int)channel;
+            request.TransferInfo.ChannelType = (int)transfer.Channel;
             request.TransferInfo.Priority = priority;
-            request.TransferInfo.SourceType = (int)source;
+            request.TransferInfo.SourceType = (int)transfer.Source;
             request.TransferInfo.TransferID = transfer.ID;
 
             byte[] paramField = new byte[20];
-            Array.Copy(assetID.GetBytes(), paramField, 16);
+            Array.Copy(assetID.GetBytes(), 0, paramField, 0, 16);
             Array.Copy(Helpers.IntToBytes((int)type), 0, paramField, 16, 4);
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request);
         }
 
-        public void RequestInventoryAsset()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="assetID">Use LLUUID.Zero if you do not have the 
+        /// asset ID but have all the necessary permissions</param>
+        /// <param name="itemID">The item ID of this asset in the inventory</param>
+        /// <param name="taskID">Use LLUUID.Zero if you are not requesting an 
+        /// asset from an object inventory</param>
+        /// <param name="ownerID">The owner of this asset</param>
+        /// <param name="type">Asset type</param>
+        /// <param name="priority">Try 101.0f</param>
+        public void RequestInventoryAsset(LLUUID assetID, LLUUID itemID, LLUUID taskID, LLUUID ownerID, AssetType type,
+            float priority)
         {
-            ;
-        }
+            AssetTransfer transfer = new AssetTransfer();
+            transfer.ID = LLUUID.Random();
+            transfer.AssetID = assetID;
+            transfer.Priority = priority;
+            transfer.Channel = ChannelType.Asset;
+            transfer.Source = SourceType.SimInventoryItem;
 
-        public void RequestFileAsset()
-        {
-            ;
+            // Add this transfer to the dictionary
+            lock (Transfers) Transfers[transfer.ID] = transfer;
+
+            // Build the request packet and send it
+            TransferRequestPacket request = new TransferRequestPacket();
+            request.TransferInfo.ChannelType = (int)transfer.Channel;
+            request.TransferInfo.Priority = priority;
+            request.TransferInfo.SourceType = (int)transfer.Source;
+            request.TransferInfo.TransferID = transfer.ID;
+
+            byte[] paramField = new byte[100];
+            Array.Copy(Client.Network.AgentID.GetBytes(), 0, paramField, 0, 16);
+            Array.Copy(Client.Network.SessionID.GetBytes(), 0, paramField, 16, 16);
+            Array.Copy(ownerID.GetBytes(), 0, paramField, 32, 16);
+            Array.Copy(taskID.GetBytes(), 0, paramField, 48, 16);
+            Array.Copy(itemID.GetBytes(), 0, paramField, 64, 16);
+            Array.Copy(assetID.GetBytes(), 0, paramField, 80, 16);
+            Array.Copy(Helpers.IntToBytes((int)type), 0, paramField, 96, 4);
+            request.TransferInfo.Params = paramField;
+
+            Client.Network.SendPacket(request);
         }
 
         public void RequestEstateAsset()
@@ -270,20 +302,11 @@ namespace libsecondlife.Utilities.Assets
                 if (Transfers.ContainsKey(info.TransferInfo.TransferID))
                 {
                     AssetTransfer transfer = Transfers[info.TransferInfo.TransferID];
-                    ChannelType channel = ChannelType.Unknown;
-                    StatusCode status = StatusCode.Unknown;
-                    TargetType target = TargetType.Unknown;
 
-                    // Attempt to recover enumeration values out of the integers
-                    channel = (ChannelType)info.TransferInfo.ChannelType;
-                    status = (StatusCode)info.TransferInfo.Status;
-                    target = (TargetType)info.TransferInfo.TargetType;
-
-                    transfer.Channel = channel;
-                    transfer.Status = status;
-                    transfer.Target = target;
+                    transfer.Channel = (ChannelType)info.TransferInfo.ChannelType;
+                    transfer.Status = (StatusCode)info.TransferInfo.Status;
+                    transfer.Target = (TargetType)info.TransferInfo.TargetType;
                     transfer.Size = info.TransferInfo.Size;
-                    transfer.AssetData = new byte[transfer.Size];
 
                     // TODO: Once we support mid-transfer status checking and aborting this
                     // will need to become smarter
@@ -291,9 +314,33 @@ namespace libsecondlife.Utilities.Assets
                     {
                         lock (Transfers) Transfers.Remove(transfer.ID);
 
+                        // Better than returning null
+                        transfer.AssetData = new byte[0];
+
                         // Fire the event with our transfer that contains Success = false;
                         try { OnAssetReceived(transfer); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+                    else
+                    {
+                        transfer.AssetData = new byte[transfer.Size];
+
+                        if (transfer.Source == SourceType.Asset && info.TransferInfo.Params.Length == 20)
+                        {
+                            transfer.AssetID = new LLUUID(info.TransferInfo.Params, 0);
+                            // TODO: Set the authoritative asset type here as well
+                        }
+                        else if (transfer.Source == SourceType.SimInventoryItem && info.TransferInfo.Params.Length == 100)
+                        {
+                            transfer.AssetID = new LLUUID(info.TransferInfo.Params, 80);
+                            // TODO: Set the authoritative asset type here as well
+                        }
+                        else
+                        {
+                            Client.Log("Received a TransferInfo packet with a SourceType of " + transfer.Source.ToString() +
+                                " and a Params field length of " + info.TransferInfo.Params.Length, 
+                                Helpers.LogLevel.Warning);
+                        }
                     }
                 }
                 else
