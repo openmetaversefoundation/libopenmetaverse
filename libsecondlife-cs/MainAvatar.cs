@@ -1646,7 +1646,7 @@ namespace libsecondlife
                 string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
                 IPAddress simIP = new IPAddress(finish.Info.SimIP);
 
-                Client.Network.CurrentCaps.Dead = true;
+                if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
 				
                 Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort,
                     simulator.CircuitCode, true, seedcaps);

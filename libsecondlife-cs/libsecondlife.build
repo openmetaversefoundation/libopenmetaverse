@@ -99,7 +99,7 @@
 				<include name="InventorySystem/*.cs" />
 				<include name="JSON/*.cs" />
 				<include name="XmlRpcCS/*.cs" />
-				<include name="libsecondlife.Utilities/Utilities.cs" />
+				<include name="libsecondlife.Utilities/*.cs" />
 			</sources>
 		</csc>
 	</target>

@@ -178,14 +178,15 @@ namespace libsecondlife
                 WebRequest wreq = WebRequest.Create(uri);
                 wreq.Method = "POST";
                 wreq.ContentLength = data.Length;
+                //wreq.ContentType = "text/xml";
 
                 Stream reqStream = wreq.GetRequestStream();
                 reqStream.Write(data, 0, data.Length);
-                reqStream.Close();
-
+                
                 HttpWebResponse wresp = (HttpWebResponse)wreq.GetResponse();
                 BinaryReader reader = new BinaryReader(wresp.GetResponseStream());
                 respBuf = reader.ReadBytes((int)wresp.ContentLength);
+                reqStream.Close();
                 wresp.Close();
             }
             catch (Exception e)
