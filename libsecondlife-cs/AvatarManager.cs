@@ -201,8 +201,8 @@ namespace libsecondlife
 
                 foreach (UUIDNameReplyPacket.UUIDNameBlockBlock block in reply.UUIDNameBlock)
                 {
-                    names[block.ID] = Helpers.FieldToString(block.FirstName) +
-                        " " + Helpers.FieldToString(block.LastName);
+                    names[block.ID] = Helpers.FieldToUTF8String(block.FirstName) +
+                        " " + Helpers.FieldToUTF8String(block.LastName);
                 }
                 
                 OnAvatarNames(names);
@@ -247,7 +247,7 @@ namespace libsecondlife
 
                 foreach (AvatarStatisticsReplyPacket.StatisticsDataBlock b in asr.StatisticsData)
                 {
-                    string n = Helpers.FieldToString(b.Name);
+                    string n = Helpers.FieldToUTF8String(b.Name);
 
                     switch (n)
                     {
@@ -292,15 +292,15 @@ namespace libsecondlife
                 properties.ProfileImage = reply.PropertiesData.ImageID;
                 properties.FirstLifeImage = reply.PropertiesData.FLImageID;
                 properties.Partner = reply.PropertiesData.PartnerID;
-                properties.AboutText = Helpers.FieldToString(reply.PropertiesData.AboutText);
-                properties.FirstLifeText = Helpers.FieldToString(reply.PropertiesData.FLAboutText);
-                properties.BornOn = Helpers.FieldToString(reply.PropertiesData.BornOn);
-                properties.CharterMember = Helpers.FieldToString(reply.PropertiesData.CharterMember);
+                properties.AboutText = Helpers.FieldToUTF8String(reply.PropertiesData.AboutText);
+                properties.FirstLifeText = Helpers.FieldToUTF8String(reply.PropertiesData.FLAboutText);
+                properties.BornOn = Helpers.FieldToUTF8String(reply.PropertiesData.BornOn);
+                properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
                 properties.AllowPublish = reply.PropertiesData.AllowPublish;
                 properties.MaturePublish = reply.PropertiesData.MaturePublish;
                 properties.Identified = reply.PropertiesData.Identified;
                 properties.Transacted = reply.PropertiesData.Transacted;
-                properties.ProfileURL = Helpers.FieldToString(reply.PropertiesData.ProfileURL);
+                properties.ProfileURL = Helpers.FieldToUTF8String(reply.PropertiesData.ProfileURL);
 
                 OnAvatarProperties(reply.AgentData.AvatarID, properties);
             }
@@ -317,10 +317,10 @@ namespace libsecondlife
                 Avatar.Interests interests = new Avatar.Interests();
 
                 interests.WantToMask = airp.PropertiesData.WantToMask;
-                interests.WantToText = Helpers.FieldToString(airp.PropertiesData.WantToText);
+                interests.WantToText = Helpers.FieldToUTF8String(airp.PropertiesData.WantToText);
                 interests.SkillsMask = airp.PropertiesData.SkillsMask;
-                interests.SkillsText = Helpers.FieldToString(airp.PropertiesData.SkillsText);
-                interests.LanguagesText = Helpers.FieldToString(airp.PropertiesData.LanguagesText);
+                interests.SkillsText = Helpers.FieldToUTF8String(airp.PropertiesData.SkillsText);
+                interests.LanguagesText = Helpers.FieldToUTF8String(airp.PropertiesData.LanguagesText);
 
                 OnAvatarInterests(airp.AgentData.AvatarID, interests);
             }
@@ -347,8 +347,8 @@ namespace libsecondlife
 
                 foreach (AvatarPickerReplyPacket.DataBlock block in reply.Data)
                 {
-                    avatars[block.AvatarID] = Helpers.FieldToString(block.FirstName) +
-                        " " + Helpers.FieldToString(block.LastName);
+                    avatars[block.AvatarID] = Helpers.FieldToUTF8String(block.FirstName) +
+                        " " + Helpers.FieldToUTF8String(block.LastName);
                 }
 
                 OnAvatarNameSearch(reply.AgentData.QueryID, avatars);
