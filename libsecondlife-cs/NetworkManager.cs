@@ -90,17 +90,25 @@ namespace libsecondlife
             req.Add("EventQueueGet");
             Hashtable resp = (Hashtable)LLSDRequest(seedcaps, req);
 
-            foreach (string cap in resp.Keys)
+            if (resp != null)
             {
-                Client.Log("Got cap " + cap + ": " + (string)resp[cap], Helpers.LogLevel.Info);
-                Capabilities[cap] = (string)resp[cap];
-            }
+                foreach (string cap in resp.Keys)
+                {
+                    Client.Log("Got cap " + cap + ": " + (string)resp[cap], Helpers.LogLevel.Info);
+                    Capabilities[cap] = (string)resp[cap];
+                }
 
-            if (Capabilities.ContainsKey("EventQueueGet"))
+                if (Capabilities.ContainsKey("EventQueueGet"))
+                {
+                    Client.Log("Running event queue", Helpers.LogLevel.Info);
+                    EventThread = new Thread(new ThreadStart(EventQueue));
+                    EventThread.Start();
+                }
+            }
+            else
             {
-                Client.Log("Running event queue", Helpers.LogLevel.Info);
-                EventThread = new Thread(new ThreadStart(EventQueue));
-                EventThread.Start();
+                Client.Log("Disabling caps for " + Region.ToString(), Helpers.LogLevel.Info);
+                Dead = true;
             }
         }
 
@@ -123,25 +131,33 @@ namespace libsecondlife
                     req["done"] = false;
 
                     Hashtable resp = (Hashtable)LLSDRequest(cap, req);
-                    ack = (long)resp["id"];
-                    gotresp = true;
-                    ArrayList events = (ArrayList)resp["events"];
-
-                    foreach (Hashtable evt in events)
+                    if (resp != null)
                     {
-                        string msg = (string)evt["message"];
-                        object body = (object)evt["body"];
+                        ack = (long)resp["id"];
+                        gotresp = true;
+                        ArrayList events = (ArrayList)resp["events"];
 
-                        Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
-
-                        if (!Dead)
+                        foreach (Hashtable evt in events)
                         {
-                            foreach (EventQueueCallback callback in Callbacks)
+                            string msg = (string)evt["message"];
+                            object body = (object)evt["body"];
+
+                            Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
+
+                            if (!Dead)
                             {
-                                try { callback(msg, body); }
-                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                foreach (EventQueueCallback callback in Callbacks)
+                                {
+                                    try { callback(msg, body); }
+                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                                }
                             }
                         }
+                    }
+                    else
+                    {
+                        Client.Log("Disabling caps for " + Region.ToString(), Helpers.LogLevel.Info);
+                        Dead = true;
                     }
                 }
                 catch (WebException e)
@@ -152,33 +168,34 @@ namespace libsecondlife
             }
         }
 
-        private static object LLSDRequest(string uri, object req)
+        private object LLSDRequest(string uri, object req)
         {
+            byte[] respBuf = null;
             byte[] data = LLSD.LLSDSerialize(req);
-            WebRequest wreq = WebRequest.Create(uri);
-            wreq.Method = "POST";
-            wreq.ContentLength = data.Length;
-            Stream reqStream = wreq.GetRequestStream();
-            reqStream.Write(data, 0, data.Length);
-            reqStream.Close();
-            HttpWebResponse wresp = (HttpWebResponse)wreq.GetResponse();
-            Stream respStream = wresp.GetResponseStream();
-            int read; int length = 0;
-            byte[] respBuf = new byte[256];
 
-            do
+            try
             {
-                read = respStream.Read(respBuf, length, 256);
+                WebRequest wreq = WebRequest.Create(uri);
+                wreq.Method = "POST";
+                wreq.ContentLength = data.Length;
 
-                if (read > 0)
-                {
-                    length += read;
-                    Array.Resize(ref respBuf, length + 256);
-                }
-            } while (read > 0);
+                Stream reqStream = wreq.GetRequestStream();
+                reqStream.Write(data, 0, data.Length);
+                reqStream.Close();
 
-            Array.Resize(ref respBuf, length);
-            return LLSD.LLSDDeserialize(respBuf);
+                HttpWebResponse wresp = (HttpWebResponse)wreq.GetResponse();
+                BinaryReader reader = new BinaryReader(wresp.GetResponseStream());
+                respBuf = reader.ReadBytes((int)wresp.ContentLength);
+                wresp.Close();
+            }
+            catch (Exception e)
+            {
+                Client.Log(e.Message, Helpers.LogLevel.Warning);
+                return null;
+            }
+
+            if (respBuf != null) return LLSD.LLSDDeserialize(respBuf);
+            else return null;
         }
 
         public void Disconnect()
