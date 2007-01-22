@@ -128,7 +128,7 @@ namespace libsecondlife.InventorySystem
                 }
                 else
                 {
-                    if ((AssetID != null) && (AssetID != LLUUID.Zero))
+                    if ((AssetID != null))
                     {
                         AssetRequestDownload request = base.iManager.AssetManager.RequestInventoryAsset(this);
                         if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)

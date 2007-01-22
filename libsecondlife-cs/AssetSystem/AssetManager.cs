@@ -270,7 +270,7 @@ namespace libsecondlife.AssetSystem
         }
         #endregion
 
-        #region Callback Handlers
+        #region Callback Handlers (Uploading)
 
         private void AssetUploadCompleteCallbackHandler(Packet packet, Simulator simulator)
 		{
@@ -320,6 +320,9 @@ namespace libsecondlife.AssetSystem
             curUploadRequest.ConfirmXferPacket(reply.XferID.ID, reply.XferID.Packet);
         }
 
+        #endregion
+
+        #region Callback Handlers (Downloading)
 
         // Download stuff
         private void TransferInfoCallbackHandler(Packet packet, Simulator simulator)
