@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace libsecondlife
 {
@@ -61,6 +62,26 @@ namespace libsecondlife
     /// </summary>
     public static class VisualParams
     {
+        private static Dictionary<int, VisualParam> _ParamDictionary = null;
+        public static Dictionary<int, VisualParam> ParamDictionary
+        {
+            get
+            {
+                if (_ParamDictionary == null)
+                {
+                    _ParamDictionary = new Dictionary<int, VisualParam>();
+                    foreach (VisualParam vp in Params)
+                    {
+                        _ParamDictionary[vp.ParamID] = vp;
+                    }
+                }
+
+                return _ParamDictionary;
+            }
+
+        }
+
+
         /// <summary>Array of all the visual parameters available for avatar appearances</summary>
         public static VisualParam[] Params = new VisualParam[]
         {
