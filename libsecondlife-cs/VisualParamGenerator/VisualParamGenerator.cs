@@ -38,7 +38,7 @@ namespace VisualParamGenerator
             bool first = true;
 
             output.Write("using System;" + Environment.NewLine + Environment.NewLine);
-            output.Write("namespace libsecondlife.Utilities.Appearance" + Environment.NewLine);
+            output.Write("namespace libsecondlife" + Environment.NewLine);
             output.Write("{" + Environment.NewLine);
             output.Write("    public static class VisualParams" + Environment.NewLine);
             output.Write("    {" + Environment.NewLine);

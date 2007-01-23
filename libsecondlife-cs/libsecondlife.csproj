@@ -218,6 +218,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Packets_.cs" />
+    <Compile Include="_VisualParam_.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
