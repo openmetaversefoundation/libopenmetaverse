@@ -301,9 +301,12 @@ namespace libsecondlife.AssetSystem
                     AgentTextureEntry.CreateFace(texture.Key).TextureID = texture.Value;
                 }
 
-                foreach (KeyValuePair<int, float> kvp in wearableAsset.Parameters)
+                lock (AgentAppearanceParams)
                 {
-                    AgentAppearanceParams[kvp.Key] = kvp.Value;
+                    foreach (KeyValuePair<int, float> kvp in wearableAsset.Parameters)
+                    {
+                        AgentAppearanceParams[kvp.Key] = kvp.Value;
+                    }
                 }
             }
             catch (Exception e)
@@ -389,12 +392,15 @@ namespace libsecondlife.AssetSystem
             float percentage = 0;
             byte packetVal = 0;
 
-            foreach (KeyValuePair<int, float> kvp in AgentAppearanceParams)
+            lock (AgentAppearanceParams)
             {
-                packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
+                foreach (KeyValuePair<int, float> kvp in AgentAppearanceParams)
+                {
+                    packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
 
-                VisualParam vp = libsecondlife.VisualParams.Params[kvp.Key];
-                VisualParams[packetIdx] = Helpers.FloatToByte(kvp.Value, vp.MinValue, vp.MaxValue);
+                    VisualParam vp = libsecondlife.VisualParams.Params[kvp.Key];
+                    VisualParams[packetIdx] = Helpers.FloatToByte(kvp.Value, vp.MinValue, vp.MaxValue);
+                }
             }
 
             return VisualParams;
