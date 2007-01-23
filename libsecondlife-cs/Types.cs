@@ -78,12 +78,11 @@ namespace libsecondlife
         /// <summary>
         /// Parse the bytes for a LLUUID from a string
         /// </summary>
-        /// <param name="val">String containing 32 (or 36 with hyphon) character UUID</param>
+        /// <param name="val">String containing 32 (or 36 with hyphens) character UUID</param>
         /// <returns></returns>
-        protected static byte[] ParseByteArray(string val)
+        protected static byte[] StringToBytes(string val)
         {
             if (val.Length == 36) val = val.Replace("-", "");
-
             if (val.Length != 32) throw new Exception("Malformed LLUUID: " + val);
 
             byte[] parseData = new byte[16];
@@ -104,7 +103,7 @@ namespace libsecondlife
         /// <example>LLUUID.Parse("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
         public static LLUUID Parse(string val)
         {
-            return new LLUUID(ParseByteArray(val), 0);
+            return new LLUUID(StringToBytes(val), 0);
         }
 
         /// <summary>
@@ -112,6 +111,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
+        /// <param name="result">Will contain the parsed UUID if successful,
+        /// otherwise null</param>
+        /// <returns>True if the string was successfully parse, otherwise false</returns>
         /// <example>LLUUID.TryParse("11f8aa9c-b071-4242-836b-13b7abe0d489", result)</example>
         public static bool TryParse(string val, out LLUUID result)
         {
@@ -126,7 +128,6 @@ namespace libsecondlife
                 return false;
             }
         }
-
 
         /// <summary>
         /// Returns the raw bytes for this UUID
