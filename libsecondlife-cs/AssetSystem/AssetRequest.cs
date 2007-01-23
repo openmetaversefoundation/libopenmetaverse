@@ -99,21 +99,46 @@ namespace libsecondlife.AssetSystem
         }
 
         /// <summary>
-        /// Wait for this Request to be completed.
+        /// Wait for this Request to be completed
         /// </summary>
-        /// <param name="timeout">milliseconds to wait, -1 to wait indefinitely</param>
+        /// <param name="timeout">milliseconds to wait for next packet in download, -1 to wait indefinitely</param>
         /// <returns></returns>
         public RequestStatus Wait(int timeout)
         {
-            if (!_Completed.WaitOne(timeout, false))
+            return Wait(-1, timeout);
+        }
+
+        /// <summary>
+        /// Wait for this Request to be completed.
+        /// </summary>
+        /// <remarks>Hard Timeout should only be specified if you really can't wait for the download, even though it's still going and may be successful.</remarks>
+        /// <param name="hardTimeout">Return after hardTimeout milliseconds even if download is still in progress, -1 to wait indefinitely</param>
+        /// <param name="softTimeout">How long to wait, before deciding download is stalled, -1 to wait indefinitely</param>
+        /// <returns></returns>
+        public RequestStatus Wait(int hardTimeout, int softTimeout)
+        {
+            UpdateLastPacketTime();
+
+            uint TimeStarted = LastPacketTime;
+
+            while (!_Completed.WaitOne(900, false))
             {
-                _StatusMsg += "Timeout Failure";
-                return RequestStatus.Failure;
+                if (SecondsSinceLastPacket > hardTimeout)
+                {
+                    _StatusMsg += "Timeout Failure - Hard timeout reached ";
+                    return RequestStatus.Failure;
+                }
+                else
+                {
+                    if (SecondsSinceLastPacket > softTimeout)
+                    {
+                        _StatusMsg += "Timeout Failure - No packets in " + SecondsSinceLastPacket;
+                        return RequestStatus.Failure;
+                    }
+                }
             }
-            else
-            {
-                return _Status;
-            }
+
+            return _Status;
         }
 
         protected void MarkCompleted(RequestStatus status, string status_msg)
@@ -138,11 +163,17 @@ namespace libsecondlife.AssetSystem
     {
         protected int _Received;
         protected SortedList<int, byte[]> _AssetDataReceived = new SortedList<int, byte[]>();
+        protected LLUUID _AssetID;
+        public LLUUID AssetID
+        {
+            get { return _AssetID; }
+        }
 
-        public AssetRequestDownload(AssetManager Manager, LLUUID TransID)
+        public AssetRequestDownload(AssetManager Manager, LLUUID TransID, LLUUID AssetID)
             : base(Manager, TransID)
         {
             _Received = 0;
+            _AssetID = AssetID;
         }
 
         internal void AddDownloadedData(int packetNum, byte[] data)

@@ -39,9 +39,12 @@ namespace libsecondlife.AssetSystem
 
         protected ManualResetEvent AgentWearablesSignal = null;
 
+        protected Dictionary<LLUUID, AssetWearable> WearableCache = new Dictionary<LLUUID, AssetWearable>();
+        protected List<LLUUID> WearableAssetQueue = new List<LLUUID>();
+
         // This data defines all appearance info for an avatar
         public AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
-        public SerializableDictionary<uint, float> AgentAppearanceParams = new SerializableDictionary<uint, float>();
+        public SerializableDictionary<int, float> AgentAppearanceParams = new SerializableDictionary<int, float>();
         public TextureEntry AgentTextureEntry = new TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
 
 
@@ -52,10 +55,10 @@ namespace libsecondlife.AssetSystem
         public AppearanceManager(SecondLife client)
         {
             Client = client;
-            AManager = client.Assets;
-
             Client.Network.RegisterCallback(libsecondlife.Packets.PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateCallbackHandler));
 
+            AManager = client.Assets;
+            AManager.TransferRequestCompletedEvent += new AssetManager.On_TransferRequestCompleted(AManager_TransferRequestCompletedEvent);
         }
 
         #region Wear Stuff
@@ -245,56 +248,25 @@ namespace libsecondlife.AssetSystem
                     Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
                 }
 
-                try
-                {
-                    foreach (KeyValuePair<uint, LLUUID> texture in wearableAsset.Textures)
-                    {
-                        AgentTextureEntry.CreateFace(texture.Key).TextureID = texture.Value;
-                    }
-
-                    foreach (KeyValuePair<uint, float> kvp in wearableAsset.Parameters)
-                    {
-                        AgentAppearanceParams[kvp.Key] = kvp.Value;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Client.Log("ItemID: " + wdb.ItemID + Environment.NewLine +
-                        "WearableType: " + wdb.WearableType + Environment.NewLine +
-                        "Retrieving as type: " + wearableAsset.Type + Environment.NewLine +
-                        e.ToString() + Environment.NewLine +
-                        wearableAsset.AssetDataToString(), Helpers.LogLevel.Error);
-                }
+                UpdateAgentTextureEntryAndAppearanceParams(wearableAsset);
             }
 
 
+            UpdateAgentTextureEntryOrder();
+        }
+
+        protected void UpdateAgentTextureEntryOrder()
+        {
             // Correct the order of the textures
             foreach (uint faceid in AgentTextureEntry.FaceTextures.Keys)
             {
-                switch (faceid)
+                if (faceid > 18)
                 {
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 5:
-                    case 6:
-                    case 7:
-                    case 12:
-                    case 13:
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 17:
-                    case 18:
-                        break;
-                    default:
-                        Client.Log("Unknown order for FaceID: " + faceid + Environment.NewLine +
-                            "Your wearables define a face that we don't know the order of.  Please " +
-                            "capture a AgentSetAppearance packet for your current outfit and submit to " +
-                            "static.sprocket@gmail.com, thanks!", Helpers.LogLevel.Info);
-                        break;
+                    Client.Log("Unknown order for FaceID: " + faceid + Environment.NewLine +
+                        "Your wearables define a face that we don't know the order of.  Please " +
+                        "capture a AgentSetAppearance packet for your current outfit and submit to " +
+                        "static.sprocket@gmail.com, thanks!", Helpers.LogLevel.Info);
+                    break;
                 }
             }
 
@@ -320,6 +292,39 @@ namespace libsecondlife.AssetSystem
             AgentTextureEntry = te2;
         }
 
+        protected void UpdateAgentTextureEntryAndAppearanceParams(AssetWearable wearableAsset)
+        {
+            try
+            {
+                foreach (KeyValuePair<uint, LLUUID> texture in wearableAsset.Textures)
+                {
+                    AgentTextureEntry.CreateFace(texture.Key).TextureID = texture.Value;
+                }
+
+                foreach (KeyValuePair<int, float> kvp in wearableAsset.Parameters)
+                {
+                    AgentAppearanceParams[kvp.Key] = kvp.Value;
+                }
+            }
+            catch (Exception e)
+            {
+                Client.Log(e.ToString() + Environment.NewLine + wearableAsset.AssetDataToString(), Helpers.LogLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// Non-blocking async request of wearables, construction and sending of AgentSetAppearance
+        /// </summary>
+        public void BeginAgentSendAppearance()
+        {
+            AgentWearablesSignal = new ManualResetEvent(false);
+
+            AgentWearablesRequestPacket p = new AgentWearablesRequestPacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            Client.Network.SendPacket(p);
+        }
+
         /// <summary>
         /// Send an AgentSetAppearance packet to the server to update your appearance.
         /// </summary>
@@ -340,9 +345,9 @@ namespace libsecondlife.AssetSystem
             p.ObjectData.TextureEntry = AgentTextureEntry.ToBytes();
 
             // Add Visual Params
-            Dictionary<uint, byte> VisualParams = GetAssetParamsAsVisualParams();
+            Dictionary<int, byte> VisualParams = GetAssetParamsAsVisualParams();
             p.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
-            for (uint i = 0; i < 218; i++)
+            for (int i = 0; i < 218; i++)
             {
                 p.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
 
@@ -352,14 +357,15 @@ namespace libsecondlife.AssetSystem
                 }
                 else
                 {
-                    uint paramid = GetParamID(i + 1);
-                    float defaultValue = BodyShapeParams.GetValueDefault(paramid);
+                    int paramid = GetParamID(i + 1);
 
-                    float minVal = BodyShapeParams.GetValueMin(paramid);
+                    if (!libsecondlife.VisualParams.ParamDictionary.ContainsKey(paramid))
+                    {
+                        Client.Log("Unknown VisualParam ID encountered :: " + paramid, Helpers.LogLevel.Debug);
+                    }
+                    VisualParam vp = libsecondlife.VisualParams.ParamDictionary[paramid];
 
-                    float range = BodyShapeParams.GetValueMax(paramid) - minVal;
-
-                    float percentage = (defaultValue - minVal) / range;
+                    float percentage = (vp.DefaultValue - vp.MinValue) / (vp.MaxValue - vp.MinValue);
 
                     byte packetVal = (byte)(percentage * (byte)255);
 
@@ -379,26 +385,21 @@ namespace libsecondlife.AssetSystem
         /// AgentSetAppearance packet
         /// </summary>
         /// <returns>Visual Param information for AgentSetAppearance packets</returns>
-        protected Dictionary<uint, byte> GetAssetParamsAsVisualParams()
+        protected Dictionary<int, byte> GetAssetParamsAsVisualParams()
         {
-            Dictionary<uint, byte> VisualParams = new Dictionary<uint, byte>();
+            Dictionary<int, byte> VisualParams = new Dictionary<int, byte>();
 
-            float maxVal = 0;
-            float minVal = 0;
-            uint packetIdx = 0;
-            float range = 0;
+            int packetIdx = 0;
             float percentage = 0;
             byte packetVal = 0;
 
-            foreach (KeyValuePair<uint, float> kvp in AgentAppearanceParams)
+            foreach (KeyValuePair<int, float> kvp in AgentAppearanceParams)
             {
                 packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
-                maxVal = BodyShapeParams.GetValueMax(kvp.Key);
-                minVal = BodyShapeParams.GetValueMin(kvp.Key);
 
-                range = maxVal - minVal;
+                VisualParam vp = libsecondlife.VisualParams.ParamDictionary[kvp.Key];
 
-                percentage = (kvp.Value - minVal) / range;
+                percentage = (kvp.Value - vp.MinValue) / (vp.MaxValue - vp.MinValue);
 
                 packetVal = (byte)(percentage * (byte)255);
 
@@ -414,7 +415,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="VisualParams"></param>
         /// <returns></returns>
-        protected LLVector3 GetAgentSizeFromVisualParams(Dictionary<uint, byte> VisualParams)
+        protected LLVector3 GetAgentSizeFromVisualParams(Dictionary<int, byte> VisualParams)
         {
             if (VisualParams.ContainsKey(25))
             {
@@ -438,7 +439,93 @@ namespace libsecondlife.AssetSystem
 
             AgentWearablesData = wearablesPacket.WearableData;
             AgentWearablesSignal.Set();
+
+
+            // Queue download of wearables
+            foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in AgentWearablesData)
+            {
+                // Don't try to download if AssetID is zero
+                if (wdb.AssetID == LLUUID.Zero)
+                {
+                    continue;
+                }
+
+                // Don't try to download, if it's already cached.
+                if (WearableCache.ContainsKey(wdb.AssetID))
+                {
+                    AssetWearable aw = WearableCache[wdb.AssetID];
+                    if (aw._AssetData != null)
+                    {
+                        continue;
+                    }
+                }
+
+                // Don't try to download, if it's already in the download queue
+                if (WearableAssetQueue.Contains(wdb.AssetID))
+                {
+                    continue;
+                }
+
+                AssetWearable wearableAsset;
+
+                switch (wdb.WearableType)
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                        wearableAsset = new AssetWearable_Body(wdb.AssetID, null);
+                        break;
+                    default:
+                        wearableAsset = new AssetWearable_Clothing(wdb.AssetID, null);
+                        break;
+                }
+
+                WearableCache[wdb.AssetID] = wearableAsset;
+                WearableAssetQueue.Add(wdb.AssetID);
+
+                AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
+
+            }
+
+            
         }
+
+        void AManager_TransferRequestCompletedEvent(AssetRequest request)
+        {
+            if( !(request is AssetRequestDownload) )
+            {
+                return;
+            }
+
+            AssetRequestDownload dlrequest = (AssetRequestDownload)request;
+
+            // Remove from the download queue
+            if (WearableAssetQueue.Contains(dlrequest.AssetID))
+            {
+                WearableAssetQueue.Remove(dlrequest.AssetID);
+
+                AssetWearable wearableAsset = WearableCache[dlrequest.AssetID];
+
+                wearableAsset.SetAssetData(dlrequest.GetAssetData());
+
+                if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
+                {
+                    Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
+                }
+                else
+                {
+                    UpdateAgentTextureEntryAndAppearanceParams(wearableAsset);
+                    UpdateAgentTextureEntryOrder();
+
+                    if (WearableAssetQueue.Count == 0)
+                    {
+                        SendAgentSetAppearance();
+                    }
+                }
+            }
+        }
+
 
         #endregion
 
@@ -449,7 +536,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="AssetParamID"></param>
         /// <returns></returns>
-        protected static uint GetAgentSetAppearanceIndex(uint AssetParamID)
+        protected static int GetAgentSetAppearanceIndex(int AssetParamID)
         {
             switch (AssetParamID)
             {
@@ -682,7 +769,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="VisualParamIdx"></param>
         /// <returns></returns>
-        protected static uint GetParamID(uint VisualParamIdx)
+        protected static int GetParamID(int VisualParamIdx)
         {
             switch (VisualParamIdx)
             {

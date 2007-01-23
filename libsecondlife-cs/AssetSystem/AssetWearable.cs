@@ -175,8 +175,8 @@ namespace libsecondlife.AssetSystem
             }
         }
 
-        private Dictionary<uint, float> _Parameters = new Dictionary<uint, float>();
-        public Dictionary<uint, float> Parameters
+        private Dictionary<int, float> _Parameters = new Dictionary<int, float>();
+        public Dictionary<int, float> Parameters
         {
             get { return _Parameters; }
             set
@@ -313,8 +313,8 @@ namespace libsecondlife.AssetSystem
                     // if (split_up.Length != 2) throw Corrupted;
                     if (split_up.Length == 2)
                     {
-                        if (this._Parameters.ContainsKey(uint.Parse(split_up[0]))) this._Parameters.Remove(uint.Parse(split_up[0]));
-                        this._Parameters.Add(uint.Parse(split_up[0]), float.Parse(split_up[1]));
+                        if (this._Parameters.ContainsKey(int.Parse(split_up[0]))) this._Parameters.Remove(int.Parse(split_up[0]));
+                        this._Parameters.Add(int.Parse(split_up[0]), float.Parse(split_up[1]));
                     }
                 }
                 else if (state == textures_block)
@@ -322,7 +322,7 @@ namespace libsecondlife.AssetSystem
                     string[] split_up = block.Split(' ');
                     if (split_up.Length != 2) throw Corrupted;
 
-                    if (this._Parameters.ContainsKey(uint.Parse(split_up[0]))) this._Parameters.Remove(uint.Parse(split_up[0]));
+                    if (this._Parameters.ContainsKey(int.Parse(split_up[0]))) this._Parameters.Remove(int.Parse(split_up[0]));
                     this._Textures.Add(uint.Parse(split_up[0]), new LLUUID(split_up[1]));
                 }
 
@@ -334,11 +334,11 @@ namespace libsecondlife.AssetSystem
             string data = "LLWearable version 22\n";
             data += this._Name + "\n\n";
             data += "\tpermissions 0\n\t{\n";
-            data += "\t\tbase_mask\t" + intToHex(this._Permission_Base_Mask);
-            data += "\n\t\towner_mask\t" + intToHex(this._Permission_Owner_Mask);
-            data += "\n\t\tgroup_mask\t" + intToHex(this._Permission_Group_Mask);
-            data += "\n\t\teveryone_mask\t" + intToHex(this._Permission_Everyone_Mask);
-            data += "\n\t\tnext_owner_mask\t" + intToHex(this._Permission_Next_Owner_Mask);
+            data += "\t\tbase_mask\t" + uintToHex(this._Permission_Base_Mask);
+            data += "\n\t\towner_mask\t" + uintToHex(this._Permission_Owner_Mask);
+            data += "\n\t\tgroup_mask\t" + uintToHex(this._Permission_Group_Mask);
+            data += "\n\t\teveryone_mask\t" + uintToHex(this._Permission_Everyone_Mask);
+            data += "\n\t\tnext_owner_mask\t" + uintToHex(this._Permission_Next_Owner_Mask);
             data += "\n\t\tcreator_id\t" + this._Creator_ID.ToStringHyphenated();
             data += "\n\t\towner_id\t" + this._Owner_ID.ToStringHyphenated();
             data += "\n\t\tlast_owner_id\t" + this._Last_Owner_ID.ToStringHyphenated();
@@ -351,7 +351,7 @@ namespace libsecondlife.AssetSystem
             data += "\n\t}";
             data += "\ntype " + this._TypeFromAsset;
             data += "\nparameters " + this._Parameters.Count;
-            foreach (KeyValuePair<uint, float> param in this._Parameters)
+            foreach (KeyValuePair<int, float> param in this._Parameters)
             {
                 string prm = string.Format("{0:f1}", param.Value);
                 if (prm == "-1.0" || prm == "1.0" || prm == "0.0")
@@ -380,7 +380,7 @@ namespace libsecondlife.AssetSystem
             _AssetData = System.Text.Encoding.ASCII.GetBytes(data.ToCharArray());
         }
 
-        private static string intToHex(uint i)
+        private static string uintToHex(uint i)
         {
             return string.Format("{0:x8}", i);
         }

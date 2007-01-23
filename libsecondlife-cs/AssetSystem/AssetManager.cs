@@ -78,7 +78,10 @@ namespace libsecondlife.AssetSystem
         protected AssetRequestUpload curUploadRequest = null;
         protected Dictionary<LLUUID, AssetRequestDownload> htDownloadRequests = new Dictionary<LLUUID, AssetRequestDownload>();
 
-        public readonly static int DefaultTimeout = 15000;
+        /// <summary>
+        /// Time to wait for next packet, during an asset download.
+        /// </summary>
+        public readonly static int DefaultTimeout = 3000;
 
         /// <summary>
         /// Event singaling an asset transfer request has completed.
@@ -183,7 +186,7 @@ namespace libsecondlife.AssetSystem
 
 			LLUUID TransferID = LLUUID.Random();
 
-            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID);
+            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID, item.AssetID);
             request.UpdateLastPacketTime(); // last time we recevied a packet for this request
 
             htDownloadRequests[TransferID] = request;
@@ -218,7 +221,7 @@ namespace libsecondlife.AssetSystem
 		{
 			LLUUID TransferID = LLUUID.Random();
 
-            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID);
+            AssetRequestDownload request = new AssetRequestDownload(slClient.Assets, TransferID, AssetID);
             request.UpdateLastPacketTime(); // last time we recevied a packet for this request
 
             htDownloadRequests[TransferID] = request;
@@ -336,6 +339,8 @@ namespace libsecondlife.AssetSystem
             LLUUID TransferID = reply.TransferInfo.TransferID;
             int Size = reply.TransferInfo.Size;
             int Status = reply.TransferInfo.Status;
+
+            //TODO: AssetID should be pulled out of the TransferInfo, if available
 
             // Lookup the request for this packet
             if (!htDownloadRequests.ContainsKey(TransferID))
