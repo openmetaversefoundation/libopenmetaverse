@@ -98,14 +98,13 @@ namespace libsecondlife.AssetSystem
         /// <summary>
 		/// Request the download of an asset
         /// The params field consists of a number of individual data components:
-        /// Params: 1: OwnerID / *AgentID
+        /// Params: 1: AgentID
         /// Params: 2: SessionID
-        /// Params: 3: *OwnerID / AgentID
-        /// Params: 4: Unknown (Maybe Group ID)
+        /// Params: 3: OwnerID
+        /// Params: 4: TaskID (LLUUID.Zero for assets not contained in an object)
         /// Params: 5: ItemID
-        /// Params: 6: AssetID
-        /// Params: 7: Type
-        /// Params: 8: Last Three Bytes Unknown
+        /// Params: 6: AssetID (LLUUIZ.Zero if it is unknown)
+        /// Params: 7: Type (32-bit field)
         /// </summary>
         /// <param name="SessionID"></param>
         /// <param name="AgentID"></param>
