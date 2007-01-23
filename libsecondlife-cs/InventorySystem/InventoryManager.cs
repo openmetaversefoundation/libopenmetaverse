@@ -80,7 +80,10 @@ namespace libsecondlife.InventorySystem
         /// <param name="InventoryFolder">The Inventory Folder that was updated</param>
         /// <param name="e"></param>
         public delegate void On_RequestDownloadContents_Finished(object iFolder, EventArgs e);
-        public event On_RequestDownloadContents_Finished RequestDownloadFinishedEvent;
+        public event On_RequestDownloadContents_Finished OnRequestDownloadFinishedEvent;
+
+        public delegate void On_InventoryItemReceived(LLUUID fromAgentID, string fromAgentName, uint parentEstateID, LLUUID regionID, LLVector3 position, DateTime timestamp, InventoryItem item);
+        public event On_InventoryItemReceived OnInventoryItemReceived;
 
         /// <summary>
         /// Primary constructor
@@ -102,6 +105,8 @@ namespace libsecondlife.InventorySystem
             // Setup the callback for Inventory Creation Update
             slClient.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
 
+            // Lets listen for inventory being given to us
+            slClient.Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
         }
 
         #region State Management
@@ -724,15 +729,60 @@ namespace libsecondlife.InventorySystem
 
         protected void FireRequestDownloadFinishedEvent(object o, EventArgs e)
         {
-            if (RequestDownloadFinishedEvent != null)
+            if (OnRequestDownloadFinishedEvent != null)
             {
-                RequestDownloadFinishedEvent(o, e);
+                OnRequestDownloadFinishedEvent(o, e);
             }
         }
 
         #endregion
 
         #region libsecondlife callback handlers
+
+        void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, byte offline, byte[] binaryBucket)
+        {
+            if ( (dialog == (byte)MainAvatar.InstantMessageDialog.GiveInventory) && (OnInventoryItemReceived != null))
+            {
+                sbyte IncomingItemType = (sbyte)binaryBucket[0];
+                LLUUID IncomingItemID = new LLUUID(binaryBucket, 1);
+
+                // Update root folders
+                InventoryFolder root = GetRootFolder();
+                if (root.GetContents().Count == 0)
+                {
+                    root.RequestDownloadContents(false, true, false, false).RequestComplete.WaitOne(3000, false);
+                }
+
+                // Look for root folder that accepts the type of inventory being received.
+                foreach (InventoryBase ib in root.GetContents())
+                {
+                    if (ib is InventoryFolder)
+                    {
+                        InventoryFolder iFolder = (InventoryFolder)ib;
+                        if (iFolder.Type == IncomingItemType)
+                        {
+                            // Check folder for incoming item
+                            iFolder.RequestDownloadContents(false, false, true, false).RequestComplete.WaitOne(3000, false);
+                            foreach (InventoryBase ib2 in iFolder.GetContents())
+                            {
+                                if (ib2 is InventoryItem)
+                                {
+                                    InventoryItem iItem = (InventoryItem)ib2;
+
+                                    if (iItem.ItemID == IncomingItemID)
+                                    {
+                                        OnInventoryItemReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, iItem);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// This is called in response to an item creation request
@@ -887,8 +937,6 @@ namespace libsecondlife.InventorySystem
                     // See if the Incoming Folder already exists locally
                     if (FoldersByUUID.ContainsKey(IncomingFolderID))
                     {
-                        Console.WriteLine("Updating existing folder entry.");
-
                         InventoryFolder existingFolder = FoldersByUUID[IncomingFolderID];
                         existingFolder._Name = IncomingName;
                         existingFolder._Type = IncomingType;
@@ -896,7 +944,6 @@ namespace libsecondlife.InventorySystem
                         // Check if parent of existing is the same as the incoming
                         if (!existingFolder.ParentID.Equals(IncomingParentID))
                         {
-                            Console.WriteLine("* New Parent :: " + existingFolder.ParentID + " != " + IncomingParentID);
                             // Remove existing from old parent
                             if (FoldersByUUID.ContainsKey(existingFolder.ParentID))
                             {
@@ -923,7 +970,7 @@ namespace libsecondlife.InventorySystem
                     }
                     else
                     {
-                        InventoryFolder TempInvFolder = new InventoryFolder(this, IncomingName, IncomingFolderID, IncomingParentID);
+                        InventoryFolder TempInvFolder = new InventoryFolder(this, IncomingName, IncomingFolderID, IncomingParentID, IncomingType);
 
                         // Add folder to Parent
                         if (InvFolderUpdating._Contents.Contains(TempInvFolder) == false)
@@ -977,7 +1024,7 @@ namespace libsecondlife.InventorySystem
                 // remove from folder status.
                 FolderDownloadStatus.Remove(uuidFolderID);
                 dr.RequestComplete.Set();
-                if (RequestDownloadFinishedEvent != null)
+                if (OnRequestDownloadFinishedEvent != null)
                 {
                     DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
                     e.DownloadRequest = dr;
