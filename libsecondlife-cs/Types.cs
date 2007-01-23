@@ -62,7 +62,7 @@ namespace libsecondlife
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
 		public LLUUID(string val)
 		{
-            data = ParseByteArray(val);
+            data = StringToBytes(val);
 		}
 
         /// <summary>
