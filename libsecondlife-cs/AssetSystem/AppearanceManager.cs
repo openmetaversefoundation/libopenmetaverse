@@ -359,11 +359,11 @@ namespace libsecondlife.AssetSystem
                 {
                     int paramid = GetParamID(i + 1);
 
-                    if (!libsecondlife.VisualParams.ParamDictionary.ContainsKey(paramid))
+                    if (!libsecondlife.VisualParams.Params.ContainsKey(paramid))
                     {
                         Client.Log("Unknown VisualParam ID encountered :: " + paramid, Helpers.LogLevel.Debug);
                     }
-                    VisualParam vp = libsecondlife.VisualParams.ParamDictionary[paramid];
+                    VisualParam vp = libsecondlife.VisualParams.Params[paramid];
 
                     float percentage = (vp.DefaultValue - vp.MinValue) / (vp.MaxValue - vp.MinValue);
 
@@ -397,7 +397,7 @@ namespace libsecondlife.AssetSystem
             {
                 packetIdx = AppearanceManager.GetAgentSetAppearanceIndex(kvp.Key) - 1; //TODO/FIXME: this should be zero indexed, not 1 based.
 
-                VisualParam vp = libsecondlife.VisualParams.ParamDictionary[kvp.Key];
+                VisualParam vp = libsecondlife.VisualParams.Params[kvp.Key];
 
                 percentage = (kvp.Value - vp.MinValue) / (vp.MaxValue - vp.MinValue);
 
