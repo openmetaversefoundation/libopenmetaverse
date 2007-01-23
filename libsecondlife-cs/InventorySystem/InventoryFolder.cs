@@ -95,6 +95,29 @@ namespace libsecondlife.InventorySystem
             return dr;
         }
 
+        /// <summary>
+        /// Request a download of this folder's content information.  Block until done, or timeout is reached
+        /// </summary>
+        /// <param name="recurse">Indicate if we should recursively download content information.</param>
+        /// <param name="folders">Indicate if sub-folder data should be downloaded (true)</param>
+        /// <param name="items">Indicate if item data should be downloaded too (true)</param>
+        /// <param name="clear">Delete locale cache information for the this folder and it's children, before downloading</param>
+        /// <param name="timeout">Milliseconds to wait before timing out, or -1 to wait indefinately.</param>
+        /// <returns>The Request object for this download</returns>
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear, int timeout)
+        {
+            if (clear)
+            {
+                iManager.FolderClearContents(this, folders, items);
+            }
+
+            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, true, items);
+            iManager.RequestFolder(dr);
+
+            dr.RequestComplete.WaitOne(timeout, false);
+            return dr;
+        }
+
         public InventoryFolder CreateFolder(string name)
         {
             return iManager.FolderCreate(name, FolderID);
