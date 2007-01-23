@@ -62,14 +62,7 @@ namespace libsecondlife
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
 		public LLUUID(string val)
 		{
-			if (val.Length == 36) val = val.Replace("-", "");
-			
-			if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
-
-			for(int i = 0; i < 16; ++i)
-			{
-				data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
-			}
+            data = ParseByteArray(val);
 		}
 
         /// <summary>
@@ -77,10 +70,63 @@ namespace libsecondlife
         /// </summary>
         /// <param name="byteArray">Byte array containing a 16 byte UUID</param>
         /// <param name="pos">Beginning offset in the array</param>
-		public LLUUID(byte[] byteArray, int pos)
-		{
-			Array.Copy(byteArray, pos, data, 0, 16);
-		}
+        public LLUUID(byte[] byteArray, int pos)
+        {
+            Array.Copy(byteArray, pos, data, 0, 16);
+        }
+
+        /// <summary>
+        /// Parse the bytes for a LLUUID from a string
+        /// </summary>
+        /// <param name="val">String containing 32 (or 36 with hyphon) character UUID</param>
+        /// <returns></returns>
+        protected static byte[] ParseByteArray(string val)
+        {
+            if (val.Length == 36) val = val.Replace("-", "");
+
+            if (val.Length != 32) throw new Exception("Malformed LLUUID: " + val);
+
+            byte[] parseData = new byte[16];
+
+            for (int i = 0; i < 16; ++i)
+            {
+                parseData[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
+            }
+
+            return parseData;
+        }
+
+        /// <summary>
+        /// Generate a LLUUID from a string
+        /// </summary>
+        /// <param name="val">A string representation of a UUID, case 
+        /// insensitive and can either be hyphenated or non-hyphenated</param>
+        /// <example>LLUUID.Parse("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
+        public static LLUUID Parse(string val)
+        {
+            return new LLUUID(ParseByteArray(val), 0);
+        }
+
+        /// <summary>
+        /// Generate a LLUUID from a string
+        /// </summary>
+        /// <param name="val">A string representation of a UUID, case 
+        /// insensitive and can either be hyphenated or non-hyphenated</param>
+        /// <example>LLUUID.TryParse("11f8aa9c-b071-4242-836b-13b7abe0d489", result)</example>
+        public static bool TryParse(string val, out LLUUID result)
+        {
+            try
+            {
+                result = Parse(val);
+                return true;
+            }
+            catch (Exception)
+            {
+                result = null;
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Returns the raw bytes for this UUID
