@@ -505,6 +505,11 @@ namespace libsecondlife.AssetSystem
             {
                 WearableAssetQueue.Remove(dlrequest.AssetID);
 
+                if (request.Status != AssetRequest.RequestStatus.Success)
+                {
+                    return;
+                }
+
                 AssetWearable wearableAsset = WearableCache[dlrequest.AssetID];
 
                 wearableAsset.SetAssetData(dlrequest.GetAssetData());
