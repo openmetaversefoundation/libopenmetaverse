@@ -724,7 +724,7 @@ namespace mapgenerator
             {
                 if (args.Length != 4)
                 {
-                    Console.WriteLine("Invalid arguments, need [message_template.msg] [template.cs] [unusedpackets.txt] [_Packets_.cs]");
+                    Console.WriteLine("Usage: [message_template.msg] [template.cs] [unusedpackets.txt] [_Packets_.cs]");
                     return -1;
                 }
 

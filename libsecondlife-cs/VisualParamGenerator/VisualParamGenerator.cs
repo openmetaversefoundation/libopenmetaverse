@@ -10,9 +10,9 @@ namespace VisualParamGenerator
     {
         static void Main(string[] args)
         {
-            if (args.Length < 2)
+            if (args.Length < 3)
             {
-                Console.WriteLine("Usage: VisualParamGenerator.exe [avatar_lad.xml] [_VisualParams_.cs]");
+                Console.WriteLine("Usage: VisualParamGenerator.exe [avatar_lad.xml] [template.cs] [_VisualParams_.cs]");
                 return;
             }
             else if (!File.Exists(args[0]))
@@ -22,6 +22,31 @@ namespace VisualParamGenerator
             }
 
             XmlNodeList list;
+            TextWriter writer;
+
+            try
+            {
+                writer = new StreamWriter(args[2]);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Couldn't open " + args[2] + " for writing");
+                return;
+            }
+
+            try
+            {
+                // Read in the template.cs file and write it to our output
+                TextReader reader = new StreamReader(args[1]);
+                writer.WriteLine(reader.ReadToEnd());
+                reader.Close();
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Couldn't read from file " + args[1]);
+                return;
+            }
+
             try
             {
                 XmlDocument doc = new XmlDocument();
@@ -36,14 +61,6 @@ namespace VisualParamGenerator
 
             StringWriter output = new StringWriter();
             bool first = true;
-
-            output.Write("using System;" + Environment.NewLine + Environment.NewLine);
-            output.Write("namespace libsecondlife" + Environment.NewLine);
-            output.Write("{" + Environment.NewLine);
-            output.Write("    public static class VisualParams" + Environment.NewLine);
-            output.Write("    {" + Environment.NewLine);
-            output.Write("        public static VisualParam[] Params = new VisualParam[]" + Environment.NewLine);
-            output.Write("        {" + Environment.NewLine);
 
             foreach (XmlNode node in list)
             {
@@ -65,7 +82,7 @@ namespace VisualParamGenerator
                 {
                     if (!first)
                     {
-                        output.Write("," + Environment.NewLine);
+                        output.Write(Environment.NewLine);
                     }
                     else
                     {
@@ -100,10 +117,9 @@ namespace VisualParamGenerator
                         else
                             def = min;
                         
-
-                        output.Write("            new VisualParam(" + id + ", \"" + name + "\", " + group + 
+                        output.Write("                    paramsDict.Add(" + id + ", new VisualParam(" + id + ", \"" + name + "\", " + group + 
                             ", \"" + wearable + "\", \"" + label + "\", \"" + label_min + "\", \"" + label_max + 
-                            "\", " + def + "f, " + min + "f, " + max + "f)");
+                            "\", " + def + "f, " + min + "f, " + max + "f));");
                     }
                     catch (Exception e)
                     {
@@ -112,13 +128,17 @@ namespace VisualParamGenerator
                 }
             }
 
-            output.Write(Environment.NewLine + "        };" + Environment.NewLine);
+            output.Write(Environment.NewLine + "                }" + Environment.NewLine);
+            output.Write("                return paramsDict;" + Environment.NewLine);
+            output.Write("            }" + Environment.NewLine);
+            output.Write("        }" + Environment.NewLine);
             output.Write("    }" + Environment.NewLine);
             output.Write("}" + Environment.NewLine);
 
             try
             {
-                File.WriteAllText(args[1], output.ToString());
+                writer.Write(output.ToString());
+                writer.Close();
             }
             catch (Exception e)
             {

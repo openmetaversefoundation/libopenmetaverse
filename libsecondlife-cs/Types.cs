@@ -38,20 +38,23 @@ namespace libsecondlife
     [Serializable]
     public class LLUUID : IXmlSerializable
 	{
-        /// <summary>The 16 bytes that make up the UUID</summary>
-        protected byte[] data = new byte[16];
-
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
 		public byte[] Data
 		{
 			get { return data; }
 		}
 
+
+        /// <summary>The 16 bytes that make up the UUID</summary>
+        protected byte[] data;
+
+
         /// <summary>
         /// Default constructor
         /// </summary>
 		public LLUUID()
 		{
+            data = new byte[16];
 		}
 
         /// <summary>
@@ -72,8 +75,34 @@ namespace libsecondlife
         /// <param name="pos">Beginning offset in the array</param>
         public LLUUID(byte[] byteArray, int pos)
         {
+            data = new byte[16];
             Array.Copy(byteArray, pos, data, 0, 16);
         }
+
+        /// <summary>
+        /// Returns the raw bytes for this UUID
+        /// </summary>
+        /// <returns>A 16 byte array containing this UUID</returns>
+        public byte[] GetBytes()
+        {
+            return data;
+        }
+
+		/// <summary>
+		/// Calculate an LLCRC (cyclic redundancy check) for this LLUUID
+		/// </summary>
+		/// <returns>The CRC checksum for this LLUUID</returns>
+		public uint CRC() 
+		{
+			uint retval = 0;
+
+			retval += (uint)((Data[3] << 24) + (Data[2] << 16) + (Data[1] << 8) + Data[0]);
+			retval += (uint)((Data[7] << 24) + (Data[6] << 16) + (Data[5] << 8) + Data[4]);
+			retval += (uint)((Data[11] << 24) + (Data[10] << 16) + (Data[9] << 8) + Data[8]);
+			retval += (uint)((Data[15] << 24) + (Data[14] << 16) + (Data[13] << 8) + Data[12]);
+
+			return retval;
+		}
 
         /// <summary>
         /// Parse the bytes for a LLUUID from a string
@@ -128,31 +157,6 @@ namespace libsecondlife
                 return false;
             }
         }
-
-        /// <summary>
-        /// Returns the raw bytes for this UUID
-        /// </summary>
-        /// <returns>A 16 byte array containing this UUID</returns>
-        public byte[] GetBytes()
-        {
-            return data;
-        }
-
-		/// <summary>
-		/// Calculate an LLCRC (cyclic redundancy check) for this LLUUID
-		/// </summary>
-		/// <returns>The CRC checksum for this LLUUID</returns>
-		public uint CRC() 
-		{
-			uint retval = 0;
-
-			retval += (uint)((Data[3] << 24) + (Data[2] << 16) + (Data[1] << 8) + Data[0]);
-			retval += (uint)((Data[7] << 24) + (Data[6] << 16) + (Data[5] << 8) + Data[4]);
-			retval += (uint)((Data[11] << 24) + (Data[10] << 16) + (Data[9] << 8) + Data[8]);
-			retval += (uint)((Data[15] << 24) + (Data[14] << 16) + (Data[13] << 8) + Data[12]);
-
-			return retval;
-		}
 
         /// <summary>
         /// 
