@@ -62,10 +62,40 @@ namespace libsecondlife.Tests
             Assert.IsTrue(result == expected, a.ToString() + " * " + b.ToString() + " produced " + result.ToString() +
                 " instead of " + expected.ToString());
         }
+
         [Test]
         public void VectorQuaternionMath()
         {
             ;
+        }
+
+        [Test]
+        public void FloatsToTerseStrings()
+        {
+            float f = 1.20f;
+            string a = String.Empty;
+            string b = "1.2";
+            
+            a = Helpers.FloatToTerseString(f);
+            Assert.IsTrue(a == b, f.ToString() + " converted to " + a + ", expecting " + b);
+
+            f = 24.00f;
+            b = "24";
+
+            a = Helpers.FloatToTerseString(f);
+            Assert.IsTrue(a == b, f.ToString() + " converted to " + a + ", expecting " + b);
+
+            f = -0.59f;
+            b = "-.59";
+
+            a = Helpers.FloatToTerseString(f);
+            Assert.IsTrue(a == b, f.ToString() + " converted to " + a + ", expecting " + b);
+
+            f = 0.59f;
+            b = ".59";
+
+            a = Helpers.FloatToTerseString(f);
+            Assert.IsTrue(a == b, f.ToString() + " converted to " + a + ", expecting " + b);
         }
     }
 }

@@ -208,7 +208,7 @@ namespace libsecondlife
         /// <returns>A terse string representation of the input number</returns>
         public static string FloatToTerseString(float val)
         {
-            string s = string.Format("{0:.00f}", val);
+            string s = string.Format("{0:.00}", val);
 
             // Trim trailing zeroes
             while (s[s.Length - 1] == '0')
