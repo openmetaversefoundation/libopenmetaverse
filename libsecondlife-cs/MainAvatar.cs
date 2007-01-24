@@ -911,6 +911,7 @@ namespace libsecondlife
 
             autopilot.AgentData.AgentID = Client.Network.AgentID;
             autopilot.AgentData.SessionID = Client.Network.SessionID;
+            autopilot.AgentData.TransactionID = LLUUID.Zero;
             autopilot.MethodData.Invoice = LLUUID.Zero;
             autopilot.MethodData.Method = Helpers.StringToField("autopilot");
             autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
