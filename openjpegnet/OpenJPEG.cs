@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 namespace OpenJPEGNet
@@ -258,7 +259,14 @@ namespace OpenJPEGNet
 
         ///////////////////////////////////
 
-        public unsafe static byte[] decode(byte[] j2cdata)
+        /// <summary>
+        /// Decodes a byte array containing JPEG2000 data using the J2K codec
+        /// in to a byte array containing a Targa file
+        /// </summary>
+        /// <param name="j2cdata">Byte array containing JPEG2000 data using the
+        /// J2K codec</param>
+        /// <returns>Byte array containing a Targa file</returns>
+        public unsafe static byte[] DecodeToTGA(byte[] j2kdata)
         {
             const int TGA_HEADER_SIZE = 32;
 
@@ -284,7 +292,7 @@ namespace OpenJPEGNet
             opj_setup_decoder(ref dinfo, ref parameters);
 
             // open a byte stream
-            IntPtr cio_ptr = opj_cio_open(dinfo_ptr, j2cdata, j2cdata.Length);
+            IntPtr cio_ptr = opj_cio_open(dinfo_ptr, j2kdata, j2kdata.Length);
             cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
 
             // decode
@@ -351,14 +359,40 @@ namespace OpenJPEGNet
             return output;
         }
 
-        public static Image DecodeToImage(byte[] j2cdata)
+        /// <summary>
+        /// Decodes a byte array containing JPEG2000 data using the J2K codec
+        /// in to a GDI+ Image object
+        /// </summary>
+        /// <param name="j2cdata"></param>
+        /// <returns></returns>
+        public static Image DecodeToImage(byte[] j2kdata)
         {
-            byte[] output = decode(j2cdata);
-            MemoryStream stream = new MemoryStream(output);
+            return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(j2kdata)));
+        }
 
-            Image image = LoadTGAClass.LoadTGA(stream);
+        public unsafe static byte[] EncodeFromImage(Bitmap bitmap, string comment)
+        {
+            const int MAX_COMPS = 5;
+            opj_cparameters_t parameters = new opj_cparameters_t();
 
-            return image;
+            opj_set_default_encoder_parameters(ref parameters);
+            parameters.tcp_rates[0] = 0;
+            parameters.tcp_numlayers++;
+            parameters.cp_disto_alloc = 1;
+            parameters.cod_format = 0;
+            parameters.cp_comment = comment;
+
+            OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
+            opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[MAX_COMPS];
+            IntPtr image_ptr;
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+            //BitmapData data = 
+            
+
+            //for (int i = 0; i < 
+
+            return new byte[0];
         }
     }
 }
