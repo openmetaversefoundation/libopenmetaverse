@@ -47,7 +47,7 @@ namespace libsecondlife
         /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
         public const byte MSG_ZEROCODED = 0x80;
         /// <summary>Used for converting a byte to a variable range float</summary>
-        public const float OneOverByteMax = 1.0f / (float)byte.MaxValue;
+        public const float ONE_OVER_BYTEMAX = 1.0f / (float)byte.MaxValue;
 
         /// <summary>
         /// Passed to SecondLife.Log() to identify the severity of a log entry
@@ -100,6 +100,17 @@ namespace libsecondlife
             Move = 0x00080000,
             /// <summary></summary>
             Transfer = 0x00002000
+        }
+
+        /// <summary>
+        /// Converts an unsigned integer to a hexadecimal string
+        /// </summary>
+        /// <param name="i">An unsigned integer to convert to a string</param>
+        /// <returns>A hexadecimal string 10 characters long</returns>
+        /// <example>0x7fffffff</example>
+        public static string UIntToHexString(uint i)
+        {
+            return string.Format("{0:x8}", i);
         }
 
         /// <summary>
@@ -190,6 +201,33 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Converts a floating point number to a terse string format used for
+        /// transmitting numbers in wearable asset files
+        /// </summary>
+        /// <param name="val">Floating point number to convert to a string</param>
+        /// <returns>A terse string representation of the input number</returns>
+        public static string FloatToTerseString(float val)
+        {
+            string s = string.Format("{0:.00f}", val);
+
+            // Trim trailing zeroes
+            while (s[s.Length - 1] == '0')
+                s = s.Remove(s.Length - 1);
+
+            // Remove superfluous decimal places after the trim
+            if (s[s.Length - 1] == '.')
+                s = s.Remove(s.Length - 1);
+            // Remove leading zeroes after a negative sign
+            else if (s[0] == '-' && s[1] == '0')
+                s = s.Remove(1, 1);
+            // Remove leading zeroes in positive numbers
+            else if (s[0] == '0')
+                s = s.Remove(0, 1);
+
+            return s;
+        }
+
+        /// <summary>
         /// Convert a float value to a byte given a minimum and maximum range
         /// </summary>
         /// <param name="val">Value to convert to a byte</param>
@@ -215,13 +253,13 @@ namespace libsecondlife
         /// <returns>A float value inclusively between lower and upper</returns>
         public static float ByteToFloat(byte val, float lower, float upper)
         {
-            float fval = (float)val * OneOverByteMax;
+            float fval = (float)val * ONE_OVER_BYTEMAX;
             float delta = (upper - lower);
             fval *= delta;
             fval += lower;
 
             // Test for values very close to zero
-            float error = delta * OneOverByteMax;
+            float error = delta * ONE_OVER_BYTEMAX;
             if (Math.Abs(fval) < error)
                 fval = 0.0f;
 
