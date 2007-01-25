@@ -45,7 +45,7 @@ namespace OpenJPEGNet
         public delegate void opj_msg_callback(string msg, IntPtr client_data);
 
         [StructLayout(LayoutKind.Sequential,Pack=4)]
-        public struct opj_event_mgr_t
+        public unsafe struct opj_event_mgr_t
         {
 	        public opj_msg_callback error_handler;
 	        public opj_msg_callback warning_handler;
@@ -55,8 +55,11 @@ namespace OpenJPEGNet
         [StructLayout(LayoutKind.Sequential,Pack=4)]
         public unsafe struct opj_poc_t
         {
-	        public int resno0, compno0;
-	        public int layno1, resno1, compno1;
+	        public int resno0;
+            public int compno0;
+	        public int layno1;
+            public int resno1;
+            public int compno1;
 	        public OPJ_PROG_ORDER prg;
 	        public int tile;
 	        public fixed char progorder[4];
@@ -73,19 +76,20 @@ namespace OpenJPEGNet
 	        public int cp_disto_alloc;
 	        public int cp_fixed_alloc;
 	        public int cp_fixed_quality;
-	        public int cp_matrice;
+	        public int* cp_matrice;
 	        public string cp_comment;
 	        public int csty;
 	        public OPJ_PROG_ORDER prog_order;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-	        public opj_poc_t[] POC;
+            //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+	        //public opj_poc_t[] POC;
+            public fixed int POC[256];
 	        public int numpocs;
 	        public int tcp_numlayers;
 	        public fixed int tcp_rates[100];
-	        public fixed int tcp_distoratio[100];
+            public fixed float tcp_distoratio[100];
 	        public int numresolution;
 	        public int cblockw_init;
-	        public int blockh_init;
+	        public int cblockh_init;
 	        public int mode;
 	        public int irreversible;
 	        public int roi_compno;
@@ -117,41 +121,51 @@ namespace OpenJPEGNet
         };
 
         [StructLayout(LayoutKind.Sequential,Pack=4)]
-        public struct opj_common_struct_t
+        public unsafe struct opj_common_struct_t
         {
-            IntPtr event_mgr;
-            IntPtr client_data;
+            void* event_mgr; //opj_event_mgr_t*
+            void* client_data;
             bool is_decompressor;
             OPJ_CODEC_FORMAT codec_format;
-            IntPtr j2k_handle;
-            IntPtr jp2_handle;
+            void* j2k_handle;
+            void* jp2_handle;
         };
 
         [StructLayout(LayoutKind.Sequential,Pack=4)]
-        public struct opj_cinfo_t
+        public unsafe struct opj_cinfo_t
         {
-            public opj_common_struct_t cinfo;
+            void* event_mgr; //opj_event_mgr_t*
+            void* client_data;
+            int is_decompressor;
+            int codec_format;
+            void* j2k_handle;
+            void* jp2_handle;
         };
 
         [StructLayout(LayoutKind.Sequential,Pack=4)]
-        public struct opj_dinfo_t
+        public unsafe struct opj_dinfo_t
         {
-            public opj_common_struct_t cinfo;
+            void* event_mgr; //opj_event_mgr_t*
+            void* client_data;
+            bool is_decompressor;
+            OPJ_CODEC_FORMAT codec_format;
+            void* j2k_handle;
+            void* jp2_handle;
         };
 
         public const int OPJ_STREAM_READ = 0x0001;
         public const int OPJ_STREAM_WRITE = 0x0002;
 
         [StructLayout(LayoutKind.Sequential,Pack=4)]
-        public struct opj_cio_t
+        public unsafe struct opj_cio_t
         {
-	        public opj_common_struct_t cinfo;
+	        public IntPtr cinfo;
 	        public int openmode;
-	        public byte buffer;
+	        public byte* buffer;
 	        public int length;
-	        public byte start;
-	        public byte end;
-	        public byte bp;
+	        public byte* start;
+	        public byte* end;
+	        public byte* bp;
         };
 
         [StructLayout(LayoutKind.Sequential,Pack=4)]
@@ -201,27 +215,27 @@ namespace OpenJPEGNet
         public static extern string opj_version();
 
         [DllImport("openjpeg.dll")]
-        public static extern IntPtr opj_image_create(int numcmpts, ref opj_image_cmptparm_t cmptparms, OPJ_COLOR_SPACE clrspc);
+        public unsafe static extern opj_image_t* opj_image_create(int numcmpts, opj_image_cmptparm_t[] cmptparms, OPJ_COLOR_SPACE clrspc);
 
         [DllImport("openjpeg.dll")]
-        public static extern void opj_image_destroy(ref opj_image_t image);
+        public unsafe static extern void opj_image_destroy(opj_image_t* image);
 
         [DllImport("openjpeg.dll")]
         // TODO: Can we get rid of this MarshalAs?
-        public static extern IntPtr opj_cio_open(IntPtr cio, [MarshalAs(UnmanagedType.LPArray)]byte[] buffer, int length);
+        public unsafe static extern opj_cio_t* opj_cio_open(void* cio, [MarshalAs(UnmanagedType.LPArray)]byte[] buffer, int length);
 
         [DllImport("openjpeg.dll")]
-        public static extern void opj_cio_close(IntPtr cio);
+        public unsafe static extern void opj_cio_close(opj_cio_t* cio);
 
         [DllImport("openjpeg.dll")]
-        public static extern int cio_tell(ref opj_cio_t cio);
+        public unsafe static extern int cio_tell(opj_cio_t* cio);
 
         [DllImport("openjpeg.dll")]
-        public static extern void cio_seek(ref opj_cio_t cio, int pos);
+        public unsafe static extern void cio_seek(opj_cio_t* cio, int pos);
 
-        [DllImport("openjpeg.dll")]
+        //[DllImport("openjpeg.dll")]
         // opj_event_mgr_t*
-        public static extern IntPtr opj_set_event_mgr(opj_common_struct_t cinfo, ref opj_event_mgr_t event_mgr, IntPtr context);
+        //public unsafe static extern opj_event_mgr_t* opj_set_event_mgr(opj_common_struct_t* cinfo, opj_event_mgr_t* event_mgr, void* context);
 
         [DllImport("openjpeg.dll", EntryPoint="opj_create_decompress")]
         // opj_dinfo_t*
@@ -242,19 +256,19 @@ namespace OpenJPEGNet
 
         [DllImport("openjpeg.dll")]
         // opj_cinfo_t*
-        public static extern IntPtr opj_create_compress(OPJ_CODEC_FORMAT format);
+        public unsafe static extern opj_cinfo_t* opj_create_compress(OPJ_CODEC_FORMAT format);
 
         [DllImport("openjpeg.dll")]
-        public static extern void opj_destroy_compress(ref opj_cinfo_t cinfo);
+        public unsafe static extern void opj_destroy_compress(opj_cinfo_t* cinfo);
 
         [DllImport("openjpeg.dll")]
-        public static extern void opj_set_default_encoder_parameters(ref opj_cparameters_t parameters);
+        public static extern void opj_set_default_encoder_parameters(IntPtr parameters);
 
         [DllImport("openjpeg.dll")]
-        public static extern void opj_setup_encoder(ref opj_cinfo_t cinfo, ref opj_cparameters_t parameters, ref opj_image_t image);
+        public unsafe static extern void opj_setup_encoder(opj_cinfo_t* cinfo, IntPtr parameters, opj_image_t* image);
 
         [DllImport("openjpeg.dll")]
-        public static extern bool opj_encode(ref opj_cinfo_t cinfo, ref opj_cio_t cio, ref opj_image_t image, string index);
+        public unsafe static extern bool opj_encode(opj_cinfo_t* cinfo, opj_cio_t* cio, opj_image_t* image, char* index);
 
 
         ///////////////////////////////////
@@ -271,7 +285,6 @@ namespace OpenJPEGNet
             const int TGA_HEADER_SIZE = 32;
 
             opj_dparameters_t parameters = new opj_dparameters_t();
-            //opj_event_mgr_t event_mgr;
             opj_image_t image;
 
             opj_dinfo_t dinfo;
@@ -292,7 +305,7 @@ namespace OpenJPEGNet
             opj_setup_decoder(ref dinfo, ref parameters);
 
             // open a byte stream
-            IntPtr cio_ptr = opj_cio_open(dinfo_ptr, j2kdata, j2kdata.Length);
+            IntPtr cio_ptr = (IntPtr)opj_cio_open((opj_common_struct_t*)dinfo_ptr, j2kdata, j2kdata.Length);
             cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
 
             // decode
@@ -353,7 +366,7 @@ namespace OpenJPEGNet
 
             File.WriteAllBytes("out.tga", output);
 
-            opj_cio_close(cio_ptr);
+            opj_cio_close((opj_cio_t*)cio_ptr);
             opj_destroy_decompress(dinfo_ptr);
 
             return output;
@@ -372,27 +385,160 @@ namespace OpenJPEGNet
 
         public unsafe static byte[] EncodeFromImage(Bitmap bitmap, string comment)
         {
-            const int MAX_COMPS = 5;
-            opj_cparameters_t parameters = new opj_cparameters_t();
+            const int MAX_COMPS = 4;
 
-            opj_set_default_encoder_parameters(ref parameters);
+            // setup the parameters
+            IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
+            opj_set_default_encoder_parameters(parameters_ptr);
+
+            opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
+
             parameters.tcp_rates[0] = 0;
             parameters.tcp_numlayers++;
             parameters.cp_disto_alloc = 1;
             parameters.cod_format = 0;
+            parameters.subsampling_dx = 1;
+            parameters.subsampling_dy = 1;
             parameters.cp_comment = comment;
 
             OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
             opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[MAX_COMPS];
-            IntPtr image_ptr;
             int width = bitmap.Width;
             int height = bitmap.Height;
-            //BitmapData data = 
-            
 
-            //for (int i = 0; i < 
+            for (int c = 0; c < MAX_COMPS; c++)
+            {
+                cmptparm[c] = new opj_image_cmptparm_t();
 
-            return new byte[0];
+                cmptparm[c].prec = 8;
+                cmptparm[c].bpp = 8;
+                cmptparm[c].sgnd = 0;
+                cmptparm[c].dx = parameters.subsampling_dx;
+                cmptparm[c].dy = parameters.subsampling_dy;
+                cmptparm[c].w = width;
+                cmptparm[c].h = height;
+            }
+
+            // create the image
+            int i = 0;
+            int numcomps;
+            PixelFormat format = bitmap.PixelFormat;
+
+            if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
+                numcomps = 4;
+            else if (format == PixelFormat.Format16bppGrayScale)
+                numcomps = 1;
+            else
+                numcomps = 3;
+
+            opj_image_t* image_ptr = opj_image_create(numcomps, cmptparm, color_space);
+            image_ptr->x1 = width;
+            image_ptr->y1 = height;
+
+            BitmapData data;
+
+            // Build the raw image buffer for openjpeg to read
+            if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
+            {
+                // four layers, RGBA
+                data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                    PixelFormat.Format32bppArgb);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* pixel = (byte*)data.Scan0;
+                        pixel += (y * width + x) * numcomps;
+
+                        // GDI+ gives us BGRA and we need to turn that in to RGBA
+                        (*image_ptr).comps[0].data[i] = *(pixel + 2);
+                        (*image_ptr).comps[1].data[i] = *(pixel + 1);
+                        (*image_ptr).comps[2].data[i] = *(pixel);
+                        (*image_ptr).comps[3].data[i] = *(pixel + 3);
+
+                        pixel += 4;
+                        i++;
+                    }
+                }
+            }
+            else if (format == PixelFormat.Format16bppGrayScale)
+            {
+                // one layer
+                data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                    PixelFormat.Format16bppGrayScale);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* pixel = (byte*)data.Scan0;
+                        pixel += (y * width + x) * numcomps;
+
+                        // turn 16 bit data in to 8 bit data (TODO: Does this work?)
+                        (*image_ptr).comps[0].data[i] = *(pixel);
+
+                        pixel += 2;
+                        i++;
+                    }
+                }
+            }
+            else
+            {
+                // three layers, RGB
+                data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                    PixelFormat.Format24bppRgb);
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte* pixel = (byte*)data.Scan0;
+                        pixel += (y * width + x) * numcomps;
+
+                        for (int c = numcomps - 1; c >= 0; c--)
+                        {
+                            (*image_ptr).comps[c].data[i] = *pixel;
+                            pixel++;
+                        }
+                        i++;
+                    }
+                }
+            }
+
+            bitmap.UnlockBits(data);
+
+            // get a J2K compressor handle
+            opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
+
+            // TODO: setup the callbacks
+
+            // setup the encoder parameters
+            Marshal.StructureToPtr(parameters, parameters_ptr, true);
+            opj_setup_encoder(cinfo_ptr, parameters_ptr, image_ptr);
+
+            // open a byte stream for writing
+            opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
+
+            // encode the image
+            bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, null);
+            if (!success)
+            {
+                opj_cio_close(cio_ptr);
+                return null;
+            }
+
+            int codestream_length = cio_tell(cio_ptr);
+
+            byte[] output = new byte[codestream_length];
+            Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
+
+            opj_cio_close(cio_ptr);
+            opj_destroy_compress(cinfo_ptr);
+            opj_image_destroy(image_ptr);
+            Marshal.FreeHGlobal(parameters_ptr);
+
+            return output;
         }
     }
 }
