@@ -59,6 +59,9 @@
       <sources failonempty="true">
         <include name="*.cs" />
       </sources>
+      <references>
+	    <include name="System.Drawing.dll" />
+	  </references>
     </csc>
     <copy todir="${bin_dir}" overwrite="true">
 	  <fileset>

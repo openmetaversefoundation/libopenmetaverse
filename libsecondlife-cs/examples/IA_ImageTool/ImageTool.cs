@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-
+using System.Drawing;
 using libsecondlife;
 using libsecondlife.InventorySystem;
 using libsecondlife.AssetSystem;
@@ -29,18 +29,16 @@ namespace IA_ImageTool
         [STAThread]
         static void Main(string[] args)
         {
-            if ( (File.Exists("libjasper.dll") == false) )
-            {
-                Console.WriteLine("You need a copy of libjasper.dll, it can be found in SVN in the main trunk inside libjaspernet");
-                return;
-            }
+            Bitmap bitmap = (Bitmap)Bitmap.FromFile("test.jpg");
+            byte[] j2k = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, String.Empty);
+            File.WriteAllBytes("test.j2c", j2k);
+            return;
 
             if (args.Length < 5)
             {
                 ImageTool.Usage();
                 return;
             }
-
 
             List<LLUUID> uuidList = new List<LLUUID>();
             string filename = "";
@@ -170,19 +168,24 @@ namespace IA_ImageTool
         {
             if (_Put)
             {
-                
-
                 Console.WriteLine("Reading: " + _FileName);
 
-                byte[] j2cdata;
+                byte[] j2cdata = null;
 
                 if (_Rate != 0)
                 {
-                    j2cdata = KakaduWrap.ReadJ2CData(_FileName, _Rate);
+                    //j2cdata = KakaduWrap.ReadJ2CData(_FileName, _Rate);
                 }
                 else
                 {
-                    j2cdata = KakaduWrap.ReadJ2CData(_FileName);
+                    Bitmap bitmap = (Bitmap)Bitmap.FromFile(_FileName);
+                    j2cdata = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, String.Empty);
+                }
+
+                if (j2cdata == null)
+                {
+                    Console.WriteLine("Failed to compress " + _FileName);
+                    return;
                 }
 
                 if (!_Client.Inventory.GetRootFolder().RequestDownloadContents(true, false, false, false).RequestComplete.WaitOne(5000, false))
@@ -190,7 +193,6 @@ namespace IA_ImageTool
                     Console.WriteLine("timeout while downloading root folders, aborting.");
                     return;
                 }
-                
 
                 Console.WriteLine("Connecting to your Texture folder...");
                 InventoryFolder iFolder = _Client.Inventory.getFolder("Textures");
@@ -227,22 +229,17 @@ namespace IA_ImageTool
 
                         Console.WriteLine("Image Data Length :" + j2cdata.Length);
 
-                        Console.WriteLine("Writing to: " + FileName + ".tif");
-                        File.WriteAllBytes(FileName + ".tif", JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata));
-
                         Console.WriteLine("Writing to: " + FileName + ".tga");
-                        File.WriteAllBytes(FileName + ".tga", JasperWrapper.jasper_decode_j2c_to_tga(j2cdata));
+                        File.WriteAllBytes(FileName + ".tga", OpenJPEGNet.OpenJPEG.DecodeToTGA(j2cdata));
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine("ERROR: Can't download image :: " + e.Message);
                     }
                 }
-
             }
 
             Console.WriteLine("Done...");
-
         }
 
         protected static void Usage()
@@ -250,13 +247,13 @@ namespace IA_ImageTool
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [get] [uuid] [(filename)]");
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [getfile] [filename]");
             Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [filename]");
-            Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [bit-rate] [filename]");
+            //Console.WriteLine("Usage: ImageTool [first] [last] [password] [put] [bit-rate] [filename]");
 
             Console.WriteLine();
-            Console.WriteLine("Example: ImageTool John Doe Password get 0444bf21-f77e-7f63-89e9-b839ec66bc15 cloud (this will output a bmp and a tiff)");
+            Console.WriteLine("Example: ImageTool John Doe Password get 0444bf21-f77e-7f63-89e9-b839ec66bc15 cloud (this will output cloud.tga)");
             Console.WriteLine("Example: ImageTool John Doe Password getfile uuids.txt (this will download a list of textures, one per line)");
-            Console.WriteLine("Example: ImageTool John Doe Password put Sample.tiff");
-            Console.WriteLine("Example: ImageTool John Doe Password put 1.0 BigImage.tiff (this will compress the file with the given bit-rate)");
+            Console.WriteLine("Example: ImageTool John Doe Password put Sample.jpg");
+            //Console.WriteLine("Example: ImageTool John Doe Password put 1.0 BigImage.jpg (this will compress the file with the given bit-rate)");
         }
     }
 }
