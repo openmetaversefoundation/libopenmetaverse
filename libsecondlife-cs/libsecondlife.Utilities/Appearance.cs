@@ -74,6 +74,248 @@ namespace libsecondlife.Utilities.Appearance
         Invalid = 255
     };
 
+    public enum ForSale
+    {
+        Not = 0,
+        Original = 1,
+        Copy = 2,
+        Contents = 3
+    }
+
+
+    public class Wearable
+    {
+        public string Name = String.Empty;
+        public string Description = String.Empty;
+        public WearableType Type = WearableType.Shape;
+        public ForSale ForSale = ForSale.Not;
+        public int SalePrice = 0;
+        public LLUUID Creator = LLUUID.Zero;
+        public LLUUID Owner = LLUUID.Zero;
+        public LLUUID LastOwner = LLUUID.Zero;
+        public LLUUID Group = LLUUID.Zero;
+        public bool GroupOwned = false;
+        public Helpers.PermissionType BasePermissions;
+        public Helpers.PermissionType EveryonePermissions;
+        public Helpers.PermissionType OwnerPermissions;
+        public Helpers.PermissionType NextOwnerPermissions;
+        public Helpers.PermissionType GroupPermissions;
+        public Dictionary<int, float> Params = new Dictionary<int, float>();
+        public Dictionary<int, LLUUID> Textures = new Dictionary<int, LLUUID>();
+
+
+        private SecondLife Client;
+        private string[] ForSaleNames = new string[]
+        {
+            "not",
+            "orig",
+            "copy",
+            "cntn"
+        };
+
+
+        public Wearable(SecondLife client)
+        {
+            Client = client;
+        }
+
+        public bool ImportAsset(string data)
+        {
+            int version = -1;
+            int n = -1;
+
+            try
+            {
+                n = data.IndexOf('\n');
+                version = Int32.Parse(data.Substring(19, n + 1));
+                data = data.Remove(0, n);
+
+                if (version != 22)
+                {
+                    Client.Log("Wearable asset has unrecognized version " + version, Helpers.LogLevel.Warning);
+                    return false;
+                }
+
+                
+                n = data.IndexOf('\n');
+                Name = data.Substring(0, n);
+                data = data.Remove(0, n);
+
+                n = data.IndexOf('\n');
+                Description = data.Substring(0, n);
+                data = data.Remove(0, n);
+
+                // Split in to an upper and lower half
+                string[] parts = data.Split(new string[] { "parameters" }, StringSplitOptions.None);
+                parts[1] = "parameters" + parts[1];
+
+                // Parse the upper half
+                string[] lines = parts[0].Split('\n');
+                foreach (string thisline in lines)
+                {
+                    string line = thisline.Trim();
+                    string[] fields = line.Split('\t');
+
+                    if (fields.Length == 2)
+                    {
+                        if (fields[0] == "creator_mask")
+                        {
+                            // Deprecated, apply this as the base mask
+                            BasePermissions = (Helpers.PermissionType)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "base_mask")
+                        {
+                            BasePermissions = (Helpers.PermissionType)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "owner_mask")
+                        {
+                            OwnerPermissions = (Helpers.PermissionType)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "group_mask")
+                        {
+                            GroupPermissions = (Helpers.PermissionType)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "everyone_mask")
+                        {
+                            EveryonePermissions = (Helpers.PermissionType)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "next_owner_mask")
+                        {
+                            NextOwnerPermissions = (Helpers.PermissionType)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "creator_id")
+                        {
+                            Creator = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "owner_id")
+                        {
+                            Owner = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "last_owner_id")
+                        {
+                            LastOwner = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "group_id")
+                        {
+                            Group = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "group_owned")
+                        {
+                            GroupOwned = (Int32.Parse(fields[1]) != 0);
+                        }
+                        else if (fields[0] == "sale_type")
+                        {
+                            for (int i = 0; i < ForSaleNames.Length; i++)
+                            {
+                                if (fields[1] == ForSaleNames[i])
+                                {
+                                    ForSale = (ForSale)i;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (fields[0] == "sale_price")
+                        {
+                            SalePrice = Int32.Parse(fields[1]);
+                        }
+                        else if (fields[0] == "perm_mask")
+                        {
+                            Client.Log("Wearable asset has deprecated perm_mask field, ignoring", Helpers.LogLevel.Warning);
+                        }
+                    }
+                    else if (line.StartsWith("type "))
+                    {
+                        Type = (WearableType)Int32.Parse(line.Substring(5));
+                        break;
+                    }
+                }
+
+                // Break up the lower half in to parameters and textures
+                string[] lowerparts = parts[1].Split(new string[] { "textures" }, StringSplitOptions.None);
+                lowerparts[1] = "textures" + lowerparts[1];
+
+                // Parse the parameters
+                lines = lowerparts[0].Split('\n');
+                foreach (string line in lines)
+                {
+                    string[] fields = line.Split(' ');
+
+                    // Use exception handling to deal with all the lines we aren't interested in
+                    try
+                    {
+                        int id = Int32.Parse(fields[0]);
+                        float weight = Single.Parse(fields[1]);
+
+                        Params[id] = weight;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                // Parse the textures
+                lines = lowerparts[1].Split('\n');
+                foreach (string line in lines)
+                {
+                    string[] fields = line.Split(' ');
+
+                    // Use exception handling to deal with all the lines we aren't interested in
+                    try
+                    {
+                        int id = Int32.Parse(fields[0]);
+                        LLUUID texture = LLUUID.Parse(fields[1]);
+
+                        Textures[id] = texture;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Client.Log("Failed to parse wearable asset: " + e.ToString(), Helpers.LogLevel.Warning);
+            }
+
+            return false;
+        }
+
+        public string ExportAsset()
+        {
+            string data = "LLWearable version 22\n";
+            data += Name + "\n\n";
+            data += "\tpermissions 0\n\t{\n";
+            data += "\t\tbase_mask\t" + Helpers.UIntToHexString((uint)BasePermissions) + "\n";
+            data += "\t\towner_mask\t" + Helpers.UIntToHexString((uint)OwnerPermissions) + "\n";
+            data += "\t\tgroup_mask\t" + Helpers.UIntToHexString((uint)GroupPermissions) + "\n";
+            data += "\t\teveryone_mask\t" + Helpers.UIntToHexString((uint)EveryonePermissions) + "\n";
+            data += "\t\tnext_owner_mask\t" + Helpers.UIntToHexString((uint)NextOwnerPermissions) + "\n";
+            data += "\t\tcreator_id\t" + Creator.ToStringHyphenated() + "\n";
+            data += "\t\towner_id\t" + Owner.ToStringHyphenated() + "\n";
+            data += "\t\tlast_owner_id\t" + LastOwner.ToStringHyphenated() + "\n";
+            data += "\t\tgroup_id\t" + Group.ToStringHyphenated() + "\n";
+            if (GroupOwned) data += "\t\tgroup_owned\t1\n";
+            data += "\t}\n";
+            data += "\tsale_info\t0\n";
+            data += "\t{\n";
+            data += "\t\tsale_type\t" + ForSaleNames[(int)ForSale] + "\n";
+            data += "\t\tsale_price\t" + SalePrice + "\n";
+            data += "\t}\n";
+            data += "type " + (int)Type + "\n";
+
+            data += "parameters " + Params.Count + "\n";
+            foreach (KeyValuePair<int, float> param in Params)
+                data += param.Key + " " + Helpers.FloatToTerseString(param.Value) + "\n";
+
+            data += "textures " + Textures.Count + "\n";
+            foreach (KeyValuePair<int, LLUUID> texture in Textures)
+                data += texture.Key + " " + texture.Value.ToStringHyphenated() + "\n";
+
+            return data;
+        }
+    }
 
     /// <summary>
     /// 
@@ -128,6 +370,7 @@ namespace libsecondlife.Utilities.Appearance
 
         private SecondLife Client;
         private AssetManager Assets;
+        private bool DownloadWearables = false;
 
 
         /// <summary>
@@ -149,14 +392,20 @@ namespace libsecondlife.Utilities.Appearance
         /// <returns></returns>
         public bool SetCurrentAppearance()
         {
+            AssetManager.AssetReceivedCallback callback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
+            Assets.OnAssetReceived += callback;
+
             return false;
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void RequestAgentWearables()
+        /// <param name="autoDownload"></param>
+        public void RequestAgentWearables(bool autoDownload)
         {
+            DownloadWearables = autoDownload;
+
             AgentWearablesRequestPacket request = new AgentWearablesRequestPacket();
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
@@ -211,12 +460,21 @@ namespace libsecondlife.Utilities.Appearance
                         KeyValuePair<LLUUID, LLUUID> ids = new KeyValuePair<LLUUID, LLUUID>(block.AssetID, block.ItemID);
                         WearableType type = (WearableType)block.WearableType;
                         wearables[type] = ids;
+
+                        //FIXME: Convert WearableType to AssetType
+                        //if (DownloadWearables)
+                        //    Assets.RequestAsset(block.AssetID, (WearableType)block.WearableType, true);
                     }
 
                     try { OnAgentWearables(wearables); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
+        }
+
+        void Assets_OnAssetReceived(AssetTransfer asset)
+        {
+            // Check if this is a wearable we were waiting on
         }
     }
 }

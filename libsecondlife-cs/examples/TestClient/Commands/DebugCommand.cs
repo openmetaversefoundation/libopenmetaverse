@@ -20,12 +20,12 @@ namespace libsecondlife.TestClient
 
             if (args[0].ToLower() == "on")
             {
-                Client.Debug = true;
+                Client.Settings.DEBUG = true;
                 return "Debug logging is on";
             }
             else if (args[0].ToLower() == "off")
             {
-                Client.Debug = false;
+                Client.Settings.DEBUG = false;
                 return "Debug logging is off";
             }
             else

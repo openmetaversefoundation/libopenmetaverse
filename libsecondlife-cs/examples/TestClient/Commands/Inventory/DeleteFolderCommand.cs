@@ -22,20 +22,22 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-			string target = String.Empty;
-			for (int ct = 0; ct < args.Length; ct++)
-				target = target + args[ct] + " ";
-			target = target.TrimEnd();
+            return "Broken until someone fixes me";
 
-			Client.Inventory.DownloadInventory();
-			InventoryFolder folder = Client.Inventory.getFolder(target);
-			if (folder != null)
-			{
-				folder.Delete();
-				return "Folder " + target + " deleted.";
-			}
+            //string target = String.Empty;
+            //for (int ct = 0; ct < args.Length; ct++)
+            //    target = target + args[ct] + " ";
+            //target = target.TrimEnd();
 
-			return "Unable to find: " + target;
+            //Client.Inventory.DownloadInventory();
+            //InventoryFolder folder = Client.Inventory.getFolder(target);
+            //if (folder != null)
+            //{
+            //    folder.Delete();
+            //    return "Folder " + target + " deleted.";
+            //}
+
+            //return "Unable to find: " + target;
 		}
 	}
 }

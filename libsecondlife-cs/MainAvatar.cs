@@ -29,6 +29,7 @@ using System.Timers;
 using System.Net;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Text;
 using libsecondlife.Packets;
 
@@ -313,10 +314,9 @@ namespace libsecondlife
         /// <summary>
         /// Triggered for any status updates of a teleport (progress, failed, succeeded)
         /// </summary>
-        /// <param name="currentSim">The simulator the avatar is currently residing in</param>
         /// <param name="message">A message about the current teleport status</param>
         /// <param name="status">The current status of the teleport</param>
-        public delegate void TeleportCallback(Simulator currentSim, string message, TeleportStatus status);
+        public delegate void TeleportCallback(string message, TeleportStatus status);
 
         /// <summary>
         /// Reply to a request to join a group, informs whether it was successful or not
@@ -427,13 +427,12 @@ namespace libsecondlife
         internal string teleportMessage = String.Empty;
 
         private SecondLife Client;
-        private TeleportStatus TeleportStat;
-        private Timer TeleportTimer;
-        private bool TeleportTimeout;
-        private uint HeightWidthGenCounter;
+        private TeleportStatus TeleportStat = TeleportStatus.None;
+        private ManualResetEvent TeleportEvent = new ManualResetEvent(false);
+        private uint HeightWidthGenCounter = 0;
         private float health = 0.0f;
         private int balance = 0;
-		private LLUUID activeGroup;
+		private LLUUID activeGroup = LLUUID.Zero;
 
         /// <summary>
         /// Constructor, setup callbacks for packets related to our avatar
@@ -465,11 +464,6 @@ namespace libsecondlife
             // Script dialog callback
             Client.Network.RegisterCallback(PacketType.ScriptDialog, new NetworkManager.PacketCallback(ScriptDialogHandler));
 
-            // Teleport timeout timer
-            TeleportTimer = new Timer(Client.Settings.TELEPORT_TIMEOUT);
-            TeleportTimer.Elapsed += new ElapsedEventHandler(TeleportTimerEvent);
-            TeleportTimeout = false;
-
             // Movement complete callback
             Client.Network.RegisterCallback(PacketType.AgentMovementComplete, new NetworkManager.PacketCallback(MovementCompleteHandler));
 
@@ -486,9 +480,6 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupHandler));
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(DropGroupHandler));
-
-            // Viewer effect callback
-            Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
 			
 			//Agent Update Callback
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
@@ -942,115 +933,27 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Start a teleport process
+        /// Attempt to look up a simulator name and teleport to the discovered
+        /// destination
         /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        public void BeginTeleport(ulong regionHandle, LLVector3 position)
-        {
-            BeginTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
-        }
-
-        /// <summary>
-        /// Start a teleport process
-        /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        /// <param name="lookAt">Target to look at</param>
-        public void BeginTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
-        {
-            TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
-            teleport.AgentData.AgentID = Client.Network.AgentID;
-            teleport.AgentData.SessionID = Client.Network.SessionID;
-            teleport.Info.LookAt = lookAt;
-            teleport.Info.Position = position;
-            teleport.Info.RegionHandle = regionHandle;
-
-            Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
-
-            Client.Network.SendPacket(teleport);
-        }
-
-        /// <summary>
-        /// Start a teleport process
-        /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        /// <returns></returns>
-        public bool Teleport(ulong regionHandle, LLVector3 position)
-        {
-            return Teleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
-        }
-
-        /// <summary>
-        /// Start a teleport process
-        /// </summary>
-        /// <param name="regionHandle"></param>
-        /// <param name="position">Position for Teleport</param>
-        /// <param name="lookAt">Target to look at</param>
-        /// <returns></returns>
-        public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
-        {
-            TeleportStat = TeleportStatus.None;
-
-            TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
-            teleport.AgentData.AgentID = Client.Network.AgentID;
-            teleport.AgentData.SessionID = Client.Network.SessionID;
-            teleport.Info.LookAt = lookAt;
-            teleport.Info.Position = position;
-
-            teleport.Info.RegionHandle = regionHandle;
-
-            Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
-
-            // Start the timeout check
-            TeleportTimeout = false;
-            TeleportTimer.Start();
-
-            Client.Network.SendPacket(teleport);
-
-            // FIXME: Use a ManualResetEvent, Client.Tick() is bad
-            while (TeleportStat != TeleportStatus.Failed && TeleportStat != TeleportStatus.Finished && !TeleportTimeout)
-            {
-                Client.Tick();
-            }
-
-            TeleportTimer.Stop();
-
-            if (TeleportTimeout)
-            {
-                teleportMessage = "Teleport timed out.";
-                TeleportStat = TeleportStatus.Failed;
-
-                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
-            }
-            else
-            {
-                if (OnTeleport != null) { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
-            }
-
-            return (TeleportStat == TeleportStatus.Finished);
-        }
-
-        /// <summary>
-        /// Generic Teleport Function
-        /// </summary>
-        /// <param name="simName">Region name</param>
-        /// <param name="position">Position for Teleport</param>
-        /// <returns></returns>
+        /// <param name="simName">Region name to look up</param>
+        /// <param name="position">Position to teleport to</param>
+        /// <returns>True if the lookup and teleport were successful, otherwise
+        /// false</returns>
         public bool Teleport(string simName, LLVector3 position)
         {
-            //position.Z = 0; //why was this here?
-            return Teleport(simName, position, new LLVector3(0, 1.0F, 0));
+            return Teleport(simName, position, new LLVector3(0, 1.0f, 0));
         }
 
         /// <summary>
-        /// Teleport Function
+        /// Attempt to look up a simulator name and teleport to the discovered
+        /// destination
         /// </summary>
-        /// <param name="simName">Region name</param>
-        /// <param name="position">Position for Teleport</param>
+        /// <param name="simName">Region name to look up</param>
+        /// <param name="position">Position to teleport to</param>
         /// <param name="lookAt">Target to look at</param>
-        /// <returns></returns>
+        /// <returns>True if the lookup and teleport were successful, otherwise
+        /// false</returns>
         public bool Teleport(string simName, LLVector3 position, LLVector3 lookAt)
         {
             int attempts = 0;
@@ -1085,14 +988,78 @@ namespace libsecondlife
                 }
             }
 
-            if (OnTeleport != null)
-            {
-                teleportMessage = "Unable to resolve name: " + simName;
-                TeleportStat = TeleportStatus.Failed;
-                OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat);
-            }
+            teleportMessage = "Unable to resolve name: " + simName;
+            TeleportStat = TeleportStatus.Failed;
 
             return false;
+        }
+
+        /// <summary>
+        /// Start a teleport process
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position">Position for Teleport</param>
+        /// <returns></returns>
+        public bool Teleport(ulong regionHandle, LLVector3 position)
+        {
+            return Teleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
+        }
+
+        /// <summary>
+        /// Start a teleport process
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position">Position for Teleport</param>
+        /// <param name="lookAt">Target to look at</param>
+        /// <returns></returns>
+        public bool Teleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
+        {
+            TeleportStat = TeleportStatus.None;
+            TeleportEvent.Reset();
+
+            RequestTeleport(regionHandle, position, lookAt);
+
+            TeleportEvent.WaitOne(Client.Settings.TELEPORT_TIMEOUT, false);
+
+            if (TeleportStat == TeleportStatus.None ||
+                TeleportStat == TeleportStatus.Start ||
+                TeleportStat == TeleportStatus.Progress)
+            {
+                teleportMessage = "Teleport timed out.";
+                TeleportStat = TeleportStatus.Failed;
+            }
+
+            return (TeleportStat == TeleportStatus.Finished);
+        }
+
+        /// <summary>
+        /// Start a teleport process
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position">Position for Teleport</param>
+        public void RequestTeleport(ulong regionHandle, LLVector3 position)
+        {
+            RequestTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
+        }
+
+        /// <summary>
+        /// Start a teleport process
+        /// </summary>
+        /// <param name="regionHandle"></param>
+        /// <param name="position">Position for Teleport</param>
+        /// <param name="lookAt">Target to look at</param>
+        public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
+        {
+            TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
+            teleport.AgentData.AgentID = Client.Network.AgentID;
+            teleport.AgentData.SessionID = Client.Network.SessionID;
+            teleport.Info.LookAt = lookAt;
+            teleport.Info.Position = position;
+            teleport.Info.RegionHandle = regionHandle;
+
+            Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
+
+            Client.Network.SendPacket(teleport);
         }
 
         /// <summary>
@@ -1479,136 +1446,20 @@ namespace libsecondlife
 	    }
 
         /// <summary>
-        /// Process an incoming effect
-        /// </summary>
-        private void ViewerEffectHandler(Packet packet, Simulator simulator)
-        {
-            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
-
-            foreach (ViewerEffectPacket.EffectBlock block in effect.Effect)
-            {
-                EffectType type;
-
-                try
-                {
-                    type = (EffectType)block.Type;
-                }
-                catch (Exception)
-                {
-                    Client.Log("Received a ViewerEffect block with an unknown type " + block.Type, 
-                        Helpers.LogLevel.Warning);
-                    continue;
-                }
-
-                //LLColor color;
-                //if (block.Color.Length == 4)
-                //{
-                //    color = new LLColor(block.Color, 0);
-                //}
-                //else
-                //{
-                //    Client.Log("Received a ViewerEffect.EffectBlock.Color array with " + block.Color.Length + " bytes",
-                //        Helpers.LogLevel.Warning);
-                //    color = new LLColor();
-                //}
-
-                // Each ViewerEffect type uses it's own custom binary format for additional data. Fun eh?
-                switch (type)
-                {
-                    case EffectType.Text:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Icon:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Connector:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.FlexibleObject:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.AnimalControls:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.AnimationObject:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Cloth:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Beam:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Glow:
-                        Client.Log("Received a Glow ViewerEffect which is not implemented yet",
-                            Helpers.LogLevel.Warning);
-                        break;
-		            case EffectType.Point:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Trail:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Sphere:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Spiral:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.Edit:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-		            case EffectType.LookAt:
-                        Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-                    case EffectType.PointAt:
-                        if (block.TypeData.Length == 57)
-                        {
-                            LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
-                            LLUUID targetObject = new LLUUID(block.TypeData, 16);
-                            LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
-                            PointAtType pointAt;
-                            try
-                            {
-                                pointAt = (PointAtType)block.TypeData[56];
-                            }
-                            catch (Exception)
-                            {
-                                Client.Log("Unrecognized PointAtType " + block.TypeData[56], Helpers.LogLevel.Warning);
-                                pointAt = PointAtType.Clear;
-                            }
-
-                            // TODO: Create OnAvatarPointAt event and call it here
-                        }
-                        else
-                        {
-                            Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
-                                block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
-                        }
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
         /// Handler for teleport Requests
         /// </summary>
         /// <param name="packet">Incoming TeleportHandler packet</param>
         /// <param name="simulator">Simulator sending teleport information</param>
         private void TeleportHandler(Packet packet, Simulator simulator)
         {
+            bool tpFinished = false;
+
             if (packet.Type == PacketType.TeleportStart)
             {
                 Client.DebugLog("TeleportStart received from " + simulator.ToString());
 
                 teleportMessage = "Teleport started";
                 TeleportStat = TeleportStatus.Start;
-
-                if (OnTeleport != null)
-                {
-                    try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
@@ -1616,12 +1467,6 @@ namespace libsecondlife
 
                 teleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
                 TeleportStat = TeleportStatus.Progress;
-
-                if (OnTeleport != null)
-                {
-                    try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
@@ -1630,11 +1475,7 @@ namespace libsecondlife
                 teleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
                 TeleportStat = TeleportStatus.Failed;
 
-                if (OnTeleport != null)
-                {
-                    try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
+                tpFinished = true;
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
@@ -1643,12 +1484,12 @@ namespace libsecondlife
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
                 Simulator previousSim = Client.Network.CurrentSim;
 
+                if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
+
                 // Connect to the new sim
                 string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
                 IPAddress simIP = new IPAddress(finish.Info.SimIP);
 
-                if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
-				
                 Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort,
                     simulator.CircuitCode, true, seedcaps);
 
@@ -1658,55 +1499,33 @@ namespace libsecondlife
                     TeleportStat = TeleportStatus.Finished;
 
                     // Move the avatar in to the new sim
-                    CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
-                    move.AgentData.AgentID = Client.Network.AgentID;
-                    move.AgentData.SessionID = Client.Network.SessionID;
-                    move.AgentData.CircuitCode = simulator.CircuitCode;
-                    Client.Network.SendPacket(move, sim);
+                    Client.Self.CompleteAgentMovement(sim);
 
                     // Disconnect from the previous sim
                     Client.Network.DisconnectSim(previousSim);
 
                     Client.Log("Moved to new sim " + sim.ToString(), Helpers.LogLevel.Info);
-
-                    if (OnTeleport != null)
-                    {
-                        try { OnTeleport(sim, teleportMessage, TeleportStat); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                    }
-                    else
-                    {
-                        // Sleep a little while so we can collect parcel information
-                        // NOTE: This doesn't belong in libsecondlife
-                        // System.Threading.Thread.Sleep(1000);
-                    }
                 }
                 else
                 {
                     teleportMessage = "Failed to connect to the new sim after a teleport";
                     TeleportStat = TeleportStatus.Failed;
 
-                    // FIXME: Set the previous CurrentSim to the current simulator again
+                    // Re-enable the previous simulator
+                    Client.Network.CurrentSim = previousSim;
+                    // FIXME: How do we re-enable Caps?
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
-
-                    if (OnTeleport != null)
-                    {
-                        try { OnTeleport(Client.Network.CurrentSim, teleportMessage, TeleportStat); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                    }
                 }
             }
-        }
 
-        /// <summary>
-        /// Teleport Timer Event Handler. Used for enforcing timeouts.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="ea"></param>
-        private void TeleportTimerEvent(object source, System.Timers.ElapsedEventArgs ea)
-        {
-            TeleportTimeout = true;
+            if (OnTeleport != null)
+            {
+                try { OnTeleport(teleportMessage, TeleportStat); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+
+            if (tpFinished) TeleportEvent.Set();
         }
     }
 }

@@ -82,8 +82,6 @@ namespace libsecondlife
         /// If this is left null, log messages will go to 
         /// the console</summary>
         public event LogCallback OnLogMessage;
-        /// <summary>Whether to log debug messages</summary>
-        public bool Debug = true;
 
         /// <summary>
         /// Default constructor
@@ -130,11 +128,12 @@ namespace libsecondlife
         /// <param name="level">The severity of the log entry</param>
         public void Log(string message, Helpers.LogLevel level)
         {
-            if (level == Helpers.LogLevel.Debug && !Debug) return;
+            if (level == Helpers.LogLevel.Debug && !Settings.DEBUG) return;
 
             if (OnLogMessage != null)
             {
-                OnLogMessage(message, level);
+                try { OnLogMessage(message, level); }
+                catch (Exception e) { Console.WriteLine(e.ToString()); }
             }
             else
             {
@@ -151,11 +150,12 @@ namespace libsecondlife
         [System.Diagnostics.Conditional("DEBUG")]
         public void DebugLog(string message)
         {
-            if (Debug)
+            if (Settings.DEBUG)
             {
                 if (OnLogMessage != null)
                 {
-                    OnLogMessage(message, Helpers.LogLevel.Debug);
+                    try { OnLogMessage(message, Helpers.LogLevel.Debug); }
+                    catch (Exception e) { Console.WriteLine(e.ToString()); }
                 }
                 else
                 {

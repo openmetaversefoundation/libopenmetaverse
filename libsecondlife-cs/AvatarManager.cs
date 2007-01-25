@@ -118,6 +118,9 @@ namespace libsecondlife
             // Avatar group callback
             Client.Network.RegisterCallback(PacketType.AvatarGroupsReply, new NetworkManager.PacketCallback(AvatarGroupsHandler));
 
+            // Viewer effect callback
+            Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
+
             // Other callbacks
             Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
             Client.Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
@@ -352,6 +355,118 @@ namespace libsecondlife
                 }
 
                 OnAvatarNameSearch(reply.AgentData.QueryID, avatars);
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming effect
+        /// </summary>
+        private void ViewerEffectHandler(Packet packet, Simulator simulator)
+        {
+            ViewerEffectPacket effect = (ViewerEffectPacket)packet;
+
+            foreach (ViewerEffectPacket.EffectBlock block in effect.Effect)
+            {
+                MainAvatar.EffectType type;
+
+                try
+                {
+                    type = (MainAvatar.EffectType)block.Type;
+                }
+                catch (Exception)
+                {
+                    Client.Log("Received a ViewerEffect block with an unknown type " + block.Type,
+                        Helpers.LogLevel.Warning);
+                    continue;
+                }
+
+                //LLColor color;
+                //if (block.Color.Length == 4)
+                //{
+                //    color = new LLColor(block.Color, 0);
+                //}
+                //else
+                //{
+                //    Client.Log("Received a ViewerEffect.EffectBlock.Color array with " + block.Color.Length + " bytes",
+                //        Helpers.LogLevel.Warning);
+                //    color = new LLColor();
+                //}
+
+                // Each ViewerEffect type uses it's own custom binary format for additional data. Fun eh?
+                switch (type)
+                {
+                    case MainAvatar.EffectType.Text:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Icon:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Connector:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.FlexibleObject:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.AnimalControls:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.AnimationObject:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Cloth:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Beam:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Glow:
+                        Client.Log("Received a Glow ViewerEffect which is not implemented yet",
+                            Helpers.LogLevel.Warning);
+                        break;
+                    case MainAvatar.EffectType.Point:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Trail:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Sphere:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Spiral:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.Edit:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.LookAt:
+                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        break;
+                    case MainAvatar.EffectType.PointAt:
+                        if (block.TypeData.Length == 57)
+                        {
+                            LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
+                            LLUUID targetObject = new LLUUID(block.TypeData, 16);
+                            LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
+                            MainAvatar.PointAtType pointAt;
+                            try
+                            {
+                                pointAt = (MainAvatar.PointAtType)block.TypeData[56];
+                            }
+                            catch (Exception)
+                            {
+                                Client.Log("Unrecognized PointAtType " + block.TypeData[56], Helpers.LogLevel.Warning);
+                                pointAt = MainAvatar.PointAtType.Clear;
+                            }
+
+                            // TODO: Create a OnAvatarPointAt event and call it here
+                        }
+                        else
+                        {
+                            Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
+                                block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                        }
+                        break;
+                }
             }
         }
     }

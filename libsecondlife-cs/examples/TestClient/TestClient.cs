@@ -49,7 +49,7 @@ namespace libsecondlife.TestClient
 
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
-            Debug = false;
+            Settings.DEBUG = false;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 

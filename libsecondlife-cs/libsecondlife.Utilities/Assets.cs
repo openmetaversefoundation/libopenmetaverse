@@ -217,12 +217,12 @@ namespace libsecondlife.Utilities.Assets
         /// <param name="assetID"></param>
         /// <param name="type"></param>
         /// <param name="priority"></param>
-        public void RequestAsset(LLUUID assetID, AssetType type, float priority)
+        public void RequestAsset(LLUUID assetID, AssetType type, bool priority)
         {
             AssetTransfer transfer = new AssetTransfer();
             transfer.ID = LLUUID.Random();
             transfer.AssetID = assetID;
-            transfer.Priority = priority;
+            transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
             transfer.Source = SourceType.Asset;
 
@@ -232,7 +232,7 @@ namespace libsecondlife.Utilities.Assets
             // Build the request packet and send it
             TransferRequestPacket request = new TransferRequestPacket();
             request.TransferInfo.ChannelType = (int)transfer.Channel;
-            request.TransferInfo.Priority = priority;
+            request.TransferInfo.Priority = transfer.Priority;
             request.TransferInfo.SourceType = (int)transfer.Source;
             request.TransferInfo.TransferID = transfer.ID;
 
@@ -254,14 +254,14 @@ namespace libsecondlife.Utilities.Assets
         /// asset from an object inventory</param>
         /// <param name="ownerID">The owner of this asset</param>
         /// <param name="type">Asset type</param>
-        /// <param name="priority">Try 101.0f</param>
+        /// <param name="priority">Whether to prioritize this asset download or not</param>
         public void RequestInventoryAsset(LLUUID assetID, LLUUID itemID, LLUUID taskID, LLUUID ownerID, AssetType type,
-            float priority)
+            bool priority)
         {
             AssetTransfer transfer = new AssetTransfer();
             transfer.ID = LLUUID.Random();
             transfer.AssetID = assetID;
-            transfer.Priority = priority;
+            transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
             transfer.Source = SourceType.SimInventoryItem;
 
@@ -271,7 +271,7 @@ namespace libsecondlife.Utilities.Assets
             // Build the request packet and send it
             TransferRequestPacket request = new TransferRequestPacket();
             request.TransferInfo.ChannelType = (int)transfer.Channel;
-            request.TransferInfo.Priority = priority;
+            request.TransferInfo.Priority = transfer.Priority;
             request.TransferInfo.SourceType = (int)transfer.Source;
             request.TransferInfo.TransferID = transfer.ID;
 

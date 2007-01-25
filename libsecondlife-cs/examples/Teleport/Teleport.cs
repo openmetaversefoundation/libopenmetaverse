@@ -147,7 +147,7 @@ namespace Teleport
             }
         }
 
-        void Self_OnTeleport(Simulator currentSim, string message, MainAvatar.TeleportStatus status)
+        void Self_OnTeleport(string message, MainAvatar.TeleportStatus status)
         {
             Console.WriteLine(message);
 

@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C# Express 2005
+# Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife", "libsecondlife.csproj", "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
@@ -28,10 +28,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "groupmanager", "examples\gr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimationSample", "examples\AnimationSample\AnimationSample.csproj", "{4EF98AD4-B3B3-42B0-9273-13A614A823F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libjaspernet", "..\libjaspernet\libjaspernet.csproj", "{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BodyPartMorphGenerator", "examples\BodyPartMorphGenerator\BodyPartMorphGenerator.csproj", "{98C44481-3F15-4305-840D-037EA0D9C221}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "examples\TestClient\TestClient.csproj", "{B87682F6-B2D7-4C4D-A529-400C24FD4880}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Utilities", "libsecondlife.Utilities\libsecondlife.Utilities.csproj", "{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}"
@@ -47,6 +43,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsole", "..\applications\SLProxy\ChatConsole.csproj", "{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proxy", "..\applications\SLProxy\Proxy.csproj", "{0516E1A7-D062-4830-859C-6FD0E4F84E75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualParamGenerator", "VisualParamGenerator\VisualParamGenerator.csproj", "{D2A514C5-5590-4789-9032-6E5B4C297B80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openjpegnet", "..\openjpegnet\openjpegnet.csproj", "{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,18 +142,6 @@ Global
 		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
 		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4EF98AD4-B3B3-42B0-9273-13A614A823F7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
-		{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
-		{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D4C4807-7705-48A7-9D82-F6689FBBCC8B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{98C44481-3F15-4305-840D-037EA0D9C221}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
-		{98C44481-3F15-4305-840D-037EA0D9C221}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{98C44481-3F15-4305-840D-037EA0D9C221}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{98C44481-3F15-4305-840D-037EA0D9C221}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
-		{98C44481-3F15-4305-840D-037EA0D9C221}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{98C44481-3F15-4305-840D-037EA0D9C221}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B87682F6-B2D7-4C4D-A529-400C24FD4880}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
 		{B87682F6-B2D7-4C4D-A529-400C24FD4880}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B87682F6-B2D7-4C4D-A529-400C24FD4880}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -202,6 +190,18 @@ Global
 		{0516E1A7-D062-4830-859C-6FD0E4F84E75}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
 		{0516E1A7-D062-4830-859C-6FD0E4F84E75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0516E1A7-D062-4830-859C-6FD0E4F84E75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
+		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
+		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
+		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
+		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

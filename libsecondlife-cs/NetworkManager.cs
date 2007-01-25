@@ -272,6 +272,7 @@ namespace libsecondlife
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
+        private ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Constructor for Simulator
@@ -321,17 +322,8 @@ namespace libsecondlife
                 // Send the initial packet out
                 SendPacket(use, true);
 
-                // Track the current time for timeout purposes
-                int start = Environment.TickCount;
-
-                while (true)
-                {
-                    if (connected || Environment.TickCount - start > Client.Settings.SIMULATOR_TIMEOUT)
-                    {
-                        return;
-                    }
-                    System.Threading.Thread.Sleep(10);
-                }
+                ConnectedEvent.Reset();
+                ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false);
             }
             catch (Exception e)
             {
@@ -606,6 +598,7 @@ namespace libsecondlife
 
             // If we're receiving data the sim connection is open
             connected = true;
+            ConnectedEvent.Set();
 
             // Update the disconnect flag so this sim doesn't time out
             DisconnectCandidate = false;
@@ -684,6 +677,7 @@ namespace libsecondlife
             {
                 while (Inbox.Count >= Client.Settings.INBOX_SIZE)
                 {
+                    Inbox.Dequeue();
                     Inbox.Dequeue();
                 }
                 Inbox.Enqueue(packet.Header.Sequence);

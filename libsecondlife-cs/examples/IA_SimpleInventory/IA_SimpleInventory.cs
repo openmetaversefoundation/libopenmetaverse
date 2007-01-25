@@ -114,20 +114,22 @@ namespace IA_SimpleInventory
 
         protected void doStuff()
         {
+            Console.WriteLine("Broken until someone fixes me");
+
             // and request an inventory download
-            Console.WriteLine("Downloading Inventory.");
-            client.Inventory.DownloadInventory();
+            //Console.WriteLine("Downloading Inventory.");
+            //client.Inventory.DownloadInventory();
 
 
-            Console.WriteLine("Dumping a copy of " + client.Self.FirstName + "'s inventory to the console.");
-            Console.WriteLine();
+            //Console.WriteLine("Dumping a copy of " + client.Self.FirstName + "'s inventory to the console.");
+            //Console.WriteLine();
 
-            InventoryFolder root = client.Inventory.GetRootFolder();
+            //InventoryFolder root = client.Inventory.GetRootFolder();
 
-            if (root != null)
-            {
-                Console.WriteLine(root.toXML(false));
-            }
+            //if (root != null)
+            //{
+            //    Console.WriteLine(root.toXML(false));
+            //}
         }
     }
 }

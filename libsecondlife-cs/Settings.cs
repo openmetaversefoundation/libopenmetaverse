@@ -70,6 +70,8 @@ namespace libsecondlife
         public int MAX_APPENDED_ACKS = 10;
         /// <summary>Cost of uploading an asset</summary>
         public int UPLOAD_COST { get { return priceUpload; } }
+        /// <summary>Enable/disable debugging log messages</summary>
+        public bool DEBUG = true;
 
         private SecondLife Client;
         private int priceUpload = 0;

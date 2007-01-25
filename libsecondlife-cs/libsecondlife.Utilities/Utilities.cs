@@ -8,7 +8,7 @@ namespace libsecondlife.Utilities
 {
     public static class Realism
     {
-        public static LLUUID TypingAnimation = new LLUUID("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
+        public readonly static LLUUID TypingAnimation = new LLUUID("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
 
         /// <summary>
         ///  A psuedo-realistic chat function that uses the typing sound and
@@ -72,6 +72,43 @@ namespace libsecondlife.Utilities
             // Stop typing
             client.Self.Chat("", 0, MainAvatar.ChatType.StopTyping);
             client.Self.AnimationStop(TypingAnimation);
+        }
+    }
+
+    public class Connection
+    {
+        private SecondLife Client;
+        private ulong SimHandle = 0;
+        private LLVector3 Position = LLVector3.Zero;
+        private LLUUID Seat = LLUUID.Zero;
+        private System.Timers.Timer CheckTimer;
+
+        public Connection(SecondLife client, int timerFrequency)
+        {
+            Client = client;
+
+            CheckTimer = new System.Timers.Timer(timerFrequency);
+            CheckTimer.Elapsed += new System.Timers.ElapsedEventHandler(CheckTimer_Elapsed);
+        }
+
+        void CheckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (SimHandle != 0)
+            {
+                if (Client.Network.CurrentSim.Region.Handle != 0 &&
+                    Client.Network.CurrentSim.Region.Handle != SimHandle)
+                {
+                    // Attempt to move to our target sim
+                    Client.Self.Teleport(SimHandle, Position);
+                }
+            }
+        }
+
+        public void StayInSim(ulong handle, LLVector3 desiredPosition)
+        {
+            SimHandle = handle;
+            Position = desiredPosition;
+            CheckTimer.Start();
         }
     }
 
