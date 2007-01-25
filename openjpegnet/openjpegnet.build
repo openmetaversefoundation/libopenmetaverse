@@ -53,6 +53,7 @@
     <mkdir dir="${bin_dir}" failonerror="false" />
     <csc
       target="library"
+      unsafe="true"
       debug="${build.debug}"
       output="${bin_dir}/openjpegnet.dll">
       <sources failonempty="true">
