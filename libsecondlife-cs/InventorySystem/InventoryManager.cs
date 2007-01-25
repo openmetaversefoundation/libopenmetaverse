@@ -212,7 +212,7 @@ namespace libsecondlife.InventorySystem
         /// <summary>
         /// Recursive helper function for public InventoryFolder getFolder(String sFolderPath)
         /// </summary>
-        /// <param name="qFolderPath">Queue<\string\></param>
+        /// <param name="qFolderPath">Queue</param>
         /// <returns></returns>
         private InventoryFolder getFolder(Queue<string> qFolderPath)
         {
