@@ -28,7 +28,7 @@
     <include name="applications/SLProxy/*.build" />
   </fileset>
   <fileset id="lib">
-    <include name="libjaspernet/*.build" />
+    <include name="openjpegnet/*.build" />
     <include name="libsecondlife-cs/*.build" />
   </fileset>
   <fileset id="examples">
