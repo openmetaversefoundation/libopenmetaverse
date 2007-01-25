@@ -76,13 +76,7 @@ namespace groupmanager
                 j2cdata = Client.Images.RequestImage("c77a1c21-e604-7d2c-2c89-5539ce853466");
             }
 
-            byte[] imagedata = JasperWrapper.jasper_decode_j2c_to_tiff(j2cdata);
-
-            //
-            MemoryStream imageStream = new MemoryStream(imagedata, false);
-            Image image = Image.FromStream(imageStream, false, false);
-            //
-
+            Image image = OpenJPEGNet.OpenJPEG.DecodeToImage(j2cdata);
             picInsignia.Image = image;
         }
 
