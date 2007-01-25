@@ -389,8 +389,6 @@ namespace libsecondlife.AssetSystem
             Dictionary<int, byte> VisualParams = new Dictionary<int, byte>();
 
             int packetIdx = 0;
-            float percentage = 0;
-            byte packetVal = 0;
 
             lock (AgentAppearanceParams)
             {
