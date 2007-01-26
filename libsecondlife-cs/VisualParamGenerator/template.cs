@@ -62,11 +62,5 @@ namespace libsecondlife
     /// </summary>
     public static class VisualParams
     {
-        private static Dictionary<int, VisualParam> paramsDict = new Dictionary<int,VisualParam>();
-
-        public static Dictionary<int, VisualParam> Params
+        public static VisualParam[] Params = new VisualParam[]
         {
-            get
-            {
-                if (paramsDict.Count == 0)
-                {

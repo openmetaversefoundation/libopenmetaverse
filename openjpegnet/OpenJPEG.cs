@@ -282,92 +282,104 @@ namespace OpenJPEGNet
         /// <returns>Byte array containing a Targa file</returns>
         public unsafe static byte[] DecodeToTGA(byte[] j2kdata)
         {
-            const int TGA_HEADER_SIZE = 32;
+            byte[] output;
 
-            opj_dparameters_t parameters = new opj_dparameters_t();
-            opj_image_t image;
-
-            opj_dinfo_t dinfo;
-            opj_cio_t cio;
-
-            // TODO: configure the event callbacks
-
-            // setup the decoding parameters
-            opj_set_default_decoder_parameters(ref parameters);
-
-            // get a decoder handle
-            IntPtr dinfo_ptr = opj_create_decompress(OPJ_CODEC_FORMAT.CODEC_J2K);
-            dinfo = (opj_dinfo_t)Marshal.PtrToStructure(dinfo_ptr, typeof(opj_dinfo_t));
-
-            // TODO: setup the callbacks
-
-            // setup the decoder
-            opj_setup_decoder(ref dinfo, ref parameters);
-
-            // open a byte stream
-            IntPtr cio_ptr = (IntPtr)opj_cio_open((opj_common_struct_t*)dinfo_ptr, j2kdata, j2kdata.Length);
-            cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
-
-            // decode
-            IntPtr image_ptr = opj_decode(ref dinfo, ref cio);
-            image = (opj_image_t)Marshal.PtrToStructure(image_ptr, typeof(opj_image_t));
-
-            int width = image.x1 - image.x0;
-            int height = image.y1 - image.y0;
-            int components = image.numcomps;
-
-            // create the targa file in memory
-            byte[] output = new byte[width * height * 4 + TGA_HEADER_SIZE];
-
-            int offset = 0;
-            output[offset++] = 0; // idlength
-            output[offset++] = 0; // colormaptype = 0: no colormap
-            output[offset++] = 2; // image type = 2: uncompressed RGB
-            output[offset++] = 0; // color map spec is five zeroes for no color map
-            output[offset++] = 0; // color map spec is five zeroes for no color map
-            output[offset++] = 0; // color map spec is five zeroes for no color map
-            output[offset++] = 0; // color map spec is five zeroes for no color map
-            output[offset++] = 0; // color map spec is five zeroes for no color map
-            output[offset++] = 0; // x origin = two bytes
-            output[offset++] = 0; // x origin = two bytes
-            output[offset++] = 0; // y origin = two bytes
-            output[offset++] = 0; // y origin = two bytes
-            output[offset++] = (byte)(width & 0xFF); // width - low byte
-            output[offset++] = (byte)(width >> 8); // width - hi byte
-            output[offset++] = (byte)(height & 0xFF); // height - low byte
-            output[offset++] = (byte)(height >> 8); // height - hi byte
-            output[offset++] = 32; // 32 bits per pixel
-            output[offset++] = 40; // image descriptor byte
-
-            switch (image.numcomps)
+            try
             {
-                case 4:
-                    for (int i = 0; i < (width * height); i++)
-                    {
-                        output[offset++] = (byte)image.comps[2].data[i]; // red
-                        output[offset++] = (byte)image.comps[1].data[i]; // green
-                        output[offset++] = (byte)image.comps[0].data[i]; // blue
-                        output[offset++] = (byte)image.comps[3].data[i]; // alpha
-                    }
-                    break;
-                case 3:
-                    for (int i = 0; i < (width * height); i++)
-                    {
-                        output[offset++] = (byte)image.comps[2].data[i]; // red
-                        output[offset++] = (byte)image.comps[1].data[i]; // green
-                        output[offset++] = (byte)image.comps[0].data[i]; // blue
-                        output[offset++] = 0xFF; // alpha
-                    }
-                    break;
-                default:
-                    // ???
-                    break;
+                const int TGA_HEADER_SIZE = 32;
+
+                opj_dparameters_t parameters = new opj_dparameters_t();
+                opj_image_t image;
+
+                opj_dinfo_t dinfo;
+                opj_cio_t cio;
+
+                // TODO: configure the event callbacks
+
+                // setup the decoding parameters
+                opj_set_default_decoder_parameters(ref parameters);
+
+                // get a decoder handle
+                IntPtr dinfo_ptr = opj_create_decompress(OPJ_CODEC_FORMAT.CODEC_J2K);
+                dinfo = (opj_dinfo_t)Marshal.PtrToStructure(dinfo_ptr, typeof(opj_dinfo_t));
+
+                // TODO: setup the callbacks
+
+                // setup the decoder
+                opj_setup_decoder(ref dinfo, ref parameters);
+
+                // open a byte stream
+                IntPtr cio_ptr = (IntPtr)opj_cio_open((opj_common_struct_t*)dinfo_ptr, j2kdata, j2kdata.Length);
+                cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
+
+                // decode
+                IntPtr image_ptr = opj_decode(ref dinfo, ref cio);
+                image = (opj_image_t)Marshal.PtrToStructure(image_ptr, typeof(opj_image_t));
+
+                int width = image.x1 - image.x0;
+                int height = image.y1 - image.y0;
+                int components = image.numcomps;
+
+                // create the targa file in memory
+                output = new byte[width * height * 4 + TGA_HEADER_SIZE];
+
+                int offset = 0;
+                output[offset++] = 0; // idlength
+                output[offset++] = 0; // colormaptype = 0: no colormap
+                output[offset++] = 2; // image type = 2: uncompressed RGB
+                output[offset++] = 0; // color map spec is five zeroes for no color map
+                output[offset++] = 0; // color map spec is five zeroes for no color map
+                output[offset++] = 0; // color map spec is five zeroes for no color map
+                output[offset++] = 0; // color map spec is five zeroes for no color map
+                output[offset++] = 0; // color map spec is five zeroes for no color map
+                output[offset++] = 0; // x origin = two bytes
+                output[offset++] = 0; // x origin = two bytes
+                output[offset++] = 0; // y origin = two bytes
+                output[offset++] = 0; // y origin = two bytes
+                output[offset++] = (byte)(width & 0xFF); // width - low byte
+                output[offset++] = (byte)(width >> 8); // width - hi byte
+                output[offset++] = (byte)(height & 0xFF); // height - low byte
+                output[offset++] = (byte)(height >> 8); // height - hi byte
+                output[offset++] = 32; // 32 bits per pixel
+                output[offset++] = 40; // image descriptor byte
+
+                switch (image.numcomps)
+                {
+                    case 5:
+                        // We can't represent the fifth 
+                    case 4:
+                        for (int i = 0; i < (width * height); i++)
+                        {
+                            output[offset++] = (byte)image.comps[2].data[i]; // red
+                            output[offset++] = (byte)image.comps[1].data[i]; // green
+                            output[offset++] = (byte)image.comps[0].data[i]; // blue
+                            output[offset++] = (byte)image.comps[3].data[i]; // alpha
+                        }
+                        break;
+                    case 3:
+                        for (int i = 0; i < (width * height); i++)
+                        {
+                            output[offset++] = (byte)image.comps[2].data[i]; // red
+                            output[offset++] = (byte)image.comps[1].data[i]; // green
+                            output[offset++] = (byte)image.comps[0].data[i]; // blue
+                            output[offset++] = 0xFF; // alpha
+                        }
+                        break;
+                    default:
+                        Console.WriteLine("Unhandled numcomps: " + image.numcomps);
+                        return null;
+                }
+
+                File.WriteAllBytes("out.tga", output);
+
+                opj_cio_close((opj_cio_t*)cio_ptr);
+                opj_destroy_decompress(dinfo_ptr);
             }
-
-            File.WriteAllBytes("out.tga", output);
-
-            opj_cio_close((opj_cio_t*)cio_ptr);
-            opj_destroy_decompress(dinfo_ptr);
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return null;
+            }
 
             return output;
         }
@@ -385,158 +397,168 @@ namespace OpenJPEGNet
 
         public unsafe static byte[] EncodeFromImage(Bitmap bitmap, string comment)
         {
-            const int MAX_COMPS = 4;
+            byte[] output = null;
 
-            // setup the parameters
-            IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
-            opj_set_default_encoder_parameters(parameters_ptr);
-
-            opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
-
-            parameters.tcp_rates[0] = 0;
-            parameters.tcp_numlayers++;
-            parameters.cp_disto_alloc = 1;
-            parameters.cod_format = 0;
-            parameters.subsampling_dx = 1;
-            parameters.subsampling_dy = 1;
-            parameters.cp_comment = comment;
-
-            OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
-            opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[MAX_COMPS];
-            int width = bitmap.Width;
-            int height = bitmap.Height;
-
-            for (int c = 0; c < MAX_COMPS; c++)
+            try
             {
-                cmptparm[c] = new opj_image_cmptparm_t();
+                const int MAX_COMPS = 4;
 
-                cmptparm[c].prec = 8;
-                cmptparm[c].bpp = 8;
-                cmptparm[c].sgnd = 0;
-                cmptparm[c].dx = parameters.subsampling_dx;
-                cmptparm[c].dy = parameters.subsampling_dy;
-                cmptparm[c].w = width;
-                cmptparm[c].h = height;
-            }
+                // setup the parameters
+                IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
+                opj_set_default_encoder_parameters(parameters_ptr);
 
-            // create the image
-            int i = 0;
-            int numcomps;
-            PixelFormat format = bitmap.PixelFormat;
+                opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
 
-            if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
-                numcomps = 4;
-            else if (format == PixelFormat.Format16bppGrayScale)
-                numcomps = 1;
-            else
-                numcomps = 3;
+                parameters.tcp_rates[0] = 0;
+                parameters.tcp_numlayers++;
+                parameters.cp_disto_alloc = 1;
+                parameters.cod_format = 0;
+                parameters.subsampling_dx = 1;
+                parameters.subsampling_dy = 1;
+                parameters.cp_comment = comment;
 
-            opj_image_t* image_ptr = opj_image_create(numcomps, cmptparm, color_space);
-            image_ptr->x1 = width;
-            image_ptr->y1 = height;
+                OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
+                opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[MAX_COMPS];
+                int width = bitmap.Width;
+                int height = bitmap.Height;
 
-            BitmapData data;
-
-            // Build the raw image buffer for openjpeg to read
-            if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
-            {
-                // four layers, RGBA
-                data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
-                    PixelFormat.Format32bppArgb);
-
-                for (int y = 0; y < height; y++)
+                for (int c = 0; c < MAX_COMPS; c++)
                 {
-                    for (int x = 0; x < width; x++)
-                    {
-                        byte* pixel = (byte*)data.Scan0;
-                        pixel += (y * width + x) * numcomps;
+                    cmptparm[c] = new opj_image_cmptparm_t();
 
-                        // GDI+ gives us BGRA and we need to turn that in to RGBA
-                        (*image_ptr).comps[0].data[i] = *(pixel + 2);
-                        (*image_ptr).comps[1].data[i] = *(pixel + 1);
-                        (*image_ptr).comps[2].data[i] = *(pixel);
-                        (*image_ptr).comps[3].data[i] = *(pixel + 3);
-
-                        pixel += 4;
-                        i++;
-                    }
+                    cmptparm[c].prec = 8;
+                    cmptparm[c].bpp = 8;
+                    cmptparm[c].sgnd = 0;
+                    cmptparm[c].dx = parameters.subsampling_dx;
+                    cmptparm[c].dy = parameters.subsampling_dy;
+                    cmptparm[c].w = width;
+                    cmptparm[c].h = height;
                 }
-            }
-            else if (format == PixelFormat.Format16bppGrayScale)
-            {
-                // one layer
-                data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
-                    PixelFormat.Format16bppGrayScale);
 
-                for (int y = 0; y < height; y++)
+                // create the image
+                int i = 0;
+                int numcomps;
+                PixelFormat format = bitmap.PixelFormat;
+
+                if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
+                    numcomps = 4;
+                else if (format == PixelFormat.Format16bppGrayScale)
+                    numcomps = 1;
+                else
+                    numcomps = 3;
+
+                opj_image_t* image_ptr = opj_image_create(numcomps, cmptparm, color_space);
+                image_ptr->x1 = width;
+                image_ptr->y1 = height;
+
+                BitmapData data;
+
+                // Build the raw image buffer for openjpeg to read
+                if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
                 {
-                    for (int x = 0; x < width; x++)
+                    // four layers, RGBA
+                    data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                        PixelFormat.Format32bppArgb);
+
+                    for (int y = 0; y < height; y++)
                     {
-                        byte* pixel = (byte*)data.Scan0;
-                        pixel += (y * width + x) * numcomps;
-
-                        // turn 16 bit data in to 8 bit data (TODO: Does this work?)
-                        (*image_ptr).comps[0].data[i] = *(pixel);
-
-                        pixel += 2;
-                        i++;
-                    }
-                }
-            }
-            else
-            {
-                // three layers, RGB
-                data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
-                    PixelFormat.Format24bppRgb);
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        byte* pixel = (byte*)data.Scan0;
-                        pixel += (y * width + x) * numcomps;
-
-                        for (int c = numcomps - 1; c >= 0; c--)
+                        for (int x = 0; x < width; x++)
                         {
-                            (*image_ptr).comps[c].data[i] = *pixel;
-                            pixel++;
+                            byte* pixel = (byte*)data.Scan0;
+                            pixel += (y * width + x) * numcomps;
+
+                            // GDI+ gives us BGRA and we need to turn that in to RGBA
+                            (*image_ptr).comps[0].data[i] = *(pixel + 2);
+                            (*image_ptr).comps[1].data[i] = *(pixel + 1);
+                            (*image_ptr).comps[2].data[i] = *(pixel);
+                            (*image_ptr).comps[3].data[i] = *(pixel + 3);
+
+                            pixel += 4;
+                            i++;
                         }
-                        i++;
                     }
                 }
-            }
+                else if (format == PixelFormat.Format16bppGrayScale)
+                {
+                    // one layer
+                    data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                        PixelFormat.Format16bppGrayScale);
 
-            bitmap.UnlockBits(data);
+                    for (int y = 0; y < height; y++)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            byte* pixel = (byte*)data.Scan0;
+                            pixel += (y * width + x) * numcomps;
 
-            // get a J2K compressor handle
-            opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
+                            // turn 16 bit data in to 8 bit data (TODO: Does this work?)
+                            (*image_ptr).comps[0].data[i] = *(pixel);
 
-            // TODO: setup the callbacks
+                            pixel += 2;
+                            i++;
+                        }
+                    }
+                }
+                else
+                {
+                    // three layers, RGB
+                    data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                        PixelFormat.Format24bppRgb);
 
-            // setup the encoder parameters
-            Marshal.StructureToPtr(parameters, parameters_ptr, true);
-            opj_setup_encoder(cinfo_ptr, parameters_ptr, image_ptr);
+                    for (int y = 0; y < height; y++)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            byte* pixel = (byte*)data.Scan0;
+                            pixel += (y * width + x) * numcomps;
 
-            // open a byte stream for writing
-            opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
+                            for (int c = numcomps - 1; c >= 0; c--)
+                            {
+                                (*image_ptr).comps[c].data[i] = *pixel;
+                                pixel++;
+                            }
+                            i++;
+                        }
+                    }
+                }
 
-            // encode the image
-            bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, null);
-            if (!success)
-            {
+                bitmap.UnlockBits(data);
+
+                // get a J2K compressor handle
+                opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
+
+                // TODO: setup the callbacks
+
+                // setup the encoder parameters
+                Marshal.StructureToPtr(parameters, parameters_ptr, true);
+                opj_setup_encoder(cinfo_ptr, parameters_ptr, image_ptr);
+
+                // open a byte stream for writing
+                opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
+
+                // encode the image
+                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, null);
+                if (!success)
+                {
+                    opj_cio_close(cio_ptr);
+                    return null;
+                }
+
+                int codestream_length = cio_tell(cio_ptr);
+
+                output = new byte[codestream_length];
+                Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
+
                 opj_cio_close(cio_ptr);
+                opj_destroy_compress(cinfo_ptr);
+                opj_image_destroy(image_ptr);
+                Marshal.FreeHGlobal(parameters_ptr);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
                 return null;
             }
-
-            int codestream_length = cio_tell(cio_ptr);
-
-            byte[] output = new byte[codestream_length];
-            Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
-
-            opj_cio_close(cio_ptr);
-            opj_destroy_compress(cinfo_ptr);
-            opj_image_destroy(image_ptr);
-            Marshal.FreeHGlobal(parameters_ptr);
 
             return output;
         }

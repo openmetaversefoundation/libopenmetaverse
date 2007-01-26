@@ -1148,14 +1148,16 @@ namespace libsecondlife
         public event LogoutCallback OnLogoutReply;
 
         /// <summary>
-        /// 
+        /// Simplified login that takes the most common fields as parameters
+        /// and uses defaults for the rest
         /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="author"></param>
-        /// <returns></returns>
+        /// <param name="firstName">Account first name</param>
+        /// <param name="lastName">Account last name</param>
+        /// <param name="password">Account password</param>
+        /// <param name="userAgent">Client application name and version</param>
+        /// <param name="author">Client application author</param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginError string will contain the error</returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string author)
         {
             Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName,
@@ -1164,16 +1166,21 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Simplified login that takes the most common fields along with a
+        /// starting location URI, and can accept an MD5 string instead of a
+        /// plaintext password
         /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="start"></param>
-        /// <param name="author"></param>
-        /// <param name="md5pass"></param>
-        /// <returns></returns>
+        /// <param name="firstName">Account first name</param>
+        /// <param name="lastName">Account last name</param>
+        /// <param name="password">Account password or MD5 hash of the password
+        /// such as $1$1682a1e45e9f957dcdf0bb56eb43319c</param>
+        /// <param name="userAgent">Client application name and version</param>
+        /// <param name="start">Starting location URI that can be built with
+        /// StartLocation()</param>
+        /// <param name="author">Client application author</param>
+        /// <param name="md5pass">If true, the password field contains </param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginError string will contain the error</returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string start,
             string author, bool md5pass)
         {
@@ -1183,25 +1190,53 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Login that takes a custom built dictionary of login parameters and
+        /// values
         /// </summary>
-        /// <param name="loginParams"></param>
-        /// <returns></returns>
+        /// <param name="loginParams">Dictionary of login parameters and values
+        /// that can be created with DefaultLoginValues()</param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginError string will contain the error</returns>
         public bool Login(Dictionary<string, object> loginParams)
         {
-            return Login(loginParams, Client.Settings.LOGIN_SERVER);
+            return Login(loginParams, Client.Settings.LOGIN_SERVER, "login_to_simulator");
         }
 
         /// <summary>
-        /// 
+        /// Login that takes a custom built dictionary of login parameters and
+        /// values and the URL of the login server
         /// </summary>
-        /// <param name="loginParams"></param>
-        /// <param name="url"></param>
-        /// <returns></returns>
+        /// <param name="loginParams">Dictionary of login parameters and values
+        /// that can be created with DefaultLoginValues()</param>
+        /// <param name="url">URL of the login server to authenticate with</param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginError string will contain the error</returns>
         public bool Login(Dictionary<string, object> loginParams, string url)
         {
+            return Login(loginParams, url, "login_to_simulator");
+        }
+
+        /// <summary>
+        /// Login that takes a custom built dictionary of login parameters and
+        /// values, URL of the login server, and the name of the XML-RPC method
+        /// to use
+        /// </summary>
+        /// <param name="loginParams">Dictionary of login parameters and values
+        /// that can be created with DefaultLoginValues()</param>
+        /// <param name="url">URL of the login server to authenticate with</param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginError string will contain the error</returns>
+        public bool Login(Dictionary<string, object> loginParams, string url, string method)
+        {
+            XmlRpcResponse result;
+            XmlRpcRequest xmlrpc;
+            Hashtable loginValues;
+
+            // Clear possible old values from the last login
+            LoginValues.Clear();
+
             // Rebuild the Dictionary<> in to a Hashtable for compatibility with XmlRpcCS
-            Hashtable loginValues = new Hashtable(loginParams.Count);
+            loginValues = new Hashtable(loginParams.Count);
             foreach (KeyValuePair<string, object> kvp in loginParams)
             {
                 if (kvp.Value is IList)
@@ -1220,9 +1255,9 @@ namespace libsecondlife
                 }
             }
 
-            XmlRpcResponse result;
-            XmlRpcRequest xmlrpc = new XmlRpcRequest();
-            xmlrpc.MethodName = "login_to_simulator";
+            // Build the XML-RPC request
+            xmlrpc = new XmlRpcRequest();
+            xmlrpc.MethodName = method;
             xmlrpc.Params.Clear();
             xmlrpc.Params.Add(loginValues);
 
@@ -1233,7 +1268,6 @@ namespace libsecondlife
             catch (Exception e)
             {
                 LoginError = "XML-RPC Error: " + e.Message;
-                LoginValues.Clear();
                 return false;
             }
 
@@ -1241,7 +1275,6 @@ namespace libsecondlife
             {
                 Client.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
                 LoginError = "XML-RPC Fault: " + result.FaultCode + ": " + result.FaultString;
-                LoginValues.Clear();
                 return false;
             }
 
@@ -1253,9 +1286,12 @@ namespace libsecondlife
 
             if ((string)LoginValues["login"] == "indeterminate")
             {
-                //FIXME: We need to do another XML-RPC, handle this case
-                LoginError = "Got a redirect, login with the official client to update";
-                return false;
+                string nexturl = (string)LoginValues["next_url"];
+                string nextmethod = (string)LoginValues["next_method"];
+                string message = (string)LoginValues["message"];
+                Client.Log("Login redirected: " + nexturl + ", message: " + message, Helpers.LogLevel.Info);
+
+                return Login(loginParams, nexturl, nextmethod);
             }
             else if ((string)LoginValues["login"] == "false")
             {
@@ -1435,13 +1471,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Connect to a simulator
         /// </summary>
-        /// <param name="ip"></param>
-        /// <param name="port"></param>
-        /// <param name="circuitCode"></param>
-        /// <param name="setDefault"></param>
-        /// <returns></returns>
+        /// <param name="ip">IP address to connect to</param>
+        /// <param name="port">Port to connect to</param>
+        /// <param name="circuitCode">Circuit code to use for the connection</param>
+        /// <param name="setDefault">Whether to set CurrentSim to this new
+        /// connection, use this if the avatar is moving in to this simulator</param>
+        /// <returns>A Simulator object on success, otherwise null</returns>
         public Simulator Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault, string seedcaps)
         {
             Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode, ip, (int)port);
@@ -1517,17 +1554,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Triggered if a LogoutReply is not received
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="ev"></param>
-        public void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
-        {
-            Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
-            ForceLogout();
-        }
-
-        /// <summary>
         /// Uses a LogoutDemand packet to force initiate a logout
         /// </summary>
         public void ForceLogout()
@@ -1538,33 +1564,6 @@ namespace libsecondlife
             CurrentSim.SendPacket(logoutDemand, true);
 
             FinalizeLogout();
-        }
-
-        /// <summary>
-        /// Finalize the logout procedure. Close down sockets, etc.
-        /// </summary>
-        private void FinalizeLogout()
-        {
-            LogoutTimer.Stop();
-
-            // Shutdown the network layer
-            Shutdown();
-
-            if (OnDisconnected != null)
-            {
-                try
-                {
-                    OnDisconnected(DisconnectType.ClientInitiated, "");
-                }
-                catch (Exception e)
-                {
-                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
-                        Helpers.LogLevel.Error);
-                }
-            }
-
-            // In case we are blocking in Logout()
-            LogoutReplyEvent.Set();
         }
 
         /// <summary>
@@ -1600,6 +1599,33 @@ namespace libsecondlife
             {
                 Client.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning);
             }
+        }
+
+        /// <summary>
+        /// Finalize the logout procedure. Close down sockets, etc.
+        /// </summary>
+        private void FinalizeLogout()
+        {
+            LogoutTimer.Stop();
+
+            // Shutdown the network layer
+            Shutdown();
+
+            if (OnDisconnected != null)
+            {
+                try
+                {
+                    OnDisconnected(DisconnectType.ClientInitiated, "");
+                }
+                catch (Exception e)
+                {
+                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
+                        Helpers.LogLevel.Error);
+                }
+            }
+
+            // In case we are blocking in Logout()
+            LogoutReplyEvent.Set();
         }
 
         /// <summary>
@@ -1681,6 +1707,15 @@ namespace libsecondlife
 
             // TODO: A movement class should be handling this
             Client.Self.SetAlwaysRun(false);
+        }
+
+        /// <summary>
+        /// Triggered if a LogoutReply is not received
+        /// </summary>
+        private void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
+        {
+            Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
+            ForceLogout();
         }
 
         private void DisconnectTimer_Elapsed(object sender, ElapsedEventArgs ev)

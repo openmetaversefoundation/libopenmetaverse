@@ -73,6 +73,7 @@ namespace name2key
 			client = new SecondLife();
 
 			// Setup the callback
+            // FIXME: Rewrite this code as soon as people searching is added to DirectoryManager
             client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(QueryHandler));
 
 			// Setup the login values
@@ -99,17 +100,12 @@ namespace name2key
 
 			while (waiting)
 			{
-				client.Tick();
+                // FIXME: Sleeping while loops are a poor example, this is supposed to be
+                // model code. Replace this with a ManualResetEvent
+                System.Threading.Thread.Sleep(500);
 			}
 
 			client.Network.Logout();
-
-            waiting = true;
-            while (waiting)
-            {
-                waiting = client.Network.Connected;
-                client.Tick();
-            }
 		}
 	}
 }

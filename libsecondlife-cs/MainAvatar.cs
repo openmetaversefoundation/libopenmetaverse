@@ -358,10 +358,10 @@ namespace libsecondlife
 
         #endregion
 
-        /// <summary>Your (client) Avatar UUID, asset server</summary>
+        /// <summary>Your (client) avatar UUID</summary>
         public LLUUID ID = LLUUID.Zero;
-        /// <summary>Your (client) Avatar ID, local to Region/sim</summary>
-        public uint LocalID;
+        /// <summary>Your (client) avatar ID, local to the current region/sim</summary>
+        public uint LocalID = 0;
         /// <summary>Avatar First Name (i.e. Philip)</summary>
         public string FirstName = String.Empty;
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
@@ -395,33 +395,17 @@ namespace libsecondlife
         /// <summary>Used for camera and control key state tracking</summary>
         public MainAvatarStatus Status;
         /// <summary>The UUID of your root inventory folder</summary>
-        public LLUUID InventoryRootFolderUUID;
+        public LLUUID InventoryRootFolderUUID = LLUUID.Zero;
 
-        
         /// <summary>Gets the health of the agent</summary>
-        public float Health
-        {
-            get { return health; }
-        }
-        
+        public float Health { get { return health; } }
         /// <summary>Gets the current balance of the agent</summary>
-        public int Balance
-        {
-            get { return balance; }
-        }
-
+        public int Balance { get { return balance; } }
         /// <summary>Gets the local ID of the prim the avatar is sitting on,
         /// zero if the avatar is not currently sitting</summary>
-        public uint SittingOn
-        {
-            get { return sittingOn; }
-        }
-		
+        public uint SittingOn { get { return sittingOn; } }
 		/// <summary>Gets the UUID of the active group.</summary>
-		public LLUUID ActiveGroup
-		{
-			get { return activeGroup; }
-		}
+		public LLUUID ActiveGroup { get { return activeGroup; } }
 
         internal uint sittingOn = 0;
         internal string teleportMessage = String.Empty;
@@ -440,10 +424,9 @@ namespace libsecondlife
         /// <param name="client"></param>
         public MainAvatar(SecondLife client)
         {
-            NetworkManager.PacketCallback callback;
             Client = client;
-
             Status = new MainAvatarStatus(Client);
+            NetworkManager.PacketCallback callback;
 
             // Coarse location callback
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
@@ -969,7 +952,10 @@ namespace libsecondlife
             }
             else
             {
-                while (attempts++ < 5)
+                // FIXME: It's been my experience that a request will either work or not work.
+                // Hammering the server with continual requests doesn't make it wake up and
+                // decide "Hey! You must really want that data!"
+                while (attempts++ < 3)
                 {
                     region = Client.Grid.GetGridRegion(simName);
 
@@ -980,10 +966,7 @@ namespace libsecondlife
                     else
                     {
                         // Request the region info again
-                        Client.Grid.AddSim(simName);
-
-                        // FIXME: We shouldn't be sleeping in the library at all, hopefully this goes away soon
-                        System.Threading.Thread.Sleep(1000);
+                        Client.Grid.GetGridRegion(simName);
                     }
                 }
             }

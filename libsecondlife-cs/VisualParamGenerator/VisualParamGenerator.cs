@@ -59,11 +59,16 @@ namespace VisualParamGenerator
                 return;
             }
 
+            SortedList<int, string> IDs = new SortedList<int, string>();
             StringWriter output = new StringWriter();
-            bool first = true;
 
             foreach (XmlNode node in list)
             {
+                if ((node.Attributes["group"] == null) || !(node.Attributes["group"].Value.Equals("0")))
+                {
+                    // We're only interested in group 0 parameters
+                    continue;
+                }
                 if ((node.Attributes["shared"] != null) && (node.Attributes["shared"].Value.Equals("1")))
                 {
                     // This param will have been already been defined
@@ -80,18 +85,14 @@ namespace VisualParamGenerator
                     node.Attributes["name"] != null &&
                     node.Attributes["wearable"] != null)
                 {
-                    if (!first)
-                    {
-                        output.Write(Environment.NewLine);
-                    }
-                    else
-                    {
-                        first = false;
-                    }
-
                     try
                     {
                         int id = Int32.Parse(node.Attributes["id"].Value);
+
+                        // Check for duplicates
+                        if (IDs.ContainsKey(id))
+                            continue;
+
                         string name = node.Attributes["name"].Value;
                         int group = Int32.Parse(node.Attributes["group"].Value);
                         string wearable = node.Attributes["wearable"].Value;
@@ -116,10 +117,10 @@ namespace VisualParamGenerator
                             def = Single.Parse(node.Attributes["value_default"].Value);
                         else
                             def = min;
-                        
-                        output.Write("                    paramsDict.Add(" + id + ", new VisualParam(" + id + ", \"" + name + "\", " + group + 
+
+                        IDs.Add(id, "            new VisualParam(" + id + ", \"" + name + "\", " + group + 
                             ", \"" + wearable + "\", \"" + label + "\", \"" + label_min + "\", \"" + label_max + 
-                            "\", " + def + "f, " + min + "f, " + max + "f));");
+                            "\", " + def + "f, " + min + "f, " + max + "f)," + Environment.NewLine);
                     }
                     catch (Exception e)
                     {
@@ -128,10 +129,13 @@ namespace VisualParamGenerator
                 }
             }
 
-            output.Write(Environment.NewLine + "                }" + Environment.NewLine);
-            output.Write("                return paramsDict;" + Environment.NewLine);
-            output.Write("            }" + Environment.NewLine);
-            output.Write("        }" + Environment.NewLine);
+            // Now that we've collected all the entries and sorted them, add them to our output buffer
+            foreach (string line in IDs.Values)
+            {
+                output.Write(line);
+            }
+
+            output.Write("        };" + Environment.NewLine);
             output.Write("    }" + Environment.NewLine);
             output.Write("}" + Environment.NewLine);
 

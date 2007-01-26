@@ -33,7 +33,7 @@ namespace libsecondlife.TestClient
 
             if (!GridDataCached[Client])
             {
-                Client.Grid.AddAllSims();
+                Client.Grid.RequestAllSims(GridManager.MapLayerType.Objects);
                 System.Threading.Thread.Sleep(5000);
                 GridDataCached[Client] = true;
             }

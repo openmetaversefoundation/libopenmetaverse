@@ -44,7 +44,7 @@ namespace libsecondlife.TestClient
 
             if (!EstateLookupFinished)
             {
-                Client.Grid.AddEstateSims();
+                Client.Grid.RequestEstateSims(GridManager.MapLayerType.Objects);
                 System.Threading.Thread.Sleep(3000);
 
                 EstateLookupFinished = true;

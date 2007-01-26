@@ -82,14 +82,8 @@ namespace Teleport
         {
             Console.WriteLine("Attempting to connect and login to Second Life.");
 
-            // Setup Login to Second Life
-            Dictionary<string, object> loginParams = Client.Network.DefaultLoginValues(FirstName, 
-                LastName, Password, "00:00:00:00:00:00", "last", "Win", "0", "createnotecard", 
-                "static.sprocket@gmail.com");
-            Dictionary<string, object> loginReply = new Dictionary<string,object>();
-
             // Login
-            if (!Client.Network.Login(loginParams))
+            if (!Client.Network.Login(FirstName, LastName, Password, "Teleport", "static.sprocket@gmail.com"))
             {
                 // Login failed
                 Console.WriteLine("Error logging in: " + Client.Network.LoginError);
@@ -114,18 +108,18 @@ namespace Teleport
             Client.Grid.OnRegionAdd += new GridRegionCallback(GridRegionHandler);
 
             Console.WriteLine("Caching estate sims...");
-            Client.Grid.AddEstateSims();
+            Client.Grid.RequestEstateSims(GridManager.MapLayerType.Objects);
             System.Threading.Thread.Sleep(3000);
 
             if (RegionHandle == 0)
             {
-                Client.Grid.BeginGetGridRegion(sim, new GridRegionCallback(GridRegionHandler));
+                Client.Grid.BeginGetGridRegion(sim);
 
                 int start = Environment.TickCount;
 
                 while (RegionHandle == 0)
                 {
-                    Client.Tick();
+                    System.Threading.Thread.Sleep(100);
 
                     if (Environment.TickCount - start > 10000)
                     {
@@ -143,7 +137,9 @@ namespace Teleport
 
             while (!DoneTeleporting)
             {
-                Client.Tick();
+                // FIXME: Sleeping while loops are a poor example, this is supposed to be
+                // model code. Replace this with a ManualResetEvent
+                System.Threading.Thread.Sleep(500);
             }
         }
 

@@ -89,24 +89,35 @@ namespace libsecondlife
 	/// </summary>
 	public class GridManager
 	{
+        public enum MapLayerType : uint
+        {
+            Objects = 0,
+            Terrain = 1
+        }
+
+
         /// <summary>
         /// Triggered when a new region is discovered through GridManager
         /// </summary>
         public event GridRegionCallback OnRegionAdd;
 
+        // FIXME: These publically accessible dictionaries are a recipe for multi-threading disaster
+
         /// <summary>A dictionary of all the regions, indexed by region ID</summary>
 		public Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
-
 		/// <summary>A dictionary of all the regions, indexed by region handle</summary>
 		public Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong,GridRegion>();
-
+        /// <summary>Unknown</summary>
+        public float SunPhase { get { return sunPhase; } }
 		/// <summary>Current direction of the sun</summary>
-        public LLVector3 SunDirection;
+        public LLVector3 SunDirection { get { return sunDirection; } }
+        /// <summary>Current angular velocity of the sun</summary>
+        public LLVector3 SunAngVelocity { get { return sunAngVelocity; } }
 
 		private SecondLife Client;
-        // This is used for BeginGetGridRegion
-        private GridRegionCallback OnRegionAddInternal;
-        private string BeginGetGridRegionName;
+        private float sunPhase = 0.0f;
+        private LLVector3 sunDirection = LLVector3.Zero;
+        private LLVector3 sunAngVelocity = LLVector3.Zero;
 
         /// <summary>
         /// Constructor
@@ -115,43 +126,22 @@ namespace libsecondlife
 		public GridManager(SecondLife client)
 		{
 			Client = client;
-            SunDirection = LLVector3.Zero;
 
             Client.Network.RegisterCallback(PacketType.MapBlockReply, new NetworkManager.PacketCallback(MapBlockReplyHandler));
             Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new NetworkManager.PacketCallback(TimeMessageHandler));
 		}
 
         /// <summary>
-        /// If the client does not have data on this region already, request the region data for it
-        /// </summary>
-        /// <param name="name">Name of the region to add</param>
-		public void AddSim(string name) 
-		{
-            name = name.ToLower();
-
-			if(!Regions.ContainsKey(name))
-			{
-                MapNameRequestPacket map = new MapNameRequestPacket();
-
-                map.AgentData.AgentID = Client.Network.AgentID;
-                map.AgentData.SessionID = Client.Network.SessionID;
-                map.NameData.Name = Helpers.StringToField(name);
-
-                Client.Network.SendPacket(map);
-			}
-		}
-
-        /// <summary>
         /// Fire off packet for Estate/Island sim data request.
         /// </summary>
-        public void AddEstateSims()
+        public void RequestEstateSims(MapLayerType layer)
         {
             MapLayerRequestPacket request = new MapLayerRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
             request.AgentData.Godlike = true;
-            request.AgentData.Flags = 0;
+            request.AgentData.Flags = (uint)layer;
             request.AgentData.EstateID = 0; // TODO get a better value here.
 
             Client.Network.SendPacket(request);
@@ -160,14 +150,14 @@ namespace libsecondlife
         /// <summary>
         /// Fire off packet for Linden/Mainland sim data request.
         /// </summary>
-        public void AddLindenSims()
+        public void RequestLindenSims(MapLayerType layer)
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
-            request.AgentData.EstateID = 0;
-            request.AgentData.Flags = 0;
+            request.AgentData.EstateID = 0; // TODO: ?
+            request.AgentData.Flags = (uint)layer;
             request.PositionData.MaxX = 65535;
             request.PositionData.MaxY = 65535;
             request.PositionData.MinX = 0;
@@ -182,47 +172,34 @@ namespace libsecondlife
         /// LL's protocol for some reason uses a different request packet for Estate sims.
         /// </remarks>
         /// </summary>
-		public void AddAllSims() 
+		public void RequestAllSims(MapLayerType layer) 
 		{
-            AddLindenSims();
-            AddEstateSims();
+            RequestLindenSims(layer);
+            RequestEstateSims(layer);
 		}
 
         /// <summary>
         /// Begin process to get information for a Region
         /// </summary>
-        /// <param name="name">Region Name you're requesting data for</param>
-        /// <param name="grc">CallBack being used to process the response</param>
-        public void BeginGetGridRegion(string name, GridRegionCallback grc)
+        /// <param name="name">Region name you're requesting data for</param>
+        public void BeginGetGridRegion(string name)
         {
-            OnRegionAddInternal = grc;
+            MapNameRequestPacket map = new MapNameRequestPacket();
 
-            BeginGetGridRegionName = name.ToLower();
+            map.AgentData.AgentID = Client.Network.AgentID;
+            map.AgentData.SessionID = Client.Network.SessionID;
+            map.NameData.Name = Helpers.StringToField(name.ToLower());
 
-            if (Regions.ContainsKey(BeginGetGridRegionName))
-            {
-                OnRegionAdd(Regions[BeginGetGridRegionName]);
-            }
-            else
-            {
-                MapNameRequestPacket map = new MapNameRequestPacket();
-
-                map.AgentData.AgentID = Client.Network.AgentID;
-                map.AgentData.SessionID = Client.Network.SessionID;
-                map.NameData.Name = Helpers.StringToField(BeginGetGridRegionName);
-
-                Client.Network.SendPacket(map);
-            }
+            Client.Network.SendPacket(map);
         }
 
         /// <summary>
-        /// Get grid region information using the region name
+        /// Get grid region information using the region name, this function
+        /// will block until it can find the region or gives up
         /// </summary>
-        /// <example>
-        /// regiondata = GetGridRegion("Ahern");
-        /// </example>
         /// <param name="name">Name of sim you're looking for</param>
         /// <returns>GridRegion for the sim you're looking for, or null if it's not available</returns>
+        /// <example>GridRegion regiondata = GetGridRegion("Ahern");</example>
 		public GridRegion GetGridRegion(string name) 
 		{
             name = name.ToLower();
@@ -233,7 +210,7 @@ namespace libsecondlife
             }
             else
             {
-                AddSim(name);
+                BeginGetGridRegion(name);
 
                 // FIXME: We shouldn't be sleeping in a library call, hopefully this goes away soon
                 System.Threading.Thread.Sleep(1000);
@@ -276,23 +253,13 @@ namespace libsecondlife
                     region.MapImageID = block.MapImageID;
                     region.RegionHandle = Helpers.UIntsToLong((uint)region.X * (uint)256, (uint)region.Y * (uint)256);
 
-                    lock (Regions)
-                    {
-                        Regions[region.Name.ToLower()] = region;
-                    }
+                    lock (Regions) Regions[region.Name.ToLower()] = region;
+					lock (RegionsByHandle) RegionsByHandle[region.RegionHandle] = region;
 
-					lock (RegionsByHandle)
-					{
-						RegionsByHandle[region.RegionHandle] = region;
-					}
-
-                    if (OnRegionAddInternal != null && BeginGetGridRegionName == region.Name.ToLower())
+                    if (OnRegionAdd != null)
                     {
-                        OnRegionAddInternal(region);
-                    }
-                    else if (OnRegionAdd != null)
-                    {
-                        OnRegionAdd(region);
+                        try { OnRegionAdd(region); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
             }
@@ -305,7 +272,13 @@ namespace libsecondlife
         /// <param name="simulator">Unused</param>
         private void TimeMessageHandler(Packet packet, Simulator simulator)
         {
-            SunDirection = ((SimulatorViewerTimeMessagePacket)packet).TimeInfo.SunDirection;
+            SimulatorViewerTimeMessagePacket time = (SimulatorViewerTimeMessagePacket)packet;
+            
+            sunPhase = time.TimeInfo.SunPhase;
+            sunDirection = time.TimeInfo.SunDirection;
+            sunAngVelocity = time.TimeInfo.SunAngVelocity;
+            
+            // TODO: Does anyone have a use for the time stuff?
         }
 	}
 }

@@ -21,7 +21,6 @@ namespace IA_ImageTool
         private List<LLUUID> _ImageIDs = new List<LLUUID>();
         private string _FileName;
         private bool _Put;
-        private double _Rate;
 
         /// <summary>
         /// Used to upload/download images.
@@ -29,28 +28,22 @@ namespace IA_ImageTool
         [STAThread]
         static void Main(string[] args)
         {
-            Bitmap bitmap = (Bitmap)Bitmap.FromFile("test.jpg");
-            byte[] j2k = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, String.Empty);
-            File.WriteAllBytes("test.j2c", j2k);
-            return;
-
             if (args.Length < 5)
             {
                 ImageTool.Usage();
                 return;
             }
 
-            List<LLUUID> uuidList = new List<LLUUID>();
-            string filename = "";
+            List<LLUUID> uuidList = new List<LLUUID>();;
+            string filename = String.Empty;
             bool put = false;
-            double rate = 0;
 
             if (args[3].ToLower().Equals("put"))
             {
                 put = true;
                 if (args.Length == 6)
                 {
-                    double.TryParse(args[4], out rate);
+                    // TODO: Parse a compression rate from argument 6
                     filename = args[5];
                 }
                 else
@@ -70,8 +63,6 @@ namespace IA_ImageTool
                 {
                     uuidList.Add(id);
                 }
-
-
             } 
             else 
             {
@@ -81,8 +72,8 @@ namespace IA_ImageTool
                     return;
                 }
 
-                uuidList = new List<LLUUID>();
-                uuidList.Add( new LLUUID(args[4]) );
+                uuidList.Add(new LLUUID(args[4]));
+
                 if (args.Length == 6)
                 {
                     filename = args[5];
@@ -93,27 +84,23 @@ namespace IA_ImageTool
                 }
             }
 
-            ImageTool it = new ImageTool(uuidList, filename, put, rate);
-
+            ImageTool it = new ImageTool(uuidList, filename, put);
 
             if (it.Connect(args[0], args[1], args[2]))
             {
                 if (it.ConnectedSignal.WaitOne(TimeSpan.FromMinutes(1), false))
                 {
                     it.doStuff();
-
                     it.Disconnect();
                 }
-
             }
         }
 
-        protected ImageTool(List<LLUUID> imageIDs, string filename, bool put, double rate)
+        protected ImageTool(List<LLUUID> imageIDs, string filename, bool put)
         {
             _ImageIDs = imageIDs;
             _FileName = filename;
             _Put = put;
-            _Rate = rate;
 
             try
             {
@@ -172,15 +159,8 @@ namespace IA_ImageTool
 
                 byte[] j2cdata = null;
 
-                if (_Rate != 0)
-                {
-                    //j2cdata = KakaduWrap.ReadJ2CData(_FileName, _Rate);
-                }
-                else
-                {
-                    Bitmap bitmap = (Bitmap)Bitmap.FromFile(_FileName);
-                    j2cdata = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, String.Empty);
-                }
+                Bitmap bitmap = (Bitmap)Bitmap.FromFile(_FileName);
+                j2cdata = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, String.Empty);
 
                 if (j2cdata == null)
                 {
@@ -227,19 +207,17 @@ namespace IA_ImageTool
                         int end = Environment.TickCount;
                         Console.WriteLine("Elapsed download time, in TickCounts: " + (end - start));
 
-                        Console.WriteLine("Image Data Length :" + j2cdata.Length);
+                        Console.WriteLine("Image Data Length: " + j2cdata.Length);
 
                         Console.WriteLine("Writing to: " + FileName + ".tga");
                         File.WriteAllBytes(FileName + ".tga", OpenJPEGNet.OpenJPEG.DecodeToTGA(j2cdata));
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("ERROR: Can't download image :: " + e.Message);
+                        Console.WriteLine("ERROR: Can't download image: " + e.Message);
                     }
                 }
             }
-
-            Console.WriteLine("Done...");
         }
 
         protected static void Usage()
