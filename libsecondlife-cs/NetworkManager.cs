@@ -274,6 +274,7 @@ namespace libsecondlife
         private System.Timers.Timer AckTimer;
         private ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
 
+		public float Dilation = 0;
         /// <summary>
         /// Constructor for Simulator
         /// </summary>
@@ -578,7 +579,7 @@ namespace libsecondlife
                         if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                         {
                             Client.Log("Resending " + packet.Type.ToString() + " packet, " +
-                                (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
+                                (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Debug);
 
                             packet.Header.Resent = true;
                             SendPacket(packet, false);
@@ -709,6 +710,7 @@ namespace libsecondlife
                 }
             }
 
+			
             // Fire the registered packet events
             #region FireCallbacks
             if (Callbacks.ContainsKey(packet.Type))

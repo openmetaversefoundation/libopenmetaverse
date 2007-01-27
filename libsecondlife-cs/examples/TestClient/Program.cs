@@ -23,7 +23,6 @@ namespace libsecondlife.TestClient
             LoginDetails account;
             string master = "";
             string file = "";
-			string startpos = "";
 			string contact = "";
 
             if (arguments["master"] != null)
@@ -31,10 +30,6 @@ namespace libsecondlife.TestClient
                 master = arguments["master"];
             }
 
-			if ( arguments["start"] != null)
-			{
-				startpos = arguments["start"];
-			}
 			if (arguments["contact"] != null)
 			{
 				contact = arguments["contact"];
@@ -112,8 +107,8 @@ namespace libsecondlife.TestClient
 				a.Master = master;
 
             // Login the accounts and run the input loop
-			if ( startpos != null ) {
-				manager = new ClientManager(accounts, contact, startpos);
+			if ( arguments["start"] != null ) {
+				manager = new ClientManager(accounts, contact, arguments["start"]);
 			} else { 
 				manager = new ClientManager(accounts, contact);
 			}

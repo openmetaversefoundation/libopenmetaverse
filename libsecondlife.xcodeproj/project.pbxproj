@@ -11,11 +11,11 @@
 		40147FEC0B59A1190070ABA4 /* JasperWrapper.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40147FE30B59A0D50070ABA4 /* JasperWrapper.cs */; };
 		40147FF40B59A1580070ABA4 /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40147FD70B59988C0070ABA4 /* AssemblyInfo.cs */; };
 		40147FF50B59A1580070ABA4 /* ImageTool.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40147FD40B59988C0070ABA4 /* ImageTool.cs */; };
-		40147FF60B59A1580070ABA4 /* KakaduWrap.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40147FD50B59988C0070ABA4 /* KakaduWrap.cs */; };
 		40147FF70B59A1620070ABA4 /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		40147FF80B59A1620070ABA4 /* libjaspernet.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 40147FE90B59A0E60070ABA4 /* libjaspernet.dll */; };
 		401480080B59A3180070ABA4 /* IA_SimpleInventory.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E4590B575BD600B0667D /* IA_SimpleInventory.cs */; };
-		4054E30B0B57351700B0667D /* _BodyShapeParams_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2B90B57343500B0667D /* _BodyShapeParams_.cs */; };
+		401D8B160B6AF98000CF8C2F /* DebugCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 401D8B150B6AF98000CF8C2F /* DebugCommand.cs */; };
+		402E14E30B699BB400A17C19 /* _VisualParam_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402E14E20B699BB400A17C19 /* _VisualParam_.cs */; };
 		4054E30C0B57351700B0667D /* _Packets_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2B60B57343500B0667D /* _Packets_.cs */; };
 		4054E30D0B57351700B0667D /* AppearanceManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2BA0B57343500B0667D /* AppearanceManager.cs */; };
 		4054E30E0B57351700B0667D /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2B70B57343500B0667D /* AssemblyInfo.cs */; };
@@ -188,6 +188,7 @@
 		40E9A5E90B60726900D8BA3C /* LLSD.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40E9A5E80B60726900D8BA3C /* LLSD.cs */; };
 		40E9A5EB0B60729800D8BA3C /* Assets.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40E9A5EA0B60729800D8BA3C /* Assets.cs */; };
 		40F258A30B586E8D003B627A /* AssetRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F258A20B586E8D003B627A /* AssetRequest.cs */; };
+		40F44B900B6B59A40087EEC9 /* DilationCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F44B8F0B6B59A40087EEC9 /* DilationCommand.cs */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -258,16 +259,16 @@
 
 /* Begin PBXFileReference section */
 		40147FD40B59988C0070ABA4 /* ImageTool.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ImageTool.cs; path = "libsecondlife-cs/examples/IA_ImageTool/ImageTool.cs"; sourceTree = "<group>"; };
-		40147FD50B59988C0070ABA4 /* KakaduWrap.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = KakaduWrap.cs; path = "libsecondlife-cs/examples/IA_ImageTool/KakaduWrap.cs"; sourceTree = "<group>"; };
 		40147FD70B59988C0070ABA4 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
 		40147FDB0B599B2D0070ABA4 /* IA_ImageTool.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = IA_ImageTool.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		40147FE30B59A0D50070ABA4 /* JasperWrapper.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = JasperWrapper.cs; path = libjaspernet/JasperWrapper.cs; sourceTree = "<group>"; };
 		40147FE50B59A0D50070ABA4 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
 		40147FE90B59A0E60070ABA4 /* libjaspernet.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = libjaspernet.dll; sourceTree = BUILT_PRODUCTS_DIR; };
 		40147FED0B59A1310070ABA4 /* libjasper.dll */ = {isa = PBXFileReference; lastKnownFileType = compiled.mono.library; name = libjasper.dll; path = libjaspernet/libjasper.dll; sourceTree = "<group>"; };
+		401D8B150B6AF98000CF8C2F /* DebugCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = DebugCommand.cs; sourceTree = "<group>"; };
+		402E14E20B699BB400A17C19 /* _VisualParam_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = _VisualParam_.cs; path = "libsecondlife-cs/_VisualParam_.cs"; sourceTree = "<group>"; };
 		4054E2B60B57343500B0667D /* _Packets_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = _Packets_.cs; path = "libsecondlife-cs/_Packets_.cs"; sourceTree = "<group>"; };
 		4054E2B70B57343500B0667D /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssemblyInfo.cs; path = "libsecondlife-cs/AssemblyInfo.cs"; sourceTree = "<group>"; };
-		4054E2B90B57343500B0667D /* _BodyShapeParams_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = _BodyShapeParams_.cs; sourceTree = "<group>"; };
 		4054E2BA0B57343500B0667D /* AppearanceManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AppearanceManager.cs; sourceTree = "<group>"; };
 		4054E2BB0B57343500B0667D /* Asset.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = Asset.cs; sourceTree = "<group>"; };
 		4054E2BC0B57343500B0667D /* AssetImage.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetImage.cs; sourceTree = "<group>"; };
@@ -438,6 +439,7 @@
 		40E9A5E80B60726900D8BA3C /* LLSD.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = LLSD.cs; path = "libsecondlife-cs/LLSD.cs"; sourceTree = "<group>"; };
 		40E9A5EA0B60729800D8BA3C /* Assets.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Assets.cs; path = "libsecondlife-cs/libsecondlife.Utilities/Assets.cs"; sourceTree = "<group>"; };
 		40F258A20B586E8D003B627A /* AssetRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssetRequest.cs; path = "libsecondlife-cs/AssetSystem/AssetRequest.cs"; sourceTree = "<group>"; };
+		40F44B8F0B6B59A40087EEC9 /* DilationCommand.cs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.csharp; path = DilationCommand.cs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -535,7 +537,6 @@
 			isa = PBXGroup;
 			children = (
 				40147FD40B59988C0070ABA4 /* ImageTool.cs */,
-				40147FD50B59988C0070ABA4 /* KakaduWrap.cs */,
 				40147FD60B59988C0070ABA4 /* Properties */,
 			);
 			name = IA_ImageTool;
@@ -584,6 +585,7 @@
 		4054E2B50B5733D200B0667D /* libsecondlife-cs */ = {
 			isa = PBXGroup;
 			children = (
+				402E14E20B699BB400A17C19 /* _VisualParam_.cs */,
 				40E9A5E80B60726900D8BA3C /* LLSD.cs */,
 				40F258A20B586E8D003B627A /* AssetRequest.cs */,
 				4054E2B60B57343500B0667D /* _Packets_.cs */,
@@ -620,7 +622,6 @@
 		4054E2B80B57343500B0667D /* AssetSystem */ = {
 			isa = PBXGroup;
 			children = (
-				4054E2B90B57343500B0667D /* _BodyShapeParams_.cs */,
 				4054E2BA0B57343500B0667D /* AppearanceManager.cs */,
 				4054E2BB0B57343500B0667D /* Asset.cs */,
 				4054E2BC0B57343500B0667D /* AssetImage.cs */,
@@ -778,6 +779,7 @@
 		4054E3B60B573A9700B0667D /* Commands */ = {
 			isa = PBXGroup;
 			children = (
+				401D8B150B6AF98000CF8C2F /* DebugCommand.cs */,
 				40AAAB9B0B60CC7300EC04F0 /* Commands */,
 				4054E3B70B573A9700B0667D /* AppearanceCommand.cs */,
 				4054E3B80B573A9700B0667D /* CloneProfileCommand.cs */,
@@ -799,6 +801,7 @@
 				4054E3D80B573A9700B0667D /* SetMasterCommand.cs */,
 				4054E3D90B573A9700B0667D /* TreeCommand.cs */,
 				4054E3DA0B573A9700B0667D /* UptimeCommand.cs */,
+				40F44B8F0B6B59A40087EEC9 /* DilationCommand.cs */,
 				4054E3DB0B573A9700B0667D /* WhoCommand.cs */,
 			);
 			name = Commands;
@@ -1217,7 +1220,6 @@
 				40147FF50B59A1580070ABA4 /* ImageTool.cs in Sources */,
 				401480080B59A3180070ABA4 /* IA_SimpleInventory.cs in Sources */,
 				40147FF40B59A1580070ABA4 /* AssemblyInfo.cs in Sources */,
-				40147FF60B59A1580070ABA4 /* KakaduWrap.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1234,7 +1236,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4054E30B0B57351700B0667D /* _BodyShapeParams_.cs in Sources */,
 				4054E30C0B57351700B0667D /* _Packets_.cs in Sources */,
 				4054E30D0B57351700B0667D /* AppearanceManager.cs in Sources */,
 				4054E30E0B57351700B0667D /* AssemblyInfo.cs in Sources */,
@@ -1307,6 +1308,7 @@
 				4054E3520B57351700B0667D /* XmlRpcXmlTokens.cs in Sources */,
 				40F258A30B586E8D003B627A /* AssetRequest.cs in Sources */,
 				40E9A5E90B60726900D8BA3C /* LLSD.cs in Sources */,
+				402E14E30B699BB400A17C19 /* _VisualParam_.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1341,6 +1343,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				401D8B160B6AF98000CF8C2F /* DebugCommand.cs in Sources */,
 				4054E3DF0B573A9700B0667D /* Arguments.cs in Sources */,
 				4054E3E00B573A9700B0667D /* ClientManager.cs in Sources */,
 				4054E3E10B573A9700B0667D /* Command.cs in Sources */,
@@ -1418,6 +1421,7 @@
 				40AAABEB0B60CC7400EC04F0 /* UptimeCommand.cs in Sources */,
 				40AAABEC0B60CC7400EC04F0 /* WhoCommand.cs in Sources */,
 				40AAAC250B60CE5300EC04F0 /* Parsing.cs in Sources */,
+				40F44B900B6B59A40087EEC9 /* DilationCommand.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -162,7 +162,7 @@ namespace libsecondlife
         /// <param name="sittingOn">The local ID of the object that is being sat
         /// on. If this is zero the avatar is not sitting on an object</param>
         public delegate void AvatarSitChanged(Simulator simulator, uint sittingOn);
-
+		
         #endregion
 
         #region Object/Prim Enums
@@ -423,16 +423,14 @@ namespace libsecondlife
         /// from the simulator
         /// </summary>
         public event ObjectPropertiesFamilyCallback OnObjectProperties;
+        #endregion
         /// <summary>
         /// If true, when a cached object check is received from the server 
         /// the full object info will automatically be requested.
         /// </summary>
         /// 
-
-        #endregion
-
         public bool RequestAllObjects = false;        
-
+		
         protected SecondLife Client;
 
         /// <summary>
@@ -916,6 +914,7 @@ namespace libsecondlife
             if (OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
             {
                 ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
+				UpdateDilation(simulator, update.RegionData.TimeDilation);
 
                 foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
                 {
@@ -1076,6 +1075,8 @@ namespace libsecondlife
 
             ImprovedTerseObjectUpdatePacket update = (ImprovedTerseObjectUpdatePacket)packet;
 
+			UpdateDilation(simulator, update.RegionData.TimeDilation);
+			
             foreach (ImprovedTerseObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
             {
                 int i = 0;
@@ -1474,6 +1475,10 @@ namespace libsecondlife
         {
             av.sittingOn = localid;
         }
+		protected void UpdateDilation(Simulator s, uint dilation)
+		{
+			s.Dilation = (float) dilation / 65535;
+		}
 
         protected void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
         {
