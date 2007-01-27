@@ -15,6 +15,22 @@ namespace libsecondlife.TestClient
         public string Password;
 		public string Master;
     }
+	
+	public class StartPosition
+	{
+		public string sim;
+		public int x;
+		public int y;
+		public int z;
+		
+		public StartPosition()
+		{
+			this.sim = null;
+			this.x = 0;
+			this.y = 0;
+			this.z = 0;
+		}
+	}
 
     public class ClientManager
     {
@@ -22,17 +38,33 @@ namespace libsecondlife.TestClient
         public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims = new Dictionary<Simulator, Dictionary<uint, PrimObject>>();
 
         public bool Running = true;
+		
+		string contactPerson = "";
+		StartPosition startpos = new StartPosition();
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="accounts"></param>
-        public ClientManager(List<LoginDetails> accounts)
+        public ClientManager(List<LoginDetails> accounts, string c)
         {
+			this.contactPerson = c;
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
+		public ClientManager(List<LoginDetails> accounts, string c, string s)
+		{
+			this.contactPerson = c;
+			char sep = '/';
+			string[] startbits = s.Split(sep);
+			this.startpos.sim = startbits[0];
+			this.startpos.x = int.Parse(startbits[1]);
+			this.startpos.y = int.Parse(startbits[2]);
+			this.startpos.z = int.Parse(startbits[3]);
+			foreach (LoginDetails account in accounts)
+                Login(account);
+		}
         /// <summary>
         /// 
         /// </summary>
@@ -54,8 +86,21 @@ namespace libsecondlife.TestClient
 
 			client.SimPrims = SimPrims;
 			client.Master = account.Master;
-
-            if ( ! client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", "contact@libsecondlife.org") ) {
+			
+			bool check = false;
+			if ( this.startpos.sim != null ) {
+				if ( this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0 ) {
+					this.startpos.x = 128;
+					this.startpos.y = 128;
+					this.startpos.z = 1;
+				}
+				string startLoc = NetworkManager.StartLocation(this.startpos.sim, this.startpos.x, this.startpos.y, this.startpos.z);
+				Console.WriteLine(startLoc);
+				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc, contactPerson, false);
+			} else {
+				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", contactPerson);
+			}
+            if ( ! check ) {
 				Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " + client.Network.LoginError);
 			}
 
