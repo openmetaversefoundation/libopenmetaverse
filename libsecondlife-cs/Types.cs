@@ -105,6 +105,22 @@ namespace libsecondlife
 		}
 
         /// <summary>
+        /// Combine two UUIDs together by taking the MD5 hash of a byte array
+        /// containing both UUIDs
+        /// </summary>
+        /// <param name="other">The UUID to combine with this one</param>
+        /// <returns>The UUID product of the combination</returns>
+        public LLUUID Combine(LLUUID other)
+        {
+            // Build the buffer to MD5
+            byte[] input = new byte[32];
+            Array.Copy(data, input, 16);
+            Array.Copy(other.Data, 0, input, 16, 16);
+
+            return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
+        }
+
+        /// <summary>
         /// Parse the bytes for a LLUUID from a string
         /// </summary>
         /// <param name="val">String containing 32 (or 36 with hyphens) character UUID</param>

@@ -804,6 +804,7 @@ namespace libsecondlife
         /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
         public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
 
+
         /// <summary>
         /// Explains why a simulator or the grid disconnected from us
         /// </summary>
@@ -817,40 +818,6 @@ namespace libsecondlife
             NetworkTimeout
         }
 
-        /// <summary>
-        /// The permanent UUID for the logged in avatar
-        /// </summary>
-        public LLUUID AgentID;
-        /// <summary>
-        /// A temporary UUID assigned to this session, used for secure 
-        /// transactions
-        /// </summary>
-        public LLUUID SessionID;
-        /// <summary>
-        /// A string holding a descriptive error on login failure, empty
-        /// otherwise
-        /// </summary>
-        public string LoginError;
-        /// <summary>
-        /// The simulator that the logged in avatar is currently occupying
-        /// </summary>
-        public Simulator CurrentSim;
-        /// <summary>
-        /// The capabilities for the current simulator
-        /// </summary>
-        public Caps CurrentCaps;
-        /// <summary>
-        /// The complete dictionary of all the login values returned by the 
-        /// RPC login server, converted to native data types wherever possible
-        /// </summary>
-        public Dictionary<string, object> LoginValues = new Dictionary<string, object>();
-        /// <summary>
-        /// Shows whether the network layer is logged in to the grid or not
-        /// </summary>
-        public bool Connected
-        {
-            get { return connected; }
-        }
 
         /// <summary>
         /// An event for the connection to a simulator other than the currently
@@ -867,22 +834,57 @@ namespace libsecondlife
         /// </summary>
         public event CurrentSimChangedCallback OnCurrentSimChanged;
 
+        /// <summary>
+        /// The permanent UUID for the logged in avatar
+        /// </summary>
+        public LLUUID AgentID = LLUUID.Zero;
+        /// <summary>
+        /// Temporary UUID assigned to this session, used for verifying 
+        /// our identity in packets
+        /// </summary>
+        public LLUUID SessionID = LLUUID.Zero;
+        /// <summary>
+        /// Shared secret UUID that is never sent over the wire
+        /// </summary>
+        public LLUUID SecureSessionID = LLUUID.Zero;
+        /// <summary>
+        /// String holding a descriptive error on login failure, empty
+        /// otherwise
+        /// </summary>
+        public string LoginError = String.Empty;
+        /// <summary>
+        /// The simulator that the logged in avatar is currently occupying
+        /// </summary>
+        public Simulator CurrentSim = null;
+        /// <summary>
+        /// The capabilities for the current simulator
+        /// </summary>
+        public Caps CurrentCaps = null;
+        /// <summary>
+        /// The complete dictionary of all the login values returned by the 
+        /// RPC login server, converted to native data types wherever possible
+        /// </summary>
+        public Dictionary<string, object> LoginValues = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Shows whether the network layer is logged in to the grid or not
+        /// </summary>
+        public bool Connected { get { return connected; } }
+
         private SecondLife Client;
         private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         private List<Simulator> Simulators = new List<Simulator>();
         private System.Timers.Timer DisconnectTimer;
         private System.Timers.Timer LogoutTimer;
-        private bool connected;
+        private bool connected = false;
         private List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
-
-        private const int NetworkTrafficTimeout = 15000;
 
         ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
 
         /// <summary>
-        /// 
+        /// Default constructor
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="client">Reference to the SecondLife client</param>
         public NetworkManager(SecondLife client)
         {
             Client = client;
@@ -896,16 +898,20 @@ namespace libsecondlife
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
 
-            // Disconnect a sim if we exceed our threshold
-            DisconnectTimer = new System.Timers.Timer(NetworkTrafficTimeout);
+            // The proper timeout for this will get set at Login
+            DisconnectTimer = new System.Timers.Timer();
+            DisconnectTimer.AutoReset = false;
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
         }
 
         /// <summary>
-        /// 
+        /// Register an event handler for a packet. This is a low level event
+        /// interface and should only be used if you are doing something not
+        /// supported in libsecondlife
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="callback"></param>
+        /// <param name="type">Packet type to trigger events for</param>
+        /// <param name="callback">Callback to fire when a packet of this type
+        /// is received</param>
         public void RegisterCallback(PacketType type, PacketCallback callback)
         {
             if (!Callbacks.ContainsKey(type))
@@ -918,10 +924,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Unregister an event handler for a packet. This is a low level event
+        /// interface and should only be used if you are doing something not 
+        /// supported in libsecondlife
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="callback"></param>
+        /// <param name="type">Packet type this callback is registered with</param>
+        /// <param name="callback">Callback to stop firing events for</param>
         public void UnregisterCallback(PacketType type, PacketCallback callback)
         {
             if (!Callbacks.ContainsKey(type))
@@ -945,69 +953,72 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Register a CAPS event handler
         /// </summary>
-        /// <param name="callback"></param>
+        /// <param name="callback">Callback to fire when a CAPS event is received</param>
         public void RegisterEventCallback(Caps.EventQueueCallback callback)
         {
             EventQueueCallbacks.Add(callback);
         }
 
         /// <summary>
-        /// 
+        /// Send a packet to the simulator the avatar is currently occupying
         /// </summary>
-        /// <param name="packet"></param>
+        /// <param name="packet">Packet to send</param>
         public void SendPacket(Packet packet)
         {
             if (CurrentSim != null && CurrentSim.Connected)
-            {
                 CurrentSim.SendPacket(packet, true);
-            }
         }
 
         /// <summary>
-        /// 
+        /// Send a packet to a specified simulator
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
+        /// <param name="packet">Packet to send</param>
+        /// <param name="simulator">Simulator to send the packet to</param>
         public void SendPacket(Packet packet, Simulator simulator)
         {
             if (simulator != null && simulator.Connected)
-            {
                 simulator.SendPacket(packet, true);
-            }
         }
 
         /// <summary>
-        /// 
+        /// Send a raw byte array as a packet to the current simulator
         /// </summary>
-        /// <param name="payload"></param>
+        /// <param name="payload">Byte array containing a packet</param>
         /// <param name="setSequence">Whether to set the second, third, and fourth
         /// bytes of the payload to the current sequence number</param>
         public void SendPacket(byte[] payload, bool setSequence)
         {
             if (connected && CurrentSim != null)
-            {
                 CurrentSim.SendPacket(payload, setSequence);
-            }
-            else
-            {
-                Client.Log("Trying to send a " + payload.Length + " payload " +
-                    "when we're not connected", Helpers.LogLevel.Warning);
-            }
         }
 
         /// <summary>
-        /// Use this if you want to login to a specific location
+        /// Send a raw byte array as a packet to the specified simulator
         /// </summary>
-        /// <param name="sim"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="z"></param>
-        /// <returns>string with a value that can be used in the start field in .DefaultLoginValues()</returns>
+        /// <param name="payload">Byte array containing a packet</param>
+        /// <param name="simulator">Simulator to send the packet to</param>
+        /// <param name="setSequence">Whether to set the second, third, and fourth
+        /// bytes of the payload to the current sequence number</param>
+        public void SendPacket(byte[] payload, Simulator simulator, bool setSequence)
+        {
+            if (connected && simulator != null)
+                simulator.SendPacket(payload, setSequence);
+        }
+
+        /// <summary>
+        /// Build a start location URI for passing to the Login function
+        /// </summary>
+        /// <param name="sim">Name of the simulator to start in</param>
+        /// <param name="x">X coordinate to start at</param>
+        /// <param name="y">Y coordinate to start at</param>
+        /// <param name="z">Z coordinate to start at</param>
+        /// <returns>String with a URI that can be used to login to a specified
+        /// location</returns>
         public static string StartLocation(string sim, int x, int y, int z)
         {
-            //uri:sim&x&y&z
+            // uri:sim name&x&y&z
             return "uri:" + sim.ToLower() + "&" + x + "&" + y + "&" + z;
         }
 
@@ -1232,6 +1243,9 @@ namespace libsecondlife
             XmlRpcRequest xmlrpc;
             Hashtable loginValues;
 
+            // Re-read the timeout value for the DisconnectTimer
+            DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
+
             // Clear possible old values from the last login
             LoginValues.Clear();
 
@@ -1386,6 +1400,7 @@ namespace libsecondlife
             {
                 this.AgentID = new LLUUID((string)LoginValues["agent_id"]);
                 this.SessionID = new LLUUID((string)LoginValues["session_id"]);
+                this.SecureSessionID = new LLUUID((string)LoginValues["secure_session_id"]);
                 Client.Self.ID = this.AgentID;
                 // Names are wrapped in quotes now, have to strip those
                 Client.Self.FirstName = ((string)LoginValues["first_name"]).Trim(new char[] { '"' });
@@ -1558,6 +1573,10 @@ namespace libsecondlife
         /// </summary>
         public void ForceLogout()
         {
+            Client.Log("Forcing a logout", Helpers.LogLevel.Info);
+
+            DisconnectTimer.Stop();
+
             // Insist on shutdown
             LogoutDemandPacket logoutDemand = new LogoutDemandPacket();
             logoutDemand.LogoutBlock.SessionID = SessionID;

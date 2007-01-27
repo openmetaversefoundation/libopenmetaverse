@@ -206,8 +206,8 @@ namespace libsecondlife.Utilities.Assets
             Client.Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketHandler));
 
             // Xfer packets for uploading large assets
-            //Client.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
-            //Client.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
+            Client.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
+            Client.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
             //Client.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
         }
 
@@ -289,6 +289,19 @@ namespace libsecondlife.Utilities.Assets
         }
 
         public void RequestEstateAsset()
+        {
+            throw new Exception("This function is not implemented yet!");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="transactionID"></param>
+        /// <param name="type"></param>
+        /// <param name="data"></param>
+        /// <param name="tempFile"></param>
+        /// <param name="isPriority"></param>
+        public void RequestUpload(LLUUID transactionID, AssetType type, byte[] data, bool tempFile, bool isPriority)
         {
             ;
         }
@@ -423,6 +436,16 @@ namespace libsecondlife.Utilities.Assets
                         asset.TransferData.TransferID, Helpers.LogLevel.Warning);
                 }
             }
+        }
+
+        private void AssetUploadCompleteHandler(Packet packet, Simulator simulator)
+        {
+            ;
+        }
+
+        private void ConfirmXferPacketHandler(Packet packet, Simulator simulator)
+        {
+            ;
         }
     }
 

@@ -102,6 +102,11 @@ namespace libsecondlife
             Transfer = 0x00002000
         }
 
+        /// <summary>Provide a single instance of the MD5 class to avoid making
+        /// duplicate copies</summary>
+        public static System.Security.Cryptography.MD5 MD5Builder = 
+            new System.Security.Cryptography.MD5CryptoServiceProvider();
+
         /// <summary>
         /// Converts an unsigned integer to a hexadecimal string
         /// </summary>
@@ -824,8 +829,7 @@ namespace libsecondlife
         public static string MD5(string password)
         {
             StringBuilder digest = new StringBuilder();
-            System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
-            byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(password));
+            byte[] hash = MD5Builder.ComputeHash(ASCIIEncoding.Default.GetBytes(password));
 
             // Convert the hash to a hex string
             foreach (byte b in hash)
