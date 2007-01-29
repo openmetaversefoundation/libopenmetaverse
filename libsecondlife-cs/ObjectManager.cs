@@ -104,7 +104,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="properties"></param>
-        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, Primitive.ObjectPropertiesFamily properties);
+        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, LLObject.ObjectPropertiesFamily properties);
         /// <summary>
         /// 
         /// </summary>
@@ -1529,7 +1529,7 @@ namespace libsecondlife
 
         #region Event Notification
 
-        protected void FireOnObjectPropertiesFamily(Simulator sim, Primitive.ObjectPropertiesFamily props)
+        protected void FireOnObjectPropertiesFamily(Simulator sim, LLObject.ObjectPropertiesFamily props)
         {
             if (OnObjectPropertiesFamily != null)
             {
