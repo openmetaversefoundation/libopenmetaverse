@@ -3,21 +3,26 @@ using System.Collections.Generic;
 using System.Text;
 using libsecondlife;
 using libsecondlife.Packets;
-using libsecondlife.AssetSystem;
 
 namespace libsecondlife.TestClient
 {
-    public class SetAppearanceCommand : Command
+    public class AppearanceCommand : Command
     {
-		public SetAppearanceCommand(TestClient testClient)
+        Utilities.Assets.AssetManager Assets;
+        Utilities.Appearance.AppearanceManager Appearance;
+
+		public AppearanceCommand(TestClient testClient)
         {
-            Name = "setapp";
-            Description = "Set appearance to what's stored in the DB.";
+            Name = "appearance";
+            Description = "Set your current appearance to your last saved appearance";
+
+            Assets = new libsecondlife.Utilities.Assets.AssetManager(testClient);
+            Appearance = new libsecondlife.Utilities.Appearance.AppearanceManager(testClient, Assets);
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-			Client.Appearance.SendAgentSetAppearance();
+            Appearance.SetPreviousAppearance();
             return "Done.";
         }
     }

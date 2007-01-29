@@ -11,12 +11,12 @@ namespace libsecondlife.TestClient
     public class ExportCommand : Command
     {
         ManualResetEvent GotPermissionsEvent = new ManualResetEvent(false);
-        ObjectProperties Properties = null;
+        LLObject.ObjectPropertiesFamily Properties;
         bool GotPermissions = false;
 
         public ExportCommand(TestClient testClient)
         {
-            testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectProperties);
+            testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectProperties);
 
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
@@ -45,7 +45,7 @@ namespace libsecondlife.TestClient
             {
                 if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
                 {
-                    foreach (PrimObject prim in Client.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (Primitive prim in Client.SimPrims[Client.Network.CurrentSim].Values)
                     {
                         if (prim.ID == id)
                         {
@@ -78,11 +78,6 @@ namespace libsecondlife.TestClient
                 {
                     GotPermissions = false;
 
-                    if (Properties == null)
-                    {
-                        return "Null object properties returned, may be a bug. Try again";
-                    }
-
                     if (Properties.OwnerID != Client.Network.AgentID)
                     {
                         // We need a MasterID field, those exports should be allowed as well
@@ -99,13 +94,13 @@ namespace libsecondlife.TestClient
 
 					try
 					{
-						List<PrimObject> prims = new List<PrimObject>();
+                        List<Primitive> prims = new List<Primitive>();
 
 						lock (Client.SimPrims)
 						{
 							if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
 							{
-								foreach (PrimObject prim in Client.SimPrims[Client.Network.CurrentSim].Values)
+                                foreach (Primitive prim in Client.SimPrims[Client.Network.CurrentSim].Values)
 								{
 									if (prim.LocalID == localid || prim.ParentID == localid)
 									{
@@ -143,7 +138,7 @@ namespace libsecondlife.TestClient
             }
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, ObjectProperties properties)
+        void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectPropertiesFamily properties)
         {
             Properties = properties;
             GotPermissions = true;

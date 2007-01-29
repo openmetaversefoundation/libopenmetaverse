@@ -20,7 +20,7 @@ namespace libsecondlife.TestClient
 
             lock (Client.SimPrims)
             {
-                foreach (Dictionary<uint, PrimObject> prims in Client.SimPrims.Values)
+                foreach (Dictionary<uint, Primitive> prims in Client.SimPrims.Values)
                 {
                     count += prims.Count;
                 }

@@ -45,7 +45,7 @@ namespace libsecondlife.AssetSystem
         // This data defines all appearance info for an avatar
         public AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
         public SerializableDictionary<int, float> AgentAppearanceParams = new SerializableDictionary<int, float>();
-        public TextureEntry AgentTextureEntry = new TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
+        public LLObject.TextureEntry AgentTextureEntry = new LLObject.TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
 
 
         /// <summary>
@@ -271,7 +271,7 @@ namespace libsecondlife.AssetSystem
             }
 
             //Re-order texture faces to match Linden Labs internal data structure.
-            TextureEntry te2 = new TextureEntry(AgentTextureEntry.DefaultTexture.TextureID);
+            LLObject.TextureEntry te2 = new LLObject.TextureEntry(AgentTextureEntry.DefaultTexture.TextureID);
             te2.CreateFace(18).TextureID = AgentTextureEntry.GetFace(18).TextureID;
             te2.CreateFace(17).TextureID = AgentTextureEntry.GetFace(17).TextureID;
             te2.CreateFace(16).TextureID = AgentTextureEntry.GetFace(16).TextureID;

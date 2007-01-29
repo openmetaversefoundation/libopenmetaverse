@@ -16,14 +16,14 @@ namespace libsecondlife.TestClient
 			
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-		    PrimObject closest = null;
+            Primitive closest = null;
 		    double closestDistance = Double.MaxValue;
 
 		    lock (Client.SimPrims)
 		    {
                 if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
                 {
-                    foreach (PrimObject p in Client.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (Primitive p in Client.SimPrims[Client.Network.CurrentSim].Values)
                     {
                         float distance = Helpers.VecDist(Client.Self.Position, p.Position);
 

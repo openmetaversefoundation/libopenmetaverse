@@ -35,7 +35,7 @@ namespace libsecondlife.TestClient
     public class ClientManager
     {
         public Dictionary<LLUUID, SecondLife> Clients = new Dictionary<LLUUID, SecondLife>();
-        public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims = new Dictionary<Simulator, Dictionary<uint, PrimObject>>();
+        public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
 		
@@ -110,9 +110,10 @@ namespace libsecondlife.TestClient
 
                 Console.WriteLine("Logged in " + client.ToString());
 
-                // Throttle the connection to not receive LayerData or asset packets
-                client.Throttle.Total = 0.0f;
-                client.Throttle.Task = 1536000.0f;
+                // Throttle the connection to not receive LayerData packets
+                client.Throttle.Land = 0.0f;
+                client.Throttle.Cloud = 0.0f;
+                client.Throttle.Wind = 0.0f;
                 client.Throttle.Set();
             }
 

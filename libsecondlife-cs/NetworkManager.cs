@@ -214,15 +214,10 @@ namespace libsecondlife
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
         public SecondLife Client;
-
         /// <summary>The Region class that this Simulator wraps</summary>
         public Region Region;
-
-        /// <summary>
-        /// Used internally to track sim disconnections, do not modify this 
-        /// variable
-        /// </summary>
-        public bool DisconnectCandidate = false;
+        /// <summary>Current time dilation of this simulator</summary>
+        public float Dilation = 0.0f;
 
         /// <summary>
         /// The ID number associated with this particular connection to the 
@@ -234,7 +229,6 @@ namespace libsecondlife
             get { return circuitCode; }
             set { circuitCode = value; }
         }
-
         /// <summary>
         /// The IP address and port of the server
         /// </summary>
@@ -242,7 +236,6 @@ namespace libsecondlife
         {
             get { return ipEndPoint; }
         }
-
         /// <summary>
         /// A boolean representing whether there is a working connection to the
         /// simulator or not
@@ -251,6 +244,9 @@ namespace libsecondlife
         {
             get { return connected; }
         }
+
+        /// <summary>Used internally to track sim disconnections</summary>
+        internal bool DisconnectCandidate = false;
 
         private NetworkManager Network;
         private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
@@ -274,7 +270,7 @@ namespace libsecondlife
         private System.Timers.Timer AckTimer;
         private ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
 
-		public float Dilation = 0;
+
         /// <summary>
         /// Constructor for Simulator
         /// </summary>
@@ -578,8 +574,8 @@ namespace libsecondlife
                     {
                         if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                         {
-                            Client.Log("Resending " + packet.Type.ToString() + " packet, " +
-                                (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Debug);
+                            Client.Log("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
+                                "), " + (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
 
                             packet.Header.Resent = true;
                             SendPacket(packet, false);
@@ -777,6 +773,10 @@ namespace libsecondlife
     /// </summary>
     public class NetworkManager
     {
+        /// <summary>Maximum size of packet that we want to send over the wire</summary>
+        public const int MAX_PACKET_SIZE = 1200;
+
+
         /// <summary>
         /// Coupled with RegisterCallback(), this is triggered whenever a packet
         /// of a registered type is received
@@ -902,7 +902,6 @@ namespace libsecondlife
 
             // The proper timeout for this will get set at Login
             DisconnectTimer = new System.Timers.Timer();
-            DisconnectTimer.AutoReset = false;
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
         }
 
@@ -1717,16 +1716,14 @@ namespace libsecondlife
             // Request the economy data
             SendPacket(new EconomyDataRequestPacket());
 
-            // TODO: A movement class should be handling this
-            Avatar.AgentUpdateFlags controlFlags = Avatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
+            // FIXME: A movement class should be handling this
+            MainAvatar.AgentUpdateFlags controlFlags = MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
             LLVector3 position = new LLVector3(128, 128, 32);
             LLVector3 forwardAxis = new LLVector3(0, 0.999999f, 0);
             LLVector3 leftAxis = new LLVector3(0.999999f, 0, 0);
             LLVector3 upAxis = new LLVector3(0, 0, 0.999999f);
             Client.Self.UpdateCamera(controlFlags, position, forwardAxis, leftAxis, upAxis, LLQuaternion.Identity,
                 LLQuaternion.Identity, 384.0f, true);
-
-            Client.Self.Status.AlwaysRun = false;
         }
 
         /// <summary>
@@ -1971,19 +1968,82 @@ namespace libsecondlife
     public class AgentThrottle
     {
         /// <summary>Maximum bytes per second for resending unacknowledged packets</summary>
-        public float Resend;
+        public float Resend
+        {
+            get { return resend; }
+            set
+            {
+                if (value > 150000.0f) resend = 150000.0f;
+                else if (value < 10000.0f) resend = 10000.0f;
+                else resend = value;
+            }
+        }
         /// <summary>Maximum bytes per second for LayerData terrain</summary>
-        public float Land;
+        public float Land
+        {
+            get { return land; }
+            set
+            {
+                if (value > 170000.0f) land = 170000.0f;
+                else if (value < 0.0f) land = 0.0f; // We don't have control of these so allow throttling to 0
+                else land = value;
+            }
+        }
         /// <summary>Maximum bytes per second for LayerData wind data</summary>
-        public float Wind;
+        public float Wind
+        {
+            get { return wind; }
+            set
+            {
+                if (value > 34000.0f) wind = 34000.0f;
+                else if (value < 0.0f) wind = 0.0f; // We don't have control of these so allow throttling to 0
+                else wind = value;
+            }
+        }
         /// <summary>Maximum bytes per second for LayerData clouds</summary>
-        public float Cloud;
+        public float Cloud
+        {
+            get { return cloud; }
+            set
+            {
+                if (value > 34000.0f) cloud = 34000.0f;
+                else if (value < 0.0f) cloud = 0.0f; // We don't have control of these so allow throttling to 0
+                else cloud = value;
+            }
+        }
         /// <summary>Unknown, includes object data</summary>
-        public float Task;
+        public float Task
+        {
+            get { return task; }
+            set
+            {
+                if (value > 446000.0f) task = 446000.0f;
+                else if (value < 4000.0f) task = 4000.0f;
+                else task = value;
+            }
+        }
         /// <summary>Maximum bytes per second for textures</summary>
-        public float Texture;
+        public float Texture
+        {
+            get { return texture; }
+            set
+            {
+                if (value > 446000.0f) texture = 446000.0f;
+                else if (value < 4000.0f) texture = 4000.0f;
+                else texture = value;
+            }
+        }
         /// <summary>Maximum bytes per second for downloaded assets</summary>
-        public float Asset;
+        public float Asset
+        {
+            get { return asset; }
+            set
+            {
+                if (value > 220000.0f) asset = 220000.0f;
+                else if (value < 10000.0f) asset = 10000.0f;
+                else asset = value;
+            }
+        }
 
         /// <summary>Maximum bytes per second the entire connection, divided up
         /// between invidiual streams using default multipliers</summary>
@@ -2004,6 +2064,13 @@ namespace libsecondlife
         }
 
         private SecondLife Client;
+        private float resend;
+        private float land;
+        private float wind;
+        private float cloud;
+        private float task;
+        private float texture;
+        private float asset;
 
         /// <summary>
         /// Default constructor, uses a default high total of 1500 KBps (1536000)

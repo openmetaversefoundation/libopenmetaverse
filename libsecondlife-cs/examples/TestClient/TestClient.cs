@@ -10,17 +10,16 @@ namespace libsecondlife.TestClient
 {
     public class TestClient : SecondLife
     {
-        public delegate void PrimCreatedCallback(Simulator simulator, PrimObject prim);
+        public delegate void PrimCreatedCallback(Simulator simulator, Primitive prim);
 
         public event PrimCreatedCallback OnPrimCreated;
 
-        public Dictionary<Simulator, Dictionary<uint, PrimObject>> SimPrims;
+        public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims;
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
         public Dictionary<uint, Avatar> AvatarList = new Dictionary<uint,Avatar>();
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
-		public AppearanceManager Appearance;
 		public bool Running = true;
 	    public string Master = String.Empty;
 		public ClientManager ClientManager;
@@ -63,9 +62,7 @@ namespace libsecondlife.TestClient
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 
-            Objects.RequestAllObjects = true;
-
-			Appearance = new AppearanceManager(this);
+            //Objects.RequestAllObjects = true;
 
             updateTimer.Start();
         }
@@ -218,19 +215,19 @@ namespace libsecondlife.TestClient
             }
         }
 
-        private void Objects_OnNewPrim(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
+        private void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             lock (SimPrims)
             {
                 if (!SimPrims.ContainsKey(simulator))
                 {
-                    SimPrims[simulator] = new Dictionary<uint, PrimObject>(10000);
+                    SimPrims[simulator] = new Dictionary<uint, Primitive>(10000);
                 }
 
                 SimPrims[simulator][prim.LocalID] = prim;
             }
 
-            if ((prim.Flags & ObjectFlags.CreateSelected) != 0 && OnPrimCreated != null)
+            if ((prim.Flags & LLObject.ObjectFlags.CreateSelected) != 0 && OnPrimCreated != null)
             {
                 OnPrimCreated(simulator, prim);
             }

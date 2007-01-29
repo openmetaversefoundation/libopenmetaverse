@@ -34,7 +34,7 @@ namespace primexport
 
         //
         private SecondLife client;
-        private Dictionary<ulong, PrimObject> Prims = new Dictionary<ulong, PrimObject>();
+        private Dictionary<ulong, Primitive> Prims = new Dictionary<ulong, Primitive>();
         private List<ulong> Avatars = new List<ulong>();
         private List<ulong> Attachments = new List<ulong>();
         private string CurrentText = "";
@@ -335,7 +335,7 @@ namespace primexport
             txtLog.AppendText(CurrentText);
         }
 
-        private void PrimSeen(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
+        private void PrimSeen(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             lock (Prims)
             {
@@ -349,7 +349,7 @@ namespace primexport
             }
         }
 
-        void AttachmentSeen(Simulator simulator, PrimObject prim, ulong regionHandle, ushort timeDilation)
+        void AttachmentSeen(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             lock (Attachments)
             {
@@ -407,7 +407,7 @@ namespace primexport
             {
                 stream.WriteLine("<primitives>");
 
-                foreach (PrimObject prim in Prims.Values)
+                foreach (Primitive prim in Prims.Values)
                 {
                     LLVector3 position = prim.Position;
                     LLQuaternion rotation = prim.Rotation;
@@ -537,7 +537,7 @@ namespace primexport
             {
                 stream.WriteLine("<Primitives>");
 
-                foreach (PrimObject prim in Prims.Values)
+                foreach (Primitive prim in Prims.Values)
                 {
                     if (prim.ParentID != 0)
                     {

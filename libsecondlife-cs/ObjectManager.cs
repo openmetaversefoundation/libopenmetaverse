@@ -33,10 +33,10 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// Contains all of the variables sent in an object update packet for a 
-    /// prim object. Used to track position and movement of prims.
+    /// Contains the shared variables sent in an object update packet for
+    /// objects. Used to track position and movement of prims and avatars
     /// </summary>
-    public struct PrimUpdate
+    public abstract class ObjectUpdate
     {
         /// <summary></summary>
         public uint LocalID;
@@ -53,33 +53,25 @@ namespace libsecondlife
         /// <summary></summary>
         public LLVector3 RotationVelocity;
         /// <summary></summary>
-        public TextureEntry Textures;
+        public LLObject.TextureEntry Textures;
+    }
+
+    /// <summary>
+    /// Contains all of the variables sent in an object update packet for a
+    /// primitive. Used to track position and movement of primitives
+    /// </summary>
+    public class PrimUpdate : ObjectUpdate
+    {
     }
 
     /// <summary>
     /// Contains all of the variables sent in an object update packet for an 
-    /// avatar. Used to track position and movement of avatars.
+    /// avatar. Used to track position and movement of avatars
     /// </summary>
-    public struct AvatarUpdate
+    public class AvatarUpdate : ObjectUpdate
     {
         /// <summary></summary>
-        public uint LocalID;
-        /// <summary></summary>
-        public byte State;
-        /// <summary></summary>
         public LLVector4 CollisionPlane;
-        /// <summary></summary>
-        public LLVector3 Position;
-        /// <summary></summary>
-        public LLVector3 Velocity;
-        /// <summary></summary>
-        public LLVector3 Acceleration;
-        /// <summary></summary>
-        public LLQuaternion Rotation;
-        /// <summary></summary>
-        public LLVector3 RotationVelocity;
-        /// <summary></summary>
-        public TextureEntry Textures;
     }
 
     /// <summary>
@@ -96,7 +88,7 @@ namespace libsecondlife
         /// <param name="prim"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void NewPrimCallback(Simulator simulator, PrimObject prim, ulong regionHandle,
+        public delegate void NewPrimCallback(Simulator simulator, Primitive prim, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
@@ -105,14 +97,14 @@ namespace libsecondlife
         /// <param name="prim"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void NewAttachmentCallback(Simulator simulator, PrimObject prim, ulong regionHandle,
+        public delegate void NewAttachmentCallback(Simulator simulator, Primitive prim, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="properties"></param>
-        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, ObjectProperties properties);
+        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, Primitive.ObjectPropertiesFamily properties);
         /// <summary>
         /// 
         /// </summary>
@@ -129,7 +121,7 @@ namespace libsecondlife
         /// <param name="prim"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public delegate void NewFoliageCallback(Simulator simulator, PrimObject foliage, ulong regionHandle,
+        public delegate void NewFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle,
             ushort timeDilation);
         /// <summary>
         /// 
@@ -164,6 +156,7 @@ namespace libsecondlife
         public delegate void AvatarSitChanged(Simulator simulator, uint sittingOn);
 		
         #endregion
+
 
         #region Object/Prim Enums
 
@@ -347,10 +340,11 @@ namespace libsecondlife
             /// <summary></summary>
             Grass4,
             /// <summary></summary>
-            undergrowth_1
+            Undergrowth1
         }
 
         #endregion
+
 
         #region Events
 
@@ -422,8 +416,11 @@ namespace libsecondlife
         /// Thie event will be raised when an object's properties are recieved
         /// from the simulator
         /// </summary>
-        public event ObjectPropertiesFamilyCallback OnObjectProperties;
+        public event ObjectPropertiesFamilyCallback OnObjectPropertiesFamily;
+
         #endregion
+
+
         /// <summary>
         /// If true, when a cached object check is received from the server 
         /// the full object info will automatically be requested.
@@ -431,7 +428,11 @@ namespace libsecondlife
         /// 
         public bool RequestAllObjects = false;        
 		
+        /// <summary>
+        /// Reference to the SecondLife client
+        /// </summary>
         protected SecondLife Client;
+
 
         /// <summary>
         /// Instantiates a new ObjectManager class. This class should only be accessed
@@ -530,7 +531,7 @@ namespace libsecondlife
         /// the requested position for an object is only close to where the prim
         /// actually ends up. If you desire exact placement you'll need to 
         /// follow up by moving the object after it has been created.</remarks>
-        public void AddPrim(Simulator simulator, PrimObject prim, LLVector3 position)
+        public void AddPrim(Simulator simulator, Primitive prim, LLVector3 position)
         {
             ObjectAddPacket packet = new ObjectAddPacket();
 
@@ -539,31 +540,31 @@ namespace libsecondlife
             packet.AgentData.GroupID = prim.GroupID;
 
             packet.ObjectData.State = (byte)prim.State;
-            packet.ObjectData.AddFlags = (uint)ObjectFlags.CreateSelected;
+            packet.ObjectData.AddFlags = (uint)LLObject.ObjectFlags.CreateSelected;
             packet.ObjectData.PCode = (byte)PCode.Prim;
 
             packet.ObjectData.Material = (byte)prim.Material;
             packet.ObjectData.Scale = prim.Scale;
             packet.ObjectData.Rotation = prim.Rotation;
 
-            packet.ObjectData.PathBegin = PrimObject.PathBeginByte(prim.PathBegin);
+            packet.ObjectData.PathBegin = LLObject.PathBeginByte(prim.PathBegin);
             packet.ObjectData.PathCurve = (byte)prim.PathCurve;
-            packet.ObjectData.PathEnd = PrimObject.PathEndByte(prim.PathEnd);
-            packet.ObjectData.PathRadiusOffset = PrimObject.PathRadiusOffsetByte(prim.PathRadiusOffset);
-            packet.ObjectData.PathRevolutions = PrimObject.PathRevolutionsByte(prim.PathRevolutions);
-            packet.ObjectData.PathScaleX = PrimObject.PathScaleByte(prim.PathScaleX);
-            packet.ObjectData.PathScaleY = PrimObject.PathScaleByte(prim.PathScaleY);
-            packet.ObjectData.PathShearX = PrimObject.PathShearByte(prim.PathShearX);
-            packet.ObjectData.PathShearY = PrimObject.PathShearByte(prim.PathShearY);
-            packet.ObjectData.PathSkew = PrimObject.PathSkewByte(prim.PathSkew);
-            packet.ObjectData.PathTaperX = PrimObject.PathTaperByte(prim.PathTaperX);
-            packet.ObjectData.PathTaperY = PrimObject.PathTaperByte(prim.PathTaperY);
+            packet.ObjectData.PathEnd = LLObject.PathEndByte(prim.PathEnd);
+            packet.ObjectData.PathRadiusOffset = LLObject.PathRadiusOffsetByte(prim.PathRadiusOffset);
+            packet.ObjectData.PathRevolutions = LLObject.PathRevolutionsByte(prim.PathRevolutions);
+            packet.ObjectData.PathScaleX = LLObject.PathScaleByte(prim.PathScaleX);
+            packet.ObjectData.PathScaleY = LLObject.PathScaleByte(prim.PathScaleY);
+            packet.ObjectData.PathShearX = LLObject.PathShearByte(prim.PathShearX);
+            packet.ObjectData.PathShearY = LLObject.PathShearByte(prim.PathShearY);
+            packet.ObjectData.PathSkew = LLObject.PathSkewByte(prim.PathSkew);
+            packet.ObjectData.PathTaperX = LLObject.PathTaperByte(prim.PathTaperX);
+            packet.ObjectData.PathTaperY = LLObject.PathTaperByte(prim.PathTaperY);
             packet.ObjectData.PathTwist = (sbyte)prim.PathTwist;
             packet.ObjectData.PathTwistBegin = (sbyte)prim.PathTwistBegin;
 
             packet.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
-            packet.ObjectData.ProfileBegin = PrimObject.ProfileBeginByte(prim.ProfileBegin);
-            packet.ObjectData.ProfileEnd = PrimObject.ProfileEndByte(prim.ProfileEnd);
+            packet.ObjectData.ProfileBegin = LLObject.ProfileBeginByte(prim.ProfileBegin);
+            packet.ObjectData.ProfileEnd = LLObject.ProfileEndByte(prim.ProfileEnd);
             packet.ObjectData.ProfileHollow = (byte)prim.ProfileHollow;
 
             packet.ObjectData.RayStart = position;
@@ -648,7 +649,7 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         /// <param name="localID"></param>
         /// <param name="textures"></param>
-        public void SetTextures(Simulator simulator, uint localID, TextureEntry textures)
+        public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures)
         {
             SetTextures(simulator, localID, textures, String.Empty);
         }
@@ -660,7 +661,7 @@ namespace libsecondlife
         /// <param name="localID"></param>
         /// <param name="textures"></param>
         /// <param name="mediaUrl"></param>
-        public void SetTextures(Simulator simulator, uint localID, TextureEntry textures, string mediaUrl)
+        public void SetTextures(Simulator simulator, uint localID, LLObject.TextureEntry textures, string mediaUrl)
         {
             ObjectImagePacket image = new ObjectImagePacket();
 
@@ -681,7 +682,7 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         /// <param name="localID"></param>
         /// <param name="light"></param>
-        public void SetLight(Simulator simulator, uint localID, PrimLightData light)
+        public void SetLight(Simulator simulator, uint localID, Primitive.LightData light)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
 
@@ -690,7 +691,7 @@ namespace libsecondlife
             extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
-            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Light;
+            extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Light;
             if (light == null)
             {
                 extra.ObjectData[0].ParamInUse = false;
@@ -712,7 +713,7 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         /// <param name="localID"></param>
         /// <param name="flexible"></param>
-        public void SetFlexible(Simulator simulator, uint localID, PrimFlexibleData flexible)
+        public void SetFlexible(Simulator simulator, uint localID, Primitive.FlexibleData flexible)
         {
             ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
 
@@ -721,7 +722,7 @@ namespace libsecondlife
             extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
-            extra.ObjectData[0].ParamType = (byte)ExtraParamType.Flexible;
+            extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Flexible;
             if (flexible == null)
             {
                 extra.ObjectData[0].ParamInUse = false;
@@ -924,12 +925,10 @@ namespace libsecondlife
                         case (byte)PCode.Grass:
                         case (byte)PCode.Tree:
                         case (byte)PCode.Prim:
-                            string name = Helpers.FieldToString(block.NameValue);
-
                             // New prim spotted
-                            PrimObject prim = new PrimObject();
+                            Primitive prim = new Primitive();
 
-                            prim.Name = name;
+                            prim.NameValue = Helpers.FieldToString(block.NameValue);
 
 							prim.RegionHandle = update.RegionData.RegionHandle;
                             prim.Position = new LLVector3(block.ObjectData, 0);
@@ -944,21 +943,21 @@ namespace libsecondlife
                             prim.Material = block.Material;
                             prim.PathCurve = block.PathCurve;
                             prim.ProfileCurve = block.ProfileCurve;
-                            prim.PathBegin = PrimObject.PathBeginFloat(block.PathBegin);
-                            prim.PathEnd = PrimObject.PathEndFloat(block.PathEnd);
-                            prim.PathScaleX = PrimObject.PathScaleFloat(block.PathScaleX);
-                            prim.PathScaleY = PrimObject.PathScaleFloat(block.PathScaleY);
-                            prim.PathShearX = PrimObject.PathShearFloat(block.PathShearX);
-                            prim.PathShearY = PrimObject.PathShearFloat(block.PathShearY);
+                            prim.PathBegin = LLObject.PathBeginFloat(block.PathBegin);
+                            prim.PathEnd = LLObject.PathEndFloat(block.PathEnd);
+                            prim.PathScaleX = LLObject.PathScaleFloat(block.PathScaleX);
+                            prim.PathScaleY = LLObject.PathScaleFloat(block.PathScaleY);
+                            prim.PathShearX = LLObject.PathShearFloat(block.PathShearX);
+                            prim.PathShearY = LLObject.PathShearFloat(block.PathShearY);
                             prim.PathTwist = block.PathTwist;
                             prim.PathTwistBegin = block.PathTwistBegin;
-                            prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                            prim.PathTaperX = PrimObject.PathTaperFloat(block.PathTaperX);
-                            prim.PathTaperY = PrimObject.PathTaperFloat(block.PathTaperY);
-                            prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.PathRevolutions);
-                            prim.PathSkew = PrimObject.PathSkewFloat(block.PathSkew);
-                            prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.ProfileBegin);
-                            prim.ProfileEnd = PrimObject.ProfileEndFloat(block.ProfileEnd);
+                            prim.PathRadiusOffset = LLObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
+                            prim.PathTaperX = LLObject.PathTaperFloat(block.PathTaperX);
+                            prim.PathTaperY = LLObject.PathTaperFloat(block.PathTaperY);
+                            prim.PathRevolutions = LLObject.PathRevolutionsFloat(block.PathRevolutions);
+                            prim.PathSkew = LLObject.PathSkewFloat(block.PathSkew);
+                            prim.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
+                            prim.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
                             prim.ProfileHollow = block.ProfileHollow;
 
 
@@ -966,22 +965,22 @@ namespace libsecondlife
                             prim.Text = ASCIIEncoding.ASCII.GetString(block.Text);
                             //block.TextColor LLColor4U of the hovering text
                             //block.MediaURL Quicktime stream
-                            prim.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-                            prim.TextureAnim = new TextureAnimation(block.TextureAnim, 0);
+                            prim.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                            prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
                             //block.JointType ?
                             //block.JointPivot ?
                             //block.JointAxisOrAnchor ?
-                            prim.ParticleSys = new ParticleSystem(block.PSBlock, 0);
+                            prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
                             prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
                             prim.Scale = block.Scale;
                             //block.Flags ?
-                            prim.Flags = (ObjectFlags)block.UpdateFlags;
+                            prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
                             //block.ClickAction ?
                             //block.Gain Sound-related
                             //block.Sound Sound-related
                             //block.Radius Sound-related
 
-                            if (prim.Name.StartsWith("AttachItemID"))
+                            if (prim.NameValue.StartsWith("AttachItemID"))
                             {
                                 FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
@@ -1041,7 +1040,7 @@ namespace libsecondlife
                                 avatar.Online = true;
                                 avatar.CurrentRegion = simulator.Region;
 
-                                avatar.Textures = new TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                                avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
 
                                 FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
@@ -1156,7 +1155,7 @@ namespace libsecondlife
                     avupdate.Acceleration = Acceleration;
                     avupdate.Rotation = Rotation;
                     avupdate.RotationVelocity = RotationVelocity;
-                    avupdate.Textures = new TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
+                    avupdate.Textures = new Primitive.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
                     FireOnAvatarMoved(simulator, avupdate, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                 }
@@ -1175,30 +1174,31 @@ namespace libsecondlife
                     primupdate.Acceleration = Acceleration;
                     primupdate.Rotation = Rotation;
                     primupdate.RotationVelocity = RotationVelocity;
-                    primupdate.Textures = new TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
+                    primupdate.Textures = new Primitive.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
                     FireOnPrimMoved(simulator, primupdate, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                 }
             }
         }
 
-
-
-#pragma warning disable 0219 // disable "value assigned but never used" while this function is incomplete
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         protected void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
             if (OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)
             {
                 ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
-                PrimObject prim;
+                Primitive prim;
 
                 foreach (ObjectUpdateCompressedPacket.ObjectDataBlock block in update.ObjectData)
                 {
                     int i = 0;
-                    prim = new PrimObject();
+                    prim = new Primitive();
 
-                    prim.Flags = (ObjectFlags)block.UpdateFlags;
+                    prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
 
                     try
                     {
@@ -1278,7 +1278,7 @@ namespace libsecondlife
 
                             if ((flags & CompressedFlags.HasParticles) != 0)
                             {
-                                prim.ParticleSys = new ParticleSystem(block.Data, i);
+                                prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
                                 i += 86;
                             }
 
@@ -1319,11 +1319,7 @@ namespace libsecondlife
                                 }
                                 i++;
 
-                                prim.Name = text;
-                            }
-                            else
-                            {
-                                prim.Name = String.Empty;
+                                prim.NameValue = text;
                             }
 
                             if ((flags & CompressedFlags.Unknown1) != 0)
@@ -1343,29 +1339,29 @@ namespace libsecondlife
                             }
 
                             prim.PathCurve = (uint)block.Data[i++];
-                            prim.PathBegin = PrimObject.PathBeginFloat(block.Data[i++]);
-                            prim.PathEnd = PrimObject.PathEndFloat(block.Data[i++]);
-                            prim.PathScaleX = PrimObject.PathScaleFloat(block.Data[i++]);
-                            prim.PathScaleY = PrimObject.PathScaleFloat(block.Data[i++]);
-                            prim.PathShearX = PrimObject.PathShearFloat(block.Data[i++]);
-                            prim.PathShearY = PrimObject.PathShearFloat(block.Data[i++]);
+                            prim.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
+                            prim.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
+                            prim.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
+                            prim.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
+                            prim.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
+                            prim.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
                             prim.PathTwist = (int)block.Data[i++];
                             prim.PathTwistBegin = (int)block.Data[i++];
-                            prim.PathRadiusOffset = PrimObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                            prim.PathTaperX = PrimObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.PathTaperY = PrimObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.PathRevolutions = PrimObject.PathRevolutionsFloat(block.Data[i++]);
-                            prim.PathSkew = PrimObject.PathSkewFloat((sbyte)block.Data[i++]);
+                            prim.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                            prim.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                            prim.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                            prim.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
+                            prim.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
 
                             prim.ProfileCurve = (uint)block.Data[i++];
-                            prim.ProfileBegin = PrimObject.ProfileBeginFloat(block.Data[i++]);
-                            prim.ProfileEnd = PrimObject.ProfileEndFloat(block.Data[i++]);
+                            prim.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
+                            prim.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
                             prim.ProfileHollow = (uint)block.Data[i++];
 
                             int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
                                 (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-                            prim.Textures = new TextureEntry(block.Data, i, textureEntryLength);
+                            prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
 
                             i += textureEntryLength;
 
@@ -1375,7 +1371,7 @@ namespace libsecondlife
                                 int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
                                     (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-                                prim.TextureAnim = new TextureAnimation(block.Data, i);
+                                prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
                             }
 
                             // Fire the appropriate callback
@@ -1413,7 +1409,6 @@ namespace libsecondlife
                 }
             }
         }
-#pragma warning restore 0219
 
         protected void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
@@ -1443,7 +1438,7 @@ namespace libsecondlife
         protected void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
         {
             ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
-            ObjectProperties props = new ObjectProperties();
+            LLObject.ObjectPropertiesFamily props = new LLObject.ObjectPropertiesFamily();
 
             props.BaseMask = op.ObjectData.BaseMask;
             props.Category = op.ObjectData.Category;
@@ -1461,20 +1456,23 @@ namespace libsecondlife
             props.SalePrice = op.ObjectData.SalePrice;
             props.SaleType = op.ObjectData.SaleType;
 
-            FireOnObjectProperties(sim, props);
+            FireOnObjectPropertiesFamily(sim, props);
         }
 
         #endregion
 
         #region Utility Functions
+
         protected void SetAvatarSelfSittingOn(uint localid)
         {
             Client.Self.sittingOn = localid;
         }
+
         protected void SetAvatarSittingOn(Avatar av, uint localid)
         {
             av.sittingOn = localid;
         }
+
 		protected void UpdateDilation(Simulator s, uint dilation)
 		{
 			s.Dilation = (float) dilation / 65535;
@@ -1482,9 +1480,8 @@ namespace libsecondlife
 
         protected void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
         {
-            // FIXME: This needs to be reworked completely. It fails on anything containing unicode
-            // (which would break FieldToString as well), or name strings that don't contain the 
-            // most common attributes which is all we handle right now.
+            // FIXME: This needs to be reworked completely. It fails on name strings that don't contain the 
+            // most common attributes which is all we handle right now
             string[] lines = name.Split('\n');
 
             foreach (string line in lines)
@@ -1521,6 +1518,7 @@ namespace libsecondlife
         /// <returns>A 32-bit floating point representation of the dequantized value</returns>
         protected float Dequantize(byte[] byteArray, int pos, float lower, float upper)
         {
+            // FIXME: Move this to Helpers and make it as solid as ByteToFloat
             ushort value = (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
             float QV = (float)value;
             float range = upper - lower;
@@ -1531,11 +1529,11 @@ namespace libsecondlife
 
         #region Event Notification
 
-        protected void FireOnObjectProperties(Simulator sim, ObjectProperties props)
+        protected void FireOnObjectPropertiesFamily(Simulator sim, Primitive.ObjectPropertiesFamily props)
         {
-            if (OnObjectProperties != null)
+            if (OnObjectPropertiesFamily != null)
             {
-                try { OnObjectProperties(sim, props); }
+                try { OnObjectPropertiesFamily(sim, props); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
@@ -1549,7 +1547,7 @@ namespace libsecondlife
             }
         }
 
-        protected void FireOnNewPrim(Simulator simulator, PrimObject prim, ulong RegionHandle, ushort TimeDilation)
+        protected void FireOnNewPrim(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewPrim != null)
             {
@@ -1558,7 +1556,7 @@ namespace libsecondlife
             }
         }
 
-        protected void FireOnNewFoliage(Simulator simulator, PrimObject prim, ulong RegionHandle, ushort TimeDilation)
+        protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewFoliage != null)
             {
@@ -1567,7 +1565,7 @@ namespace libsecondlife
             }
         }
 
-        protected void FireOnNewAttachment(Simulator simulator, PrimObject prim, ulong RegionHandle, ushort TimeDilation)
+        protected void FireOnNewAttachment(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
         {
             if (OnNewAttachment != null)
             {

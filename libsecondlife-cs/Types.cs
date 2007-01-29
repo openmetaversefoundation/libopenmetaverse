@@ -39,11 +39,7 @@ namespace libsecondlife
     public class LLUUID : IXmlSerializable
 	{
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
-		public byte[] Data
-		{
-			get { return data; }
-		}
-
+		public byte[] Data { get { return data; } }
 
         /// <summary>The 16 bytes that make up the UUID</summary>
         protected byte[] data;
@@ -77,6 +73,18 @@ namespace libsecondlife
         {
             data = new byte[16];
             Array.Copy(byteArray, pos, data, 0, 16);
+        }
+
+        /// <summary>
+        /// Constructor that takes an unsigned 64-bit unsigned integer to 
+        /// convert to a UUID
+        /// </summary>
+        /// <param name="val">64-bit unsigned integer to convert to a UUID</param>
+        public LLUUID(ulong val)
+        {
+            data = new byte[16];
+            byte[] bytes = BitConverter.GetBytes(val);
+            Array.Copy(bytes, data, bytes.Length);
         }
 
         /// <summary>

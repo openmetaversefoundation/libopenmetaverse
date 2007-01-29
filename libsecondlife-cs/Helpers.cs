@@ -860,19 +860,17 @@ namespace libsecondlife
             serializer.Serialize(xmlWriter, packets);
         }
 
-        public static void PrimListToXml(List<PrimObject> list, XmlWriter xmlWriter)
+        public static void PrimListToXml(List<Primitive> list, XmlWriter xmlWriter)
         {
-            //XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            //ns.Add("", "");
-            XmlSerializer serializer = new XmlSerializer(typeof(List<PrimObject>));
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Primitive>));
             serializer.Serialize(xmlWriter, list);
         }
 
-        public static List<PrimObject> PrimListFromXml(XmlReader reader)
+        public static List<Primitive> PrimListFromXml(XmlReader reader)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<PrimObject>));
+            XmlSerializer serializer = new XmlSerializer(typeof(List<Primitive>));
             object list = serializer.Deserialize(reader);
-            return (List<PrimObject>)list;
+            return (List<Primitive>)list;
         }
 
         public static List<Packet> PacketListFromXml(XmlReader reader)

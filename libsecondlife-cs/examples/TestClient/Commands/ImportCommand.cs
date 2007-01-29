@@ -11,29 +11,29 @@ namespace libsecondlife.TestClient
 {
     public class Linkset
     {
-        public PrimObject RootPrim;
-        public List<PrimObject> Children;
+        public Primitive RootPrim;
+        public List<Primitive> Children;
 
         public Linkset()
         {
-            RootPrim = new PrimObject();
-            Children = new List<PrimObject>();
+            RootPrim = new Primitive();
+            Children = new List<Primitive>();
         }
 
-        public Linkset(PrimObject rootPrim)
+        public Linkset(Primitive rootPrim)
         {
             RootPrim = rootPrim;
-            Children = new List<PrimObject>();
+            Children = new List<Primitive>();
         }
     }
 
     public class ImportCommand : Command
     {
-        PrimObject currentPrim;
+        Primitive currentPrim;
         LLVector3 currentPosition;
         SecondLife currentClient;
         ManualResetEvent primDone;
-        List<PrimObject> primsCreated;
+        List<Primitive> primsCreated;
         uint rootLocalID = 0;
         bool registeredCreateEvent = false;
         bool rezzingRootPrim = false;
@@ -53,19 +53,19 @@ namespace libsecondlife.TestClient
                 return "Usage: import inputfile.xml";
 
             string name = args[0];
-            Dictionary<uint, PrimObject> prims;
+            Dictionary<uint, Primitive> prims;
 
             currentClient = Client;
 
             try
             {
                 XmlReader reader = XmlReader.Create(name);
-                List<PrimObject> listprims = Helpers.PrimListFromXml(reader);
+                List<Primitive> listprims = Helpers.PrimListFromXml(reader);
                 reader.Close();
 
                 // Create a dictionary indexed by the old local ID of the prims
-                prims = new Dictionary<uint, PrimObject>();
-                foreach (PrimObject prim in listprims)
+                prims = new Dictionary<uint, Primitive>();
+                foreach (Primitive prim in listprims)
                 {
                     prims.Add(prim.LocalID, prim);
                 }
@@ -83,7 +83,7 @@ namespace libsecondlife.TestClient
 
             // Build an organized structure from the imported prims
             Dictionary<uint, Linkset> linksets = new Dictionary<uint, Linkset>();
-            foreach (PrimObject prim in prims.Values)
+            foreach (Primitive prim in prims.Values)
             {
                 if (prim.ParentID == 0)
                 {
@@ -101,7 +101,7 @@ namespace libsecondlife.TestClient
                 }
             }
 
-            primsCreated = new List<PrimObject>();
+            primsCreated = new List<Primitive>();
             linking = false;
             Console.WriteLine("Importing " + linksets.Count + " structures.");
 
@@ -133,7 +133,7 @@ namespace libsecondlife.TestClient
                     rezzingRootPrim = false;
 
                     // Rez the child prims
-                    foreach (PrimObject prim in linkset.Children)
+                    foreach (Primitive prim in linkset.Children)
                     {
                         currentPrim = prim;
                         currentPosition = prim.Position + linkset.RootPrim.Position;
@@ -147,7 +147,7 @@ namespace libsecondlife.TestClient
 
                     // Create a list of the local IDs of the newly created prims
                     List<uint> primIDs = new List<uint>();
-                    foreach (PrimObject prim in primsCreated)
+                    foreach (Primitive prim in primsCreated)
                     {
                         if (prim.LocalID != rootLocalID)
                             primIDs.Add(prim.LocalID);
@@ -188,7 +188,7 @@ namespace libsecondlife.TestClient
             return "Import complete.";
         }
 
-        void TestClient_OnPrimCreated(Simulator simulator, PrimObject prim)
+        void TestClient_OnPrimCreated(Simulator simulator, Primitive prim)
         {
             if (rezzingRootPrim)
             {
