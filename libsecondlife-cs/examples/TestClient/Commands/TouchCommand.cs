@@ -16,13 +16,13 @@ namespace libsecondlife.TestClient
 		
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-		    PrimObject target = null;
+		    Primitive target = null;
 
 		    lock (Client.SimPrims)
 		    {
                 if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
                 {
-                    foreach (PrimObject p in Client.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (Primitive p in Client.SimPrims[Client.Network.CurrentSim].Values)
                     {
                         if (args.Length == 0)
                             return "You must specify a UUID of the prim.";
