@@ -48,6 +48,10 @@ namespace libsecondlife
         public const byte MSG_ZEROCODED = 0x80;
         /// <summary>Used for converting a byte to a variable range float</summary>
         public const float ONE_OVER_BYTEMAX = 1.0f / (float)byte.MaxValue;
+        /// <summary>Used for converting degrees to radians</summary>
+        public const double DEG_TO_RAD = Math.PI / 180;
+        /// <summary>Used for converting radians to degrees</summary>
+        public const double RAD_TO_DEG = 180 / Math.PI;
 
         /// <summary>
         /// Passed to SecondLife.Log() to identify the severity of a log entry
@@ -558,9 +562,17 @@ namespace libsecondlife
         /// <summary>
         /// Calculate the magnitude of the supplied vector
         /// </summary>
-        public static float VecMag(LLVector3 vector)
+        public static float VecMag(LLVector3 v)
         {
-            return (float)Math.Sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
+            return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
+        }
+
+        /// <summary>
+        /// Calculate the magnitude of the supplied quaternion
+        /// </summary>
+        public static float RotMag(LLQuaternion q)
+        {
+            return (float)Math.Sqrt(q.W * q.W + q.X * q.X + q.Y * q.Y + q.Z * q.Z);
         }
 
         /// <summary>
