@@ -46,16 +46,18 @@ namespace libsecondlife
         /// </summary>
         public enum TeleportStatus
         {
-            /// <summary></summary>
+            /// <summary>Unknown status</summary>
             None,
-            /// <summary>Teleport Start</summary>
+            /// <summary>Teleport initialized</summary>
             Start,
-            /// <summary>Teleport in Progress</summary>
+            /// <summary>Teleport in progress</summary>
             Progress,
-            /// <summary>Teleport Failed</summary>
+            /// <summary>Teleport failed</summary>
             Failed,
-            /// <summary>Teleport Completed</summary>
-            Finished
+            /// <summary>Teleport completed</summary>
+            Finished,
+            /// <summary>Teleport cancelled</summary>
+            Cancelled
         }
 
         /// <summary>
@@ -437,6 +439,8 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.TeleportProgress, callback);
             Client.Network.RegisterCallback(PacketType.TeleportFailed, callback);
             Client.Network.RegisterCallback(PacketType.TeleportFinish, callback);
+            Client.Network.RegisterCallback(PacketType.TeleportCancel, callback);
+            Client.Network.RegisterCallback(PacketType.TeleportLocal, callback);
 
             // Instant Message callback
             Client.Network.RegisterCallback(PacketType.ImprovedInstantMessage, new NetworkManager.PacketCallback(InstantMessageHandler));
@@ -1486,6 +1490,31 @@ namespace libsecondlife
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
                 }
+            }
+            else if (packet.Type == PacketType.TeleportCancel)
+            {
+                Client.DebugLog("TeleportCancel received from " + simulator.ToString());
+
+                teleportMessage = "Cancelled.";
+                TeleportStat = TeleportStatus.Cancelled;
+
+                tpFinished = true;
+            }
+            else if (packet.Type == PacketType.TeleportLocal)
+            {
+                TeleportLocalPacket local = (TeleportLocalPacket)packet;
+
+                LookAt = local.Info.LookAt;
+                Position = local.Info.Position;
+
+                // TODO: Do something with these
+                //local.Info.LocationID;
+                //local.Info.TeleportFlags;
+
+                teleportMessage = "Teleport finished";
+                TeleportStat = TeleportStatus.Finished;
+
+                tpFinished = true;
             }
 
             if (OnTeleport != null)
