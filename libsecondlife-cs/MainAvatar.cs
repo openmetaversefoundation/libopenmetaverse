@@ -757,20 +757,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Set the always running toggle on the server
-        /// </summary>
-        /// <param name="alwaysRun">Whether the avatar should always run or not</param>
-        public void SetAlwaysRun(bool alwaysRun)
-        {
-            SetAlwaysRunPacket run = new SetAlwaysRunPacket();
-            run.AgentData.AgentID = Client.Network.AgentID;
-            run.AgentData.SessionID = Client.Network.SessionID;
-            run.AgentData.AlwaysRun = alwaysRun;
-
-            Client.Network.SendPacket(run);
-        }
-
-        /// <summary>
         /// Follows a call to RequestSit() to actually sit on the object
         /// </summary>
         public void Sit()

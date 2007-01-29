@@ -1726,8 +1726,7 @@ namespace libsecondlife
             Client.Self.UpdateCamera(controlFlags, position, forwardAxis, leftAxis, upAxis, LLQuaternion.Identity,
                 LLQuaternion.Identity, 384.0f, true);
 
-            // TODO: A movement class should be handling this
-            Client.Self.SetAlwaysRun(false);
+            Client.Self.Status.AlwaysRun = false;
         }
 
         /// <summary>

@@ -38,8 +38,32 @@ namespace libsecondlife
         /// </summary> 
         public class MainAvatarStatus
         {
+
+            bool alwaysRun = false;
+
             /// <summary>
-            /// 
+            /// Returns "always run" value, or changes it by sending a SetAlwaysRunPacket
+            /// </summary>
+            public bool AlwaysRun
+            {
+                get
+                {
+                    return alwaysRun;
+                }
+                set
+                {
+                    alwaysRun = value;
+                    SetAlwaysRunPacket run = new SetAlwaysRunPacket();
+                    run.AgentData.AgentID = Client.Network.AgentID;
+                    run.AgentData.SessionID = Client.Network.SessionID;
+                    run.AgentData.AlwaysRun = alwaysRun;
+                    Client.Network.SendPacket(run);
+                }
+            }
+
+
+            /// <summary>
+            /// Contains properties for client control key states
             /// </summary>
             public struct ControlStatus
             {
