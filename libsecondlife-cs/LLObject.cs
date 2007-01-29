@@ -245,6 +245,8 @@ namespace libsecondlife
         public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary></summary>
         public TextureEntry Textures = new TextureEntry();
+        /// <summary></summary>
+        public ObjectPropertiesFamily PropertiesFamily;
 
         #endregion Public Properties
 
