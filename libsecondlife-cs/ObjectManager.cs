@@ -1300,205 +1300,209 @@ namespace libsecondlife
 
                     try
                     {
+                        // UUID
                         prim.ID = new LLUUID(block.Data, 0);
                         i += 16;
+                        // Local ID
                         prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                             (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                        byte pcode = block.Data[i++];
-                        if (pcode == (byte)PCode.Prim || pcode == (byte)PCode.Grass || pcode == (byte)PCode.Tree || 
-                            pcode == (byte)PCode.NewTree)
+                        // PCode
+                        PCode pcode = (PCode)block.Data[i++];
+                        switch (pcode)
                         {
-                            #region Prim
-
-                            // State
-                            prim.data.State = (uint)block.Data[i++];
-                            // CRC
-                            i += 4;
-                            // Material
-                            prim.data.Material = (uint)block.Data[i++];
-                            // Click action
-                            prim.ClickAction = block.Data[i++];
-                            // Scale
-                            prim.Scale = new LLVector3(block.Data, i);
-                            i += 12;
-                            // Position
-                            prim.Position = new LLVector3(block.Data, i);
-                            i += 12;
-                            // Rotation
-                            prim.Rotation = new LLQuaternion(block.Data, i, true);
-                            i += 12;
-                            // Compressed flags
-                            CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
-                            i += 4;
-
-                            if ((flags & CompressedFlags.Tree) != 0)
-                            {
-                                // FIXME: Decode the tree data
-                                byte Unknown1 = block.Data[i++];
-                                byte Unknown2 = block.Data[i++];
-
-                                Client.DebugLog("Compressed object with Tree flag set: " + Environment.NewLine +
-                                    "Unknown byte 1: " + Unknown1 + Environment.NewLine + "Unknown byte 2: " + Unknown2);
-                            }
-
-                            if ((flags & CompressedFlags.HasParent) != 0)
-                            {
-                                prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                            }
-                            else
-                            {
-                                prim.ParentID = 0;
-                            }
-
-                            if ((flags & CompressedFlags.HasAngularVelocity) != 0)
-                            {
-                                prim.AngularVelocity = new LLVector3(block.Data, i);
+                            case PCode.Prim:
+                                #region Prim
+                                // State
+                                prim.data.State = (uint)block.Data[i++];
+                                // CRC
+                                i += 4;
+                                // Material
+                                prim.data.Material = (uint)block.Data[i++];
+                                // Click action
+                                prim.ClickAction = block.Data[i++];
+                                // Scale
+                                prim.Scale = new LLVector3(block.Data, i);
                                 i += 12;
-                            }
+                                // Position
+                                prim.Position = new LLVector3(block.Data, i);
+                                i += 12;
+                                // Rotation
+                                prim.Rotation = new LLQuaternion(block.Data, i, true);
+                                i += 12;
+                                // Compressed flags
+                                CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
+                                i += 4;
 
-                            if ((flags & CompressedFlags.HasText) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
+                                if ((flags & CompressedFlags.Tree) != 0)
                                 {
-                                    // TODO: Make this UTF8 compliant?
-                                    text += (char)block.Data[i];
+                                    // FIXME: Decode the tree data
+                                    byte Unknown1 = block.Data[i++];
+                                    byte Unknown2 = block.Data[i++];
+
+                                    Client.DebugLog("Compressed object with Tree flag set: " + Environment.NewLine +
+                                        "Unknown byte 1: " + Unknown1 + Environment.NewLine + "Unknown byte 2: " + Unknown2);
+                                }
+
+                                if ((flags & CompressedFlags.HasParent) != 0)
+                                {
+                                    prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                                }
+                                else
+                                {
+                                    prim.ParentID = 0;
+                                }
+
+                                if ((flags & CompressedFlags.HasAngularVelocity) != 0)
+                                {
+                                    prim.AngularVelocity = new LLVector3(block.Data, i);
+                                    i += 12;
+                                }
+
+                                if ((flags & CompressedFlags.HasText) != 0)
+                                {
+                                    string text = String.Empty;
+                                    while (block.Data[i] != 0)
+                                    {
+                                        // TODO: Make this UTF8 compliant?
+                                        text += (char)block.Data[i];
+                                        i++;
+                                    }
                                     i++;
+
+                                    // Floating text
+                                    prim.Text = text;
+
+                                    // Text color
+                                    prim.TextColor = new LLColor(block.Data, i);
+                                    i += 4;
                                 }
-                                i++;
-
-                                // Floating text
-                                prim.Text = text;
-
-                                // Text color
-                                prim.TextColor = new LLColor(block.Data, i);
-                                i += 4;
-                            }
-                            else
-                            {
-                                prim.Text = String.Empty;
-                            }
-
-                            if ((flags & CompressedFlags.HasParticles) != 0)
-                            {
-                                prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
-                                i += 86;
-                            }
-
-                            i += prim.SetExtraParamsFromBytes(block.Data, i);
-
-                            //Sound data
-                            if ((flags & CompressedFlags.HasSound) != 0)
-                            {
-                                prim.Sound = new LLUUID(block.Data, i);
-                                i += 16;
-                                prim.OwnerID = new LLUUID(block.Data, i);
-                                i += 16;
-
-                                if (!BitConverter.IsLittleEndian)
+                                else
                                 {
-                                    Array.Reverse(block.Data, i, 4);
-                                    Array.Reverse(block.Data, i + 5, 4);
+                                    prim.Text = String.Empty;
                                 }
 
-                                prim.SoundGain = BitConverter.ToSingle(block.Data, i);
-                                i += 4;
-                                prim.SoundFlags = block.Data[i++];
-                                prim.SoundRadius = BitConverter.ToSingle(block.Data, i);
-                                i += 4;
-                            }
-
-                            if ((flags & CompressedFlags.HasNameValues) != 0)
-                            {
-                                string text = String.Empty;
-                                while (block.Data[i] != 0)
+                                if ((flags & CompressedFlags.HasParticles) != 0)
                                 {
-                                    // TODO: Make UTF-8 compliant?
-                                    text += (char)block.Data[i];
+                                    prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
+                                    i += 86;
+                                }
+
+                                i += prim.SetExtraParamsFromBytes(block.Data, i);
+
+                                //Sound data
+                                if ((flags & CompressedFlags.HasSound) != 0)
+                                {
+                                    prim.Sound = new LLUUID(block.Data, i);
+                                    i += 16;
+                                    prim.OwnerID = new LLUUID(block.Data, i);
+                                    i += 16;
+
+                                    if (!BitConverter.IsLittleEndian)
+                                    {
+                                        Array.Reverse(block.Data, i, 4);
+                                        Array.Reverse(block.Data, i + 5, 4);
+                                    }
+
+                                    prim.SoundGain = BitConverter.ToSingle(block.Data, i);
+                                    i += 4;
+                                    prim.SoundFlags = block.Data[i++];
+                                    prim.SoundRadius = BitConverter.ToSingle(block.Data, i);
+                                    i += 4;
+                                }
+
+                                if ((flags & CompressedFlags.HasNameValues) != 0)
+                                {
+                                    string text = String.Empty;
+                                    while (block.Data[i] != 0)
+                                    {
+                                        // TODO: Make UTF-8 compliant?
+                                        text += (char)block.Data[i];
+                                        i++;
+                                    }
                                     i++;
+
+                                    // FIXME: Parse the NameValue pairs
+
+                                    prim.NameValue = text;
                                 }
-                                i++;
 
-                                // FIXME: Parse the NameValue pairs
+                                if ((flags & CompressedFlags.ScratchPad) != 0)
+                                {
+                                    // TODO: What is this?
+                                    Client.DebugLog("Compressed object with ScratchPad flag set: " + Environment.NewLine +
+                                        "Flags: " + flags.ToString() + Environment.NewLine +
+                                        Helpers.FieldToString(block.Data));
+                                }
 
-                                prim.NameValue = text;
-                            }
+                                if ((flags & CompressedFlags.Unknown) != 0)
+                                {
+                                    // TODO: Implement CompressedFlags.Unknown2
+                                    Client.DebugLog("Compressed object with Unknown flag set: " + Environment.NewLine +
+                                        "Flags: " + flags.ToString() + Environment.NewLine +
+                                        Helpers.FieldToString(block.Data));
+                                }
 
-                            if ((flags & CompressedFlags.ScratchPad) != 0)
-                            {
-                                // TODO: What is this?
-                                Client.DebugLog("Compressed object with ScratchPad flag set: " + Environment.NewLine +
-                                    "Flags: " + flags.ToString() + Environment.NewLine +
-                                    Helpers.FieldToString(block.Data));
-                            }
+                                prim.data.PathCurve = (uint)block.Data[i++];
+                                prim.data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
+                                prim.data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
+                                prim.data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
+                                prim.data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
+                                prim.data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
+                                prim.data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
+                                prim.data.PathTwist = (int)block.Data[i++];
+                                prim.data.PathTwistBegin = (int)block.Data[i++];
+                                prim.data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                                prim.data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                                prim.data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                                prim.data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
+                                prim.data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
 
-                            if ((flags & CompressedFlags.Unknown) != 0)
-                            {
-                                // TODO: Implement CompressedFlags.Unknown2
-                                Client.DebugLog("Compressed object with Unknown flag set: " + Environment.NewLine +
-                                    "Flags: " + flags.ToString() + Environment.NewLine +
-                                    Helpers.FieldToString(block.Data));
-                            }
+                                prim.data.ProfileCurve = (uint)block.Data[i++];
+                                prim.data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
+                                prim.data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
+                                prim.data.ProfileHollow = (uint)block.Data[i++];
 
-                            prim.data.PathCurve = (uint)block.Data[i++];
-                            prim.data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
-                            prim.data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
-                            prim.data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
-                            prim.data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
-                            prim.data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
-                            prim.data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
-                            prim.data.PathTwist = (int)block.Data[i++];
-                            prim.data.PathTwistBegin = (int)block.Data[i++];
-                            prim.data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                            prim.data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
-                            prim.data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
-
-                            prim.data.ProfileCurve = (uint)block.Data[i++];
-                            prim.data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
-                            prim.data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
-                            prim.data.ProfileHollow = (uint)block.Data[i++];
-
-                            int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                            prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
-
-                            i += textureEntryLength;
-
-                            // Assume everything else is texture animation data
-                            if (i < block.Data.Length)
-                            {
-                                int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                                int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
                                     (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-                                prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
-                            }
+                                prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
 
-                            // Fire the appropriate callback
-                            if ((flags & CompressedFlags.HasNameValues) != 0)
-                            {
-                                // TODO: We should use a better check to see if this is actually an attachment
-                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
-                            else if ((flags & CompressedFlags.Tree) != 0)
-                            {
-                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
-                            else if (OnNewPrim != null)
-                            {
-                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
+                                i += textureEntryLength;
 
-                            #endregion Prim
-                        }
-                        else
-                        {
-                            Client.Log("######### Got an ObjectUpdateCompressed for PCode=" + pcode.ToString() + 
-                                ", implement this! #########", Helpers.LogLevel.Debug);
+                                // Assume everything else is texture animation data
+                                if (i < block.Data.Length)
+                                {
+                                    int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+                                    prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
+                                }
+
+                                // Fire the appropriate callback
+                                if ((flags & CompressedFlags.HasNameValues) != 0)
+                                {
+                                    // TODO: We should use a better check to see if this is actually an attachment
+                                    FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                }
+                                else if ((flags & CompressedFlags.Tree) != 0)
+                                {
+                                    FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                }
+                                else if (OnNewPrim != null)
+                                {
+                                    FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+                                }
+
+                                break;
+                                #endregion Prim
+                            case PCode.Grass:
+                            case PCode.Tree:
+                            case PCode.NewTree:
+                            default:
+                                Client.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() + 
+                                    ", implement this!");
+                                break;
                         }
                     }
                     catch (System.IndexOutOfRangeException e)

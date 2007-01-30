@@ -277,42 +277,6 @@ namespace libsecondlife
         {
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        public int SetExtraParamsFromBytes(byte[] data, int pos)
-        {
-            int i = pos;
-            int totalLength = 1;
-
-            if (data.Length == 0)
-                return 0;
-
-            byte extraParamCount = data[i++];
-
-            for (int k = 0; k < extraParamCount; k++)
-            {
-                ExtraParamType type = (ExtraParamType)(data[i++] + (data[i++] << 8));
-                uint paramLength = (uint)(data[i++] + (data[i++] << 8) +
-                                         (data[i++] << 16) + (data[i++] << 24));
-                if (type == ExtraParamType.Flexible)
-                {
-                    Flexible = new FlexibleData(data, i);
-                }
-                else if (type == ExtraParamType.Light)
-                {
-                    Light = new LightData(data, i);
-                }
-                i += (int)paramLength;
-                totalLength += (int)paramLength + 6;
-            }
-
-            return totalLength;
-        }
-
         public override string ToString()
         {
             string output = "";
@@ -339,6 +303,43 @@ namespace libsecondlife
         {
             XmlSerializer serializer = new XmlSerializer(typeof(Primitive));
             return (Primitive)serializer.Deserialize(xmlReader);
+        }
+
+        internal int SetExtraParamsFromBytes(byte[] data, int pos)
+        {
+            int i = pos;
+            int totalLength = 1;
+
+            if (data.Length == 0 || pos >= data.Length)
+                return 0;
+
+            try
+            {
+                byte extraParamCount = data[i++];
+
+                for (int k = 0; k < extraParamCount; k++)
+                {
+                    ExtraParamType type = (ExtraParamType)Helpers.BytesToUInt16(data, i);
+                    i += 2;
+
+                    uint paramLength = Helpers.BytesToUIntBig(data, i);
+                    i += 4;
+
+                    if (type == ExtraParamType.Flexible)
+                        Flexible = new FlexibleData(data, i);
+                    else if (type == ExtraParamType.Light)
+                        Light = new LightData(data, i);
+
+                    i += (int)paramLength;
+                    totalLength += (int)paramLength + 6;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
+            return totalLength;
         }
     }
 }

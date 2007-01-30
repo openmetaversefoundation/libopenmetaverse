@@ -61,7 +61,7 @@ namespace libsecondlife.TestClient
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 
-            //Objects.RequestAllObjects = true;
+            Objects.RequestAllObjects = true;
 
             updateTimer.Start();
         }
