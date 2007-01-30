@@ -549,6 +549,24 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Converts a vector style rotation to a quaternion
+        /// </summary>
+        /// <param name="axis">Axis rotation, such as 0,0,90 for 90 degrees to the right</param>
+        /// <returns>A quaternion representing the axes of the supplied vector</returns>
+        public static LLQuaternion Axis2Rot(LLVector3 axis)
+        {
+            LLVector3 a = axis;
+            if (a.X > 180) a.X -= 360; if (a.Y > 180) a.Y -= 360; if (a.Z > 180) a.Z -= 360;
+            if (a.X < -180) a.X += 360; if (a.Y < -180) a.Y += 360; if (a.Z < -180) a.Z += 360;
+            LLQuaternion rot = LLQuaternion.Identity;
+            rot.X = (float)(a.X * DEG_TO_RAD);
+            rot.Y = (float)(a.Y * DEG_TO_RAD);
+            rot.Z = (float)(a.Z * DEG_TO_RAD);
+            if (a.Z > 180) rot.W = 0;
+            return rot;
+        }
+
+        /// <summary>
         /// Calculates the distance between two vectors
         /// </summary>
         public static float VecDist(LLVector3 pointA, LLVector3 pointB)
