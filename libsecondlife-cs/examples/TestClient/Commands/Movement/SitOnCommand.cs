@@ -16,13 +16,13 @@ namespace libsecondlife.TestClient
 			
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-		    PrimObject targetSeat = null;
+		    LLObject targetSeat = null;
 
 		    lock (Client.SimPrims)
 		    {
                 if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
                 {
-                    foreach (PrimObject p in Client.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (LLObject p in Client.SimPrims[Client.Network.CurrentSim].Values)
                    {
                        try
                        {

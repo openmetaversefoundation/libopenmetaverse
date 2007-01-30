@@ -23,7 +23,7 @@ namespace libsecondlife.TestClient
 
         void stand(SecondLife client)
         {
-            SendAgentUpdate(client, (uint)Avatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP);
+            SendAgentUpdate(client, (uint)MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP);
         }
 
         const float DRAW_DISTANCE = 96.0f;
