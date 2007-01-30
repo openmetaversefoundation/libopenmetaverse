@@ -443,7 +443,9 @@ namespace primexport
                     output += "<properties>" + Environment.NewLine +
                         "<levelofdetail val=\"9\" />" + Environment.NewLine;
 
-                    switch (prim.ProfileCurve + prim.PathCurve)
+                    LLObject.ObjectData data = prim.Data;
+
+                    switch (data.ProfileCurve + data.PathCurve)
                     {
                         case 17:
                             // PRIM_TYPE_BOX
@@ -475,7 +477,7 @@ namespace primexport
                             break;
                         default:
                             Log("Not exporting an unhandled prim, ProfileCurve=" +
-                                prim.ProfileCurve + ", PathCurve=" + prim.PathCurve + Environment.NewLine);
+                                data.ProfileCurve + ", PathCurve=" + data.PathCurve + Environment.NewLine);
                             continue;
                     }
 
@@ -493,27 +495,27 @@ namespace primexport
 
                     if (type == 1)
                     {
-                        output += "<cut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
-                        output += "<dimple x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />" + Environment.NewLine;
+                        output += "<cut x=\"" + data.ProfileBegin + "\" y=\"" + data.ProfileEnd + "\" />" + Environment.NewLine;
+                        output += "<dimple x=\"" + data.PathBegin + "\" y=\"" + data.PathEnd + "\" />" + Environment.NewLine;
                     }
                     else
                     {
-                        output += "<cut x=\"" + prim.PathBegin + "\" y=\"" + prim.PathEnd + "\" />" + Environment.NewLine;
-                        output += "<dimple x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
+                        output += "<cut x=\"" + data.PathBegin + "\" y=\"" + data.PathEnd + "\" />" + Environment.NewLine;
+                        output += "<dimple x=\"" + data.ProfileBegin + "\" y=\"" + data.ProfileEnd + "\" />" + Environment.NewLine;
                     }
 
-                    output += "<advancedcut x=\"" + prim.ProfileBegin + "\" y=\"" + prim.ProfileEnd + "\" />" + Environment.NewLine;
-                    output += "<hollow val=\"" + prim.ProfileHollow + "\" />" + Environment.NewLine;
-                    output += "<twist x=\"" + prim.PathTwistBegin + "\" y=\"" + prim.PathTwist + "\" />" + Environment.NewLine;
-                    output += "<topsize x=\"" + Math.Abs(prim.PathScaleX - 1.0f) + "\" y=\"" +
-                        Math.Abs(prim.PathScaleY - 1.0f) + "\" />" + Environment.NewLine;
-                    output += "<holesize x=\"" + (1.0f - prim.PathScaleX) + "\" y=\"" + (1.0f - prim.PathScaleY) + "\" />" + Environment.NewLine;
-                    output += "<topshear x=\"" + prim.PathShearX + "\" y=\"" + prim.PathShearY + "\" />" + Environment.NewLine;
-                    output += "<taper x=\"" + prim.PathTaperX + "\" y=\"" + prim.PathTaperY + "\" />" + Environment.NewLine;
-                    output += "<revolutions val=\"" + prim.PathRevolutions + "\" />" + Environment.NewLine;
-                    output += "<radiusoffset val=\"" + prim.PathRadiusOffset + "\" />" + Environment.NewLine;
-                    output += "<skew val=\"" + prim.PathSkew + "\" />" + Environment.NewLine;
-                    output += "<material val=\"" + prim.Material + "\" />" + Environment.NewLine;
+                    output += "<advancedcut x=\"" + data.ProfileBegin + "\" y=\"" + data.ProfileEnd + "\" />" + Environment.NewLine;
+                    output += "<hollow val=\"" + data.ProfileHollow + "\" />" + Environment.NewLine;
+                    output += "<twist x=\"" + data.PathTwistBegin + "\" y=\"" + data.PathTwist + "\" />" + Environment.NewLine;
+                    output += "<topsize x=\"" + Math.Abs(data.PathScaleX - 1.0f) + "\" y=\"" +
+                        Math.Abs(data.PathScaleY - 1.0f) + "\" />" + Environment.NewLine;
+                    output += "<holesize x=\"" + (1.0f - data.PathScaleX) + "\" y=\"" + (1.0f - data.PathScaleY) + "\" />" + Environment.NewLine;
+                    output += "<topshear x=\"" + data.PathShearX + "\" y=\"" + data.PathShearY + "\" />" + Environment.NewLine;
+                    output += "<taper x=\"" + data.PathTaperX + "\" y=\"" + data.PathTaperY + "\" />" + Environment.NewLine;
+                    output += "<revolutions val=\"" + data.PathRevolutions + "\" />" + Environment.NewLine;
+                    output += "<radiusoffset val=\"" + data.PathRadiusOffset + "\" />" + Environment.NewLine;
+                    output += "<skew val=\"" + data.PathSkew + "\" />" + Environment.NewLine;
+                    output += "<material val=\"" + data.Material + "\" />" + Environment.NewLine;
                     // FIXME: Hollowshape. 16-21 = circle, 32-37 = square, 48-53 = triangle
                     output += "<hollowshape val=\"0\" />" + Environment.NewLine;
 

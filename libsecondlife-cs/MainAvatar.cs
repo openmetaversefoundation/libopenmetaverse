@@ -466,6 +466,14 @@ namespace libsecondlife
         public LLVector3 Position = LLVector3.Zero;
         /// <summary>Current rotation of avatar</summary>
         public LLQuaternion Rotation = LLQuaternion.Identity;
+        /// <summary></summary>
+        public LLVector4 CollisionPlane = LLVector4.Zero;
+        /// <summary></summary>
+        public LLVector3 Velocity = LLVector3.Zero;
+        /// <summary></summary>
+        public LLVector3 Acceleration = LLVector3.Zero;
+        /// <summary></summary>
+        public LLVector3 AngularVelocity = LLVector3.Zero;
         /// <summary>The point the avatar is currently looking at
         /// (may not stay updated)</summary>
         public LLVector3 LookAt = LLVector3.Zero;

@@ -46,12 +46,10 @@ namespace libsecondlife
         public const byte MSG_RELIABLE = 0x40;
         /// <summary>This header flag signals that the message is compressed using zerocoding</summary>
         public const byte MSG_ZEROCODED = 0x80;
-        /// <summary>Used for converting a byte to a variable range float</summary>
-        public const float ONE_OVER_BYTEMAX = 1.0f / (float)byte.MaxValue;
         /// <summary>Used for converting degrees to radians</summary>
-        public const double DEG_TO_RAD = Math.PI / 180;
+        public const double DEG_TO_RAD = Math.PI / 180.0d;
         /// <summary>Used for converting radians to degrees</summary>
-        public const double RAD_TO_DEG = 180 / Math.PI;
+        public const double RAD_TO_DEG = 180.0d / Math.PI;
 
         /// <summary>
         /// Passed to SecondLife.Log() to identify the severity of a log entry
@@ -163,6 +161,34 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Convert the first two bytes starting at the given position in
+        /// little endian ordering to an unsigned short
+        /// </summary>
+        /// <param name="bytes">Byte array containing the ushort</param>
+        /// <param name="pos">Position to start reading the ushort from</param>
+        /// <returns>An unsigned short, will be zero if a ushort can't be read
+        /// at the given position</returns>
+        public static ushort BytesToUInt16(byte[] bytes, int pos)
+        {
+            if (bytes.Length <= pos + 1) return 0;
+            return (ushort)(bytes[pos + 1] + (bytes[pos] << 8));
+        }
+
+        /// <summary>
+        /// Convert the first four bytes starting at the given position in
+        /// little endian ordering to an unsigned integer
+        /// </summary>
+        /// <param name="bytes">Byte array containing the uint</param>
+        /// <param name="pos">Position to start reading the uint from</param>
+        /// <returns>An unsigned integer, will be zero if a uint can't be read
+        /// at the given position</returns>
+        public static uint BytesToUInt(byte[] bytes, int pos)
+        {
+            if (bytes.Length <= pos + 4) return 0;
+            return (uint)(bytes[pos + 3] + (bytes[pos + 2] << 8) + (bytes[pos + 1] << 16) + (bytes[pos] << 24));
+        }
+
+        /// <summary>
         /// Convert the first four bytes of the given array in little endian
         /// ordering to an unsigned integer
         /// </summary>
@@ -173,6 +199,20 @@ namespace libsecondlife
         {
             if (bytes.Length < 4) return 0;
             return (uint)(bytes[3] + (bytes[2] << 8) + (bytes[1] << 16) + (bytes[0] << 24));
+        }
+
+        /// <summary>
+        /// Convert the first four bytes starting at the given position in
+        /// big endian ordering to an unsigned integer
+        /// </summary>
+        /// <param name="bytes">Byte array containing the uint</param>
+        /// <param name="pos">Position to start reading the uint from</param>
+        /// <returns>An unsigned integer, will be zero if a uint can't be read
+        /// at the given position</returns>
+        public static uint BytesToUIntBig(byte[] bytes, int pos)
+        {
+            if (bytes.Length <= pos + 4) return 0;
+            return (uint)(bytes[pos] + (bytes[pos + 1] << 8) + (bytes[pos + 2] << 16) + (bytes[pos + 3] << 24));
         }
 
         /// <summary>
@@ -256,12 +296,28 @@ namespace libsecondlife
         /// <summary>
         /// Convert a byte to a float value given a minimum and maximum range
         /// </summary>
+        /// <param name="bytes">Byte array to get the byte from</param>
+        /// <param name="pos">Position in the byte array the desired byte is at</param>
+        /// <param name="lower">Minimum value range</param>
+        /// <param name="upper">Maximum value range</param>
+        /// <returns>A float value inclusively between lower and upper</returns>
+        public static float ByteToFloat(byte[] bytes, int pos, float lower, float upper)
+        {
+            if (bytes.Length <= pos) return 0;
+            return ByteToFloat(bytes[pos], lower, upper);
+        }
+
+        /// <summary>
+        /// Convert a byte to a float value given a minimum and maximum range
+        /// </summary>
         /// <param name="val">Byte to convert to a float value</param>
         /// <param name="lower">Minimum value range</param>
         /// <param name="upper">Maximum value range</param>
         /// <returns>A float value inclusively between lower and upper</returns>
         public static float ByteToFloat(byte val, float lower, float upper)
         {
+            const float ONE_OVER_BYTEMAX = 1.0f / (float)byte.MaxValue;
+
             float fval = (float)val * ONE_OVER_BYTEMAX;
             float delta = (upper - lower);
             fval *= delta;
@@ -270,6 +326,44 @@ namespace libsecondlife
             // Test for values very close to zero
             float error = delta * ONE_OVER_BYTEMAX;
             if (Math.Abs(fval) < error)
+                fval = 0.0f;
+
+            return fval;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="pos"></param>
+        /// <param name="lower"></param>
+        /// <param name="upper"></param>
+        /// <returns></returns>
+        public static float UInt16ToFloat(byte[] bytes, int pos, float lower, float upper)
+        {
+            ushort val = BytesToUInt16(bytes, pos);
+            return UInt16ToFloat(val, lower, upper);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="lower"></param>
+        /// <param name="upper"></param>
+        /// <returns></returns>
+        public static float UInt16ToFloat(ushort val, float lower, float upper)
+        {
+            const float ONE_OVER_U16_MAX = 1.0f / 65535.0f;
+
+            float fval = (float)val * ONE_OVER_U16_MAX;
+            float delta = upper - lower;
+            fval *= delta;
+            fval += lower;
+
+            // Make sure zeroes come through as zero
+            float maxError = delta * ONE_OVER_U16_MAX;
+            if (Math.Abs(fval) < maxError)
                 fval = 0.0f;
 
             return fval;

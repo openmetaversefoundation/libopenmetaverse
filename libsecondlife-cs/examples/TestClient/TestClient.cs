@@ -53,10 +53,9 @@ namespace libsecondlife.TestClient
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
             Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            Objects.OnPrimMoved += new ObjectManager.PrimMovedCallback(Objects_OnPrimMoved);
+            Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
             Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
 			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-			Objects.OnAvatarMoved += new ObjectManager.AvatarMovedCallback(Objects_OnAvatarMoved);
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
             this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
@@ -203,14 +202,41 @@ namespace libsecondlife.TestClient
 			}
         }
 
-        private void Objects_OnPrimMoved(Simulator simulator, PrimUpdate prim, ulong regionHandle, ushort timeDilation)
+        private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
         {
-            lock (SimPrims)
+            regionX = (int)(regionHandle >> 32);
+            regionY = (int)(regionHandle & 0xFFFFFFFF);
+
+            if (update.Avatar)
             {
-                if (SimPrims.ContainsKey(simulator) && SimPrims[simulator].ContainsKey(prim.LocalID))
+                lock (AvatarList)
                 {
-                    SimPrims[simulator][prim.LocalID].Position = prim.Position;
-                    SimPrims[simulator][prim.LocalID].Rotation = prim.Rotation;
+                    // TODO: We really need a solid avatar and object tracker in Utilities to use here
+                    if (AvatarList.ContainsKey(update.LocalID))
+                    {
+                        AvatarList[update.LocalID].CollisionPlane = update.CollisionPlane;
+                        AvatarList[update.LocalID].Position = update.Position;
+                        AvatarList[update.LocalID].Velocity = update.Velocity;
+                        AvatarList[update.LocalID].Acceleration = update.Acceleration;
+                        AvatarList[update.LocalID].Rotation = update.Rotation;
+                        AvatarList[update.LocalID].AngularVelocity = update.AngularVelocity;
+                        AvatarList[update.LocalID].Textures = update.Textures;
+                    }
+                }
+            }
+            else
+            {
+                lock (SimPrims)
+                {
+                    if (SimPrims.ContainsKey(simulator) && SimPrims[simulator].ContainsKey(update.LocalID))
+                    {
+                        SimPrims[simulator][update.LocalID].Position = update.Position;
+                        SimPrims[simulator][update.LocalID].Velocity = update.Velocity;
+                        SimPrims[simulator][update.LocalID].Acceleration = update.Acceleration;
+                        SimPrims[simulator][update.LocalID].Rotation = update.Rotation;
+                        SimPrims[simulator][update.LocalID].AngularVelocity = update.AngularVelocity;
+                        SimPrims[simulator][update.LocalID].Textures = update.Textures;
+                    }
                 }
             }
         }
@@ -238,20 +264,6 @@ namespace libsecondlife.TestClient
 		    lock (AvatarList)
 		    {
 		        AvatarList[avatar.LocalID] = avatar;
-		    }
-		}
-
-		private void Objects_OnAvatarMoved(Simulator simulator, AvatarUpdate avatar, ulong regionHandle, ushort timeDilation)
-		{
-		    regionX = (int)(regionHandle >> 32);
-		    regionY = (int)(regionHandle & 0xFFFFFFFF);
-		    lock (AvatarList)
-		    {
-		        if (AvatarList.ContainsKey(avatar.LocalID))
-		        {
-		            AvatarList[avatar.LocalID].Position = avatar.Position;
-		            AvatarList[avatar.LocalID].Rotation = avatar.Rotation;
-		        }
 		    }
 		}
 

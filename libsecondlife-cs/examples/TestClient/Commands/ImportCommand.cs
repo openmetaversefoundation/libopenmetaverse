@@ -124,7 +124,8 @@ namespace libsecondlife.TestClient
                     rezzingRootPrim = true;
                     currentPrim = linkset.RootPrim;
 
-                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim, linkset.RootPrim.Position);
+                    Client.Objects.AddPrim(Client.Network.CurrentSim, linkset.RootPrim.Data, LLUUID.Zero,
+                        linkset.RootPrim.Position, linkset.RootPrim.Scale, linkset.RootPrim.Rotation);
 
                     if (!primDone.WaitOne(10000, false))
                         return "Rez failed, timed out while creating a prim.";
@@ -138,7 +139,8 @@ namespace libsecondlife.TestClient
                         currentPrim = prim;
                         currentPosition = prim.Position + linkset.RootPrim.Position;
 
-                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim, currentPosition);
+                        Client.Objects.AddPrim(Client.Network.CurrentSim, prim.Data, LLUUID.Zero, 
+                            currentPosition, prim.Scale, prim.Rotation);
 
                         if (!primDone.WaitOne(10000, false))
                             return "Rez failed, timed out while creating a prim.";

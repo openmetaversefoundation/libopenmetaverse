@@ -48,6 +48,25 @@ namespace libsecondlife
             Light = 0x20
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum JointType : byte
+        {
+            /// <summary></summary>
+            Invalid = 0,
+            /// <summary></summary>
+            Hinge = 1,
+            /// <summary></summary>
+            Point = 2,
+            /// <summary></summary>
+            [Obsolete]
+            LPoint = 3,
+            /// <summary></summary>
+            [Obsolete]
+            Wheel = 4
+        }
+
 
         #region Subclasses
 
@@ -229,8 +248,31 @@ namespace libsecondlife
         public LightData Light = new LightData();
         /// <summary></summary>
         public ParticleSystem ParticleSys = new ParticleSystem();
+        /// <summary></summary>
+        public byte ClickAction;
+        /// <summary></summary>
+        public LLUUID Sound = LLUUID.Zero;
+        /// <summary>Identifies the owner of the audio or particle system</summary>
+        public LLUUID OwnerID = LLUUID.Zero;
+        /// <summary></summary>
+        public byte SoundFlags;
+        /// <summary></summary>
+        public float SoundGain;
+        /// <summary></summary>
+        public float SoundRadius;
+        /// <summary></summary>
+        public string Text;
+        /// <summary></summary>
+        public LLColor TextColor;
+        /// <summary></summary>
+        public string MediaURL;
+        public JointType Joint;
+        public LLVector3 JointPivot;
+        public LLVector3 JointAxisOrAnchor;
 
-
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public Primitive()
         {
         }
@@ -280,9 +322,9 @@ namespace libsecondlife
             output += "ParentID: " + ParentID + ", ";
             output += "LocalID: " + LocalID + ", ";
             output += "Flags: " + Flags + ", ";
-            output += "State: " + State + ", ";
-            output += "PCode: " + PCode + ", ";
-            output += "Material: " + Material + ", ";
+            output += "State: " + data.State + ", ";
+            output += "PCode: " + data.PCode + ", ";
+            output += "Material: " + data.Material + ", ";
 
             return output;
         }

@@ -1565,6 +1565,7 @@ namespace libsecondlife
             CurrentSim.SendPacket(logout, true);
 
             LogoutTimer = new System.Timers.Timer(Client.Settings.LOGOUT_TIMEOUT);
+            LogoutTimer.AutoReset = false;
             LogoutTimer.Elapsed += new ElapsedEventHandler(LogoutTimer_Elapsed);
             LogoutTimer.Start();
         }
@@ -1731,6 +1732,7 @@ namespace libsecondlife
         /// </summary>
         private void LogoutTimer_Elapsed(object sender, ElapsedEventArgs ev)
         {
+            LogoutTimer.Stop();
             Client.Log("Logout due to timeout on server acknowledgement", Helpers.LogLevel.Debug);
             ForceLogout();
         }

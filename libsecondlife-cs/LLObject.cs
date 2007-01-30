@@ -114,6 +114,77 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        [Serializable]
+        public struct ObjectData
+        {
+            /// <summary></summary>
+            [XmlAttribute("pathtwistbegin")]
+            public int PathTwistBegin;
+            /// <summary></summary>
+            [XmlAttribute("pathend")]
+            public float PathEnd;
+            /// <summary></summary>
+            [XmlAttribute("profilebegin")]
+            public float ProfileBegin;
+            /// <summary></summary>
+            [XmlAttribute("pathradiusoffset")]
+            public float PathRadiusOffset;
+            /// <summary></summary>
+            [XmlAttribute("pathskew")]
+            public float PathSkew;
+            /// <summary></summary>
+            [XmlAttribute("profilecurve")]
+            public uint ProfileCurve;
+            /// <summary></summary>
+            [XmlAttribute("pathscalex")]
+            public float PathScaleX;
+            /// <summary></summary>
+            [XmlAttribute("pathscaley")]
+            public float PathScaleY;
+            /// <summary></summary>
+            [XmlAttribute("material")]
+            public uint Material;
+            /// <summary></summary>
+            [XmlAttribute("pathshearx")]
+            public float PathShearX;
+            /// <summary></summary>
+            [XmlAttribute("pathsheary")]
+            public float PathShearY;
+            /// <summary></summary>
+            [XmlAttribute("pathtaperx")]
+            public float PathTaperX;
+            /// <summary></summary>
+            [XmlAttribute("pathtapery")]
+            public float PathTaperY;
+            /// <summary></summary>
+            [XmlAttribute("profileend")]
+            public float ProfileEnd;
+            /// <summary></summary>
+            [XmlAttribute("pathbegin")]
+            public float PathBegin;
+            /// <summary></summary>
+            [XmlAttribute("pathcurve")]
+            public uint PathCurve;
+            /// <summary></summary>
+            [XmlAttribute("pathtwist")]
+            public int PathTwist;
+            /// <summary></summary>
+            [XmlAttribute("profilehollow")]
+            public uint ProfileHollow;
+            /// <summary></summary>
+            [XmlAttribute("pathrevolutions")]
+            public float PathRevolutions;
+            /// <summary></summary>
+            [XmlAttribute("state")]
+            public uint State;
+            /// <summary></summary>
+            [XmlIgnore]
+            public ObjectManager.PCode PCode;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public struct ObjectPropertiesFamily
         {
             /// <summary></summary>
@@ -151,104 +222,47 @@ namespace libsecondlife
         #endregion Structs
 
 
-        #region Public Properties
+        #region Public Members
 
         /// <summary></summary>
-        [XmlAttribute("pathtwistbegin")]
-        public int PathTwistBegin;
-        /// <summary></summary>
-        [XmlAttribute("pathend")]
-        public float PathEnd;
-        /// <summary></summary>
-        [XmlAttribute("profilebegin")]
-        public float ProfileBegin;
-        /// <summary></summary>
-        [XmlAttribute("pathradiusoffset")]
-        public float PathRadiusOffset;
-        /// <summary></summary>
-        [XmlAttribute("pathskew")]
-        public float PathSkew;
-        /// <summary></summary>
-        [XmlAttribute("profilecurve")]
-        public uint ProfileCurve;
-        /// <summary></summary>
-        [XmlAttribute("pathscalex")]
-        public float PathScaleX;
-        /// <summary></summary>
-        [XmlAttribute("pathscaley")]
-        public float PathScaleY;
-        /// <summary></summary>
-        [XmlAttribute("localid")]
-        public uint LocalID;
-        /// <summary></summary>
-        [XmlAttribute("parentid")]
-        public uint ParentID;
-        /// <summary></summary>
-        [XmlAttribute("material")]
-        public uint Material;
-        /// <summary></summary>
-        [XmlAttribute("pathshearx")]
-        public float PathShearX;
-        /// <summary></summary>
-        [XmlAttribute("pathsheary")]
-        public float PathShearY;
-        /// <summary></summary>
-        [XmlAttribute("pathtaperx")]
-        public float PathTaperX;
-        /// <summary></summary>
-        [XmlAttribute("pathtapery")]
-        public float PathTaperY;
-        /// <summary></summary>
-        [XmlAttribute("profileend")]
-        public float ProfileEnd;
-        /// <summary></summary>
-        [XmlAttribute("pathbegin")]
-        public float PathBegin;
-        /// <summary></summary>
-        [XmlAttribute("pathcurve")]
-        public uint PathCurve;
-        /// <summary></summary>
-        [XmlAttribute("pathtwist")]
-        public int PathTwist;
-        /// <summary></summary>
-        [XmlAttribute("profilehollow")]
-        public uint ProfileHollow;
-        /// <summary></summary>
-        [XmlAttribute("pathrevolutions")]
-        public float PathRevolutions;
-        /// <summary></summary>
-        [XmlAttribute("state")]
-        public uint State;
-        /// <summary></summary>
-        [XmlAttribute("text")]
-        public string Text = String.Empty;
-        /// <summary></summary>
-        [XmlAttribute("regionhandle")]
-        public ulong RegionHandle;
-        /// <summary></summary>
-        [XmlAttribute("flags")]
-        public ObjectFlags Flags;
-        /// <summary></summary>
-        [XmlIgnore]
-        public ObjectManager.PCode PCode = ObjectManager.PCode.Prim;
-        /// <summary></summary>
-        [XmlElement("id")]
         public LLUUID ID = LLUUID.Zero;
         /// <summary></summary>
-        [XmlElement("groupid")]
         public LLUUID GroupID = LLUUID.Zero;
+        /// <summary></summary>
+        public uint LocalID;
+        /// <summary></summary>
+        public uint ParentID;
+        /// <summary></summary>
+        public ulong RegionHandle;
+        /// <summary></summary>
+        public ObjectFlags Flags;
+        /// <summary>Unknown</summary>
+        public byte[] GenericData;
         /// <summary></summary>
         public LLVector3 Position = LLVector3.Zero;
         /// <summary></summary>
         public LLVector3 Scale = LLVector3.Zero;
         /// <summary></summary>
         public LLQuaternion Rotation = LLQuaternion.Identity;
+
+        public LLVector3 Velocity;
+        public LLVector3 AngularVelocity;
+        public LLVector3 Acceleration;
+        public LLVector4 CollisionPlane;
+
         /// <summary></summary>
         public TextureEntry Textures = new TextureEntry();
         /// <summary></summary>
         public ObjectPropertiesFamily PropertiesFamily;
 
-        #endregion Public Properties
+        #endregion Public Members
+
+
+        /// <summary></summary>
+        public ObjectData Data { get { return data; } }
+
+
+        internal ObjectData data = new ObjectData();
 
 
         #region Static Methods
