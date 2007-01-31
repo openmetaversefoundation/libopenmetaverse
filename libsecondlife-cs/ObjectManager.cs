@@ -1184,9 +1184,9 @@ namespace libsecondlife
                                 }
                             }
 
-                            if (OnNewAvatar != null)
+                            if ( AlwaysDecode || (OnNewAvatar != null))
                             {
-                                Avatar avatar = new Avatar();
+                                Avatar avatar = GetAvatar(simulator, block.ID, block.FullID);
 
                                 #region Update Avatar with decoded data
                                 avatar.ID = block.FullID;
@@ -1313,16 +1313,29 @@ namespace libsecondlife
 
                     // TODO: this really only needs to be called when this class is an instance of a subclass of this class...
                     // Get primitive from factory, so subclasses can have a chance to have cached data updated
-                    Primitive prim = GetPrimitive(simulator, update.LocalID, null);
-                    prim.Acceleration = update.Acceleration;
-                    prim.AngularVelocity = update.AngularVelocity;
-                    prim.CollisionPlane = update.CollisionPlane;
-                    prim.Position = update.Position;
-                    prim.Rotation = update.Rotation;
-                    prim.Textures = update.Textures;
-                    prim.Velocity = update.Velocity;
+                    if (AlwaysDecode)
+                    {
+                        LLObject obj;
 
-                    llObjectUpdated(simulator, prim);
+                        if (update.Avatar)
+                        {
+                            obj = GetAvatar(simulator, update.LocalID, null);
+                        }
+                        else
+                        {
+                            obj = GetPrimitive(simulator, update.LocalID, null);
+                        }
+
+                        obj.Acceleration = update.Acceleration;
+                        obj.AngularVelocity = update.AngularVelocity;
+                        obj.CollisionPlane = update.CollisionPlane;
+                        obj.Position = update.Position;
+                        obj.Rotation = update.Rotation;
+                        obj.Textures = update.Textures;
+                        obj.Velocity = update.Velocity;
+
+                        llObjectUpdated(simulator, obj);
+                    }
                     
                     // Fire the callback
                     FireOnObjectUpdated(simulator, update, terse.RegionData.RegionHandle, terse.RegionData.TimeDilation);
@@ -1788,6 +1801,19 @@ namespace libsecondlife
         virtual protected Primitive GetPrimitive(Simulator simulator, uint LocalID, LLUUID UUID)
         {
             return new Primitive();
+        }
+
+        /// <summary>
+        /// Primitive Factory, this allows a subclass to lookup a copy of the Avatar
+        /// and return it for updating, rather then always creating a new Avatar
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="LocalID"></param>
+        /// <param name="UUID"></param>
+        /// <returns></returns>
+        virtual protected Avatar GetAvatar(Simulator simulator, uint LocalID, LLUUID UUID)
+        {
+            return new Avatar();
         }
 
         /// <summary>
