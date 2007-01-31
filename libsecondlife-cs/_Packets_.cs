@@ -27079,7 +27079,6 @@ namespace libsecondlife.Packets
                     else { _abouttext = new byte[value.Length]; Array.Copy(value, _abouttext, value.Length); }
                 }
             }
-            public bool Transacted;
             private byte[] _chartermember;
             public byte[] CharterMember
             {
@@ -27104,7 +27103,6 @@ namespace libsecondlife.Packets
             }
             public LLUUID ImageID;
             public LLUUID FLImageID;
-            public bool AllowPublish;
             private byte[] _profileurl;
             public byte[] ProfileURL
             {
@@ -27116,7 +27114,6 @@ namespace libsecondlife.Packets
                     else { _profileurl = new byte[value.Length]; Array.Copy(value, _profileurl, value.Length); }
                 }
             }
-            public bool Identified;
             private byte[] _bornon;
             public byte[] BornOn
             {
@@ -27128,7 +27125,7 @@ namespace libsecondlife.Packets
                     else { _bornon = new byte[value.Length]; Array.Copy(value, _bornon, value.Length); }
                 }
             }
-            public bool MaturePublish;
+            public uint Flags;
 
             [XmlIgnore]
             public int Length
@@ -27155,7 +27152,6 @@ namespace libsecondlife.Packets
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _abouttext = new byte[length];
                     Array.Copy(bytes, i, _abouttext, 0, length); i += length;
-                    Transacted = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _chartermember = new byte[length];
                     Array.Copy(bytes, i, _chartermember, 0, length); i += length;
@@ -27164,15 +27160,13 @@ namespace libsecondlife.Packets
                     Array.Copy(bytes, i, _flabouttext, 0, length); i += length;
                     ImageID = new LLUUID(bytes, i); i += 16;
                     FLImageID = new LLUUID(bytes, i); i += 16;
-                    AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _profileurl = new byte[length];
                     Array.Copy(bytes, i, _profileurl, 0, length); i += length;
-                    Identified = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _bornon = new byte[length];
                     Array.Copy(bytes, i, _bornon, 0, length); i += length;
-                    MaturePublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                    Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
                 {
@@ -27188,7 +27182,6 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)(AboutText.Length % 256);
                 bytes[i++] = (byte)((AboutText.Length >> 8) % 256);
                 Array.Copy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
-                bytes[i++] = (byte)((Transacted) ? 1 : 0);
                 if(CharterMember == null) { Console.WriteLine("Warning: CharterMember is null, in " + this.GetType()); }
                 bytes[i++] = (byte)CharterMember.Length;
                 Array.Copy(CharterMember, 0, bytes, i, CharterMember.Length); i += CharterMember.Length;
@@ -27199,15 +27192,16 @@ namespace libsecondlife.Packets
                 Array.Copy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(FLImageID == null) { Console.WriteLine("Warning: FLImageID is null, in " + this.GetType()); }
                 Array.Copy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 if(ProfileURL == null) { Console.WriteLine("Warning: ProfileURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProfileURL.Length;
                 Array.Copy(ProfileURL, 0, bytes, i, ProfileURL.Length); i += ProfileURL.Length;
-                bytes[i++] = (byte)((Identified) ? 1 : 0);
                 if(BornOn == null) { Console.WriteLine("Warning: BornOn is null, in " + this.GetType()); }
                 bytes[i++] = (byte)BornOn.Length;
                 Array.Copy(BornOn, 0, bytes, i, BornOn.Length); i += BornOn.Length;
-                bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
+                bytes[i++] = (byte)(Flags % 256);
+                bytes[i++] = (byte)((Flags >> 8) % 256);
+                bytes[i++] = (byte)((Flags >> 16) % 256);
+                bytes[i++] = (byte)((Flags >> 24) % 256);
             }
 
             public override string ToString()
@@ -27215,16 +27209,13 @@ namespace libsecondlife.Packets
                 string output = "-- PropertiesData --" + Environment.NewLine;
                 output += "PartnerID: " + PartnerID.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(AboutText, "AboutText") + "" + Environment.NewLine;
-                output += "Transacted: " + Transacted.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(CharterMember, "CharterMember") + "" + Environment.NewLine;
                 output += Helpers.FieldToString(FLAboutText, "FLAboutText") + "" + Environment.NewLine;
                 output += "ImageID: " + ImageID.ToString() + "" + Environment.NewLine;
                 output += "FLImageID: " + FLImageID.ToString() + "" + Environment.NewLine;
-                output += "AllowPublish: " + AllowPublish.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(ProfileURL, "ProfileURL") + "" + Environment.NewLine;
-                output += "Identified: " + Identified.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(BornOn, "BornOn") + "" + Environment.NewLine;
-                output += "MaturePublish: " + MaturePublish.ToString() + "" + Environment.NewLine;
+                output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -71377,6 +71368,7 @@ namespace libsecondlife.Packets
         {
             public float Duration;
             public LLUUID ID;
+            public LLUUID AgentID;
             public byte Type;
             public byte[] Color;
             private byte[] _typedata;
@@ -71396,7 +71388,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 25;
+                    int length = 41;
                     if (TypeData != null) { length += 1 + TypeData.Length; }
                     return length;
                 }
@@ -71411,6 +71403,7 @@ namespace libsecondlife.Packets
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Duration = BitConverter.ToSingle(bytes, i); i += 4;
                     ID = new LLUUID(bytes, i); i += 16;
+                    AgentID = new LLUUID(bytes, i); i += 16;
                     Type = (byte)bytes[i++];
                     Color = new byte[4];
                     Array.Copy(bytes, i, Color, 0, 4); i += 4;
@@ -71432,6 +71425,8 @@ namespace libsecondlife.Packets
                 Array.Copy(ba, 0, bytes, i, 4); i += 4;
                 if(ID == null) { Console.WriteLine("Warning: ID is null, in " + this.GetType()); }
                 Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(AgentID == null) { Console.WriteLine("Warning: AgentID is null, in " + this.GetType()); }
+                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Type;
                                 Array.Copy(Color, 0, bytes, i, 4);i += 4;
                 if(TypeData == null) { Console.WriteLine("Warning: TypeData is null, in " + this.GetType()); }
@@ -71444,9 +71439,58 @@ namespace libsecondlife.Packets
                 string output = "-- Effect --" + Environment.NewLine;
                 output += "Duration: " + Duration.ToString() + "" + Environment.NewLine;
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
+                output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += Helpers.FieldToString(Color, "Color") + "" + Environment.NewLine;
                 output += Helpers.FieldToString(TypeData, "TypeData") + "" + Environment.NewLine;
+                output = output.Trim();
+                return output;
+            }
+        }
+
+        /// <exclude/>
+        [XmlType("viewereffect_agentdata")]
+        public class AgentDataBlock
+        {
+            public LLUUID AgentID;
+            public LLUUID SessionID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 32;
+                }
+            }
+
+            public AgentDataBlock() { }
+            public AgentDataBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentID = new LLUUID(bytes, i); i += 16;
+                    SessionID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                if(AgentID == null) { Console.WriteLine("Warning: AgentID is null, in " + this.GetType()); }
+                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(SessionID == null) { Console.WriteLine("Warning: SessionID is null, in " + this.GetType()); }
+                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                string output = "-- AgentData --" + Environment.NewLine;
+                output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
+                output += "SessionID: " + SessionID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -71456,6 +71500,7 @@ namespace libsecondlife.Packets
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ViewerEffect; } }
         public EffectBlock[] Effect;
+        public AgentDataBlock AgentData;
 
         public ViewerEffectPacket()
         {
@@ -71464,6 +71509,7 @@ namespace libsecondlife.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             Effect = new EffectBlock[0];
+            AgentData = new AgentDataBlock();
         }
 
         public ViewerEffectPacket(byte[] bytes, ref int i)
@@ -71474,6 +71520,7 @@ namespace libsecondlife.Packets
             Effect = new EffectBlock[count];
             for (int j = 0; j < count; j++)
             { Effect[j] = new EffectBlock(bytes, ref i); }
+            AgentData = new AgentDataBlock(bytes, ref i);
         }
 
         public ViewerEffectPacket(Header head, byte[] bytes, ref int i)
@@ -71483,12 +71530,13 @@ namespace libsecondlife.Packets
             Effect = new EffectBlock[count];
             for (int j = 0; j < count; j++)
             { Effect[j] = new EffectBlock(bytes, ref i); }
+            AgentData = new AgentDataBlock(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 6;
-;
+            length += AgentData.Length;;
             length++;
             for (int j = 0; j < Effect.Length; j++) { length += Effect[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
@@ -71497,6 +71545,7 @@ namespace libsecondlife.Packets
             header.ToBytes(bytes, ref i);
             bytes[i++] = (byte)Effect.Length;
             for (int j = 0; j < Effect.Length; j++) { Effect[j].ToBytes(bytes, ref i); }
+            AgentData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -71508,6 +71557,7 @@ namespace libsecondlife.Packets
             {
                 output += Effect[j].ToString() + "" + Environment.NewLine;
             }
+                output += AgentData.ToString() + "" + Environment.NewLine;
             return output;
         }
 
