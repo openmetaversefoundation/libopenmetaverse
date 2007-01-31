@@ -16,6 +16,8 @@
 		401480080B59A3180070ABA4 /* IA_SimpleInventory.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E4590B575BD600B0667D /* IA_SimpleInventory.cs */; };
 		401D8B160B6AF98000CF8C2F /* DebugCommand.cs in Sources */ = {isa = PBXBuildFile; fileRef = 401D8B150B6AF98000CF8C2F /* DebugCommand.cs */; };
 		402E14E30B699BB400A17C19 /* _VisualParam_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 402E14E20B699BB400A17C19 /* _VisualParam_.cs */; };
+		40458D310B714F4F00B05E5E /* TerrainManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40458D300B714F4F00B05E5E /* TerrainManager.cs */; };
+		40458D340B71501400B05E5E /* BitPack.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40458D330B71501400B05E5E /* BitPack.cs */; };
 		4054E30C0B57351700B0667D /* _Packets_.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2B60B57343500B0667D /* _Packets_.cs */; };
 		4054E30D0B57351700B0667D /* AppearanceManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2BA0B57343500B0667D /* AppearanceManager.cs */; };
 		4054E30E0B57351700B0667D /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4054E2B70B57343500B0667D /* AssemblyInfo.cs */; };
@@ -262,7 +264,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 4054E36E0B57375B00B0667D /* libsecondlife.Utilities */;
+			remoteGlobalIDString = 4054E36E0B57375B00B0667D;
 			remoteInfo = libsecondlife.Utilities;
 		};
 /* End PBXContainerItemProxy section */
@@ -277,6 +279,8 @@
 		40147FED0B59A1310070ABA4 /* libjasper.dll */ = {isa = PBXFileReference; lastKnownFileType = compiled.mono.library; name = libjasper.dll; path = libjaspernet/libjasper.dll; sourceTree = "<group>"; };
 		401D8B150B6AF98000CF8C2F /* DebugCommand.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = DebugCommand.cs; sourceTree = "<group>"; };
 		402E14E20B699BB400A17C19 /* _VisualParam_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = _VisualParam_.cs; path = "libsecondlife-cs/_VisualParam_.cs"; sourceTree = "<group>"; };
+		40458D300B714F4F00B05E5E /* TerrainManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TerrainManager.cs; path = "libsecondlife-cs/TerrainManager.cs"; sourceTree = "<group>"; };
+		40458D330B71501400B05E5E /* BitPack.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BitPack.cs; path = "libsecondlife-cs/BitPack.cs"; sourceTree = "<group>"; };
 		4054E2B60B57343500B0667D /* _Packets_.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = _Packets_.cs; path = "libsecondlife-cs/_Packets_.cs"; sourceTree = "<group>"; };
 		4054E2B70B57343500B0667D /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = AssemblyInfo.cs; path = "libsecondlife-cs/AssemblyInfo.cs"; sourceTree = "<group>"; };
 		4054E2BA0B57343500B0667D /* AppearanceManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AppearanceManager.cs; sourceTree = "<group>"; };
@@ -356,7 +360,7 @@
 		4054E3920B5739FC00B0667D /* Program.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Program.cs; path = "libsecondlife-cs/examples/Key2Name/Program.cs"; sourceTree = "<group>"; };
 		4054E3940B5739FC00B0667D /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
 		4054E3980B573A0900B0667D /* Key2Name.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = Key2Name.exe; sourceTree = BUILT_PRODUCTS_DIR; };
-		4054E3AB0B573A6500B0667D /* TestClient.exe */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = compiled.mono.executable; path = TestClient.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3AB0B573A6500B0667D /* TestClient.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = TestClient.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3B30B573A9700B0667D /* Arguments.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Arguments.cs; path = "libsecondlife-cs/examples/TestClient/Arguments.cs"; sourceTree = "<group>"; };
 		4054E3B40B573A9700B0667D /* ClientManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ClientManager.cs; path = "libsecondlife-cs/examples/TestClient/ClientManager.cs"; sourceTree = "<group>"; };
 		4054E3B50B573A9700B0667D /* Command.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Command.cs; path = "libsecondlife-cs/examples/TestClient/Command.cs"; sourceTree = "<group>"; };
@@ -598,6 +602,8 @@
 		4054E2B50B5733D200B0667D /* libsecondlife-cs */ = {
 			isa = PBXGroup;
 			children = (
+				40458D330B71501400B05E5E /* BitPack.cs */,
+				40458D300B714F4F00B05E5E /* TerrainManager.cs */,
 				40FBC0030B6F0B59002FCB38 /* LLObject.cs */,
 				402E14E20B699BB400A17C19 /* _VisualParam_.cs */,
 				40E9A5E80B60726900D8BA3C /* LLSD.cs */,
@@ -1326,6 +1332,8 @@
 				40E9A5E90B60726900D8BA3C /* LLSD.cs in Sources */,
 				402E14E30B699BB400A17C19 /* _VisualParam_.cs in Sources */,
 				40FBC0040B6F0B59002FCB38 /* LLObject.cs in Sources */,
+				40458D310B714F4F00B05E5E /* TerrainManager.cs in Sources */,
+				40458D340B71501400B05E5E /* BitPack.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
