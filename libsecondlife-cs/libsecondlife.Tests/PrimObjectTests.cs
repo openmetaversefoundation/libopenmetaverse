@@ -15,8 +15,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathBeginFloat(i);
-                byte result = PrimObject.PathBeginByte(floatValue);
+                float floatValue = LLObject.PathBeginFloat(i);
+                byte result = LLObject.PathBeginByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -28,8 +28,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathEndFloat(i);
-                byte result = PrimObject.PathEndByte(floatValue);
+                float floatValue = LLObject.PathEndFloat(i);
+                byte result = LLObject.PathEndByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -41,8 +41,8 @@ namespace libsecondlife.Tests
         {
             for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathRadiusOffsetFloat(i);
-                sbyte result = PrimObject.PathRadiusOffsetByte(floatValue);
+                float floatValue = LLObject.PathRadiusOffsetFloat(i);
+                sbyte result = LLObject.PathRadiusOffsetByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -54,8 +54,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathRevolutionsFloat(i);
-                byte result = PrimObject.PathRevolutionsByte(floatValue);
+                float floatValue = LLObject.PathRevolutionsFloat(i);
+                byte result = LLObject.PathRevolutionsByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -67,8 +67,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathScaleFloat(i);
-                byte result = PrimObject.PathScaleByte(floatValue);
+                float floatValue = LLObject.PathScaleFloat(i);
+                byte result = LLObject.PathScaleByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -80,8 +80,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathShearFloat(i);
-                byte result = PrimObject.PathShearByte(floatValue);
+                float floatValue = LLObject.PathShearFloat(i);
+                byte result = LLObject.PathShearByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -93,8 +93,8 @@ namespace libsecondlife.Tests
         {
             for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathSkewFloat(i);
-                sbyte result = PrimObject.PathSkewByte(floatValue);
+                float floatValue = LLObject.PathSkewFloat(i);
+                sbyte result = LLObject.PathSkewByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -106,8 +106,8 @@ namespace libsecondlife.Tests
         {
             for (sbyte i = sbyte.MinValue; i < sbyte.MaxValue; i++)
             {
-                float floatValue = PrimObject.PathTaperFloat(i);
-                sbyte result = PrimObject.PathTaperByte(floatValue);
+                float floatValue = LLObject.PathTaperFloat(i);
+                sbyte result = LLObject.PathTaperByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -119,8 +119,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.ProfileBeginFloat(i);
-                byte result = PrimObject.ProfileBeginByte(floatValue);
+                float floatValue = LLObject.ProfileBeginFloat(i);
+                byte result = LLObject.ProfileBeginByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -132,8 +132,8 @@ namespace libsecondlife.Tests
         {
             for (byte i = 0; i < byte.MaxValue; i++)
             {
-                float floatValue = PrimObject.ProfileEndFloat(i);
-                byte result = PrimObject.ProfileEndByte(floatValue);
+                float floatValue = LLObject.ProfileEndFloat(i);
+                byte result = LLObject.ProfileEndByte(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);

@@ -71,6 +71,8 @@ namespace libsecondlife
         /// <summary>Directory searches including classifieds, people, land 
         /// sales, etc</summary>
         public DirectoryManager Directory;
+        /// <summary>Handles land, wind, and cloud heightmaps</summary>
+        public TerrainManager Terrain;
         /// <summary>Throttling total bandwidth usage, or allocating bandwidth
         /// for specific data stream types</summary>
         public AgentThrottle Throttle;
@@ -100,6 +102,8 @@ namespace libsecondlife
             Assets = new AssetManager(this);
             Images = new ImageManager(this);
             Inventory = new InventoryManager(this);
+            Directory = new DirectoryManager(this);
+            Terrain = new TerrainManager(this);
             Throttle = new AgentThrottle(this);
         }
 

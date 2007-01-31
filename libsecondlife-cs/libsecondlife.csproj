@@ -109,6 +109,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AvatarManager.cs" />
+    <Compile Include="BitPack.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
     <Compile Include="InventorySystem\InventoryScript.cs" />
@@ -170,6 +171,7 @@
     </Compile>
     <Compile Include="SerializableDictionary.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="TerrainManager.cs" />
     <Compile Include="Textures.cs">
       <SubType>Code</SubType>
     </Compile>

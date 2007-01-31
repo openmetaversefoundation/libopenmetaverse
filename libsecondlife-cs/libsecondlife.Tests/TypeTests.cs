@@ -97,5 +97,32 @@ namespace libsecondlife.Tests
             a = Helpers.FloatToTerseString(f);
             Assert.IsTrue(a == b, f.ToString() + " converted to " + a + ", expecting " + b);
         }
+
+        [Test]
+        public void BitUnpacking()
+        {
+            byte[] data = new byte[] { 0x80, 0x00, 0x0F, 0x50, 0x83, 0x7D };
+            BitPack bitpacker = new BitPack(data, 0);
+
+            int b = bitpacker.UnpackBits(1);
+            Assert.IsTrue(b == 1, "Unpacked " + b + " instead of 1");
+
+            b = bitpacker.UnpackBits(1);
+            Assert.IsTrue(b == 0, "Unpacked " + b + " instead of 0");
+
+            bitpacker = new BitPack(data, 2);
+
+            b = bitpacker.UnpackBits(4);
+            Assert.IsTrue(b == 0, "Unpacked " + b + " instead of 0");
+
+            b = bitpacker.UnpackBits(8);
+            Assert.IsTrue(b == 0xF5, "Unpacked " + b + " instead of 0xF5");
+
+            b = bitpacker.UnpackBits(4);
+            Assert.IsTrue(b == 0, "Unpacked " + b + " instead of 0");
+
+            b = bitpacker.UnpackBits(10);
+            Assert.IsTrue(b == 0x0183, "Unpacked " + b + " instead of 0x0183");
+        }
     }
 }
