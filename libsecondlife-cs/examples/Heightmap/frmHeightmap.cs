@@ -14,21 +14,13 @@ namespace Heightmap
     {
         private SecondLife Client = new SecondLife();
         private System.Windows.Forms.PictureBox[,] Boxes = new System.Windows.Forms.PictureBox[16, 16];
-
+        private string FirstName, LastName, Password;
 
         public frmHeightmap(string firstName, string lastName, string password)
         {
-            Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
-
-            string start = NetworkManager.StartLocation("Miramare", 128, 128, 40);
-            Dictionary<string, object> loginvals = Client.Network.DefaultLoginValues(firstName, lastName, password,
-                start, "Heightmap", "jhurliman@wsu.edu", false);
-
-            if (!Client.Network.Login(loginvals, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
-            {
-                Console.WriteLine("Login failed: " + Client.Network.LoginError);
-                Application.Exit();
-            }
+            FirstName = firstName;
+            LastName = lastName;
+            Password = password;
 
             // Build the picture boxes
             this.SuspendLayout();
@@ -52,6 +44,22 @@ namespace Heightmap
             this.ResumeLayout();
 
             InitializeComponent();
+        }
+
+        private void frmHeightmap_Load(object sender, EventArgs e)
+        {
+            Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
+
+            Dictionary<string, object> loginvals = Client.Network.DefaultLoginValues(FirstName, LastName, Password,
+                "Heightmap", "jhurliman@wsu.edu");
+
+            if (!Client.Network.Login(loginvals)) //, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
+            {
+                Console.WriteLine("Login failed: " + Client.Network.LoginError);
+                Console.ReadKey();
+                this.Close();
+                return;
+            }
         }
 
         void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)

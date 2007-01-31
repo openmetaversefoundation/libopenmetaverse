@@ -37,6 +37,7 @@ namespace Heightmap
             this.ClientSize = new System.Drawing.Size(256, 256);
             this.Name = "frmHeightmap";
             this.Text = "Heightmap";
+            this.Load += new System.EventHandler(this.frmHeightmap_Load);
             this.ResumeLayout(false);
 
         }
