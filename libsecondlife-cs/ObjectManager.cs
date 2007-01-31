@@ -399,8 +399,14 @@ namespace libsecondlife
         /// the full object info will automatically be requested.
         /// </summary>
         /// 
-        public bool RequestAllObjects = false;        
-		
+        public bool RequestAllObjects = false;
+
+        /// <summary>
+        /// Used to flag if Object updates should always be decoded, 
+        /// even if no object event listenners/callbacks are registered.
+        /// </summary>
+        public bool AlwaysDecode = false;		
+
         /// <summary>
         /// Reference to the SecondLife client
         /// </summary>
@@ -876,6 +882,24 @@ namespace libsecondlife
             Client.Network.SendPacket(properties, simulator);
         }
 
+        /// <summary>
+        /// Request additional properties for an object
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="objectID"></param>
+        public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID, bool reliable)
+        {
+            RequestObjectPropertiesFamilyPacket properties = new RequestObjectPropertiesFamilyPacket();
+            properties.AgentData.AgentID = Client.Network.AgentID;
+            properties.AgentData.SessionID = Client.Network.SessionID;
+            properties.ObjectData.ObjectID = objectID;
+            properties.ObjectData.RequestFlags = 0;
+
+            properties.Header.Reliable = reliable;
+
+            Client.Network.SendPacket(properties, simulator);
+        }
+
         #endregion
         
         #region Packet Handlers
@@ -887,7 +911,8 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void UpdateHandler(Packet packet, Simulator simulator)
         {
-            if (OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
+
+            if (AlwaysDecode || OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
             {
                 ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
 				UpdateDilation(simulator, update.RegionData.TimeDilation);
@@ -904,7 +929,7 @@ namespace libsecondlife
                     // TODO: Parse NameValue here
                     string nameValue = Helpers.FieldToString(block.NameValue);
 
-                    // Object (primitive) parameters
+                    #region Decode Object (primitive) parameters
                     LLObject.ObjectData data = new LLObject.ObjectData();
                     data.State = block.State;
                     data.Material = block.Material;
@@ -926,8 +951,9 @@ namespace libsecondlife
                     data.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
                     data.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
                     data.ProfileHollow = block.ProfileHollow;
+                    #endregion
 
-                    // Additional packed parameters in ObjectData
+                    #region Decode Additional packed parameters in ObjectData
                     int pos = 0;
                     switch (block.ObjectData.Length)
                     {
@@ -1039,6 +1065,7 @@ namespace libsecondlife
 
                             continue;
                     }
+                    #endregion
 
                     // Unknown
                     if (block.Data.Length != 0)
@@ -1051,8 +1078,9 @@ namespace libsecondlife
                         case (byte)PCode.Grass:
                         case (byte)PCode.Tree:
                         case (byte)PCode.Prim:
-                            Primitive prim = new Primitive();
-                            
+                            Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
+
+                            #region Update Prim Info with decoded data                            
                             prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
 
                             if ((prim.Flags & LLObject.ObjectFlags.ZlibCompressed) != 0)
@@ -1106,6 +1134,11 @@ namespace libsecondlife
                             prim.Acceleration = acceleration;
                             prim.Rotation = rotation;
                             prim.AngularVelocity = angularVelocity;
+                            #endregion
+
+                            // Used to notify subclasses that prim was updated.
+                            llObjectUpdated(simulator, prim);
+
 
                             if (prim.NameValue.StartsWith("AttachItemID"))
                             {
@@ -1125,6 +1158,8 @@ namespace libsecondlife
                             // Update some internals if this is our avatar
                             if (block.FullID == Client.Network.AgentID)
                             {
+                                #region Update Client.Self
+                                
                                 // Interesting to know
                                 Client.Self.LocalID = block.ID;
                                 
@@ -1139,6 +1174,8 @@ namespace libsecondlife
                                 // Detect if we are sitting or standing
                                 uint oldSittingOn = Client.Self.SittingOn;
 
+                                #endregion
+
                                 // Fire the callback for our sitting orientation changing
                                 if (block.ParentID != oldSittingOn)
                                 {
@@ -1151,6 +1188,7 @@ namespace libsecondlife
                             {
                                 Avatar avatar = new Avatar();
 
+                                #region Update Avatar with decoded data
                                 avatar.ID = block.FullID;
                                 avatar.LocalID = block.ID;
 
@@ -1186,6 +1224,7 @@ namespace libsecondlife
 
                                 // Texutres
                                 avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+                                #endregion
 
                                 FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
@@ -1223,6 +1262,7 @@ namespace libsecondlife
                     ObjectUpdate update = new ObjectUpdate();
                     int pos = 0;
 
+                    #region Decode Update Data
                     // Local ID
                     update.LocalID = Helpers.BytesToUIntBig(block.Data, pos);
                     pos += 4;
@@ -1269,6 +1309,21 @@ namespace libsecondlife
                     // FIXME: Why are we ignoring the first four bytes here?
                     update.Textures = new LLObject.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
+                    #endregion
+
+                    // TODO: this really only needs to be called when this class is an instance of a subclass of this class...
+                    // Get primitive from factory, so subclasses can have a chance to have cached data updated
+                    Primitive prim = GetPrimitive(simulator, update.LocalID, null);
+                    prim.Acceleration = update.Acceleration;
+                    prim.AngularVelocity = update.AngularVelocity;
+                    prim.CollisionPlane = update.CollisionPlane;
+                    prim.Position = update.Position;
+                    prim.Rotation = update.Rotation;
+                    prim.Textures = update.Textures;
+                    prim.Velocity = update.Velocity;
+
+                    llObjectUpdated(simulator, prim);
+                    
                     // Fire the callback
                     FireOnObjectUpdated(simulator, update, terse.RegionData.RegionHandle, terse.RegionData.TimeDilation);
                 }
@@ -1286,7 +1341,7 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
-            if (OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)
+            if (AlwaysDecode || OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)
             {
                 ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
                 Primitive prim;
@@ -1294,24 +1349,30 @@ namespace libsecondlife
                 foreach (ObjectUpdateCompressedPacket.ObjectDataBlock block in update.ObjectData)
                 {
                     int i = 0;
-                    prim = new Primitive();
-
-                    prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
 
                     try
                     {
                         // UUID
-                        prim.ID = new LLUUID(block.Data, 0);
+                        LLUUID FullID = new LLUUID(block.Data, 0);
                         i += 16;
                         // Local ID
-                        prim.LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        uint LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                             (block.Data[i++] << 16) + (block.Data[i++] << 24));
+
+
+                        prim = GetPrimitive(simulator, LocalID, FullID);
+
+
+                        prim.LocalID = LocalID;
+                        prim.ID = FullID;
+                        prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
+
                         // PCode
                         PCode pcode = (PCode)block.Data[i++];
                         switch (pcode)
                         {
                             case PCode.Prim:
-                                #region Prim
+                                #region Decode block and update Prim
                                 // State
                                 prim.data.State = (uint)block.Data[i++];
                                 // CRC
@@ -1479,6 +1540,9 @@ namespace libsecondlife
                                     prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
                                 }
 
+                                #endregion
+
+                                #region Fire Events
                                 // Fire the appropriate callback
                                 if ((flags & CompressedFlags.HasNameValues) != 0)
                                 {
@@ -1493,9 +1557,8 @@ namespace libsecondlife
                                 {
                                     FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                                 }
-
+                                #endregion
                                 break;
-                                #endregion Prim
                             case PCode.Grass:
                             case PCode.Tree:
                             case PCode.NewTree:
@@ -1504,6 +1567,8 @@ namespace libsecondlife
                                     ", implement this!");
                                 break;
                         }
+
+                        llObjectUpdated(simulator, prim);
                     }
                     catch (System.IndexOutOfRangeException e)
                     {
@@ -1704,6 +1769,34 @@ namespace libsecondlife
                 try { OnObjectUpdated(simulator, update, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
+        }
+
+        #endregion
+
+
+        #region Subclass Indirection
+
+
+        /// <summary>
+        /// Primitive Factory, this allows a subclass to lookup a copy of the Primitive
+        /// and return it for updating, rather then always creating a new Primitive
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="LocalID"></param>
+        /// <param name="UUID"></param>
+        /// <returns></returns>
+        virtual protected Primitive GetPrimitive(Simulator simulator, uint LocalID, LLUUID UUID)
+        {
+            return new Primitive();
+        }
+
+        /// <summary>
+        /// Used to flag to a subclass that an LLObject was updated/created
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="obj"></param>
+        virtual protected void llObjectUpdated(Simulator simulator, LLObject obj)
+        {
         }
 
         #endregion
