@@ -173,6 +173,8 @@ namespace libsecondlife
             byte[] respBuf = null;
             byte[] data = LLSD.LLSDSerialize(req);
 
+        Start:
+
             try
             {
                 WebRequest wreq = WebRequest.Create(uri);
@@ -189,10 +191,14 @@ namespace libsecondlife
                 reqStream.Close();
                 wresp.Close();
             }
-            catch (Exception e)
+            catch (WebException e)
             {
-                Client.Log(e.Message, Helpers.LogLevel.Warning);
-                return null;
+                // We seem to get HTTP errors fairly commonly from the CAPS servers
+                Client.DebugLog(e.Message);
+                if (Client.Network.Connected && e.Status == WebExceptionStatus.ProtocolError)
+                    goto Start;
+                else
+                    return null;
             }
 
             if (respBuf != null) return LLSD.LLSDDeserialize(respBuf);

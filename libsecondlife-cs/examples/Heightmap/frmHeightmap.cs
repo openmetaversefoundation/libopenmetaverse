@@ -60,7 +60,7 @@ namespace Heightmap
             Dictionary<string, object> loginvals = Client.Network.DefaultLoginValues(FirstName, LastName, Password,
                 "Heightmap", "jhurliman@wsu.edu");
 
-            if (!Client.Network.Login(loginvals, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
+            if (!Client.Network.Login(loginvals)) //, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginError);
                 Console.ReadKey();
@@ -112,7 +112,7 @@ namespace Heightmap
                 for (int xp = 0; xp < 16; xp++)
                 {
                     float height = data[yp * 16 + xp];
-                    int colorVal = Helpers.FloatToByte(height, 0.0f, 30.0f);
+                    int colorVal = Helpers.FloatToByte(height, 0.0f, 60.0f);
                     int lesserVal = (int)((float)colorVal * 0.75f);
                     Color color;
 
