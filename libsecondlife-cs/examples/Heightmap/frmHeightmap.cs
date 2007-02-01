@@ -7,14 +7,21 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 using libsecondlife;
+using libsecondlife.Packets;
 
 namespace Heightmap
 {
     public partial class frmHeightmap : Form
     {
         private SecondLife Client = new SecondLife();
-        private System.Windows.Forms.PictureBox[,] Boxes = new System.Windows.Forms.PictureBox[16, 16];
+        private PictureBox[,] Boxes = new PictureBox[16, 16];
+        private System.Timers.Timer UpdateTimer = new System.Timers.Timer(500);
         private string FirstName, LastName, Password;
+
+        LLVector3 center = new LLVector3(128, 128, 40);
+        LLVector3 up = new LLVector3(0, 0, 0.9999f);
+        LLVector3 forward = new LLVector3(0, 0.9999f, 0);
+        LLVector3 left = new LLVector3(0.9999f, 0, 0);
 
         public frmHeightmap(string firstName, string lastName, string password)
         {
@@ -53,13 +60,35 @@ namespace Heightmap
             Dictionary<string, object> loginvals = Client.Network.DefaultLoginValues(FirstName, LastName, Password,
                 "Heightmap", "jhurliman@wsu.edu");
 
-            if (!Client.Network.Login(loginvals)) //, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
+            if (!Client.Network.Login(loginvals, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginError);
                 Console.ReadKey();
                 this.Close();
                 return;
             }
+            else
+            {
+                UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
+                UpdateTimer.Start();
+
+                // Crank up the terrain throttle
+                Client.Throttle.Land = 999999.0f;
+                Client.Throttle.Set();
+            }
+        }
+
+        void UpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            forward.Y += 0.2f;
+            left.X += 0.2f;
+
+            if (forward.Y >= 1.0f) forward.Y = 0.0f;
+            if (left.X >= 1.0f) left.X = 0.0f;
+
+            // Spin our camera in circles at the center of the sim to load all the terrain
+            Client.Self.UpdateCamera(MainAvatar.AgentUpdateFlags.NONE, center, forward, left, up,
+                LLQuaternion.Identity, LLQuaternion.Identity, 384.0f, false);
         }
 
         void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)
@@ -83,12 +112,25 @@ namespace Heightmap
                 for (int xp = 0; xp < 16; xp++)
                 {
                     float height = data[yp * 16 + xp];
-                    int color = Helpers.FloatToByte(height, 0.0f, 40.0f);
-                    patch.SetPixel(xp, yp, Color.FromArgb(color, color, color));
+                    int colorVal = Helpers.FloatToByte(height, 0.0f, 30.0f);
+                    int lesserVal = (int)((float)colorVal * 0.75f);
+                    Color color;
+
+                    if (height >= simulator.Region.WaterHeight)
+                        color = Color.FromArgb(lesserVal, colorVal, lesserVal);
+                    else
+                        color = Color.FromArgb(lesserVal, lesserVal, colorVal);
+
+                    patch.SetPixel(xp, yp, color);
                 }
             }
 
             Boxes[x, y].Image = (Image)patch;
+        }
+
+        private void frmHeightmap_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Client.Network.Logout();
         }
     }
 }
