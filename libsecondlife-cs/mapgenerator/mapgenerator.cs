@@ -79,8 +79,8 @@ namespace mapgenerator
                 writer.WriteLine("                    if (value == null) { _" + 
                     field.Name.ToLower() + " = null; return; }");
                 writer.WriteLine("                    if (value.Length > " + 
-                    ((field.Count == 1) ? "255" : "1024") + ") { throw new OverflowException(" + 
-                    "\"Value exceeds " + ((field.Count == 1) ? "255" : "1024") + " characters\"); }");
+                    ((field.Count == 1) ? "255" : "1500") + ") { throw new OverflowException(" + 
+                    "\"Value exceeds " + ((field.Count == 1) ? "255" : "1500") + " characters\"); }");
                 writer.WriteLine("                    else { _" + field.Name.ToLower() + 
                     " = new byte[value.Length]; Array.Copy(value, _" + 
                     field.Name.ToLower() + ", value.Length); }");
@@ -128,8 +128,6 @@ namespace mapgenerator
                         " = (ushort)(bytes[i++] + (bytes[i++] << 8));");
                     break;
                 case FieldType.LLQuaternion:
-                    //writer.WriteLine("                    " + field.Name + 
-                    //    " = new LLQuaternion(bytes, i); i += 16;");
                     writer.WriteLine("                    " + field.Name +
                         " = new LLQuaternion(bytes, i, true); i += 12;");
                     break;

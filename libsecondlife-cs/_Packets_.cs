@@ -6296,7 +6296,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
                 }
             }
@@ -6564,7 +6564,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
                 }
             }
@@ -9133,7 +9133,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _subject = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _subject = new byte[value.Length]; Array.Copy(value, _subject, value.Length); }
                 }
             }
@@ -9146,7 +9146,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _fromname = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _fromname = new byte[value.Length]; Array.Copy(value, _fromname, value.Length); }
                 }
             }
@@ -10355,7 +10355,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _seedcapability = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _seedcapability = new byte[value.Length]; Array.Copy(value, _seedcapability, value.Length); }
                 }
             }
@@ -12277,7 +12277,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
                 }
             }
@@ -13006,7 +13006,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
                 }
             }
@@ -15036,7 +15036,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
                 }
             }
@@ -22108,7 +22108,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _details = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _details = new byte[value.Length]; Array.Copy(value, _details, value.Length); }
                 }
             }
@@ -22961,7 +22961,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
                 }
             }
@@ -24667,7 +24667,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _params = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _params = new byte[value.Length]; Array.Copy(value, _params, value.Length); }
                 }
             }
@@ -24807,7 +24807,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _params = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _params = new byte[value.Length]; Array.Copy(value, _params, value.Length); }
                 }
             }
@@ -25549,7 +25549,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
                 }
             }
@@ -26301,7 +26301,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _reason = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _reason = new byte[value.Length]; Array.Copy(value, _reason, value.Length); }
                 }
             }
@@ -26529,7 +26529,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _reason = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _reason = new byte[value.Length]; Array.Copy(value, _reason, value.Length); }
                 }
             }
@@ -27075,7 +27075,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _abouttext = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _abouttext = new byte[value.Length]; Array.Copy(value, _abouttext, value.Length); }
                 }
             }
@@ -27776,7 +27776,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _abouttext = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _abouttext = new byte[value.Length]; Array.Copy(value, _abouttext, value.Length); }
                 }
             }
@@ -28451,7 +28451,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _notes = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _notes = new byte[value.Length]; Array.Copy(value, _notes, value.Length); }
                 }
             }
@@ -28616,7 +28616,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _notes = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _notes = new byte[value.Length]; Array.Copy(value, _notes, value.Length); }
                 }
             }
@@ -29163,7 +29163,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
                 }
             }
@@ -30137,7 +30137,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
                 }
             }
@@ -30390,7 +30390,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _desc = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
                 }
             }
@@ -31174,7 +31174,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
                 }
             }
@@ -32161,7 +32161,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -39030,7 +39030,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _message = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
                 }
             }
@@ -39044,7 +39044,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _binarybucket = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _binarybucket = new byte[value.Length]; Array.Copy(value, _binarybucket, value.Length); }
                 }
             }
@@ -53859,7 +53859,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _assetdata = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _assetdata = new byte[value.Length]; Array.Copy(value, _assetdata, value.Length); }
                 }
             }
@@ -54477,7 +54477,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _charter = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _charter = new byte[value.Length]; Array.Copy(value, _charter, value.Length); }
                 }
             }
@@ -54858,7 +54858,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _charter = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _charter = new byte[value.Length]; Array.Copy(value, _charter, value.Length); }
                 }
             }
@@ -56583,7 +56583,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _charter = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _charter = new byte[value.Length]; Array.Copy(value, _charter, value.Length); }
                 }
             }
@@ -58971,7 +58971,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _proposaltext = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _proposaltext = new byte[value.Length]; Array.Copy(value, _proposaltext, value.Length); }
                 }
             }
@@ -64944,7 +64944,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _email = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _email = new byte[value.Length]; Array.Copy(value, _email, value.Length); }
                 }
             }
@@ -67212,7 +67212,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _msg = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _msg = new byte[value.Length]; Array.Copy(value, _msg, value.Length); }
                 }
             }
@@ -69797,7 +69797,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _seedcapability = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _seedcapability = new byte[value.Length]; Array.Copy(value, _seedcapability, value.Length); }
                 }
             }
@@ -72726,7 +72726,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -72891,7 +72891,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -73050,7 +73050,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -73201,7 +73201,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -73251,7 +73251,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _namevalue = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _namevalue = new byte[value.Length]; Array.Copy(value, _namevalue, value.Length); }
                 }
             }
@@ -73290,7 +73290,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
                 }
             }
@@ -73677,7 +73677,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -74059,7 +74059,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
                 }
             }
@@ -74476,7 +74476,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -74612,7 +74612,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _data = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
                 }
             }
@@ -75435,7 +75435,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _bitmap = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _bitmap = new byte[value.Length]; Array.Copy(value, _bitmap, value.Length); }
                 }
             }
@@ -75981,7 +75981,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _agenttextures = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _agenttextures = new byte[value.Length]; Array.Copy(value, _agenttextures, value.Length); }
                 }
             }
@@ -76217,7 +76217,7 @@ namespace libsecondlife.Packets
                 set
                 {
                     if (value == null) { _nvpairs = null; return; }
-                    if (value.Length > 1024) { throw new OverflowException("Value exceeds 1024 characters"); }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
                     else { _nvpairs = new byte[value.Length]; Array.Copy(value, _nvpairs, value.Length); }
                 }
             }
