@@ -239,21 +239,25 @@ namespace libsecondlife
         /// <summary>Unknown</summary>
         public byte[] GenericData;
         /// <summary></summary>
-        public LLVector3 Position = LLVector3.Zero;
+        public LLVector3 Position;
         /// <summary></summary>
-        public LLVector3 Scale = LLVector3.Zero;
+        public LLVector3 Scale;
         /// <summary></summary>
         public LLQuaternion Rotation = LLQuaternion.Identity;
-
-        public LLVector3 Velocity;
-        public LLVector3 AngularVelocity;
-        public LLVector3 Acceleration;
-        public LLVector4 CollisionPlane;
-
         /// <summary></summary>
-        public TextureEntry Textures = new TextureEntry();
+        public LLVector3 Velocity;
+        /// <summary></summary>
+        public LLVector3 AngularVelocity;
+        /// <summary></summary>
+        public LLVector3 Acceleration;
+        /// <summary></summary>
+        public LLVector4 CollisionPlane;
+        /// <summary></summary>
+        public TextureEntry Textures;
         /// <summary></summary>
         public ObjectPropertiesFamily PropertiesFamily;
+        /// <summary></summary>
+        public Dictionary<string, NameValue> NameValues = new Dictionary<string, NameValue>();
 
         #endregion Public Members
 

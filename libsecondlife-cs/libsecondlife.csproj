@@ -145,6 +145,7 @@
     <Compile Include="JSON\JSONTokener.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="NameValue.cs" />
     <Compile Include="NetworkManager.cs">
       <SubType>Code</SubType>
     </Compile>

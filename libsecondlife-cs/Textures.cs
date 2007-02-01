@@ -370,7 +370,10 @@ namespace libsecondlife
                     }
                 }
 
-                binWriter.Write(DefaultTexture.TextureID.Data);
+                if (DefaultTexture.TextureID != null)
+                    binWriter.Write(DefaultTexture.TextureID.Data);
+                else
+                    binWriter.Write(LLUUID.Zero.Data);
                 foreach (KeyValuePair<LLUUID, uint> kv in TextureIDs)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));

@@ -1089,7 +1089,13 @@ namespace libsecondlife
                                 continue;
                             }
 
-                            prim.NameValue = nameValue;
+                            // Parse the name values
+                            string[] lines = nameValue.Split(new char[] { '\n' });
+                            for (int i = 0; i < lines.Length; i++)
+                            {
+                                NameValue nv = new NameValue(lines[i]);
+                                prim.NameValues.Add(nv.Name, nv);
+                            }
 
                             prim.LocalID = block.ID;
                             prim.ID = block.FullID;
@@ -1139,8 +1145,7 @@ namespace libsecondlife
                             // Used to notify subclasses that prim was updated.
                             llObjectUpdated(simulator, prim);
 
-
-                            if (prim.NameValue.StartsWith("AttachItemID"))
+                            if (prim.NameValues.ContainsKey("AttachItemID"))
                             {
                                 FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             }
@@ -1213,12 +1218,7 @@ namespace libsecondlife
                                 // Unknown
                                 avatar.GenericData = block.Data;
 
-                                // TODO: Replace this
-                                ParseAvName(Helpers.FieldToString(block.NameValue), ref FirstName, ref LastName, ref GroupName);
-
-                                // Basic vitals
-                                avatar.Name = FirstName + " " + LastName;
-                                avatar.GroupName = GroupName;
+                                // Set this avatar online and in a region
                                 avatar.Online = true;
                                 avatar.CurrentRegion = simulator.Region;
 
@@ -1438,7 +1438,6 @@ namespace libsecondlife
                                     string text = String.Empty;
                                     while (block.Data[i] != 0)
                                     {
-                                        // TODO: Make this UTF8 compliant?
                                         text += (char)block.Data[i];
                                         i++;
                                     }
@@ -1490,15 +1489,18 @@ namespace libsecondlife
                                     string text = String.Empty;
                                     while (block.Data[i] != 0)
                                     {
-                                        // TODO: Make UTF-8 compliant?
                                         text += (char)block.Data[i];
                                         i++;
                                     }
                                     i++;
 
-                                    // FIXME: Parse the NameValue pairs
-
-                                    prim.NameValue = text;
+                                    // Parse the name values
+                                    string[] lines = text.Split(new char[] { '\n' });
+                                    for (int j = 0; j < lines.Length; j++)
+                                    {
+                                        NameValue nv = new NameValue(lines[j]);
+                                        prim.NameValues.Add(nv.Name, nv);
+                                    }
                                 }
 
                                 if ((flags & CompressedFlags.ScratchPad) != 0)
@@ -1660,33 +1662,6 @@ namespace libsecondlife
 		{
 			s.Dilation = (float) dilation / 65535;
 		}
-
-        protected void ParseAvName(string name, ref string firstName, ref string lastName, ref string groupName)
-        {
-            // FIXME: This needs to be reworked completely. It fails on name strings that don't contain the 
-            // most common attributes which is all we handle right now
-            string[] lines = name.Split('\n');
-
-            foreach (string line in lines)
-            {
-                if (line.Substring(0, 19) == "Title STRING RW SV ")
-                {
-                    groupName = line.Substring(19);
-                }
-                else if (line.Substring(0, 23) == "FirstName STRING RW SV ")
-                {
-                    firstName = line.Substring(23);
-                }
-                else if (line.Substring(0, 22) == "LastName STRING RW SV ")
-                {
-                    lastName = line.Substring(22);
-                }
-                else
-                {
-                    Client.Log("Unhandled line in an avatar name: " + line, Helpers.LogLevel.Warning);
-                }
-            }
-        }
 
         /// <summary>
         /// Takes a quantized 16-bit value from a byte array and its range and returns 

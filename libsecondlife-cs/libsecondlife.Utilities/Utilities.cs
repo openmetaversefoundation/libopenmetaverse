@@ -378,7 +378,8 @@ namespace libsecondlife.Utilities
                     if (!avatars.ContainsKey(kvp.Key) || avatars[kvp.Key] == null)
                         avatars[kvp.Key] = new Avatar();
 
-                    avatars[kvp.Key].Name = kvp.Value;
+                    // FIXME:
+                    //avatars[kvp.Key].Name = kvp.Value;
 
                     if (NameLookupEvents.ContainsKey(kvp.Key))
                         NameLookupEvents[kvp.Key].Set();

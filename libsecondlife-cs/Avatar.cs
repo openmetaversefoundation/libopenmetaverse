@@ -117,10 +117,6 @@ namespace libsecondlife
 
         #region Public Members
 
-        /// <summary>Full name</summary>
-        public string Name = String.Empty;
-        /// <summary>Active group</summary>
-        public string GroupName = String.Empty;
         /// <summary>Groups that this avatar is a member of</summary>
         public List<LLUUID> Groups = new List<LLUUID>();
         /// <summary>Online status</summary>
@@ -138,6 +134,30 @@ namespace libsecondlife
 
         #endregion Public Members
 
+
+        /// <summary>Full name</summary>
+        public string Name
+        {
+            get
+            {
+                if (NameValues.ContainsKey("FirstName") && NameValues.ContainsKey("LastName"))
+                    return (string)NameValues["FirstName"].Value + " " + (string)NameValues["LastName"].Value;
+                else
+                    return String.Empty;
+            }
+        }
+
+        /// <summary>Active group</summary>
+        public string GroupName
+        {
+            get
+            {
+                if (NameValues.ContainsKey("Title"))
+                    return (string)NameValues["Title"].Value;
+                else
+                    return String.Empty;
+            }
+        }
 
         /// <summary>Gets the local ID of the prim the avatar is sitting on,
         /// zero if the avatar is not currently sitting</summary>

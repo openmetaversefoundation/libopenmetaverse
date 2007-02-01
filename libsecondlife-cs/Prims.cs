@@ -238,8 +238,8 @@ namespace libsecondlife
         #endregion Subclasses
 
 
-        /// <summary></summary>
-        public string NameValue = String.Empty;
+        #region Public Members
+
         /// <summary></summary>
         public TextureAnimation TextureAnim = new TextureAnimation();
         /// <summary></summary>
@@ -266,9 +266,15 @@ namespace libsecondlife
         public LLColor TextColor;
         /// <summary></summary>
         public string MediaURL;
+        /// <summary></summary>
         public JointType Joint;
+        /// <summary></summary>
         public LLVector3 JointPivot;
+        /// <summary></summary>
         public LLVector3 JointAxisOrAnchor;
+
+        #endregion Public Members
+
 
         /// <summary>
         /// Default constructor
