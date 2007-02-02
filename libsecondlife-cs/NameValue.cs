@@ -105,7 +105,6 @@ namespace libsecondlife
 
         private static readonly string[] TypeStrings = new string[]
         {
-            "NULL",
             "STRING",
             "F32",
             "S32",
@@ -117,14 +116,12 @@ namespace libsecondlife
         };
         private static readonly string[] ClassStrings = new string[]
         {
-            "NULL",
             "R",    // Read-only
             "RW",   // Read-write
             "CB"    // Callback
         };
         private static readonly string[] SendtoStrings = new string[]
         {
-            "NULL",
             "S",    // Sim
             "DS",   // Data Sim
             "SV",   // Sim Viewer

@@ -244,8 +244,8 @@ namespace libsecondlife
             HasSound = 0x10,
             /// <summary>Whether the object is attached to a root object or not</summary>
             HasParent = 0x20,
-            /// <summary>Unknown</summary>
-            Unknown = 0x40,
+            /// <summary>Whether the object has texture animation settings</summary>
+            TextureAnimation = 0x40,
             /// <summary>Whether the object has an angular velocity</summary>
             HasAngularVelocity = 0x80,
             /// <summary>Whether the object has a name value pairs string</summary>
@@ -925,9 +925,23 @@ namespace libsecondlife
                     LLVector3 acceleration;
                     LLQuaternion rotation;
                     LLVector3 angularVelocity;
+                    Dictionary<string, NameValue> nameValues = new Dictionary<string, NameValue>();
 
-                    // TODO: Parse NameValue here
+                    // Parse the name values
                     string nameValue = Helpers.FieldToString(block.NameValue);
+                    if (nameValue.Length > 0)
+                    {
+                        string[] lines = nameValue.Split(new char[] { '\n' });
+                        for (int i = 0; i < lines.Length; i++)
+                        {
+                            if (lines[i].Length > 0)
+                            {
+                                NameValue nv = new NameValue(lines[i]);
+                                if (!nameValues.ContainsKey(nv.Name))
+                                    nameValues.Add(nv.Name, nv);
+                            }
+                        }
+                    }
 
                     #region Decode Object (primitive) parameters
                     LLObject.ObjectData data = new LLObject.ObjectData();
@@ -1069,7 +1083,7 @@ namespace libsecondlife
 
                     // Unknown
                     if (block.Data.Length != 0)
-                        Client.DebugLog("Got an ObjectUpdate block with Data length " + block.Data.Length);
+                        Client.DebugLog("Got an ObjectUpdate block with generic data length " + block.Data.Length);
 
                     // Determine the object type and create the appropriate class
                     byte pcode = block.PCode;
@@ -1085,18 +1099,11 @@ namespace libsecondlife
 
                             if ((prim.Flags & LLObject.ObjectFlags.ZlibCompressed) != 0)
                             {
-                                Client.Log("Got a ZlibCompressed ObjectUpdate, implement me!", Helpers.LogLevel.Info);
+                                Client.Log("Got a ZlibCompressed ObjectUpdate, implement me!", Helpers.LogLevel.Warning);
                                 continue;
                             }
 
-                            // Parse the name values
-                            string[] lines = nameValue.Split(new char[] { '\n' });
-                            for (int i = 0; i < lines.Length; i++)
-                            {
-                                NameValue nv = new NameValue(lines[i]);
-                                prim.NameValues.Add(nv.Name, nv);
-                            }
-
+                            prim.NameValues = nameValues;
                             prim.LocalID = block.ID;
                             prim.ID = block.FullID;
                             prim.ParentID = block.ParentID;
@@ -1146,17 +1153,11 @@ namespace libsecondlife
                             llObjectUpdated(simulator, prim);
 
                             if (prim.NameValues.ContainsKey("AttachItemID"))
-                            {
                                 FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
-                            else if (block.PCode == (byte)PCode.Tree || block.PCode == (byte)PCode.Grass)
-                            {
+                            else if (block.PCode == (byte)PCode.Tree || block.PCode == (byte)PCode.Grass || block.PCode == (byte)PCode.NewTree)
                                 FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
-                            else 
-                            {
+                            else
                                 FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
 
                             break;
                         case (byte)PCode.Avatar:
@@ -1189,41 +1190,33 @@ namespace libsecondlife
                                 }
                             }
 
-                            if ( AlwaysDecode || (OnNewAvatar != null))
+                            if (AlwaysDecode || (OnNewAvatar != null))
                             {
                                 Avatar avatar = GetAvatar(simulator, block.ID, block.FullID);
 
                                 #region Update Avatar with decoded data
+
                                 avatar.ID = block.FullID;
                                 avatar.LocalID = block.ID;
-
-                                // TODO: This will probably change with the NameValue parsing
-                                string FirstName = String.Empty;
-                                string LastName = String.Empty;
-                                string GroupName = String.Empty;
-
-                                // Packed parameters
                                 avatar.CollisionPlane = collisionPlane;
                                 avatar.Position = position;
                                 avatar.Velocity = velocity;
                                 avatar.Acceleration = acceleration;
                                 avatar.Rotation = rotation;
                                 avatar.AngularVelocity = angularVelocity;
+                                avatar.NameValues = nameValues;
+                                avatar.data = data;
+                                avatar.GenericData = block.Data; // Unknown
 
                                 SetAvatarSittingOn(avatar, block.ParentID);
-
-                                // Object parameters
-                                avatar.data = data;
-
-                                // Unknown
-                                avatar.GenericData = block.Data;
 
                                 // Set this avatar online and in a region
                                 avatar.Online = true;
                                 avatar.CurrentRegion = simulator.Region;
 
-                                // Texutres
+                                // Textures
                                 avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
+
                                 #endregion
 
                                 FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
@@ -1407,16 +1400,14 @@ namespace libsecondlife
                                 CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
                                 i += 4;
 
-                                if ((flags & CompressedFlags.Tree) != 0)
+                                // Angular velocity
+                                if ((flags & CompressedFlags.HasAngularVelocity) != 0)
                                 {
-                                    // FIXME: Decode the tree data
-                                    byte Unknown1 = block.Data[i++];
-                                    byte Unknown2 = block.Data[i++];
-
-                                    Client.DebugLog("Compressed object with Tree flag set: " + Environment.NewLine +
-                                        "Unknown byte 1: " + Unknown1 + Environment.NewLine + "Unknown byte 2: " + Unknown2);
+                                    prim.AngularVelocity = new LLVector3(block.Data, i);
+                                    i += 12;
                                 }
 
+                                // Parent ID
                                 if ((flags & CompressedFlags.HasParent) != 0)
                                 {
                                     prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
@@ -1427,12 +1418,23 @@ namespace libsecondlife
                                     prim.ParentID = 0;
                                 }
 
-                                if ((flags & CompressedFlags.HasAngularVelocity) != 0)
+                                // Tree data
+                                if ((flags & CompressedFlags.Tree) != 0)
                                 {
-                                    prim.AngularVelocity = new LLVector3(block.Data, i);
-                                    i += 12;
+                                    // FIXME: Decode the tree data in to an enum and do something with it
+                                    byte treeData = block.Data[i++];
+                                    Client.DebugLog("Compressed object with Tree flag set, TreeData: " + treeData);
                                 }
-
+                                // Scratch pad
+                                else if ((flags & CompressedFlags.ScratchPad) != 0)
+                                {
+                                    int size = block.Data[i++];
+                                    i += size;
+                                    Client.Log("Compressed object with ScratchPad flag set, Size: " + size,
+                                        Helpers.LogLevel.Warning);
+                                }
+                                
+                                // Floating text
                                 if ((flags & CompressedFlags.HasText) != 0)
                                 {
                                     string text = String.Empty;
@@ -1455,12 +1457,28 @@ namespace libsecondlife
                                     prim.Text = String.Empty;
                                 }
 
+                                // Media URL
+                                if ((flags & CompressedFlags.MediaURL) != 0)
+                                {
+                                    string text = String.Empty;
+                                    while (block.Data[i] != 0)
+                                    {
+                                        text += (char)block.Data[i];
+                                        i++;
+                                    }
+                                    i++;
+
+                                    prim.MediaURL = text;
+                                }
+
+                                // Particle system
                                 if ((flags & CompressedFlags.HasParticles) != 0)
                                 {
                                     prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
                                     i += 86;
                                 }
 
+                                // Extra parameters
                                 i += prim.SetExtraParamsFromBytes(block.Data, i);
 
                                 //Sound data
@@ -1484,6 +1502,7 @@ namespace libsecondlife
                                     i += 4;
                                 }
 
+                                // Name values
                                 if ((flags & CompressedFlags.HasNameValues) != 0)
                                 {
                                     string text = String.Empty;
@@ -1495,28 +1514,19 @@ namespace libsecondlife
                                     i++;
 
                                     // Parse the name values
-                                    string[] lines = text.Split(new char[] { '\n' });
-                                    for (int j = 0; j < lines.Length; j++)
+                                    if (text.Length > 0)
                                     {
-                                        NameValue nv = new NameValue(lines[j]);
-                                        prim.NameValues.Add(nv.Name, nv);
+                                        string[] lines = text.Split(new char[] { '\n' });
+                                        for (int j = 0; j < lines.Length; j++)
+                                        {
+                                            if (lines[j].Length > 0)
+                                            {
+                                                NameValue nv = new NameValue(lines[j]);
+                                                if (!prim.NameValues.ContainsKey(nv.Name))
+                                                    prim.NameValues.Add(nv.Name, nv);
+                                            }
+                                        }
                                     }
-                                }
-
-                                if ((flags & CompressedFlags.ScratchPad) != 0)
-                                {
-                                    // TODO: What is this?
-                                    Client.DebugLog("Compressed object with ScratchPad flag set: " + Environment.NewLine +
-                                        "Flags: " + flags.ToString() + Environment.NewLine +
-                                        Helpers.FieldToString(block.Data));
-                                }
-
-                                if ((flags & CompressedFlags.Unknown) != 0)
-                                {
-                                    // TODO: Implement CompressedFlags.Unknown2
-                                    Client.DebugLog("Compressed object with Unknown flag set: " + Environment.NewLine +
-                                        "Flags: " + flags.ToString() + Environment.NewLine +
-                                        Helpers.FieldToString(block.Data));
                                 }
 
                                 prim.data.PathCurve = (uint)block.Data[i++];
@@ -1539,19 +1549,18 @@ namespace libsecondlife
                                 prim.data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
                                 prim.data.ProfileHollow = (uint)block.Data[i++];
 
+                                // TextureEntry
                                 int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
                                     (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
                                 prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
-
                                 i += textureEntryLength;
 
-                                // Assume everything else is texture animation data
-                                if (i < block.Data.Length)
+                                // Texture animation
+                                if ((flags & CompressedFlags.TextureAnimation) != 0)
                                 {
-                                    int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
+                                    //int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                                    //    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                                    i += 4;
                                     prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
                                 }
 
