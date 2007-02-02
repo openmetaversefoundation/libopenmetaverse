@@ -418,7 +418,7 @@ namespace libsecondlife
         /// the null terminator</returns>
         public static string FieldToString(byte[] bytes)
         {
-            return FieldToString(bytes, "");
+            return FieldToString(bytes, String.Empty);
         }
 
         /// <summary>
@@ -433,7 +433,10 @@ namespace libsecondlife
         /// the null terminator</returns>
         public static string FieldToString(byte[] bytes, string fieldName)
         {
-            string output = "";
+            // Check for a common case
+            if (bytes.Length == 0) return String.Empty;
+
+            StringBuilder output = new StringBuilder();
             bool printable = true;
 
             for (int i = 0; i < bytes.Length; ++i)
@@ -451,81 +454,46 @@ namespace libsecondlife
             {
                 if (fieldName.Length > 0)
                 {
-                    output += fieldName + ": ";
+                    output.Append(fieldName);
+                    output.Append(": ");
                 }
 
-                output += System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
+                if (bytes[bytes.Length - 1] == 0x00)
+                    output.Append(UTF8Encoding.UTF8.GetString(bytes, 0, bytes.Length - 1));
+                else
+                    output.Append(UTF8Encoding.UTF8.GetString(bytes));
             }
             else
             {
                 for (int i = 0; i < bytes.Length; i += 16)
                 {
-                    if (i != 0) { output += "\n"; }
-                    if (fieldName != "") { output += fieldName + ": "; }
+                    if (i != 0)
+                        output.Append(Environment.NewLine);
+                    if (fieldName.Length > 0)
+                    {
+                        output.Append(fieldName);
+                        output.Append(": ");
+                    }
 
                     for (int j = 0; j < 16; j++)
                     {
                         if ((i + j) < bytes.Length)
-                        {
-                            string s = String.Format("{0:X} ", bytes[i + j]);
-                            if (s.Length == 2)
-                            {
-                                s = "0" + s;
-                            }
-
-                            output += s;
-                        }
+                            output.Append(String.Format("{0:X2} ", bytes[i + j]));
                         else
-                        {
-                            output += "   ";
-                        }
+                            output.Append("   ");
                     }
 
                     for (int j = 0; j < 16 && (i + j) < bytes.Length; j++)
                     {
                         if (bytes[i + j] >= 0x20 && bytes[i + j] < 0x7E)
-                        {
-                            output += (char)bytes[i + j];
-                        }
+                            output.Append(bytes[i + j]);
                         else
-                        {
-                            output += ".";
-                        }
+                            output.Append(".");
                     }
                 }
             }
 
-            return output;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="filterChar"></param>
-        /// <returns></returns>
-        public static string FieldToFilteredString(byte[] bytes, char filterChar)
-        {
-            if ((int)filterChar > 255)
-            {
-                Console.WriteLine("FieldToFilteredString error - filterChar overflow");
-                return null;
-            }
-            string output = "";
-
-            for (int i = 0; i < bytes.Length; ++i)
-            {
-                // Check if there are any unprintable characters in the array
-                if ((bytes[i] < 0x20 || bytes[i] > 0x7E) && bytes[i] != 0x09
-                    && bytes[i] != 0x0D && bytes[i] != 0x0A && bytes[i] != 0x00)
-                {
-                    bytes[i] = (byte)filterChar;
-                }
-            }
-
-            output += System.Text.Encoding.UTF8.GetString(bytes).Replace("\0", "");
-
-            return output;
+            return output.ToString();
         }
 
         /// <summary>
@@ -538,43 +506,33 @@ namespace libsecondlife
         /// lines. Each line is prepended with the field name</returns>
         public static string FieldToHexString(byte[] bytes, string fieldName)
         {
-            string output = "";
+            StringBuilder output = new StringBuilder();
+
             for (int i = 0; i < bytes.Length; i += 16)
             {
-                if (i != 0) { output += "\n"; }
-                if (fieldName != "") { output += fieldName + ": "; }
+                if (i != 0)
+                    output.Append(Environment.NewLine);
+                if (fieldName.Length > 0)
+                    output.Append(": ");
 
                 for (int j = 0; j < 16; j++)
                 {
                     if ((i + j) < bytes.Length)
-                    {
-                        string s = String.Format("{0:X} ", bytes[i + j]);
-                        if (s.Length == 2)
-                        {
-                            s = "0" + s;
-                        }
-
-                        output += s;
-                    }
+                        output.Append(String.Format("{0:X2} ", bytes[i + j]));
                     else
-                    {
-                        output += "   ";
-                    }
+                        output.Append("   ");
                 }
 
                 for (int j = 0; j < 16 && (i + j) < bytes.Length; j++)
                 {
                     if (bytes[i + j] >= 0x20 && bytes[i + j] < 0x7E)
-                    {
-                        output += (char)bytes[i + j];
-                    }
+                        output.Append(bytes[i + j]);
                     else
-                    {
-                        output += ".";
-                    }
+                        output.Append(".");
                 }
             }
-            return output;
+
+            return output.ToString();
         }
 
         /// <summary>
@@ -659,18 +617,19 @@ namespace libsecondlife
         /// <summary>
         /// Converts a vector style rotation to a quaternion
         /// </summary>
-        /// <param name="axis">Axis rotation, such as 0,0,90 for 90 degrees to the right</param>
+        /// <param name="a">Axis rotation, such as 0,0,90 for 90 degrees to the right</param>
         /// <returns>A quaternion representing the axes of the supplied vector</returns>
-        public static LLQuaternion Axis2Rot(LLVector3 axis)
+        public static LLQuaternion Axis2Rot(LLVector3 a)
         {
-            LLVector3 a = axis;
             if (a.X > 180) a.X -= 360; if (a.Y > 180) a.Y -= 360; if (a.Z > 180) a.Z -= 360;
             if (a.X < -180) a.X += 360; if (a.Y < -180) a.Y += 360; if (a.Z < -180) a.Z += 360;
+
             LLQuaternion rot = LLQuaternion.Identity;
             rot.X = (float)(a.X * DEG_TO_RAD);
             rot.Y = (float)(a.Y * DEG_TO_RAD);
             rot.Z = (float)(a.Z * DEG_TO_RAD);
             if (a.Z > 180) rot.W = 0;
+
             return rot;
         }
 
@@ -761,15 +720,6 @@ namespace libsecondlife
                 Array.Copy(src, 0, dest, 0, 4);
                 zerolen = 4;
                 bodylen = srclen;
-
-                //if ((src[0] & MSG_APPENDED_ACKS) == 0)
-                //{
-                //    bodylen = srclen;
-                //}
-                //else
-                //{
-                //    bodylen = srclen - src[srclen - 1] * 4 - 1;
-                //}
 
                 for (i = zerolen; i < bodylen; i++)
                 {
