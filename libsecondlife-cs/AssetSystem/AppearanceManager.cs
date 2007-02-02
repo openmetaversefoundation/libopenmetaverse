@@ -37,7 +37,7 @@ namespace libsecondlife.AssetSystem
 
         protected uint SerialNum = 1;
 
-        protected ManualResetEvent AgentWearablesSignal = null;
+        protected ManualResetEvent AgentWearablesSignal = new ManualResetEvent(false);
 
         protected Dictionary<LLUUID, AssetWearable> WearableCache = new Dictionary<LLUUID, AssetWearable>();
         protected List<LLUUID> WearableAssetQueue = new List<LLUUID>();
@@ -101,7 +101,7 @@ namespace libsecondlife.AssetSystem
             GetAvatarAppearanceInfoFromWearableAssets();
 
             // Send updated AgentSetAppearance to the grid
-            SendAgentSetAppearance();
+            BeginAgentSendAppearance();
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace libsecondlife.AssetSystem
             GetAvatarAppearanceInfoFromWearableAssets();
 
             // Send updated AgentSetAppearance to the grid
-            SendAgentSetAppearance();
+            BeginAgentSendAppearance();
         }
 
         #endregion
@@ -190,7 +190,7 @@ namespace libsecondlife.AssetSystem
         /// <returns>The wearable info for what we're currently wearing</returns>
         protected AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()
         {
-            AgentWearablesSignal = new ManualResetEvent(false);
+            AgentWearablesSignal.Reset();
 
             AgentWearablesRequestPacket p = new AgentWearablesRequestPacket();
             p.AgentData.AgentID = Client.Network.AgentID;
@@ -320,7 +320,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         public void BeginAgentSendAppearance()
         {
-            AgentWearablesSignal = new ManualResetEvent(false);
+            AgentWearablesSignal.Reset();
 
             AgentWearablesRequestPacket p = new AgentWearablesRequestPacket();
             p.AgentData.AgentID = Client.Network.AgentID;
@@ -331,7 +331,8 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// Send an AgentSetAppearance packet to the server to update your appearance.
         /// </summary>
-        public void SendAgentSetAppearance()
+        
+        protected void SendAgentSetAppearance()
         {
             // Get latest appearance info
             if (AgentAppearanceParams.Count == 0)
@@ -452,6 +453,10 @@ namespace libsecondlife.AssetSystem
             
         }
 
+        /// <summary>
+        /// Called each time a wearable asset is done downloading
+        /// </summary>
+        /// <param name="request"></param>
         void AManager_TransferRequestCompletedEvent(AssetRequest request)
         {
             if( !(request is AssetRequestDownload) )
@@ -486,7 +491,9 @@ namespace libsecondlife.AssetSystem
 
                     if (WearableAssetQueue.Count == 0)
                     {
-                        SendAgentSetAppearance();
+                        // Now that all the wearable assets are done downloading
+                        // , we can send an appearance packet
+                        BeginAgentSendAppearance();
                     }
                 }
             }
