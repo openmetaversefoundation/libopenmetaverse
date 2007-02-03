@@ -90,7 +90,14 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="properties"></param>
-        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, LLObject.ObjectPropertiesFamily properties);
+        public delegate void ObjectPropertiesCallback(Simulator simulator, LLObject.ObjectProperties properties);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="properties"></param>
+        public delegate void ObjectPropertiesFamilyCallback(Simulator simulator, 
+            LLObject.ObjectPropertiesFamily properties);
         /// <summary>
         /// 
         /// </summary>
@@ -386,8 +393,14 @@ namespace libsecondlife
         /// </summary>
         public event KillObjectCallback OnObjectKilled;
         /// <summary>
-        /// Thie event will be raised when an object's properties are recieved
+        /// This event will be raised when an objects properties are received
         /// from the simulator
+        /// </summary>
+        public event ObjectPropertiesCallback OnObjectProperties;
+        /// <summary>
+        /// Thie event will be raised when an objects properties family 
+        /// information is recieved from the simulator. ObjectPropertiesFamily
+        /// is a subset of the fields found in ObjectProperties
         /// </summary>
         public event ObjectPropertiesFamilyCallback OnObjectPropertiesFamily;
 
@@ -400,7 +413,6 @@ namespace libsecondlife
         /// </summary>
         /// 
         public bool RequestAllObjects = false;
-
         /// <summary>
         /// Used to flag if Object updates should always be decoded, 
         /// even if no object event listenners/callbacks are registered.
@@ -770,6 +782,76 @@ namespace libsecondlife
         /// </summary>
         /// <param name="simulator"></param>
         /// <param name="localID"></param>
+        /// <param name="name"></param>
+        public void SetName(Simulator simulator, uint localID, string name)
+        {
+            SetNames(simulator, new uint[] { localID }, new string[] { name });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localIDs"></param>
+        /// <param name="names"></param>
+        public void SetNames(Simulator simulator, uint[] localIDs, string[] names)
+        {
+            ObjectNamePacket namePacket = new ObjectNamePacket();
+            namePacket.AgentData.AgentID = Client.Network.AgentID;
+            namePacket.AgentData.SessionID = Client.Network.SessionID;
+
+            namePacket.ObjectData = new ObjectNamePacket.ObjectDataBlock[localIDs.Length];
+
+            for (int i = 0; i < localIDs.Length; ++i)
+            {
+                namePacket.ObjectData[i] = new ObjectNamePacket.ObjectDataBlock();
+                namePacket.ObjectData[i].LocalID = localIDs[i];
+                namePacket.ObjectData[i].Name = Helpers.StringToField(names[i]);
+            }
+
+            Client.Network.SendPacket(namePacket, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="description"></param>
+        public void SetDescription(Simulator simulator, uint localID, string description)
+        {
+            SetDescriptions(simulator, new uint[] { localID }, new string[] { description });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localIDs"></param>
+        /// <param name="descriptions"></param>
+        public void SetDescriptions(Simulator simulator, uint[] localIDs, string[] descriptions)
+        {
+            ObjectDescriptionPacket descPacket = new ObjectDescriptionPacket();
+            descPacket.AgentData.AgentID = Client.Network.AgentID;
+            descPacket.AgentData.SessionID = Client.Network.SessionID;
+
+            descPacket.ObjectData = new ObjectDescriptionPacket.ObjectDataBlock[localIDs.Length];
+
+            for (int i = 0; i < localIDs.Length; ++i)
+            {
+                descPacket.ObjectData[i] = new ObjectDescriptionPacket.ObjectDataBlock();
+                descPacket.ObjectData[i].LocalID = localIDs[i];
+                descPacket.ObjectData[i].Description = Helpers.StringToField(descriptions[i]);
+            }
+
+            Client.Network.SendPacket(descPacket, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
         /// <param name="attachPoint"></param>
         /// <param name="rotation"></param>
         public void AttachObject(Simulator simulator, uint localID, AttachmentPoint attachPoint, LLQuaternion rotation)
@@ -873,13 +955,7 @@ namespace libsecondlife
         /// <param name="objectID"></param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID)
         {
-            RequestObjectPropertiesFamilyPacket properties = new RequestObjectPropertiesFamilyPacket();
-            properties.AgentData.AgentID = Client.Network.AgentID;
-            properties.AgentData.SessionID = Client.Network.SessionID;
-            properties.ObjectData.ObjectID = objectID;
-            properties.ObjectData.RequestFlags = 0;
-
-            Client.Network.SendPacket(properties, simulator);
+            RequestObjectPropertiesFamily(simulator, objectID, true);
         }
 
         /// <summary>
@@ -893,6 +969,8 @@ namespace libsecondlife
             properties.AgentData.AgentID = Client.Network.AgentID;
             properties.AgentData.SessionID = Client.Network.SessionID;
             properties.ObjectData.ObjectID = objectID;
+            // TODO: RequestFlags is typically only for bug report submissions, but we might be able to
+            // use it to pass an arbitrary uint back to the callback
             properties.ObjectData.RequestFlags = 0;
 
             properties.Header.Reliable = reliable;
@@ -1629,11 +1707,58 @@ namespace libsecondlife
             }
         }
 
+        protected void ObjectPropertiesHandler(Packet p, Simulator sim)
+        {
+            ObjectPropertiesPacket op = (ObjectPropertiesPacket)p;
+            ObjectPropertiesPacket.ObjectDataBlock[] datablocks = op.ObjectData;
+
+            for (int i = 0; i < datablocks.Length; ++i)
+            {
+                ObjectPropertiesPacket.ObjectDataBlock objectData = datablocks[i];
+                LLObject.ObjectProperties props = new LLObject.ObjectProperties();
+
+                props.AggregatePerms = objectData.AggregatePerms;
+                props.AggregatePermTextures = objectData.AggregatePermTextures;
+                props.AggregatePermTexturesOwner = objectData.AggregatePermTexturesOwner;
+                props.BaseMask = objectData.BaseMask;
+                props.Category = objectData.Category;
+                props.CreationDate = objectData.CreationDate;
+                props.CreatorID = objectData.CreatorID;
+                props.Description = Helpers.FieldToUTF8String(objectData.Description);
+                props.EveryoneMask = objectData.EveryoneMask;
+                props.FolderID = objectData.FolderID;
+                props.FromTaskID = objectData.FromTaskID;
+                props.GroupID = objectData.GroupID;
+                props.GroupMask = objectData.GroupMask;
+                props.InventorySerial = objectData.InventorySerial;
+                props.ItemID = objectData.ItemID;
+                props.LastOwnerID = objectData.LastOwnerID;
+                props.Name = Helpers.FieldToUTF8String(objectData.Name);
+                props.NextOwnerMask = objectData.NextOwnerMask;
+                props.ObjectID = objectData.ObjectID;
+                props.OwnerID = objectData.OwnerID;
+                props.OwnerMask = objectData.OwnerMask;
+                props.OwnershipCost = objectData.OwnershipCost;
+                props.SalePrice = objectData.SalePrice;
+                props.SaleType = objectData.SaleType;
+                props.SitName = Helpers.FieldToUTF8String(objectData.SitName);
+                props.TouchName = Helpers.FieldToUTF8String(objectData.TouchName);
+
+                int numTextures = objectData.TextureID.Length / 16;
+                props.TextureIDs = new LLUUID[numTextures];
+                for (int j = 0; j < numTextures; ++j)
+                    props.TextureIDs[j] = new LLUUID(objectData.TextureID, j * 16);
+
+                FireOnObjectProperties(sim, props);
+            }
+        }
+
         protected void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
         {
             ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
             LLObject.ObjectPropertiesFamily props = new LLObject.ObjectPropertiesFamily();
 
+            props.RequestFlags = (LLObject.ObjectPropertiesFamily.RequestFlagsType)op.ObjectData.RequestFlags;
             props.BaseMask = op.ObjectData.BaseMask;
             props.Category = op.ObjectData.Category;
             props.Description = Helpers.FieldToString(op.ObjectData.Description);
@@ -1695,6 +1820,15 @@ namespace libsecondlife
         #endregion
 
         #region Event Notification
+
+        protected void FireOnObjectProperties(Simulator sim, LLObject.ObjectProperties props)
+        {
+            if (OnObjectProperties != null)
+            {
+                try { OnObjectProperties(sim, props); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
 
         protected void FireOnObjectPropertiesFamily(Simulator sim, LLObject.ObjectPropertiesFamily props)
         {

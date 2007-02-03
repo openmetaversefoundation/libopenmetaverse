@@ -182,11 +182,82 @@ namespace libsecondlife
             public ObjectManager.PCode PCode;
         }
 
+        public struct ObjectProperties
+        {
+            /// <summary></summary>
+            public LLUUID ObjectID;
+            /// <summary></summary>
+            public LLUUID CreatorID;
+            /// <summary></summary>
+            public LLUUID OwnerID;
+            /// <summary></summary>
+            public LLUUID GroupID;
+            /// <summary></summary>
+            public ulong CreationDate;
+            /// <summary></summary>
+            public uint BaseMask;
+            /// <summary></summary>
+            public uint OwnerMask;
+            /// <summary></summary>
+            public uint GroupMask;
+            /// <summary></summary>
+            public uint EveryoneMask;
+            /// <summary></summary>
+            public uint NextOwnerMask;
+            /// <summary></summary>
+            public int OwnershipCost;
+            /// <summary></summary>
+            public byte SaleType;
+            /// <summary></summary>
+            public int SalePrice;
+            /// <summary></summary>
+            public byte AggregatePerms;
+            /// <summary></summary>
+            public byte AggregatePermTextures;
+            /// <summary></summary>
+            public byte AggregatePermTexturesOwner;
+            /// <summary></summary>
+            public uint Category;
+            /// <summary></summary>
+            public short InventorySerial;
+            /// <summary></summary>
+            public LLUUID ItemID;
+            /// <summary></summary>
+            public LLUUID FolderID;
+            /// <summary></summary>
+            public LLUUID FromTaskID;
+            /// <summary></summary>
+            public LLUUID LastOwnerID;
+            /// <summary></summary>
+            public string Name;
+            /// <summary></summary>
+            public string Description;
+            /// <summary></summary>
+            public string TouchName;
+            /// <summary></summary>
+            public string SitName;
+            /// <summary></summary>
+            public LLUUID[] TextureIDs;
+        }
+
         /// <summary>
         /// 
         /// </summary>
         public struct ObjectPropertiesFamily
         {
+            /// <summary>
+            /// 
+            /// </summary>
+            public enum RequestFlagsType
+            {
+                /// <summary></summary>
+                BugReportRequest = 1,
+                /// <summary></summary>
+                ComplaintReportRequest = 2
+            }
+
+            /// <summary></summary>
+            public RequestFlagsType RequestFlags;
             /// <summary></summary>
             public LLUUID ObjectID;
             /// <summary></summary>
@@ -268,6 +339,19 @@ namespace libsecondlife
 
         internal ObjectData data = new ObjectData();
 
+
+        public override bool Equals(object obj)
+        {
+            LLObject llobj = obj as LLObject;
+            if (llobj == null)
+                return false;
+            return ID.Equals(llobj.ID);
+        }
+
+        public override int GetHashCode()
+        {
+            return ID.GetHashCode();
+        }
 
         #region Static Methods
 
