@@ -406,6 +406,7 @@ namespace libsecondlife.AssetSystem
             // Queue download of wearables
             foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in AgentWearablesData)
             {
+
                 // Don't try to download if AssetID is zero
                 if (wdb.AssetID == LLUUID.Zero)
                 {
@@ -444,6 +445,7 @@ namespace libsecondlife.AssetSystem
                 }
 
                 WearableCache[wdb.AssetID] = wearableAsset;
+
                 WearableAssetQueue.Add(wdb.AssetID);
 
                 AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
@@ -466,6 +468,7 @@ namespace libsecondlife.AssetSystem
 
             AssetRequestDownload dlrequest = (AssetRequestDownload)request;
 
+
             // Remove from the download queue
             if (WearableAssetQueue.Contains(dlrequest.AssetID))
             {
@@ -477,7 +480,6 @@ namespace libsecondlife.AssetSystem
                 }
 
                 AssetWearable wearableAsset = WearableCache[dlrequest.AssetID];
-
                 wearableAsset.SetAssetData(dlrequest.GetAssetData());
 
                 if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
@@ -487,13 +489,15 @@ namespace libsecondlife.AssetSystem
                 else
                 {
                     UpdateAgentTextureEntryAndAppearanceParams(wearableAsset);
+
                     UpdateAgentTextureEntryOrder();
 
                     if (WearableAssetQueue.Count == 0)
                     {
+
                         // Now that all the wearable assets are done downloading
                         // , we can send an appearance packet
-                        BeginAgentSendAppearance();
+                        SendAgentSetAppearance();
                     }
                 }
             }
