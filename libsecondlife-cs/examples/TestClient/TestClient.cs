@@ -86,7 +86,7 @@ namespace libsecondlife.TestClient
             }
         }
 
-        private void RegisterCommand(Command command)
+        public void RegisterCommand(Command command)
         {
 			command.Client = this;
 			if (!Commands.ContainsKey(command.Name.ToLower()))
