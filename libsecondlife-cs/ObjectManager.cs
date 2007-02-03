@@ -925,7 +925,7 @@ namespace libsecondlife
                     LLVector3 acceleration;
                     LLQuaternion rotation;
                     LLVector3 angularVelocity;
-                    Dictionary<string, NameValue> nameValues = new Dictionary<string, NameValue>();
+                    SerializableDictionary<string, NameValue> nameValues = new SerializableDictionary<string, NameValue>();
 
                     // Parse the name values
                     string nameValue = Helpers.FieldToString(block.NameValue);

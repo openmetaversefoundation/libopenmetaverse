@@ -257,7 +257,7 @@ namespace libsecondlife
         /// <summary></summary>
         public ObjectPropertiesFamily PropertiesFamily;
         /// <summary></summary>
-        public Dictionary<string, NameValue> NameValues = new Dictionary<string, NameValue>();
+        public SerializableDictionary<string, NameValue> NameValues = new SerializableDictionary<string, NameValue>();
 
         #endregion Public Members
 
