@@ -182,6 +182,9 @@ namespace libsecondlife
             public ObjectManager.PCode PCode;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public struct ObjectProperties
         {
             /// <summary></summary>
@@ -333,8 +336,12 @@ namespace libsecondlife
         #endregion Public Members
 
 
+        #region Public Properties
+
         /// <summary></summary>
         public ObjectData Data { get { return data; } }
+
+        #endregion Public Properties
 
 
         internal ObjectData data = new ObjectData();

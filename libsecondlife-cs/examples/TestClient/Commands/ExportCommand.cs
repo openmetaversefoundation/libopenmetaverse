@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using System.Text;
 using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
@@ -10,14 +11,17 @@ namespace libsecondlife.TestClient
 {
     public class ExportCommand : Command
     {
-        ManualResetEvent GotPermissionsEvent = new ManualResetEvent(false);
+        AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
         LLObject.ObjectPropertiesFamily Properties;
         bool GotPermissions = false;
 
+        Dictionary<LLUUID, Primitive> PrimsWaiting = new Dictionary<LLUUID, Primitive>();
+        AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
+
         public ExportCommand(TestClient testClient)
         {
-            testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectProperties);
-
+            testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectPropertiesFamily);
+            testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
         }
@@ -68,7 +72,7 @@ namespace libsecondlife.TestClient
             {
                 // Check for export permission first
                 Client.Objects.RequestObjectPropertiesFamily(Client.Network.CurrentSim, id);
-                GotPermissionsEvent.WaitOne(5000, false);
+                GotPermissionsEvent.WaitOne(8000, false);
 
                 if (!GotPermissions)
                 {
@@ -77,7 +81,6 @@ namespace libsecondlife.TestClient
                 else 
                 {
                     GotPermissions = false;
-
                     if (Properties.OwnerID != Client.Network.AgentID)
                     {
                         // We need a MasterID field, those exports should be allowed as well
@@ -110,8 +113,16 @@ namespace libsecondlife.TestClient
 								}
 							}
 						}
-						//Serialize it!
+                        bool complete = RequestObjectProperties(prims, (int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+						
+                        //Serialize it!
 						Helpers.PrimListToXml(prims, writer);
+
+                        if (!complete) {
+                            Console.WriteLine("Warning: Unable to retrieve full properties for:");
+                            foreach (LLUUID uuid in PrimsWaiting.Keys)
+                                Console.WriteLine(uuid);
+                        }
 					}
 					finally
 					{
@@ -127,7 +138,6 @@ namespace libsecondlife.TestClient
                     }
                     return ret;
                 }
-
                 return "Exported " + count + " prims to " + file;
             }
             else
@@ -138,11 +148,48 @@ namespace libsecondlife.TestClient
             }
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectPropertiesFamily properties)
+        private bool RequestObjectProperties(List<Primitive> objects, int msPerRequest)
+        {
+            lock (PrimsWaiting)
+            {
+                PrimsWaiting.Clear();
+                ObjectSelectPacket select = new ObjectSelectPacket();
+                select.ObjectData = new ObjectSelectPacket.ObjectDataBlock[objects.Count];
+                for (int i = 0; i < objects.Count; ++i)
+                {
+                    select.ObjectData[i] = new ObjectSelectPacket.ObjectDataBlock();
+                    select.ObjectData[i].ObjectLocalID = objects[i].LocalID;
+                    PrimsWaiting.Add(objects[i].ID, objects[i]);
+                }
+                select.AgentData.AgentID = Client.Self.ID;
+                select.AgentData.SessionID = Client.Network.SessionID;
+                Client.Network.SendPacket(select); // this should cause the server to send us ObjectProperty packets
+            }
+            return AllPropertiesReceived.WaitOne(msPerRequest * objects.Count, false);
+        }
+
+        void Objects_OnObjectPropertiesFamily(Simulator simulator, LLObject.ObjectPropertiesFamily properties)
         {
             Properties = properties;
             GotPermissions = true;
             GotPermissionsEvent.Set();
+        }
+
+        void Objects_OnObjectProperties(Simulator simulator, LLObject.ObjectProperties properties)
+        {
+            lock (PrimsWaiting)
+            {
+                Primitive prim;
+                if (PrimsWaiting.TryGetValue(properties.ObjectID, out prim))
+                {
+                    // TODO: Should Properties and PropertiesFamily be members of LLObject?
+                    //prim.Properties = properties;
+                }
+                PrimsWaiting.Remove(properties.ObjectID);
+
+                if (PrimsWaiting.Count == 0)
+                    AllPropertiesReceived.Set();
+            }
         }
     }
 }
