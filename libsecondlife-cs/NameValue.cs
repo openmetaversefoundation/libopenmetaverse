@@ -32,6 +32,7 @@ namespace libsecondlife
     /// <summary>
     /// A Name Value pair with additional settings
     /// </summary>
+    [Serializable]
     public class NameValue
     {
         /// <summary>Type of the value</summary>
@@ -130,7 +131,14 @@ namespace libsecondlife
 
 
         /// <summary>
-        /// 
+        /// Default constructor
+        /// </summary>
+        public NameValue()
+        {
+        }
+
+        /// <summary>
+        /// Constructor that takes all the fields as parameters
         /// </summary>
         /// <param name="name"></param>
         /// <param name="valueType"></param>
@@ -147,7 +155,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Constructor that takes a single line from a NameValue field
         /// </summary>
         /// <param name="data"></param>
         public NameValue(string data)
