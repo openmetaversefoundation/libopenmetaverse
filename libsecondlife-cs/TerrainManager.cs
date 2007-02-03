@@ -385,8 +385,8 @@ namespace libsecondlife
 
         private float[] DecompressPatch(int[] patches, PatchHeader header, GroupHeader group)
         {
-            float[] block = new float[32 * 32];
-            float[] output = new float[32 * 32];
+            float[] block = new float[group.PatchSize * group.PatchSize];
+            float[] output = new float[group.PatchSize * group.PatchSize];
             int prequant = (header.QuantWBits >> 4) + 2;
             int quantize = 1 << prequant;
             float ooq = 1.0f / (float)quantize;
@@ -415,7 +415,7 @@ namespace libsecondlife
                 }
 
                 //IDCTPatchLarge(block);
-                Client.Log("Implement IDCTPatchLarge", Helpers.LogLevel.Info);
+                Client.Log("Implement IDCTPatchLarge", Helpers.LogLevel.Warning);
             }
 
             for (int j = 0; j < block.Length; j++)
