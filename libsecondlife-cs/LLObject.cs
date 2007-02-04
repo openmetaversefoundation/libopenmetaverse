@@ -329,6 +329,8 @@ namespace libsecondlife
         /// <summary></summary>
         public TextureEntry Textures;
         /// <summary></summary>
+        public ObjectProperties Properties;
+        /// <summary></summary>
         public ObjectPropertiesFamily PropertiesFamily;
         /// <summary></summary>
         public SerializableDictionary<string, NameValue> NameValues = new SerializableDictionary<string, NameValue>();

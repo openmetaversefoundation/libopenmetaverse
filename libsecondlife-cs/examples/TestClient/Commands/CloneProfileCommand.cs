@@ -8,7 +8,7 @@ namespace libsecondlife.TestClient
 {
     public class CloneProfileCommand : Command
     {
-        Avatar.Properties Properties;
+        Avatar.AvatarProperties Properties;
         Avatar.Interests Interests;
         List<LLUUID> Groups = new List<LLUUID>();
         bool ReceivedProperties = false;
@@ -75,7 +75,7 @@ namespace libsecondlife.TestClient
             return "Synchronized our profile to the profile of " + targetID.ToStringHyphenated();
         }
 
-        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.Properties properties)
+        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.AvatarProperties properties)
         {
             lock (ReceivedProfileEvent)
             {

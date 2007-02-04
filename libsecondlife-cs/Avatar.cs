@@ -66,7 +66,7 @@ namespace libsecondlife
         /// Avatar properties including about text, profile URL, image IDs and 
         /// publishing settings
         /// </summary>
-        public struct Properties
+        public struct AvatarProperties
         {
             /// <summary>Should this profile be published on the web</summary>
             public bool AllowPublish;
@@ -125,7 +125,7 @@ namespace libsecondlife
         public Statistics ProfileStatistics = new Statistics();
         /// <summary>Avatar properties including about text, profile URL, image IDs and 
         /// publishing settings</summary>
-        public Properties ProfileProperties = new Properties();
+        public AvatarProperties ProfileProperties = new AvatarProperties();
         /// <summary>Avatar interests including spoken languages, skills, and "want to"
         /// choices</summary>
         public Interests ProfileInterests = new Interests();

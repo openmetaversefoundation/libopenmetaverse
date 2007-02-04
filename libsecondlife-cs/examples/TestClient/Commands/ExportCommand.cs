@@ -182,8 +182,7 @@ namespace libsecondlife.TestClient
                 Primitive prim;
                 if (PrimsWaiting.TryGetValue(properties.ObjectID, out prim))
                 {
-                    // TODO: Should Properties and PropertiesFamily be members of LLObject?
-                    //prim.Properties = properties;
+                    prim.Properties = properties;
                 }
                 PrimsWaiting.Remove(properties.ObjectID);
 

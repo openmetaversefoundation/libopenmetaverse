@@ -65,7 +65,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="avatarID"></param>
         /// <param name="properties"></param>
-        public delegate void AvatarPropertiesCallback(LLUUID avatarID, Avatar.Properties properties);
+        public delegate void AvatarPropertiesCallback(LLUUID avatarID, Avatar.AvatarProperties properties);
         /// <summary>
         /// Triggered when an avatar group list is received (AvatarGroupsReply)
         /// </summary>
@@ -290,7 +290,7 @@ namespace libsecondlife
             if (OnAvatarProperties != null)
             {
                 AvatarPropertiesReplyPacket reply = (AvatarPropertiesReplyPacket)packet;
-                Avatar.Properties properties = new Avatar.Properties();
+                Avatar.AvatarProperties properties = new Avatar.AvatarProperties();
 
                 properties.ProfileImage = reply.PropertiesData.ImageID;
                 properties.FirstLifeImage = reply.PropertiesData.FLImageID;
