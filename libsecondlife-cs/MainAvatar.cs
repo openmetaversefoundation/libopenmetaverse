@@ -456,7 +456,7 @@ namespace libsecondlife
         /// publishing settings</summary>
         /// <remarks>If you change fields in this struct, the changes will not
         /// be reflected on the server until you call SetAvatarInformation</remarks>
-        public Avatar.Properties ProfileProperties = new Avatar.Properties();
+        public Avatar.AvatarProperties ProfileProperties = new Avatar.AvatarProperties();
         /// <summary>Avatar interests including spoken languages, skills, and "want to"
         /// choices</summary>
         /// <remarks>If you change fields in this struct, the changes will not
@@ -1615,9 +1615,8 @@ namespace libsecondlife
                     teleportMessage = "Failed to connect to the new sim after a teleport";
                     TeleportStat = TeleportStatus.Failed;
 
-                    // Re-enable the previous simulator
+                    // Re-connect to the previous simulator
                     Client.Network.CurrentSim = previousSim;
-                    // FIXME: How do we re-enable Caps?
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
                 }
