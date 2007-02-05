@@ -273,7 +273,7 @@ namespace libsecondlife.Utilities
         //    }
         //}
 
-        public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.Properties properties, 
+        public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.AvatarProperties properties, 
             out Avatar.Statistics statistics, out List<LLUUID> groups)
         {
             // Do a local lookup first
@@ -335,7 +335,7 @@ namespace libsecondlife.Utilities
             else
             {
                 interests = new Avatar.Interests();
-                properties = new Avatar.Properties();
+                properties = new Avatar.AvatarProperties();
                 statistics = new Avatar.Statistics();
                 groups = null;
 
@@ -401,7 +401,7 @@ namespace libsecondlife.Utilities
                 StatisticsLookupEvents[avatarID].Set();
         }
 
-        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.Properties properties)
+        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.AvatarProperties properties)
         {
             lock (avatars)
             {

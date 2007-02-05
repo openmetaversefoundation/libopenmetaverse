@@ -25,6 +25,9 @@
  */
 
 using System;
+using System.Text;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Threading;
 using libsecondlife;
@@ -33,31 +36,58 @@ using libsecondlife.Packets;
 
 namespace libsecondlife.Utilities.Appearance
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Wearable
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public enum WearableType : byte
         {
+            /// <summary></summary>
             Shape = 0,
+            /// <summary></summary>
             Skin,
+            /// <summary></summary>
             Hair,
+            /// <summary></summary>
             Eyes,
+            /// <summary></summary>
             Shirt,
+            /// <summary></summary>
             Pants,
+            /// <summary></summary>
             Shoes,
+            /// <summary></summary>
             Socks,
+            /// <summary></summary>
             Jacket,
+            /// <summary></summary>
             Gloves,
+            /// <summary></summary>
             Undershirt,
+            /// <summary></summary>
             Underpants,
+            /// <summary></summary>
             Skirt,
+            /// <summary></summary>
             Invalid = 255
         };
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum ForSale
         {
+            /// <summary>Not for sale</summary>
             Not = 0,
+            /// <summary>The original is for sale</summary>
             Original = 1,
+            /// <summary>Copies are for sale</summary>
             Copy = 2,
+            /// <summary>The contents of the object are for sale</summary>
             Contents = 3
         }
 
@@ -91,6 +121,10 @@ namespace libsecondlife.Utilities.Appearance
         };
 
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="client">Reference to the SecondLife client</param>
         public Wearable(SecondLife client)
         {
             Client = client;
@@ -283,36 +317,146 @@ namespace libsecondlife.Utilities.Appearance
 
         public string ExportAsset()
         {
-            string data = "LLWearable version 22\n";
-            data += Name + "\n\n";
-            data += "\tpermissions 0\n\t{\n";
-            data += "\t\tbase_mask\t" + Helpers.UIntToHexString((uint)BasePermissions) + "\n";
-            data += "\t\towner_mask\t" + Helpers.UIntToHexString((uint)OwnerPermissions) + "\n";
-            data += "\t\tgroup_mask\t" + Helpers.UIntToHexString((uint)GroupPermissions) + "\n";
-            data += "\t\teveryone_mask\t" + Helpers.UIntToHexString((uint)EveryonePermissions) + "\n";
-            data += "\t\tnext_owner_mask\t" + Helpers.UIntToHexString((uint)NextOwnerPermissions) + "\n";
-            data += "\t\tcreator_id\t" + Creator.ToStringHyphenated() + "\n";
-            data += "\t\towner_id\t" + Owner.ToStringHyphenated() + "\n";
-            data += "\t\tlast_owner_id\t" + LastOwner.ToStringHyphenated() + "\n";
-            data += "\t\tgroup_id\t" + Group.ToStringHyphenated() + "\n";
-            if (GroupOwned) data += "\t\tgroup_owned\t1\n";
-            data += "\t}\n";
-            data += "\tsale_info\t0\n";
-            data += "\t{\n";
-            data += "\t\tsale_type\t" + ForSaleNames[(int)Sale] + "\n";
-            data += "\t\tsale_price\t" + SalePrice + "\n";
-            data += "\t}\n";
-            data += "type " + (int)Type + "\n";
+            StringBuilder data = new StringBuilder("LLWearable version 22\n");
+            data.Append(Name); data.Append("\n\n");
+            data.Append("\tpermissions 0\n\t{\n");
+            data.Append("\t\tbase_mask\t"); data.Append(Helpers.UIntToHexString((uint)BasePermissions)); data.Append("\n");
+            data.Append("\t\towner_mask\t"); data.Append(Helpers.UIntToHexString((uint)OwnerPermissions)); data.Append("\n");
+            data.Append("\t\tgroup_mask\t"); data.Append(Helpers.UIntToHexString((uint)GroupPermissions)); data.Append("\n");
+            data.Append("\t\teveryone_mask\t"); data.Append(Helpers.UIntToHexString((uint)EveryonePermissions)); data.Append("\n");
+            data.Append("\t\tnext_owner_mask\t"); data.Append(Helpers.UIntToHexString((uint)NextOwnerPermissions)); data.Append("\n");
+            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToStringHyphenated()); data.Append("\n");
+            data.Append("\t\towner_id\t"); data.Append(Owner.ToStringHyphenated()); data.Append("\n");
+            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToStringHyphenated()); data.Append("\n");
+            data.Append("\t\tgroup_id\t"); data.Append(Group.ToStringHyphenated()); data.Append("\n");
+            if (GroupOwned) data.Append("\t\tgroup_owned\t1\n");
+            data.Append("\t}\n");
+            data.Append("\tsale_info\t0\n");
+            data.Append("\t{\n");
+            data.Append("\t\tsale_type\t"); data.Append(ForSaleNames[(int)Sale]); data.Append("\n");
+            data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append("\n");
+            data.Append("\t}\n");
+            data.Append("type "); data.Append((int)Type); data.Append("\n");
 
-            data += "parameters " + Params.Count + "\n";
+            data.Append("parameters "); data.Append(Params.Count); data.Append("\n");
             foreach (KeyValuePair<int, float> param in Params)
-                data += param.Key + " " + Helpers.FloatToTerseString(param.Value) + "\n";
+            {
+                data.Append(param.Key); data.Append(" "); data.Append(Helpers.FloatToTerseString(param.Value)); data.Append("\n");
+            }
 
-            data += "textures " + Textures.Count + "\n";
+            data.Append("textures "); data.Append(Textures.Count); data.Append("\n");
             foreach (KeyValuePair<int, LLUUID> texture in Textures)
-                data += texture.Key + " " + texture.Value.ToStringHyphenated() + "\n";
+            {
+                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToStringHyphenated()); data.Append("\n");
+            }
 
-            return data;
+            return data.ToString();
+        }
+    }
+
+    /// <summary>
+    /// A set of textures that are layered on top of each other and "baked"
+    /// in to a single texture, for avatar appearances
+    /// </summary>
+    public class TextureLayer
+    {
+        public const int BAKE_TEXTURE_WIDTH = 512;
+        public const int BAKE_TEXTURE_HEIGHT = 512;
+
+        private SecondLife Client;
+        private AssetManager Assets;
+        private SortedList<int, LLUUID> PendingDownloads = new SortedList<int, LLUUID>(AppearanceManager.WEARABLES_PER_LAYER);
+        private SortedList<int, ImageDownload> Textures = new SortedList<int, ImageDownload>(AppearanceManager.WEARABLES_PER_LAYER);
+        private int TotalLayers;
+
+        public TextureLayer(SecondLife client, AssetManager assets, int totalLayers)
+        {
+            Client = client;
+            Assets = assets;
+            TotalLayers = totalLayers;
+
+            Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+        }
+
+        public void AddImage(int bakeIndex, LLUUID assetID)
+        {
+            // Add this image to the pending downloads list
+            lock (PendingDownloads)
+            {
+                if (!PendingDownloads.ContainsKey(bakeIndex) && !PendingDownloads.ContainsValue(assetID))
+                {
+                    PendingDownloads.Add(bakeIndex, assetID);
+                }
+                else
+                {
+                    Client.Log("Texture layer already contains bake index " + bakeIndex + "or image " + 
+                        assetID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+                    return;
+                }
+            }
+
+            // Start the download
+            Assets.RequestImage(assetID, ImageType.Normal, 1013000.0f, 0);
+        }
+
+        private void Assets_OnImageReceived(ImageDownload image)
+        {
+            int bakeIndex = -1;
+
+            // Remove this image from the pending downloads if it's found, otherwise ignore
+            // it and return (not an image we're looking for)
+            lock (PendingDownloads)
+            {
+                if (PendingDownloads.ContainsValue(image.ID))
+                {
+                    bakeIndex = PendingDownloads.Keys[PendingDownloads.IndexOfValue(image.ID)];
+                    PendingDownloads.Remove(bakeIndex);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            // Add this to the list of downloaded textures
+            lock (Textures) Textures.Add(bakeIndex, image);
+
+            if (Textures.Count >= TotalLayers)
+            {
+                // We can bake
+                lock (Textures)
+                {
+                    Bitmap composite = new Bitmap(BAKE_TEXTURE_WIDTH, BAKE_TEXTURE_HEIGHT, PixelFormat.Format32bppArgb);
+                    Graphics graphics = Graphics.FromImage(composite);
+                    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
+                    for (int i = 0; i < Textures.Count; i++)
+                    {
+                        // Decode the image
+                        Image texture = OpenJPEGNet.OpenJPEG.DecodeToImage(Textures[i].AssetData);
+                        
+                        // Make sure it's the right size
+                        //if (texture.Height != BAKE_TEXTURE_HEIGHT || texture.Width != BAKE_TEXTURE_WIDTH)
+                        //{
+                        //    // Resize the image
+                        //    Bitmap tempTexture = new Bitmap(BAKE_TEXTURE_WIDTH, BAKE_TEXTURE_HEIGHT,
+                        //        PixelFormat.Format32bppArgb);
+                        //    tempTexture.SetResolution(texture.HorizontalResolution, texture.VerticalResolution);
+
+                        //    Graphics graphics = Graphics.FromImage(tempTexture);
+                        //    graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+
+                        //    graphics.DrawImage(texture, new Rectangle(0, 0, BAKE_TEXTURE_WIDTH, BAKE_TEXTURE_HEIGHT),
+                        //        new Rectangle(0, 0, texture.Width, texture.Height), GraphicsUnit.Pixel);
+                        //    graphics.Dispose();
+
+                        //    texture = tempTexture;
+                        //}
+
+                        // Create an 
+                    }
+                }
+            }
         }
     }
 
@@ -325,7 +469,6 @@ namespace libsecondlife.Utilities.Appearance
         public LLUUID AssetID;
         public LLUUID ItemID;
     }
-
 
     /// <summary>
     /// 
@@ -359,6 +502,9 @@ namespace libsecondlife.Utilities.Appearance
             SkirtBaked
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum BakeType
         {
             Head = 0,
@@ -420,6 +566,10 @@ namespace libsecondlife.Utilities.Appearance
         // Wearable assets are downloaded one at a time, a new request is pulled off the queue
         // and started when the previous one completes
         private Queue<KeyValuePair<LLUUID, AssetType>> DownloadQueue = new Queue<KeyValuePair<LLUUID, AssetType>>();
+        // A list of all the images we are currently downloading, prior to baking
+        private List<LLUUID> ImageDownloads = new List<LLUUID>();
+        // A list of all the bakes we need to complete
+        private List<int> PendingBakes = new List<int>();
         // Whether the handler for our current wearable list should automatically start downloading the assets
         private bool DownloadWearables = false;
         private int CacheCheckSerialNum = 0;
@@ -824,23 +974,48 @@ namespace libsecondlife.Utilities.Appearance
                     Client.DebugLog("Cache response, index: " + block.TextureIndex + ", ID: " +
                         block.TextureID.ToStringHyphenated());
 
-                    // FIXME: Use this
-                    Helpers.FieldToUTF8String(block.HostName);
+                    // FIXME: Use this. Right now we treat baked images on other sims as if they were missing
+                    string host = Helpers.FieldToUTF8String(block.HostName);
 
                     // Convert the baked index to an AgentTexture index
-                    if (block.TextureID != LLUUID.Zero)
+                    if (block.TextureID != LLUUID.Zero && host.Length == 0)
                     {
                         int index = BakedIndexToAgentTextureIndex(block.TextureIndex);
                         AgentTextures[index] = block.TextureID;
                     }
                     else
                     {
-                        // FIXME: We need to download all of the images for this layer and bake them
+                        // Download all of the images in this layer. This is kind of hacky to be
+                        // hardcoded in but it is the most straightforward way to do what we need
+                        switch ((BakeType)block.TextureIndex)
+                        {
+                            case BakeType.Head:
+                                ImageDownloads.Add(AgentTextures[(int)TextureIndex.HeadBodypaint]);
+                                ImageDownloads.Add(AgentTextures[(int)TextureIndex.Hair]);
+                                break;
+                            case BakeType.UpperBody:
+                                break;
+                            case BakeType.LowerBody:
+                                break;
+                            case BakeType.Eyes:
+                                break;
+                            case BakeType.Skirt:
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
 
-            CachedResponseEvent.Set();
+            // FIXME: Most of this whole function
+            //if (done)
+            //{
+            //}
+            //else
+            //{
+            //    CachedResponseEvent.Set();
+            //}
         }
 
         private void Assets_OnAssetReceived(AssetDownload asset)
