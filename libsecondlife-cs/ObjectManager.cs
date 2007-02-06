@@ -1664,6 +1664,8 @@ namespace libsecondlife
                             case PCode.Grass:
                             case PCode.Tree:
                             case PCode.NewTree:
+                                // FIXME: Implement these!!!
+                                break;
                             default:
                                 Client.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() + 
                                     ", implement this!");

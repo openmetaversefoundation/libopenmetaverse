@@ -66,8 +66,8 @@ namespace libsecondlife
         public Simulator Simulator;
 
         internal bool Dead = false;
+        internal string Seedcaps;
 
-        private string Seedcaps;
         private StringDictionary Capabilities = new StringDictionary();
         private Thread EventThread;
         private List<EventQueueCallback> Callbacks;
@@ -186,6 +186,8 @@ namespace libsecondlife
                 Stream reqStream = wreq.GetRequestStream();
                 reqStream.Write(data, 0, data.Length);
                 
+                // FIXME: Switch this to BeginGetResponse so this blocking request doesn't prevent
+                // us from killing the app
                 HttpWebResponse wresp = (HttpWebResponse)wreq.GetResponse();
                 BinaryReader reader = new BinaryReader(wresp.GetResponseStream());
                 respBuf = reader.ReadBytes((int)wresp.ContentLength);

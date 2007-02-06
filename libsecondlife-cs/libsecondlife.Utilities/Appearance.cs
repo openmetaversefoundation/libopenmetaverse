@@ -360,8 +360,8 @@ namespace libsecondlife.Utilities.Appearance
     /// </summary>
     public class TextureLayer
     {
-        public const int BAKE_TEXTURE_WIDTH = 512;
-        public const int BAKE_TEXTURE_HEIGHT = 512;
+        internal int BAKE_TEXTURE_WIDTH = 512;
+        internal int BAKE_TEXTURE_HEIGHT = 512;
 
         private SecondLife Client;
         private AssetManager Assets;

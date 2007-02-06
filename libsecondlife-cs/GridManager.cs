@@ -37,7 +37,7 @@ namespace libsecondlife
     public delegate void GridRegionCallback(GridRegion region);
 
 	/// <summary>
-	/// Class for regions on the world map
+	/// Region information returned from the spaceserver, used for the world map
 	/// </summary>
 	public class GridRegion
 	{
@@ -57,7 +57,8 @@ namespace libsecondlife
 		public byte Agents;
         /// <summary>UUID of the World Map image</summary>
 		public LLUUID MapImageID;
-        /// <summary>Used for teleporting</summary>
+        /// <summary>Unique identifier for this region, a combination of the X 
+        /// and Y position</summary>
 		public ulong RegionHandle;
 
         /// <summary>
@@ -213,7 +214,7 @@ namespace libsecondlife
                 BeginGetGridRegion(name);
 
                 // FIXME: We shouldn't be sleeping in a library call, hopefully this goes away soon
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(5000);
 
                 if (Regions.ContainsKey(name))
                 {

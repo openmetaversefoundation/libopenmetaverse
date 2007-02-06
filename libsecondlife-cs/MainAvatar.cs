@@ -333,6 +333,58 @@ namespace libsecondlife
             Clear
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum TeleportFlags : uint
+        {
+            /// <summary></summary>
+            Default         =      0,
+            /// <summary></summary>
+            SetHomeToTarget = 1 << 0,
+            /// <summary></summary>
+            SetLastToTarget = 1 << 1,
+            /// <summary></summary>
+            ViaLure         = 1 << 2,
+            /// <summary></summary>
+            ViaLandmark     = 1 << 3,
+            /// <summary></summary>
+            ViaLocation     = 1 << 4,
+            /// <summary></summary>
+            ViaHome         = 1 << 5,
+            /// <summary></summary>
+            ViaTelehub      = 1 << 6,
+            /// <summary></summary>
+            ViaLogin        = 1 << 7,
+            /// <summary></summary>
+            ViaGodlikeLure  = 1 << 8,
+            /// <summary></summary>
+            Godlike         = 1 << 9,
+            /// <summary></summary>
+            NineOneOne      = 1 << 10,
+            /// <summary></summary>
+            DisableCancel   = 1 << 11,
+            /// <summary></summary>
+            ViaRegionID     = 1 << 12,
+            /// <summary></summary>
+            IsFlying        = 1 << 13
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum TeleportLureFlags
+        {
+            /// <summary></summary>
+            NormalLure = 0,
+            /// <summary></summary>
+            GodlikeLure = 1,
+            /// <summary></summary>
+            GodlikePursuit = 2
+        }
+
         #endregion
 
 
@@ -395,7 +447,8 @@ namespace libsecondlife
         /// </summary>
         /// <param name="message">A message about the current teleport status</param>
         /// <param name="status">The current status of the teleport</param>
-        public delegate void TeleportCallback(string message, TeleportStatus status);
+        /// <param name="flags">Various flags describing the teleport</param>
+        public delegate void TeleportCallback(string message, TeleportStatus status, TeleportFlags flags);
 
         /// <summary>
         /// Reply to a request to join a group, informs whether it was successful or not
@@ -1028,7 +1081,6 @@ namespace libsecondlife
         /// <param name="localX">Integer value for the local X coordinate to move to</param>
         /// <param name="localY">Integer value for the local Y coordinate to move to</param>
         /// <param name="z">Floating-point value for the Z coordinate to move to</param>
-        /// <example>AutoPilot(252620, 247078, 20.2674);</example>
         public void AutoPilotLocal(int localX, int localY, float z)
         {
             uint x, y;
@@ -1060,42 +1112,30 @@ namespace libsecondlife
         /// false</returns>
         public bool Teleport(string simName, LLVector3 position, LLVector3 lookAt)
         {
-            int attempts = 0;
             TeleportStat = TeleportStatus.None;
-
             simName = simName.ToLower();
 
-            GridRegion region = Client.Grid.GetGridRegion(simName);
-
-            if (region != null)
+            if (simName != Client.Network.CurrentSim.Name.ToLower())
             {
-                return Teleport(region.RegionHandle, position, lookAt);
+                // Teleporting to a foreign sim
+                GridRegion region = Client.Grid.GetGridRegion(simName);
+
+                if (region != null)
+                {
+                    return Teleport(region.RegionHandle, position, lookAt);
+                }
+                else
+                {
+                    teleportMessage = "Unable to resolve name: " + simName;
+                    TeleportStat = TeleportStatus.Failed;
+                    return false;
+                }
             }
             else
             {
-                // FIXME: It's been my experience that a request will either work or not work.
-                // Hammering the server with continual requests doesn't make it wake up and
-                // decide "Hey! You must really want that data!"
-                while (attempts++ < 3)
-                {
-                    region = Client.Grid.GetGridRegion(simName);
-
-                    if (region != null)
-                    {
-                        return Teleport(region.RegionHandle, position, lookAt);
-                    }
-                    else
-                    {
-                        // Request the region info again
-                        Client.Grid.GetGridRegion(simName);
-                    }
-                }
+                // Teleporting to the sim we're already in
+                return Teleport(Client.Network.CurrentSim.Handle, position, lookAt);
             }
-
-            teleportMessage = "Unable to resolve name: " + simName;
-            TeleportStat = TeleportStatus.Failed;
-
-            return false;
         }
 
         /// <summary>
@@ -1106,7 +1146,7 @@ namespace libsecondlife
         /// <returns></returns>
         public bool Teleport(ulong regionHandle, LLVector3 position)
         {
-            return Teleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
+            return Teleport(regionHandle, position, new LLVector3(0.0f, 1.0f, 0.0f));
         }
 
         /// <summary>
@@ -1143,7 +1183,7 @@ namespace libsecondlife
         /// <param name="position">Position for Teleport</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position)
         {
-            RequestTeleport(regionHandle, position, new LLVector3(position.X + 1.0f, position.Y, position.Z));
+            RequestTeleport(regionHandle, position, new LLVector3(0.0f, 1.0f, 0.0f));
         }
 
         /// <summary>
@@ -1183,7 +1223,7 @@ namespace libsecondlife
                 lure.Info.AgentID = Client.Network.AgentID;
                 lure.Info.SessionID = Client.Network.SessionID;
                 lure.Info.LureID = Client.Network.AgentID;
-                lure.Info.TeleportFlags = 4; // TODO: What does this mean?
+                lure.Info.TeleportFlags = (uint)TeleportFlags.ViaLure;
 
                 Client.Network.SendPacket(lure);
             }
@@ -1525,28 +1565,33 @@ namespace libsecondlife
 
 	    private void EventQueueHandler(string message, object body)
         {
-	        if(message == "TeleportFinish")
+            if (message == "TeleportFinish")
             {
-		        Hashtable tpt = (Hashtable)body;
-		        Hashtable info = (Hashtable)tpt["Info"];
+                Hashtable tpt = (Hashtable)body;
+                Hashtable info = (Hashtable)tpt["Info"];
 
-		        // FIXME: quick and dirty hack
-		        TeleportFinishPacket packet = new TeleportFinishPacket();
+                // Backwards compatibility hack
+                TeleportFinishPacket packet = new TeleportFinishPacket();
 
-		        packet.Info.SimIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
+                packet.Info.SimIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
                 packet.Info.LocationID = Helpers.BytesToUInt((byte[])info["LocationID"]);
                 packet.Info.TeleportFlags = Helpers.BytesToUInt((byte[])info["TeleportFlags"]);
-		        packet.Info.AgentID = (LLUUID)info["AgentID"];
+                packet.Info.AgentID = (LLUUID)info["AgentID"];
                 packet.Info.RegionHandle = Helpers.BytesToUInt64((byte[])info["RegionHandle"]);
-		        packet.Info.SeedCapability = Helpers.StringToField((string)info["SeedCapability"]);
-		        packet.Info.SimPort = (ushort)(long)info["SimPort"];
-		        packet.Info.SimAccess = (byte)(long)info["SimAccess"];
+                packet.Info.SeedCapability = Helpers.StringToField((string)info["SeedCapability"]);
+                packet.Info.SimPort = (ushort)(long)info["SimPort"];
+                packet.Info.SimAccess = (byte)(long)info["SimAccess"];
 
-                Client.DebugLog("Received a TeleportFinish event, SimIP: " + new IPAddress(packet.Info.SimIP) + 
+                Client.DebugLog("Received a TeleportFinish event, SimIP: " + new IPAddress(packet.Info.SimIP) +
                     ", LocationID: " + packet.Info.LocationID + ", RegionHandle: " + packet.Info.RegionHandle);
 
-		        TeleportHandler(packet, Client.Network.CurrentSim);
-	        }
+                TeleportHandler(packet, Client.Network.CurrentSim);
+            }
+            else
+            {
+                Client.Log("Received unhandled event " + message + " in the EventQueueHandler", 
+                    Helpers.LogLevel.Warning);
+            }
 	    }
 
         /// <summary>
@@ -1556,54 +1601,62 @@ namespace libsecondlife
         /// <param name="simulator">Simulator sending teleport information</param>
         private void TeleportHandler(Packet packet, Simulator simulator)
         {
-            bool tpFinished = false;
+            bool finished = false;
+            TeleportFlags flags = TeleportFlags.Default;
 
             if (packet.Type == PacketType.TeleportStart)
             {
-                Client.DebugLog("TeleportStart received from " + simulator.ToString());
+                TeleportStartPacket start = (TeleportStartPacket)packet;
 
                 teleportMessage = "Teleport started";
+                flags = (TeleportFlags)start.Info.TeleportFlags;
                 TeleportStat = TeleportStatus.Start;
+
+                Client.DebugLog("TeleportStart received from " + simulator.ToString() + ", Flags: " + flags.ToString());
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
-                Client.DebugLog("TeleportProgress received from " + simulator.ToString());
+                TeleportProgressPacket progress = (TeleportProgressPacket)packet;
 
-                teleportMessage = Helpers.FieldToString(((TeleportProgressPacket)packet).Info.Message);
+                teleportMessage = Helpers.FieldToUTF8String(progress.Info.Message);
+                flags = (TeleportFlags)progress.Info.TeleportFlags;
                 TeleportStat = TeleportStatus.Progress;
+
+                Client.DebugLog("TeleportProgress received from " + simulator.ToString() + ", Flags: " + flags.ToString());
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
-                Client.DebugLog("TeleportFailed received from " + simulator.ToString());
+                TeleportFailedPacket failed = (TeleportFailedPacket)packet;
 
-                teleportMessage = Helpers.FieldToString(((TeleportFailedPacket)packet).Info.Reason);
+                teleportMessage = Helpers.FieldToUTF8String(failed.Info.Reason);
                 TeleportStat = TeleportStatus.Failed;
+                finished = true;
 
-                tpFinished = true;
+                Client.DebugLog("TeleportFailed received from " + simulator.ToString() + ", Reason: " + teleportMessage);
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
-                Client.DebugLog("TeleportFinish received from " + simulator.ToString());
-
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
-                Simulator previousSim = Client.Network.CurrentSim;
 
+                Simulator previousSim = Client.Network.CurrentSim;
+                flags = (TeleportFlags)finish.Info.TeleportFlags;
+                string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
+                IPAddress simIP = new IPAddress(finish.Info.SimIP);
+                finished = true;
+
+                Client.DebugLog("TeleportFinish received from " + simulator.ToString() + ", Flags: " + flags.ToString());
+
+                // Disable CAPS on the current sim since we are moving
                 if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
 
                 // Connect to the new sim
-                string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
-                IPAddress simIP = new IPAddress(finish.Info.SimIP);
-
-                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort,
-                    simulator.CircuitCode, true, seedcaps);
+                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort, simulator.CircuitCode, true, 
+                    seedcaps);
 
                 if (sim != null)
                 {
                     teleportMessage = "Teleport finished";
                     TeleportStat = TeleportStatus.Finished;
-
-                    // Move the avatar in to the new sim
-                    Client.Self.CompleteAgentMovement(sim);
 
                     // Disconnect from the previous sim
                     Client.Network.DisconnectSim(previousSim);
@@ -1615,45 +1668,47 @@ namespace libsecondlife
                     teleportMessage = "Failed to connect to the new sim after a teleport";
                     TeleportStat = TeleportStatus.Failed;
 
-                    // Re-connect to the previous simulator
-                    Client.Network.CurrentSim = previousSim;
+                    // Attempt to reconnect to the previous simulator
+                    // TODO: This hasn't been tested at all
+                    Client.Network.Connect(previousSim.IPEndPoint.Address, (ushort)previousSim.IPEndPoint.Port,
+                        previousSim.CircuitCode, true, Client.Network.CurrentCaps.Seedcaps);
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
                 }
             }
             else if (packet.Type == PacketType.TeleportCancel)
             {
-                Client.DebugLog("TeleportCancel received from " + simulator.ToString());
+                //TeleportCancelPacket cancel = (TeleportCancelPacket)packet;
 
                 teleportMessage = "Cancelled.";
                 TeleportStat = TeleportStatus.Cancelled;
+                finished = true;
 
-                tpFinished = true;
+                Client.DebugLog("TeleportCancel received from " + simulator.ToString());
             }
             else if (packet.Type == PacketType.TeleportLocal)
             {
                 TeleportLocalPacket local = (TeleportLocalPacket)packet;
 
+                teleportMessage = "Teleport finished";
+                flags = (TeleportFlags)local.Info.TeleportFlags;
+                TeleportStat = TeleportStatus.Finished;
                 LookAt = local.Info.LookAt;
                 Position = local.Info.Position;
-
-                // TODO: Do something with these
+                // This field is apparently not used for anything
                 //local.Info.LocationID;
-                //local.Info.TeleportFlags;
+                finished = true;
 
-                teleportMessage = "Teleport finished";
-                TeleportStat = TeleportStatus.Finished;
-
-                tpFinished = true;
+                Client.DebugLog("TeleportLocal received from " + simulator.ToString() + ", Flags: " + flags.ToString());
             }
 
             if (OnTeleport != null)
             {
-                try { OnTeleport(teleportMessage, TeleportStat); }
+                try { OnTeleport(teleportMessage, TeleportStat, flags); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
 
-            if (tpFinished) TeleportEvent.Set();
+            if (finished) TeleportEvent.Set();
         }
     }
 }

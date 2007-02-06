@@ -137,7 +137,7 @@ namespace Teleport
             }
         }
 
-        void Self_OnTeleport(string message, MainAvatar.TeleportStatus status)
+        void Self_OnTeleport(string message, MainAvatar.TeleportStatus status, MainAvatar.TeleportFlags flags)
         {
             Console.WriteLine(message);
 
