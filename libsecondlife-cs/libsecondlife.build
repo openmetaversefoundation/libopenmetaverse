@@ -101,7 +101,8 @@
 				<include name="XmlRpcCS/*.cs" />
 				<include name="libsecondlife.Utilities/*.cs" />
 			</sources>
-			<references>
+			<references basedir="${bin_dir}/"> 
+				<include name="openjpegnet.dll" />
 				<include name="System.Drawing.dll" />
 			</references>
 		</csc>
