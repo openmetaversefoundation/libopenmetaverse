@@ -187,38 +187,7 @@
     <echo message="Created archive at file://${project::get-base-directory()}/${srcarchive.name}" />
   </target>
   
-  <target name="doc" depends="build"
+  <!--<target name="doc" depends="build"
     description="Compiles html documentation for libsecondlife">
-    <ndoc>
-      <assemblies basedir="bin">
-          <include name="libsecondlife.dll" />
-      </assemblies>
-      <summaries basedir="bin">
-          <include name="doc/libsecondlife.xml" />
-      </summaries>
-      <documenters>
-          <documenter name="MSDN">
-              <property name="OutputDirectory" value="doc" />
-              <property name="HtmlHelpName" value="libsecondlife" />
-              <property name="IncludeFavorites" value="False" />
-              <property name="Title" value="libsecondlife Documentation" />
-              <property name="SplitTOCs" value="False" />
-              <property name="DefaulTOC" value="" />
-              <property name="ShowVisualBasic" value="True" />
-              <property name="ShowMissingSummaries" value="True" />
-              <property name="ShowMissingRemarks" value="True" />
-              <property name="ShowMissingParams" value="True" />
-              <property name="ShowMissingReturns" value="True" />
-              <property name="ShowMissingValues" value="True" />
-              <property name="DocumentInternals" value="False" />
-              <property name="DocumentProtected" value="True" />
-              <property name="DocumentPrivates" value="False" />
-              <property name="DocumentEmptyNamespaces" value="False" />
-              <property name="IncludeAssemblyVersion" value="False" />
-              <property name="CopyrightText" value="" />
-              <property name="CopyrightHref" value="" />
-           </documenter>
-      </documenters> 
-    </ndoc>
-  </target>
+  </target>-->
 </project>
