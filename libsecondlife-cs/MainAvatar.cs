@@ -1032,7 +1032,7 @@ namespace libsecondlife
         public void AutoPilotLocal(int localX, int localY, float z)
         {
             uint x, y;
-            Helpers.LongToUInts(Client.Network.CurrentSim.Region.Handle, out x, out y);
+            Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
@@ -1448,7 +1448,7 @@ namespace libsecondlife
 
             this.Position = movement.Data.Position;
             this.LookAt = movement.Data.LookAt;
-            simulator.Region.Handle = movement.Data.RegionHandle;
+            simulator.Handle = movement.Data.RegionHandle;
         }
 
         /// <summary>

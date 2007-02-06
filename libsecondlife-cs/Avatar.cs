@@ -129,8 +129,8 @@ namespace libsecondlife
         /// <summary>Avatar interests including spoken languages, skills, and "want to"
         /// choices</summary>
         public Interests ProfileInterests = new Interests();
-        /// <summary>Region the avatar is in</summary>
-        public Region CurrentRegion = null;
+        /// <summary>Simulator the avatar is in</summary>
+        public Simulator CurrentSim = null;
 
         #endregion Public Members
 

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Text;
+using System.IO;
 using libsecondlife;
-//using libsecondlife.Utilities.Assets;
-//using libsecondlife.Utilities.Appearance;
+using libsecondlife.Utilities.Assets;
+using libsecondlife.Utilities.Appearance;
 using libsecondlife.Packets;
 
 namespace libsecondlife.TestClient
@@ -11,18 +13,69 @@ namespace libsecondlife.TestClient
     public class ResearchCommand : Command
     {
         private ManualResetEvent AssetReceived = new ManualResetEvent(false);
-        //AssetManager manager;
+        AssetManager manager;
         //AppearanceManager appearance;
+        List<LLUUID> Downloaded = new List<LLUUID>();
 
         public ResearchCommand(TestClient testClient)
         {
             Name = "research";
             Description = "Does important research for the betterment of mankind";
 
-            //manager = new AssetManager(testClient);
+            testClient.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
+
+            manager = new AssetManager(testClient);
+            manager.OnImageReceived += new AssetManager.ImageReceivedCallback(manager_OnImageReceived);
             //manager.OnAssetReceived += new AssetManager.AssetReceivedCallback(manager_OnAssetReceived);
             //appearance = new AppearanceManager(testClient, manager);
             //appearance.OnAgentWearables += new AppearanceManager.AgentWearablesCallback(appearance_OnAgentWearables);
+        }
+
+        void manager_OnImageReceived(ImageDownload image)
+        {
+            if (image.Success)
+            {
+                File.WriteAllBytes(image.ID.ToStringHyphenated() + ".j2c", image.AssetData);
+                Console.WriteLine("Downloaded " + image.ID.ToStringHyphenated());
+            }
+            else
+            {
+                Console.WriteLine("Failed to download " + image.ID.ToStringHyphenated() + ", NotFound=" + image.NotFound);
+            }
+        }
+
+        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+        {
+            StringBuilder output = new StringBuilder("Avatar ");
+            output.Append(avatar.ID.ToStringHyphenated());
+            output.Append(" is wearing: ");
+
+            foreach (KeyValuePair<uint, LLObject.TextureEntryFace> texture in avatar.Textures.FaceTextures)
+            {
+                AppearanceManager.TextureIndex textureName = (AppearanceManager.TextureIndex)texture.Key;
+
+                switch (textureName)
+                {
+                    case AppearanceManager.TextureIndex.HeadBaked:
+                    case AppearanceManager.TextureIndex.LowerBaked:
+                    case AppearanceManager.TextureIndex.UpperBaked:
+                    case AppearanceManager.TextureIndex.SkirtBaked:
+                        if (!Downloaded.Contains(texture.Value.TextureID) &&
+                            texture.Value.TextureID != AppearanceManager.DEFAULT_AVATAR_TEXTURE)
+                        {
+                            Downloaded.Add(texture.Value.TextureID);
+                            //manager.RequestImage(texture.Value.TextureID, ImageType.Baked, 120000.0f, 0);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                output.Append(textureName.ToString());
+                output.Append(" ");
+            }
+
+            //Console.WriteLine(output.ToString());
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)

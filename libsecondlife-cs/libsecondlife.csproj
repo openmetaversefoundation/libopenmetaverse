@@ -164,14 +164,12 @@
     <Compile Include="ProtocolManager.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Region.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="SerializableDictionary.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Simulator.cs" />
     <Compile Include="TerrainManager.cs" />
     <Compile Include="Textures.cs">
       <SubType>Code</SubType>

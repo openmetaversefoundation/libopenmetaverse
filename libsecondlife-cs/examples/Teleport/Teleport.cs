@@ -40,15 +40,9 @@ namespace Teleport
 
             if (success)
             {
-                // Get the current sim name
-                while (app.Client.Network.CurrentSim.Region.Name == "")
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
+                Console.WriteLine("Starting in " + app.Client.Network.CurrentSim.ToString());
 
-                Console.WriteLine("Starting in " + app.Client.Network.CurrentSim.Region.Name);
-
-                if (sim.ToLower() == app.Client.Network.CurrentSim.Region.Name.ToLower())
+                if (sim.ToLower() == app.Client.Network.CurrentSim.Name.ToLower())
                 {
                     Console.WriteLine("TODO: Add the ability to teleport somewhere in the local region. " +
                         "Exiting for now, please specify a region other than the current one");

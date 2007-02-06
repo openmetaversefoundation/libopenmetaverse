@@ -51,15 +51,18 @@ namespace AnimationSample
         private void btnLogin_Click(object sender, EventArgs e)
         {
             // Login
-            if (!client.Network.Login(txtFirst.Text, txtLast.Text, txtPassword.Text, "animationsample", "jessemalthus@gmail.com"))
+            if (!client.Network.Login(txtFirst.Text, txtLast.Text, txtPassword.Text, "animationsample", 
+                "jessemalthus@gmail.com"))
             {
                 // Login failed
-                MessageBox.Show("We're sorry, but login failed. Error: \n " + client.Network.LoginError);
+                MessageBox.Show("We're sorry, but login failed. Error: " + Environment.NewLine + 
+                    client.Network.LoginError);
                 
             }
             else
             {
-                MessageBox.Show("Login succeded. You're at " + client.Self.Position + " on " + client.Network.CurrentSim.Region.Name);
+                MessageBox.Show("Login succeded. You're at " + client.Self.Position + " on " + 
+                    client.Network.CurrentSim.ToString());
             }
         }
     }

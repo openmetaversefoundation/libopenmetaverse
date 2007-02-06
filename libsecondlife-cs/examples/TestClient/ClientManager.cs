@@ -86,22 +86,30 @@ namespace libsecondlife.TestClient
 
 			client.SimPrims = SimPrims;
 			client.Master = account.Master;
-			
-			bool check = false;
-			if ( this.startpos.sim != null ) {
-				if ( this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0 ) {
+
+			if (this.startpos.sim != null)
+            {
+				if (this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0)
+                {
 					this.startpos.x = 128;
 					this.startpos.y = 128;
 					this.startpos.z = 1;
 				}
-				string startLoc = NetworkManager.StartLocation(this.startpos.sim, this.startpos.x, this.startpos.y, this.startpos.z);
+
+				string startLoc = NetworkManager.StartLocation(this.startpos.sim, this.startpos.x, this.startpos.y, 
+                    this.startpos.z);
 				Console.WriteLine(startLoc);
-				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc, contactPerson, false);
-			} else {
-				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", contactPerson);
+				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc, 
+                    contactPerson, false);
 			}
-            if ( ! check ) {
-				Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " + client.Network.LoginError);
+            else
+            {
+                if (!client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient",
+                    contactPerson))
+                {
+                    Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                        client.Network.LoginError);
+                }
 			}
 
             if (client.Network.Connected)

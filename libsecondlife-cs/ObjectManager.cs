@@ -1290,7 +1290,7 @@ namespace libsecondlife
 
                                 // Set this avatar online and in a region
                                 avatar.Online = true;
-                                avatar.CurrentRegion = simulator.Region;
+                                avatar.CurrentSim = simulator;
 
                                 // Textures
                                 avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);

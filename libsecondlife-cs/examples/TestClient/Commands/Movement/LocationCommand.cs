@@ -16,7 +16,8 @@ namespace libsecondlife.TestClient
 
 		public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-            return "CurrentSim: '" + Client.Network.CurrentSim.Region.Name + "' Position: " + Client.Self.Position.ToString();
+            return "CurrentSim: '" + Client.Network.CurrentSim.ToString() + "' Position: " + 
+                Client.Self.Position.ToString();
 		}
     }
 }

@@ -116,7 +116,7 @@ namespace Heightmap
                     int lesserVal = (int)((float)colorVal * 0.75f);
                     Color color;
 
-                    if (height >= simulator.Region.WaterHeight)
+                    if (height >= simulator.WaterHeight)
                         color = Color.FromArgb(lesserVal, colorVal, lesserVal);
                     else
                         color = Color.FromArgb(lesserVal, lesserVal, colorVal);

@@ -95,8 +95,8 @@ namespace libsecondlife.Utilities
         {
             if (SimHandle != 0)
             {
-                if (Client.Network.CurrentSim.Region.Handle != 0 &&
-                    Client.Network.CurrentSim.Region.Handle != SimHandle)
+                if (Client.Network.CurrentSim.Handle != 0 &&
+                    Client.Network.CurrentSim.Handle != SimHandle)
                 {
                     // Attempt to move to our target sim
                     Client.Self.Teleport(SimHandle, Position);
@@ -177,7 +177,7 @@ namespace libsecondlife.Utilities
             {
                 foreach (Avatar avatar in avatars.Values)
                 {
-                    if (avatar.CurrentRegion == Client.Network.CurrentSim.Region)
+                    if (avatar.CurrentSim == Client.Network.CurrentSim)
                         local[avatar.ID] = avatar;
                 }
             }

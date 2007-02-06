@@ -24,7 +24,7 @@ namespace libsecondlife.TestClient
 
 			Client.Self.Teleport
 			(
-				Client.Network.CurrentSim.Region.Name,
+				Client.Network.CurrentSim.Name,
 				new LLVector3(Client.Self.Position.X, Client.Self.Position.Y, Client.Self.Position.Z + height)
 			);
 

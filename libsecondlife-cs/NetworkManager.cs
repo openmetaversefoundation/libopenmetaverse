@@ -62,8 +62,8 @@ namespace libsecondlife
 
         /// <summary>Reference to the SecondLife client this system is connected to</summary>
         public SecondLife Client;
-        /// <summary>Reference to the region this system is connected to</summary>
-        public Region Region;
+        /// <summary>Reference to the simulator this system is connected to</summary>
+        public Simulator Simulator;
 
         internal bool Dead = false;
 
@@ -76,13 +76,14 @@ namespace libsecondlife
         /// Default constructor
         /// </summary>
         /// <param name="client"></param>
-        /// <param name="region"></param>
         /// <param name="seedcaps"></param>
         /// <param name="callbacks"></param>
-        public Caps(SecondLife client, Region region, string seedcaps, List<EventQueueCallback> callbacks)
+        public Caps(SecondLife client, Simulator simulator, string seedcaps, List<EventQueueCallback> callbacks)
         {
-            Client = client; Region = region;
-            this.Seedcaps = seedcaps; Callbacks = callbacks;
+            Client = client;
+            Simulator = simulator;
+            Seedcaps = seedcaps;
+            Callbacks = callbacks;
             ArrayList req = new ArrayList();
             req.Add("MapLayer");
             req.Add("MapLayerGod");
@@ -107,7 +108,7 @@ namespace libsecondlife
             }
             else
             {
-                Client.Log("Disabling caps for " + Region.ToString(), Helpers.LogLevel.Info);
+                Client.Log("Disabling caps for " + Simulator.ToString(), Helpers.LogLevel.Info);
                 Dead = true;
             }
         }
@@ -156,7 +157,7 @@ namespace libsecondlife
                     }
                     else
                     {
-                        Client.Log("Disabling caps for " + Region.ToString(), Helpers.LogLevel.Info);
+                        Client.Log("Disabling caps for " + Simulator.ToString(), Helpers.LogLevel.Info);
                         Dead = true;
                     }
                 }
@@ -208,566 +209,6 @@ namespace libsecondlife
         public void Disconnect()
         {
             Dead = true;
-        }
-    }
-
-    /// <summary>
-    /// Simulator is a wrapper for a network connection to a simulator and the
-    /// Region class representing the block of land in the metaverse
-    /// </summary>
-    public class Simulator
-    {
-        /// <summary>A public reference to the client that this Simulator object
-        /// is attached to</summary>
-        public SecondLife Client;
-        /// <summary>The Region class that this Simulator wraps</summary>
-        public Region Region;
-        /// <summary>Current time dilation of this simulator</summary>
-        public float Dilation = 0.0f;
-
-        /// <summary>
-        /// The ID number associated with this particular connection to the 
-        /// simulator, used to emulate TCP connections. This is used 
-        /// internally for packets that have a CircuitCode field
-        /// </summary>
-        public uint CircuitCode
-        {
-            get { return circuitCode; }
-            set { circuitCode = value; }
-        }
-        /// <summary>
-        /// The IP address and port of the server
-        /// </summary>
-        public IPEndPoint IPEndPoint
-        {
-            get { return ipEndPoint; }
-        }
-        /// <summary>
-        /// A boolean representing whether there is a working connection to the
-        /// simulator or not
-        /// </summary>
-        public bool Connected
-        {
-            get { return connected; }
-        }
-
-        /// <summary>Used internally to track sim disconnections</summary>
-        internal bool DisconnectCandidate = false;
-
-        private NetworkManager Network;
-        private Dictionary<PacketType, List<NetworkManager.PacketCallback>> Callbacks;
-        private uint Sequence = 0;
-        private object SequenceLock = new object();
-        private byte[] RecvBuffer = new byte[4096];
-        private byte[] ZeroBuffer = new byte[8192];
-        private byte[] ZeroOutBuffer = new byte[4096];
-        private Socket Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        private AsyncCallback ReceivedData;
-        // Packets we sent out that need ACKs from the simulator
-        private Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
-        // Sequence numbers of packets we've received from the simulator
-        private Queue<uint> Inbox;
-        // ACKs that are queued up to be sent to the simulator
-        private Dictionary<uint, uint> PendingAcks = new Dictionary<uint, uint>();
-        private bool connected = false;
-        private uint circuitCode;
-        private IPEndPoint ipEndPoint;
-        private EndPoint endPoint;
-        private System.Timers.Timer AckTimer;
-        private ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
-
-
-        /// <summary>
-        /// Constructor for Simulator
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="callbacks"></param>
-        /// <param name="circuit"></param>
-        /// <param name="ip"></param>
-        /// <param name="port"></param>
-        public Simulator(SecondLife client, Dictionary<PacketType, List<NetworkManager.PacketCallback>> callbacks,
-            uint circuit, IPAddress ip, int port)
-        {
-            Client = client;
-            Network = client.Network;
-            Callbacks = callbacks;
-            Region = new Region(client);
-            circuitCode = circuit;
-            Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
-            AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
-            AckTimer.Elapsed += new ElapsedEventHandler(AckTimer_Elapsed);
-
-            // Initialize the callback for receiving a new packet
-            ReceivedData = new AsyncCallback(OnReceivedData);
-
-            Client.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
-
-            try
-            {
-                // Create an endpoint that we will be communicating with (need it in two 
-                // types due to .NET weirdness)
-                ipEndPoint = new IPEndPoint(ip, port);
-                endPoint = (EndPoint)ipEndPoint;
-
-                // Associate this simulator's socket with the given ip/port and start listening
-                Connection.Connect(endPoint);
-                Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-
-                // Send the UseCircuitCode packet to initiate the connection
-                UseCircuitCodePacket use = new UseCircuitCodePacket();
-                use.CircuitCode.Code = circuitCode;
-                use.CircuitCode.ID = Network.AgentID;
-                use.CircuitCode.SessionID = Network.SessionID;
-
-                // Start the ACK timer
-                AckTimer.Start();
-
-                // Send the initial packet out
-                SendPacket(use, true);
-
-                ConnectedEvent.Reset();
-                ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false);
-            }
-            catch (Exception e)
-            {
-                Client.Log(e.ToString(), Helpers.LogLevel.Error);
-            }
-        }
-
-        /// <summary>
-        /// Disconnect a Simulator
-        /// </summary>
-        public void Disconnect()
-        {
-            if (connected)
-            {
-                connected = false;
-                AckTimer.Stop();
-
-                // Send the CloseCircuit notice
-                CloseCircuitPacket close = new CloseCircuitPacket();
-
-                if (Connection.Connected)
-                {
-                    try
-                    {
-                        Connection.Send(close.ToBytes());
-                    }
-                    catch (SocketException)
-                    {
-                        // There's a high probability of this failing if the network is
-                        // disconnecting, so don't even bother logging the error
-                    }
-                }
-
-                try
-                {
-                    // Shut the socket communication down
-                    Connection.Shutdown(SocketShutdown.Both);
-                }
-                catch (SocketException)
-                {
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sends a packet
-        /// </summary>
-        /// <param name="packet">Packet to be sent</param>
-        /// <param name="incrementSequence">Increment sequence number?</param>
-        public void SendPacket(Packet packet, bool incrementSequence)
-        {
-            byte[] buffer;
-            int bytes;
-
-            if (!connected && packet.Type != PacketType.UseCircuitCode)
-            {
-                Client.Log("Trying to send a " + packet.Type.ToString() + " packet when the socket is closed",
-                    Helpers.LogLevel.Info);
-
-                return;
-            }
-
-            if (packet.Header.AckList.Length > 0)
-            {
-                // Scrub any appended ACKs since all of the ACK handling is done here
-                packet.Header.AckList = new uint[0];
-            }
-            packet.Header.AppendedAcks = false;
-
-            // Keep track of when this packet was sent out
-            packet.TickCount = Environment.TickCount;
-
-            if (incrementSequence)
-            {
-                // Set the sequence number
-                lock (SequenceLock)
-                {
-                    if (Sequence > Client.Settings.MAX_SEQUENCE)
-                        Sequence = 1;
-                    else
-                        Sequence++;
-                    packet.Header.Sequence = Sequence;
-                }
-
-                if (packet.Header.Reliable)
-                {
-                    lock (NeedAck)
-                    {
-                        if (!NeedAck.ContainsKey(packet.Header.Sequence))
-                        {
-                            NeedAck.Add(packet.Header.Sequence, packet);
-                        }
-                        else
-                        {
-                            Client.Log("Attempted to add a duplicate sequence number (" +
-                                packet.Header.Sequence + ") to the NeedAck dictionary for packet type " +
-                                packet.Type.ToString(), Helpers.LogLevel.Warning);
-                        }
-                    }
-
-                    // Don't append ACKs to resent packets, in case that's what was causing the
-                    // delivery to fail
-                    if (!packet.Header.Resent)
-                    {
-                        // Append any ACKs that need to be sent out to this packet
-                        lock (PendingAcks)
-                        {
-                            if (PendingAcks.Count > 0 && PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS &&
-                                packet.Type != PacketType.PacketAck &&
-                                packet.Type != PacketType.LogoutRequest)
-                            {
-                                packet.Header.AckList = new uint[PendingAcks.Count];
-
-                                int i = 0;
-
-                                foreach (uint ack in PendingAcks.Values)
-                                {
-                                    packet.Header.AckList[i] = ack;
-                                    i++;
-                                }
-
-                                PendingAcks.Clear();
-                                packet.Header.AppendedAcks = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Serialize the packet
-            buffer = packet.ToBytes();
-            bytes = buffer.Length;
-
-            try
-            {
-                // Zerocode if needed
-                if (packet.Header.Zerocoded)
-                {
-                    lock (ZeroOutBuffer)
-                    {
-                        bytes = Helpers.ZeroEncode(buffer, bytes, ZeroOutBuffer);
-                        Connection.Send(ZeroOutBuffer, bytes, SocketFlags.None);
-                    }
-                }
-                else
-                {
-                    Connection.Send(buffer, bytes, SocketFlags.None);
-                }
-            }
-            catch (SocketException)
-            {
-                Client.Log("Tried to send a " + packet.Type.ToString() + " on a closed socket",
-                    Helpers.LogLevel.Warning);
-
-                Disconnect();
-            }
-        }
-
-        /// <summary>
-        /// Send a raw byte array payload as a packet
-        /// </summary>
-        /// <param name="payload">The packet payload</param>
-        /// <param name="setSequence">Whether the second, third, and fourth bytes
-        /// should be modified to the current stream sequence number</param>
-        public void SendPacket(byte[] payload, bool setSequence)
-        {
-            if (connected)
-            {
-                try
-                {
-                    if (setSequence && payload.Length > 3)
-                    {
-                        lock (SequenceLock)
-                        {
-                            payload[1] = (byte)(Sequence >> 16);
-                            payload[2] = (byte)(Sequence >> 8);
-                            payload[3] = (byte)(Sequence % 256);
-                            Sequence++;
-                        }
-                    }
-
-                    Connection.Send(payload, payload.Length, SocketFlags.None);
-                }
-                catch (SocketException e)
-                {
-                    Client.Log(e.ToString(), Helpers.LogLevel.Error);
-                }
-            }
-            else
-            {
-                Client.Log("Attempted to send a " + payload.Length + " byte payload when " +
-                    "we are disconnected", Helpers.LogLevel.Warning);
-            }
-        }
-
-        /// <summary>
-        /// Returns Simulator Name as a String
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return Region.Name + " (" + ipEndPoint.ToString() + ")";
-        }
-
-        /// <summary>
-        /// Sends out pending acknowledgements
-        /// </summary>
-        private void SendAcks()
-        {
-            lock (PendingAcks)
-            {
-                if (connected && PendingAcks.Count > 0)
-                {
-                    if (PendingAcks.Count > 250)
-                    {
-                        // FIXME: Handle the odd case where we have too many pending ACKs queued up
-                        Client.Log("Too many ACKs queued up!", Helpers.LogLevel.Error);
-                        return;
-                    }
-
-                    int i = 0;
-                    PacketAckPacket acks = new PacketAckPacket();
-                    acks.Packets = new PacketAckPacket.PacketsBlock[PendingAcks.Count];
-
-                    foreach (uint ack in PendingAcks.Values)
-                    {
-                        acks.Packets[i] = new PacketAckPacket.PacketsBlock();
-                        acks.Packets[i].ID = ack;
-                        i++;
-                    }
-
-                    acks.Header.Reliable = false;
-                    SendPacket(acks, true);
-
-                    PendingAcks.Clear();
-                }
-            }
-        }
-        /// <summary>
-        /// Resend unacknowledged packets
-        /// </summary>
-        private void ResendUnacked()
-        {
-            if (connected)
-            {
-                int now = Environment.TickCount;
-
-                lock (NeedAck)
-                {
-                    foreach (Packet packet in NeedAck.Values)
-                    {
-                        if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
-                        {
-                            Client.Log("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
-                                "), " + (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
-
-                            packet.Header.Resent = true;
-                            SendPacket(packet, false);
-                        }
-                    }
-                }
-            }
-        }
-        /// <summary>
-        /// Callback handler for incomming data
-        /// </summary>
-        /// <param name="result"></param>
-        private void OnReceivedData(IAsyncResult result)
-        {
-            Packet packet = null;
-            int numBytes;
-
-            // If we're receiving data the sim connection is open
-            connected = true;
-            ConnectedEvent.Set();
-
-            // Update the disconnect flag so this sim doesn't time out
-            DisconnectCandidate = false;
-
-            lock (RecvBuffer)
-            {
-                // Retrieve the incoming packet
-                try
-                {
-                    numBytes = Connection.EndReceiveFrom(result, ref endPoint);
-
-                    int packetEnd = numBytes - 1;
-                    packet = Packet.BuildPacket(RecvBuffer, ref packetEnd, ZeroBuffer);
-
-                    Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-                }
-                catch (SocketException)
-                {
-                    Client.Log(endPoint.ToString() + " socket is closed, shutting down " + this.Region.Name,
-                        Helpers.LogLevel.Info);
-
-                    connected = false;
-                    Network.DisconnectSim(this);
-                    return;
-                }
-            }
-
-            // Fail-safe check
-            if (packet == null)
-            {
-                Client.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning);
-                return;
-            }
-
-            // Track the sequence number for this packet if it's marked as reliable
-            if (packet.Header.Reliable)
-            {
-                if (PendingAcks.Count > Client.Settings.MAX_PENDING_ACKS)
-                {
-                    SendAcks();
-                }
-
-                // Check if we already received this packet
-                if (Inbox.Contains(packet.Header.Sequence))
-                {
-                    Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
-                        packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No") +
-                        ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count,
-                        Helpers.LogLevel.Info);
-
-                    // Send an ACK for this packet immediately
-                    //SendAck(packet.Header.Sequence);
-
-                    // TESTING: Try just queuing up ACKs for resent packets instead of immediately triggering an ACK
-                    lock (PendingAcks)
-                    {
-                        uint sequence = (uint)packet.Header.Sequence;
-                        if (!PendingAcks.ContainsKey(sequence)) { PendingAcks[sequence] = sequence; }
-                    }
-
-                    // Avoid firing a callback twice for the same packet
-                    return;
-                }
-                else
-                {
-                    lock (PendingAcks)
-                    {
-                        uint sequence = (uint)packet.Header.Sequence;
-                        if (!PendingAcks.ContainsKey(sequence)) { PendingAcks[sequence] = sequence; }
-                    }
-                }
-            }
-
-            // Add this packet to our inbox
-            lock (Inbox)
-            {
-                while (Inbox.Count >= Client.Settings.INBOX_SIZE)
-                {
-                    Inbox.Dequeue();
-                    Inbox.Dequeue();
-                }
-                Inbox.Enqueue(packet.Header.Sequence);
-            }
-
-            // Handle appended ACKs
-            if (packet.Header.AppendedAcks)
-            {
-                lock (NeedAck)
-                {
-                    foreach (uint ack in packet.Header.AckList)
-                    {
-                        NeedAck.Remove(ack);
-                    }
-                }
-            }
-
-            // Handle PacketAck packets
-            if (packet.Type == PacketType.PacketAck)
-            {
-                PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                lock (NeedAck)
-                {
-                    foreach (PacketAckPacket.PacketsBlock block in ackPacket.Packets)
-                    {
-                        NeedAck.Remove(block.ID);
-                    }
-                }
-            }
-
-			
-            // Fire the registered packet events
-            #region FireCallbacks
-            if (Callbacks.ContainsKey(packet.Type))
-            {
-                List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
-
-                // Fire any registered callbacks
-                foreach (NetworkManager.PacketCallback callback in callbackArray)
-                {
-                    if (callback != null)
-                    {
-                        try
-                        {
-                            callback(packet, this);
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in a packet callback: " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
-                    }
-                }
-            }
-
-            if (Callbacks.ContainsKey(PacketType.Default))
-            {
-                List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
-
-                // Fire any registered callbacks
-                foreach (NetworkManager.PacketCallback callback in callbackArray)
-                {
-                    if (callback != null)
-                    {
-                        try
-                        {
-                            callback(packet, this);
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in a packet callback: " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
-                    }
-                }
-            }
-            #endregion FireCallbacks
-        }
-
-        private void AckTimer_Elapsed(object sender, ElapsedEventArgs ea)
-        {
-            if (connected)
-            {
-                SendAcks();
-                ResendUnacked();
-            }
         }
     }
 
@@ -879,8 +320,10 @@ namespace libsecondlife
         /// </summary>
         public bool Connected { get { return connected; } }
 
+        /// <summary></summary>
+        internal Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
+
         private SecondLife Client;
-        private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         private List<Simulator> Simulators = new List<Simulator>();
         private System.Timers.Timer DisconnectTimer;
         private System.Timers.Timer LogoutTimer;
@@ -985,7 +428,7 @@ namespace libsecondlife
         /// <param name="simulator">Simulator to send the packet to</param>
         public void SendPacket(Packet packet, Simulator simulator)
         {
-            if (simulator != null && simulator.Connected)
+            if (simulator != null)
                 simulator.SendPacket(packet, true);
         }
 
@@ -997,7 +440,7 @@ namespace libsecondlife
         /// bytes of the payload to the current sequence number</param>
         public void SendPacket(byte[] payload, bool setSequence)
         {
-            if (connected && CurrentSim != null)
+            if (CurrentSim != null)
                 CurrentSim.SendPacket(payload, setSequence);
         }
 
@@ -1010,7 +453,7 @@ namespace libsecondlife
         /// bytes of the payload to the current sequence number</param>
         public void SendPacket(byte[] payload, Simulator simulator, bool setSequence)
         {
-            if (connected && simulator != null)
+            if (simulator != null)
                 simulator.SendPacket(payload, setSequence);
         }
 
@@ -1149,6 +592,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="sender">Reference to the SecondLife class that called the event</param>
         public delegate void ConnectedCallback(object sender);
+
 
         /// <summary>
         /// Event raised when the client was able to connected successfully.
@@ -1417,40 +861,17 @@ namespace libsecondlife
                 Client.Self.HomeLookAt = lookatVector;
 
                 // Get Inventory Root Folder
-                Client.Log("Pulling root folder UUID from login data.", Helpers.LogLevel.Debug);
                 ArrayList alInventoryRoot = (ArrayList)LoginValues["inventory-root"];
                 Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
                 Client.Self.InventoryRootFolderUUID = new LLUUID((string)htInventoryRoot["folder_id"]);
 
-
                 // Connect to the sim given in the login reply
-                Simulator simulator = new Simulator(Client, this.Callbacks, (uint)(int)LoginValues["circuit_code"],
-                    IPAddress.Parse((string)LoginValues["sim_ip"]), (int)LoginValues["sim_port"]);
-                if (!simulator.Connected)
+                if (Connect(IPAddress.Parse((string)LoginValues["sim_ip"]), (ushort)(int)LoginValues["sim_port"],
+                    (uint)(int)LoginValues["circuit_code"], true, (string)LoginValues["seed_capability"]) == null)
                 {
                     LoginError = "Unable to connect to the simulator";
                     return false;
                 }
-
-                Simulator oldSim = CurrentSim;
-                CurrentSim = simulator;
-
-                // Simulator is successfully connected, add it to the list and set it as default
-                Simulators.Add(simulator);
-
-                // Mark that we are now officially connected to the grid
-                connected = true;
-
-                // Start a timer that checks if we've been disconnected
-                DisconnectTimer.Start();
-
-                if (LoginValues.ContainsKey("seed_capability") && (string)LoginValues["seed_capability"] != "")
-                {
-                    CurrentCaps = new Caps(Client, simulator.Region, (string)LoginValues["seed_capability"], EventQueueCallbacks);
-                }
-
-                // Move our agent in to the sim to complete the connection
-                Client.Self.CompleteAgentMovement(simulator);
 
                 // Send a couple packets that are useful right after login
                 SendInitialPackets();
@@ -1458,29 +879,8 @@ namespace libsecondlife
                 // Fire an event for connecting to the grid
                 if (OnConnected != null)
                 {
-                    try
-                    {
-                        OnConnected(this.Client);
-                    }
-                    catch (Exception e)
-                    {
-                        Client.Log("Caught an exception in the OnConnected() callback: " + e.ToString(),
-                            Helpers.LogLevel.Error);
-                    }
-                }
-
-                // Fire an event that the current simulator has changed
-                if (OnCurrentSimChanged != null)
-                {
-                    try
-                    {
-                        OnCurrentSimChanged(oldSim);
-                    }
-                    catch (Exception e)
-                    {
-                        Client.Log("Caught an exception in OnCurrentSimChanged(): " + e.ToString(),
-                            Helpers.LogLevel.Error);
-                    }
+                    try { OnConnected(this.Client); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
                 return true;
@@ -1503,7 +903,7 @@ namespace libsecondlife
         /// <returns>A Simulator object on success, otherwise null</returns>
         public Simulator Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault, string seedcaps)
         {
-            Simulator simulator = new Simulator(Client, this.Callbacks, circuitCode, ip, (int)port);
+            Simulator simulator = new Simulator(Client, circuitCode, ip, (int)port, setDefault);
 
             if (!simulator.Connected)
             {
@@ -1511,10 +911,7 @@ namespace libsecondlife
                 return null;
             }
 
-            lock (Simulators)
-            {
-                Simulators.Add(simulator);
-            }
+            lock (Simulators) Simulators.Add(simulator);
 
             // Mark that we are connected to the grid (in case we weren't before)
             connected = true;
@@ -1526,11 +923,18 @@ namespace libsecondlife
             {
                 Simulator oldSim = CurrentSim;
                 CurrentSim = simulator;
+
                 if (CurrentCaps != null) CurrentCaps.Disconnect();
                 CurrentCaps = null;
-                if (seedcaps != null && seedcaps != "")
-                    CurrentCaps = new Caps(Client, simulator.Region, seedcaps, EventQueueCallbacks);
-                if (OnCurrentSimChanged != null && simulator != oldSim) OnCurrentSimChanged(oldSim);
+
+                if (seedcaps != null && seedcaps.Length > 0)
+                    CurrentCaps = new Caps(Client, simulator, seedcaps, EventQueueCallbacks);
+
+                if (OnCurrentSimChanged != null && simulator != oldSim)
+                {
+                    try { OnCurrentSimChanged(oldSim); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
 
             return simulator;
@@ -1617,10 +1021,7 @@ namespace libsecondlife
                     }
                 }
 
-                lock (Simulators)
-                {
-                    Simulators.Remove(sim);
-                }
+                lock (Simulators) Simulators.Remove(sim);
             }
             else
             {
@@ -1723,7 +1124,7 @@ namespace libsecondlife
             // Request the economy data
             SendPacket(new EconomyDataRequestPacket());
 
-            // FIXME: A movement class should be handling this
+            // Send an AgentUpdate packet to truly move our avatar in to the sim
             MainAvatar.AgentUpdateFlags controlFlags = MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
             LLVector3 position = new LLVector3(128, 128, 32);
             LLVector3 forwardAxis = new LLVector3(0, 0.999999f, 0);
@@ -1758,7 +1159,7 @@ namespace libsecondlife
                 if (CurrentSim.DisconnectCandidate)
                 {
                     Client.Log("Network timeout for the current simulator (" +
-                        CurrentSim.Region.Name + "), logging out", Helpers.LogLevel.Warning);
+                        CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning);
 
                     DisconnectTimer.Stop();
                     connected = false;
@@ -1815,7 +1216,7 @@ namespace libsecondlife
                         {
                             // This sim hasn't received any network traffic since the 
                             // timer last elapsed, consider it disconnected
-                            Client.Log("Network timeout for simulator " + sim.Region.Name +
+                            Client.Log("Network timeout for simulator " + sim.ToString() +
                                 ", disconnecting", Helpers.LogLevel.Warning);
 
                             DisconnectSim(sim);
@@ -1868,11 +1269,43 @@ namespace libsecondlife
 
             // TODO: We can use OldestUnacked to correct transmission errors
 
-            SendPacket((Packet)ping, simulator);
+            SendPacket(ping, simulator);
         }
 
         private void RegionHandshakeHandler(Packet packet, Simulator simulator)
         {
+            RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
+
+            simulator.ID = handshake.RegionInfo.CacheID;
+
+            // TODO: What do we need these for? RegionFlags probably contains good stuff
+            //handshake.RegionInfo.BillableFactor;
+            //handshake.RegionInfo.RegionFlags;
+            //handshake.RegionInfo.SimAccess;
+
+            simulator.IsEstateManager = handshake.RegionInfo.IsEstateManager;
+            simulator.Name = Helpers.FieldToString(handshake.RegionInfo.SimName);
+            simulator.SimOwner = handshake.RegionInfo.SimOwner;
+            simulator.TerrainBase0 = handshake.RegionInfo.TerrainBase0;
+            simulator.TerrainBase1 = handshake.RegionInfo.TerrainBase1;
+            simulator.TerrainBase2 = handshake.RegionInfo.TerrainBase2;
+            simulator.TerrainBase3 = handshake.RegionInfo.TerrainBase3;
+            simulator.TerrainDetail0 = handshake.RegionInfo.TerrainDetail0;
+            simulator.TerrainDetail1 = handshake.RegionInfo.TerrainDetail1;
+            simulator.TerrainDetail2 = handshake.RegionInfo.TerrainDetail2;
+            simulator.TerrainDetail3 = handshake.RegionInfo.TerrainDetail3;
+            simulator.TerrainHeightRange00 = handshake.RegionInfo.TerrainHeightRange00;
+            simulator.TerrainHeightRange01 = handshake.RegionInfo.TerrainHeightRange01;
+            simulator.TerrainHeightRange10 = handshake.RegionInfo.TerrainHeightRange10;
+            simulator.TerrainHeightRange11 = handshake.RegionInfo.TerrainHeightRange11;
+            simulator.TerrainStartHeight00 = handshake.RegionInfo.TerrainStartHeight00;
+            simulator.TerrainStartHeight01 = handshake.RegionInfo.TerrainStartHeight01;
+            simulator.TerrainStartHeight10 = handshake.RegionInfo.TerrainStartHeight10;
+            simulator.TerrainStartHeight11 = handshake.RegionInfo.TerrainStartHeight11;
+            simulator.WaterHeight = handshake.RegionInfo.WaterHeight;
+
+            Client.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info);
+
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
             reply.AgentData.AgentID = AgentID;
@@ -1880,37 +1313,9 @@ namespace libsecondlife
             reply.RegionInfo.Flags = 0;
             SendPacket(reply, simulator);
 
-            RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
-
-            simulator.Region.ID = handshake.RegionInfo.CacheID;
-
-            // TODO: What do we need these for? RegionFlags probably contains good stuff
-            //handshake.RegionInfo.BillableFactor;
-            //handshake.RegionInfo.RegionFlags;
-            //handshake.RegionInfo.SimAccess;
-
-            simulator.Region.IsEstateManager = handshake.RegionInfo.IsEstateManager;
-            simulator.Region.Name = Helpers.FieldToString(handshake.RegionInfo.SimName);
-            simulator.Region.SimOwner = handshake.RegionInfo.SimOwner;
-            simulator.Region.TerrainBase0 = handshake.RegionInfo.TerrainBase0;
-            simulator.Region.TerrainBase1 = handshake.RegionInfo.TerrainBase1;
-            simulator.Region.TerrainBase2 = handshake.RegionInfo.TerrainBase2;
-            simulator.Region.TerrainBase3 = handshake.RegionInfo.TerrainBase3;
-            simulator.Region.TerrainDetail0 = handshake.RegionInfo.TerrainDetail0;
-            simulator.Region.TerrainDetail1 = handshake.RegionInfo.TerrainDetail1;
-            simulator.Region.TerrainDetail2 = handshake.RegionInfo.TerrainDetail2;
-            simulator.Region.TerrainDetail3 = handshake.RegionInfo.TerrainDetail3;
-            simulator.Region.TerrainHeightRange00 = handshake.RegionInfo.TerrainHeightRange00;
-            simulator.Region.TerrainHeightRange01 = handshake.RegionInfo.TerrainHeightRange01;
-            simulator.Region.TerrainHeightRange10 = handshake.RegionInfo.TerrainHeightRange10;
-            simulator.Region.TerrainHeightRange11 = handshake.RegionInfo.TerrainHeightRange11;
-            simulator.Region.TerrainStartHeight00 = handshake.RegionInfo.TerrainStartHeight00;
-            simulator.Region.TerrainStartHeight01 = handshake.RegionInfo.TerrainStartHeight01;
-            simulator.Region.TerrainStartHeight10 = handshake.RegionInfo.TerrainStartHeight10;
-            simulator.Region.TerrainStartHeight11 = handshake.RegionInfo.TerrainStartHeight11;
-            simulator.Region.WaterHeight = handshake.RegionInfo.WaterHeight;
-
-            Client.Log("Received a region handshake for " + simulator.Region.Name, Helpers.LogLevel.Info);
+            // We're officially connected to this sim
+            simulator.connected = true;
+            simulator.ConnectedEvent.Set();
         }
 
         private void ParcelOverlayHandler(Packet packet, Simulator simulator)
@@ -1919,11 +1324,11 @@ namespace libsecondlife
 
             if (overlay.ParcelData.SequenceID >= 0 && overlay.ParcelData.SequenceID <= 3)
             {
-                Array.Copy(overlay.ParcelData.Data, 0, simulator.Region.ParcelOverlay,
+                Array.Copy(overlay.ParcelData.Data, 0, simulator.ParcelOverlay,
                     overlay.ParcelData.SequenceID * 1024, 1024);
-                simulator.Region.ParcelOverlaysReceived++;
+                simulator.ParcelOverlaysReceived++;
 
-                if (simulator.Region.ParcelOverlaysReceived > 3)
+                if (simulator.ParcelOverlaysReceived > 3)
                 {
                     // TODO: ParcelOverlaysReceived should become internal, and reset to zero every 
                     // time it hits four. Also need a callback here
@@ -1932,7 +1337,7 @@ namespace libsecondlife
             else
             {
                 Client.Log("Parcel overlay with sequence ID of " + overlay.ParcelData.SequenceID +
-                    " received from " + simulator.Region.Name, Helpers.LogLevel.Warning);
+                    " received from " + simulator.ToString(), Helpers.LogLevel.Warning);
             }
         }
 
