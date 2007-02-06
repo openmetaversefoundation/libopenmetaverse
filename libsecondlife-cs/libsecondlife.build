@@ -101,6 +101,9 @@
 				<include name="XmlRpcCS/*.cs" />
 				<include name="libsecondlife.Utilities/*.cs" />
 			</sources>
+			<references>
+				<include name="System.Drawing.dll" />
+			</references>
 		</csc>
 	</target>
 
