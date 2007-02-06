@@ -140,11 +140,15 @@ namespace libsecondlife
         {
             get
             {
-                if (NameValues.ContainsKey("FirstName") && NameValues.ContainsKey("LastName"))
+                if (name.Length > 0)
+                    return name;
+                else if (NameValues.ContainsKey("FirstName") && NameValues.ContainsKey("LastName"))
                     return (string)NameValues["FirstName"].Value + " " + (string)NameValues["LastName"].Value;
                 else
                     return String.Empty;
             }
+            // FIXME: Get rid of this when an AvatarManager is built in to libsl
+            set { name = value; }
         }
 
         /// <summary>Active group</summary>
@@ -164,9 +168,13 @@ namespace libsecondlife
         public uint SittingOn { get { return sittingOn; } }
 
 
+        internal string name = String.Empty;
         internal uint sittingOn = 0;
 
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public Avatar()
         {
         }

@@ -198,8 +198,7 @@ namespace libsecondlife.Utilities
                 return LocalAvatarNameLookup(id);
 
             // Add to the dictionary
-            lock (NameLookupEvents)
-                NameLookupEvents.Add(id, new ManualResetEvent(false));
+            lock (NameLookupEvents) NameLookupEvents.Add(id, new ManualResetEvent(false));
 
             // Call function
             Client.Avatars.RequestAvatarName(id);
@@ -208,8 +207,7 @@ namespace libsecondlife.Utilities
             NameLookupEvents[id].WaitOne(5000, false);
 
             // Clean up
-            lock (NameLookupEvents)
-                NameLookupEvents.Remove(id);
+            lock (NameLookupEvents) NameLookupEvents.Remove(id);
 
             // Return
             return LocalAvatarNameLookup(id);
@@ -378,8 +376,8 @@ namespace libsecondlife.Utilities
                     if (!avatars.ContainsKey(kvp.Key) || avatars[kvp.Key] == null)
                         avatars[kvp.Key] = new Avatar();
 
-                    // FIXME:
-                    //avatars[kvp.Key].Name = kvp.Value;
+                    // FIXME: Change this to .name when we move inside libsecondlife
+                    avatars[kvp.Key].Name = kvp.Value;
 
                     if (NameLookupEvents.ContainsKey(kvp.Key))
                         NameLookupEvents[kvp.Key].Set();
