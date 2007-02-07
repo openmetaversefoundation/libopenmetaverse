@@ -895,7 +895,7 @@ namespace libsecondlife
             AgentHeightWidthPacket heightwidth = new AgentHeightWidthPacket();
             heightwidth.AgentData.AgentID = Client.Network.AgentID;
             heightwidth.AgentData.SessionID = Client.Network.SessionID;
-            heightwidth.AgentData.CircuitCode = Client.Network.CurrentSim.CircuitCode;
+            heightwidth.AgentData.CircuitCode = Client.Network.CircuitCode;
             heightwidth.HeightWidthBlock.Height = height;
             heightwidth.HeightWidthBlock.Width = width;
             heightwidth.HeightWidthBlock.GenCounter = HeightWidthGenCounter++;
@@ -1339,7 +1339,7 @@ namespace libsecondlife
 
             move.AgentData.AgentID = Client.Network.AgentID;
             move.AgentData.SessionID = Client.Network.SessionID;
-            move.AgentData.CircuitCode = simulator.CircuitCode;
+            move.AgentData.CircuitCode = Client.Network.CircuitCode;
 
             Client.Network.SendPacket(move, simulator);
         }
@@ -1650,7 +1650,7 @@ namespace libsecondlife
                 if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
 
                 // Connect to the new sim
-                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort, simulator.CircuitCode, true, 
+                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort, true, 
                     seedcaps);
 
                 if (sim != null)
@@ -1671,7 +1671,7 @@ namespace libsecondlife
                     // Attempt to reconnect to the previous simulator
                     // TODO: This hasn't been tested at all
                     Client.Network.Connect(previousSim.IPEndPoint.Address, (ushort)previousSim.IPEndPoint.Port,
-                        previousSim.CircuitCode, true, Client.Network.CurrentCaps.Seedcaps);
+                        true, Client.Network.CurrentCaps.Seedcaps);
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
                 }

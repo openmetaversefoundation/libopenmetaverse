@@ -95,16 +95,6 @@ namespace libsecondlife
         /// <summary>Current time dilation of this simulator</summary>
         public float Dilation;
 
-        /// <summary>
-        /// The ID number associated with this particular connection to the 
-        /// simulator, used to emulate TCP connections. This is used 
-        /// internally for packets that have a CircuitCode field
-        /// </summary>
-        public uint CircuitCode
-        {
-            get { return circuitCode; }
-            set { circuitCode = value; }
-        }
         /// <summary>The IP address and port of the server</summary>
         public IPEndPoint IPEndPoint { get { return ipEndPoint; } }
         /// <summary>Whether there is a working connection to the simulator or 
@@ -132,7 +122,6 @@ namespace libsecondlife
         private Queue<uint> Inbox;
         // ACKs that are queued up to be sent to the simulator
         private Dictionary<uint, uint> PendingAcks = new Dictionary<uint, uint>();
-        private uint circuitCode;
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
@@ -142,16 +131,14 @@ namespace libsecondlife
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="circuit">Integer to uniquely identify the connection to this simulator</param>
         /// <param name="ip">IP address of the simulator</param>
         /// <param name="port">Port on the simulator to connect to</param>
         /// <param name="moveToSim">Whether to move our agent in to this sim or not</param>
-        public Simulator(SecondLife client, uint circuit, IPAddress ip, int port, bool moveToSim)
+        public Simulator(SecondLife client, IPAddress ip, int port, bool moveToSim)
         {
             Client = client;
             Estate = new EstateTools(Client);
             Network = client.Network;
-            circuitCode = circuit;
             Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
             AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
@@ -174,7 +161,7 @@ namespace libsecondlife
 
                 // Send the UseCircuitCode packet to initiate the connection
                 UseCircuitCodePacket use = new UseCircuitCodePacket();
-                use.CircuitCode.Code = circuitCode;
+                use.CircuitCode.Code = Network.CircuitCode;
                 use.CircuitCode.ID = Network.AgentID;
                 use.CircuitCode.SessionID = Network.SessionID;
 

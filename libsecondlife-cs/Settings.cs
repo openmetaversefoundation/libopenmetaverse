@@ -40,6 +40,8 @@ namespace libsecondlife
         /// <summary>XML-RPC login server to connect to</summary>
         public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
 
+        /// <summary>Maximum size of packet that we want to send over the wire</summary>
+        public readonly int MAX_PACKET_SIZE = 1200;
         /// <summary>Millisecond interval between ticks, where all ACKs are 
         /// sent out and the age of unACKed packets is checked</summary>
         public readonly int NETWORK_TICK_LENGTH = 500;

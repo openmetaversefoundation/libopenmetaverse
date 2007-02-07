@@ -222,8 +222,18 @@ namespace libsecondlife
     /// </summary>
     public class NetworkManager
     {
-        /// <summary>Maximum size of packet that we want to send over the wire</summary>
-        public const int MAX_PACKET_SIZE = 1200;
+        /// <summary>
+        /// Explains why a simulator or the grid disconnected from us
+        /// </summary>
+        public enum DisconnectType
+        {
+            /// <summary>The client requested the logout or simulator disconnect</summary>
+            ClientInitiated,
+            /// <summary>The server notified us that it is disconnecting</summary>
+            ServerInitiated,
+            /// <summary>Either a socket was closed or network traffic timed out</summary>
+            NetworkTimeout
+        }
 
 
         /// <summary>
@@ -257,20 +267,6 @@ namespace libsecondlife
 
 
         /// <summary>
-        /// Explains why a simulator or the grid disconnected from us
-        /// </summary>
-        public enum DisconnectType
-        {
-            /// <summary>The client requested the logout or simulator disconnect</summary>
-            ClientInitiated,
-            /// <summary>The server notified us that it is disconnecting</summary>
-            ServerInitiated,
-            /// <summary>Either a socket was closed or network traffic timed out</summary>
-            NetworkTimeout
-        }
-
-
-        /// <summary>
         /// An event for the connection to a simulator other than the currently
         /// occupied one disconnecting
         /// </summary>
@@ -285,36 +281,27 @@ namespace libsecondlife
         /// </summary>
         public event CurrentSimChangedCallback OnCurrentSimChanged;
 
-        /// <summary>
-        /// The permanent UUID for the logged in avatar
-        /// </summary>
+        /// <summary>The permanent UUID for the logged in avatar</summary>
         public LLUUID AgentID = LLUUID.Zero;
-        /// <summary>
-        /// Temporary UUID assigned to this session, used for verifying 
-        /// our identity in packets
-        /// </summary>
+        /// <summary>Temporary UUID assigned to this session, used for 
+        /// verifying our identity in packets</summary>
         public LLUUID SessionID = LLUUID.Zero;
-        /// <summary>
-        /// Shared secret UUID that is never sent over the wire
-        /// </summary>
+        /// <summary>Shared secret UUID that is never sent over the wire</summary>
         public LLUUID SecureSessionID = LLUUID.Zero;
-        /// <summary>
-        /// String holding a descriptive error on login failure, empty
-        /// otherwise
-        /// </summary>
+        /// <summary>Uniquely identifier associated with our connections to
+        /// simulators</summary>
+        public uint CircuitCode;
+        /// <summary>String holding a descriptive error on login failure, empty
+        /// otherwise</summary>
         public string LoginError = String.Empty;
-        /// <summary>
-        /// The simulator that the logged in avatar is currently occupying
-        /// </summary>
+        /// <summary>The simulator that the logged in avatar is currently 
+        /// occupying</summary>
         public Simulator CurrentSim = null;
-        /// <summary>
-        /// The capabilities for the current simulator
-        /// </summary>
+        /// <summary>The capabilities for the current simulator</summary>
         public Caps CurrentCaps = null;
-        /// <summary>
-        /// The complete dictionary of all the login values returned by the 
-        /// RPC login server, converted to native data types wherever possible
-        /// </summary>
+        /// <summary>The complete dictionary of all the login values returned 
+        /// by the RPC login server, converted to native data types wherever 
+        /// possible</summary>
         public Dictionary<string, object> LoginValues = new Dictionary<string, object>();
 
         /// <summary>
@@ -867,9 +854,12 @@ namespace libsecondlife
                 Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
                 Client.Self.InventoryRootFolderUUID = new LLUUID((string)htInventoryRoot["folder_id"]);
 
+                // Set the Circuit Code
+                CircuitCode = (uint)(int)LoginValues["circuit_code"];
+
                 // Connect to the sim given in the login reply
                 if (Connect(IPAddress.Parse((string)LoginValues["sim_ip"]), (ushort)(int)LoginValues["sim_port"],
-                    (uint)(int)LoginValues["circuit_code"], true, (string)LoginValues["seed_capability"]) == null)
+                    true, (string)LoginValues["seed_capability"]) == null)
                 {
                     LoginError = "Unable to connect to the simulator";
                     return false;
@@ -899,13 +889,12 @@ namespace libsecondlife
         /// </summary>
         /// <param name="ip">IP address to connect to</param>
         /// <param name="port">Port to connect to</param>
-        /// <param name="circuitCode">Circuit code to use for the connection</param>
         /// <param name="setDefault">Whether to set CurrentSim to this new
         /// connection, use this if the avatar is moving in to this simulator</param>
         /// <returns>A Simulator object on success, otherwise null</returns>
-        public Simulator Connect(IPAddress ip, ushort port, uint circuitCode, bool setDefault, string seedcaps)
+        public Simulator Connect(IPAddress ip, ushort port, bool setDefault, string seedcaps)
         {
-            Simulator simulator = new Simulator(Client, circuitCode, ip, (int)port, setDefault);
+            Simulator simulator = new Simulator(Client, ip, (int)port, setDefault);
 
             if (!simulator.Connected)
             {
@@ -1538,7 +1527,7 @@ namespace libsecondlife
             AgentThrottlePacket throttle = new AgentThrottlePacket();
             throttle.AgentData.AgentID = Client.Network.AgentID;
             throttle.AgentData.SessionID = Client.Network.SessionID;
-            throttle.AgentData.CircuitCode = Client.Network.CurrentSim.CircuitCode;
+            throttle.AgentData.CircuitCode = Client.Network.CircuitCode;
             throttle.Throttle.GenCounter = 0;
             throttle.Throttle.Throttles = this.ToBytes();
 
