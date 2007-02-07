@@ -57,9 +57,11 @@ namespace libsecondlife.Packets
     /// bytes in length at the beginning of the packet, and encapsulates any 
     /// appended ACKs at the end of the packet as well
     /// </summary>
+#if PACKETSERIALIZE
     [XmlInclude(typeof(LowHeader))]
     [XmlInclude(typeof(MediumHeader))]
     [XmlInclude(typeof(HighHeader))]
+#endif
     public abstract class Header
     {
         /// <summary>Raw header data, does not include appended ACKs</summary>

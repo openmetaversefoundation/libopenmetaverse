@@ -121,7 +121,7 @@ namespace libsecondlife
         // Sequence numbers of packets we've received from the simulator
         private Queue<uint> Inbox;
         // ACKs that are queued up to be sent to the simulator
-        private Dictionary<uint, uint> PendingAcks = new Dictionary<uint, uint>();
+        private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
@@ -140,8 +140,11 @@ namespace libsecondlife
             Estate = new EstateTools(Client);
             Network = client.Network;
             Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
+
+            // Start the ACK timer
             AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
+            AckTimer.Start();
 
             // Initialize the callback for receiving a new packet
             ReceivedData = new AsyncCallback(OnReceivedData);
@@ -165,9 +168,6 @@ namespace libsecondlife
                 use.CircuitCode.ID = Network.AgentID;
                 use.CircuitCode.SessionID = Network.SessionID;
 
-                // Start the ACK timer
-                AckTimer.Start();
-
                 // Send the initial packet out
                 SendPacket(use, true);
 
@@ -177,9 +177,8 @@ namespace libsecondlife
                 ConnectedEvent.Reset();
                 if (ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false) == false)
                 {
-                    Client.Log("Giving up on waiting for RegionHandshake", Helpers.LogLevel.Info);
+                    Client.Log("Giving up on waiting for RegionHandshake", Helpers.LogLevel.Warning);
                     connected = true;
-                    ConnectedEvent.Set();
                 }
             }
             catch (Exception e)
@@ -286,12 +285,9 @@ namespace libsecondlife
                             {
                                 packet.Header.AckList = new uint[PendingAcks.Count];
 
-                                int i = 0;
-
-                                foreach (uint ack in PendingAcks.Values)
+                                for (int i = 0; i < PendingAcks.Count; i++)
                                 {
-                                    packet.Header.AckList[i] = ack;
-                                    i++;
+                                    packet.Header.AckList[i] = PendingAcks.Values[i];
                                 }
 
                                 PendingAcks.Clear();
@@ -455,24 +451,23 @@ namespace libsecondlife
                         return;
                     }
 
-                    int i = 0;
                     PacketAckPacket acks = new PacketAckPacket();
+                    acks.Header.Reliable = false;
                     acks.Packets = new PacketAckPacket.PacketsBlock[PendingAcks.Count];
 
-                    foreach (uint ack in PendingAcks.Values)
+                    for (int i = 0; i < PendingAcks.Count; i++)
                     {
                         acks.Packets[i] = new PacketAckPacket.PacketsBlock();
-                        acks.Packets[i].ID = ack;
-                        i++;
+                        acks.Packets[i].ID = PendingAcks.Values[i];
                     }
-
-                    acks.Header.Reliable = false;
+                    
                     SendPacket(acks, true);
 
                     PendingAcks.Clear();
                 }
             }
         }
+
         /// <summary>
         /// Resend unacknowledged packets
         /// </summary>
@@ -495,6 +490,7 @@ namespace libsecondlife
                 }
             }
         }
+
         /// <summary>
         /// Callback handler for incomming data
         /// </summary>
@@ -506,6 +502,8 @@ namespace libsecondlife
 
             // Update the disconnect flag so this sim doesn't time out
             DisconnectCandidate = false;
+
+            #region Packet Decoding
 
             lock (RecvBuffer)
             {
@@ -535,14 +533,31 @@ namespace libsecondlife
                 return;
             }
 
-            // Track the sequence number for this packet if it's marked as reliable
+            #endregion Packet Decoding
+
+            #region Reliable Handling
+
             if (packet.Header.Reliable)
             {
-                if (PendingAcks.Count > Client.Settings.MAX_PENDING_ACKS)
+                // Queue up ACKs for resent packets
+                lock (PendingAcks)
                 {
-                    SendAcks();
+                    uint sequence = (uint)packet.Header.Sequence;
+                    if (!PendingAcks.ContainsKey(sequence)) PendingAcks[sequence] = sequence;
                 }
 
+                // Send out ACKs if we have a lot of them
+                if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
+                    SendAcks();
+            }
+
+            #endregion Reliable Handling
+
+            #region Inbox Tracking
+
+            // The Inbox doesn't serve a functional purpose any more, it's only used for debugging
+            lock (Inbox)
+            {
                 // Check if we already received this packet
                 if (Inbox.Contains(packet.Header.Sequence))
                 {
@@ -551,49 +566,34 @@ namespace libsecondlife
                         ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count,
                         Helpers.LogLevel.Info);
 
-                    // Send an ACK for this packet immediately
-                    //SendAck(packet.Header.Sequence);
-
-                    // TESTING: Try just queuing up ACKs for resent packets instead of immediately triggering an ACK
-                    lock (PendingAcks)
-                    {
-                        uint sequence = (uint)packet.Header.Sequence;
-                        if (!PendingAcks.ContainsKey(sequence)) { PendingAcks[sequence] = sequence; }
-                    }
-
                     // Avoid firing a callback twice for the same packet
                     return;
                 }
                 else
                 {
-                    lock (PendingAcks)
+                    // Keep the Inbox size within a certain capacity
+                    while (Inbox.Count >= Client.Settings.INBOX_SIZE)
                     {
-                        uint sequence = (uint)packet.Header.Sequence;
-                        if (!PendingAcks.ContainsKey(sequence)) { PendingAcks[sequence] = sequence; }
+                        Inbox.Dequeue(); Inbox.Dequeue();
+                        Inbox.Dequeue(); Inbox.Dequeue();
                     }
+
+                    // Add this packet to the inbox
+                    Inbox.Enqueue(packet.Header.Sequence);
                 }
             }
 
-            // Add this packet to our inbox
-            lock (Inbox)
-            {
-                while (Inbox.Count >= Client.Settings.INBOX_SIZE)
-                {
-                    Inbox.Dequeue();
-                    Inbox.Dequeue();
-                }
-                Inbox.Enqueue(packet.Header.Sequence);
-            }
+            #endregion Inbox Tracking
+
+            #region ACK handling
 
             // Handle appended ACKs
             if (packet.Header.AppendedAcks)
             {
                 lock (NeedAck)
                 {
-                    foreach (uint ack in packet.Header.AckList)
-                    {
-                        NeedAck.Remove(ack);
-                    }
+                    for (int i = 0; i < packet.Header.AckList.Length; i++)
+                        NeedAck.Remove(packet.Header.AckList[i]);
                 }
             }
 
@@ -604,34 +604,26 @@ namespace libsecondlife
 
                 lock (NeedAck)
                 {
-                    foreach (PacketAckPacket.PacketsBlock block in ackPacket.Packets)
-                    {
-                        NeedAck.Remove(block.ID);
-                    }
+                    for (int i = 0; i < ackPacket.Packets.Length; i++)
+                        NeedAck.Remove(ackPacket.Packets[i].ID);
                 }
             }
 
+            #endregion ACK handling
 
-            // Fire the registered packet events
             #region FireCallbacks
+
             if (Network.Callbacks.ContainsKey(packet.Type))
             {
                 List<NetworkManager.PacketCallback> callbackArray = Network.Callbacks[packet.Type];
 
                 // Fire any registered callbacks
-                foreach (NetworkManager.PacketCallback callback in callbackArray)
+                for (int i = 0; i < callbackArray.Count; i++)
                 {
-                    if (callback != null)
+                    if (callbackArray[i] != null)
                     {
-                        try
-                        {
-                            callback(packet, this);
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in a packet callback: " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
+                        try { callbackArray[i](packet, this); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
             }
@@ -641,22 +633,16 @@ namespace libsecondlife
                 List<NetworkManager.PacketCallback> callbackArray = Network.Callbacks[PacketType.Default];
 
                 // Fire any registered callbacks
-                foreach (NetworkManager.PacketCallback callback in callbackArray)
+                for (int i = 0; i < callbackArray.Count; i++)
                 {
-                    if (callback != null)
+                    if (callbackArray[i] != null)
                     {
-                        try
-                        {
-                            callback(packet, this);
-                        }
-                        catch (Exception e)
-                        {
-                            Client.Log("Caught an exception in a packet callback: " + e.ToString(),
-                                Helpers.LogLevel.Error);
-                        }
+                        try { callbackArray[i](packet, this); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
             }
+
             #endregion FireCallbacks
         }
 
