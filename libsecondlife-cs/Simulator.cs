@@ -175,7 +175,12 @@ namespace libsecondlife
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
                 ConnectedEvent.Reset();
-                ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false);
+                if (ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false) == false)
+                {
+                    Client.Log("Giving up on waiting for RegionHandshake", Helpers.LogLevel.Info);
+                    connected = true;
+                    ConnectedEvent.Set();
+                }
             }
             catch (Exception e)
             {
@@ -473,22 +478,19 @@ namespace libsecondlife
         /// </summary>
         private void ResendUnacked()
         {
-            if (connected)
+            int now = Environment.TickCount;
+
+            lock (NeedAck)
             {
-                int now = Environment.TickCount;
-
-                lock (NeedAck)
+                foreach (Packet packet in NeedAck.Values)
                 {
-                    foreach (Packet packet in NeedAck.Values)
+                    if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
-                        if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
-                        {
-                            Client.Log("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
-                                "), " + (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
+                        Client.Log("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
+                            "), " + (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
 
-                            packet.Header.Resent = true;
-                            SendPacket(packet, false);
-                        }
+                        packet.Header.Resent = true;
+                        SendPacket(packet, false);
                     }
                 }
             }
