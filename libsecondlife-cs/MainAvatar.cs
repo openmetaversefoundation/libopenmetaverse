@@ -676,7 +676,8 @@ namespace libsecondlife
 		/// <param name="dialog">Dialog code to be sent.</param>
 		public void InstantMessage(LLUUID target, InstantMessageDialog dialog)
 		{
-			InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, String.Empty, null, LLUUID.Random(), dialog);
+			InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, String.Empty, null, LLUUID.Random(), 
+                dialog, true);
 		}
 
         /// <summary>
@@ -698,7 +699,8 @@ namespace libsecondlife
         /// <param name="target">Key of Avatar</param>
         /// <param name="message">Text Message being sent.</param>
         /// <param name="conferenceIDs"></param>
-        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, LLUUID[] conferenceIDs)
+        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, 
+            LLUUID[] conferenceIDs)
         {
             InstantMessage(fromName, sessionID, target, message, conferenceIDs, LLUUID.Random());
         }
@@ -715,7 +717,8 @@ namespace libsecondlife
 		public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message,
 			LLUUID[] conferenceIDs, LLUUID IMSessionID)
 		{
-			InstantMessage(fromName, sessionID, target, message, conferenceIDs, IMSessionID, InstantMessageDialog.MessageFromAgent);
+			InstantMessage(fromName, sessionID, target, message, conferenceIDs, IMSessionID, 
+                InstantMessageDialog.MessageFromAgent, true);
 		}
 
         /// <summary>
@@ -727,8 +730,10 @@ namespace libsecondlife
         /// <param name="message">Text message being sent</param>
         /// <param name="conferenceIDs"></param>
         /// <param name="IMSessionID">IM session ID (to differentiate between IM windows)</param>
+        /// <param name="dialog">Type of instant message to send</param>
+        /// <param name="offline">Whether to IM offline avatars as well</param>
         public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message,
-            LLUUID[] conferenceIDs, LLUUID IMSessionID, InstantMessageDialog dialog)
+            LLUUID[] conferenceIDs, LLUUID IMSessionID, InstantMessageDialog dialog, bool offline)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
             im.AgentData.AgentID = this.ID;
@@ -738,7 +743,7 @@ namespace libsecondlife
             im.MessageBlock.FromGroup = false;
             im.MessageBlock.ID = IMSessionID;
             im.MessageBlock.Message = Helpers.StringToField(message);
-            im.MessageBlock.Offline = 1;
+            im.MessageBlock.Offline = (byte)(offline ? 1 : 0);
             im.MessageBlock.ToAgentID = target;
             if (conferenceIDs != null && conferenceIDs.Length > 0)
             {
