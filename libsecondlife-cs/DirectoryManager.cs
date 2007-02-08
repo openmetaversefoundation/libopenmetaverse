@@ -124,13 +124,15 @@ namespace libsecondlife
         public enum SearchTypeFlags
         {
             /// <summary></summary>
-            Auction = 1 << 0,
+            None = 0,
             /// <summary></summary>
-            Newbie = 1 << 1,
+            Auction = 1 << 1,
             /// <summary></summary>
-            Mainland = 1 << 2,
+            Newbie = 1 << 2,
             /// <summary></summary>
-            Estate = 1 << 3
+            Mainland = 1 << 3,
+            /// <summary></summary>
+            Estate = 1 << 4
         }
 
 
@@ -245,14 +247,67 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Starts a search for land sales using the directory
         /// </summary>
-        /// <param name="findFlags"></param>
-        /// <param name="typeFlags"></param>
-        /// <param name="priceLimit"></param>
-        /// <param name="areaLimit"></param>
-        /// <param name="queryStart"></param>
-        /// <returns></returns>
+        /// <param name="typeFlags">What type of land to search for. Auction, 
+        /// estate, mainland, "first land", etc</param>
+        /// <returns>A unique identifier that can identify packets associated
+        /// with this query from other queries</returns>
+        /// <remarks>The OnDirLandReply event handler must be registered before
+        /// calling this function. There is no way to determine how many 
+        /// results will be returned, or how many times the callback will be 
+        /// fired other than you won't get more than 100 total parcels from 
+        /// each query.</remarks>
+        public LLUUID StartLandSearch(SearchTypeFlags typeFlags)
+        {
+            return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort, 0, 0, 0);
+        }
+
+        /// <summary>
+        /// Starts a search for land sales using the directory
+        /// </summary>
+        /// <param name="typeFlags">What type of land to search for. Auction, 
+        /// estate, mainland, "first land", etc</param>
+        /// <param name="priceLimit">Maximum price to search for</param>
+        /// <param name="areaLimit">Maximum area to search for</param>
+        /// <param name="queryStart">Each request is limited to 100 parcels
+        /// being returned. To get the first 100 parcels of a request use 0,
+        /// from 100-199 use 1, 200-299 use 2, etc.</param>
+        /// <returns>A unique identifier that can identify packets associated
+        /// with this query from other queries</returns>
+        /// <remarks>The OnDirLandReply event handler must be registered before
+        /// calling this function. There is no way to determine how many 
+        /// results will be returned, or how many times the callback will be 
+        /// fired other than you won't get more than 100 total parcels from 
+        /// each query.</remarks>
+        public LLUUID StartLandSearch(SearchTypeFlags typeFlags, int priceLimit, int areaLimit, int queryStart)
+        {
+            return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort | DirFindFlags.LimitByPrice | 
+                DirFindFlags.LimitByArea, priceLimit, areaLimit, queryStart);
+        }
+
+        /// <summary>
+        /// Starts a search for land sales using the directory
+        /// </summary>
+        /// <param name="findFlags">A flags parameter that can modify the way
+        /// search results are returned, for example changing the ordering of
+        /// results or limiting based on price or area</param>
+        /// <param name="typeFlags">What type of land to search for. Auction, 
+        /// estate, mainland, "first land", etc</param>
+        /// <param name="priceLimit">Maximum price to search for, the 
+        /// DirFindFlags.LimitByPrice flag must be set</param>
+        /// <param name="areaLimit">Maximum area to search for, the
+        /// DirFindFlags.LimitByArea flag must be set</param>
+        /// <param name="queryStart">Each request is limited to 100 parcels
+        /// being returned. To get the first 100 parcels of a request use 0,
+        /// from 100-199 use 1, 200-299 use 2, etc.</param>
+        /// <returns>A unique identifier that can identify packets associated
+        /// with this query from other queries</returns>
+        /// <remarks>The OnDirLandReply event handler must be registered before
+        /// calling this function. There is no way to determine how many 
+        /// results will be returned, or how many times the callback will be 
+        /// fired other than you won't get more than 100 total parcels from 
+        /// each query.</remarks>
         public LLUUID StartLandSearch(DirFindFlags findFlags, SearchTypeFlags typeFlags, int priceLimit,
             int areaLimit, int queryStart)
         {
