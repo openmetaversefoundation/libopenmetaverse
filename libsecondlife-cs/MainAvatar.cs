@@ -764,6 +764,43 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Send an Instant Message to a group
+        /// </summary>
+        /// <param name="groupUUID">Key of Group</param>
+        /// <param name="message">Text Message being sent.</param>
+        public void InstantMessageGroup(LLUUID groupUUID, string message)
+        {
+            InstantMessageGroup(FirstName + " " + LastName, groupUUID, message);
+        }
+
+        /// <summary>
+        /// Send an Instant Message to a group
+        /// </summary>
+        /// <param name="fromName">The name this IM will show up as being from</param>
+        /// <param name="groupUUID">Key of the group</param>
+        /// <param name="message">Text message being sent</param>
+        /// <remarks>This does not appear to function with groups the agent is not in</remarks>
+        public void InstantMessageGroup(string fromName, LLUUID groupUUID, string message)
+        {
+            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+
+            im.AgentData.AgentID = this.ID;
+            im.AgentData.SessionID = Client.Network.SessionID;
+            im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.SessionSend;
+            im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+            im.MessageBlock.FromGroup = false;
+            im.MessageBlock.Message = Helpers.StringToField(message);
+            im.MessageBlock.Offline = 0;
+            im.MessageBlock.ID = groupUUID;
+            im.MessageBlock.ToAgentID = groupUUID;
+            im.MessageBlock.BinaryBucket = new byte[0];
+            im.MessageBlock.Position = LLVector3.Zero;
+            im.MessageBlock.RegionID = LLUUID.Zero;
+
+            // Send the message
+            Client.Network.SendPacket(im);
+        }
+
         /// 
         /// </summary>
         /// <param name="sourceAvatar"></param>
