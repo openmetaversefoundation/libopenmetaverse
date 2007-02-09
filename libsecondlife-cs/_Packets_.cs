@@ -1249,7 +1249,7 @@ namespace libsecondlife.Packets
     {
         public abstract Header Header { get; set; }
         public abstract PacketType Type { get; }
-        internal int TickCount;
+        public int TickCount;
 
         public abstract byte[] ToBytes();
 

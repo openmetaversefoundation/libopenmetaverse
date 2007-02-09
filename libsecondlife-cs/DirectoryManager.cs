@@ -260,7 +260,7 @@ namespace libsecondlife
         /// each query.</remarks>
         public LLUUID StartLandSearch(SearchTypeFlags typeFlags)
         {
-            return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort, 0, 0, 0);
+            return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort, typeFlags, 0, 0, 0);
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace libsecondlife
         public LLUUID StartLandSearch(SearchTypeFlags typeFlags, int priceLimit, int areaLimit, int queryStart)
         {
             return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort | DirFindFlags.LimitByPrice | 
-                DirFindFlags.LimitByArea, priceLimit, areaLimit, queryStart);
+                DirFindFlags.LimitByArea, typeFlags, priceLimit, areaLimit, queryStart);
         }
 
         /// <summary>

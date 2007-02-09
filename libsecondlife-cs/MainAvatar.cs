@@ -736,7 +736,7 @@ namespace libsecondlife
             LLUUID[] conferenceIDs, LLUUID IMSessionID, InstantMessageDialog dialog, bool offline)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
-            im.AgentData.AgentID = this.ID;
+            im.AgentData.AgentID = Client.Network.AgentID;
             im.AgentData.SessionID = Client.Network.SessionID;
             im.MessageBlock.Dialog = (byte)dialog;
             im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
@@ -789,7 +789,7 @@ namespace libsecondlife
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
 
-            im.AgentData.AgentID = this.ID;
+            im.AgentData.AgentID = Client.Network.AgentID;
             im.AgentData.SessionID = Client.Network.SessionID;
             im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.SessionSend;
             im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
