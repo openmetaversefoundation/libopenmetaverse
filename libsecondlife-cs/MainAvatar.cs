@@ -815,8 +815,13 @@ namespace libsecondlife
         public void PointAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, PointAtType type)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
+
+            effect.AgentData.AgentID = Client.Network.AgentID;
+            effect.AgentData.SessionID = Client.Network.SessionID;
+
             effect.Effect = new ViewerEffectPacket.EffectBlock[1];
             effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
+            effect.Effect[0].AgentID = Client.Network.AgentID;
             effect.Effect[0].Color = LLColor.Black.GetBytes();
             effect.Effect[0].Duration = (type == PointAtType.Clear) ? 0.0f : Single.MaxValue / 4.0f;
             effect.Effect[0].ID = LLUUID.Random();
@@ -847,8 +852,13 @@ namespace libsecondlife
             float duration)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
+
+            effect.AgentData.AgentID = Client.Network.AgentID;
+            effect.AgentData.SessionID = Client.Network.SessionID;
+
             effect.Effect = new ViewerEffectPacket.EffectBlock[1];
             effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
+            effect.Effect[0].AgentID = Client.Network.AgentID;
             effect.Effect[0].Color = color.GetBytes();
             effect.Effect[0].Duration = duration;
             effect.Effect[0].ID = LLUUID.Random();
