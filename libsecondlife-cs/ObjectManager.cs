@@ -990,10 +990,11 @@ namespace libsecondlife
         protected void UpdateHandler(Packet packet, Simulator simulator)
         {
 
-			ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
-			UpdateDilation(simulator, update.RegionData.TimeDilation);
             if (AlwaysDecode || OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
             {
+                ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
+				UpdateDilation(simulator, update.RegionData.TimeDilation);
+
                 foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
                 {
                     LLVector4 collisionPlane = LLVector4.Zero;
