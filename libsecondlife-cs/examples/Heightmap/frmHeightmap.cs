@@ -43,6 +43,7 @@ namespace Heightmap
                     box.Location = new System.Drawing.Point(x * 16, y * 16);
                     box.Size = new System.Drawing.Size(16, 16);
                     box.Visible = true;
+                    box.MouseUp += new MouseEventHandler(box_MouseUp);
                     ((System.ComponentModel.ISupportInitialize)(box)).EndInit();
 
                     this.Controls.Add(box);
@@ -56,6 +57,8 @@ namespace Heightmap
         private void frmHeightmap_Load(object sender, EventArgs e)
         {
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
+            // Only needed so we can do lookups with TerrainHeightAtPoint
+            Client.Settings.STORE_LAND_PATCHES = true;
 
             Dictionary<string, object> loginvals = Client.Network.DefaultLoginValues(FirstName, LastName, Password,
                 "Heightmap", "jhurliman@wsu.edu");
@@ -72,9 +75,34 @@ namespace Heightmap
                 UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
                 UpdateTimer.Start();
 
-                // Crank up the terrain throttle
+                // Crank up the terrain throttle and turn off or down other useless info
+                Client.Throttle.Total = 0.0f;
                 Client.Throttle.Land = 999999.0f;
                 Client.Throttle.Set();
+            }
+        }
+
+        private void box_MouseUp(object sender, MouseEventArgs e)
+        {
+            for (int y = 0; y < 16; y++)
+            {
+                for (int x = 0; x < 16; x++)
+                {
+                    if (Boxes[x, y] == sender)
+                    {
+                        float height;
+                        if (Client.Terrain.TerrainHeightAtPoint(Client.Network.CurrentSim.Handle,
+                            x * 16 + e.X, y * 16 + e.Y, out height))
+                        {
+                            MessageBox.Show(height.ToString());
+                        }
+                        else
+                        {
+                            MessageBox.Show("Unknown height");
+                        }
+                        return;
+                    }
+                }
             }
         }
 
