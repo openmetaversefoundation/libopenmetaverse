@@ -36,6 +36,78 @@ namespace libsecondlife
     /// </summary>
     public class Parcel
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum ParcelFlags : uint
+        {
+            /// <summary>No flags set</summary>
+            None = 0,
+            /// <summary>Allow avatars to fly (a client-side only restriction)</summary>
+            AllowFly = 1 << 0,
+            /// <summary>Allow foreign scripts to run</summary>
+            AllowOtherScripts = 1 << 1,
+            /// <summary>This parcel is for sale</summary>
+            ForSale = 1 << 2,
+            /// <summary>Allow avatars to create a landmark on this parcel</summary>
+            AllowLandmark = 1 << 3,
+            /// <summary></summary>
+            AllowTerraform = 1 << 4,
+            /// <summary>Avatars have health and can take damage on this parcel</summary>
+            AllowDamage = 1 << 5,
+            /// <summary>Foreign avatars can create objects here</summary>
+            CreateObjects = 1 << 6,
+            /// <summary>All objects on this parcel can be purchased</summary>
+            ForSaleObjects = 1 << 7,
+            /// <summary>Access is restricted to a group</summary>
+            UseAccessGroup = 1 << 8,
+            /// <summary>Access is restricted to a whitelist</summary>
+            UseAccessList = 1 << 9,
+            /// <summary>Ban blacklist is enabled</summary>
+            UseBanList = 1 << 10,
+            /// <summary>Unknown</summary>
+            UsePassList = 1 << 11,
+            /// <summary>List this parcel in the search directory</summary>
+            ShowDirectory = 1 << 12,
+            /// <summary>Unknown</summary>
+            AllowDeedToGroup = 1 << 13,
+            /// <summary>Unknown</summary>
+            ContributeWithDeed = 1 << 14,
+            /// <summary>Restrict sounds originating on this parcel to the 
+            /// parcel boundaries</summary>
+            SoundLocal = 1 << 15,
+            /// <summary>Objects on this parcel are sold when the land is 
+            /// purchsaed</summary>
+            SellParcelObjects = 1 << 16,
+            /// <summary>Allow this parcel to be published on the web</summary>
+            AllowPublish = 1 << 17,
+            /// <summary>The information for this parcel is mature content</summary>
+            MaturePublish = 1 << 18,
+            /// <summary>The media URL is an HTML page</summary>
+            UrlWebPage = 1 << 19,
+            /// <summary>The media URL is a raw HTML string</summary>
+            UrlRawHtml = 1 << 20,
+            /// <summary>Restrict foreign object pushes</summary>
+            RestrictPushObject = 1 << 21,
+            /// <summary>Ban all non identified/transacted avatars</summary>
+            DenyAnonymous = 1 << 22,
+            /// <summary>Ban all identified avatars</summary>
+            DenyIdentified = 1 << 23,
+            /// <summary>Ban all transacted avatars</summary>
+            DenyTransacted = 1 << 24,
+            /// <summary>Allow group-owned scripts to run</summary>
+            AllowGroupScripts = 1 << 25,
+            /// <summary>Allow object creation by group members or group 
+            /// objects</summary>
+            CreateGroupObjects = 1 << 26,
+            /// <summary>Allow all objects to enter this parcel</summary>
+            AllowAllObjectEntry = 1 << 27,
+            /// <summary>Only allow group and owner objects to enter this parcel</summary>
+            AllowGroupObjectEntry = 1 << 28,
+        }
+
+
         /// <summary></summary>
         public int RequestResult;
         /// <summary></summary>
@@ -93,7 +165,7 @@ namespace libsecondlife
         /// <summary></summary>
         public int OtherCleanTime;
         /// <summary></summary>
-        public uint ParcelFlags;
+        public ParcelFlags Flags;
         /// <summary></summary>
         public int SalePrice;
         /// <summary>Parcel Name</summary>
@@ -262,7 +334,7 @@ namespace libsecondlife
             request.ParcelData.MediaURL = Helpers.StringToField(this.MediaURL);
             request.ParcelData.MusicURL = Helpers.StringToField(this.MusicURL);
             request.ParcelData.Name = Helpers.StringToField(this.Name);
-            request.ParcelData.ParcelFlags = this.ParcelFlags;
+            request.ParcelData.Flags = (uint)this.Flags;
             request.ParcelData.PassHours = this.PassHours;
             request.ParcelData.PassPrice = this.PassPrice;
             request.ParcelData.SalePrice = this.SalePrice;
@@ -477,7 +549,7 @@ namespace libsecondlife
                 parcel.OtherObjects = properties.ParcelData.OtherPrims;
                 parcel.ParcelObjectBonus = properties.ParcelData.ParcelPrimBonus;
                 parcel.OtherCleanTime = properties.ParcelData.OtherCleanTime;
-                parcel.ParcelFlags = properties.ParcelData.ParcelFlags;
+                parcel.Flags = (Parcel.ParcelFlags)properties.ParcelData.ParcelFlags;
                 parcel.SalePrice = properties.ParcelData.SalePrice;
                 parcel.Name = Helpers.FieldToString(properties.ParcelData.Name);
                 parcel.Desc = Helpers.FieldToString(properties.ParcelData.Desc);
