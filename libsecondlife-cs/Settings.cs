@@ -74,6 +74,8 @@ namespace libsecondlife
         public int UPLOAD_COST { get { return priceUpload; } }
         /// <summary>Enable/disable debugging log messages</summary>
         public bool DEBUG = true;
+        /// <summary>Enable/disable storing terrain heightmaps in the TerrainManager</summary>
+        public bool STORE_LAND_PATCHES = false;
 
         private SecondLife Client;
         private int priceUpload = 0;

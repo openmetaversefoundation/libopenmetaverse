@@ -56,10 +56,26 @@ namespace libsecondlife
             public uint WordBits;
         }
 
+        public class Patch
+        {
+            public float[] Heightmap;
+        }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="width"></param>
+        /// <param name="data"></param>
         public delegate void LandPatchCallback(Simulator simulator, int x, int y, int width, float[] data);
 
 
+        /// <summary>
+        /// 
+        /// </summary>
         public event LandPatchCallback OnLandPatch;
 
 
@@ -68,6 +84,7 @@ namespace libsecondlife
         private const float OO_SQRT2 = 0.7071067811865475244008443621049f;
 
         private SecondLife Client;
+        private Dictionary<ulong, Patch[]> SimPatches = new Dictionary<ulong, Patch[]>();
         private float[] DequantizeTable16 = new float[16 * 16];
         private float[] DequantizeTable32 = new float[32 * 32];
         private float[] ICosineTable16 = new float[16 * 16];
@@ -76,6 +93,10 @@ namespace libsecondlife
         private int[] DeCopyMatrix32 = new int[32 * 32];
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
         public TerrainManager(SecondLife client)
         {
             Client = client;
@@ -89,6 +110,39 @@ namespace libsecondlife
             BuildDecopyMatrix32();
 
             Client.Network.RegisterCallback(PacketType.LayerData, new NetworkManager.PacketCallback(LayerDataHandler));
+        }
+
+        /// <summary>
+        /// Retrieve the terrain height at a given coordinate
+        /// </summary>
+        /// <param name="regionHandle">The region that the point of interest is in</param>
+        /// <param name="x">Sim X coordinate, valid range is from 0 to 255</param>
+        /// <param name="y">Sim Y coordinate, valid range is from 0 to 255</param>
+        /// <param name="height">The terrain height at the given point if the
+        /// lookup was successful, otherwise 0.0f</param>
+        /// <returns>True if the lookup was successful, otherwise false</returns>
+        public bool TerrainHeightAtPoint(ulong regionHandle, int x, int y, out float height)
+        {
+            if (x > 0 && x < 256 && y > 0 && y < 256)
+            {
+                lock (SimPatches)
+                {
+                    if (SimPatches.ContainsKey(regionHandle))
+                    {
+                        int patchX = (int)Math.DivRem(x, 16, out x);
+                        int patchY = (int)Math.DivRem(y, 16, out y);
+
+                        if (SimPatches[regionHandle][patchY * 16 + patchX] != null)
+                        {
+                            height = SimPatches[regionHandle][patchY * 16 + patchX].Heightmap[y * 16 + x];
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            height = 0.0f;
+            return false;
         }
 
         private void BuildDequantizeTable16()
@@ -464,6 +518,18 @@ namespace libsecondlife
                 {
                     try { OnLandPatch(simulator, x, y, group.PatchSize, heightmap); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+
+                    if (Client.Settings.STORE_LAND_PATCHES)
+                    {
+                        lock (SimPatches)
+                        {
+                            if (!SimPatches.ContainsKey(simulator.Handle))
+                                SimPatches.Add(simulator.Handle, new Patch[16 * 16]);
+
+                            SimPatches[simulator.Handle][y * 16 + x] = new Patch();
+                            SimPatches[simulator.Handle][y * 16 + x].Heightmap = heightmap;
+                        }
+                    }
                 }
             }
         }
