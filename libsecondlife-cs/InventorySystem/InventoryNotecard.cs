@@ -64,7 +64,7 @@ namespace libsecondlife.InventorySystem
         internal InventoryNotecard(InventoryManager manager, InventoryItem ii)
 			: base( manager, ii._Name, ii._Description, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
 		{
-			if( (ii.InvType != 7) || (ii.Type != Asset.ASSET_TYPE_NOTECARD) )
+            if ((ii.InvType != 7) || (ii.Type != (sbyte)Asset.AssetType.Notecard))
 			{
 				throw new Exception("The InventoryItem cannot be converted to a Notecard, wrong InvType/Type.");
 			}

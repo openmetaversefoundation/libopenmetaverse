@@ -125,14 +125,14 @@ namespace libsecondlife.AssetSystem
             {
                 if (SecondsSinceLastPacket > hardTimeout)
                 {
-                    _StatusMsg += "Timeout Failure - Hard timeout reached ";
+                    _StatusMsg += "Timeout Failure - Hard timeout reached (" + SecondsSinceLastPacket + " > " + hardTimeout + ")";
                     return RequestStatus.Failure;
                 }
                 else
                 {
                     if (SecondsSinceLastPacket > softTimeout)
                     {
-                        _StatusMsg += "Timeout Failure - No packets in " + SecondsSinceLastPacket;
+                        _StatusMsg += "Timeout Failure - Soft Timeout ( " + SecondsSinceLastPacket + " > " + softTimeout + ")";
                         return RequestStatus.Failure;
                     }
                 }

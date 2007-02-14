@@ -46,7 +46,7 @@ namespace libsecondlife.InventorySystem
         public InventoryScript(InventoryManager manager, InventoryItem ii)
             : base(manager, ii.Name, ii.Description, ii.FolderID, ii.InvType, ii.Type, ii.CreatorID)
         {
-            if ( ii.InvType != 10 || ii.Type != Asset.ASSET_TYPE_SCRIPT )
+            if (ii.InvType != 10 || ii.Type != (sbyte)Asset.AssetType.LSLText)
                 throw new Exception("The InventoryItem cannot be converted to a Script, wrong InvType/Type.");
             this.iManager = manager;
             this._ItemID = ii._ItemID;

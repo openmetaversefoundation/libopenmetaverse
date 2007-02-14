@@ -812,19 +812,19 @@ namespace libsecondlife.InventorySystem
 
                         if (InvFolderUpdating._Contents.Contains(TempInvItem) == false)
                         {
-                            if ((TempInvItem.InvType == 7) && (TempInvItem.Type == Asset.ASSET_TYPE_NOTECARD))
+                            if ((TempInvItem.InvType == 7) && (TempInvItem.Type == (sbyte)Asset.AssetType.Notecard))
                             {
                                 InventoryItem temp = new InventoryNotecard(this, TempInvItem);
                                 TempInvItem = temp;
                             }
 
-                            if ((TempInvItem.InvType == 0) && (TempInvItem.Type == Asset.ASSET_TYPE_IMAGE))
+                            if ((TempInvItem.InvType == 0) && (TempInvItem.Type == (sbyte)Asset.AssetType.Texture))
                             {
                                 InventoryItem temp = new InventoryImage(this, TempInvItem);
                                 TempInvItem = temp;
                             }
 
-                            if ( (TempInvItem.InvType == 10) && (TempInvItem.Type == Asset.ASSET_TYPE_SCRIPT) )
+                            if ((TempInvItem.InvType == 10) && (TempInvItem.Type == (sbyte)Asset.AssetType.LSLText))
                             {
                                 InventoryItem temp = new InventoryScript(this, TempInvItem);
                                 TempInvItem = temp;
@@ -832,8 +832,8 @@ namespace libsecondlife.InventorySystem
 
                             if ((TempInvItem.InvType == 18) && 
                                 (
-                                    (TempInvItem.Type == Asset.ASSET_TYPE_WEARABLE_BODY)
-                                    || (TempInvItem.Type == Asset.ASSET_TYPE_WEARABLE_CLOTHING)
+                                    (TempInvItem.Type == (sbyte)Asset.AssetType.Bodypart)
+                                    || (TempInvItem.Type == (sbyte)Asset.AssetType.Clothing)
                                 )
                                )
 

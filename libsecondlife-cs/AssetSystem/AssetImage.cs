@@ -48,7 +48,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="assetID"></param>
         /// <param name="assetData"></param>
         public AssetImage(LLUUID assetID, byte[] assetData)
-            : base(assetID, Asset.ASSET_TYPE_IMAGE, false, assetData)
+            : base(assetID, (sbyte)Asset.AssetType.Texture, false, assetData)
 		{
 		}
 

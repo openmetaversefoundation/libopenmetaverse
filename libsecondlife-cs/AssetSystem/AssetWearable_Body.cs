@@ -41,7 +41,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="assetID"></param>
         /// <param name="assetData"></param>
         public AssetWearable_Body(LLUUID assetID, byte[] assetData)
-            : base(assetID, Asset.ASSET_TYPE_WEARABLE_BODY, assetData)
+            : base(assetID, (sbyte)Asset.AssetType.Bodypart, assetData)
 		{
 		}
 	}

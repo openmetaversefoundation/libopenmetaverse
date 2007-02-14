@@ -18,14 +18,14 @@ namespace libsecondlife.AssetSystem
         }
 
         public AssetScript(LLUUID assetID, string source)
-            : base(assetID, Asset.ASSET_TYPE_SCRIPT, false, null)
+            : base(assetID, (sbyte)Asset.AssetType.LSLText, false, null)
         {
             _Source = source;
             setAsset(source);
         }
 
         public AssetScript(LLUUID assetID, byte[] assetData)
-            : base(assetID, Asset.ASSET_TYPE_SCRIPT, false, assetData)
+            : base(assetID, (sbyte)Asset.AssetType.LSLText, false, assetData)
         {
             _Source = System.Text.Encoding.UTF8.GetString(assetData).Trim();
         }

@@ -54,7 +54,7 @@ namespace libsecondlife.InventorySystem
 		internal InventoryImage( InventoryManager manager, InventoryItem ii )
 			: base( manager, ii._Name, ii._Description, ii._FolderID, ii._InvType, ii._Type, ii._CreatorID)
 		{
-			if( (ii.InvType != 0) || (ii.Type != Asset.ASSET_TYPE_IMAGE) )
+			if( (ii.InvType != 0) || (ii.Type != (sbyte)Asset.AssetType.Texture) )
 			{
 				throw new Exception("The InventoryItem cannot be converted to a Image/Texture, wrong InvType/Type.");
 			}

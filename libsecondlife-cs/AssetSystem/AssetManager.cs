@@ -73,6 +73,8 @@ namespace libsecondlife.AssetSystem
 	/// </summary>
 	public class AssetManager
 	{
+
+
 		protected SecondLife slClient;
 
         protected AssetRequestUpload curUploadRequest = null;
@@ -148,7 +150,7 @@ namespace libsecondlife.AssetSystem
                 curUploadRequest = new AssetRequestUpload(slClient, LLUUID.Random(), asset);
 
                 LLUUID assetID = curUploadRequest.DoUpload();
-                if (asset.Type == Asset.ASSET_TYPE_IMAGE)
+                if (asset.Type == (sbyte)Asset.AssetType.Texture)
                 {
                     SinkFee();
                 }

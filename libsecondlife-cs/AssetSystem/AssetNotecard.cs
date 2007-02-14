@@ -51,7 +51,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="assetID"></param>
         /// <param name="body"></param>
         public AssetNotecard(LLUUID assetID, string body)
-            : base(assetID, Asset.ASSET_TYPE_NOTECARD, false, null)
+            : base(assetID, (sbyte)Asset.AssetType.Notecard, false, null)
 		{
 			_Body = body;
 			setAsset( body );
@@ -62,7 +62,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="assetID"></param>
         /// <param name="assetData"></param>
         public AssetNotecard(LLUUID assetID, byte[] assetData)
-            : base(assetID, Asset.ASSET_TYPE_NOTECARD, false, null)
+            : base(assetID, (sbyte)Asset.AssetType.Notecard, false, null)
 		{
 			_AssetData = assetData;
 

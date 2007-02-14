@@ -145,10 +145,17 @@ namespace libsecondlife.AssetSystem
             {
                 if (ib is InventoryWearable)
                 {
-                    InventoryWearable iw = (InventoryWearable)ib;
-                    byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
-                    AgentWearablesData[type].ItemID  = iw.ItemID;
-                    AgentWearablesData[type].AssetID = iw.AssetID;
+                    try
+                    {
+                        InventoryWearable iw = (InventoryWearable)ib;
+                        byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
+                        AgentWearablesData[type].ItemID = iw.ItemID;
+                        AgentWearablesData[type].AssetID = iw.AssetID;
+                    }
+                    catch (Exception e)
+                    {
+                        Client.Log("Asset for " + ib._Name + " unavailable: " + e.Message, Helpers.LogLevel.Error);
+                    }
                 }
             }
 
@@ -239,9 +246,12 @@ namespace libsecondlife.AssetSystem
                 AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
                 if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
                 {
-                    throw new Exception("Asset (" + wearableAsset.AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ")");
+                    Client.Log("Asset (" + wearableAsset.AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ")", Helpers.LogLevel.Error);
                 }
-                wearableAsset.SetAssetData(request.GetAssetData());
+                else
+                {
+                    wearableAsset.SetAssetData(request.GetAssetData());
+                }
 
                 if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
                 {

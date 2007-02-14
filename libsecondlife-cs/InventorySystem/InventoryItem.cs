@@ -135,7 +135,31 @@ namespace libsecondlife.InventorySystem
                         {
                             throw new Exception("Asset (" + AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ") for " + this.Name);
                         }
-                        _Asset = new Asset(AssetID, Type, request.GetAssetData());
+                        switch (Type)
+                        {
+                            case (sbyte)Asset.AssetType.Clothing:
+                                Console.WriteLine(">> Clothing");
+                                _Asset = new AssetWearable_Clothing(AssetID, request.GetAssetData());
+                                break;
+                            case (sbyte)Asset.AssetType.Bodypart:
+                                Console.WriteLine(">> Bodypart");
+                                _Asset = new AssetWearable_Body(AssetID, request.GetAssetData());
+                                break;
+                            case (sbyte)Asset.AssetType.LSLText:
+                                _Asset = new AssetScript(AssetID, request.GetAssetData());
+                                break;
+                            case (sbyte)Asset.AssetType.Notecard:
+                                _Asset = new AssetNotecard(AssetID, request.GetAssetData());
+                                break;
+                            case (sbyte)Asset.AssetType.Texture:
+                                _Asset = new AssetImage(AssetID, request.GetAssetData());
+                                break;
+                            default:
+                                Console.WriteLine(">> Bodypart");
+                                _Asset = new Asset(AssetID, Type, request.GetAssetData());
+                                break;
+                        }
+                        
                         return Asset;
                     }
                 }
