@@ -478,6 +478,10 @@ namespace libsecondlife.AssetSystem
 
             AssetRequestDownload dlrequest = (AssetRequestDownload)request;
 
+            if (dlrequest.AssetID == null)
+            {
+                Client.Log("AssetID is null in AssetRequestDownload: " + dlrequest.StatusMsg, Helpers.LogLevel.Error);
+            }
 
             // Remove from the download queue
             if (WearableAssetQueue.Contains(dlrequest.AssetID))

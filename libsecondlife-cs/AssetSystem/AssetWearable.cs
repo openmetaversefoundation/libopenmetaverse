@@ -323,7 +323,16 @@ namespace libsecondlife.AssetSystem
                     if (split_up.Length != 2) throw Corrupted;
 
                     if (this._Parameters.ContainsKey(int.Parse(split_up[0]))) this._Parameters.Remove(int.Parse(split_up[0]));
-                    this._Textures.Add(uint.Parse(split_up[0]), new LLUUID(split_up[1]));
+
+                    uint TextureIndex = uint.Parse(split_up[0]);
+                    if (_Textures.ContainsKey(TextureIndex))
+                    {
+                        //Should probably log this some how...
+                    }
+                    else
+                    {
+                        this._Textures.Add(TextureIndex, new LLUUID(split_up[1]));
+                    }
                 }
 
             }
