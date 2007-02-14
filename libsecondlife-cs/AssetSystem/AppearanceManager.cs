@@ -456,7 +456,13 @@ namespace libsecondlife.AssetSystem
 
                 WearableCache[wdb.AssetID] = wearableAsset;
 
-                WearableAssetQueue.Add(wdb.AssetID);
+                lock (WearableAssetQueue)
+                {
+                    if (!WearableAssetQueue.Contains(wdb.AssetID))
+                    {
+                        WearableAssetQueue.Add(wdb.AssetID);
+                    }
+                }
 
                 AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
 
@@ -483,36 +489,43 @@ namespace libsecondlife.AssetSystem
                 Client.Log("AssetID is null in AssetRequestDownload: " + dlrequest.StatusMsg, Helpers.LogLevel.Error);
             }
 
-            // Remove from the download queue
-            if (WearableAssetQueue.Contains(dlrequest.AssetID))
+            lock( WearableAssetQueue )
             {
-                WearableAssetQueue.Remove(dlrequest.AssetID);
-
-                if (request.Status != AssetRequest.RequestStatus.Success)
+                // Remove from the download queue
+                if (!WearableAssetQueue.Contains(dlrequest.AssetID))
                 {
                     return;
                 }
 
-                AssetWearable wearableAsset = WearableCache[dlrequest.AssetID];
-                wearableAsset.SetAssetData(dlrequest.GetAssetData());
+                WearableAssetQueue.Remove(dlrequest.AssetID);
+            }
 
-                if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
+            // If the request wasn't successful, then don't try to process it.
+            if (request.Status != AssetRequest.RequestStatus.Success)
+            {
+                return;
+            }
+
+
+            AssetWearable wearableAsset = WearableCache[dlrequest.AssetID];
+            wearableAsset.SetAssetData(dlrequest.GetAssetData());
+
+            if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
+            {
+                Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
+            }
+            else
+            {
+                UpdateAgentTextureEntryAndAppearanceParams(wearableAsset);
+
+                UpdateAgentTextureEntryOrder();
+
+                if (WearableAssetQueue.Count == 0)
                 {
-                    Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
-                }
-                else
-                {
-                    UpdateAgentTextureEntryAndAppearanceParams(wearableAsset);
 
-                    UpdateAgentTextureEntryOrder();
-
-                    if (WearableAssetQueue.Count == 0)
-                    {
-
-                        // Now that all the wearable assets are done downloading
-                        // , we can send an appearance packet
-                        SendAgentSetAppearance();
-                    }
+                    // Now that all the wearable assets are done downloading
+                    // , we can send an appearance packet
+                    SendAgentSetAppearance();
                 }
             }
         }
