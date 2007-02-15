@@ -105,6 +105,9 @@
 				<include name="openjpegnet.dll" />
 				<include name="System.Drawing.dll" />
 			</references>
+			<nowarn>
+			    <warning number="1591" />
+			</nowarn>
 		</csc>
 	</target>
 
