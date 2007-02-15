@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Appearance.cs" />
     <Compile Include="Assets.cs" />
+    <Compile Include="Inventory.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
