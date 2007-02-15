@@ -89,7 +89,7 @@ namespace libsecondlife.AssetSystem
             // Update with specified wearables
             foreach (InventoryWearable iw in wearables)
             {
-                byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
+                byte type = (byte)((AssetWearable)iw.Asset).AppearanceLayer;
                 AgentWearablesData[type].ItemID = iw.ItemID;
                 AgentWearablesData[type].AssetID = iw.AssetID;
             }
@@ -148,9 +148,13 @@ namespace libsecondlife.AssetSystem
                     try
                     {
                         InventoryWearable iw = (InventoryWearable)ib;
-                        byte type = ((AssetWearable)iw.Asset).TypeFromAsset;
-                        AgentWearablesData[type].ItemID = iw.ItemID;
-                        AgentWearablesData[type].AssetID = iw.AssetID;
+                        Client.Log("Retrieving asset for " + iw.Name + "("+iw.AssetID+")", Helpers.LogLevel.Info);
+                        AssetWearable.AppearanceLayerType AppearanceLayer = ((AssetWearable)iw.Asset).AppearanceLayer;
+
+                        Client.Log("Adding skin/clothing layer for " + AppearanceLayer, Helpers.LogLevel.Info);
+                        AgentWearablesData[(byte)AppearanceLayer].ItemID = iw.ItemID;
+                        AgentWearablesData[(byte)AppearanceLayer].AssetID = iw.AssetID;
+
                     }
                     catch (Exception e)
                     {

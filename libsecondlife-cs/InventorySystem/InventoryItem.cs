@@ -138,11 +138,9 @@ namespace libsecondlife.InventorySystem
                         switch (Type)
                         {
                             case (sbyte)Asset.AssetType.Clothing:
-                                Console.WriteLine(">> Clothing");
                                 _Asset = new AssetWearable_Clothing(AssetID, request.GetAssetData());
                                 break;
                             case (sbyte)Asset.AssetType.Bodypart:
-                                Console.WriteLine(">> Bodypart");
                                 _Asset = new AssetWearable_Body(AssetID, request.GetAssetData());
                                 break;
                             case (sbyte)Asset.AssetType.LSLText:
@@ -155,7 +153,6 @@ namespace libsecondlife.InventorySystem
                                 _Asset = new AssetImage(AssetID, request.GetAssetData());
                                 break;
                             default:
-                                Console.WriteLine(">> Bodypart");
                                 _Asset = new Asset(AssetID, Type, request.GetAssetData());
                                 break;
                         }

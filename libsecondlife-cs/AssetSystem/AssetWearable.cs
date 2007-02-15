@@ -57,13 +57,13 @@ namespace libsecondlife.AssetSystem
             }
         }
 
-        private byte _TypeFromAsset = 0;
-        public byte TypeFromAsset
+        private AppearanceLayerType _AppearanceLayer = 0;
+        public AppearanceLayerType AppearanceLayer
         {
-            get { return _TypeFromAsset; }
+            get { return _AppearanceLayer; }
             set
             {
-                _TypeFromAsset = value;
+                _AppearanceLayer = value;
                 UpdateAssetData();
             }
         }
@@ -245,7 +245,7 @@ namespace libsecondlife.AssetSystem
         private int _SalePrice = 0;
 
 
-        private enum _WearableType : byte
+        public enum AppearanceLayerType : byte
         {
             /// <summary></summary>
             Shape = 0,
@@ -405,7 +405,7 @@ namespace libsecondlife.AssetSystem
                     }
                     else if (line.StartsWith("type "))
                     {
-                        Type = (sbyte)(_WearableType)Int32.Parse(line.Substring(5));
+                        AppearanceLayer = (AppearanceLayerType)Int32.Parse(line.Substring(5));
                         break;
                     }
                 }
@@ -482,7 +482,7 @@ namespace libsecondlife.AssetSystem
             data += "\n\t\tsale_type\t" + this._Sale_Type;
             data += "\n\t\tsale_price\t" + this._Sale_Price;
             data += "\n\t}";
-            data += "\ntype " + this._TypeFromAsset;
+            data += "\ntype " + this._AppearanceLayer;
             data += "\nparameters " + this._Parameters.Count;
             foreach (KeyValuePair<int, float> param in this._Parameters)
             {

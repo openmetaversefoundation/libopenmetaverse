@@ -123,14 +123,14 @@ namespace libsecondlife.AssetSystem
 
             while (!_Completed.WaitOne(900, false))
             {
-                if (SecondsSinceLastPacket > hardTimeout)
+                if ((hardTimeout != -1) && (SecondsSinceLastPacket > hardTimeout))
                 {
                     _StatusMsg += "Timeout Failure - Hard timeout reached (" + SecondsSinceLastPacket + " > " + hardTimeout + ")";
                     return RequestStatus.Failure;
                 }
                 else
                 {
-                    if (SecondsSinceLastPacket > softTimeout)
+                    if ((softTimeout != -1) && (SecondsSinceLastPacket > softTimeout))
                     {
                         _StatusMsg += "Timeout Failure - Soft Timeout ( " + SecondsSinceLastPacket + " > " + softTimeout + ")";
                         return RequestStatus.Failure;

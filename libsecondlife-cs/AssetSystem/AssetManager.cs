@@ -83,7 +83,7 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// Time to wait for next packet, during an asset download.
         /// </summary>
-        public readonly static int DefaultTimeout = 3000;
+        public readonly static int DefaultTimeout = 10000;
 
         /// <summary>
         /// Event singaling an asset transfer request has completed.
