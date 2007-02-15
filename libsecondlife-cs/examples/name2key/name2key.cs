@@ -76,11 +76,7 @@ namespace name2key
             // FIXME: Rewrite this code as soon as people searching is added to DirectoryManager
             client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(QueryHandler));
 
-			// Setup the login values
-            Dictionary<string, object> loginParams = client.Network.DefaultLoginValues(args[0], args[1], args[2], 
-                "00:00:00:00:00:00", "last", "Win", "0", "name2key", "jhurliman@wsu.edu");
-
-			if (!client.Network.Login(loginParams))
+			if (!client.Network.Login(args[0], args[1], args[2], "name2key", "jhurliman@wsu.edu"))
 			{
 				// Login failed
 				Console.WriteLine("ERROR: " + client.Network.LoginError);

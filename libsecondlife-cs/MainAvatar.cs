@@ -232,7 +232,7 @@ namespace libsecondlife
         /// </summary>
         public enum ChatType : byte
         {
-            /// <summary>Whispers (5m radius)</summary>
+            /// <summary>Whisper (5m radius)</summary>
             Whisper = 0,
             /// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
             Normal = 1,
@@ -240,11 +240,40 @@ namespace libsecondlife
             Shout = 2,
             /// <summary>Say chat (10/20m radius) - The official viewer will 
             /// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
+            [Obsolete]
             Say = 3,
             /// <summary>Event message when an Avatar has begun to type</summary>
             StartTyping = 4,
             /// <summary>Event message when an Avatar has stopped typing</summary>
-            StopTyping = 5
+            StopTyping = 5,
+            /// <summary>Unknown</summary>
+            Debug = 6
+        }
+
+        /// <summary>
+        /// Identifies the source of a chat message
+        /// </summary>
+        public enum ChatSourceType : byte
+        {
+            /// <summary>Chat from the grid or simulator</summary>
+            System = 0,
+            /// <summary>Chat from another avatar</summary>
+            Agent = 1,
+            /// <summary>Chat from an object</summary>
+            Object = 2
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ChatAudibleLevel : sbyte
+        {
+            /// <summary></summary>
+            Not = -1,
+            /// <summary></summary>
+            Barely = 0,
+            /// <summary></summary>
+            Fully = 1
         }
 
         /// <summary>
@@ -392,14 +421,14 @@ namespace libsecondlife
         /// <summary>
         /// Triggered on incoming chat messages
         /// </summary>
-        /// <param name="Message">Text of chat message</param>
-        /// <param name="Audible">Is this normal audible chat or not.</param>
-        /// <param name="Type">Type of chat (whisper,shout,status,etc)</param>
-        /// <param name="Sourcetype">Type of source (Agent / Object / ???)</param>
-        /// <param name="FromName">Text name of sending Avatar/Object</param>
+        /// <param name="message">Text of chat message</param>
+        /// <param name="audible">Audible level of this chat message</param>
+        /// <param name="type">Type of chat (whisper, shout, status, etc.)</param>
+        /// <param name="sourceType">Source of the chat message</param>
+        /// <param name="fromName">Name of the sending object</param>
         /// <param name="ID"></param>
-        public delegate void ChatCallback(string message, byte audible, byte type, byte sourcetype,
-            string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
+        public delegate void ChatCallback(string message, ChatAudibleLevel audible, ChatType type, 
+            ChatSourceType sourceType, string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
 
         /// <summary>
         /// Triggered when a script pops up a dialog box
@@ -1549,9 +1578,9 @@ namespace libsecondlife
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
                 OnChat(Helpers.FieldToUTF8String(chat.ChatData.Message)
-                    , chat.ChatData.Audible
-                    , chat.ChatData.ChatType
-                    , chat.ChatData.SourceType
+                    , (ChatAudibleLevel)chat.ChatData.Audible
+                    , (ChatType)chat.ChatData.ChatType
+                    , (ChatSourceType)chat.ChatData.SourceType
                     , Helpers.FieldToUTF8String(chat.ChatData.FromName)
                     , chat.ChatData.SourceID
                     , chat.ChatData.OwnerID

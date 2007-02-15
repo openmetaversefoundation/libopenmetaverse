@@ -60,10 +60,7 @@ namespace Heightmap
             // Only needed so we can do lookups with TerrainHeightAtPoint
             Client.Settings.STORE_LAND_PATCHES = true;
 
-            Dictionary<string, object> loginvals = Client.Network.DefaultLoginValues(FirstName, LastName, Password,
-                "Heightmap", "jhurliman@wsu.edu");
-
-            if (!Client.Network.Login(loginvals)) //, "https://login.aditi.lindenlab.com/cgi-bin/login.cgi"))
+            if (!Client.Network.Login(FirstName, LastName, Password, "Heightmap", "jhurliman@wsu.edu"))
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginError);
                 Console.ReadKey();

@@ -467,59 +467,6 @@ namespace libsecondlife
         /// <param name="firstName"></param>
         /// <param name="lastName"></param>
         /// <param name="password"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="author"></param>
-        /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
-            string password, string userAgent, string author)
-        {
-            return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", "last",
-                1, 50, 50, 50, "Win", "0", userAgent, author, false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="author"></param>
-        /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
-            string password, string startLocation, string userAgent, string author, bool md5pass)
-        {
-            return DefaultLoginValues(firstName, lastName, password, "00:00:00:00:00:00", startLocation,
-                1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
-        /// <param name="mac"></param>
-        /// <param name="startLocation"></param>
-        /// <param name="platform"></param>
-        /// <param name="viewerDigest"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="author"></param>
-        /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
-            string password, string mac, string startLocation, string platform,
-            string viewerDigest, string userAgent, string author)
-        {
-            return DefaultLoginValues(firstName, lastName, password, mac, startLocation,
-                1, 50, 50, 50, platform, viewerDigest, userAgent, author, false);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
         /// <param name="mac"></param>
         /// <param name="startLocation"></param>
         /// <param name="major"></param>
@@ -611,8 +558,26 @@ namespace libsecondlife
         /// LoginError string will contain the error</returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string author)
         {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName,
-                password, "last", userAgent, author, false);
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password, 
+                "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0", userAgent, author, false);
+            return Login(loginParams);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="password"></param>
+        /// <param name="userAgent"></param>
+        /// <param name="author"></param>
+        /// <param name="md5pass"></param>
+        /// <returns></returns>
+        public bool Login(string firstName, string lastName, string password, string userAgent, string author, 
+            bool md5pass)
+        {
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password, 
+                "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
             return Login(loginParams);
         }
 
@@ -635,8 +600,8 @@ namespace libsecondlife
         public bool Login(string firstName, string lastName, string password, string userAgent, string start,
             string author, bool md5pass)
         {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName,
-                password, start, userAgent, author, md5pass);
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password,
+                "00:00:00:00:00:00", start, 1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
             return Login(loginParams);
         }
 
@@ -913,7 +878,7 @@ namespace libsecondlife
             if (setDefault)
             {
                 Simulator oldSim = CurrentSim;
-                CurrentSim = simulator;
+                lock (Simulators) CurrentSim = simulator;
 
                 if (CurrentCaps != null) CurrentCaps.Disconnect();
                 CurrentCaps = null;
@@ -1058,28 +1023,17 @@ namespace libsecondlife
             lock (Simulators)
             {
                 // Disconnect all simulators except the current one
-                foreach (Simulator simulator in Simulators)
+                for (int i = 0; i < Simulators.Count; i++)
                 {
-                    // Don't disconnect the current sim, we'll use LogoutRequest for that
-                    if (simulator != null && simulator != CurrentSim)
+                    if (Simulators[i] != null && Simulators[i] != CurrentSim)
                     {
-                        DisconnectSim(simulator);
+                        DisconnectSim(Simulators[i]);
 
                         // Fire the SimDisconnected event if a handler is registered
-                        // FIXME: This is a recipe for disaster. Firing an event when we 
-                        // are locking is just inviting someone to call a function that 
-                        // locks in Simulators and deadlocks the library
                         if (OnSimDisconnected != null)
                         {
-                            try
-                            {
-                                OnSimDisconnected(simulator, DisconnectType.NetworkTimeout);
-                            }
-                            catch (Exception e)
-                            {
-                                Client.Log("Caught an exception in OnSimDisconnected(): " + e.ToString(),
-                                    Helpers.LogLevel.Error);
-                            }
+                            try { OnSimDisconnected(Simulators[i], DisconnectType.NetworkTimeout); }
+                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                         }
                     }
                 }
@@ -1092,7 +1046,7 @@ namespace libsecondlife
                 Simulator oldSim = CurrentSim;
 
                 DisconnectSim(CurrentSim);
-                CurrentSim = null;
+                lock (Simulators) CurrentSim = null;
 
                 if (OnCurrentSimChanged != null)
                 {
@@ -1180,20 +1134,18 @@ namespace libsecondlife
                 // Check all of the connected sims for disconnects
                 lock (Simulators)
                 {
-                    foreach (Simulator sim in Simulators)
+                    for (int i = 0; i < Simulators.Count; i++)
                     {
-                        if (sim.DisconnectCandidate)
+                        if (Simulators[i].DisconnectCandidate)
                         {
                             if (disconnectedSims == null)
-                            {
                                 disconnectedSims = new List<Simulator>();
-                            }
 
-                            disconnectedSims.Add(sim);
+                            disconnectedSims.Add(Simulators[i]);
                         }
                         else
                         {
-                            sim.DisconnectCandidate = true;
+                            Simulators[i].DisconnectCandidate = true;
                         }
                     }
                 }
@@ -1201,16 +1153,16 @@ namespace libsecondlife
                 // Actually disconnect each sim we detected as disconnected
                 if (disconnectedSims != null)
                 {
-                    foreach (Simulator sim in disconnectedSims)
+                    for (int i = 0; i < disconnectedSims.Count; i++)
                     {
-                        if (sim != null)
+                        if (disconnectedSims[i] != null)
                         {
                             // This sim hasn't received any network traffic since the 
                             // timer last elapsed, consider it disconnected
-                            Client.Log("Network timeout for simulator " + sim.ToString() +
+                            Client.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
                                 ", disconnecting", Helpers.LogLevel.Warning);
 
-                            DisconnectSim(sim);
+                            DisconnectSim(disconnectedSims[i]);
                         }
                     }
                 }

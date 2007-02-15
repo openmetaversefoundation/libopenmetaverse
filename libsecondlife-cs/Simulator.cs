@@ -481,8 +481,8 @@ namespace libsecondlife
                 {
                     if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
-                        Client.Log("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
-                            "), " + (now - packet.TickCount) + "ms have passed", Helpers.LogLevel.Info);
+                        Client.DebugLog("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
+                            "), " + (now - packet.TickCount) + "ms have passed");
 
                         packet.Header.Resent = true;
                         SendPacket(packet, false);
@@ -561,10 +561,9 @@ namespace libsecondlife
                 // Check if we already received this packet
                 if (Inbox.Contains(packet.Header.Sequence))
                 {
-                    Client.Log("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
+                    Client.DebugLog("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
                         packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No") +
-                        ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count,
-                        Helpers.LogLevel.Info);
+                        ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count);
 
                     // Avoid firing a callback twice for the same packet
                     return;

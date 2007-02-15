@@ -125,7 +125,7 @@ namespace libsecondlife.TestClient
             // "all balance" will send the balance command to all currently logged in bots
 			if (firstToken == "all" && tokens.Length > 1)
 			{
-			    cmd = "";
+			    cmd = String.Empty;
 
 			    // Reserialize all of the arguments except for "all"
 			    for (int i = 1; i < tokens.Length; i++)
@@ -156,8 +156,7 @@ namespace libsecondlife.TestClient
 
         private void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            Self.UpdateCamera(0, Self.Position, forward, left, up, bodyRotation,
-                LLQuaternion.Identity, DrawDistance, false);
+            this.Self.Status.SendUpdate();
 
             foreach (Command c in Commands.Values)
                 if (c.Active)

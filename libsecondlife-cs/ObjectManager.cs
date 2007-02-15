@@ -329,6 +329,14 @@ namespace libsecondlife
             Undergrowth1
         }
 
+        public enum SaleType : byte
+        {
+            Not = 0,
+            Original = 1,
+            Copy = 2,
+            Contents = 3
+        }
+
         #endregion
 
 
@@ -510,6 +518,64 @@ namespace libsecondlife
             }
 
             Client.Network.SendPacket(request, simulator);
+        }
+
+        /// <summary>
+        /// Attempt to purchase an original object, a copy, or the contents of
+        /// an object
+        /// </summary>
+        /// <param name="simulator">Simulator where the object resides</param>
+        /// <param name="localID">Sim-local ID of the object</param>
+        /// <param name="saleType">Whether the original, a copy, or the object
+        /// contents are on sale. This is used for verification, if the this
+        /// sale type is not valid for the object the purchase will fail</param>
+        /// <param name="price">Price of the object. This is used for 
+        /// verification, if it does not match the actual price the purchase
+        /// will fail</param>
+        /// <param name="groupID">Group ID that will be associated with the new
+        /// purchase</param>
+        /// <param name="categoryID">Inventory folder UUID where the purchase
+        /// should go</param>
+        /// <example>BuyObject(Client.Network.CurrentSim, 500, SaleType.Copy, 
+        /// 100, LLUUID.Zero, Client.Self.InventoryRootFolderUUID);</example>
+        public void BuyObject(Simulator simulator, uint localID, SaleType saleType, int price, LLUUID groupID, 
+            LLUUID categoryID)
+        {
+            ObjectBuyPacket buy = new ObjectBuyPacket();
+
+            buy.AgentData.AgentID = Client.Network.AgentID;
+            buy.AgentData.SessionID = Client.Network.SessionID;
+            buy.AgentData.GroupID = groupID;
+            buy.AgentData.CategoryID = categoryID;
+
+            buy.ObjectData = new ObjectBuyPacket.ObjectDataBlock[1];
+            buy.ObjectData[0] = new ObjectBuyPacket.ObjectDataBlock();
+            buy.ObjectData[0].ObjectLocalID = localID;
+            buy.ObjectData[0].SaleType = (byte)saleType;
+            buy.ObjectData[0].SalePrice = price;
+
+            Client.Network.SendPacket(buy, simulator);
+        }
+
+        /// <summary>
+        /// Select an object. This will trigger the simulator to send us back 
+        /// an ObjectProperties packet so we can get the full information for
+        /// this object
+        /// </summary>
+        /// <param name="simulator">Simulator where the object resides</param>
+        /// <param name="localID">Sim-local ID of the object to select</param>
+        public void SelectObject(Simulator simulator, uint localID)
+        {
+            ObjectSelectPacket select = new ObjectSelectPacket();
+
+            select.AgentData.AgentID = Client.Network.AgentID;
+            select.AgentData.SessionID = Client.Network.SessionID;
+
+            select.ObjectData = new ObjectSelectPacket.ObjectDataBlock[1];
+            select.ObjectData[0] = new ObjectSelectPacket.ObjectDataBlock();
+            select.ObjectData[0].ObjectLocalID = localID;
+
+            Client.Network.SendPacket(select, simulator);
         }
 
         /// <summary>

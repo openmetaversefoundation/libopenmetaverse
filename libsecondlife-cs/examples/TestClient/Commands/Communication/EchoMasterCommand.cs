@@ -30,7 +30,8 @@ namespace libsecondlife.TestClient
 			}
 		}
 
-		void Self_OnChat(string message, byte audible, byte type, byte sourcetype, string fromName, LLUUID id, LLUUID ownerid, LLVector3 position)
+		void Self_OnChat(string message, MainAvatar.ChatAudibleLevel audible, MainAvatar.ChatType type, 
+            MainAvatar.ChatSourceType sourcetype, string fromName, LLUUID id, LLUUID ownerid, LLVector3 position)
 		{
 			if (message.Length > 0 && Client.Master == fromName)
 			{
