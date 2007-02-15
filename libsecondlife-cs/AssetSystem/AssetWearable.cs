@@ -46,6 +46,17 @@ namespace libsecondlife.AssetSystem
                 UpdateAssetData();
             }
         }
+        private string _Description = "";
+        public string Description
+        {
+            get { return _Description; }
+            set
+            {
+                _Description = value;
+                UpdateAssetData();
+            }
+        }
+
         private byte _TypeFromAsset = 0;
         public byte TypeFromAsset
         {
@@ -109,6 +120,7 @@ namespace libsecondlife.AssetSystem
                 UpdateAssetData();
             }
         }
+
         private LLUUID _Group_ID = new LLUUID();
         public LLUUID Group_ID
         {
@@ -119,6 +131,18 @@ namespace libsecondlife.AssetSystem
                 UpdateAssetData();
             }
         }
+
+        private bool _Group_Owned = false;
+        public bool Group_Owned
+        {
+            get { return _Group_Owned; }
+            set
+            {
+                _Group_Owned = value;
+                UpdateAssetData();
+            }
+        }
+
 
         private uint _Permission_Base_Mask = 0;
         public uint Permission_Base_Mask
@@ -197,6 +221,62 @@ namespace libsecondlife.AssetSystem
             }
         }
 
+        private string[] _ForSaleNames = new string[]
+        {
+            "not",
+            "orig",
+            "copy",
+            "cntn"
+        };
+
+        private enum _ForSale
+        {
+            /// <summary>Not for sale</summary>
+            Not = 0,
+            /// <summary>The original is for sale</summary>
+            Original = 1,
+            /// <summary>Copies are for sale</summary>
+            Copy = 2,
+            /// <summary>The contents of the object are for sale</summary>
+            Contents = 3
+        }
+
+        private _ForSale _Sale = _ForSale.Not;
+        private int _SalePrice = 0;
+
+
+        private enum _WearableType : byte
+        {
+            /// <summary></summary>
+            Shape = 0,
+            /// <summary></summary>
+            Skin,
+            /// <summary></summary>
+            Hair,
+            /// <summary></summary>
+            Eyes,
+            /// <summary></summary>
+            Shirt,
+            /// <summary></summary>
+            Pants,
+            /// <summary></summary>
+            Shoes,
+            /// <summary></summary>
+            Socks,
+            /// <summary></summary>
+            Jacket,
+            /// <summary></summary>
+            Gloves,
+            /// <summary></summary>
+            Undershirt,
+            /// <summary></summary>
+            Underpants,
+            /// <summary></summary>
+            Skirt,
+            /// <summary></summary>
+            Invalid = 255
+        };
+
 
         /// <summary>
         /// </summary>
@@ -219,123 +299,167 @@ namespace libsecondlife.AssetSystem
                 return;
             }
 
-            byte state = 0;
-            const byte parameters_block = 4;
-            const byte textures_block = 6;
+            string wearableData = Helpers.FieldToUTF8String(this._AssetData);
 
-            Exception Corrupted = new Exception("Corrupted Body Part data");
+            int version = -1;
+            int n = -1;
 
-            string whole_enchilada = System.Text.Encoding.ASCII.GetString(AssetData);
-
-            //this seperates the whole enchilada into two, the header and the body.
-            string[] seperated_enchilada = whole_enchilada.Split(new string[] { "permissions" }, StringSplitOptions.RemoveEmptyEntries);
-            if (seperated_enchilada.Length != 2) throw Corrupted;
-
-            //this parses out the name out of the header
-            string[] header = seperated_enchilada[0].Split('\n');
-            if (header.Length < 2) throw Corrupted;
-            this._Name = header[1];
-
-            seperated_enchilada[1] = "permissions" + seperated_enchilada[1];
-            string[] body = seperated_enchilada[1].Split('\n');
-            foreach (string blk in body)
+            try
             {
-                string block = blk.Trim();
-                if (block == "{" || block == "}") continue; //I hate those things..
-                if (block == "") continue;
-                //use the markers...
-                if (block.StartsWith("parameters "))
+                n = wearableData.IndexOf('\n');
+                version = Int32.Parse(wearableData.Substring(19, n - 18));
+                wearableData = wearableData.Remove(0, n);
+
+                if (version != 22)
                 {
-                    state = parameters_block;
-                    continue;
-                }
-                else if (block.StartsWith("textures "))
-                {
-                    state = textures_block;
-                    continue;
+                    Console.WriteLine("** WARNING ** : Wearable asset has unrecognized version " + version);
+                    return;
                 }
 
-                if (state == 0)
-                {
-                    if (block.StartsWith("type "))
-                    {
-                        this._TypeFromAsset = byte.Parse(block.Substring(5));
-                    }
-                    else
-                    {
-                        string[] split_field = block.Split('\t');
+                n = wearableData.IndexOf('\n');
+                Name = wearableData.Substring(0, n);
+                wearableData = wearableData.Remove(0, n);
 
-                        if (split_field.Length == 2)
+                n = wearableData.IndexOf('\n');
+                Description = wearableData.Substring(0, n);
+                wearableData = wearableData.Remove(0, n);
+
+                // Split in to an upper and lower half
+                string[] parts = wearableData.Split(new string[] { "parameters" }, StringSplitOptions.None);
+                parts[1] = "parameters" + parts[1];
+
+                // Parse the upper half
+                string[] lines = parts[0].Split('\n');
+                foreach (string thisline in lines)
+                {
+                    string line = thisline.Trim();
+                    string[] fields = line.Split('\t');
+
+                    if (fields.Length == 2)
+                    {
+                        if (fields[0] == "creator_mask")
                         {
-                            switch (split_field[0])
+                            // Deprecated, apply this as the base mask
+                            _Permission_Base_Mask = UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "base_mask")
+                        {
+                            _Permission_Base_Mask = UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "owner_mask")
+                        {
+                            _Permission_Owner_Mask = UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "group_mask")
+                        {
+                            _Permission_Group_Mask = UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "everyone_mask")
+                        {
+                            _Permission_Everyone_Mask = UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "next_owner_mask")
+                        {
+                            _Permission_Next_Owner_Mask = UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                        }
+                        else if (fields[0] == "creator_id")
+                        {
+                            _Creator_ID = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "owner_id")
+                        {
+                            _Owner_ID = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "last_owner_id")
+                        {
+                            _Last_Owner_ID = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "group_id")
+                        {
+                            _Group_ID = new LLUUID(fields[1]);
+                        }
+                        else if (fields[0] == "group_owned")
+                        {
+                            
+                            _Group_Owned = (Int32.Parse(fields[1]) != 0);
+                        }
+                        else if (fields[0] == "sale_type")
+                        {
+                            for (int i = 0; i < _ForSaleNames.Length; i++)
                             {
-                                case "base_mask":
-                                    this._Permission_Base_Mask = uint.Parse(split_field[1], System.Globalization.NumberStyles.HexNumber);
+                                if (fields[1] == _ForSaleNames[i])
+                                {
+                                    _Sale = (_ForSale)i;
                                     break;
-                                case "owner_mask":
-                                    this._Permission_Owner_Mask = uint.Parse(split_field[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "group_mask":
-                                    this._Permission_Group_Mask = uint.Parse(split_field[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "everyone_mask":
-                                    this._Permission_Everyone_Mask = uint.Parse(split_field[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "next_owner_mask":
-                                    this._Permission_Next_Owner_Mask = uint.Parse(split_field[1], System.Globalization.NumberStyles.HexNumber);
-                                    break;
-                                case "creator_id":
-                                    this._Creator_ID = new LLUUID(split_field[1]);
-                                    break;
-                                case "owner_id":
-                                    this._Owner_ID = new LLUUID(split_field[1]);
-                                    break;
-                                case "last_owner_id":
-                                    this._Last_Owner_ID = new LLUUID(split_field[1]);
-                                    break;
-                                case "group_id":
-                                    this._Group_ID = new LLUUID(split_field[1]);
-                                    break;
-                                case "sale_type":
-                                    this._Sale_Type = split_field[1];
-                                    break;
-                                case "sale_price":
-                                    this._Sale_Price = uint.Parse(split_field[1]);
-                                    break;
-                                default: break;
+                                }
                             }
                         }
+                        else if (fields[0] == "sale_price")
+                        {
+                            _SalePrice = Int32.Parse(fields[1]);
+                        }
+                        else if (fields[0] == "perm_mask")
+                        {
+                            Console.WriteLine("** WARNING ** : Wearable asset has deprecated perm_mask field, ignoring");
+                        }
+                    }
+                    else if (line.StartsWith("type "))
+                    {
+                        Type = (sbyte)(_WearableType)Int32.Parse(line.Substring(5));
+                        break;
                     }
                 }
-                else if (state == parameters_block)
+
+                // Break up the lower half in to parameters and textures
+                string[] lowerparts = parts[1].Split(new string[] { "textures" }, StringSplitOptions.None);
+                lowerparts[1] = "textures" + lowerparts[1];
+
+                // Parse the parameters
+                lines = lowerparts[0].Split('\n');
+                foreach (string line in lines)
                 {
-                    string[] split_up = block.Split(' ');
-                    // if (split_up.Length != 2) throw Corrupted;
-                    if (split_up.Length == 2)
+                    string[] fields = line.Split(' ');
+
+                    // Use exception handling to deal with all the lines we aren't interested in
+                    try
                     {
-                        if (this._Parameters.ContainsKey(int.Parse(split_up[0]))) this._Parameters.Remove(int.Parse(split_up[0]));
-                        this._Parameters.Add(int.Parse(split_up[0]), float.Parse(split_up[1]));
+                        int id = Int32.Parse(fields[0]);
+                        float weight = Single.Parse(fields[1]);
+
+                        _Parameters[id] = weight;
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
-                else if (state == textures_block)
+
+                // Parse the textures
+                lines = lowerparts[1].Split('\n');
+                foreach (string line in lines)
                 {
-                    string[] split_up = block.Split(' ');
-                    if (split_up.Length != 2) throw Corrupted;
+                    string[] fields = line.Split(' ');
 
-                    if (this._Parameters.ContainsKey(int.Parse(split_up[0]))) this._Parameters.Remove(int.Parse(split_up[0]));
-
-                    uint TextureIndex = uint.Parse(split_up[0]);
-                    if (_Textures.ContainsKey(TextureIndex))
+                    // Use exception handling to deal with all the lines we aren't interested in
+                    try
                     {
-                        //Should probably log this some how...
+                        uint id = UInt32.Parse(fields[0]);
+                        LLUUID texture = LLUUID.Parse(fields[1]);
+
+                        _Textures[id] = texture;
                     }
-                    else
+                    catch (Exception)
                     {
-                        this._Textures.Add(TextureIndex, new LLUUID(split_up[1]));
                     }
                 }
 
+                return;
             }
+            catch (Exception e)
+            {
+                Console.WriteLine("** WARNING **", "Failed to parse wearable asset: " + e.ToString());
+            }
+
+            return;
         }
 
         private void UpdateAssetData()
