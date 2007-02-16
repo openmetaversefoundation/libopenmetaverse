@@ -426,7 +426,9 @@ namespace libsecondlife
         /// <param name="type">Type of chat (whisper, shout, status, etc.)</param>
         /// <param name="sourceType">Source of the chat message</param>
         /// <param name="fromName">Name of the sending object</param>
-        /// <param name="ID"></param>
+        /// <param name="id"></param>
+        /// <param name="ownerid"></param>
+        /// <param name="position"></param>
         public delegate void ChatCallback(string message, ChatAudibleLevel audible, ChatType type, 
             ChatSourceType sourceType, string fromName, LLUUID id, LLUUID ownerid, LLVector3 position);
 
@@ -835,6 +837,7 @@ namespace libsecondlife
             Client.Network.SendPacket(im);
         }
 
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="sourceAvatar"></param>
@@ -1489,7 +1492,15 @@ namespace libsecondlife
         /// position and orientation of our camera, and a ControlFlags field
         /// specifying our current movement actions
         /// </summary>
-        /// <param name="reliable">Whether to ensure this packet makes it to the server</param>
+        /// <param name="controlFlags"></param>
+        /// <param name="position"></param>
+        /// <param name="forwardAxis"></param>
+        /// <param name="leftAxis"></param>
+        /// <param name="upAxis"></param>
+        /// <param name="bodyRotation"></param>
+        /// <param name="headRotation"></param>
+        /// <param name="farClip"></param>
+        /// <param name="reliable"></param>
         public void UpdateCamera(MainAvatar.AgentUpdateFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
             LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
             bool reliable)

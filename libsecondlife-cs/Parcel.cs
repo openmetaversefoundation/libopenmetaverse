@@ -256,6 +256,7 @@ namespace libsecondlife
         /// <param name="client"></param>
         /// <param name="forGroup"></param>
         /// <param name="groupID"></param>
+        /// <param name="removeContribution"></param>
         /// <returns></returns>
         public bool Buy(SecondLife client, bool forGroup, LLUUID groupID, bool removeContribution)
         {

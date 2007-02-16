@@ -76,6 +76,7 @@ namespace libsecondlife
         /// Default constructor
         /// </summary>
         /// <param name="client"></param>
+        /// <param name="simulator"></param>
         /// <param name="seedcaps"></param>
         /// <param name="callbacks"></param>
         public Caps(SecondLife client, Simulator simulator, string seedcaps, List<EventQueueCallback> callbacks)
@@ -477,6 +478,7 @@ namespace libsecondlife
         /// <param name="viewerDigest"></param>
         /// <param name="userAgent"></param>
         /// <param name="author"></param>
+        /// <param name="md5pass"></param>
         /// <returns></returns>
         public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
             string password, string mac, string startLocation, int major, int minor, int patch,
@@ -640,6 +642,8 @@ namespace libsecondlife
         /// <param name="loginParams">Dictionary of login parameters and values
         /// that can be created with DefaultLoginValues()</param>
         /// <param name="url">URL of the login server to authenticate with</param>
+        /// <param name="method">The XML-RPC method to execute on the login 
+        /// server. This is generally login_to_simulator</param>
         /// <returns>Whether the login was successful or not. On failure the
         /// LoginError string will contain the error</returns>
         public bool Login(Dictionary<string, object> loginParams, string url, string method)
@@ -856,6 +860,8 @@ namespace libsecondlife
         /// <param name="port">Port to connect to</param>
         /// <param name="setDefault">Whether to set CurrentSim to this new
         /// connection, use this if the avatar is moving in to this simulator</param>
+        /// <param name="seedcaps">URL of the capabilities server to use for
+        /// this sim connection</param>
         /// <returns>A Simulator object on success, otherwise null</returns>
         public Simulator Connect(IPAddress ip, ushort port, bool setDefault, string seedcaps)
         {
@@ -1438,23 +1444,15 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Sets the total KBps throttle
-        /// <param name="total">The total kilobytes per second for the connection.
-        /// This will be divided up between the various stream types using the 
-        /// default multipliers</param>
+        /// Constructor that decodes an existing AgentThrottle packet in to
+        /// individual values
         /// </summary>
-        public AgentThrottle(SecondLife client, float total)
-        {
-            Client = client;
-            // Note that the client itself never seems to go below 75k, even if you tell it to
-            Total = total;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="pos"></param>
+        /// <param name="data">Reference to the throttle data in an AgentThrottle
+        /// packet</param>
+        /// <param name="pos">Offset position to start reading at in the 
+        /// throttle data</param>
+        /// <remarks>This is generally not needed in libsecondlife clients as 
+        /// the server will never send a throttle packet to the client</remarks>
         public AgentThrottle(byte[] data, int pos)
         {
             int i;
@@ -1487,9 +1485,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Convert the current throttle values to a byte array that can be put
+        /// in an AgentThrottle packet
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Byte array containing all the throttle values</returns>
         public byte[] ToBytes()
         {
             byte[] data = new byte[7 * 4];

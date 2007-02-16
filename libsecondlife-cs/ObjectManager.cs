@@ -111,7 +111,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="simulator"></param>
-        /// <param name="prim"></param>
+        /// <param name="foliage"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
         public delegate void NewFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle,
@@ -445,11 +445,14 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Instantiates a new ObjectManager class. This class should only be accessed
-        /// through SecondLife.Objects, client applications should never create their own
+        /// Instantiates a new ObjectManager class. This class should only be 
+        /// accessed through SecondLife.Objects, client applications should 
+        /// never create their own
         /// </summary>
-        /// <remarks>This constructor allows a subclass to determine if callbacks should be registered here or not.</remarks>
         /// <param name="client">A reference to the client</param>
+        /// <param name="registerCallbacks">If false, the ObjectManager won't
+        /// register any packet callbacks and won't decode incoming object
+        /// packets</param>
         protected ObjectManager(SecondLife client, bool registerCallbacks)
         {
             Client = client;
@@ -1027,8 +1030,9 @@ namespace libsecondlife
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="objectID"></param>
+        /// <param name="simulator">Simulator containing the object</param>
+        /// <param name="objectID">Absolute UUID of the object</param>
+        /// <param name="reliable">Whether to require server acknowledgement of this request</param>
         public void RequestObjectPropertiesFamily(Simulator simulator, LLUUID objectID, bool reliable)
         {
             RequestObjectPropertiesFamilyPacket properties = new RequestObjectPropertiesFamilyPacket();

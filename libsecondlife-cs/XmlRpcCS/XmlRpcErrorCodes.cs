@@ -15,10 +15,10 @@ namespace Nwc.XmlRpc
         /// <summary></summary>
         public const String PARSE_ERROR_ENCODING_MSG = "Parse Error, unsupported encoding";
 
-        /**
-           -32702 ---> parse error. invalid character for encoding
-           -32600 ---> server error. invalid xml-rpc. not conforming to spec.
-        **/
+        //
+        // -32702 ---> parse error. invalid character for encoding
+        // -32600 ---> server error. invalid xml-rpc. not conforming to spec.
+        //
 
         /// <summary></summary>
         public const int SERVER_ERROR_METHOD = -32601;
@@ -30,18 +30,18 @@ namespace Nwc.XmlRpc
         /// <summary></summary>
         public const String SERVER_ERROR_PARAMS_MSG = "Server Error, invalid method parameters";
 
-        /**
-           -32603 ---> server error. internal xml-rpc error
-        **/
+        //
+        // -32603 ---> server error. internal xml-rpc error
+        //
 
         /// <summary></summary>
         public const int APPLICATION_ERROR = -32500;
         /// <summary></summary>
         public const String APPLICATION_ERROR_MSG = "Application Error";
 
-        /**
-           -32400 ---> system error
-        **/
+        //
+        // -32400 ---> system error
+        //
 
         /// <summary></summary>
         public const int TRANSPORT_ERROR = -32300;
@@ -49,5 +49,3 @@ namespace Nwc.XmlRpc
         public const String TRANSPORT_ERROR_MSG = "Transport Layer Error";
     }
 }
-
-

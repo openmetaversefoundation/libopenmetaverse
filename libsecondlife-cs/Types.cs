@@ -502,9 +502,8 @@ namespace libsecondlife
         /// <summary>
         /// Generate an LLVector3 from a string
         /// </summary>
-        /// <param name="val">A string representation of a 3d vector, enclosed 
+        /// <param name="val">A string representation of a 3D vector, enclosed 
         /// in arrow brackets and separated by commas</param>
-        /// <example>llVector3.Parse("&lt;128.00000, 128.50000, 20.00000&rt;")</example>
         public static LLVector3 Parse(string val)
         {
             char[] splitChar = { ',', ' ' };

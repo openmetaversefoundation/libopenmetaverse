@@ -70,7 +70,7 @@ namespace libsecondlife
         /// Triggered when an avatar group list is received (AvatarGroupsReply)
         /// </summary>
         /// <param name="avatarID"></param>
-        /// <param name="groupBlock"></param>
+        /// <param name="groups"></param>
         public delegate void AvatarGroupsCallback(LLUUID avatarID, AvatarGroupsReplyPacket.GroupDataBlock[] groups);
         /// <summary>
         /// Triggered when a name search reply is received (AvatarPickerReply)

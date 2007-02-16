@@ -112,10 +112,10 @@ namespace libsecondlife.Utilities
         }
     }
 
-    /// <summary>
-    /// Keeps an up to date inventory of the currently seen objects in each
-    /// simulator
-    /// </summary>
+    ///// <summary>
+    ///// Keeps an up to date inventory of the currently seen objects in each
+    ///// simulator
+    ///// </summary>
     //public class ObjectTracker
     //{
     //    private SecondLife Client;
@@ -213,10 +213,6 @@ namespace libsecondlife.Utilities
             return LocalAvatarNameLookup(id);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
         //public void BeginGetAvatarName(LLUUID id)
         //{
         //    // TODO: BeginGetAvatarNames is pretty bulky, rewrite a simple version here

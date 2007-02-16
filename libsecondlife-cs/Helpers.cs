@@ -535,11 +535,11 @@ namespace libsecondlife
             return output.ToString();
         }
 
-        /// <summary>
-        /// Converts a string containing hexadecimal characters to a byte array
-        /// </summary>
-        /// <param name="hexString">String containing hexadecimal characters</param>
-        /// <returns>The converted byte array</returns>
+        ///// <summary>
+        ///// Converts a string containing hexadecimal characters to a byte array
+        ///// </summary>
+        ///// <param name="hexString">String containing hexadecimal characters</param>
+        ///// <returns>The converted byte array</returns>
         //public static byte[] HexStringToField(string hexString)
         //{
         //    string newString = "";

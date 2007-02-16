@@ -205,7 +205,7 @@ namespace libsecondlife.Utilities.Assets
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="image"></param>
+        /// <param name="asset"></param>
         public delegate void AssetReceivedCallback(AssetDownload asset);
         /// <summary>
         /// 
