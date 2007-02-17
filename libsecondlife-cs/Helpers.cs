@@ -486,7 +486,7 @@ namespace libsecondlife
                     for (int j = 0; j < 16 && (i + j) < bytes.Length; j++)
                     {
                         if (bytes[i + j] >= 0x20 && bytes[i + j] < 0x7E)
-                            output.Append(bytes[i + j]);
+                            output.Append((char)bytes[i + j]);
                         else
                             output.Append(".");
                     }
