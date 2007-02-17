@@ -39,6 +39,7 @@
     <Compile Include="Commands\AppearanceCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
     <Compile Include="Commands\DebugCommand.cs" />
+    <Compile Include="Commands\DumpOutfitCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Commands\Communication\SayCommand.cs" />
     <Compile Include="Commands\Communication\ShoutCommand.cs" />
     <Compile Include="Commands\Communication\WhisperCommand.cs" />
+    <Compile Include="Commands\MD5Command.cs" />
     <Compile Include="Commands\Movement\FollowCommand.cs" />
     <Compile Include="Commands\Movement\GotoCommand.cs" />
     <Compile Include="Commands\Movement\JumpCommand.cs" />
@@ -65,9 +67,6 @@
     <Compile Include="Commands\Movement\SitCommand.cs" />
     <Compile Include="Commands\PacketLogCommand.cs" />
     <Compile Include="Commands\QuitCommand.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Commands\ResearchCommand.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\SetMasterCommand.cs">
@@ -91,6 +90,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\openjpegnet\openjpegnet.csproj">
+      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
+      <Name>openjpegnet</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\libsecondlife.csproj">
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Name>libsecondlife</Name>
