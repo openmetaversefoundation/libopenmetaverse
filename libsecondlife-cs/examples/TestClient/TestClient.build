@@ -91,6 +91,7 @@
       </sources>
       <references basedir="${bin_dir}/">
         <include name="libsecondlife.dll"/>
+        <include name="openjpegnet.dll"/>
       </references>
     </csc>
   </target>
