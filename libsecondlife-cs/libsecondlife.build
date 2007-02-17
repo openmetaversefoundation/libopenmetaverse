@@ -69,13 +69,13 @@
 	</target>
 
 	<target name="build" depends="init map" description="compiles the source code">
-		<if propertyexists="CCNetLabel">
+	    <if test="${property::exists('CCNetLabel')}">
 			<!-- Produce AssemblyInfo.cs for libsecondlife.dll -->
 			<asminfo output="AssemblyInfo.cs" language="CSharp">
 				<imports>
-					<import name="System" />
-					<import name="System.Reflection" />
-					<import name="System.Runtime.InteropServices" />
+					<import namespace="System" />
+					<import namespace="System.Reflection" />
+					<import namespace="System.Runtime.InteropServices" />
 				</imports>
 				<attributes>
 					<attribute type="ComVisibleAttribute" value="false" />

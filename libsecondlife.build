@@ -48,7 +48,7 @@
   <target name="debug" description="Configures a debug build">
     <property name="build.debug" value="true" />
     <property name="package.name" value="${project::get-name()}-${project.version}-${project.config}" />
-    <if propertyexists="CCNetLabel">
+    <if test="${property::exists('CCNetLabel')}">
       <property name="package.name" value="${project::get-name()}-${CCNetLabel}-${project.config}" />
     </if>
   </target>
@@ -57,7 +57,7 @@
     <property name="project.config" value="release" />
     <property name="build.debug"    value="false"/>
     <property name="package.name" value="${project::get-name()}-${project.version}" />
-    <if propertyexists="CCNetLabel">
+    <if test="${property::exists('CCNetLabel')}">
       <property name="package.name" value="${project::get-name()}-${CCNetLabel}-${project.config}" />
     </if>
   </target>
@@ -70,7 +70,7 @@
     <property name="srcarchive.name" value="${project::get-name()}-${project.version}-src.zip" />
     <property name="srcarchive.dir" value="${temp.dir}/${project::get-name()}-${project.version}-src" />
     
-    <if propertyexists="CCNetLabel">
+    <if test="${property::exists('CCNetLabel')}">
       <property name="srcarchive.name" value="${project::get-name()}-${CCNetLabel}-src.zip" />
     </if>
   </target>
