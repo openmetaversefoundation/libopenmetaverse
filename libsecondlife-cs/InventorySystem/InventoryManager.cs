@@ -668,9 +668,12 @@ namespace libsecondlife.InventorySystem
 
         #region libsecondlife callback handlers
 
-        void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, byte offline, byte[] binaryBucket)
+        void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, 
+            LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog, bool groupIM, 
+            LLUUID imSessionID, DateTime timestamp,  string message, MainAvatar.InstantMessageOnline offline, 
+            byte[] binaryBucket)
         {
-            if ( (dialog == (byte)MainAvatar.InstantMessageDialog.GiveInventory) && (OnInventoryItemReceived != null))
+            if ((dialog == MainAvatar.InstantMessageDialog.InventoryOffered) && (OnInventoryItemReceived != null))
             {
                 sbyte IncomingItemType = (sbyte)binaryBucket[0];
                 LLUUID IncomingItemID = new LLUUID(binaryBucket, 1);

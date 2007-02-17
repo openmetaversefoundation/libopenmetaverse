@@ -32,7 +32,6 @@ namespace libsecondlife.TestClient
         private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
         private LLVector3 left = new LLVector3(0.9999f, 0, 0);
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
-        private int DrawDistance = 64;
         private System.Timers.Timer updateTimer;
         
 
@@ -273,9 +272,10 @@ namespace libsecondlife.TestClient
             lock (Appearances) Appearances[appearance.Sender.ID] = appearance;
         }
 
-        private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, 
-            LLUUID regionID, LLVector3 position, byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, 
-            string message, byte offline, byte[] binaryBucket)
+        private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, 
+            uint parentEstateID, LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog, 
+            bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
+            MainAvatar.InstantMessageOnline offline, byte[] binaryBucket)
         {
             if (Master != null && Master.Length > 0)
             {
@@ -298,20 +298,23 @@ namespace libsecondlife.TestClient
 
             Console.WriteLine("<IM>" + fromAgentName + ": " + message);
 
-            if (Self.ID == toAgentID)
-            {				
-                if (dialog == (byte)MainAvatar.InstantMessageDialog.RequestTeleport)
+            if (toAgentID == this.Network.AgentID)
+            {
+                if (dialog == MainAvatar.InstantMessageDialog.RequestTeleport)
                 {
                     Console.WriteLine("Accepting teleport lure.");
                     Self.TeleportLureRespond(fromAgentID, true);
                 }
                 else
                 {
-					if (dialog == (byte)MainAvatar.InstantMessageDialog.InventoryOffered)
+					if (dialog == MainAvatar.InstantMessageDialog.InventoryOffered)
 					{
-						// unfortunatly this is purely cosmetic and has nothing to do with the actual inventory transfer, which is always accepted
 						Console.WriteLine("Accepting inventory offer.");
-						Self.InstantMessage(fromAgentID, MainAvatar.InstantMessageDialog.InventoryAccepted);
+
+						Self.InstantMessage(Self.FirstName + " " + Self.LastName, fromAgentID, String.Empty, 
+                            imSessionID, MainAvatar.InstantMessageDialog.InventoryAccepted, 
+                            MainAvatar.InstantMessageOnline.Offline, Self.Position, LLUUID.Zero,
+                            Self.InventoryRootFolderUUID.GetBytes());
 					}
 					else
 	                    DoCommand(message, fromAgentID, imSessionID);

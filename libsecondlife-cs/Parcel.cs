@@ -335,7 +335,8 @@ namespace libsecondlife
             request.ParcelData.MediaURL = Helpers.StringToField(this.MediaURL);
             request.ParcelData.MusicURL = Helpers.StringToField(this.MusicURL);
             request.ParcelData.Name = Helpers.StringToField(this.Name);
-            request.ParcelData.Flags = (uint)this.Flags;
+            request.ParcelData.Flags = 0; // TODO: Unused?
+            request.ParcelData.ParcelFlags = (uint)this.Flags;
             request.ParcelData.PassHours = this.PassHours;
             request.ParcelData.PassPrice = this.PassPrice;
             request.ParcelData.SalePrice = this.SalePrice;

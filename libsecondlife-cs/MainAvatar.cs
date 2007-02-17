@@ -143,28 +143,31 @@ namespace libsecondlife
         {
             /// <summary>Indicates a regular IM from another agent</summary>
             MessageFromAgent = 0,
-			/// <summary>Simple notification box with an OK button.</summary>
+			/// <summary>Simple notification box with an OK button</summary>
 			MessageBox = 1,
+            /// <summary>Used to show a countdown notification with an OK
+            /// button, deprecated now</summary>
+            [Obsolete]
+            MessageBoxCountdown = 2,
 			/// <summary>You've been invited to join a group.</summary>
 			GroupInvitation = 3,
-            /// <summary>Indicates that someone has given the user an object</summary>
-            /// <remarks>Soon to be deprecated</remarks>
-            GiveInventory = 4,
-			/// <summary>Inventory offer</summary>
-			InventoryOffered = 4,
-            /// <summary>An avatar has accepted your inventory offer</summary>
+            /// <summary>Inventory offer</summary>
+            InventoryOffered = 4,
+			/// <summary>Accepted inventory offer</summary>
 			InventoryAccepted = 5,
-            /// <summary>An avatar has declined your inventory offer</summary>
+            /// <summary>Declined inventory offer</summary>
 			InventoryDeclined = 6,
 			/// <summary>Group vote</summary>
 			GroupVote = 7,
-            /// <summary>Indicates that someone has given us a notecard</summary>
-            GiveNotecard = 9,
-			/// <summary>Unknown</summary>
+            /// <summary>A message to everyone in the agent's group, no longer
+            /// used</summary>
+            [Obsolete]
+            DeprecatedGroupMessage = 8,
+			/// <summary>An object is offering its inventory</summary>
 			TaskInventoryOffered = 9,
-            /// <summary>Unknown</summary>
+            /// <summary>Accept an inventory offer from an object</summary>
 			TaskInventoryAccepted = 10,
-            /// <summary>Unknown</summary>
+            /// <summary>Decline an inventory offer from an object</summary>
 			TaskInventoryDeclined = 11,
 			/// <summary>Unknown</summary>
 			NewUserDefault = 12,
@@ -194,6 +197,13 @@ namespace libsecondlife
             DenyTeleport = 24,
             /// <summary>Only useful if you have Linden permissions</summary>
             GodLikeRequestTeleport = 25,
+            /// <summary>A placeholder type for future expansion, currently not
+            /// used</summary>
+            CurrentlyUnused = 26,
+            /// <summary>Notification of a new group election, this is 
+            /// deprecated</summary>
+            [Obsolete]
+            DeprecatedGroupElection = 27,
 			/// <summary>IM to tell the user to go to an URL</summary>
 			GotoUrl = 28,
 			/// <summary>IM for help</summary>
@@ -225,6 +235,19 @@ namespace libsecondlife
             StartTyping = 41,
             /// <summary>Indicates that a user has stopped typing</summary>
             StopTyping = 42
+        }
+
+        /// <summary>
+        /// Flag in Instant Messages, whether the IM should be delivered to
+        /// offline avatars as well
+        /// </summary>
+        public enum InstantMessageOnline
+        {
+            /// <summary>Only deliver to online avatars</summary>
+            Online = 0,
+            /// <summary>If the avatar is offline the message will be held until
+            /// they login next, and possibly forwarded to their e-mail account</summary>
+            Offline = 1
         }
 
         /// <summary>
@@ -466,12 +489,13 @@ namespace libsecondlife
         /// <param name="imSessionID">Key of IM Session</param>
         /// <param name="timestamp">Timestamp of message</param>
         /// <param name="message">Text of message</param>
-        /// <param name="offline"></param>
+        /// <param name="offline">Enum of whether this message is held for 
+        /// offline avatars</param>
         /// <param name="binaryBucket"></param>
         public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
             LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
-            byte dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
-            byte offline, byte[] binaryBucket);
+            InstantMessageDialog dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
+            InstantMessageOnline offline, byte[] binaryBucket);
 
         /// <summary>
         /// Triggered for any status updates of a teleport (progress, failed, succeeded)
@@ -693,107 +717,95 @@ namespace libsecondlife
         /// <summary>
         /// Send an Instant Message
         /// </summary>
-        /// <param name="target">Key of Avatar</param>
-        /// <param name="message">Text Message being sent.</param>
+        /// <param name="target">Target of the Instant Message</param>
+        /// <param name="message">Text message being sent</param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, message, null, LLUUID.Random());
+            InstantMessage(FirstName + " " + LastName, target, message, LLUUID.Random(),
+                InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.Position,
+                LLUUID.Zero, new byte[0]);
         }
-
-		/// <summary>
-		/// Send an Instant Message, used for dialog responses.
-		/// </summary>
-		/// <param name="target">Key of Avatar</param>
-		/// <param name="dialog">Dialog code to be sent.</param>
-		public void InstantMessage(LLUUID target, InstantMessageDialog dialog)
-		{
-			InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, String.Empty, null, LLUUID.Random(), 
-                dialog, true);
-		}
 
         /// <summary>
         /// Send an Instant Message
         /// </summary>
-        /// <param name="target">Key of Avatar</param>
-        /// <param name="message">Text Message being sent.</param>
-        /// <param name="IMSessionID">IM Session ID</param>
-        public void InstantMessage(LLUUID target, string message, LLUUID IMSessionID)
+        /// <param name="target">Target of the Instant Message</param>
+        /// <param name="message">Text message being sent</param>
+        /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
+        public void InstantMessage(LLUUID target, string message, LLUUID imSessionID)
         {
-            InstantMessage(FirstName + " " + LastName, LLUUID.Random(), target, message, null, IMSessionID);
+            InstantMessage(FirstName + " " + LastName, target, message, imSessionID,
+                InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.Position,
+                LLUUID.Zero, new byte[0]);
         }
 
         /// <summary>
         /// Send an Instant Message
         /// </summary>
-        /// <param name="fromName">Client's Avatar</param>
-        /// <param name="sessionID">SessionID of current connection to grid</param>
+        /// <param name="fromName">The name this IM will show up as being from</param>
         /// <param name="target">Key of Avatar</param>
-        /// <param name="message">Text Message being sent.</param>
+        /// <param name="message">Text message being sent</param>
+        /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
         /// <param name="conferenceIDs"></param>
-        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message, 
+		public void InstantMessage(string fromName, LLUUID target, string message, LLUUID imSessionID, 
             LLUUID[] conferenceIDs)
-        {
-            InstantMessage(fromName, sessionID, target, message, conferenceIDs, LLUUID.Random());
-        }
-
-        /// <summary>
-        /// Send an Instant Message
-        /// </summary>
-        /// <param name="fromName">The name this IM will show up as being from</param>
-        /// <param name="sessionID">Session ID of current connection to grid</param>
-        /// <param name="target">Key of Avatar</param>
-        /// <param name="message">Text message being sent</param>
-        /// <param name="conferenceIDs"></param>
-        /// <param name="IMSessionID">IM session ID (to differentiate between IM windows)</param>
-		public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message,
-			LLUUID[] conferenceIDs, LLUUID IMSessionID)
 		{
-			InstantMessage(fromName, sessionID, target, message, conferenceIDs, IMSessionID, 
-                InstantMessageDialog.MessageFromAgent, true);
-		}
+            byte[] binaryBucket;
 
-        /// <summary>
-        /// Send an Instant Message
-        /// </summary>
-        /// <param name="fromName">The name this IM will show up as being from</param>
-        /// <param name="sessionID">Session ID of current connection to grid</param>
-        /// <param name="target">Key of Avatar</param>
-        /// <param name="message">Text message being sent</param>
-        /// <param name="conferenceIDs"></param>
-        /// <param name="IMSessionID">IM session ID (to differentiate between IM windows)</param>
-        /// <param name="dialog">Type of instant message to send</param>
-        /// <param name="offline">Whether to IM offline avatars as well</param>
-        public void InstantMessage(string fromName, LLUUID sessionID, LLUUID target, string message,
-            LLUUID[] conferenceIDs, LLUUID IMSessionID, InstantMessageDialog dialog, bool offline)
-        {
-            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
-            im.AgentData.AgentID = Client.Network.AgentID;
-            im.AgentData.SessionID = Client.Network.SessionID;
-            im.MessageBlock.Dialog = (byte)dialog;
-            im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
-            im.MessageBlock.FromGroup = false;
-            im.MessageBlock.ID = IMSessionID;
-            im.MessageBlock.Message = Helpers.StringToField(message);
-            im.MessageBlock.Offline = (byte)(offline ? 1 : 0);
-            im.MessageBlock.ToAgentID = target;
             if (conferenceIDs != null && conferenceIDs.Length > 0)
             {
-                im.MessageBlock.BinaryBucket = new byte[16 * conferenceIDs.Length];
-
+                binaryBucket = new byte[16 * conferenceIDs.Length];
                 for (int i = 0; i < conferenceIDs.Length; ++i)
-                {
-                    Array.Copy(conferenceIDs[i].Data, 0, im.MessageBlock.BinaryBucket, i * 16, 16);
-                }
+                    Array.Copy(conferenceIDs[i].Data, 0, binaryBucket, i * 16, 16);
             }
             else
             {
-                im.MessageBlock.BinaryBucket = new byte[0];
+                binaryBucket = new byte[0];
             }
+
+			InstantMessage(fromName, target, message, imSessionID, InstantMessageDialog.MessageFromAgent, 
+                InstantMessageOnline.Offline, LLVector3.Zero, LLUUID.Zero, binaryBucket);
+		}
+
+        /// <summary>
+        /// Send an Instant Message
+        /// </summary>
+        /// <param name="fromName">The name this IM will show up as being from</param>
+        /// <param name="target">Key of Avatar</param>
+        /// <param name="message">Text message being sent</param>
+        /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
+        /// <param name="dialog">Type of instant message to send</param>
+        /// <param name="offline">Whether to IM offline avatars as well</param>
+        /// <param name="position"></param>
+        /// <param name="regionID"></param>
+        /// <param name="binaryBucket">Packed binary data that is specific to
+        /// the dialog type</param>
+        public void InstantMessage(string fromName, LLUUID target, string message, LLUUID imSessionID, 
+            InstantMessageDialog dialog, InstantMessageOnline offline, LLVector3 position, LLUUID regionID, 
+            byte[] binaryBucket)
+        {
+            ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
+
+            im.AgentData.AgentID = Client.Network.AgentID;
+            im.AgentData.SessionID = Client.Network.SessionID;
+
+            im.MessageBlock.Dialog = (byte)dialog;
+            im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
+            im.MessageBlock.FromGroup = false;
+            im.MessageBlock.ID = imSessionID;
+            im.MessageBlock.Message = Helpers.StringToField(message);
+            im.MessageBlock.Offline = (byte)offline;
+            im.MessageBlock.ToAgentID = target;
+
+            if (binaryBucket != null)
+                im.MessageBlock.BinaryBucket = binaryBucket;
+            else
+                im.MessageBlock.BinaryBucket = new byte[0];
 
             // These fields are mandatory, even if we don't have valid values for them
             im.MessageBlock.Position = LLVector3.Zero;
             //TODO: Allow region id to be correctly set by caller or fetched from Client.*
-            im.MessageBlock.RegionID = LLUUID.Zero;
+            im.MessageBlock.RegionID = regionID;
 
             // Send the message
             Client.Network.SendPacket(im);
@@ -1357,7 +1369,9 @@ namespace libsecondlife
         /// <param name="accept">Accept the teleport request or deny it</param>
         public void TeleportLureRespond(LLUUID requesterID, bool accept)
         {
-			InstantMessage(requesterID, accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport);
+            InstantMessage(FirstName + " " + LastName, requesterID, String.Empty, LLUUID.Random(), 
+                accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
+                InstantMessageOnline.Offline, this.Position, LLUUID.Zero, new byte[0]);
 
             if (accept)
             {
@@ -1564,12 +1578,12 @@ namespace libsecondlife
                         , im.MessageBlock.ParentEstateID
                         , im.MessageBlock.RegionID
                         , im.MessageBlock.Position
-                        , im.MessageBlock.Dialog
+                        , (InstantMessageDialog)im.MessageBlock.Dialog
                         , im.MessageBlock.FromGroup
                         , im.MessageBlock.ID
                         , new DateTime(im.MessageBlock.Timestamp)
                         , Helpers.FieldToUTF8String(im.MessageBlock.Message)
-                        , im.MessageBlock.Offline
+                        , (InstantMessageOnline)im.MessageBlock.Offline
                         , im.MessageBlock.BinaryBucket
                         );
                 }

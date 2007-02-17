@@ -199,10 +199,16 @@ namespace libsecondlife
             {
                 // We seem to get HTTP errors fairly commonly from the CAPS servers
                 Client.DebugLog(e.Message);
-                if (Client.Network.Connected && e.Status == WebExceptionStatus.ProtocolError)
-                    goto Start;
-                else
-                    return null;
+
+                if (Client.Network.Connected)
+                {
+                    if (e.Status == WebExceptionStatus.ProtocolError)
+                        goto Start;
+                    else
+                        Client.Log("CAPS error, " + e.Status.ToString(), Helpers.LogLevel.Warning);
+                }
+
+                return null;
             }
 
             if (respBuf != null) return LLSD.LLSDDeserialize(respBuf);

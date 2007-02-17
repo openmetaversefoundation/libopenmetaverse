@@ -329,12 +329,32 @@ namespace libsecondlife
             Undergrowth1
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum SaleType : byte
         {
+            /// <summary></summary>
             Not = 0,
+            /// <summary></summary>
             Original = 1,
+            /// <summary></summary>
             Copy = 2,
+            /// <summary></summary>
             Contents = 3
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ClickAction : byte
+        {
+            /// <summary></summary>
+            Touch = 0,
+            /// <summary></summary>
+            Sit = 1,
+            /// <summary></summary>
+            Buy = 2
         }
 
         #endregion
@@ -579,6 +599,32 @@ namespace libsecondlife
             select.ObjectData[0].ObjectLocalID = localID;
 
             Client.Network.SendPacket(select, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        public void ClickObject(Simulator simulator, uint localID)
+        {
+            ObjectGrabPacket grab = new ObjectGrabPacket();
+            grab.AgentData.AgentID = Client.Network.AgentID;
+            grab.AgentData.SessionID = Client.Network.SessionID;
+            grab.ObjectData.GrabOffset = LLVector3.Zero;
+            grab.ObjectData.LocalID = localID;
+
+            Client.Network.SendPacket(grab, simulator);
+
+            // TODO: If these hit the server out of order the click will fail 
+            // and we'll be grabbing the object
+
+            ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
+            degrab.AgentData.AgentID = Client.Network.AgentID;
+            degrab.AgentData.SessionID = Client.Network.SessionID;
+            degrab.ObjectData.LocalID = localID;
+
+            Client.Network.SendPacket(degrab, simulator);
         }
 
         /// <summary>
@@ -1257,7 +1303,7 @@ namespace libsecondlife
                             prim.ParentID = block.ParentID;
 							prim.RegionHandle = update.RegionData.RegionHandle;
                             prim.Scale = block.Scale;
-                            prim.ClickAction = block.ClickAction;
+                            prim.ClickAction = (ClickAction)block.ClickAction;
                             prim.OwnerID = block.OwnerID;
                             prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
                             prim.Text = Helpers.FieldToUTF8String(block.Text);
@@ -1534,7 +1580,7 @@ namespace libsecondlife
                                 // Material
                                 prim.data.Material = (uint)block.Data[i++];
                                 // Click action
-                                prim.ClickAction = block.Data[i++];
+                                prim.ClickAction = (ClickAction)block.Data[i++];
                                 // Scale
                                 prim.Scale = new LLVector3(block.Data, i);
                                 i += 12;
