@@ -10,7 +10,7 @@ namespace libsecondlife.TestClient
 {
     public class DumpOutfitCommand : Command
     {
-        AssetManager Assets;
+        libsecondlife.Utilities.Assets.AssetManager Assets;
         List<LLUUID> OutfitAssets = new List<LLUUID>();
 
         public DumpOutfitCommand(TestClient testClient)
@@ -62,6 +62,8 @@ namespace libsecondlife.TestClient
                             output.Append(((AppearanceManager.TextureIndex)face.Key).ToString());
                             output.Append(" ");
                         }
+
+                        return output.ToString();
                     }
                 }
             }

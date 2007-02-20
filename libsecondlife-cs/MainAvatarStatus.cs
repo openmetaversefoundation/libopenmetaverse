@@ -321,12 +321,24 @@ namespace libsecondlife
             }
 
             /// <summary>
-            /// Send new AgentUpdate
+            /// Send new AgentUpdate packet to update our current camera 
+            /// position and rotation
             /// </summary>
             public void SendUpdate()
             {
+                SendUpdate(false);
+            }
+
+            /// <summary>
+            /// Send new AgentUpdate packet to update our current camera 
+            /// position and rotation
+            /// </summary>
+            /// <param name="reliable">Whether to require server acknowledgement
+            /// of this packet</param>
+            public void SendUpdate(bool reliable)
+            {
                 AgentUpdatePacket update = new AgentUpdatePacket();
-                update.Header.Reliable = false;
+                update.Header.Reliable = reliable;
 
                 update.AgentData.AgentID = Client.Network.AgentID;
                 update.AgentData.SessionID = Client.Network.SessionID;

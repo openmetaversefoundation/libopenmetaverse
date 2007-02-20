@@ -202,13 +202,18 @@ namespace libsecondlife
 
                 if (Client.Network.Connected)
                 {
-                    if (e.Status == WebExceptionStatus.ProtocolError)
-                        goto Start;
-                    else
-                        Client.Log("CAPS error, " + e.Status.ToString(), Helpers.LogLevel.Warning);
+                    switch (e.Status)
+                    {
+                        case WebExceptionStatus.ProtocolError:
+                        case WebExceptionStatus.Timeout:
+                        case WebExceptionStatus.ConnectFailure:
+                            Client.DebugLog("CAPS error: " + e.Status.ToString());
+                            goto Start;
+                        default:
+                            Client.Log("CAPS error, " + e.Status.ToString(), Helpers.LogLevel.Warning);
+                            return null;
+                    }
                 }
-
-                return null;
             }
 
             if (respBuf != null) return LLSD.LLSDDeserialize(respBuf);

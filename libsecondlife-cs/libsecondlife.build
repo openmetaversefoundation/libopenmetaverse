@@ -51,6 +51,9 @@
 				<include name="mapgenerator/mapgenerator.cs" />
 				<include name="mapgenerator/ProtocolManager.cs" />
 			</sources>
+			<resources dynamicprefix="true" prefix="libsecondlife" basedir="." failonempty="true">
+			    <include name="*.tga" />
+			</resources>
 		</csc>
 		<!-- Does _Packets_.cs really need to be reproduced? -->
 		<!-- Don't do it unless we have must, otherwise lots of stuff recompiles. -->

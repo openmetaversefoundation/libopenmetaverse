@@ -1105,7 +1105,6 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void UpdateHandler(Packet packet, Simulator simulator)
         {
-
             if (AlwaysDecode || OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
             {
                 ObjectUpdatePacket update = (ObjectUpdatePacket)packet;

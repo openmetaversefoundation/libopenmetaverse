@@ -83,6 +83,7 @@
     <Reference Include="System.Data">
       <Name>System.Data</Name>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
@@ -109,6 +110,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AvatarManager.cs" />
+    <Compile Include="BakeLayer.cs" />
     <Compile Include="BitPack.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
@@ -220,6 +222,26 @@
     </Compile>
     <Compile Include="_Packets_.cs" />
     <Compile Include="_VisualParam_.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\gloves_fingers_alpha.tga" />
+    <EmbeddedResource Include="Resources\glove_length_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_length_lower_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_length_upper_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_open_lower_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_open_upper_alpha.tga" />
+    <EmbeddedResource Include="Resources\pants_length_alpha.tga" />
+    <EmbeddedResource Include="Resources\pants_waist_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_bottom_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_collar_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_collar_back_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_sleeve_alpha.tga" />
+    <EmbeddedResource Include="Resources\shoe_height_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_length_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_back_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_front_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_left_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_right_alpha.tga" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
