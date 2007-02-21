@@ -181,10 +181,13 @@ namespace libsecondlife.AssetSystem
         /// <param name="item"></param>
         public AssetRequestDownload RequestInventoryAsset(InventoryItem item)
 		{
-            if ( (item.OwnerMask & (uint)AssetPermission.Copy) == 0 )
-                throw new AssetPermissionException(item, slClient, "Asset data refused, Copy permission needed.");
-            if ( (item.OwnerMask & (uint)AssetPermission.Modify) == 0 && (item.Type == 10) )
-                throw new AssetPermissionException(item, slClient, "Asset data refused, Modify permission needed for scripts.");
+            if (!(item is InventoryWearable))
+            {
+                if ((item.OwnerMask & (uint)AssetPermission.Copy) == 0)
+                    throw new AssetPermissionException(item, slClient, "Asset data refused, Copy permission needed.");
+                if ((item.OwnerMask & (uint)AssetPermission.Modify) == 0 && (item.Type == 10))
+                    throw new AssetPermissionException(item, slClient, "Asset data refused, Modify permission needed for scripts.");
+            }
 
 			LLUUID TransferID = LLUUID.Random();
 

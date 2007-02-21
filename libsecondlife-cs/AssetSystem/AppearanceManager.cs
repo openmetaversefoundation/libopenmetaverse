@@ -110,7 +110,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="outfitFolder">Contains the wearable items to put on.</param>
         public void WearOutfit(InventoryFolder outfitFolder)
         {
-            WearOutfit(outfitFolder, 10000);
+            WearOutfit(outfitFolder, 10000, true);
         }
 
 
@@ -119,7 +119,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
         /// <param name="outfitFolder">Contains the wearable items to put on.</param>
         /// <param name="TimeOut">How long to wait for outfit directory information to download</param>
-        public void WearOutfit(InventoryFolder outfitFolder, int TimeOut)
+        public void WearOutfit(InventoryFolder outfitFolder, int TimeOut, bool removeExistingAttachments)
         {
             // Refresh download of outfit folder
             if (!outfitFolder.RequestDownloadContents(false, false, true, true).RequestComplete.WaitOne(TimeOut, false))
@@ -139,6 +139,8 @@ namespace libsecondlife.AssetSystem
                 AgentWearablesData[i].ItemID  = LLUUID.Zero;
                 AgentWearablesData[i].AssetID = LLUUID.Zero;
             }
+
+            List<InventoryItem> attachments = new List<InventoryItem>();
 
             // Replace with wearables from Outfit folder
             foreach (InventoryBase ib in outfitFolder.GetContents())
@@ -161,7 +163,15 @@ namespace libsecondlife.AssetSystem
                         Client.Log("Asset for " + ib._Name + " unavailable: " + e.Message, Helpers.LogLevel.Error);
                     }
                 }
+                else if (ib is InventoryItem)
+                {
+                    InventoryItem ii = (InventoryItem)ib;
+                    attachments.Add(ii);
+                }
             }
+
+            // Change attachments
+            AddAttachments(attachments, removeExistingAttachments);
 
             // Create AgentIsNowWearing Packet, and send it
             SendAgentIsNowWearing();
@@ -171,6 +181,35 @@ namespace libsecondlife.AssetSystem
 
             // Send updated AgentSetAppearance to the grid
             BeginAgentSendAppearance();
+        }
+
+        public void AddAttachments(List<InventoryItem> attachments, bool removeExistingFirst)
+        {
+            // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
+            RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
+            attachmentsPacket.AgentData.AgentID = Client.Network.AgentID;
+            attachmentsPacket.AgentData.SessionID = Client.Network.SessionID;
+
+            attachmentsPacket.HeaderData.CompoundMsgID = LLUUID.Random();
+            attachmentsPacket.HeaderData.FirstDetachAll = true;
+            attachmentsPacket.HeaderData.TotalObjects = (byte)attachments.Count;
+
+            attachmentsPacket.ObjectData = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock[attachments.Count];
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
+                attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                attachmentsPacket.ObjectData[i].EveryoneMask = attachments[i].EveryoneMask;
+                attachmentsPacket.ObjectData[i].GroupMask = attachments[i].GroupMask;
+                attachmentsPacket.ObjectData[i].ItemFlags = attachments[i].Flags;
+                attachmentsPacket.ObjectData[i].ItemID = attachments[i].ItemID;
+                attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachments[i].Name);
+                attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachments[i].Description);
+                attachmentsPacket.ObjectData[i].NextOwnerMask = attachments[i].NextOwnerMask;
+                attachmentsPacket.ObjectData[i].OwnerID = attachments[i].OwnerID;
+            }
+
+            Client.Network.SendPacket(attachmentsPacket);
         }
 
         #endregion

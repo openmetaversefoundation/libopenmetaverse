@@ -118,11 +118,41 @@ namespace libsecondlife.InventorySystem
             return dr;
         }
 
+        /// <summary>
+        /// Request that a sub-folder be created
+        /// </summary>
+        /// <param name="name">Name of folder</param>
+        /// <returns>A reference to the folder, or null if it fails</returns>
         public InventoryFolder CreateFolder(string name)
         {
-            return iManager.FolderCreate(name, FolderID);
+            // Request folder creation
+            LLUUID requestedFolderUUID = iManager.FolderCreate(name, FolderID);
+
+            // Refresh child folders, to find created folder.
+            if (RequestDownloadContents(false, true, false, false).RequestComplete.WaitOne(30000, false) == false)
+            {
+                // Should probably note the timeout somewhere...
+            }
+
+            foreach (InventoryBase ib in GetContents())
+            {
+                if (ib is InventoryFolder)
+                {
+                    InventoryFolder iFolder = (InventoryFolder)ib;
+                    if (iFolder.FolderID == requestedFolderUUID)
+                    {
+                        return iFolder;
+                    }
+                }
+            }
+
+            return null;
         }
 
+        /// <summary>
+        /// Request this folder be deleted
+        /// </summary>
+        /// <remarks>You should re-request the parent folder's contents.</remarks>
         public void Delete()
         {
             iManager.getFolder(this.ParentID)._Contents.Remove(this);

@@ -66,6 +66,8 @@ namespace libsecondlife.InventorySystem
         private Dictionary<LLUUID, DownloadRequest_Folder> FolderDownloadStatus = new Dictionary<LLUUID, DownloadRequest_Folder>();
         private List<DownloadRequest_Folder> alFolderRequestQueue = new List<DownloadRequest_Folder>();
 
+        protected Dictionary<sbyte, InventoryFolder> FolderByType = new Dictionary<sbyte, InventoryFolder>();
+
         // Used to track current item being created
         private InventoryItem iiCreationInProgress;
         public ManualResetEvent ItemCreationCompleted;
@@ -280,14 +282,14 @@ namespace libsecondlife.InventorySystem
         #region Inventory Creation Functions
 
         /// <summary>
-        /// Create a folder
+        /// Request that a folder be created
         /// </summary>
         /// <param name="name"></param>
         /// <param name="parentid"></param>
-        /// <returns></returns>
-        internal InventoryFolder FolderCreate(String name, LLUUID parentid)
+        internal LLUUID FolderCreate(String name, LLUUID parentid)
         {
-            InventoryFolder ifolder = new InventoryFolder(this, name, LLUUID.Random(), parentid);
+            LLUUID requestedFolderID = LLUUID.Random();
+            InventoryFolder ifolder = new InventoryFolder(this, name, requestedFolderID, parentid);
             ifolder._Type = -1;
 
             if (FoldersByUUID.ContainsKey(ifolder.ParentID))
@@ -311,7 +313,7 @@ namespace libsecondlife.InventorySystem
             Packet packet = InvPacketHelper.CreateInventoryFolder(ifolder.Name, ifolder.ParentID, ifolder.Type, ifolder.FolderID);
             slClient.Network.SendPacket(packet);
 
-            return ifolder;
+            return requestedFolderID;
         }
         /// <summary>
         /// Create a new notecard
@@ -685,31 +687,53 @@ namespace libsecondlife.InventorySystem
                     root.RequestDownloadContents(false, true, false, false).RequestComplete.WaitOne(3000, false);
                 }
 
-                // Look for root folder that accepts the type of inventory being received.
-                foreach (InventoryBase ib in root.GetContents())
+                // Make sure we have a folder lookup by type table ready.
+                if (FolderByType.Count == 0)
                 {
-                    if (ib is InventoryFolder)
+                    foreach (InventoryBase ib in root.GetContents())
                     {
-                        InventoryFolder iFolder = (InventoryFolder)ib;
-                        if (iFolder.Type == IncomingItemType)
+                        if (ib is InventoryFolder)
                         {
-                            // Check folder for incoming item
-                            iFolder.RequestDownloadContents(false, false, true, false).RequestComplete.WaitOne(3000, false);
-                            foreach (InventoryBase ib2 in iFolder.GetContents())
-                            {
-                                if (ib2 is InventoryItem)
-                                {
-                                    InventoryItem iItem = (InventoryItem)ib2;
-
-                                    if (iItem.ItemID == IncomingItemID)
-                                    {
-                                        OnInventoryItemReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, iItem);
-                                        break;
-                                    }
-                                }
-                            }
+                            InventoryFolder iFolder = (InventoryFolder)ib;
+                            FolderByType[iFolder.Type] = iFolder;
                         }
                     }
+                }
+
+                // Get a reference to the incoming/receiving folder
+                if (!FolderByType.ContainsKey(IncomingItemType))
+                {
+                    slClient.Log("Incoming item specifies type (" + IncomingItemType  + ") with no matching inventory folder found.", Helpers.LogLevel.Error);
+                }
+                InventoryFolder incomingFolder = FolderByType[IncomingItemType];
+
+                // Refresh contents of receiving folder
+                incomingFolder.RequestDownloadContents(false, false, true, false).RequestComplete.WaitOne(3000, false);
+
+                // Search folder for incoming item
+                InventoryItem incomingItem = null;
+                foreach (InventoryBase ib2 in incomingFolder.GetContents())
+                {
+                    if (ib2 is InventoryItem)
+                    {
+                        InventoryItem iItem = (InventoryItem)ib2;
+
+                        if (iItem.ItemID == IncomingItemID)
+                        {
+                            incomingItem = iItem;
+                            break;
+                        }
+                    }
+                }
+
+                // If found, send out notification
+                if (incomingItem != null)
+                {
+                    OnInventoryItemReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, incomingItem);
+                }
+                else
+                {
+                    slClient.Log("Incoming item not found in inventory.", Helpers.LogLevel.Error);
                 }
             }
         }
