@@ -688,14 +688,17 @@ namespace libsecondlife.InventorySystem
                 }
 
                 // Make sure we have a folder lookup by type table ready.
-                if (FolderByType.Count == 0)
+                lock (FolderByType)
                 {
-                    foreach (InventoryBase ib in root.GetContents())
+                    if (FolderByType.Count == 0)
                     {
-                        if (ib is InventoryFolder)
+                        foreach (InventoryBase ib in root.GetContents())
                         {
-                            InventoryFolder iFolder = (InventoryFolder)ib;
-                            FolderByType[iFolder.Type] = iFolder;
+                            if (ib is InventoryFolder)
+                            {
+                                InventoryFolder iFolder = (InventoryFolder)ib;
+                                FolderByType[iFolder.Type] = iFolder;
+                            }
                         }
                     }
                 }
@@ -824,173 +827,175 @@ namespace libsecondlife.InventorySystem
             int iDescendentsExpected = reply.AgentData.Descendents;
             int iDescendentsReceivedThisBlock = 0;
 
-
-            #region Handle Child Items
-            foreach (InventoryDescendentsPacket.ItemDataBlock itemBlock in reply.ItemData)
+            lock (slClient.Inventory)
             {
-                // There is always an item block, even if there isn't any items
-                // the "filler" block will not have a name
-                if (itemBlock.Name.Length != 0)
+
+                #region Handle Child Items
+                foreach (InventoryDescendentsPacket.ItemDataBlock itemBlock in reply.ItemData)
                 {
-                    iDescendentsReceivedThisBlock++;
-
-                    if (itemBlock.ItemID == LLUUID.Zero)
+                    // There is always an item block, even if there isn't any items
+                    // the "filler" block will not have a name
+                    if (itemBlock.Name.Length != 0)
                     {
-                        // this shouldn't ever happen, unless you've uploaded an invalid item
-                        // to yourself while developping inventory code :-(
-                    }
-                    else
-                    {
-                        InventoryItem TempInvItem = new InventoryItem(this, itemBlock);
+                        iDescendentsReceivedThisBlock++;
 
-                        if (InvFolderUpdating._Contents.Contains(TempInvItem) == false)
+                        if (itemBlock.ItemID == LLUUID.Zero)
                         {
-                            if ((TempInvItem.InvType == 7) && (TempInvItem.Type == (sbyte)Asset.AssetType.Notecard))
-                            {
-                                InventoryItem temp = new InventoryNotecard(this, TempInvItem);
-                                TempInvItem = temp;
-                            }
-
-                            if ((TempInvItem.InvType == 0) && (TempInvItem.Type == (sbyte)Asset.AssetType.Texture))
-                            {
-                                InventoryItem temp = new InventoryImage(this, TempInvItem);
-                                TempInvItem = temp;
-                            }
-
-                            if ((TempInvItem.InvType == 10) && (TempInvItem.Type == (sbyte)Asset.AssetType.LSLText))
-                            {
-                                InventoryItem temp = new InventoryScript(this, TempInvItem);
-                                TempInvItem = temp;
-                            }
-
-                            if ((TempInvItem.InvType == 18) && 
-                                (
-                                    (TempInvItem.Type == (sbyte)Asset.AssetType.Bodypart)
-                                    || (TempInvItem.Type == (sbyte)Asset.AssetType.Clothing)
-                                )
-                               )
-
-                            {
-                                InventoryItem temp = new InventoryWearable(this, TempInvItem);
-                                TempInvItem = temp;
-                            }
-
-                            InvFolderUpdating._Contents.Add(TempInvItem);
+                            // this shouldn't ever happen, unless you've uploaded an invalid item
+                            // to yourself while developping inventory code :-(
                         }
-                    }
-                }
-            }
-            #endregion
-
-            #region Handle Child Folders
-            foreach (InventoryDescendentsPacket.FolderDataBlock folderBlock in reply.FolderData)
-            {
-                String IncomingName     = System.Text.Encoding.UTF8.GetString(folderBlock.Name).Trim().Replace("\0", "");
-                LLUUID IncomingFolderID = folderBlock.FolderID;
-                LLUUID IncomingParentID = folderBlock.ParentID;
-                sbyte  IncomingType     = folderBlock.Type;
-
-                // There is always an folder block, even if there isn't any folders
-                // the "filler" block will not have a name
-                if (folderBlock.Name.Length != 0)
-                {
-                    iDescendentsReceivedThisBlock++;
-
-                    // See if the Incoming Folder already exists locally
-                    if (FoldersByUUID.ContainsKey(IncomingFolderID))
-                    {
-                        InventoryFolder existingFolder = FoldersByUUID[IncomingFolderID];
-                        existingFolder._Name = IncomingName;
-                        existingFolder._Type = IncomingType;
-
-                        // Check if parent of existing is the same as the incoming
-                        if (!existingFolder.ParentID.Equals(IncomingParentID))
+                        else
                         {
-                            // Remove existing from old parent
-                            if (FoldersByUUID.ContainsKey(existingFolder.ParentID))
+                            InventoryItem TempInvItem = new InventoryItem(this, itemBlock);
+
+                            if (InvFolderUpdating._Contents.Contains(TempInvItem) == false)
                             {
-                                InventoryFolder ExistingParent = FoldersByUUID[existingFolder.ParentID];
-                                if (ExistingParent._Contents.Contains(existingFolder))
+                                if ((TempInvItem.InvType == 7) && (TempInvItem.Type == (sbyte)Asset.AssetType.Notecard))
                                 {
-                                    ExistingParent._Contents.Remove(existingFolder);
+                                    InventoryItem temp = new InventoryNotecard(this, TempInvItem);
+                                    TempInvItem = temp;
                                 }
-                            }
 
-                            // Set existings parent to new
-                            existingFolder._ParentID = IncomingParentID;
-
-                            // Connect existing folder to parent specified in new
-                            if (FoldersByUUID.ContainsKey(IncomingParentID))
-                            {
-                                InventoryFolder ExistingParent = FoldersByUUID[IncomingParentID];
-                                if (!ExistingParent._Contents.Contains(existingFolder))
+                                if ((TempInvItem.InvType == 0) && (TempInvItem.Type == (sbyte)Asset.AssetType.Texture))
                                 {
-                                    ExistingParent._Contents.Add(existingFolder);
+                                    InventoryItem temp = new InventoryImage(this, TempInvItem);
+                                    TempInvItem = temp;
                                 }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        InventoryFolder TempInvFolder = new InventoryFolder(this, IncomingName, IncomingFolderID, IncomingParentID, IncomingType);
 
-                        // Add folder to Parent
-                        if (InvFolderUpdating._Contents.Contains(TempInvFolder) == false)
-                        {
-                            InvFolderUpdating._Contents.Add(TempInvFolder);
-                        }
-
-                        // Add folder to local cache lookup
-                        FoldersByUUID[TempInvFolder.FolderID] = TempInvFolder;
-
-                    }
-
-
-                    // Do we recurse?
-                    if (dr.Recurse)
-                    {
-                        // It's not the root, should be safe to "recurse"
-                        if (!IncomingFolderID.Equals(slClient.Self.InventoryRootFolderUUID))
-                        {
-                            // Check if a download for this folder is already queued
-                            bool alreadyQueued = false;
-                            foreach (DownloadRequest_Folder adr in alFolderRequestQueue)
-                            {
-                                if (adr.FolderID == IncomingFolderID)
+                                if ((TempInvItem.InvType == 10) && (TempInvItem.Type == (sbyte)Asset.AssetType.LSLText))
                                 {
-                                    alreadyQueued = true;
-                                    break;
+                                    InventoryItem temp = new InventoryScript(this, TempInvItem);
+                                    TempInvItem = temp;
                                 }
-                            }
 
-                            // If not, then queue the stucker
-                            if (!alreadyQueued)
-                            {
-                                alFolderRequestQueue.Add(new DownloadRequest_Folder(IncomingFolderID, dr.Recurse, dr.FetchFolders, dr.FetchItems));
+                                if ((TempInvItem.InvType == 18) &&
+                                    (
+                                        (TempInvItem.Type == (sbyte)Asset.AssetType.Bodypart)
+                                        || (TempInvItem.Type == (sbyte)Asset.AssetType.Clothing)
+                                    )
+                                   )
+                                {
+                                    InventoryItem temp = new InventoryWearable(this, TempInvItem);
+                                    TempInvItem = temp;
+                                }
+
+                                InvFolderUpdating._Contents.Add(TempInvItem);
                             }
                         }
                     }
                 }
-            }
-            #endregion
+                #endregion
 
-            // Update total number of descendants expected , and update the total downloaded
-            dr.Expected = iDescendentsExpected;
-            dr.Received += iDescendentsReceivedThisBlock;
-            dr.LastReceivedAtTick = Environment.TickCount;
-
-            // Check if we're finished
-            if (dr.Received >= dr.Expected)
-            {
-                // Looks like after updating, we have all the descendents, 
-                // remove from folder status.
-                FolderDownloadStatus.Remove(uuidFolderID);
-                dr.RequestComplete.Set();
-                if (OnRequestDownloadFinishedEvent != null)
+                #region Handle Child Folders
+                foreach (InventoryDescendentsPacket.FolderDataBlock folderBlock in reply.FolderData)
                 {
-                    DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
-                    e.DownloadRequest = dr;
-                    FireRequestDownloadFinishedEvent(InvFolderUpdating, e);
+                    String IncomingName = System.Text.Encoding.UTF8.GetString(folderBlock.Name).Trim().Replace("\0", "");
+                    LLUUID IncomingFolderID = folderBlock.FolderID;
+                    LLUUID IncomingParentID = folderBlock.ParentID;
+                    sbyte IncomingType = folderBlock.Type;
+
+                    // There is always an folder block, even if there isn't any folders
+                    // the "filler" block will not have a name
+                    if (folderBlock.Name.Length != 0)
+                    {
+                        iDescendentsReceivedThisBlock++;
+
+                        // See if the Incoming Folder already exists locally
+                        if (FoldersByUUID.ContainsKey(IncomingFolderID))
+                        {
+                            InventoryFolder existingFolder = FoldersByUUID[IncomingFolderID];
+                            existingFolder._Name = IncomingName;
+                            existingFolder._Type = IncomingType;
+
+                            // Check if parent of existing is the same as the incoming
+                            if (!existingFolder.ParentID.Equals(IncomingParentID))
+                            {
+                                // Remove existing from old parent
+                                if (FoldersByUUID.ContainsKey(existingFolder.ParentID))
+                                {
+                                    InventoryFolder ExistingParent = FoldersByUUID[existingFolder.ParentID];
+                                    if (ExistingParent._Contents.Contains(existingFolder))
+                                    {
+                                        ExistingParent._Contents.Remove(existingFolder);
+                                    }
+                                }
+
+                                // Set existings parent to new
+                                existingFolder._ParentID = IncomingParentID;
+
+                                // Connect existing folder to parent specified in new
+                                if (FoldersByUUID.ContainsKey(IncomingParentID))
+                                {
+                                    InventoryFolder ExistingParent = FoldersByUUID[IncomingParentID];
+                                    if (!ExistingParent._Contents.Contains(existingFolder))
+                                    {
+                                        ExistingParent._Contents.Add(existingFolder);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            InventoryFolder TempInvFolder = new InventoryFolder(this, IncomingName, IncomingFolderID, IncomingParentID, IncomingType);
+
+                            // Add folder to Parent
+                            if (InvFolderUpdating._Contents.Contains(TempInvFolder) == false)
+                            {
+                                InvFolderUpdating._Contents.Add(TempInvFolder);
+                            }
+
+                            // Add folder to local cache lookup
+                            FoldersByUUID[TempInvFolder.FolderID] = TempInvFolder;
+
+                        }
+
+
+                        // Do we recurse?
+                        if (dr.Recurse)
+                        {
+                            // It's not the root, should be safe to "recurse"
+                            if (!IncomingFolderID.Equals(slClient.Self.InventoryRootFolderUUID))
+                            {
+                                // Check if a download for this folder is already queued
+                                bool alreadyQueued = false;
+                                foreach (DownloadRequest_Folder adr in alFolderRequestQueue)
+                                {
+                                    if (adr.FolderID == IncomingFolderID)
+                                    {
+                                        alreadyQueued = true;
+                                        break;
+                                    }
+                                }
+
+                                // If not, then queue the stucker
+                                if (!alreadyQueued)
+                                {
+                                    alFolderRequestQueue.Add(new DownloadRequest_Folder(IncomingFolderID, dr.Recurse, dr.FetchFolders, dr.FetchItems));
+                                }
+                            }
+                        }
+                    }
+                }
+                #endregion
+
+                // Update total number of descendants expected , and update the total downloaded
+                dr.Expected = iDescendentsExpected;
+                dr.Received += iDescendentsReceivedThisBlock;
+                dr.LastReceivedAtTick = Environment.TickCount;
+
+                // Check if we're finished
+                if (dr.Received >= dr.Expected)
+                {
+                    // Looks like after updating, we have all the descendents, 
+                    // remove from folder status.
+                    FolderDownloadStatus.Remove(uuidFolderID);
+                    dr.RequestComplete.Set();
+                    if (OnRequestDownloadFinishedEvent != null)
+                    {
+                        DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
+                        e.DownloadRequest = dr;
+                        FireRequestDownloadFinishedEvent(InvFolderUpdating, e);
+                    }
                 }
             }
         }
