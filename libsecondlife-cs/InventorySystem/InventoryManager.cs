@@ -705,23 +705,29 @@ namespace libsecondlife.InventorySystem
                 {
                     slClient.Log("Incoming item specifies type (" + IncomingItemType  + ") with no matching inventory folder found.", Helpers.LogLevel.Error);
                 }
+
+
                 InventoryFolder incomingFolder = FolderByType[IncomingItemType];
-
-                // Refresh contents of receiving folder
-                incomingFolder.RequestDownloadContents(false, false, true, false).RequestComplete.WaitOne(3000, false);
-
-                // Search folder for incoming item
                 InventoryItem incomingItem = null;
-                foreach (InventoryBase ib2 in incomingFolder.GetContents())
-                {
-                    if (ib2 is InventoryItem)
-                    {
-                        InventoryItem iItem = (InventoryItem)ib2;
 
-                        if (iItem.ItemID == IncomingItemID)
+                // lock just incade another item comes into the same directory while processing this one.
+                lock (incomingFolder)
+                {
+                    // Refresh contents of receiving folder
+                    incomingFolder.RequestDownloadContents(false, false, true, false).RequestComplete.WaitOne(3000, false);
+
+                    // Search folder for incoming item
+                    foreach (InventoryBase ib2 in incomingFolder.GetContents())
+                    {
+                        if (ib2 is InventoryItem)
                         {
-                            incomingItem = iItem;
-                            break;
+                            InventoryItem iItem = (InventoryItem)ib2;
+
+                            if (iItem.ItemID == IncomingItemID)
+                            {
+                                incomingItem = iItem;
+                                break;
+                            }
                         }
                     }
                 }
