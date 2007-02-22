@@ -139,7 +139,10 @@ namespace libsecondlife.InventorySystem
         private void ClearState()
         {
             FoldersByUUID.Clear();
-            FolderDownloadStatus.Clear();
+            lock (FolderDownloadStatus)
+            {
+                FolderDownloadStatus.Clear();
+            }
             alFolderRequestQueue.Clear();
 
             if (slClient.Self.InventoryRootFolderUUID != null)
@@ -647,8 +650,10 @@ namespace libsecondlife.InventorySystem
         /// <param name="dr"></param>
         internal void RequestFolder(DownloadRequest_Folder dr)
         {
-            
-            FolderDownloadStatus[dr.FolderID] = dr;
+            lock (FolderDownloadStatus)
+            {
+                FolderDownloadStatus[dr.FolderID] = dr;
+            }
 
             Packet packet = InvPacketHelper.FetchInventoryDescendents(
                             dr.FolderID
@@ -815,7 +820,18 @@ namespace libsecondlife.InventorySystem
             LLUUID uuidFolderID = reply.AgentData.FolderID;
 
             // Get the original Descendent Request for this Packet
-            DownloadRequest_Folder dr = (DownloadRequest_Folder)FolderDownloadStatus[uuidFolderID];
+            DownloadRequest_Folder dr = null;
+            lock (FolderDownloadStatus)
+            {
+                if (FolderDownloadStatus.ContainsKey(uuidFolderID))
+                {
+                    dr = (DownloadRequest_Folder)FolderDownloadStatus[uuidFolderID];
+                }
+                else
+                {
+                    slClient.Log("Received an inventory descendent packet for a folder that was not in FolderDownloadStatus.", Helpers.LogLevel.Info);
+                }
+            }
 
             // Get the Inventory folder that we'll be updating
             InventoryFolder InvFolderUpdating = (InventoryFolder)FoldersByUUID[uuidFolderID];
@@ -988,7 +1004,10 @@ namespace libsecondlife.InventorySystem
                 {
                     // Looks like after updating, we have all the descendents, 
                     // remove from folder status.
-                    FolderDownloadStatus.Remove(uuidFolderID);
+                    lock (FolderDownloadStatus)
+                    {
+                        FolderDownloadStatus.Remove(uuidFolderID);
+                    }
                     dr.RequestComplete.Set();
                     if (OnRequestDownloadFinishedEvent != null)
                     {
