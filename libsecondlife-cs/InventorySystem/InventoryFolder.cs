@@ -84,15 +84,7 @@ namespace libsecondlife.InventorySystem
         /// <returns>The Request object for this download</returns>
         public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear)
         {
-            if (clear)
-            {
-                iManager.FolderClearContents(this, folders, items);
-            }
-
-            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, true, items);
-            iManager.RequestFolder(dr);
-
-            return dr;
+            return RequestDownloadContents(recurse, folders, items, clear, 0);
         }
 
         /// <summary>

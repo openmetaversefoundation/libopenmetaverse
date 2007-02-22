@@ -64,7 +64,7 @@ namespace libsecondlife.InventorySystem
 
         // Setup a dictionary to track download progress
         private Dictionary<LLUUID, DownloadRequest_Folder> FolderDownloadStatus = new Dictionary<LLUUID, DownloadRequest_Folder>();
-        private List<DownloadRequest_Folder> alFolderRequestQueue = new List<DownloadRequest_Folder>();
+        private Queue<DownloadRequest_Folder> FolderRequestQueue = new Queue<DownloadRequest_Folder>();
 
         protected Dictionary<sbyte, InventoryFolder> FolderByType = new Dictionary<sbyte, InventoryFolder>();
 
@@ -143,7 +143,11 @@ namespace libsecondlife.InventorySystem
             {
                 FolderDownloadStatus.Clear();
             }
-            alFolderRequestQueue.Clear();
+
+            lock (FolderRequestQueue)
+            {
+                FolderRequestQueue.Clear();
+            }
 
             if (slClient.Self.InventoryRootFolderUUID != null)
             {
@@ -663,6 +667,11 @@ namespace libsecondlife.InventorySystem
             slClient.Network.SendPacket(packet);
         }
 
+        /// <summary>
+        /// Issue a RequestDownload Finished event.  Happens after each download request completes.
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         protected void FireRequestDownloadFinishedEvent(object o, EventArgs e)
         {
             if (OnRequestDownloadFinishedEvent != null)
@@ -675,6 +684,22 @@ namespace libsecondlife.InventorySystem
 
         #region libsecondlife callback handlers
 
+        /// <summary>
+        /// Used to track when inventory is dropped onto/into agent
+        /// </summary>
+        /// <param name="fromAgentID"></param>
+        /// <param name="fromAgentName"></param>
+        /// <param name="toAgentID"></param>
+        /// <param name="parentEstateID"></param>
+        /// <param name="regionID"></param>
+        /// <param name="position"></param>
+        /// <param name="dialog"></param>
+        /// <param name="groupIM"></param>
+        /// <param name="imSessionID"></param>
+        /// <param name="timestamp"></param>
+        /// <param name="message"></param>
+        /// <param name="offline"></param>
+        /// <param name="binaryBucket"></param>
         void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, uint parentEstateID, 
             LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog, bool groupIM, 
             LLUUID imSessionID, DateTime timestamp,  string message, MainAvatar.InstantMessageOnline offline, 
@@ -829,7 +854,7 @@ namespace libsecondlife.InventorySystem
                 }
                 else
                 {
-                    slClient.Log("Received an inventory descendent packet for a folder that was not in FolderDownloadStatus.", Helpers.LogLevel.Info);
+                    slClient.Log("Received an inventory descendent packet for a folder (" + uuidFolderID.ToStringHyphenated() + ") that was not in FolderDownloadStatus.", Helpers.LogLevel.Info);
                 }
             }
 
@@ -974,19 +999,21 @@ namespace libsecondlife.InventorySystem
                             {
                                 // Check if a download for this folder is already queued
                                 bool alreadyQueued = false;
-                                foreach (DownloadRequest_Folder adr in alFolderRequestQueue)
+                                lock (FolderRequestQueue)
                                 {
-                                    if (adr.FolderID == IncomingFolderID)
+                                    foreach (DownloadRequest_Folder adr in FolderRequestQueue)
                                     {
-                                        alreadyQueued = true;
-                                        break;
+                                        if (adr.FolderID == IncomingFolderID)
+                                        {
+                                            alreadyQueued = true;
+                                            break;
+                                        }
                                     }
-                                }
-
-                                // If not, then queue the stucker
-                                if (!alreadyQueued)
-                                {
-                                    alFolderRequestQueue.Add(new DownloadRequest_Folder(IncomingFolderID, dr.Recurse, dr.FetchFolders, dr.FetchItems));
+                                    // If not, then queue the stucker
+                                    if (!alreadyQueued)
+                                    {
+                                        FolderRequestQueue.Enqueue(new DownloadRequest_Folder(IncomingFolderID, dr.Recurse, dr.FetchFolders, dr.FetchItems));
+                                    }
                                 }
                             }
                         }
@@ -1014,6 +1041,15 @@ namespace libsecondlife.InventorySystem
                         DownloadRequest_EventArgs e = new DownloadRequest_EventArgs();
                         e.DownloadRequest = dr;
                         FireRequestDownloadFinishedEvent(InvFolderUpdating, e);
+                    }
+
+                    // If there's any more download requests queued, grab one, and go
+                    lock (FolderRequestQueue)
+                    {
+                        if (FolderRequestQueue.Count > 0)
+                        {
+                            RequestFolder(FolderRequestQueue.Dequeue());
+                        }
                     }
                 }
             }
