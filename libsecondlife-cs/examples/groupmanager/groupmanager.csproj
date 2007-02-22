@@ -98,6 +98,10 @@
       <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\libsecondlife.Utilities\libsecondlife.Utilities.csproj">
+      <Project>{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}</Project>
+      <Name>libsecondlife.Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="frmGroupInfo.cs">

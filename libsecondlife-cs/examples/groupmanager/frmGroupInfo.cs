@@ -8,20 +8,10 @@ using System.Windows.Forms;
 using System.IO;
 using libsecondlife;
 using libsecondlife.AssetSystem;
+using libsecondlife.Utilities.Assets;
 
 namespace groupmanager
 {
-    public class GroupMemberData
-    {
-        public LLUUID ID;
-        public string Name;
-        public string Title;
-        public string LastOnline;
-        public ulong Powers;
-        public bool IsOwner;
-        public int Contribution;
-    }
-
     public partial class frmGroupInfo : Form
     {
         Group Group;
@@ -31,6 +21,7 @@ namespace groupmanager
         Dictionary<LLUUID, GroupTitle> Titles = new Dictionary<LLUUID,GroupTitle>();
         Dictionary<LLUUID, GroupMemberData> MemberData = new Dictionary<LLUUID, GroupMemberData>();
         Dictionary<LLUUID, string> Names = new Dictionary<LLUUID, string>();
+        libsecondlife.Utilities.Assets.AssetManager Assets;
         
         public frmGroupInfo(Group group, SecondLife client)
         {
@@ -44,6 +35,8 @@ namespace groupmanager
 
             Group = group;
             Client = client;
+            Assets = new libsecondlife.Utilities.Assets.AssetManager(Client);
+            Assets.OnImageReceived += new libsecondlife.Utilities.Assets.AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
 
             Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
 
@@ -65,19 +58,18 @@ namespace groupmanager
 
             Invoke(new MethodInvoker(UpdateProfile));
 
-            byte[] j2cdata;
             if (Group.InsigniaID != null)
             {
-                j2cdata = Client.Images.RequestImage(Group.InsigniaID);
+                Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0);
             }
-            else
-            {
-                // ???
-                j2cdata = Client.Images.RequestImage("c77a1c21-e604-7d2c-2c89-5539ce853466");
-            }
+        }
 
-            Image image = OpenJPEGNet.OpenJPEG.DecodeToImage(j2cdata);
-            picInsignia.Image = image;
+        void Assets_OnImageReceived(ImageDownload image)
+        {
+            if (image.Success)
+            {
+                picInsignia.Image = OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData);
+            }
         }
 
         private void UpdateProfile()
@@ -104,33 +96,40 @@ namespace groupmanager
                 }
             }
 
-            Invoke(new MethodInvoker(UpdateNames));
+            UpdateNames();
         }
 
         private void UpdateNames()
         {
-            lock (Names)
+            if (this.InvokeRequired)
             {
-                if (Profile.FounderID != null && Names.ContainsKey(Profile.FounderID))
+                Invoke(new MethodInvoker(UpdateNames));
+            }
+            else
+            {
+                lock (Names)
                 {
-                    lblFoundedBy.Text = "Founded by " + Names[Profile.FounderID];
-                }
-
-                lock (MemberData)
-                {
-                    foreach (KeyValuePair<LLUUID, string> name in Names)
+                    if (Profile.FounderID != null && Names.ContainsKey(Profile.FounderID))
                     {
-                        if (!MemberData.ContainsKey(name.Key))
-                        {
-                            MemberData[name.Key] = new GroupMemberData();
-                        }
+                        lblFoundedBy.Text = "Founded by " + Names[Profile.FounderID];
+                    }
 
-                        MemberData[name.Key].Name = name.Value;
+                    lock (MemberData)
+                    {
+                        foreach (KeyValuePair<LLUUID, string> name in Names)
+                        {
+                            if (!MemberData.ContainsKey(name.Key))
+                            {
+                                MemberData[name.Key] = new GroupMemberData();
+                            }
+
+                            MemberData[name.Key].Name = name.Value;
+                        }
                     }
                 }
-            }
 
-            UpdateMemberList();
+                UpdateMemberList();
+            }
         }
 
         private void UpdateMemberList()
@@ -184,48 +183,73 @@ namespace groupmanager
         {
             Members = members;
 
-            Invoke(new MethodInvoker(UpdateMembers));
+            UpdateMembers();
         }
 
         private void UpdateMembers()
         {
-            List<LLUUID> requestids = new List<LLUUID>();
-
-            lock (Members)
+            if (this.InvokeRequired)
             {
-                lock (MemberData)
+                Invoke(new MethodInvoker(UpdateMembers));
+            }
+            else
+            {
+                List<LLUUID> requestids = new List<LLUUID>();
+
+                lock (Members)
                 {
-                    foreach (GroupMember member in Members.Values)
+                    lock (MemberData)
                     {
-                        GroupMemberData memberData = new GroupMemberData();
-                        memberData.ID = member.ID;
-                        memberData.IsOwner = member.IsOwner;
-                        memberData.LastOnline = member.OnlineStatus;
-                        memberData.Powers = member.Powers;
-                        memberData.Title = member.Title;
-                        memberData.Contribution = member.Contribution;
+                        foreach (GroupMember member in Members.Values)
+                        {
+                            GroupMemberData memberData = new GroupMemberData();
+                            memberData.ID = member.ID;
+                            memberData.IsOwner = member.IsOwner;
+                            memberData.LastOnline = member.OnlineStatus;
+                            memberData.Powers = member.Powers;
+                            memberData.Title = member.Title;
+                            memberData.Contribution = member.Contribution;
 
-                        MemberData[member.ID] = memberData;
+                            MemberData[member.ID] = memberData;
 
-                        // Add this ID to the name request batch
-                        requestids.Add(member.ID);
+                            // Add this ID to the name request batch
+                            requestids.Add(member.ID);
+                        }
                     }
                 }
-            }
 
-            Client.Avatars.RequestAvatarNames(requestids);
+                Client.Avatars.RequestAvatarNames(requestids);
+            }
         }
 
         private void GroupTitlesHandler(Dictionary<LLUUID, GroupTitle> titles)
         {
             Titles = titles;
 
-            Invoke(new MethodInvoker(UpdateTitles));
+            UpdateTitles();
         }
 
         private void UpdateTitles()
         {
-            ;
+            if (this.InvokeRequired)
+            {
+                Invoke(new MethodInvoker(UpdateTitles));
+            }
+            else
+            {
+                // TODO: Finish this
+            }
         }
+    }
+
+    public class GroupMemberData
+    {
+        public LLUUID ID;
+        public string Name;
+        public string Title;
+        public string LastOnline;
+        public ulong Powers;
+        public bool IsOwner;
+        public int Contribution;
     }
 }

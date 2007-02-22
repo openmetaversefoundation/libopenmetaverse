@@ -207,10 +207,11 @@ namespace libsecondlife
                         case WebExceptionStatus.ProtocolError:
                         case WebExceptionStatus.Timeout:
                         case WebExceptionStatus.ConnectFailure:
-                            Client.DebugLog("CAPS error: " + e.Status.ToString());
+                        case WebExceptionStatus.ReceiveFailure:
+                            Client.DebugLog("CAPS error, " + e.Status.ToString());
                             goto Start;
                         default:
-                            Client.Log("CAPS error, " + e.Status.ToString(), Helpers.LogLevel.Warning);
+                            Client.Log("Unhandled CAPS error, " + e.Status.ToString(), Helpers.LogLevel.Warning);
                             return null;
                     }
                 }

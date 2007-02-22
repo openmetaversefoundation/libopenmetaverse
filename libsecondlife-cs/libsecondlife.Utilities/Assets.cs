@@ -596,11 +596,6 @@ namespace libsecondlife.Utilities.Assets
                 lock (Transfers) Transfers[transferID] = upload;
                 SendNextUploadPacket(upload);
             }
-            else
-            {
-                Client.Log("Received an unrecognized RequestXfer packet:" + Environment.NewLine + request.ToString(),
-                    Helpers.LogLevel.Warning);
-            }
         }
 
         private void ConfirmXferPacketHandler(Packet packet, Simulator simulator)
@@ -613,11 +608,6 @@ namespace libsecondlife.Utilities.Assets
             if (Transfers.ContainsKey(transferID))
             {
                 SendNextUploadPacket((AssetUpload)Transfers[transferID]);
-            }
-            else
-            {
-                Client.Log("Received a ConfirmXfer packet for an unknown transfer " + confirm.XferID.ID +
-                    ", packet number " + confirm.XferID.Packet, Helpers.LogLevel.Warning);
             }
         }
 
@@ -658,11 +648,6 @@ namespace libsecondlife.Utilities.Assets
                     try { OnAssetUploaded((AssetUpload)foundTransfer.Value); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
-                else
-                {
-                    Client.Log("Got an AssetUploadComplete packet for an unknown AssetID " +
-                        complete.AssetBlock.UUID.ToStringHyphenated(), Helpers.LogLevel.Warning);
-                }
             }
         }
 
@@ -674,41 +659,43 @@ namespace libsecondlife.Utilities.Assets
         public void ImageDataHandler(Packet packet, Simulator simulator)
         {
             ImageDataPacket data = (ImageDataPacket)packet;
+            ImageDownload transfer = null;
 
             Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
                 data.ImageID.ID.ToStringHyphenated());
 
-            if (Transfers.ContainsKey(data.ImageID.ID))
+            lock (Transfers)
             {
-                ImageDownload transfer = (ImageDownload)Transfers[data.ImageID.ID];
-
-                transfer.Codec = data.ImageID.Codec;
-                transfer.PacketCount = data.ImageID.Packets;
-                transfer.Size = (int)data.ImageID.Size;
-                transfer.AssetData = new byte[transfer.Size];
-                Array.Copy(data.ImageData.Data, transfer.AssetData, data.ImageData.Data.Length);
-                transfer.InitialDataSize = data.ImageData.Data.Length;
-                transfer.Transferred += data.ImageData.Data.Length;
-
-                transfer.HeaderReceivedEvent.Set();
-
-                // Check if we downloaded the full image
-                if (transfer.Transferred >= transfer.Size)
+                if (Transfers.ContainsKey(data.ImageID.ID))
                 {
-                    lock (Transfers) Transfers.Remove(transfer.ID);
-                    transfer.Success = true;
+                    transfer = (ImageDownload)Transfers[data.ImageID.ID];
 
-                    if (OnImageReceived != null)
+                    transfer.Codec = data.ImageID.Codec;
+                    transfer.PacketCount = data.ImageID.Packets;
+                    transfer.Size = (int)data.ImageID.Size;
+                    transfer.AssetData = new byte[transfer.Size];
+                    Array.Copy(data.ImageData.Data, transfer.AssetData, data.ImageData.Data.Length);
+                    transfer.InitialDataSize = data.ImageData.Data.Length;
+                    transfer.Transferred += data.ImageData.Data.Length;
+
+                    // Check if we downloaded the full image
+                    if (transfer.Transferred >= transfer.Size)
                     {
-                        try { OnImageReceived(transfer); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        Transfers.Remove(transfer.ID);
+                        transfer.Success = true;
                     }
                 }
             }
-            else
+
+            if (transfer != null)
             {
-                Client.Log("Received an ImageData packet for an image we didn't request, ID: " + data.ImageID.ID,
-                    Helpers.LogLevel.Warning);
+                if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
+                {
+                    try { OnImageReceived(transfer); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+
+                transfer.HeaderReceivedEvent.Set();
             }
         }
 
@@ -718,59 +705,53 @@ namespace libsecondlife.Utilities.Assets
         public void ImagePacketHandler(Packet packet, Simulator simulator)
         {
             ImagePacketPacket image = (ImagePacketPacket)packet;
+            ImageDownload transfer = null;
 
-            if (Transfers.ContainsKey(image.ImageID.ID))
+            lock (Transfers)
             {
-                ImageDownload transfer = (ImageDownload)Transfers[image.ImageID.ID];
-
-                if (transfer.Size == 0)
+                if (Transfers.ContainsKey(image.ImageID.ID))
                 {
-                    // We haven't received the header yet, block until it's received or times out
-                    transfer.HeaderReceivedEvent.WaitOne(1000 * 20, false);
+                    transfer = (ImageDownload)Transfers[image.ImageID.ID];
 
                     if (transfer.Size == 0)
                     {
+                        // We haven't received the header yet, block until it's received or times out
+                        transfer.HeaderReceivedEvent.WaitOne(1000 * 20, false);
 
-                        Client.Log("Timed out while waiting for the image header to download for " +
-                            transfer.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
-
-                        lock (Transfers) Transfers.Remove(transfer.ID);
-
-                        // Fire the event with our transfer that contains Success = false;
-                        if (OnImageReceived != null)
+                        if (transfer.Size == 0)
                         {
-                            try { OnImageReceived(transfer); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            Client.Log("Timed out while waiting for the image header to download for " +
+                                transfer.ID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+
+                            transfer.Success = false;
+                            Transfers.Remove(transfer.ID);
+                            goto Callback;
                         }
-
-                        return;
                     }
-                }
 
-                // The header is downloaded, we can insert this data in to the proper position
-                Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
-                transfer.Transferred += image.ImageData.Data.Length;
+                    // The header is downloaded, we can insert this data in to the proper position
+                    Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize + 
+                        (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
+                    transfer.Transferred += image.ImageData.Data.Length;
 
-                Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
-                    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToStringHyphenated());
+                    Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
+                        "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToStringHyphenated());
 
-                // Check if we downloaded the full image
-                if (transfer.Transferred >= transfer.Size)
-                {
-                    transfer.Success = true;
-                    lock (Transfers) Transfers.Remove(transfer.ID);
-
-                    if (OnImageReceived != null)
+                    // Check if we downloaded the full image
+                    if (transfer.Transferred >= transfer.Size)
                     {
-                        try { OnImageReceived(transfer); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        transfer.Success = true;
+                        Transfers.Remove(transfer.ID);
                     }
                 }
             }
-            else
+
+        Callback:
+
+            if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
             {
-                Client.Log("Received an ImagePacket packet for an image we didn't request, ID: " + image.ImageID.ID,
-                    Helpers.LogLevel.Warning);
+                try { OnImageReceived(transfer); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -780,25 +761,23 @@ namespace libsecondlife.Utilities.Assets
         public void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
         {
             ImageNotInDatabasePacket notin = (ImageNotInDatabasePacket)packet;
+            ImageDownload transfer = null;
 
-            if (Transfers.ContainsKey(notin.ImageID.ID))
+            lock (Transfers)
             {
-                ImageDownload transfer = (ImageDownload)Transfers[notin.ImageID.ID];
-
-                transfer.NotFound = true;
-                lock (Transfers) Transfers.Remove(transfer.ID);
-
-                // Fire the event with our transfer that contains Success = false;
-                if (OnImageReceived != null)
+                if (Transfers.ContainsKey(notin.ImageID.ID))
                 {
-                    try { OnImageReceived(transfer); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    transfer = (ImageDownload)Transfers[notin.ImageID.ID];
+                    transfer.NotFound = true;
+                    Transfers.Remove(transfer.ID);
                 }
             }
-            else
+
+            // Fire the event with our transfer that contains Success = false;
+            if (transfer != null && OnImageReceived != null)
             {
-                Client.Log("Received an ImageNotInDatabase packet for an image we didn't request, ID: " +
-                    notin.ImageID.ID, Helpers.LogLevel.Warning);
+                try { OnImageReceived(transfer); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
     }

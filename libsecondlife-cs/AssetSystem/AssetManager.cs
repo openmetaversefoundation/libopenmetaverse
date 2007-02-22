@@ -383,7 +383,8 @@ namespace libsecondlife.AssetSystem
             // Lookup the request for this packet
             if (!htDownloadRequests.ContainsKey(TransferID))
             {
-                slClient.Log("Received unexpected TransferPacket packet." + Environment.NewLine + packet.ToString(), Helpers.LogLevel.Warning);
+                //slClient.Log("Received unexpected TransferPacket packet." + Environment.NewLine + packet.ToString(), 
+                //    Helpers.LogLevel.Warning);
                 return;
             }
             AssetRequestDownload request = htDownloadRequests[TransferID];

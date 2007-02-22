@@ -64,6 +64,7 @@ namespace groupmanager
                 {
                     groupBox.Enabled = true;
 
+                    Client.Throttle.Set();
                     Client.Groups.BeginGetCurrentGroups(new GroupManager.CurrentGroupsCallback(GroupsUpdatedHandler));
                 }
                 else
