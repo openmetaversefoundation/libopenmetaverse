@@ -100,7 +100,7 @@ namespace libsecondlife.AssetSystem
 			slClient = client;
 
             // Need to know when we're Connected/Disconnected to clear state
-            slClient.Network.OnDisconnected += new NetworkManager.DisconnectCallback(Network_OnDisconnected);
+            slClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
             slClient.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
 
 			// Used to upload small assets, or as an initial start packet for large transfers

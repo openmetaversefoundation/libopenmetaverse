@@ -99,7 +99,7 @@ namespace libsecondlife.InventorySystem
 
             // Need to know what when we're connected/disconnected
             slClient.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
-            slClient.Network.OnDisconnected += new NetworkManager.DisconnectCallback(Network_OnDisconnected);
+            slClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
 
             // Setup the callback for Inventory Downloads
             slClient.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));

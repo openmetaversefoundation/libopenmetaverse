@@ -104,7 +104,7 @@ namespace sldump
 
 			// Setup the packet callback and disconnect event handler
             client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
-            client.Network.OnDisconnected += new NetworkManager.DisconnectCallback(DisconnectHandler);
+            client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
 
 			if (!client.Network.Login(args[0], args[1], args[2], "sldump", "contact@libsecondlife.org"))
 			{

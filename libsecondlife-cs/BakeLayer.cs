@@ -68,6 +68,8 @@ namespace libsecondlife
         protected SecondLife Client;
         /// <summary>Total number of textures in this bake</summary>
         protected int TotalLayers;
+        /// <summary>Appearance parameters the drive the baking process</summary>
+        protected Dictionary<int, float> ParamValues;
         /// <summary>GDI+ image that textures are composited to</summary>
         protected Bitmap Scratchpad;
         /// <summary>List of textures sorted by their baking order</summary>
@@ -89,10 +91,13 @@ namespace libsecondlife
         /// <param name="client">Reference to the SecondLife client</param>
         /// <param name="totalLayers">Total number of layers this bake set is
         /// composed of</param>
-        public BakeLayer(SecondLife client, int totalLayers)
+        /// <param name="paramValues">Appearance parameters the drive the 
+        /// baking process</param>
+        public BakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues)
         {
             Client = client;
             TotalLayers = totalLayers;
+            ParamValues = paramValues;
         }
 
         /// <summary>
@@ -101,12 +106,15 @@ namespace libsecondlife
         /// <param name="client">Reference to the SecondLife client</param>
         /// <param name="totalLayers">Total number of layers this bake set is
         /// composed of</param>
+        /// <param name="paramValues">Appearance parameters the drive the 
+        /// baking process</param>
         /// <param name="width">Width of the final baked image</param>
         /// <param name="height">Height of the final baked image</param>
-        public BakeLayer(SecondLife client, int totalLayers, int width, int height)
+        public BakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues, int width, int height)
         {
             Client = client;
             TotalLayers = totalLayers;
+            ParamValues = paramValues;
             BakeWidth = width;
             BakeHeight = height;
         }
@@ -175,8 +183,10 @@ namespace libsecondlife
         /// <param name="client">Reference to the SecondLife client</param>
         /// <param name="totalLayers">Total number of layers this bake set is
         /// composed of</param>
-        public UpperBakeLayer(SecondLife client, int totalLayers)
-            : base(client, totalLayers)
+        /// <param name="paramValues">Appearance parameters the drive the 
+        /// baking process</param>
+        public UpperBakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues)
+            : base(client, totalLayers, paramValues)
         {
         }
 
@@ -201,8 +211,10 @@ namespace libsecondlife
         /// <param name="client">Reference to the SecondLife client</param>
         /// <param name="totalLayers">Total number of layers this bake set is
         /// composed of</param>
-        public LowerBakeLayer(SecondLife client, int totalLayers)
-            : base(client, totalLayers)
+        /// <param name="paramValues">Appearance parameters the drive the 
+        /// baking process</param>
+        public LowerBakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues)
+            : base(client, totalLayers, paramValues)
         {
         }
 

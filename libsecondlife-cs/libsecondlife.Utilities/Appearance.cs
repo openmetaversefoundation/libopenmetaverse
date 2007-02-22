@@ -463,7 +463,7 @@ namespace libsecondlife.Utilities.Appearance
         // A list of all the images we are currently downloading, prior to baking
         private Dictionary<LLUUID, TextureIndex> ImageDownloads = new Dictionary<LLUUID, TextureIndex>();
         // A list of all the bakes we need to complete
-        private List<int> PendingBakes = new List<int>();
+        private List<BakeLayer> PendingBakes = new List<BakeLayer>(BAKED_TEXTURE_COUNT);
         // Whether the handler for our current wearable list should automatically start downloading the assets
         private bool DownloadWearables = false;
         private int CacheCheckSerialNum = 0;
@@ -515,8 +515,6 @@ namespace libsecondlife.Utilities.Appearance
         public void SetPreviousAppearance()
         {
             // Clear out any previous data
-            // TODO: Figure out why deformed avatars are produced the second time around if this
-            // isn't done
             DownloadWearables = false;
             lock (Wearables) Wearables.Clear();
             lock (AgentTextures) AgentTextures.Clear();
@@ -866,6 +864,27 @@ namespace libsecondlife.Utilities.Appearance
         private void AgentCachedTextureResponseHandler(Packet packet, Simulator simulator)
         {
             AgentCachedTextureResponsePacket response = (AgentCachedTextureResponsePacket)packet;
+            Dictionary<int, float> paramValues = new Dictionary<int, float>(VisualParams.Params.Length);
+
+            // Build a dictionary of appearance parameter indices and values from the wearables
+            for (int i = 0; i < VisualParams.Params.Length; i++)
+            {
+                bool found = false;
+
+                // Try and find this value in our collection of downloaded wearables
+                foreach (WearableData data in Wearables.Values)
+                {
+                    if (data.Wearable.Params.ContainsKey(i))
+                    {
+                        paramValues.Add(i,data.Wearable.Params[i]);
+                        found = true;
+                        break;
+                    }
+                }
+
+                // Use a default value if we don't have one set for it
+                if (!found) paramValues.Add(i, VisualParams.Params[i].DefaultValue);
+            }
 
             lock (AgentTextures)
             {
@@ -877,6 +896,9 @@ namespace libsecondlife.Utilities.Appearance
 
                     // FIXME: Use this. Right now we treat baked images on other sims as if they were missing
                     string host = Helpers.FieldToUTF8String(block.HostName);
+
+                    if (host.Length > 0)
+                        Client.DebugLog("Cached bake exists on foreign host " + host);
 
                     // Convert the baked index to an AgentTexture index
                     if (block.TextureID != LLUUID.Zero && host.Length == 0)
@@ -893,6 +915,7 @@ namespace libsecondlife.Utilities.Appearance
                             case BakeType.Head:
                                 lock (ImageDownloads)
                                 {
+                                    PendingBakes.Add(new BakeLayer(Client, 2, paramValues));
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.HeadBodypaint], TextureIndex.HeadBodypaint);
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.Hair], TextureIndex.Hair);
                                 }
@@ -900,6 +923,7 @@ namespace libsecondlife.Utilities.Appearance
                             case BakeType.UpperBody:
                                 lock (ImageDownloads)
                                 {
+                                    PendingBakes.Add(new BakeLayer(Client, 4, paramValues));
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperBodypaint], TextureIndex.UpperBodypaint);
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperUndershirt], TextureIndex.UpperUndershirt);
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperShirt], TextureIndex.UpperShirt);
@@ -910,6 +934,7 @@ namespace libsecondlife.Utilities.Appearance
                             case BakeType.LowerBody:
                                 lock (ImageDownloads)
                                 {
+                                    PendingBakes.Add(new BakeLayer(Client, 6, paramValues));
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerBodypaint], TextureIndex.LowerBodypaint);
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerUnderpants], TextureIndex.LowerUnderpants);
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerSocks], TextureIndex.LowerSocks);
@@ -921,13 +946,18 @@ namespace libsecondlife.Utilities.Appearance
                             case BakeType.Eyes:
                                 lock (ImageDownloads)
                                 {
+                                    PendingBakes.Add(new BakeLayer(Client, 1, paramValues));
                                     ImageDownloads.Add(AgentTextures[(int)TextureIndex.EyesIris], TextureIndex.EyesIris);
                                 }
                                 break;
                             case BakeType.Skirt:
                                 if (Wearables.ContainsKey(Wearable.WearableType.Skirt))
                                 {
-                                    lock (ImageDownloads) ImageDownloads.Add(AgentTextures[(int)TextureIndex.Skirt], TextureIndex.Skirt);
+                                    lock (ImageDownloads)
+                                    {
+                                        PendingBakes.Add(new BakeLayer(Client, 1, paramValues));
+                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.Skirt], TextureIndex.Skirt);
+                                    }
                                 }
                                 break;
                             default:
