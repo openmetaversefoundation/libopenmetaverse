@@ -76,6 +76,10 @@ namespace libsecondlife
         public bool DEBUG = true;
         /// <summary>Enable/disable storing terrain heightmaps in the TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
+        /// <summary>Enable/disable sending periodic camera updates</summary>
+        public bool SEND_AGENTUPDATES = true;
+        /// <summary>Number of milliseconds between sending camera updates</summary>
+        public int AGENT_UPDATE_INTERVAL = 500;
 
         private SecondLife Client;
         private int priceUpload = 0;

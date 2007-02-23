@@ -314,10 +314,11 @@ namespace libsecondlife
                 Camera.CameraUpAxis = new LLVector3(0, 0, 0.9999f);
                 Camera.Far = 128.0f;
 
-                UpdateTimer = new Timer(500);
+                UpdateTimer = new Timer(Client.Settings.AGENT_UPDATE_INTERVAL);
                 UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
-                // Update Timer Disabled By Default --Jesse Malthus
-                UpdateTimer.Enabled = false;
+                UpdateTimer.Enabled = Client.Settings.SEND_AGENTUPDATES;
+                if (Client.Settings.SEND_AGENTUPDATES)
+                    UpdateTimer.Start();
             }
 
             /// <summary>
@@ -326,7 +327,7 @@ namespace libsecondlife
             /// </summary>
             public void SendUpdate()
             {
-                SendUpdate(false);
+                SendUpdate(false, Client.Network.CurrentSim);
             }
 
             /// <summary>
@@ -336,6 +337,18 @@ namespace libsecondlife
             /// <param name="reliable">Whether to require server acknowledgement
             /// of this packet</param>
             public void SendUpdate(bool reliable)
+            {
+                SendUpdate(reliable, Client.Network.CurrentSim);
+            }
+
+            /// <summary>
+            /// Send new AgentUpdate packet to update our current camera 
+            /// position and rotation
+            /// </summary>
+            /// <param name="reliable">Whether to require server acknowledgement
+            /// of this packet</param>
+            /// <param name="simulator">Simulator to send the update to</param>
+            public void SendUpdate(bool reliable, Simulator simulator)
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();
                 update.Header.Reliable = reliable;
@@ -351,7 +364,7 @@ namespace libsecondlife
                 update.AgentData.ControlFlags = agentControls;
                 update.AgentData.Far = Camera.Far;
 
-                Client.Network.SendPacket(update);
+                Client.Network.SendPacket(update, simulator);
             }
 
             private static bool GetControlFlag(MainAvatar.AgentUpdateFlags flag)

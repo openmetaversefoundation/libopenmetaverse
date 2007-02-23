@@ -1793,8 +1793,7 @@ namespace libsecondlife
                 if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
 
                 // Connect to the new sim
-                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort, true, 
-                    seedcaps);
+                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort, true, seedcaps);
 
                 if (sim != null)
                 {

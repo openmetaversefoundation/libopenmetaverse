@@ -101,7 +101,7 @@ namespace libsecondlife
         /// not</summary>
         public bool Connected { get { return connected; } }
         /// <summary>Coarse locations of avatars in this simulator</summary>
-        public List<LLVector3> AvatarPosition { get { return avatarPosition; } }
+        public List<LLVector3> AvatarPositions { get { return avatarPositions; } }
 
         /// <summary>Used internally to track sim disconnections</summary>
         internal bool DisconnectCandidate = false;
@@ -157,6 +157,8 @@ namespace libsecondlife
 
             try
             {
+                ConnectedEvent.Reset();
+
                 // Create an endpoint that we will be communicating with (need it in two 
                 // types due to .NET weirdness)
                 ipEndPoint = new IPEndPoint(ip, port);
@@ -178,8 +180,10 @@ namespace libsecondlife
                 // Move our agent in to the sim to complete the connection
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
-                ConnectedEvent.Reset();
-                if (ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false) == false)
+                if (Client.Settings.SEND_AGENTUPDATES)
+                    Client.Self.Status.SendUpdate(true, this);
+
+                if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
                     Client.Log("Giving up on waiting for RegionHandshake", Helpers.LogLevel.Warning);
                     connected = true;

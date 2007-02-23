@@ -868,8 +868,8 @@ namespace libsecondlife
                     return false;
                 }
 
-                // Send a couple packets that are useful right after login
-                SendInitialPackets();
+                // Request the economy data right after login
+                SendPacket(new EconomyDataRequestPacket());
 
                 // Fire an event for connecting to the grid
                 if (OnConnected != null)
@@ -1102,21 +1102,6 @@ namespace libsecondlife
             }
 
             connected = false;
-        }
-
-        private void SendInitialPackets()
-        {
-            // Request the economy data
-            SendPacket(new EconomyDataRequestPacket());
-
-            // Send an AgentUpdate packet to truly move our avatar in to the sim
-            MainAvatar.AgentUpdateFlags controlFlags = MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM;
-            LLVector3 position = new LLVector3(128, 128, 32);
-            LLVector3 forwardAxis = new LLVector3(0, 0.999999f, 0);
-            LLVector3 leftAxis = new LLVector3(0.999999f, 0, 0);
-            LLVector3 upAxis = new LLVector3(0, 0, 0.999999f);
-            Client.Self.UpdateCamera(controlFlags, position, forwardAxis, leftAxis, upAxis, LLQuaternion.Identity,
-                LLQuaternion.Identity, 384.0f, true);
         }
 
         /// <summary>
