@@ -75,6 +75,39 @@ namespace libsecondlife.InventorySystem
         // Used to track to see if a download has timed out or not
         private int LastPacketRecievedAtTick;
 
+        public enum InventoryType : sbyte
+        {
+            Unknown = -1,
+            Texture = 0,
+            Sound = 1,
+            CallingCard = 2,
+            Landmark = 3,
+            [Obsolete]
+            Script = 4,
+            [Obsolete]
+            Clothing = 5,
+            Object = 6,
+            Notecard = 7,
+            Category = 8,
+            RootCategory = 0,
+            LSL = 10,
+            [Obsolete]
+            LSLBytecode = 11,
+            [Obsolete]
+            TextureTGA = 12,
+            [Obsolete]
+            Bodypart = 13,
+            [Obsolete]
+            Trash = 14,
+            Snapshot = 15,
+            [Obsolete]
+            LostAndFound = 16,
+            Attachment = 17,
+            Wearable = 18,
+            Animation = 19,
+            Gesture = 20
+        }
+
 
         /// <summary>
         /// Download event singalling that folder contents have been downloaded.
