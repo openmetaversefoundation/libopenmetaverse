@@ -28,6 +28,11 @@ using System;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// Wrapper around a byte array that allows bit to be packed and unpacked
+    /// one at a time or by a variable amount. Useful for very tightly packed
+    /// data like LayerData packets
+    /// </summary>
     public class BitPack
     {
         private const int MAX_BITS = 8;
@@ -36,12 +41,43 @@ namespace libsecondlife
         private int bytePos;
         private int bitPos;
 
+        /// <summary>
+        /// Default constructor, initialize the bit packer / bit unpacker
+        /// with a byte array and starting position
+        /// </summary>
+        /// <param name="data">Byte array to pack bits in to or unpack from</param>
+        /// <param name="pos">Starting position in the byte array</param>
         public BitPack(byte[] data, int pos)
         {
             Data = data;
             bytePos = pos;
         }
 
+        /// <summary>
+        /// Pack a floating point value in to the data
+        /// </summary>
+        /// <param name="data">Floating point value to pack</param>
+        public void PackFloat(float data)
+        {
+            byte[] input = BitConverter.GetBytes(data);
+            PackBitArray(input, 32);
+        }
+
+        /// <summary>
+        /// Pack part or all of an integer in to the data
+        /// </summary>
+        /// <param name="data">Integer containing the data to pack</param>
+        /// <param name="totalCount">Number of bits of the integer to pack</param>
+        public void PackBits(int data, int totalCount)
+        {
+            byte[] input = BitConverter.GetBytes(data);
+            PackBitArray(input, totalCount);
+        }
+
+        /// <summary>
+        /// Unpacking a floating point value from the data
+        /// </summary>
+        /// <returns>Unpacked floating point value</returns>
         public float UnpackFloat()
         {
             byte[] output = UnpackBitsArray(32);
@@ -50,12 +86,59 @@ namespace libsecondlife
             return BitConverter.ToSingle(output, 0);
         }
 
+        /// <summary>
+        /// Unpack a variable number of bits from the data in to integer format
+        /// </summary>
+        /// <param name="totalCount">Number of bits to unpack</param>
+        /// <returns>An integer containing the unpacked bits</returns>
+        /// <remarks>This function is only useful up to 32 bits</remarks>
         public int UnpackBits(int totalCount)
         {
             byte[] output = UnpackBitsArray(totalCount);
 
             if (!BitConverter.IsLittleEndian) Array.Reverse(output);
             return BitConverter.ToInt32(output, 0);
+        }
+
+        private void PackBitArray(byte[] data, int totalCount)
+        {
+            int count = 0;
+            int curBytePos = 0;
+            int curBitPos = 0;
+
+            while (totalCount > 0)
+            {
+                if (totalCount > MAX_BITS)
+                {
+                    count = MAX_BITS;
+                    totalCount -= MAX_BITS;
+                }
+                else
+                {
+                    count = totalCount;
+                    totalCount = 0;
+                }
+
+                while (count > 0)
+                {
+                    if (data[curBytePos] & (0x80 >> curBitPos) != 0)
+                        Data[bytePos] |= 0x80 >> bitPos++;
+
+                    --count;
+                    ++curBitPos;
+
+                    if (bitPos >= MAX_BITS)
+                    {
+                        bitPos = 0;
+                        ++bytePos;
+                    }
+                    if (curBitPos >= MAX_BITS)
+                    {
+                        curBitPos = 0;
+                        ++curBytePos;
+                    }
+                }
+            }
         }
 
         private byte[] UnpackBitsArray(int totalCount)

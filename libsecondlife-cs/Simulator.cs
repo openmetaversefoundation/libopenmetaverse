@@ -100,6 +100,8 @@ namespace libsecondlife
         /// <summary>Whether there is a working connection to the simulator or 
         /// not</summary>
         public bool Connected { get { return connected; } }
+        /// <summary>Coarse locations of avatars in this simulator</summary>
+        public List<LLVector3> AvatarPosition { get { return avatarPosition; } }
 
         /// <summary>Used internally to track sim disconnections</summary>
         internal bool DisconnectCandidate = false;
@@ -107,6 +109,8 @@ namespace libsecondlife
         internal ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
         /// <summary></summary>
         internal bool connected;
+        /// <summary>Coarse locations of avatars in this simulator</summary>
+        internal List<LLVector3> avatarPositions = new List<LLVector3>();
 
         private NetworkManager Network;
         private uint Sequence = 0;

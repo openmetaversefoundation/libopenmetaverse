@@ -669,9 +669,6 @@ namespace libsecondlife
             Status = new MainAvatarStatus(Client);
             NetworkManager.PacketCallback callback;
 
-            // Coarse location callback
-            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
-
             // Teleport callbacks
             callback = new NetworkManager.PacketCallback(TeleportHandler);
             Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
@@ -1539,27 +1536,8 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// [UNUSED - for now]
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void CoarseLocationHandler(Packet packet, Simulator simulator)
-        {
-            if (packet.Type == PacketType.CoarseLocationUpdate)
-	    {
-                CoarseLocationUpdatePacket p = (CoarseLocationUpdatePacket) packet;
-
-                if (p.Index.You < 0 || p.Index.You >= p.Location.Length) return;
-                /* 1.5 and 6 represent a 50% fudge factor (hysteresis) -- bushing */
-                if (Math.Abs(Position.X-p.Location[p.Index.You].X) > 1.5) Position.X=p.Location[p.Index.You].X;
-                if (Math.Abs(Position.Y-p.Location[p.Index.You].Y) > 1.5) Position.Y=p.Location[p.Index.You].Y;
-                if (Math.Abs(Position.Z-(p.Location[p.Index.You].Z*4)) > 6) Position.Z=p.Location[p.Index.You].Z*4;
-            }
-        }
-
-        /// <summary>
         /// Take an incoming ImprovedInstantMessage packet, auto-parse, and if
-        ///   OnInstantMessage is defined call that with the appropriate arguments.
+        /// OnInstantMessage is defined call that with the appropriate arguments
         /// </summary>
         /// <param name="packet">Incoming ImprovedInstantMessagePacket</param>
         /// <param name="simulator">Unused</param>

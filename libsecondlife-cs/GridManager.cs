@@ -130,6 +130,7 @@ namespace libsecondlife
 
             Client.Network.RegisterCallback(PacketType.MapBlockReply, new NetworkManager.PacketCallback(MapBlockReplyHandler));
             Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new NetworkManager.PacketCallback(TimeMessageHandler));
+            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
 		}
 
         /// <summary>
@@ -281,5 +282,28 @@ namespace libsecondlife
             
             // TODO: Does anyone have a use for the time stuff?
         }
-	}
+
+        private void CoarseLocationHandler(Packet packet, Simulator simulator)
+        {
+            CoarseLocationUpdatePacket coarse = (CoarseLocationUpdatePacket)packet;
+
+            lock (simulator.avatarPositions)
+            {
+                simulator.avatarPositions.Clear();
+
+                for (int i = 0; i < coarse.Location.Length; i++)
+                {
+                    if (i == coarse.Index.Prey)
+                    {
+                        // TODO: Handle the coarse target position
+                    }
+                    else if (i != coarse.Index.You)
+                    {
+                        simulator.avatarPositions.Add(new LLVector3(coarse.Location[i].X, coarse.Location[i].Y,
+                            coarse.Location[i].Z));
+                    }
+                }
+            }
+        }
+    }
 }

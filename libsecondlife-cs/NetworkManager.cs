@@ -119,22 +119,32 @@ namespace libsecondlife
 
         private void RunEventQueue()
         {
-            // Make a new request
-            Hashtable req = new Hashtable();
-            req["ack"] = null;
-            req["done"] = false;
+        Start:
 
-            byte[] data = LLSD.LLSDSerialize(req);
+            try
+            {
+                // Make a new request
+                Hashtable req = new Hashtable();
+                req["ack"] = null;
+                req["done"] = false;
 
-            EventQueueRequest = WebRequest.Create(EventQueueCap);
-            EventQueueRequest.Method = "POST";
-            EventQueueRequest.ContentLength = data.Length;
+                byte[] data = LLSD.LLSDSerialize(req);
 
-            Stream reqStream = EventQueueRequest.GetRequestStream();
-            reqStream.Write(data, 0, data.Length);
-            reqStream.Close();
+                EventQueueRequest = WebRequest.Create(EventQueueCap);
+                EventQueueRequest.Method = "POST";
+                EventQueueRequest.ContentLength = data.Length;
 
-            EventQueueRequest.BeginGetResponse(new AsyncCallback(EventQueueResponse), EventQueueRequest);
+                Stream reqStream = EventQueueRequest.GetRequestStream();
+                reqStream.Write(data, 0, data.Length);
+                reqStream.Close();
+
+                EventQueueRequest.BeginGetResponse(new AsyncCallback(EventQueueResponse), EventQueueRequest);
+            }
+            catch (WebException e)
+            {
+                Client.DebugLog("RunEventQueue: " + e.Message);
+                goto Start;
+            }
         }
 
         private void InitialResponse(IAsyncResult result)
