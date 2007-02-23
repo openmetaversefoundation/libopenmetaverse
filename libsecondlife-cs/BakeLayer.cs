@@ -61,6 +61,8 @@ namespace libsecondlife
         /// <summary>Maximum number of wearables for any baked layer</summary>
         public const int WEARABLES_PER_LAYER = 7;
 
+        /// <summary>Final compressed JPEG2000 data</summary>
+        public byte[] FinalData = new byte[0];
         /// <summary>Whether this bake is complete or not</summary>
         public bool Finished = false;
 
@@ -74,8 +76,6 @@ namespace libsecondlife
         protected Bitmap Scratchpad;
         /// <summary>List of textures sorted by their baking order</summary>
         protected SortedList<BakeOrder, byte[]> Textures = new SortedList<BakeOrder, byte[]>(WEARABLES_PER_LAYER);
-        /// <summary>Final compressed JPEG2000 data</summary>
-        protected byte[] FinalData = new byte[0];
         /// <summary>Width of the final baked image and scratchpad</summary>
         protected int BakeWidth = 512;
         /// <summary>Height of the final baked image and scratchpad</summary>

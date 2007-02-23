@@ -456,14 +456,16 @@ namespace libsecondlife.Utilities.Appearance
         private AssetManager Assets;
         private Dictionary<Wearable.WearableType, WearableData> Wearables = new Dictionary<Wearable.WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this list
-        private Dictionary<int, LLUUID> AgentTextures = new Dictionary<int, LLUUID>();
+        private Dictionary<TextureIndex, LLUUID> AgentTextures = new Dictionary<TextureIndex, LLUUID>();
         // Wearable assets are downloaded one at a time, a new request is pulled off the queue
         // and started when the previous one completes
         private Queue<KeyValuePair<LLUUID, AssetType>> DownloadQueue = new Queue<KeyValuePair<LLUUID, AssetType>>();
         // A list of all the images we are currently downloading, prior to baking
         private Dictionary<LLUUID, TextureIndex> ImageDownloads = new Dictionary<LLUUID, TextureIndex>();
         // A list of all the bakes we need to complete
-        private List<BakeLayer> PendingBakes = new List<BakeLayer>(BAKED_TEXTURE_COUNT);
+        private Dictionary<BakeType, BakeLayer> PendingBakes = new Dictionary<BakeType, BakeLayer>(BAKED_TEXTURE_COUNT);
+        // A list of all the uploads that are in progress
+        private Dictionary<LLUUID, TextureIndex> PendingUploads = new Dictionary<LLUUID, TextureIndex>(BAKED_TEXTURE_COUNT);
         // Whether the handler for our current wearable list should automatically start downloading the assets
         private bool DownloadWearables = false;
         private int CacheCheckSerialNum = 0;
@@ -608,12 +610,12 @@ namespace libsecondlife.Utilities.Appearance
             DownloadWearables = true;
 
             // Register an asset download callback to get wearable data
-            AssetManager.AssetReceivedCallback assetCallback = 
-                new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
-            AssetManager.ImageReceivedCallback imageCallback =
-                new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
+            AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
             Assets.OnAssetReceived += assetCallback;
             Assets.OnImageReceived += imageCallback;
+            Assets.OnAssetUploaded += uploadCallback;
 
             // Ask the server what we are currently wearing
             RequestAgentWearables();
@@ -633,8 +635,9 @@ namespace libsecondlife.Utilities.Appearance
 
             CachedResponseEvent.WaitOne();
 
-            // Unregister the image download callback
+            // Unregister the image download and asset upload callbacks
             Assets.OnImageReceived -= imageCallback;
+            Assets.OnAssetUploaded -= uploadCallback;
 
             Client.DebugLog("CachedResponseEvent completed");
 
@@ -690,7 +693,7 @@ namespace libsecondlife.Utilities.Appearance
                 // Put our AgentTextures dictionary in to TextureEntry
                 lock (AgentTextures)
                 {
-                    foreach (KeyValuePair<int, LLUUID> texture in AgentTextures)
+                    foreach (KeyValuePair<TextureIndex, LLUUID> texture in AgentTextures)
                     {
                         LLObject.TextureEntryFace face = te.CreateFace((uint)texture.Key);
                         face.TextureID = texture.Value;
@@ -775,22 +778,22 @@ namespace libsecondlife.Utilities.Appearance
             Client.Network.SendPacket(wearing);
         }
 
-        private int BakedIndexToAgentTextureIndex(int index)
+        private TextureIndex BakedIndexToAgentTextureIndex(BakeType index)
         {
-            switch ((BakeType)index)
+            switch (index)
             {
                 case BakeType.Head:
-                    return 8;
+                    return TextureIndex.HeadBaked;
                 case BakeType.UpperBody:
-                    return 9;
+                    return TextureIndex.UpperBaked;
                 case BakeType.LowerBody:
-                    return 10;
+                    return TextureIndex.LowerBaked;
                 case BakeType.Eyes:
-                    return 11;
+                    return TextureIndex.EyesBaked;
                 case BakeType.Skirt:
-                    return 19;
+                    return TextureIndex.SkirtBaked;
                 default:
-                    return (int)TextureIndex.Unknown;
+                    return TextureIndex.Unknown;
             }
         }
 
@@ -903,7 +906,7 @@ namespace libsecondlife.Utilities.Appearance
                     // Convert the baked index to an AgentTexture index
                     if (block.TextureID != LLUUID.Zero && host.Length == 0)
                     {
-                        int index = BakedIndexToAgentTextureIndex(block.TextureIndex);
+                        TextureIndex index = BakedIndexToAgentTextureIndex((BakeType)block.TextureIndex);
                         AgentTextures[index] = block.TextureID;
                     }
                     else
@@ -915,39 +918,39 @@ namespace libsecondlife.Utilities.Appearance
                             case BakeType.Head:
                                 lock (ImageDownloads)
                                 {
-                                    PendingBakes.Add(new BakeLayer(Client, 2, paramValues));
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.HeadBodypaint], TextureIndex.HeadBodypaint);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.Hair], TextureIndex.Hair);
+                                    PendingBakes.Add(BakeType.Head, new BakeLayer(Client, 2, paramValues));
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.HeadBodypaint], TextureIndex.HeadBodypaint);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.Hair], TextureIndex.Hair);
                                 }
                                 break;
                             case BakeType.UpperBody:
                                 lock (ImageDownloads)
                                 {
-                                    PendingBakes.Add(new BakeLayer(Client, 4, paramValues));
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperBodypaint], TextureIndex.UpperBodypaint);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperUndershirt], TextureIndex.UpperUndershirt);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperShirt], TextureIndex.UpperShirt);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperJacket], TextureIndex.UpperJacket);
+                                    PendingBakes.Add(BakeType.UpperBody, new BakeLayer(Client, 4, paramValues));
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.UpperBodypaint], TextureIndex.UpperBodypaint);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.UpperUndershirt], TextureIndex.UpperUndershirt);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.UpperShirt], TextureIndex.UpperShirt);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.UpperJacket], TextureIndex.UpperJacket);
                                     // TODO: Where are the gloves?
                                 }
                                 break;
                             case BakeType.LowerBody:
                                 lock (ImageDownloads)
                                 {
-                                    PendingBakes.Add(new BakeLayer(Client, 6, paramValues));
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerBodypaint], TextureIndex.LowerBodypaint);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerUnderpants], TextureIndex.LowerUnderpants);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerSocks], TextureIndex.LowerSocks);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerShoes], TextureIndex.LowerShoes);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerPants], TextureIndex.LowerPants);
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerJacket], TextureIndex.LowerJacket);
+                                    PendingBakes.Add(BakeType.LowerBody, new BakeLayer(Client, 6, paramValues));
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.LowerBodypaint], TextureIndex.LowerBodypaint);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.LowerUnderpants], TextureIndex.LowerUnderpants);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.LowerSocks], TextureIndex.LowerSocks);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.LowerShoes], TextureIndex.LowerShoes);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.LowerPants], TextureIndex.LowerPants);
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.LowerJacket], TextureIndex.LowerJacket);
                                 }
                                 break;
                             case BakeType.Eyes:
                                 lock (ImageDownloads)
                                 {
-                                    PendingBakes.Add(new BakeLayer(Client, 1, paramValues));
-                                    ImageDownloads.Add(AgentTextures[(int)TextureIndex.EyesIris], TextureIndex.EyesIris);
+                                    PendingBakes.Add(BakeType.Eyes, new BakeLayer(Client, 1, paramValues));
+                                    ImageDownloads.Add(AgentTextures[TextureIndex.EyesIris], TextureIndex.EyesIris);
                                 }
                                 break;
                             case BakeType.Skirt:
@@ -955,8 +958,8 @@ namespace libsecondlife.Utilities.Appearance
                                 {
                                     lock (ImageDownloads)
                                     {
-                                        PendingBakes.Add(new BakeLayer(Client, 1, paramValues));
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.Skirt], TextureIndex.Skirt);
+                                        PendingBakes.Add(BakeType.Skirt, new BakeLayer(Client, 1, paramValues));
+                                        ImageDownloads.Add(AgentTextures[TextureIndex.Skirt], TextureIndex.Skirt);
                                     }
                                 }
                                 break;
@@ -1007,7 +1010,7 @@ namespace libsecondlife.Utilities.Appearance
                                 lock (AgentTextures)
                                 {
                                     foreach (KeyValuePair<int, LLUUID> texture in data.Wearable.Textures)
-                                        AgentTextures[texture.Key] = texture.Value;
+                                        AgentTextures[(TextureIndex)texture.Key] = texture.Value;
                                 }
 
                                 Client.DebugLog("Imported wearable asset " + data.Wearable.Type.ToString());
@@ -1050,11 +1053,92 @@ namespace libsecondlife.Utilities.Appearance
                 if (ImageDownloads.ContainsKey(image.ID))
                 {
                     TextureIndex index = ImageDownloads[image.ID];
+                    BakeType type = BakeType.Head;
+                    BakeLayer.BakeOrder order = BakeLayer.BakeOrder.HeadBodypaint;
 
                     if (image.Success)
                     {
-                        // FIXME: Add this image to a baking layer
-                        // FIXME: If true is returned, the bake is complete and we can fetch the finished jp2 data
+                        // Add this image to a baking layer
+                        switch (index)
+                        {
+                            case TextureIndex.HeadBodypaint:
+                                type = BakeType.Head;
+                                order = BakeLayer.BakeOrder.HeadBodypaint;
+                                break;
+                            case TextureIndex.Hair:
+                                type = BakeType.Head;
+                                order = BakeLayer.BakeOrder.Hair;
+                                break;
+                            case TextureIndex.UpperBodypaint:
+                                type = BakeType.UpperBody;
+                                order = BakeLayer.BakeOrder.UpperBodypaint;
+                                break;
+                            case TextureIndex.UpperUndershirt:
+                                type = BakeType.UpperBody;
+                                order = BakeLayer.BakeOrder.UpperUndershirt;
+                                break;
+                            case TextureIndex.UpperShirt:
+                                type = BakeType.UpperBody;
+                                order = BakeLayer.BakeOrder.UpperShirt;
+                                break;
+                            case TextureIndex.UpperJacket:
+                                type = BakeType.UpperBody;
+                                order = BakeLayer.BakeOrder.UpperJacket;
+                                break;
+                            case TextureIndex.LowerBodypaint:
+                                type = BakeType.LowerBody;
+                                order = BakeLayer.BakeOrder.LowerBodypaint;
+                                break;
+                            case TextureIndex.LowerUnderpants:
+                                type = BakeType.LowerBody;
+                                order = BakeLayer.BakeOrder.LowerUnderpants;
+                                break;
+                            case TextureIndex.LowerSocks:
+                                type = BakeType.LowerBody;
+                                order = BakeLayer.BakeOrder.LowerSocks;
+                                break;
+                            case TextureIndex.LowerShoes:
+                                type = BakeType.LowerBody;
+                                order = BakeLayer.BakeOrder.LowerShoes;
+                                break;
+                            case TextureIndex.LowerPants:
+                                type = BakeType.LowerBody;
+                                order = BakeLayer.BakeOrder.LowerPants;
+                                break;
+                            case TextureIndex.LowerJacket:
+                                type = BakeType.LowerBody;
+                                order = BakeLayer.BakeOrder.LowerJacket;
+                                break;
+                            case TextureIndex.EyesIris:
+                                type = BakeType.Eyes;
+                                order = BakeLayer.BakeOrder.EyesIris;
+                                break;
+                            case TextureIndex.Skirt:
+                                type = BakeType.Skirt;
+                                order = BakeLayer.BakeOrder.Skirt;
+                                break;
+                            default:
+                                Client.Log("Image downloaded for unknown TextureIndex " + index.ToString(),
+                                    Helpers.LogLevel.Warning);
+                                break;
+                        }
+
+                        if (PendingBakes.ContainsKey(type) && PendingBakes[type].AddImage(order, image.AssetData))
+                        {
+                            // Create a transactionID and assetID for this upload
+                            LLUUID transactionID = LLUUID.Random();
+                            LLUUID assetID = transactionID.Combine(Client.Network.SecureSessionID);
+
+                            // Upload the completed bake data
+                            Assets.RequestUpload(transactionID, AssetType.Texture, PendingBakes[type].FinalData, 
+                                true, true, false);
+
+                            // Add it to a pending uploads list
+                            lock (PendingUploads) PendingUploads.Add(assetID, index);
+
+                            // Remove this bake from the pending list
+                            PendingBakes.Remove(type);
+                        }
                     }
                     else
                     {
@@ -1064,11 +1148,43 @@ namespace libsecondlife.Utilities.Appearance
 
                     ImageDownloads.Remove(image.ID);
 
-                    if (ImageDownloads.Count == 0)
+                    if (ImageDownloads.Count == 0 && PendingUploads.Count == 0)
                     {
-                        // All the images have been downloaded and the baking is finished
+                        // This is a failsafe catch, as the upload completed callback should normally 
+                        // be triggering the event
                         CachedResponseEvent.Set();
                     }
+                }
+            }
+        }
+
+        private void Assets_OnAssetUploaded(AssetUpload upload)
+        {
+            lock (PendingUploads)
+            {
+                if (PendingUploads.ContainsKey(upload.AssetID))
+                {
+                    if (upload.Success)
+                    {
+                        // FIXME: Setup the TextureEntry with the new baked upload
+                    }
+                    else
+                    {
+                        Client.Log("Asset upload " + upload.AssetID.ToStringHyphenated() + " failed", 
+                            Helpers.LogLevel.Warning);
+                    }
+
+                    PendingUploads.Remove(upload.AssetID);
+
+                    if (PendingUploads.Count == 0 && ImageDownloads.Count == 0)
+                    {
+                        CachedResponseEvent.Set();
+                    }
+                }
+                else
+                {
+                    // TEMP
+                    Client.DebugLog("Upload " + upload.AssetID.ToStringHyphenated() + " was not found in PendingUploads");
                 }
             }
         }
