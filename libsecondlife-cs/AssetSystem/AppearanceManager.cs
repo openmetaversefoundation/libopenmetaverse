@@ -122,7 +122,7 @@ namespace libsecondlife.AssetSystem
         public void WearOutfit(InventoryFolder outfitFolder, int TimeOut, bool removeExistingAttachments)
         {
             // Refresh download of outfit folder
-            if (!outfitFolder.RequestDownloadContents(false, false, true, true).RequestComplete.WaitOne(TimeOut, false))
+            if (!outfitFolder.RequestDownloadContents(false, false, true).RequestComplete.WaitOne(TimeOut, false))
             {
                 Console.WriteLine("An error occured while downloads the folder contents of : " + outfitFolder.Name);
             }

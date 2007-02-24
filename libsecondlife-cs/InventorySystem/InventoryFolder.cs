@@ -82,10 +82,17 @@ namespace libsecondlife.InventorySystem
         /// <param name="items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
         /// <param name="clear">Indicate if item data should be downloaded too (true), or only folders(false)</param>
         /// <returns>The Request object for this download</returns>
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items)
+        {
+            return RequestDownloadContents(recurse, folders, items, 0);
+        }
+
+        [Obsolete("Clearing is no longer an option when requesting a download, you should use another version of this method", false)]
         public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear)
         {
-            return RequestDownloadContents(recurse, folders, items, clear, 0);
+            return RequestDownloadContents(recurse, folders, items, 0);
         }
+
 
         /// <summary>
         /// Request a download of this folder's content information.  Block until done, or timeout is reached
@@ -96,18 +103,19 @@ namespace libsecondlife.InventorySystem
         /// <param name="clear">Delete locale cache information for the this folder and it's children, before downloading</param>
         /// <param name="timeout">Milliseconds to wait before timing out, or -1 to wait indefinately.</param>
         /// <returns>The Request object for this download</returns>
-        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear, int timeout)
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, int timeout)
         {
-            if (clear)
-            {
-                iManager.FolderClearContents(this, folders, items);
-            }
-
             DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, true, items);
-            iManager.RequestFolder(dr);
+            iManager.FolderRequestAppend(dr);
 
             dr.RequestComplete.WaitOne(timeout, false);
             return dr;
+        }
+
+        [Obsolete("Clearing is no longer an option when requesting a download, you should use another version of this method", false)]
+        public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, bool clear, int timeout)
+        {
+            return RequestDownloadContents(recurse, folders, items, timeout);
         }
 
         /// <summary>
@@ -121,7 +129,7 @@ namespace libsecondlife.InventorySystem
             LLUUID requestedFolderUUID = iManager.FolderCreate(name, FolderID);
 
             // Refresh child folders, to find created folder.
-            if (RequestDownloadContents(false, true, false, false).RequestComplete.WaitOne(30000, false) == false)
+            if (RequestDownloadContents(false, true, false).RequestComplete.WaitOne(30000, false) == false)
             {
                 // Should probably note the timeout somewhere...
             }
