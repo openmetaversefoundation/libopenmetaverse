@@ -783,8 +783,6 @@ namespace libsecondlife.InventorySystem
             LLUUID imSessionID, DateTime timestamp,  string message, MainAvatar.InstantMessageOnline offline, 
             byte[] binaryBucket)
         {
-            Console.WriteLine(Helpers.FieldToHexString(binaryBucket, ""));
-
             if ((dialog == MainAvatar.InstantMessageDialog.InventoryOffered) && ((OnInventoryItemReceived != null) || (OnInventoryFolderReceived !=null)))
             {
                 sbyte IncomingItemType = (sbyte)binaryBucket[0];
