@@ -29,6 +29,11 @@ namespace Heightmap
             LastName = lastName;
             Password = password;
 
+            // Throttle land up and other things down
+            Client.Throttle.Cloud = 0;
+            Client.Throttle.Land = 1000000;
+            Client.Throttle.Wind = 0;
+
             // Build the picture boxes
             this.SuspendLayout();
             for (int y = 0; y < 16; y++)
@@ -71,11 +76,6 @@ namespace Heightmap
             {
                 UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
                 UpdateTimer.Start();
-
-                // Crank up the terrain throttle and turn off or down other useless info
-                Client.Throttle.Total = 0.0f;
-                Client.Throttle.Land = 999999.0f;
-                Client.Throttle.Set();
             }
         }
 

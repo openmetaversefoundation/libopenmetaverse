@@ -299,11 +299,18 @@ namespace primexport
             InitializeComponent();
 
             client = new SecondLife();
+
+            // Setup the callbacks
             client.OnLogMessage += new SecondLife.LogCallback(client_OnLogMessage);
             client.Objects.RequestAllObjects = true;
             client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(PrimSeen);
             client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(AvatarSeen);
             client.Objects.OnNewAttachment += new ObjectManager.NewAttachmentCallback(AttachmentSeen);
+
+            // Throttle down unnecessary things
+            client.Throttle.Cloud = 0;
+            client.Throttle.Land = 0;
+            client.Throttle.Wind = 0;
 
             grpLogin.Enabled = true;
         }
@@ -576,12 +583,7 @@ namespace primexport
                 if (client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text,
                     "primexport", "jhurliman@wsu.edu"))
                 {
-                    client.Throttle.Asset = 0;
-                    client.Throttle.Cloud = 0;
-                    client.Throttle.Land = 0;
-                    client.Throttle.Texture = 0;
-                    client.Throttle.Wind = 0;
-                    client.Throttle.Set();
+                    ;
                 }
                 else
                 {

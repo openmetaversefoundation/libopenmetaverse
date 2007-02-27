@@ -102,6 +102,12 @@ namespace sldump
 				return;
 			}
 
+            // Throttle packets that we don't want all the way down
+            client.Throttle.Land = 0;
+            client.Throttle.Wind = 0;
+            client.Throttle.Cloud = 0;
+            client.Throttle.Texture = 0;
+
 			// Setup the packet callback and disconnect event handler
             client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
             client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
@@ -115,13 +121,6 @@ namespace sldump
 
 			// Login was successful
 			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
-
-            // Throttle packets that we don't want all the way down
-			client.Throttle.Land = 0;
-            client.Throttle.Wind = 0;
-            client.Throttle.Cloud = 0;
-            client.Throttle.Texture = 0;
-            client.Throttle.Set();
 
             int start = Environment.TickCount;
             int milliseconds = Int32.Parse(args[3]) * 1000;

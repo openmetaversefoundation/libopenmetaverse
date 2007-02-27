@@ -18,6 +18,10 @@ namespace groupmanager
         public frmGroupManager()
         {
             Client = new SecondLife();
+            // Throttle unnecessary things down
+            Client.Throttle.Land = 0;
+            Client.Throttle.Wind = 0;
+            Client.Throttle.Cloud = 0;
             
             InitializeComponent();
         }
@@ -64,7 +68,6 @@ namespace groupmanager
                 {
                     groupBox.Enabled = true;
 
-                    Client.Throttle.Set();
                     Client.Groups.BeginGetCurrentGroups(new GroupManager.CurrentGroupsCallback(GroupsUpdatedHandler));
                 }
                 else

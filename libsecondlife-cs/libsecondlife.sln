@@ -50,8 +50,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heightmap", "examples\Heigh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "key2name", "examples\Key2Name\key2name.csproj", "{4FF68142-9C61-42D1-87DC-5D37CB671C29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "animationbot", "..\animationbot\animationbot.csproj", "{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET 1.1 = Debug|.NET 1.1
@@ -212,12 +210,6 @@ Global
 		{4FF68142-9C61-42D1-87DC-5D37CB671C29}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
 		{4FF68142-9C61-42D1-87DC-5D37CB671C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FF68142-9C61-42D1-87DC-5D37CB671C29}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}.Debug|.NET 1.1.ActiveCfg = Debug|Any CPU
-		{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}.Release|.NET 1.1.ActiveCfg = Release|Any CPU
-		{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D82F2B21-2E02-43A2-96E8-94D6B5EBE3B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

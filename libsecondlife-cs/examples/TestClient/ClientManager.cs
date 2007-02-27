@@ -87,6 +87,11 @@ namespace libsecondlife.TestClient
 			client.SimPrims = SimPrims;
 			client.Master = account.Master;
 
+            // Throttle the connection to not receive LayerData packets
+            client.Throttle.Land = 0.0f;
+            client.Throttle.Cloud = 0.0f;
+            client.Throttle.Wind = 0.0f;
+
 			if (this.startpos.sim != null)
             {
 				if (this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0)
@@ -117,12 +122,6 @@ namespace libsecondlife.TestClient
                 Clients[client.Network.AgentID] = client;
 
                 Console.WriteLine("Logged in " + client.ToString());
-
-                // Throttle the connection to not receive LayerData packets
-                client.Throttle.Land = 0.0f;
-                client.Throttle.Cloud = 0.0f;
-                client.Throttle.Wind = 0.0f;
-                client.Throttle.Set();
             }
 
             return client;
