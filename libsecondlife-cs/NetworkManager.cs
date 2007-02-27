@@ -711,6 +711,10 @@ namespace libsecondlife
             // Start a timer that checks if we've been disconnected
             DisconnectTimer.Start();
 
+            // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
+            if (Client.Settings.SEND_THROTTLE)
+                Client.Throttle.Set(simulator);
+
             if (setDefault)
             {
                 Simulator oldSim = CurrentSim;
@@ -1285,9 +1289,19 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Send an AgentThrottle packet to the server using the current values
+        /// Send an AgentThrottle packet to the current server using the 
+        /// current values
         /// </summary>
         public void Set()
+        {
+            Set(Client.Network.CurrentSim);
+        }
+
+        /// <summary>
+        /// Send an AgentThrottle packet to the specified server using the 
+        /// current values
+        /// </summary>
+        public void Set(Simulator simulator)
         {
             AgentThrottlePacket throttle = new AgentThrottlePacket();
             throttle.AgentData.AgentID = Client.Network.AgentID;
@@ -1296,7 +1310,7 @@ namespace libsecondlife
             throttle.Throttle.GenCounter = 0;
             throttle.Throttle.Throttles = this.ToBytes();
 
-            Client.Network.SendPacket(throttle);
+            Client.Network.SendPacket(throttle, simulator);
         }
 
         /// <summary>

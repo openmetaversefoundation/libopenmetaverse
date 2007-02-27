@@ -80,6 +80,13 @@ namespace libsecondlife
         public bool SEND_AGENT_UPDATES = true;
         /// <summary>Number of milliseconds between sending camera updates</summary>
         public int AGENT_UPDATE_INTERVAL = 500;
+        /// <summary>Enable/disable libsecondlife automatically setting the
+        /// bandwidth throttle after connecting to each simulator</summary>
+        /// <remarks>The default libsecondlife throttle uses the equivalent of
+        /// the maximum bandwidth setting in the official client. If you do not
+        /// set a throttle your connection will by default be throttled well
+        /// below the minimum values and you may experience connection problems</remarks>
+        public bool SEND_THROTTLE = true;
 
         private SecondLife Client;
         private int priceUpload = 0;
