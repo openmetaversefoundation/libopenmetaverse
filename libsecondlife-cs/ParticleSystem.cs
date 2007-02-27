@@ -19,30 +19,39 @@ namespace libsecondlife
             public enum SourcePattern : byte
             {
                 /// <summary></summary>
-                [XmlEnum("None")]
                 None = 0,
                 /// <summary></summary>
-                [XmlEnum("Drop")]
                 Drop = 0x01,
                 /// <summary></summary>
-                [XmlEnum("Explode")]
                 Explode = 0x02,
                 /// <summary></summary>
-                [XmlEnum("Angle")]
                 Angle = 0x04,
                 /// <summary></summary>
-                [XmlEnum("AngleCone")]
                 AngleCone = 0x08,
                 /// <summary></summary>
-                [XmlEnum("AngleConeEmpty")]
                 AngleConeEmpty = 0x10
             }
 
             /// <summary>
-            /// Information on a particle system assocaited with a prim
+            /// Flags for the particle system behavior
             /// </summary>
             [Flags]
-            public enum ParticleFlags : ushort
+            public enum ParticleSystemFlags : uint
+            {
+                /// <summary></summary>
+                None = 0,
+                /// <summary>Acceleration and velocity for particles are
+                /// relative to the object rotation</summary>
+                ObjectRelative = 0x01,
+                /// <summary>Particles use new 'correct' angle parameters</summary>
+                UseNewAngle = 0x02
+            }
+
+            /// <summary>
+            /// Flags for the particles in this particle system
+            /// </summary>
+            [Flags]
+            public enum ParticleFlags : uint
             {
                 /// <summary></summary>
                 None = 0,
@@ -63,72 +72,37 @@ namespace libsecondlife
                 /// <summary></summary>
                 TargetLinear = 0x080,
                 /// <summary></summary>
-                Emissive = 0x100
+                Emissive = 0x100,
+                /// <summary></summary>
+                Beam = 0x200
             }
 
-            /// <summary></summary>
-            [XmlAttribute("startrgba"), DefaultValue(0)]
-            public uint PartStartRGBA;
-            /// <summary></summary>
-            [XmlAttribute("endrgba"), DefaultValue(0)]
-            public uint PartEndRGBA;
-            /// <summary></summary>
-            [XmlAttribute("maxage"), DefaultValue(0)]
+
+            public uint CRC;
+            public SourcePattern Pattern = SourcePattern.None;
+            public ParticleSystemFlags Flags = ParticleSystemFlags.None;
+            public float MaxAge;
+            public float StartAge;
+            public float InnerAngle;
+            public float OuterAngle;
+            public float BurstRate;
+            public float BurstRadius;
+            public float BurstSpeedMin;
+            public float BurstSpeedMax;
+            public float BurstPartCount;
+            public LLVector3 AngularVelocity;
+            public LLVector3 PartAcceleration;
+            public LLUUID Texture;
+            public LLUUID Target;
+            public LLColor PartStartColor;
+            public LLColor PartEndColor;
+            public float PartStartScaleX;
+            public float PartStartScaleY;
+            public float PartEndScaleX;
+            public float PartEndScaleY;
             public float PartMaxAge;
-            /// <summary></summary>
-            [XmlAttribute("srcmaxage"), DefaultValue(0)]
-            public float SrcMaxAge;
-            /// <summary></summary>
-            [XmlAttribute("srcanglebegin"), DefaultValue(0)]
-            public float SrcAngleBegin;
-            /// <summary></summary>
-            [XmlAttribute("srcangleend"), DefaultValue(0)]
-            public float SrcAngleEnd;
-            /// <summary></summary>
-            [XmlAttribute("srcburstpartcount"), DefaultValue(0)]
-            public int SrcBurstPartCount;
-            /// <summary></summary>
-            [XmlAttribute("srcburstradius"), DefaultValue(0)]
-            public float SrcBurstRadius;
-            /// <summary></summary>
-            [XmlAttribute("srcburstrate"), DefaultValue(0)]
-            public float SrcBurstRate;
-            /// <summary></summary>
-            [XmlAttribute("srcburstspeedmin"), DefaultValue(0)]
-            public float SrcBurstSpeedMin;
-            /// <summary></summary>
-            [XmlAttribute("srcburstspeedmax"), DefaultValue(0)]
-            public float SrcBurstSpeedMax;
-            /// <summary>Unknown</summary>
-            [XmlAttribute("serial"), DefaultValue(0)]
-            public uint Serial;
-            /// <summary>Unknown</summary>
-            [XmlAttribute("starttick"), DefaultValue(0)]
-            public uint StartTick;
-            /// <summary></summary>
-            [XmlAttribute("srcpattern"), DefaultValue(SourcePattern.None)]
-            public SourcePattern SrcPattern = SourcePattern.None;
-            /// <summary>Various options that describe the behavior of this system</summary>
-            [XmlAttribute("particleflags"), DefaultValue(ParticleFlags.None)]
             public ParticleFlags PartFlags = ParticleFlags.None;
-            /// <summary></summary>
-            [XmlElement("srctarget")]
-            public LLUUID SrcTargetKey = LLUUID.Zero;
-            /// <summary>Texture that will be applied to the particles</summary>
-            [XmlElement("srctexture")]
-            public LLUUID SrcTexture = LLUUID.Zero;
-            /// <summary></summary>
-            [XmlElement("partstartscale")]
-            public LLVector3 PartStartScale = LLVector3.Zero;
-            /// <summary></summary>
-            [XmlElement("partendscale")]
-            public LLVector3 PartEndScale = LLVector3.Zero;
-            /// <summary></summary>
-            [XmlElement("srcaccel")]
-            public LLVector3 SrcAccel = LLVector3.Zero;
-            /// <summary></summary>
-            [XmlElement("srcomega")]
-            public LLVector3 SrcOmega = LLVector3.Zero;
+            
 
             /// <summary>
             /// 
@@ -165,68 +139,49 @@ namespace libsecondlife
             /// <param name="pos"></param>
             private void FromBytes(byte[] data, int pos)
             {
-                int i = pos;
-
                 if (data.Length == 0)
                     return;
 
-                Serial = (uint)(data[i++] + (data[i++] << 8) +
-                        (data[i++] << 16) + (data[i++] << 24));
+                BitPack pack = new BitPack(data, pos);
 
-                StartTick = (uint)(data[i++] + (data[i++] << 8) +
-                        (data[i++] << 16) + (data[i++] << 24));
-
-                SrcPattern = (SourcePattern)data[i++];
-
-                SrcMaxAge = (data[i++] + (data[i++] << 8)) / 256.0f;
-
-                // TODO: Unknown
-                i += 2;
-
-                SrcAngleBegin = (data[i++] / 100.0f) * (float)Math.PI;
-                SrcAngleEnd = (data[i++] / 100.0f) * (float)Math.PI;
-
-                SrcBurstRate = (data[i++] + (data[i++] << 8)) / 256.0f;
-                SrcBurstRadius = (data[i++] + (data[i++] << 8)) / 256.0f;
-                SrcBurstSpeedMin = (data[i++] + (data[i++] << 8)) / 256.0f;
-                SrcBurstSpeedMax = (data[i++] + (data[i++] << 8)) / 256.0f;
-                SrcBurstPartCount = data[i++];
-
-                SrcOmega = new LLVector3();
-                SrcOmega.X = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
-                SrcOmega.Y = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
-                SrcOmega.Z = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
-
-                SrcAccel = new LLVector3();
-                SrcAccel.X = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
-                SrcAccel.Y = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
-                SrcAccel.Z = (data[i++] + (data[i++] << 8)) / 128.0f - 256.0f;
-
-                SrcTexture = new LLUUID(data, i);
-                i += 16;
-                SrcTargetKey = new LLUUID(data, i);
-                i += 16;
-
-                PartFlags = (ParticleFlags)(data[i++] + (data[i++] << 8));
-
-                PartMaxAge = (data[i++] + (data[i++] << 8)) / 256.0f;
-
-                // TODO: Unknown
-                i += 2;
-
-                PartStartRGBA = (uint)(data[i++] + (data[i++] << 8) +
-                        (data[i++] << 16) + (data[i++] << 24));
-
-                PartEndRGBA = (uint)(data[i++] + (data[i++] << 8) +
-                        (data[i++] << 16) + (data[i++] << 24));
-
-                PartStartScale = new LLVector3();
-                PartStartScale.X = data[i++] / 32.0f;
-                PartStartScale.Y = data[i++] / 32.0f;
-
-                PartEndScale = new LLVector3();
-                PartEndScale.X = data[i++] / 32.0f;
-                PartEndScale.Y = data[i++] / 32.0f;
+                CRC = pack.UnpackUBits(32);
+                Flags = (ParticleSystemFlags)pack.UnpackUBits(32);
+                Pattern = (SourcePattern)pack.UnpackByte();
+                MaxAge = pack.UnpackFixed(false, 8, 8);
+                StartAge = pack.UnpackFixed(false, 8, 8);
+                InnerAngle = pack.UnpackFixed(false, 3, 5);
+                OuterAngle = pack.UnpackFixed(false, 3, 5);
+                BurstRate = pack.UnpackFixed(false, 8, 8);
+                BurstRadius = pack.UnpackFixed(false, 8, 8);
+                BurstSpeedMin = pack.UnpackFixed(false, 8, 8);
+                BurstSpeedMax = pack.UnpackFixed(false, 8, 8);
+                BurstPartCount = (uint)pack.UnpackByte();
+                float x = pack.UnpackFixed(true, 8, 7);
+                float y = pack.UnpackFixed(true, 8, 7);
+                float z = pack.UnpackFixed(true, 8, 7);
+                AngularVelocity = new LLVector3(x, y, z);
+                x = pack.UnpackFixed(true, 8, 7);
+                y = pack.UnpackFixed(true, 8, 7);
+                z = pack.UnpackFixed(true, 8, 7);
+                PartAcceleration = new LLVector3(x, y, z);
+                Texture = pack.UnpackUUID();
+                Target = pack.UnpackUUID();
+                PartFlags = (ParticleFlags)pack.UnpackUBits(32);
+                PartMaxAge = pack.UnpackFixed(false, 8, 8);
+                byte r = pack.UnpackByte();
+                byte g = pack.UnpackByte();
+                byte b = pack.UnpackByte();
+                byte a = pack.UnpackByte();
+                PartStartColor = new LLColor(r, g, b, a);
+                r = pack.UnpackByte();
+                g = pack.UnpackByte();
+                b = pack.UnpackByte();
+                a = pack.UnpackByte();
+                PartEndColor = new LLColor(r, g, b, a);
+                PartStartScaleX = pack.UnpackFixed(false, 3, 5);
+                PartStartScaleY = pack.UnpackFixed(false, 3, 5);
+                PartEndScaleX = pack.UnpackFixed(false, 3, 5);
+                PartEndScaleY = pack.UnpackFixed(false, 3, 5);
             }
         }
     }

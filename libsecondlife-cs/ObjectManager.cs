@@ -1274,17 +1274,18 @@ namespace libsecondlife
                     }
                     #endregion
 
-                    // Unknown
-                    if (block.Data.Length != 0)
-                        Client.DebugLog("Got an ObjectUpdate block with generic data length " + block.Data.Length);
+                    // TODO: Figure out what this is used for and implement it
+                    //if (block.Data.Length != 0)
+                    //    Client.DebugLog("Got an ObjectUpdate block with generic data length " + block.Data.Length);
 
                     // Determine the object type and create the appropriate class
-                    byte pcode = block.PCode;
+                    PCode pcode = (PCode)block.PCode;
                     switch (pcode)
                     {
-                        case (byte)PCode.Grass:
-                        case (byte)PCode.Tree:
-                        case (byte)PCode.Prim:
+                        case PCode.Grass:
+                        case PCode.Tree:
+                        case PCode.NewTree:
+                        case PCode.Prim:
                             Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
 
                             #region Update Prim Info with decoded data                            
@@ -1347,13 +1348,13 @@ namespace libsecondlife
 
                             if (prim.NameValues.ContainsKey("AttachItemID"))
                                 FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            else if (block.PCode == (byte)PCode.Tree || block.PCode == (byte)PCode.Grass || block.PCode == (byte)PCode.NewTree)
+                            else if (pcode == PCode.Tree || pcode == PCode.Grass || pcode == PCode.NewTree)
                                 FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
                             else
                                 FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
 
                             break;
-                        case (byte)PCode.Avatar:
+                        case PCode.Avatar:
                             // Update some internals if this is our avatar
                             if (block.FullID == Client.Network.AgentID)
                             {
@@ -1416,19 +1417,57 @@ namespace libsecondlife
                             }
 
                             break;
-                        case (byte)PCode.ParticleSystem:
-                            // FIXME: Handle ParticleSystem
-                            Client.DebugLog("Got an ObjectUpdate block with a ParticleSystem PCode");
-
+                        case PCode.ParticleSystem:
+                            DecodeParticleUpdate(block);
                             break;
                         default:
-                            Client.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + 
-                                ((PCode)pcode).ToString());
-
+                            Client.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + pcode.ToString());
                             break;
                     }
                 }
             }
+        }
+
+        protected void DecodeParticleUpdate(ObjectUpdatePacket.ObjectDataBlock block)
+        {
+            // TODO: Handle ParticleSystem ObjectUpdate blocks
+
+            // float bounce_b
+            // LLVector4 scale_range
+            // LLVector4 alpha_range
+            // LLVector3 vel_offset
+            // float dist_begin_fadeout
+            // float dist_end_fadeout
+            // LLUUID image_uuid
+            // long flags
+            // byte createme
+            // LLVector3 diff_eq_alpha
+            // LLVector3 diff_eq_scale
+            // byte max_particles
+            // byte initial_particles
+            // float kill_plane_z
+            // LLVector3 kill_plane_normal
+            // float bounce_plane_z
+            // LLVector3 bounce_plane_normal
+            // float spawn_range
+            // float spawn_frequency
+            // float spawn_frequency_range
+            // LLVector3 spawn_direction
+            // float spawn_direction_range
+            // float spawn_velocity
+            // float spawn_velocity_range
+            // float speed_limit
+            // float wind_weight
+            // LLVector3 current_gravity
+            // float gravity_weight
+            // float global_lifetime
+            // float individual_lifetime
+            // float individual_lifetime_range
+            // float alpha_decay
+            // float scale_decay
+            // float distance_death
+            // float damp_motion_factor
+            // LLVector3 wind_diffusion_factor
         }
 
         /// <summary>

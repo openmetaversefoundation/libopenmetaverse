@@ -100,6 +100,69 @@ namespace libsecondlife
             return BitConverter.ToInt32(output, 0);
         }
 
+        /// <summary>
+        /// Unpack a variable number of bits from the data in to unsigned 
+        /// integer format
+        /// </summary>
+        /// <param name="totalCount">Number of bits to unpack</param>
+        /// <returns>An unsigned integer containing the unpacked bits</returns>
+        /// <remarks>This function is only useful up to 32 bits</remarks>
+        public uint UnpackUBits(int totalCount)
+        {
+            byte[] output = UnpackBitsArray(totalCount);
+
+            if (!BitConverter.IsLittleEndian) Array.Reverse(output);
+            return BitConverter.ToUInt32(output, 0);
+        }
+
+        public byte UnpackByte()
+        {
+            byte[] output = UnpackBitsArray(8);
+            return output[0];
+        }
+
+        public float UnpackFixed(bool signed, int intBits, int fracBits)
+        {
+            int minVal;
+            int maxVal;
+            int unsignedBits = intBits + fracBits;
+            int totalBits = unsignedBits;
+            float fixedVal;
+
+            if (signed)
+            {
+                totalBits++;
+
+                minVal = 1 << intBits;
+                minVal *= -1;
+            }
+            maxVal = 1 << intBits;
+
+            if (totalBits <= 8)
+                fixedVal = (float)UnpackByte();
+            else if (totalBits <= 16)
+                fixedVal = (float)UnpackUBits(16);
+            else if (totalBits <= 31)
+                fixedVal = (float)UnpackUBits(32);
+            else
+                return 0.0f;
+
+            fixedVal /= (float)(1 << fracBits);
+
+            if (signed) fixedVal -= (float)maxVal;
+
+            return fixedVal;
+        }
+
+        public LLUUID UnpackUUID()
+        {
+            if (bitPos != 0) return LLUUID.Zero;
+
+            LLUUID val = new LLUUID(Data, bytePos);
+            bytePos += 16;
+            return val;
+        }
+
         private void PackBitArray(byte[] data, int totalCount)
         {
             int count = 0;

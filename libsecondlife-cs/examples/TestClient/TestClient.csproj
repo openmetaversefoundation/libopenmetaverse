@@ -40,6 +40,7 @@
     <Compile Include="Commands\CloneProfileCommand.cs" />
     <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Commands\DumpOutfitCommand.cs" />
+    <Compile Include="Commands\ExportScriptCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />

@@ -36,14 +36,8 @@ namespace libsecondlife.TestClient
             int count = 0;
             string file = args[1];
 
-            try
-            {
-                id = new LLUUID(args[0]);
-            }
-            catch (Exception)
-            {
+            if (!LLUUID.TryParse(args[0], out id))
                 return "Usage: export uuid outputfile.xml";
-            }
             
             lock (Client.SimPrims)
             {

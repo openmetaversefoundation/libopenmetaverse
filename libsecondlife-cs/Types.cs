@@ -369,10 +369,10 @@ namespace libsecondlife
 			{
 				uuid += Data[i].ToString("x2");
 			}
-			uuid = uuid.Insert(20,"-");
-			uuid = uuid.Insert(16,"-");
-			uuid = uuid.Insert(12,"-");
-			uuid = uuid.Insert(8,"-");
+			uuid = uuid.Insert(20, "-");
+			uuid = uuid.Insert(16, "-");
+			uuid = uuid.Insert(12, "-");
+			uuid = uuid.Insert(8, "-");
 			
 			return uuid;
 		}
@@ -487,7 +487,7 @@ namespace libsecondlife
         /// vector to string conversion in Second Life</returns>
 		public override string ToString()
 		{
-			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ">";
+            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
 		}
 
         /// <summary>
@@ -765,7 +765,7 @@ namespace libsecondlife
         /// <returns></returns>
 		public override string ToString()
 		{
-			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ">";
+            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
 		}
 
         /// <summary>
@@ -849,7 +849,7 @@ namespace libsecondlife
         /// <returns></returns>
 		public override string ToString()
 		{
-			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ", " + S.ToString() + ">";
+            return String.Format("<{0}, {1}, {2}, {3}>", X, Y, Z, S);
 		}
 
         /// <summary>
@@ -866,16 +866,16 @@ namespace libsecondlife
     {
         /// <summary>Red</summary>
         [XmlAttribute("r"), DefaultValue(0)]
-        public byte R;
+        public float R;
         /// <summary>Green</summary>
         [XmlAttribute("g"), DefaultValue(0)]
-        public byte G;
+        public float G;
         /// <summary>Blue</summary>
         [XmlAttribute("b"), DefaultValue(0)]
-        public byte B;
+        public float B;
         /// <summary>Alpha</summary>
         [XmlAttribute("a"), DefaultValue(0)]
-        public byte A;
+        public float A;
 
         /// <summary>
         /// 
@@ -886,10 +886,12 @@ namespace libsecondlife
         /// <param name="a"></param>
         public LLColor(byte r, byte g, byte b, byte a)
         {
-            R = r;
-            G = g;
-            B = b;
-            A = a;
+            float quanta = 1.0f / 255.0f;
+
+            R = (float)r * quanta;
+            G = (float)g * quanta;
+            B = (float)b * quanta;
+            A = (float)a * quanta;
         }
 
         /// <summary>
@@ -899,10 +901,12 @@ namespace libsecondlife
         /// <param name="pos"></param>
         public LLColor(byte[] byteArray, int pos)
 		{
-            R = byteArray[pos];
-            G = byteArray[pos + 1];
-            B = byteArray[pos + 2];
-            A = byteArray[pos + 3];
+            float quanta = 1.0f / 255.0f;
+
+            R = (float)byteArray[pos] * quanta;
+            G = (float)byteArray[pos + 1] * quanta;
+            B = (float)byteArray[pos + 2] * quanta;
+            A = (float)byteArray[pos + 3] * quanta;
         }
 
         /// <summary>
@@ -913,10 +917,10 @@ namespace libsecondlife
         {
             byte[] byteArray = new byte[4];
 
-            byteArray[0] = R;
-            byteArray[1] = G;
-            byteArray[2] = B;
-            byteArray[3] = A;
+            byteArray[0] = Helpers.FloatToByte(R, 0.0f, 255.0f);
+            byteArray[1] = Helpers.FloatToByte(G, 0.0f, 255.0f);
+            byteArray[2] = Helpers.FloatToByte(B, 0.0f, 255.0f);
+            byteArray[3] = Helpers.FloatToByte(A, 0.0f, 255.0f);
 
             return byteArray;
         }
@@ -927,7 +931,16 @@ namespace libsecondlife
         /// <returns></returns>
         public override string ToString()
         {
-            return "<" + R.ToString() + ", " + G.ToString() + ", " + B.ToString() + ", " + A.ToString() + ">";
+            return String.Format("<{0}, {1}, {2}, {3}>", R, G, B, A);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string ToStringRGB()
+        {
+            return String.Format("<{0}, {1}, {2}>", R, G, B);
         }
 
         /// <summary>
