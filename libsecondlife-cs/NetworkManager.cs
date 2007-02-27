@@ -29,7 +29,6 @@ using System.Timers;
 using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
@@ -45,210 +44,6 @@ namespace libsecondlife
     /// without a network connection.
     /// </summary>
     public class NotConnectedException : ApplicationException { }
-
-    /// <summary>
-    /// Capabilities is the name of the bi-directional HTTP REST protocol that
-    /// Second Life uses to communicate transactions such as teleporting or
-    /// asset transfers
-    /// </summary>
-    public class Caps
-    {
-        /// <summary>
-        /// Triggered when an event is received via the EventQueueGet capability;
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="body"></param>
-        public delegate void EventQueueCallback(string message, object body);
-
-        /// <summary>Reference to the SecondLife client this system is connected to</summary>
-        public SecondLife Client;
-        /// <summary>Reference to the simulator this system is connected to</summary>
-        public Simulator Simulator;
-
-        /// <summary></summary>
-        public string SeedCapsURI { get { return Seedcaps; } }
-
-        internal bool Dead = false;
-        internal string Seedcaps;
-
-        private StringDictionary Capabilities = new StringDictionary();
-        private string EventQueueCap = String.Empty;
-        private Thread EventQueueThread;
-        private WebRequest EventQueueRequest = null;
-        private List<EventQueueCallback> Callbacks;
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="simulator"></param>
-        /// <param name="seedcaps"></param>
-        /// <param name="callbacks"></param>
-        internal Caps(SecondLife client, Simulator simulator, string seedcaps, List<EventQueueCallback> callbacks)
-        {
-            Client = client;
-            Simulator = simulator;
-            Seedcaps = seedcaps;
-            Callbacks = callbacks;
-
-            ArrayList req = new ArrayList();
-            req.Add("MapLayer");
-            req.Add("MapLayerGod");
-            req.Add("NewAgentInventory");
-            req.Add("EventQueueGet");
-
-            byte[] data = LLSD.LLSDSerialize(req);
-
-            WebRequest request = WebRequest.Create(seedcaps);
-            request.Method = "POST";
-            request.ContentLength = data.Length;
-
-            Stream reqStream = request.GetRequestStream();
-            reqStream.Write(data, 0, data.Length);
-            reqStream.Close();
-
-            request.BeginGetResponse(new AsyncCallback(InitialResponse), request);
-        }
-
-        public void Disconnect()
-        {
-            Dead = true;
-            if (EventQueueRequest != null)
-                EventQueueRequest.Abort();
-        }
-
-        private void RunEventQueue()
-        {
-        Start:
-
-            try
-            {
-                // Make a new request
-                Hashtable req = new Hashtable();
-                req["ack"] = null;
-                req["done"] = false;
-
-                byte[] data = LLSD.LLSDSerialize(req);
-
-                EventQueueRequest = WebRequest.Create(EventQueueCap);
-                EventQueueRequest.Method = "POST";
-                EventQueueRequest.ContentLength = data.Length;
-
-                Stream reqStream = EventQueueRequest.GetRequestStream();
-                reqStream.Write(data, 0, data.Length);
-                reqStream.Close();
-
-                EventQueueRequest.BeginGetResponse(new AsyncCallback(EventQueueResponse), EventQueueRequest);
-            }
-            catch (WebException e)
-            {
-                Client.DebugLog("RunEventQueue: " + e.Message);
-                goto Start;
-            }
-        }
-
-        private void InitialResponse(IAsyncResult result)
-        {
-            WebRequest request = (WebRequest)result.AsyncState;
-            byte[] buffer = null;
-
-            try
-            {
-                HttpWebResponse response = (HttpWebResponse)request.EndGetResponse(result);
-                BinaryReader reader = new BinaryReader(response.GetResponseStream());
-                buffer = reader.ReadBytes((int)response.ContentLength);
-                response.Close();
-            }
-            catch (WebException e)
-            {
-                Client.Log("CAPS probe error: " + e.Message, Helpers.LogLevel.Warning);
-            }
-
-            if (buffer != null)
-            {
-                Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
-
-                foreach (string cap in resp.Keys)
-                {
-                    Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
-                    Capabilities[cap] = (string)resp[cap];
-                }
-
-                if (Capabilities.ContainsKey("EventQueueGet"))
-                {
-                    EventQueueCap = Capabilities["EventQueueGet"];
-
-                    Client.Log("Running event queue", Helpers.LogLevel.Info);
-
-                    EventQueueThread = new Thread(new ThreadStart(RunEventQueue));
-                    EventQueueThread.Start();
-                }
-            }
-        }
-
-        private void EventQueueResponse(IAsyncResult result)
-        {
-            byte[] buffer = null;
-            long ack = 0;
-
-            try
-            {
-                HttpWebResponse response = (HttpWebResponse)EventQueueRequest.EndGetResponse(result);
-                BinaryReader reader = new BinaryReader(response.GetResponseStream());
-                buffer = reader.ReadBytes((int)response.ContentLength);
-                response.Close();
-            }
-            catch (WebException e)
-            {
-                Client.DebugLog("EventQueue: " + e.Message);
-            }
-
-            if (buffer != null)
-            {
-                Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
-                ArrayList events = (ArrayList)resp["events"];
-                ack = (long)resp["id"];
-
-                foreach (Hashtable evt in events)
-                {
-                    string msg = (string)evt["message"];
-                    object body = (object)evt["body"];
-
-                    Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
-
-                    if (!Dead)
-                    {
-                        foreach (EventQueueCallback callback in Callbacks)
-                        {
-                            try { callback(msg, body); }
-                            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                        }
-                    }
-                }
-            }
-
-            if (!Dead)
-            {
-                // Make a new request
-                Hashtable req = new Hashtable();
-                if (ack != 0) req["ack"] = ack;
-                else req["ack"] = null;
-                req["done"] = false;
-
-                byte[] data = LLSD.LLSDSerialize(req);
-
-                EventQueueRequest = WebRequest.Create(EventQueueCap);
-                EventQueueRequest.Method = "POST";
-                EventQueueRequest.ContentLength = data.Length;
-
-                Stream reqStream = EventQueueRequest.GetRequestStream();
-                reqStream.Write(data, 0, data.Length);
-                reqStream.Close();
-
-                EventQueueRequest.BeginGetResponse(new AsyncCallback(EventQueueResponse), EventQueueRequest);
-            }
-        }
-    }
 
     /// <summary>
     /// NetworkManager is responsible for managing the network layer of 
@@ -347,13 +142,14 @@ namespace libsecondlife
 
         /// <summary></summary>
         internal Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
+        /// <summary></summary>
+        internal List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
 
         private SecondLife Client;
         private List<Simulator> Simulators = new List<Simulator>();
         private System.Timers.Timer DisconnectTimer;
         private System.Timers.Timer LogoutTimer;
         private bool connected = false;
-        private List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
         private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
 
         /// <summary>
@@ -432,7 +228,7 @@ namespace libsecondlife
         /// <param name="callback">Callback to fire when a CAPS event is received</param>
         public void RegisterEventCallback(Caps.EventQueueCallback callback)
         {
-            EventQueueCallbacks.Add(callback);
+            lock (EventQueueCallbacks) EventQueueCallbacks.Add(callback);
         }
 
         /// <summary>
@@ -920,11 +716,11 @@ namespace libsecondlife
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator;
 
-                if (CurrentCaps != null) CurrentCaps.Disconnect();
+                if (CurrentCaps != null) CurrentCaps.Disconnect(false);
                 CurrentCaps = null;
 
                 if (seedcaps != null && seedcaps.Length > 0)
-                    CurrentCaps = new Caps(Client, simulator, seedcaps, EventQueueCallbacks);
+                    CurrentCaps = new Caps(Client, simulator, seedcaps);
 
                 if (OnCurrentSimChanged != null && simulator != oldSim)
                 {
@@ -1097,7 +893,7 @@ namespace libsecondlife
 
             if (CurrentCaps != null)
             {
-                CurrentCaps.Disconnect();
+                CurrentCaps.Disconnect(true);
                 CurrentCaps = null;
             }
 

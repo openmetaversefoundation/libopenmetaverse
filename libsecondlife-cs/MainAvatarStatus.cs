@@ -316,9 +316,8 @@ namespace libsecondlife
 
                 UpdateTimer = new Timer(Client.Settings.AGENT_UPDATE_INTERVAL);
                 UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
-                UpdateTimer.Enabled = Client.Settings.SEND_AGENTUPDATES;
-                if (Client.Settings.SEND_AGENTUPDATES)
-                    UpdateTimer.Start();
+                UpdateTimer.Enabled = Client.Settings.SEND_AGENT_UPDATES;
+                if (UpdateTimer.Enabled) UpdateTimer.Start();
             }
 
             /// <summary>

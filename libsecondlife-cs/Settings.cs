@@ -77,7 +77,7 @@ namespace libsecondlife
         /// <summary>Enable/disable storing terrain heightmaps in the TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
         /// <summary>Enable/disable sending periodic camera updates</summary>
-        public bool SEND_AGENTUPDATES = true;
+        public bool SEND_AGENT_UPDATES = true;
         /// <summary>Number of milliseconds between sending camera updates</summary>
         public int AGENT_UPDATE_INTERVAL = 500;
 
