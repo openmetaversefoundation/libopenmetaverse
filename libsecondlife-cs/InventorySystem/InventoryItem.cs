@@ -41,7 +41,7 @@ namespace libsecondlife.InventorySystem
                 iTargetFolder._Contents.Add(this);
 
                 _FolderID = value;
-                UpdateItem();
+                base.iManager.MoveItem(ItemID, FolderID);
             }
         }
 

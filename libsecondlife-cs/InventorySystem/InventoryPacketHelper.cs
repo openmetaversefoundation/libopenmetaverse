@@ -150,25 +150,37 @@ namespace libsecondlife.InventorySystem
 
 		}
 
-		public Packet MoveInventoryItem(
-			LLUUID itemID
-			, LLUUID folderID
-			)
-		{
-            Console.WriteLine("WARNING: Using the new MoveInventoryItem packet, without specifying new folder name has unknown results.");
-            return MoveInventoryItem( itemID, folderID, null );
-		}
-
+        /// <summary>
+        /// Move an item to a new folder
+        /// </summary>
+        /// <param name="itemID"></param>
+        /// <param name="folderID"></param>
+        /// <returns></returns>
         public Packet MoveInventoryItem(
             LLUUID itemID
             , LLUUID folderID
-            , string newFolderName
+            )
+        {
+            return MoveInventoryItem(itemID, folderID, null);
+        }
+
+        /// <summary>
+        /// Move item to new folder, optionally changing it's name in the process
+        /// </summary>
+        /// <param name="itemID"></param>
+        /// <param name="folderID"></param>
+        /// <param name="itemName">specify null to not change the name</param>
+        /// <returns></returns>
+        public Packet MoveInventoryItem(
+            LLUUID itemID
+            , LLUUID folderID
+            , string itemName
             )
         {
             MoveInventoryItemPacket p = new MoveInventoryItemPacket();
             p.AgentData.AgentID = AgentID;
             p.AgentData.SessionID = SessionID;
-            p.AgentData.Stamp = true;
+            p.AgentData.Stamp = false; //the official client uses false.
 
             p.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[1];
             p.InventoryData[0] = new MoveInventoryItemPacket.InventoryDataBlock();
@@ -176,9 +188,13 @@ namespace libsecondlife.InventorySystem
             p.InventoryData[0].ItemID = itemID;
             p.InventoryData[0].FolderID = folderID;
 
-            if (newFolderName != null)
+            if (itemName == null)
             {
-                p.InventoryData[0].NewName = Helpers.StringToField(newFolderName);
+                p.InventoryData[0].NewName = new byte[0];
+            }
+            else
+            {
+                p.InventoryData[0].NewName = Helpers.StringToField(itemName);
             }
 
             return p;

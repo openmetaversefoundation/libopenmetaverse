@@ -425,7 +425,26 @@ namespace libsecondlife.AssetSystem
                     {
                         int id = Int32.Parse(fields[0]);
                         float weight = Single.Parse(fields[1]);
+/*
+                        if (Single.TryParse(fields[1], out weight) == false)
+                        {
+                            // probably a packed float that isn't parsing...  what to do, what to do...
+                            if (fields[1].StartsWith("."))
+                            {
+                                fields[1] = "0" + fields[1];
+                            }
+                            else if (fields[1].StartsWith("-."))
+                            {
+                                fields[1] = "-0" + fields[1].Remove(0,1);
+                            }
 
+                            if (Single.TryParse(fields[1], out weight) == false)
+                            {
+                                // give up...
+                                weight = 0.0f;
+                            }
+                        }
+*/
                         _Parameters[id] = weight;
                     }
                     catch (Exception)

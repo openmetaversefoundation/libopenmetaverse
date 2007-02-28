@@ -599,6 +599,17 @@ namespace libsecondlife.InventorySystem
             #endif         
         }
 
+
+        internal void MoveItem(LLUUID itemID, LLUUID targetFolderID)
+        {
+            Packet packet = InvPacketHelper.MoveInventoryItem(itemID, targetFolderID);
+            slClient.Network.SendPacket(packet);
+
+            #if DEBUG_PACKETS
+                slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
+            #endif
+        }
+
         /// <summary>
         /// Give an item to someone
         /// </summary>
@@ -882,6 +893,7 @@ namespace libsecondlife.InventorySystem
                         }
                         else
                         {
+                            Thread.Sleep(500);
                             incomingFolder.RequestDownloadContents(false, false, true).RequestComplete.WaitOne(3000, false);
                         }
                     }
@@ -962,7 +974,7 @@ namespace libsecondlife.InventorySystem
             CurrentlyDownloadingMutex.WaitOne();
 
             // Make sure this request matches the one we believe is the currently downloading request
-            if( CurrentlyDownloadingRequest.FolderID != uuidFolderID )
+            if ((CurrentlyDownloadingRequest != null) && (CurrentlyDownloadingRequest.FolderID != uuidFolderID))
             {
                 // Release so that we can let other things look at and modify what is currently downloading.
                 CurrentlyDownloadingMutex.ReleaseMutex();
