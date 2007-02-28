@@ -835,6 +835,9 @@ namespace libsecondlife.InventorySystem
                             root.RequestDownloadContents(false, true, false).RequestComplete.WaitOne(3000, false);
                         }
                     }
+
+                    slClient.Log("Incoming folder [" + IncomingUUID.ToStringHyphenated() + "] not found in inventory.", Helpers.LogLevel.Error);
+                    return;
                 }
 
                 // Make sure we have a folder lookup by type table ready.
