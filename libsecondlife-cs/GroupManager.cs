@@ -33,7 +33,7 @@ namespace libsecondlife
     /// <summary>
     /// Avatar group management
     /// </summary>
-    public class GroupMember
+    public struct GroupMember
     {
         /// <summary>Key of Group Member</summary>
         public LLUUID ID;
@@ -47,21 +47,12 @@ namespace libsecondlife
         public string Title;
         /// <summary>Is a group owner</summary>
         public bool IsOwner;
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="id"></param>
-        public GroupMember(LLUUID id)
-        {
-            ID = id;
-        }
     }
 
     /// <summary>
     /// Role manager for a group
     /// </summary>
-    public class GroupRole
+    public struct GroupRole
     {
         /// <summary>Key of Role</summary>
         public LLUUID ID;
@@ -73,21 +64,12 @@ namespace libsecondlife
         public string Description;
         /// <summary>Abilities Associated with Role</summary>
         public ulong Powers;
-
-        /// <summary>
-        /// Constructor for Group Roles
-        /// </summary>
-        /// <param name="id">Key associated with Group Role</param>
-        public GroupRole(LLUUID id)
-        {
-            ID = id;
-        }
     }
 
     /// <summary>
     /// Class to represent Group Title
     /// </summary>
-    public class GroupTitle
+    public struct GroupTitle
     {
         /// <summary>Group Title</summary>
         public string Title;
@@ -98,7 +80,7 @@ namespace libsecondlife
     /// <summary>
     /// Represents a group in Second Life
     /// </summary>
-    public class Group
+    public struct Group
     {
         /// <summary>Key of Group</summary>
         public LLUUID ID;
@@ -138,16 +120,6 @@ namespace libsecondlife
         public int GroupRolesCount;
 
         /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="id">Key of Group</param>
-        public Group(LLUUID id)
-        {
-            ID = id;
-            InsigniaID = LLUUID.Zero;
-        }
-
-        /// <summary>
         /// Returns the name of the group
         /// </summary>
         /// <returns></returns>
@@ -160,7 +132,7 @@ namespace libsecondlife
     /// <summary>
     /// Profile of a group
     /// </summary>
-    public class GroupProfile
+    public struct GroupProfile
     {
         /// <summary></summary>
         public LLUUID ID;
@@ -203,7 +175,7 @@ namespace libsecondlife
     /// <summary>
     /// A group Vote
     /// </summary>
-    public class Vote
+    public struct Vote
     {
         /// <summary>Key of Avatar who created Vote</summary>
         public LLUUID Candidate;
@@ -216,7 +188,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    public class GroupAccountSummary
+    public struct GroupAccountSummary
     {
         /// <summary></summary>
         public int IntervalDays;
@@ -261,7 +233,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    public class GroupAccountDetails
+    public struct GroupAccountDetails
     {
         /// <summary></summary>
         public int IntervalDays;
@@ -277,7 +249,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    public class GroupAccountTransactions
+    public struct GroupAccountTransactions
     {
         /// <summary></summary>
         public int IntervalDays;
@@ -358,24 +330,35 @@ namespace libsecondlife
         /// <param name="transactions"></param>
         public delegate void GroupAccountTransactionsCallback(GroupAccountTransactions transactions);
 
+
+        /// <summary></summary>
+        public event CurrentGroupsCallback OnCurrentGroups;
+        /// <summary></summary>
+        public event GroupProfileCallback OnGroupProfile;
+        /// <summary></summary>
+        public event GroupMembersCallback OnGroupMembers;
+        /// <summary></summary>
+        public event GroupRolesCallback OnGroupRoles;
+        /// <summary></summary>
+        public event GroupRolesMembersCallback OnGroupRolesMembers;
+        /// <summary></summary>
+        public event GroupTitlesCallback OnGroupTitles;
+        /// <summary></summary>
+        public event GroupAccountSummaryCallback OnGroupAccountSummary;
+        /// <summary></summary>
+        public event GroupAccountDetailsCallback OnGroupAccountDetails;
+        /// <summary></summary>
+        //public event GroupAccountTransactionsCallback OnGroupAccountTransactions;
+
+
         private SecondLife Client;
-        // No need for concurrency with the current group list request
-        private CurrentGroupsCallback OnCurrentGroups;
-        private Dictionary<LLUUID, GroupProfileCallback> GroupProfileCallbacks;
-        private Dictionary<LLUUID, GroupMembersCallback> GroupMembersCallbacks;
-        private Dictionary<LLUUID, GroupRolesCallback> GroupRolesCallbacks;
-        private Dictionary<LLUUID, GroupRolesMembersCallback> GroupRolesMembersCallbacks;
-        private Dictionary<LLUUID, GroupTitlesCallback> GroupTitlesCallbacks;
-        private Dictionary<LLUUID, GroupAccountSummaryCallback> GroupAccountSummaryCallbacks;
-        private Dictionary<LLUUID, GroupAccountDetailsCallback> GroupAccountDetailsCallbacks;
-		//TODO - presumably someone created this Dictionary so they could use it.
-        //private Dictionary<LLUUID, GroupAccountTransactionsCallback> GroupAccountTransactionsCallbacks;
         /// <summary>A list of all the lists of group members, indexed by the request ID</summary>
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>> GroupMembersCaches;
         /// <summary>A list of all the lists of group roles, indexed by the request ID</summary>
         private Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>> GroupRolesCaches;
         /// <summary>A list of all the role to member mappings</summary>
         private Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>> GroupRolesMembersCaches;
+
 
         /// <summary>
         /// 
@@ -384,15 +367,6 @@ namespace libsecondlife
         public GroupManager(SecondLife client)
         {
             Client = client;
-
-            GroupProfileCallbacks = new Dictionary<LLUUID, GroupProfileCallback>();
-            GroupMembersCallbacks = new Dictionary<LLUUID, GroupMembersCallback>();
-            GroupRolesCallbacks = new Dictionary<LLUUID, GroupRolesCallback>();
-            GroupRolesMembersCallbacks = new Dictionary<LLUUID, GroupRolesMembersCallback>();
-            GroupTitlesCallbacks = new Dictionary<LLUUID, GroupTitlesCallback>();
-            GroupAccountSummaryCallbacks = new Dictionary<LLUUID, GroupAccountSummaryCallback>();
-            GroupAccountDetailsCallbacks = new Dictionary<LLUUID, GroupAccountDetailsCallback>();
-            //GroupAccountTransactionsCallbacks = new Dictionary<LLUUID, GroupAccountTransactionsCallback>();
 
             GroupMembersCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupMember>>();
             GroupRolesCaches = new Dictionary<LLUUID, Dictionary<LLUUID, GroupRole>>();
@@ -414,11 +388,8 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="cgc"></param>
-        public void BeginGetCurrentGroups(CurrentGroupsCallback cgc)
+        public void BeginGetCurrentGroups()
         {
-            OnCurrentGroups = cgc;
-
             AgentDataUpdateRequestPacket request = new AgentDataUpdateRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
@@ -431,11 +402,8 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        /// <param name="gpc"></param>
-        public void BeginGetGroupProfile(LLUUID group, GroupProfileCallback gpc)
+        public void BeginGetGroupProfile(LLUUID group)
         {
-            GroupProfileCallbacks[group] = gpc;
-
             GroupProfileRequestPacket request = new GroupProfileRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
@@ -449,8 +417,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        /// <param name="gmc"></param>
-        public void BeginGetGroupMembers(LLUUID group, GroupMembersCallback gmc)
+        public void BeginGetGroupMembers(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
 
@@ -458,8 +425,6 @@ namespace libsecondlife
             {
                 GroupMembersCaches[requestID] = new Dictionary<LLUUID, GroupMember>();
             }
-
-            GroupMembersCallbacks[group] = gmc;
 
             GroupMembersRequestPacket request = new GroupMembersRequestPacket();
 
@@ -475,8 +440,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        /// <param name="grc"></param>
-        public void BeginGetGroupRoles(LLUUID group, GroupRolesCallback grc)
+        public void BeginGetGroupRoles(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
 
@@ -484,8 +448,6 @@ namespace libsecondlife
             {
                 GroupRolesCaches[requestID] = new Dictionary<LLUUID, GroupRole>();
             }
-
-            GroupRolesCallbacks[group] = grc;
 
             GroupRoleDataRequestPacket request = new GroupRoleDataRequestPacket();
 
@@ -501,12 +463,9 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        /// <param name="gtc"></param>
-        public void BeginGetGroupTitles(LLUUID group, GroupTitlesCallback gtc)
+        public void BeginGetGroupTitles(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
-
-            GroupTitlesCallbacks[group] = gtc;
 
             GroupTitlesRequestPacket request = new GroupTitlesRequestPacket();
 
@@ -528,8 +487,9 @@ namespace libsecondlife
 
                 foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
                 {
-                    Group group = new Group(block.GroupID);
+                    Group group = new Group();
 
+                    group.ID = block.GroupID;
                     group.InsigniaID = block.GroupInsigniaID;
                     group.Name = Helpers.FieldToString(block.GroupName);
                     group.Powers = block.GroupPowers;
@@ -539,19 +499,16 @@ namespace libsecondlife
                     currentGroups[block.GroupID] = group;
                 }
 
-                if (OnCurrentGroups != null)
-                {
-                    OnCurrentGroups(currentGroups);
-                }
+                try { OnCurrentGroups(currentGroups); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
         private void GroupProfileHandler(Packet packet, Simulator simulator)
         {
-            GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
-
-            if (GroupProfileCallbacks.ContainsKey(profile.GroupData.GroupID))
+            if (OnGroupProfile != null)
             {
+                GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
                 GroupProfile group = new GroupProfile();
 
                 group.AllowPublish = profile.GroupData.AllowPublish;
@@ -570,27 +527,31 @@ namespace libsecondlife
                 group.Powers = profile.GroupData.PowersMask;
                 group.ShowInList = profile.GroupData.ShowInList;
 
-                GroupProfileCallbacks[profile.GroupData.GroupID](group);
+                try { OnGroupProfile(group); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
         private void GroupTitlesHandler(Packet packet, Simulator simulator)
         {
-            GroupTitlesReplyPacket titles = (GroupTitlesReplyPacket)packet;
-
-            Dictionary<LLUUID, GroupTitle> groupTitleCache = new Dictionary<LLUUID, GroupTitle>();
-
-            foreach (GroupTitlesReplyPacket.GroupDataBlock block in titles.GroupData)
+            if (OnGroupTitles != null)
             {
-                GroupTitle groupTitle = new GroupTitle();
+                GroupTitlesReplyPacket titles = (GroupTitlesReplyPacket)packet;
+                Dictionary<LLUUID, GroupTitle> groupTitleCache = new Dictionary<LLUUID, GroupTitle>();
 
-                groupTitle.Title = Helpers.FieldToString(block.Title);
-                groupTitle.Selected = block.Selected;
+                foreach (GroupTitlesReplyPacket.GroupDataBlock block in titles.GroupData)
+                {
+                    GroupTitle groupTitle = new GroupTitle();
 
-                groupTitleCache[block.RoleID] = groupTitle;
+                    groupTitle.Title = Helpers.FieldToString(block.Title);
+                    groupTitle.Selected = block.Selected;
+
+                    groupTitleCache[block.RoleID] = groupTitle;
+                }
+
+                try { OnGroupTitles(groupTitleCache); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
-
-            GroupTitlesCallbacks[titles.AgentData.GroupID](groupTitleCache);
         }
 
         private void GroupMembersHandler(Packet packet, Simulator simulator)
@@ -607,8 +568,9 @@ namespace libsecondlife
 
                     foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
                     {
-                        GroupMember groupMember = new GroupMember(block.AgentID);
+                        GroupMember groupMember = new GroupMember();
 
+                        groupMember.ID = block.AgentID;
                         groupMember.Contribution = block.Contribution;
                         groupMember.IsOwner = block.IsOwner;
                         groupMember.OnlineStatus = Helpers.FieldToString(block.OnlineStatus);
@@ -621,9 +583,10 @@ namespace libsecondlife
             }
 
             // Check if we've received all the group members that are showing up
-            if (groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
+            if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
-                GroupMembersCallbacks[members.GroupData.GroupID](groupMemberCache);
+                try { OnGroupMembers(groupMemberCache); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -641,8 +604,9 @@ namespace libsecondlife
 
                     foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
                     {
-                        GroupRole groupRole = new GroupRole(block.RoleID);
+                        GroupRole groupRole = new GroupRole();
 
+                        groupRole.ID = block.RoleID;
                         groupRole.Description = Helpers.FieldToString(block.Description);
                         groupRole.Name = Helpers.FieldToString(block.Name);
                         groupRole.Powers = block.Powers;
@@ -654,9 +618,10 @@ namespace libsecondlife
             }
 
             // Check if we've received all the group members that are showing up
-            if (groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
+            if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
             {
-                GroupRolesCallbacks[roles.GroupData.GroupID](groupRoleCache);
+                try { OnGroupRoles(groupRoleCache); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -684,9 +649,10 @@ namespace libsecondlife
             }
 
             // Check if we've received all the pairs that are showing up
-            if (groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
+            if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
-                GroupRolesMembersCallbacks[members.AgentData.GroupID](groupRoleMemberCache);
+                try { OnGroupRolesMembers(groupRoleMemberCache); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -706,10 +672,9 @@ namespace libsecondlife
 
         private void GroupAccountSummaryHandler(Packet packet, Simulator simulator)
         {
-            GroupAccountSummaryReplyPacket summary = (GroupAccountSummaryReplyPacket)packet;
-
-            if (GroupAccountSummaryCallbacks.ContainsKey(summary.AgentData.GroupID))
+            if (OnGroupAccountSummary != null)
             {
+                GroupAccountSummaryReplyPacket summary = (GroupAccountSummaryReplyPacket)packet;
                 GroupAccountSummary account = new GroupAccountSummary();
 
                 account.Balance = summary.MoneyData.Balance;
@@ -732,16 +697,16 @@ namespace libsecondlife
                 account.TotalCredits = summary.MoneyData.TotalCredits;
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
-                GroupAccountSummaryCallbacks[summary.AgentData.GroupID](account);
+                try { OnGroupAccountSummary(account); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
         private void GroupAccountDetailsHandler(Packet packet, Simulator simulator)
         {
-            GroupAccountDetailsReplyPacket details = (GroupAccountDetailsReplyPacket)packet;
-
-            if (GroupAccountDetailsCallbacks.ContainsKey(details.AgentData.GroupID))
+            if (OnGroupAccountDetails != null)
             {
+                GroupAccountDetailsReplyPacket details = (GroupAccountDetailsReplyPacket)packet;
                 GroupAccountDetails account = new GroupAccountDetails();
 
                 account.CurrentInterval = details.MoneyData.CurrentInterval;
@@ -752,13 +717,14 @@ namespace libsecondlife
 
                 foreach (GroupAccountDetailsReplyPacket.HistoryDataBlock block in details.HistoryData)
                 {
-                    KeyValuePair<string, int> item = 
+                    KeyValuePair<string, int> item =
                         new KeyValuePair<string, int>(Helpers.FieldToString(block.Description), block.Amount);
 
                     account.HistoryItems.Add(item);
                 }
 
-                GroupAccountDetailsCallbacks[details.AgentData.GroupID](account);
+                try { OnGroupAccountDetails(account); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
@@ -774,7 +740,8 @@ namespace libsecondlife
 
             //    ;
 
-            //    GroupAccountTransactionsCallbacks[transactions.AgentData.GroupID](account);
+            //    try { OnGroupAccountTransactions(account); }
+            //    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             //}
         }
     }

@@ -21,6 +21,10 @@ namespace groupmanager
         Dictionary<LLUUID, GroupTitle> Titles = new Dictionary<LLUUID,GroupTitle>();
         Dictionary<LLUUID, GroupMemberData> MemberData = new Dictionary<LLUUID, GroupMemberData>();
         Dictionary<LLUUID, string> Names = new Dictionary<LLUUID, string>();
+        GroupManager.GroupProfileCallback GroupProfileCallback;
+        GroupManager.GroupMembersCallback GroupMembersCallback;
+        GroupManager.GroupTitlesCallback GroupTitlesCallback;
+        AvatarManager.AvatarNamesCallback AvatarNamesCallback;
         libsecondlife.Utilities.Assets.AssetManager Assets;
         
         public frmGroupInfo(Group group, SecondLife client)
@@ -33,23 +37,35 @@ namespace groupmanager
                 IntPtr temp = Handle;
             }
 
+            GroupProfileCallback = new GroupManager.GroupProfileCallback(GroupProfileHandler);
+            GroupMembersCallback = new GroupManager.GroupMembersCallback(GroupMembersHandler);
+            GroupTitlesCallback = new GroupManager.GroupTitlesCallback(GroupTitlesHandler);
+            AvatarNamesCallback = new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
+
             Group = group;
             Client = client;
             Assets = new libsecondlife.Utilities.Assets.AssetManager(Client);
             Assets.OnImageReceived += new libsecondlife.Utilities.Assets.AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
 
-            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
+            // Register the callbacks for this form
+            Client.Groups.OnGroupProfile += GroupProfileCallback;
+            Client.Groups.OnGroupMembers += GroupMembersCallback;
+            Client.Groups.OnGroupTitles += GroupTitlesCallback;
+            Client.Avatars.OnAvatarNames += AvatarNamesCallback;
 
             // Request the group information
+            Client.Groups.BeginGetGroupProfile(Group.ID);
+            Client.Groups.BeginGetGroupMembers(Group.ID);
+            Client.Groups.BeginGetGroupTitles(Group.ID);
+        }
 
-            Client.Groups.BeginGetGroupProfile(Group.ID,
-                new GroupManager.GroupProfileCallback(GroupProfileHandler));
-
-            Client.Groups.BeginGetGroupMembers(Group.ID,
-                new GroupManager.GroupMembersCallback(GroupMembersHandler));
-
-            Client.Groups.BeginGetGroupTitles(Group.ID,
-                new GroupManager.GroupTitlesCallback(GroupTitlesHandler));
+        ~frmGroupInfo()
+        {
+            // Unregister the callbacks for this form
+            Client.Groups.OnGroupProfile -= GroupProfileCallback;
+            Client.Groups.OnGroupMembers -= GroupMembersCallback;
+            Client.Groups.OnGroupTitles -= GroupTitlesCallback;
+            Client.Avatars.OnAvatarNames -= AvatarNamesCallback;
         }
 
         private void GroupProfileHandler(GroupProfile profile)
@@ -58,7 +74,7 @@ namespace groupmanager
 
             Invoke(new MethodInvoker(UpdateProfile));
 
-            if (Group.InsigniaID != null)
+            if (Group.InsigniaID != null && Group.InsigniaID != LLUUID.Zero)
             {
                 Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0);
             }

@@ -6,22 +6,22 @@ using libsecondlife;
 
 namespace libsecondlife.TestClient
 {
-    public class ExportScriptCommand : Command
+    public class ExportParticlesCommand : Command
     {
-        public ExportScriptCommand(TestClient testClient)
+        public ExportParticlesCommand(TestClient testClient)
         {
-            Name = "exportscript";
+            Name = "exportparticles";
             Description = "Reverse engineers a prim with a particle system to an LSL script. Usage: exportscript [prim-uuid]";
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
             if (args.Length != 1)
-                return "Usage: exportscript [prim-uuid]";
+                return "Usage: exportparticles [prim-uuid]";
 
             LLUUID id;
             if (!LLUUID.TryParse(args[0], out id))
-                return "Usage: exportscript [prim-uuid]";
+                return "Usage: exportparticles [prim-uuid]";
 
             lock (Client.SimPrims)
             {

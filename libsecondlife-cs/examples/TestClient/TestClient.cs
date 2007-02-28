@@ -56,6 +56,7 @@ namespace libsecondlife.TestClient
             Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
 			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
+            Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
             this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
@@ -145,18 +146,20 @@ namespace libsecondlife.TestClient
 
                 if (response.Length > 0)
                 {
-                    if (fromAgentID != null && Network.Connected) 
-                        SendResponseIM(this, fromAgentID, response, imSessionID);
-                        
                     Console.WriteLine(response);
+
+                    if (fromAgentID != null && Network.Connected)
+                    {
+                        // IMs don't like \r\n line endings, clean them up first
+                        response = response.Replace("\r", "");
+                        SendResponseIM(this, fromAgentID, response, imSessionID);
+                    }
                 }
             }
         }
 
         private void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            this.Self.Status.SendUpdate();
-
             foreach (Command c in Commands.Values)
                 if (c.Active)
                     c.Think();
@@ -170,7 +173,7 @@ namespace libsecondlife.TestClient
                 Console.WriteLine("Got the group ID for " + sim.Client.ToString() + ", requesting group members...");
                 GroupID = p.AgentData.ActiveGroupID;
 
-                sim.Client.Groups.BeginGetGroupMembers(GroupID, new GroupManager.GroupMembersCallback(OnGroupMembers));
+                sim.Client.Groups.BeginGetGroupMembers(GroupID);
             }
         }
 
@@ -179,7 +182,7 @@ namespace libsecondlife.TestClient
             Console.WriteLine("<" + this.ToString() + "> " + level.ToString() + ": " + message);
         }
 
-        private void OnGroupMembers(Dictionary<LLUUID, GroupMember> members)
+        private void GroupMembersHandler(Dictionary<LLUUID, GroupMember> members)
         {
             Console.WriteLine("Got " + members.Count + " group members.");
             GroupMembers = members;
@@ -298,32 +301,26 @@ namespace libsecondlife.TestClient
 
             Console.WriteLine("<IM>" + fromAgentName + ": " + message);
 
-            if (toAgentID == this.Network.AgentID)
+            if (dialog == MainAvatar.InstantMessageDialog.RequestTeleport)
             {
-                if (dialog == MainAvatar.InstantMessageDialog.RequestTeleport)
-                {
-                    Console.WriteLine("Accepting teleport lure.");
-                    Self.TeleportLureRespond(fromAgentID, true);
-                }
-                else
-                {
-					if (dialog == MainAvatar.InstantMessageDialog.InventoryOffered)
-					{
-						Console.WriteLine("Accepting inventory offer.");
-
-						Self.InstantMessage(Self.FirstName + " " + Self.LastName, fromAgentID, String.Empty, 
-                            imSessionID, MainAvatar.InstantMessageDialog.InventoryAccepted, 
-                            MainAvatar.InstantMessageOnline.Offline, Self.Position, LLUUID.Zero,
-                            Self.InventoryRootFolderUUID.GetBytes());
-					}
-					else
-	                    DoCommand(message, fromAgentID, imSessionID);
-                }
+                Console.WriteLine("Accepting teleport lure.");
+                Self.TeleportLureRespond(fromAgentID, true);
             }
             else
             {
-                // This shouldn't happen
-                Console.WriteLine("A bot that we aren't tracking received an IM?");
+                if (dialog == MainAvatar.InstantMessageDialog.InventoryOffered)
+                {
+                    Console.WriteLine("Accepting inventory offer.");
+
+                    Self.InstantMessage(Self.FirstName + " " + Self.LastName, fromAgentID, String.Empty,
+                        imSessionID, MainAvatar.InstantMessageDialog.InventoryAccepted,
+                        MainAvatar.InstantMessageOnline.Offline, Self.Position, LLUUID.Zero,
+                        Self.InventoryRootFolderUUID.GetBytes());
+                }
+                else
+                {
+                    DoCommand(message, fromAgentID, imSessionID);
+                }
             }
         }
 	}

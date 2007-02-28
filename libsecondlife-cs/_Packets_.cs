@@ -2348,10 +2348,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TestMessage ---" + Environment.NewLine;
-                output += TestBlock1.ToString() + "" + Environment.NewLine;
+                output += TestBlock1.ToString() + Environment.NewLine;
             for (int j = 0; j < 4; j++)
             {
-                output += NeighborBlock[j].ToString() + "" + Environment.NewLine;
+                output += NeighborBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -2458,7 +2458,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UseCircuitCode ---" + Environment.NewLine;
-                output += CircuitCode.ToString() + "" + Environment.NewLine;
+                output += CircuitCode.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -2570,7 +2570,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LogControl ---" + Environment.NewLine;
-                output += Options.ToString() + "" + Environment.NewLine;
+                output += Options.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -2663,7 +2663,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LogMessages ---" + Environment.NewLine;
-                output += Options.ToString() + "" + Environment.NewLine;
+                output += Options.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -2735,7 +2735,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- TelehubBlock --" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectName, "ObjectName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectName, "ObjectName") + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
                 output += "TelehubPos: " + TelehubPos.ToString() + "" + Environment.NewLine;
                 output += "TelehubRot: " + TelehubRot.ToString() + "" + Environment.NewLine;
@@ -2842,10 +2842,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TelehubInfo ---" + Environment.NewLine;
-                output += TelehubBlock.ToString() + "" + Environment.NewLine;
+                output += TelehubBlock.ToString() + Environment.NewLine;
             for (int j = 0; j < SpawnPointBlock.Length; j++)
             {
-                output += SpawnPointBlock[j].ToString() + "" + Environment.NewLine;
+                output += SpawnPointBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -3101,7 +3101,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EconomyData ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -3163,7 +3163,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -3269,8 +3269,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarPickerRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -3354,8 +3354,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(LastName, "LastName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FirstName, "FirstName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(LastName, "LastName") + Environment.NewLine;
+                output += Helpers.FieldToString(FirstName, "FirstName") + Environment.NewLine;
                 output += "AvatarID: " + AvatarID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -3468,9 +3468,9 @@ namespace libsecondlife.Packets
             string output = "--- AvatarPickerReply ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -3559,10 +3559,10 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- QueryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(QueryText, "QueryText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(QueryText, "QueryText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -3717,9 +3717,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PlacesQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += TransactionData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -3871,14 +3871,14 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- QueryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "BillableArea: " + BillableArea.ToString() + "" + Environment.NewLine;
                 output += "ActualArea: " + ActualArea.ToString() + "" + Environment.NewLine;
                 output += "GlobalX: " + GlobalX.ToString() + "" + Environment.NewLine;
                 output += "GlobalY: " + GlobalY.ToString() + "" + Environment.NewLine;
                 output += "GlobalZ: " + GlobalZ.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
@@ -4044,10 +4044,10 @@ namespace libsecondlife.Packets
             string output = "--- PlacesReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryData.Length; j++)
             {
-                output += QueryData[j].ToString() + "" + Environment.NewLine;
+                output += QueryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += TransactionData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -4128,7 +4128,7 @@ namespace libsecondlife.Packets
                 output += "QueryID: " + QueryID.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
                 output += "QueryStart: " + QueryStart.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(QueryText, "QueryText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(QueryText, "QueryText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -4230,8 +4230,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DirFindQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -4330,12 +4330,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- QueryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "QueryID: " + QueryID.ToString() + "" + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
                 output += "QueryStart: " + QueryStart.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(QueryText, "QueryText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(QueryText, "QueryText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -4437,8 +4437,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DirPlacesQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -4523,7 +4523,7 @@ namespace libsecondlife.Packets
                 output += "ReservedNewbie: " + ReservedNewbie.ToString() + "" + Environment.NewLine;
                 output += "ForSale: " + ForSale.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Auction: " + Auction.ToString() + "" + Environment.NewLine;
                 output += "Dwell: " + Dwell.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -4690,13 +4690,13 @@ namespace libsecondlife.Packets
             string output = "--- DirPlacesReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
             for (int j = 0; j < QueryData.Length; j++)
             {
-                output += QueryData[j].ToString() + "" + Environment.NewLine;
+                output += QueryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -4808,11 +4808,11 @@ namespace libsecondlife.Packets
             {
                 string output = "-- QueryReplies --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LastName, "LastName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FirstName, "FirstName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(LastName, "LastName") + Environment.NewLine;
+                output += Helpers.FieldToString(FirstName, "FirstName") + Environment.NewLine;
                 output += "Online: " + Online.ToString() + "" + Environment.NewLine;
                 output += "Reputation: " + Reputation.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Group, "Group") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Group, "Group") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -4968,10 +4968,10 @@ namespace libsecondlife.Packets
             string output = "--- DirPeopleReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -5073,8 +5073,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- QueryReplies --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Date, "Date") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Date, "Date") + Environment.NewLine;
                 output += "EventID: " + EventID.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "EventFlags: " + EventFlags.ToString() + "" + Environment.NewLine;
@@ -5234,10 +5234,10 @@ namespace libsecondlife.Packets
             string output = "--- DirEventsReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -5322,7 +5322,7 @@ namespace libsecondlife.Packets
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "MembershipFee: " + MembershipFee.ToString() + "" + Environment.NewLine;
                 output += "OpenEnrollment: " + OpenEnrollment.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupName, "GroupName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupName, "GroupName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -5478,10 +5478,10 @@ namespace libsecondlife.Packets
             string output = "--- DirGroupsReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -5569,7 +5569,7 @@ namespace libsecondlife.Packets
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
                 output += "QueryStart: " + QueryStart.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(QueryText, "QueryText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(QueryText, "QueryText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -5671,8 +5671,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DirClassifiedQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -5762,7 +5762,7 @@ namespace libsecondlife.Packets
                 output += "ClassifiedFlags: " + ClassifiedFlags.ToString() + "" + Environment.NewLine;
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "ClassifiedID: " + ClassifiedID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "PriceForListing: " + PriceForListing.ToString() + "" + Environment.NewLine;
                 output += "ExpirationDate: " + ExpirationDate.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -5920,10 +5920,10 @@ namespace libsecondlife.Packets
             string output = "--- DirClassifiedReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -5990,7 +5990,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Data --" + Environment.NewLine;
                 output += "ClassifiedID: " + ClassifiedID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -6102,9 +6102,9 @@ namespace libsecondlife.Packets
             string output = "--- AvatarClassifiedReply ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -6252,8 +6252,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ClassifiedInfoRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -6424,13 +6424,13 @@ namespace libsecondlife.Packets
                 string output = "-- Data --" + Environment.NewLine;
                 output += "ClassifiedFlags: " + ClassifiedFlags.ToString() + "" + Environment.NewLine;
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "ClassifiedID: " + ClassifiedID.ToString() + "" + Environment.NewLine;
                 output += "PosGlobal: " + PosGlobal.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ParcelName, "ParcelName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
+                output += Helpers.FieldToString(ParcelName, "ParcelName") + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "CreatorID: " + CreatorID.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
@@ -6532,8 +6532,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ClassifiedInfoReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -6654,8 +6654,8 @@ namespace libsecondlife.Packets
                 output += "ClassifiedID: " + ClassifiedID.ToString() + "" + Environment.NewLine;
                 output += "PosGlobal: " + PosGlobal.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
                 output += "PriceForListing: " + PriceForListing.ToString() + "" + Environment.NewLine;
@@ -6760,8 +6760,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ClassifiedInfoUpdate ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -6908,8 +6908,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ClassifiedDelete ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -7061,8 +7061,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ClassifiedGodDelete ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -7217,8 +7217,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DirPicksQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -7288,7 +7288,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- QueryReplies --" + Environment.NewLine;
                 output += "Enabled: " + Enabled.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "PickID: " + PickID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -7445,10 +7445,10 @@ namespace libsecondlife.Packets
             string output = "--- DirPicksReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -7631,8 +7631,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DirLandQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -7723,7 +7723,7 @@ namespace libsecondlife.Packets
                 output += "ActualArea: " + ActualArea.ToString() + "" + Environment.NewLine;
                 output += "ForSale: " + ForSale.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Auction: " + Auction.ToString() + "" + Environment.NewLine;
                 output += "SalePrice: " + SalePrice.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -7881,10 +7881,10 @@ namespace libsecondlife.Packets
             string output = "--- DirLandReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -8039,8 +8039,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DirPopularQuery ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -8114,7 +8114,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- QueryReplies --" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Dwell: " + Dwell.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -8271,10 +8271,10 @@ namespace libsecondlife.Packets
             string output = "--- DirPopularReply ---" + Environment.NewLine;
             for (int j = 0; j < QueryReplies.Length; j++)
             {
-                output += QueryReplies[j].ToString() + "" + Environment.NewLine;
+                output += QueryReplies[j].ToString() + Environment.NewLine;
             }
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -8421,8 +8421,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelInfoRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -8584,15 +8584,15 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "BillableArea: " + BillableArea.ToString() + "" + Environment.NewLine;
                 output += "ActualArea: " + ActualArea.ToString() + "" + Environment.NewLine;
                 output += "GlobalX: " + GlobalX.ToString() + "" + Environment.NewLine;
                 output += "GlobalY: " + GlobalY.ToString() + "" + Environment.NewLine;
                 output += "GlobalZ: " + GlobalZ.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "SalePrice: " + SalePrice.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
@@ -8695,8 +8695,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelInfoReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -8845,8 +8845,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelObjectOwnersRequest ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -8967,7 +8967,7 @@ namespace libsecondlife.Packets
             string output = "--- ParcelObjectOwnersReply ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -9115,8 +9115,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupNoticesListRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -9215,10 +9215,10 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Data --" + Environment.NewLine;
                 output += "Timestamp: " + Timestamp.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Subject, "Subject") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Subject, "Subject") + Environment.NewLine;
                 output += "HasAttachment: " + HasAttachment.ToString() + "" + Environment.NewLine;
                 output += "NoticeID: " + NoticeID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FromName, "FromName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(FromName, "FromName") + Environment.NewLine;
                 output += "AssetType: " + AssetType.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -9331,9 +9331,9 @@ namespace libsecondlife.Packets
             string output = "--- GroupNoticesListReply ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -9480,8 +9480,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupNoticeRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -9633,8 +9633,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupNoticeDelete ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -9789,8 +9789,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportRequest ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -9951,8 +9951,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportLocationRequest ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10068,7 +10068,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportLocal ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10173,7 +10173,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportLandmarkRequest ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10241,7 +10241,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Info --" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "TeleportFlags: " + TeleportFlags.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -10338,8 +10338,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportProgress ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10441,7 +10441,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Info --" + Environment.NewLine;
-                output += Helpers.FieldToString(SeedCapability, "SeedCapability") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SeedCapability, "SeedCapability") + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "SimPort: " + SimPort.ToString() + "" + Environment.NewLine;
                 output += "RegionHandle: " + RegionHandle.ToString() + "" + Environment.NewLine;
@@ -10496,7 +10496,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportFinish ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10561,7 +10561,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Info --" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "LureType: " + LureType.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -10720,12 +10720,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- StartLure ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             for (int j = 0; j < TargetData.Length; j++)
             {
-                output += TargetData[j].ToString() + "" + Environment.NewLine;
+                output += TargetData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10836,7 +10836,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportLureRequest ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -10935,7 +10935,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportCancel ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11031,7 +11031,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportStart ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11098,7 +11098,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Info --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Reason, "Reason") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Reason, "Reason") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -11146,7 +11146,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TeleportFailed ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11252,7 +11252,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LeaderBoardRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11332,7 +11332,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- BoardData --" + Environment.NewLine;
-                output += Helpers.FieldToString(TimeString, "TimeString") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TimeString, "TimeString") + Environment.NewLine;
                 output += "MaxPlace: " + MaxPlace.ToString() + "" + Environment.NewLine;
                 output += "MinPlace: " + MinPlace.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
@@ -11401,7 +11401,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Entry --" + Environment.NewLine;
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Sequence: " + Sequence.ToString() + "" + Environment.NewLine;
                 output += "Place: " + Place.ToString() + "" + Environment.NewLine;
                 output += "Score: " + Score.ToString() + "" + Environment.NewLine;
@@ -11515,12 +11515,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LeaderBoardData ---" + Environment.NewLine;
-                output += BoardData.ToString() + "" + Environment.NewLine;
+                output += BoardData.ToString() + Environment.NewLine;
             for (int j = 0; j < Entry.Length; j++)
             {
-                output += Entry[j].ToString() + "" + Environment.NewLine;
+                output += Entry[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11683,9 +11683,9 @@ namespace libsecondlife.Packets
             string output = "--- Undo ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11848,9 +11848,9 @@ namespace libsecondlife.Packets
             string output = "--- Redo ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -11949,7 +11949,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UndoLand ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12048,7 +12048,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RedoLand ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12154,7 +12154,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentPause ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12260,7 +12260,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentResume ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12333,7 +12333,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ChatData --" + Environment.NewLine;
                 output += "Channel: " + Channel.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -12436,8 +12436,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ChatFromViewer ---" + Environment.NewLine;
-                output += ChatData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ChatData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12506,7 +12506,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Throttle --" + Environment.NewLine;
                 output += "GenCounter: " + GenCounter.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Throttles, "Throttles") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Throttles, "Throttles") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -12615,8 +12615,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentThrottle ---" + Environment.NewLine;
-                output += Throttle.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Throttle.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12780,8 +12780,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentFOV ---" + Environment.NewLine;
-                output += FOVBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += FOVBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -12947,8 +12947,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentHeightWidth ---" + Environment.NewLine;
-                output += HeightWidthBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += HeightWidthBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13053,7 +13053,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -13243,14 +13243,14 @@ namespace libsecondlife.Packets
             string output = "--- AgentSetAppearance ---" + Environment.NewLine;
             for (int j = 0; j < VisualParam.Length; j++)
             {
-                output += VisualParam[j].ToString() + "" + Environment.NewLine;
+                output += VisualParam[j].ToString() + Environment.NewLine;
             }
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             for (int j = 0; j < WearableData.Length; j++)
             {
-                output += WearableData[j].ToString() + "" + Environment.NewLine;
+                output += WearableData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13349,7 +13349,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentQuit ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13498,8 +13498,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentQuitCopy ---" + Environment.NewLine;
-                output += FuseBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += FuseBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13593,7 +13593,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ImageNotInDatabase ---" + Environment.NewLine;
-                output += ImageID.ToString() + "" + Environment.NewLine;
+                output += ImageID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13687,7 +13687,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RebakeAvatarTextures ---" + Environment.NewLine;
-                output += TextureData.ToString() + "" + Environment.NewLine;
+                output += TextureData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13790,7 +13790,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SetAlwaysRun ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -13955,9 +13955,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDelete ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -14177,10 +14177,10 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDuplicate ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += SharedData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += SharedData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -14382,9 +14382,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDuplicateOnRay ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -14549,9 +14549,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectScale ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -14716,9 +14716,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectRotation ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -14841,7 +14841,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectFlagUpdate ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -15006,9 +15006,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectClickAction ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -15095,9 +15095,9 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(MediaURL, "MediaURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MediaURL, "MediaURL") + Environment.NewLine;
                 output += "ObjectLocalID: " + ObjectLocalID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -15210,9 +15210,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectImage ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -15377,9 +15377,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectMaterial ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -15612,9 +15612,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectShape ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -15697,7 +15697,7 @@ namespace libsecondlife.Packets
                 string output = "-- ObjectData --" + Environment.NewLine;
                 output += "ParamInUse: " + ParamInUse.ToString() + "" + Environment.NewLine;
                 output += "ObjectLocalID: " + ObjectLocalID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ParamData, "ParamData") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ParamData, "ParamData") + Environment.NewLine;
                 output += "ParamSize: " + ParamSize.ToString() + "" + Environment.NewLine;
                 output += "ParamType: " + ParamType.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -15812,9 +15812,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectExtraParams ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -16032,10 +16032,10 @@ namespace libsecondlife.Packets
             string output = "--- ObjectOwner ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += HeaderData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += HeaderData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -16201,9 +16201,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectGroup ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -16385,9 +16385,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectBuy ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -16545,8 +16545,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- BuyObjectInventory ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -16645,7 +16645,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DerezContainer ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -16868,10 +16868,10 @@ namespace libsecondlife.Packets
             string output = "--- ObjectPermissions ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += HeaderData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += HeaderData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -17043,9 +17043,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectSaleInfo ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -17114,7 +17114,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
                 output += "LocalID: " + LocalID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -17227,9 +17227,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectName ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -17298,7 +17298,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
                 output += "LocalID: " + LocalID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -17411,9 +17411,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDescription ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -17581,9 +17581,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectCategory ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -17744,9 +17744,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectSelect ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -17907,9 +17907,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDeselect ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -18078,9 +18078,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectAttach ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -18240,9 +18240,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDetach ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -18402,9 +18402,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDrop ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -18564,9 +18564,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectLink ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -18726,9 +18726,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDelink ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -18935,10 +18935,10 @@ namespace libsecondlife.Packets
             string output = "--- ObjectHinge ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += JointType.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += JointType.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -19098,9 +19098,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectDehinge ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -19254,8 +19254,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectGrab ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -19418,8 +19418,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectGrabUpdate ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -19568,8 +19568,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectDeGrab ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -19717,8 +19717,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectSpinStart ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -19870,8 +19870,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectSpinUpdate ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20019,8 +20019,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectSpinStop ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20184,9 +20184,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectExportSelected ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20318,9 +20318,9 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- AssetData --" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectName, "ObjectName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectName, "ObjectName") + Environment.NewLine;
                 output += "FileID: " + FileID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -20374,8 +20374,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectImport ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += AssetData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += AssetData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20629,12 +20629,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ModifyLand ---" + Environment.NewLine;
-                output += ModifyBlock.ToString() + "" + Environment.NewLine;
+                output += ModifyBlock.ToString() + Environment.NewLine;
             for (int j = 0; j < ParcelData.Length; j++)
             {
-                output += ParcelData[j].ToString() + "" + Environment.NewLine;
+                output += ParcelData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20733,7 +20733,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- VelocityInterpolateOn ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20832,7 +20832,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- VelocityInterpolateOff ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -20894,7 +20894,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- DataBlock --" + Environment.NewLine;
-                output += Helpers.FieldToString(Filename, "Filename") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Filename, "Filename") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -20995,8 +20995,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- StateSave ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -21099,7 +21099,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ReportAutosaveCrash ---" + Environment.NewLine;
-                output += AutosaveData.ToString() + "" + Environment.NewLine;
+                output += AutosaveData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -21253,8 +21253,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SimWideDeletes ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -21401,8 +21401,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TrackAgent ---" + Environment.NewLine;
-                output += TargetData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += TargetData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -21834,11 +21834,11 @@ namespace libsecondlife.Packets
                 output += "RunTime: " + RunTime.ToString() + "" + Environment.NewLine;
                 output += "MetersTraveled: " + MetersTraveled.ToString() + "" + Environment.NewLine;
                 output += "SimFPS: " + SimFPS.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SysCPU, "SysCPU") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SysGPU, "SysGPU") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SysCPU, "SysCPU") + Environment.NewLine;
+                output += Helpers.FieldToString(SysGPU, "SysGPU") + Environment.NewLine;
                 output += "SysRAM: " + SysRAM.ToString() + "" + Environment.NewLine;
                 output += "StartTime: " + StartTime.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SysOS, "SysOS") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SysOS, "SysOS") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -21921,17 +21921,17 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ViewerStats ---" + Environment.NewLine;
-                output += DownloadTotals.ToString() + "" + Environment.NewLine;
+                output += DownloadTotals.ToString() + Environment.NewLine;
             for (int j = 0; j < MiscStats.Length; j++)
             {
-                output += MiscStats[j].ToString() + "" + Environment.NewLine;
+                output += MiscStats[j].ToString() + Environment.NewLine;
             }
             for (int j = 0; j < 2; j++)
             {
-                output += NetStats[j].ToString() + "" + Environment.NewLine;
+                output += NetStats[j].ToString() + Environment.NewLine;
             }
-                output += FailStats.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += FailStats.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -22090,8 +22090,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptAnswerYes ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -22237,15 +22237,15 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ReportData --" + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Details, "Details") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(VersionString, "VersionString") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Details, "Details") + Environment.NewLine;
+                output += Helpers.FieldToString(VersionString, "VersionString") + Environment.NewLine;
                 output += "AbuseRegionID: " + AbuseRegionID.ToString() + "" + Environment.NewLine;
                 output += "CheckFlags: " + CheckFlags.ToString() + "" + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Summary, "Summary") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Summary, "Summary") + Environment.NewLine;
                 output += "ReportType: " + ReportType.ToString() + "" + Environment.NewLine;
                 output += "AbuserID: " + AbuserID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(AbuseRegionName, "AbuseRegionName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(AbuseRegionName, "AbuseRegionName") + Environment.NewLine;
                 output += "ScreenshotID: " + ScreenshotID.ToString() + "" + Environment.NewLine;
                 output += "Position: " + Position.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -22349,8 +22349,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UserReport ---" + Environment.NewLine;
-                output += ReportData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ReportData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -22412,7 +22412,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- AlertData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -22460,7 +22460,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AlertMessage ---" + Environment.NewLine;
-                output += AlertData.ToString() + "" + Environment.NewLine;
+                output += AlertData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -22525,7 +22525,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- AlertData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "Modal: " + Modal.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -22622,8 +22622,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentAlertMessage ---" + Environment.NewLine;
-                output += AlertData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AlertData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -22753,7 +22753,7 @@ namespace libsecondlife.Packets
             string output = "--- MeanCollisionAlert ---" + Environment.NewLine;
             for (int j = 0; j < MeanCollision.Length; j++)
             {
-                output += MeanCollision[j].ToString() + "" + Environment.NewLine;
+                output += MeanCollision[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -22847,7 +22847,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ViewerFrozenMessage ---" + Environment.NewLine;
-                output += FrozenData.ToString() + "" + Environment.NewLine;
+                output += FrozenData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -22945,7 +22945,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- HealthMessage ---" + Environment.NewLine;
-                output += HealthData.ToString() + "" + Environment.NewLine;
+                output += HealthData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -23046,11 +23046,11 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ChatData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "Audible: " + Audible.ToString() + "" + Environment.NewLine;
                 output += "ChatType: " + ChatType.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FromName, "FromName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(FromName, "FromName") + Environment.NewLine;
                 output += "SourceType: " + SourceType.ToString() + "" + Environment.NewLine;
                 output += "SourceID: " + SourceID.ToString() + "" + Environment.NewLine;
                 output += "Position: " + Position.ToString() + "" + Environment.NewLine;
@@ -23101,7 +23101,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ChatFromSimulator ---" + Environment.NewLine;
-                output += ChatData.ToString() + "" + Environment.NewLine;
+                output += ChatData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -23287,9 +23287,9 @@ namespace libsecondlife.Packets
             string output = "--- SimStats ---" + Environment.NewLine;
             for (int j = 0; j < Stat.Length; j++)
             {
-                output += Stat[j].ToString() + "" + Environment.NewLine;
+                output += Stat[j].ToString() + Environment.NewLine;
             }
-                output += Region.ToString() + "" + Environment.NewLine;
+                output += Region.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -23388,7 +23388,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestRegionInfo ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -23536,7 +23536,7 @@ namespace libsecondlife.Packets
                 output += "ObjectBonusFactor: " + ObjectBonusFactor.ToString() + "" + Environment.NewLine;
                 output += "RedirectGridX: " + RedirectGridX.ToString() + "" + Environment.NewLine;
                 output += "RedirectGridY: " + RedirectGridY.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "PricePerMeter: " + PricePerMeter.ToString() + "" + Environment.NewLine;
                 output += "RegionFlags: " + RegionFlags.ToString() + "" + Environment.NewLine;
                 output += "WaterHeight: " + WaterHeight.ToString() + "" + Environment.NewLine;
@@ -23649,8 +23649,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RegionInfo ---" + Environment.NewLine;
-                output += RegionInfo.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RegionInfo.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -23758,7 +23758,7 @@ namespace libsecondlife.Packets
                 output += "BillableFactor: " + BillableFactor.ToString() + "" + Environment.NewLine;
                 output += "RedirectGridX: " + RedirectGridX.ToString() + "" + Environment.NewLine;
                 output += "RedirectGridY: " + RedirectGridY.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "PricePerMeter: " + PricePerMeter.ToString() + "" + Environment.NewLine;
                 output += "RegionFlags: " + RegionFlags.ToString() + "" + Environment.NewLine;
                 output += "ParentEstateID: " + ParentEstateID.ToString() + "" + Environment.NewLine;
@@ -23864,8 +23864,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GodUpdateRegionInfo ---" + Environment.NewLine;
-                output += RegionInfo.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RegionInfo.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -23965,7 +23965,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- NearestLandingRegionUpdated ---" + Environment.NewLine;
-                output += RegionData.ToString() + "" + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -24145,7 +24145,7 @@ namespace libsecondlife.Packets
                 output += "TerrainHeightRange01: " + TerrainHeightRange01.ToString() + "" + Environment.NewLine;
                 output += "TerrainHeightRange10: " + TerrainHeightRange10.ToString() + "" + Environment.NewLine;
                 output += "TerrainHeightRange11: " + TerrainHeightRange11.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "RegionFlags: " + RegionFlags.ToString() + "" + Environment.NewLine;
                 output += "TerrainStartHeight00: " + TerrainStartHeight00.ToString() + "" + Environment.NewLine;
                 output += "TerrainStartHeight01: " + TerrainStartHeight01.ToString() + "" + Environment.NewLine;
@@ -24212,7 +24212,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RegionHandshake ---" + Environment.NewLine;
-                output += RegionInfo.ToString() + "" + Environment.NewLine;
+                output += RegionInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -24362,8 +24362,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RegionHandshakeReply ---" + Environment.NewLine;
-                output += RegionInfo.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RegionInfo.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -24493,7 +24493,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SimulatorViewerTimeMessage ---" + Environment.NewLine;
-                output += TimeInfo.ToString() + "" + Environment.NewLine;
+                output += TimeInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -24605,7 +24605,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EnableSimulator ---" + Environment.NewLine;
-                output += SimulatorInfo.ToString() + "" + Environment.NewLine;
+                output += SimulatorInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -24737,7 +24737,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- TransferInfo --" + Environment.NewLine;
                 output += "TransferID: " + TransferID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Params, "Params") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Params, "Params") + Environment.NewLine;
                 output += "ChannelType: " + ChannelType.ToString() + "" + Environment.NewLine;
                 output += "SourceType: " + SourceType.ToString() + "" + Environment.NewLine;
                 output += "Priority: " + Priority.ToString() + "" + Environment.NewLine;
@@ -24789,7 +24789,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TransferRequest ---" + Environment.NewLine;
-                output += TransferInfo.ToString() + "" + Environment.NewLine;
+                output += TransferInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -24882,7 +24882,7 @@ namespace libsecondlife.Packets
                 string output = "-- TransferInfo --" + Environment.NewLine;
                 output += "TransferID: " + TransferID.ToString() + "" + Environment.NewLine;
                 output += "Size: " + Size.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Params, "Params") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Params, "Params") + Environment.NewLine;
                 output += "ChannelType: " + ChannelType.ToString() + "" + Environment.NewLine;
                 output += "TargetType: " + TargetType.ToString() + "" + Environment.NewLine;
                 output += "Status: " + Status.ToString() + "" + Environment.NewLine;
@@ -24934,7 +24934,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TransferInfo ---" + Environment.NewLine;
-                output += TransferInfo.ToString() + "" + Environment.NewLine;
+                output += TransferInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25036,7 +25036,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TransferAbort ---" + Environment.NewLine;
-                output += TransferInfo.ToString() + "" + Environment.NewLine;
+                output += TransferInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25146,7 +25146,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TransferPriority ---" + Environment.NewLine;
-                output += TransferInfo.ToString() + "" + Environment.NewLine;
+                output += TransferInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25239,7 +25239,7 @@ namespace libsecondlife.Packets
                 output += "UseBigPackets: " + UseBigPackets.ToString() + "" + Environment.NewLine;
                 output += "DeleteOnCompletion: " + DeleteOnCompletion.ToString() + "" + Environment.NewLine;
                 output += "FilePath: " + FilePath.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Filename, "Filename") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Filename, "Filename") + Environment.NewLine;
                 output += "VFileID: " + VFileID.ToString() + "" + Environment.NewLine;
                 output += "VFileType: " + VFileType.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -25290,7 +25290,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestXfer ---" + Environment.NewLine;
-                output += XferID.ToString() + "" + Environment.NewLine;
+                output += XferID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25397,7 +25397,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AbortXfer ---" + Environment.NewLine;
-                output += XferID.ToString() + "" + Environment.NewLine;
+                output += XferID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25491,7 +25491,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestAvatarInfo ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25596,7 +25596,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -25713,10 +25713,10 @@ namespace libsecondlife.Packets
             string output = "--- AvatarAppearance ---" + Environment.NewLine;
             for (int j = 0; j < VisualParam.Length; j++)
             {
-                output += VisualParam[j].ToString() + "" + Environment.NewLine;
+                output += VisualParam[j].ToString() + Environment.NewLine;
             }
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += Sender.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += Sender.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25879,9 +25879,9 @@ namespace libsecondlife.Packets
             string output = "--- SetFollowCamProperties ---" + Environment.NewLine;
             for (int j = 0; j < CameraProperty.Length; j++)
             {
-                output += CameraProperty[j].ToString() + "" + Environment.NewLine;
+                output += CameraProperty[j].ToString() + Environment.NewLine;
             }
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -25975,7 +25975,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ClearFollowCamProperties ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -26069,7 +26069,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestPayPrice ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -26229,10 +26229,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PayPriceReply ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             for (int j = 0; j < ButtonData.Length; j++)
             {
-                output += ButtonData[j].ToString() + "" + Environment.NewLine;
+                output += ButtonData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -26356,7 +26356,7 @@ namespace libsecondlife.Packets
                 string output = "-- UserInfo --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "SessionID: " + SessionID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Reason, "Reason") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Reason, "Reason") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -26409,8 +26409,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- KickUser ---" + Environment.NewLine;
-                output += TargetBlock.ToString() + "" + Environment.NewLine;
-                output += UserInfo.ToString() + "" + Environment.NewLine;
+                output += TargetBlock.ToString() + Environment.NewLine;
+                output += UserInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -26511,7 +26511,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- KickUserAck ---" + Environment.NewLine;
-                output += UserInfo.ToString() + "" + Environment.NewLine;
+                output += UserInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -26594,7 +26594,7 @@ namespace libsecondlife.Packets
                 string output = "-- UserInfo --" + Environment.NewLine;
                 output += "GodSessionID: " + GodSessionID.ToString() + "" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Reason, "Reason") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Reason, "Reason") + Environment.NewLine;
                 output += "KickFlags: " + KickFlags.ToString() + "" + Environment.NewLine;
                 output += "GodID: " + GodID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -26644,7 +26644,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GodKickUser ---" + Environment.NewLine;
-                output += UserInfo.ToString() + "" + Environment.NewLine;
+                output += UserInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -26798,8 +26798,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EjectUser ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -26953,8 +26953,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- FreezeUser ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -27058,7 +27058,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarPropertiesRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -27212,13 +27212,13 @@ namespace libsecondlife.Packets
             {
                 string output = "-- PropertiesData --" + Environment.NewLine;
                 output += "PartnerID: " + PartnerID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(AboutText, "AboutText") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(CharterMember, "CharterMember") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FLAboutText, "FLAboutText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(AboutText, "AboutText") + Environment.NewLine;
+                output += Helpers.FieldToString(CharterMember, "CharterMember") + Environment.NewLine;
+                output += Helpers.FieldToString(FLAboutText, "FLAboutText") + Environment.NewLine;
                 output += "ImageID: " + ImageID.ToString() + "" + Environment.NewLine;
                 output += "FLImageID: " + FLImageID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ProfileURL, "ProfileURL") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(BornOn, "BornOn") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ProfileURL, "ProfileURL") + Environment.NewLine;
+                output += Helpers.FieldToString(BornOn, "BornOn") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -27321,8 +27321,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarPropertiesReply ---" + Environment.NewLine;
-                output += PropertiesData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += PropertiesData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -27433,10 +27433,10 @@ namespace libsecondlife.Packets
             {
                 string output = "-- PropertiesData --" + Environment.NewLine;
                 output += "WantToMask: " + WantToMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(WantToText, "WantToText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(WantToText, "WantToText") + Environment.NewLine;
                 output += "SkillsMask: " + SkillsMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SkillsText, "SkillsText") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LanguagesText, "LanguagesText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SkillsText, "SkillsText") + Environment.NewLine;
+                output += Helpers.FieldToString(LanguagesText, "LanguagesText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -27538,8 +27538,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarInterestsReply ---" + Environment.NewLine;
-                output += PropertiesData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += PropertiesData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -27688,12 +27688,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- GroupData --" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupTitle, "GroupTitle") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupTitle, "GroupTitle") + Environment.NewLine;
                 output += "GroupPowers: " + GroupPowers.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "GroupInsigniaID: " + GroupInsigniaID.ToString() + "" + Environment.NewLine;
                 output += "AcceptNotices: " + AcceptNotices.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupName, "GroupName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupName, "GroupName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -27756,10 +27756,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarGroupsReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < GroupData.Length; j++)
             {
-                output += GroupData[j].ToString() + "" + Environment.NewLine;
+                output += GroupData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -27873,12 +27873,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- PropertiesData --" + Environment.NewLine;
-                output += Helpers.FieldToString(AboutText, "AboutText") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FLAboutText, "FLAboutText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(AboutText, "AboutText") + Environment.NewLine;
+                output += Helpers.FieldToString(FLAboutText, "FLAboutText") + Environment.NewLine;
                 output += "ImageID: " + ImageID.ToString() + "" + Environment.NewLine;
                 output += "FLImageID: " + FLImageID.ToString() + "" + Environment.NewLine;
                 output += "AllowPublish: " + AllowPublish.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ProfileURL, "ProfileURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ProfileURL, "ProfileURL") + Environment.NewLine;
                 output += "MaturePublish: " + MaturePublish.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -27981,8 +27981,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarPropertiesUpdate ---" + Environment.NewLine;
-                output += PropertiesData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += PropertiesData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -28093,10 +28093,10 @@ namespace libsecondlife.Packets
             {
                 string output = "-- PropertiesData --" + Environment.NewLine;
                 output += "WantToMask: " + WantToMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(WantToText, "WantToText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(WantToText, "WantToText") + Environment.NewLine;
                 output += "SkillsMask: " + SkillsMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SkillsText, "SkillsText") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LanguagesText, "LanguagesText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SkillsText, "SkillsText") + Environment.NewLine;
+                output += Helpers.FieldToString(LanguagesText, "LanguagesText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -28198,8 +28198,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarInterestsUpdate ---" + Environment.NewLine;
-                output += PropertiesData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += PropertiesData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -28273,7 +28273,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- StatisticsData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Negative: " + Negative.ToString() + "" + Environment.NewLine;
                 output += "Positive: " + Positive.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -28431,10 +28431,10 @@ namespace libsecondlife.Packets
             string output = "--- AvatarStatisticsReply ---" + Environment.NewLine;
             for (int j = 0; j < StatisticsData.Length; j++)
             {
-                output += StatisticsData[j].ToString() + "" + Environment.NewLine;
+                output += StatisticsData[j].ToString() + Environment.NewLine;
             }
-                output += AvatarData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AvatarData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -28502,7 +28502,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Data --" + Environment.NewLine;
                 output += "TargetID: " + TargetID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Notes, "Notes") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Notes, "Notes") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -28598,8 +28598,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarNotesReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -28667,7 +28667,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Data --" + Environment.NewLine;
                 output += "TargetID: " + TargetID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Notes, "Notes") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Notes, "Notes") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -28768,8 +28768,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarNotesUpdate ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -28835,7 +28835,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(PickName, "PickName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(PickName, "PickName") + Environment.NewLine;
                 output += "PickID: " + PickID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -28948,9 +28948,9 @@ namespace libsecondlife.Packets
             string output = "--- AvatarPicksReply ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -29099,8 +29099,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EventInfoRequest ---" + Environment.NewLine;
-                output += EventData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += EventData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -29294,14 +29294,14 @@ namespace libsecondlife.Packets
                 string output = "-- EventData --" + Environment.NewLine;
                 output += "Duration: " + Duration.ToString() + "" + Environment.NewLine;
                 output += "DateUTC: " + DateUTC.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "GlobalPos: " + GlobalPos.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Creator, "Creator") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Date, "Date") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Creator, "Creator") + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Date, "Date") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "EventID: " + EventID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Category, "Category") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Category, "Category") + Environment.NewLine;
                 output += "EventFlags: " + EventFlags.ToString() + "" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
                 output += "Cover: " + Cover.ToString() + "" + Environment.NewLine;
@@ -29400,8 +29400,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EventInfoReply ---" + Environment.NewLine;
-                output += EventData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += EventData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -29550,8 +29550,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EventNotificationAddRequest ---" + Environment.NewLine;
-                output += EventData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += EventData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -29700,8 +29700,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EventNotificationRemoveRequest ---" + Environment.NewLine;
-                output += EventData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += EventData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -29827,7 +29827,7 @@ namespace libsecondlife.Packets
                 output += "QueryID: " + QueryID.ToString() + "" + Environment.NewLine;
                 output += "QueryFlags: " + QueryFlags.ToString() + "" + Environment.NewLine;
                 output += "QueryStart: " + QueryStart.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(QueryText, "QueryText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(QueryText, "QueryText") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -29933,9 +29933,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EventGodDelete ---" + Environment.NewLine;
-                output += EventData.ToString() + "" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += EventData.ToString() + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -30083,8 +30083,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PickInfoRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -30250,15 +30250,15 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(OriginalName, "OriginalName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(OriginalName, "OriginalName") + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "Enabled: " + Enabled.ToString() + "" + Environment.NewLine;
                 output += "PosGlobal: " + PosGlobal.ToString() + "" + Environment.NewLine;
                 output += "TopPick: " + TopPick.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(User, "User") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
+                output += Helpers.FieldToString(User, "User") + Environment.NewLine;
                 output += "CreatorID: " + CreatorID.ToString() + "" + Environment.NewLine;
                 output += "PickID: " + PickID.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
@@ -30358,8 +30358,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PickInfoReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -30475,8 +30475,8 @@ namespace libsecondlife.Packets
                 output += "PosGlobal: " + PosGlobal.ToString() + "" + Environment.NewLine;
                 output += "TopPick: " + TopPick.ToString() + "" + Environment.NewLine;
                 output += "ParcelID: " + ParcelID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "CreatorID: " + CreatorID.ToString() + "" + Environment.NewLine;
                 output += "PickID: " + PickID.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
@@ -30581,8 +30581,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PickInfoUpdate ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -30729,8 +30729,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PickDelete ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -30882,8 +30882,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PickGodDelete ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -30977,8 +30977,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectName, "ObjectName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectOwner, "ObjectOwner") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectName, "ObjectName") + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectOwner, "ObjectOwner") + Environment.NewLine;
                 output += "TaskID: " + TaskID.ToString() + "" + Environment.NewLine;
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "Questions: " + Questions.ToString() + "" + Environment.NewLine;
@@ -31029,7 +31029,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptQuestion ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -31144,7 +31144,7 @@ namespace libsecondlife.Packets
             string output = "--- ScriptControlChange ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -31276,12 +31276,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectName, "ObjectName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectName, "ObjectName") + Environment.NewLine;
                 output += "ImageID: " + ImageID.ToString() + "" + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LastName, "LastName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FirstName, "FirstName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
+                output += Helpers.FieldToString(LastName, "LastName") + Environment.NewLine;
+                output += Helpers.FieldToString(FirstName, "FirstName") + Environment.NewLine;
                 output += "ChatChannel: " + ChatChannel.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -31341,7 +31341,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Buttons --" + Environment.NewLine;
-                output += Helpers.FieldToString(ButtonLabel, "ButtonLabel") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ButtonLabel, "ButtonLabel") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -31404,10 +31404,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptDialog ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             for (int j = 0; j < Buttons.Length; j++)
             {
-                output += Buttons[j].ToString() + "" + Environment.NewLine;
+                output += Buttons[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -31487,7 +31487,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- Data --" + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ButtonLabel, "ButtonLabel") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ButtonLabel, "ButtonLabel") + Environment.NewLine;
                 output += "ButtonIndex: " + ButtonIndex.ToString() + "" + Environment.NewLine;
                 output += "ChatChannel: " + ChatChannel.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -31591,8 +31591,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptDialogReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -31691,7 +31691,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ForceScriptControlRelease ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -31845,8 +31845,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RevokePermissions ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -31955,11 +31955,11 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(URL, "URL") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectName, "ObjectName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(URL, "URL") + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectName, "ObjectName") + Environment.NewLine;
                 output += "OwnerIsGroup: " + OwnerIsGroup.ToString() + "" + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -32008,7 +32008,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LoadURL ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -32094,8 +32094,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- Data --" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectName, "ObjectName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectName, "ObjectName") + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "LookAt: " + LookAt.ToString() + "" + Environment.NewLine;
                 output += "SimPosition: " + SimPosition.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -32145,7 +32145,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptTeleportRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -32214,7 +32214,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ParcelData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output += "SequenceID: " + SequenceID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -32264,7 +32264,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelOverlay ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -32421,8 +32421,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelPropertiesRequestByID ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -32608,11 +32608,11 @@ namespace libsecondlife.Packets
                 string output = "-- ParcelData --" + Environment.NewLine;
                 output += "MediaID: " + MediaID.ToString() + "" + Environment.NewLine;
                 output += "UserLookAt: " + UserLookAt.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MediaURL, "MediaURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MediaURL, "MediaURL") + Environment.NewLine;
                 output += "LocalID: " + LocalID.ToString() + "" + Environment.NewLine;
                 output += "UserLocation: " + UserLocation.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "SalePrice: " + SalePrice.ToString() + "" + Environment.NewLine;
@@ -32624,7 +32624,7 @@ namespace libsecondlife.Packets
                 output += "ParcelFlags: " + ParcelFlags.ToString() + "" + Environment.NewLine;
                 output += "PassPrice: " + PassPrice.ToString() + "" + Environment.NewLine;
                 output += "MediaAutoScale: " + MediaAutoScale.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MusicURL, "MusicURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MusicURL, "MusicURL") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -32726,8 +32726,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelPropertiesUpdate ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -33000,13 +33000,13 @@ namespace libsecondlife.Packets
             string output = "--- ParcelReturnObjects ---" + Environment.NewLine;
             for (int j = 0; j < TaskIDs.Length; j++)
             {
-                output += TaskIDs[j].ToString() + "" + Environment.NewLine;
+                output += TaskIDs[j].ToString() + Environment.NewLine;
             }
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < OwnerIDs.Length; j++)
             {
-                output += OwnerIDs[j].ToString() + "" + Environment.NewLine;
+                output += OwnerIDs[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -33164,8 +33164,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelSetOtherCleanTime ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -33438,13 +33438,13 @@ namespace libsecondlife.Packets
             string output = "--- ParcelDisableObjects ---" + Environment.NewLine;
             for (int j = 0; j < TaskIDs.Length; j++)
             {
-                output += TaskIDs[j].ToString() + "" + Environment.NewLine;
+                output += TaskIDs[j].ToString() + Environment.NewLine;
             }
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < OwnerIDs.Length; j++)
             {
-                output += OwnerIDs[j].ToString() + "" + Environment.NewLine;
+                output += OwnerIDs[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -33661,10 +33661,10 @@ namespace libsecondlife.Packets
             string output = "--- ParcelSelectObjects ---" + Environment.NewLine;
             for (int j = 0; j < ReturnIDs.Length; j++)
             {
-                output += ReturnIDs[j].ToString() + "" + Environment.NewLine;
+                output += ReturnIDs[j].ToString() + Environment.NewLine;
             }
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -33763,7 +33763,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EstateCovenantRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -33841,7 +33841,7 @@ namespace libsecondlife.Packets
                 string output = "-- Data --" + Environment.NewLine;
                 output += "CovenantID: " + CovenantID.ToString() + "" + Environment.NewLine;
                 output += "CovenantTimestamp: " + CovenantTimestamp.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(EstateName, "EstateName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(EstateName, "EstateName") + Environment.NewLine;
                 output += "EstateOwnerID: " + EstateOwnerID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -33890,7 +33890,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EstateCovenantReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -34044,9 +34044,9 @@ namespace libsecondlife.Packets
             string output = "--- ForceObjectSelect ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += _Header.ToString() + "" + Environment.NewLine;
+                output += _Header.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -34195,8 +34195,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelBuyPass ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -34350,8 +34350,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelDeedToGroup ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -34500,8 +34500,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelReclaim ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -34738,12 +34738,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelClaim ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             for (int j = 0; j < ParcelData.Length; j++)
             {
-                output += ParcelData[j].ToString() + "" + Environment.NewLine;
+                output += ParcelData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -34914,8 +34914,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelJoin ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -35086,8 +35086,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelDivide ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -35236,8 +35236,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelRelease ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -35404,8 +35404,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelBuy ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -35560,8 +35560,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelGodForceOwner ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -35725,8 +35725,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelAccessListRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -35913,10 +35913,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelAccessListReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             for (int j = 0; j < List.Length; j++)
             {
-                output += List[j].ToString() + "" + Environment.NewLine;
+                output += List[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -36164,12 +36164,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelAccessListUpdate ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
             for (int j = 0; j < List.Length; j++)
             {
-                output += List[j].ToString() + "" + Environment.NewLine;
+                output += List[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -36323,8 +36323,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelDwellRequest ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -36481,8 +36481,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelDwellReply ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -36631,8 +36631,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelGodMarkAsContent ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -36786,8 +36786,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelGodReserveForNewbie ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -36941,8 +36941,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ViewerStartAuction ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -37047,7 +37047,7 @@ namespace libsecondlife.Packets
             string output = "--- UUIDNameRequest ---" + Environment.NewLine;
             for (int j = 0; j < UUIDNameBlock.Length; j++)
             {
-                output += UUIDNameBlock[j].ToString() + "" + Environment.NewLine;
+                output += UUIDNameBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -37133,8 +37133,8 @@ namespace libsecondlife.Packets
             {
                 string output = "-- UUIDNameBlock --" + Environment.NewLine;
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LastName, "LastName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FirstName, "FirstName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(LastName, "LastName") + Environment.NewLine;
+                output += Helpers.FieldToString(FirstName, "FirstName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -37193,7 +37193,7 @@ namespace libsecondlife.Packets
             string output = "--- UUIDNameReply ---" + Environment.NewLine;
             for (int j = 0; j < UUIDNameBlock.Length; j++)
             {
-                output += UUIDNameBlock[j].ToString() + "" + Environment.NewLine;
+                output += UUIDNameBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -37299,7 +37299,7 @@ namespace libsecondlife.Packets
             string output = "--- UUIDGroupNameRequest ---" + Environment.NewLine;
             for (int j = 0; j < UUIDNameBlock.Length; j++)
             {
-                output += UUIDNameBlock[j].ToString() + "" + Environment.NewLine;
+                output += UUIDNameBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -37367,7 +37367,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- UUIDNameBlock --" + Environment.NewLine;
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupName, "GroupName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupName, "GroupName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -37426,7 +37426,7 @@ namespace libsecondlife.Packets
             string output = "--- UUIDGroupNameReply ---" + Environment.NewLine;
             for (int j = 0; j < UUIDNameBlock.Length; j++)
             {
-                output += UUIDNameBlock[j].ToString() + "" + Environment.NewLine;
+                output += UUIDNameBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -37527,7 +37527,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ChildAgentDying ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -37626,7 +37626,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ChildAgentUnknown ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -37725,7 +37725,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GetScriptRunning ---" + Environment.NewLine;
-                output += Script.ToString() + "" + Environment.NewLine;
+                output += Script.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -37828,7 +37828,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptRunningReply ---" + Environment.NewLine;
-                output += Script.ToString() + "" + Environment.NewLine;
+                output += Script.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -37984,8 +37984,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SetScriptRunning ---" + Environment.NewLine;
-                output += Script.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Script.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38137,8 +38137,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ScriptReset ---" + Environment.NewLine;
-                output += Script.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Script.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38244,7 +38244,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CompleteAgentMovement ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38412,8 +38412,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentMovementComplete ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38512,7 +38512,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ConnectAgentToUserserver ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38656,7 +38656,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LogoutRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38755,7 +38755,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- FinalizeLogout ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -38914,9 +38914,9 @@ namespace libsecondlife.Packets
             string output = "--- LogoutReply ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39010,7 +39010,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LogoutDemand ---" + Environment.NewLine;
-                output += LogoutBlock.ToString() + "" + Environment.NewLine;
+                output += LogoutBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39150,13 +39150,13 @@ namespace libsecondlife.Packets
                 output += "ToAgentID: " + ToAgentID.ToString() + "" + Environment.NewLine;
                 output += "Offline: " + Offline.ToString() + "" + Environment.NewLine;
                 output += "Timestamp: " + Timestamp.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "RegionID: " + RegionID.ToString() + "" + Environment.NewLine;
                 output += "Dialog: " + Dialog.ToString() + "" + Environment.NewLine;
                 output += "FromGroup: " + FromGroup.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(BinaryBucket, "BinaryBucket") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(BinaryBucket, "BinaryBucket") + Environment.NewLine;
                 output += "ParentEstateID: " + ParentEstateID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FromAgentName, "FromAgentName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(FromAgentName, "FromAgentName") + Environment.NewLine;
                 output += "Position: " + Position.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -39259,8 +39259,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ImprovedInstantMessage ---" + Environment.NewLine;
-                output += MessageBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MessageBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39359,7 +39359,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RetrieveInstantMessages ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39579,9 +39579,9 @@ namespace libsecondlife.Packets
             string output = "--- FindAgent ---" + Environment.NewLine;
             for (int j = 0; j < LocationBlock.Length; j++)
             {
-                output += LocationBlock[j].ToString() + "" + Environment.NewLine;
+                output += LocationBlock[j].ToString() + Environment.NewLine;
             }
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39732,8 +39732,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestGodlikePowers ---" + Environment.NewLine;
-                output += RequestBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RequestBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39884,8 +39884,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GrantGodlikePowers ---" + Environment.NewLine;
-                output += GrantData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += GrantData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -39952,7 +39952,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MethodData --" + Environment.NewLine;
                 output += "Invoice: " + Invoice.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Method, "Method") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Method, "Method") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40011,7 +40011,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ParamList --" + Environment.NewLine;
-                output += Helpers.FieldToString(Parameter, "Parameter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Parameter, "Parameter") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40132,12 +40132,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GodlikeMessage ---" + Environment.NewLine;
-                output += MethodData.ToString() + "" + Environment.NewLine;
+                output += MethodData.ToString() + Environment.NewLine;
             for (int j = 0; j < ParamList.Length; j++)
             {
-                output += ParamList[j].ToString() + "" + Environment.NewLine;
+                output += ParamList[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -40204,7 +40204,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MethodData --" + Environment.NewLine;
                 output += "Invoice: " + Invoice.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Method, "Method") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Method, "Method") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40263,7 +40263,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ParamList --" + Environment.NewLine;
-                output += Helpers.FieldToString(Parameter, "Parameter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Parameter, "Parameter") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40384,12 +40384,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EstateOwnerMessage ---" + Environment.NewLine;
-                output += MethodData.ToString() + "" + Environment.NewLine;
+                output += MethodData.ToString() + Environment.NewLine;
             for (int j = 0; j < ParamList.Length; j++)
             {
-                output += ParamList[j].ToString() + "" + Environment.NewLine;
+                output += ParamList[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -40456,7 +40456,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MethodData --" + Environment.NewLine;
                 output += "Invoice: " + Invoice.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Method, "Method") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Method, "Method") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40515,7 +40515,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ParamList --" + Environment.NewLine;
-                output += Helpers.FieldToString(Parameter, "Parameter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Parameter, "Parameter") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -40636,12 +40636,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GenericMessage ---" + Environment.NewLine;
-                output += MethodData.ToString() + "" + Environment.NewLine;
+                output += MethodData.ToString() + Environment.NewLine;
             for (int j = 0; j < ParamList.Length; j++)
             {
-                output += ParamList[j].ToString() + "" + Environment.NewLine;
+                output += ParamList[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -40790,8 +40790,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MuteListRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += MuteData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += MuteData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -40919,7 +40919,7 @@ namespace libsecondlife.Packets
                 string output = "-- MuteData --" + Environment.NewLine;
                 output += "MuteID: " + MuteID.ToString() + "" + Environment.NewLine;
                 output += "MuteFlags: " + MuteFlags.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MuteName, "MuteName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MuteName, "MuteName") + Environment.NewLine;
                 output += "MuteType: " + MuteType.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -40973,8 +40973,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UpdateMuteListEntry ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += MuteData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += MuteData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -41089,7 +41089,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MuteData --" + Environment.NewLine;
                 output += "MuteID: " + MuteID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MuteName, "MuteName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MuteName, "MuteName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -41142,8 +41142,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RemoveMuteListEntry ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += MuteData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += MuteData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -41360,10 +41360,10 @@ namespace libsecondlife.Packets
             string output = "--- CopyInventoryFromNotecard ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += NotecardData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += NotecardData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -41545,7 +41545,7 @@ namespace libsecondlife.Packets
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "CallbackID: " + CallbackID.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
@@ -41555,7 +41555,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
@@ -41673,9 +41673,9 @@ namespace libsecondlife.Packets
             string output = "--- UpdateInventoryItem ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -41857,7 +41857,7 @@ namespace libsecondlife.Packets
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "CallbackID: " + CallbackID.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "AssetID: " + AssetID.ToString() + "" + Environment.NewLine;
@@ -41868,7 +41868,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -41984,9 +41984,9 @@ namespace libsecondlife.Packets
             string output = "--- UpdateCreateInventoryItem ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -42056,7 +42056,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- InventoryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(NewName, "NewName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(NewName, "NewName") + Environment.NewLine;
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -42175,9 +42175,9 @@ namespace libsecondlife.Packets
             string output = "--- MoveInventoryItem ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -42257,7 +42257,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- InventoryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(NewName, "NewName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(NewName, "NewName") + Environment.NewLine;
                 output += "NewFolderID: " + NewFolderID.ToString() + "" + Environment.NewLine;
                 output += "CallbackID: " + CallbackID.ToString() + "" + Environment.NewLine;
                 output += "OldItemID: " + OldItemID.ToString() + "" + Environment.NewLine;
@@ -42374,9 +42374,9 @@ namespace libsecondlife.Packets
             string output = "--- CopyInventoryItem ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -42534,9 +42534,9 @@ namespace libsecondlife.Packets
             string output = "--- RemoveInventoryItem ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -42701,9 +42701,9 @@ namespace libsecondlife.Packets
             string output = "--- ChangeInventoryItemFlags ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -42850,8 +42850,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SaveAssetIntoInventory ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -42972,7 +42972,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- FolderData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "ParentID: " + ParentID.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
@@ -43028,8 +43028,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CreateInventoryFolder ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += FolderData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += FolderData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -43150,7 +43150,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- FolderData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "ParentID: " + ParentID.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
@@ -43215,10 +43215,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UpdateInventoryFolder ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -43387,9 +43387,9 @@ namespace libsecondlife.Packets
             string output = "--- MoveInventoryFolder ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -43545,10 +43545,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RemoveInventoryFolder ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -43717,8 +43717,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- FetchInventoryDescendents ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -43893,7 +43893,7 @@ namespace libsecondlife.Packets
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "AssetID: " + AssetID.ToString() + "" + Environment.NewLine;
@@ -43904,7 +43904,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -44045,7 +44045,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- FolderData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "ParentID: " + ParentID.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
@@ -44127,12 +44127,12 @@ namespace libsecondlife.Packets
             string output = "--- InventoryDescendents ---" + Environment.NewLine;
             for (int j = 0; j < ItemData.Length; j++)
             {
-                output += ItemData[j].ToString() + "" + Environment.NewLine;
+                output += ItemData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -44297,9 +44297,9 @@ namespace libsecondlife.Packets
             string output = "--- FetchInventory ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -44474,7 +44474,7 @@ namespace libsecondlife.Packets
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "AssetID: " + AssetID.ToString() + "" + Environment.NewLine;
@@ -44485,7 +44485,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -44597,9 +44597,9 @@ namespace libsecondlife.Packets
             string output = "--- FetchInventoryReply ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -44781,7 +44781,7 @@ namespace libsecondlife.Packets
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "CallbackID: " + CallbackID.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "AssetID: " + AssetID.ToString() + "" + Environment.NewLine;
@@ -44792,7 +44792,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -44914,7 +44914,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- FolderData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "ParentID: " + ParentID.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
@@ -44996,12 +44996,12 @@ namespace libsecondlife.Packets
             string output = "--- BulkUpdateInventory ---" + Environment.NewLine;
             for (int j = 0; j < ItemData.Length; j++)
             {
-                output += ItemData[j].ToString() + "" + Environment.NewLine;
+                output += ItemData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -45111,7 +45111,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestInventoryAsset ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -45214,7 +45214,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- InventoryAssetResponse ---" + Environment.NewLine;
-                output += QueryData.ToString() + "" + Environment.NewLine;
+                output += QueryData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -45429,12 +45429,12 @@ namespace libsecondlife.Packets
             string output = "--- RemoveInventoryObjects ---" + Environment.NewLine;
             for (int j = 0; j < ItemData.Length; j++)
             {
-                output += ItemData[j].ToString() + "" + Environment.NewLine;
+                output += ItemData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -45583,8 +45583,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- PurgeInventoryDescendents ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -45759,7 +45759,7 @@ namespace libsecondlife.Packets
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
@@ -45769,7 +45769,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
@@ -45930,9 +45930,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UpdateTaskInventory ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += UpdateData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += UpdateData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -46087,8 +46087,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RemoveTaskInventory ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -46247,8 +46247,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoveTaskInventory ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -46397,8 +46397,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestTaskInventory ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -46469,7 +46469,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- InventoryData --" + Environment.NewLine;
                 output += "TaskID: " + TaskID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Filename, "Filename") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Filename, "Filename") + Environment.NewLine;
                 output += "Serial: " + Serial.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -46519,7 +46519,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ReplyTaskInventory ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -46750,10 +46750,10 @@ namespace libsecondlife.Packets
             string output = "--- DeRezObject ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -46973,7 +46973,7 @@ namespace libsecondlife.Packets
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
@@ -46983,7 +46983,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
@@ -47200,9 +47200,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RezObject ---" + Environment.NewLine;
-                output += InventoryData.ToString() + "" + Environment.NewLine;
-                output += RezData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryData.ToString() + Environment.NewLine;
+                output += RezData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -47524,11 +47524,11 @@ namespace libsecondlife.Packets
             string output = "--- RezObjectFromNotecard ---" + Environment.NewLine;
             for (int j = 0; j < InventoryData.Length; j++)
             {
-                output += InventoryData[j].ToString() + "" + Environment.NewLine;
+                output += InventoryData[j].ToString() + Environment.NewLine;
             }
-                output += RezData.ToString() + "" + Environment.NewLine;
-                output += NotecardData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RezData.ToString() + Environment.NewLine;
+                output += NotecardData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -47622,7 +47622,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DeclineInventory ---" + Environment.NewLine;
-                output += InfoBlock.ToString() + "" + Environment.NewLine;
+                output += InfoBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -47779,8 +47779,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestFriendship ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -47984,11 +47984,11 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AcceptFriendship ---" + Environment.NewLine;
-                output += TransactionBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += TransactionBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -48136,8 +48136,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DeclineFriendship ---" + Environment.NewLine;
-                output += TransactionBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += TransactionBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -48236,7 +48236,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- FormFriendship ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -48383,8 +48383,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TerminateFriendship ---" + Environment.NewLine;
-                output += ExBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ExBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -48536,8 +48536,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- OfferCallingCard ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -48741,11 +48741,11 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AcceptCallingCard ---" + Environment.NewLine;
-                output += TransactionBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += TransactionBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < FolderData.Length; j++)
             {
-                output += FolderData[j].ToString() + "" + Environment.NewLine;
+                output += FolderData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -48893,8 +48893,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DeclineCallingCard ---" + Environment.NewLine;
-                output += TransactionBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += TransactionBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -49118,7 +49118,7 @@ namespace libsecondlife.Packets
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
@@ -49128,7 +49128,7 @@ namespace libsecondlife.Packets
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
@@ -49245,9 +49245,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RezScript ---" + Environment.NewLine;
-                output += UpdateBlock.ToString() + "" + Environment.NewLine;
-                output += InventoryBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += UpdateBlock.ToString() + Environment.NewLine;
+                output += InventoryBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -49358,11 +49358,11 @@ namespace libsecondlife.Packets
                 string output = "-- InventoryBlock --" + Environment.NewLine;
                 output += "CallbackID: " + CallbackID.ToString() + "" + Environment.NewLine;
                 output += "WearableType: " + WearableType.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InvType: " + InvType.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -49466,8 +49466,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CreateInventoryItem ---" + Environment.NewLine;
-                output += InventoryBlock.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryBlock.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -49533,7 +49533,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- InventoryBlock --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -49686,9 +49686,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CreateLandmarkForEvent ---" + Environment.NewLine;
-                output += InventoryBlock.ToString() + "" + Environment.NewLine;
-                output += EventData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += InventoryBlock.ToString() + Environment.NewLine;
+                output += EventData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -49782,7 +49782,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RegionHandleRequest ---" + Environment.NewLine;
-                output += RequestBlock.ToString() + "" + Environment.NewLine;
+                output += RequestBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -49887,7 +49887,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RegionIDAndHandleReply ---" + Environment.NewLine;
-                output += ReplyBlock.ToString() + "" + Environment.NewLine;
+                output += ReplyBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -49982,7 +49982,7 @@ namespace libsecondlife.Packets
                 output += "AggregatePermNextOwner: " + AggregatePermNextOwner.ToString() + "" + Environment.NewLine;
                 output += "DestID: " + DestID.ToString() + "" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "Flags: " + Flags.ToString() + "" + Environment.NewLine;
                 output += "SourceID: " + SourceID.ToString() + "" + Environment.NewLine;
                 output += "TransactionType: " + TransactionType.ToString() + "" + Environment.NewLine;
@@ -50087,8 +50087,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyTransferRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -50190,7 +50190,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AdjustBalance ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -50338,8 +50338,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyBalanceRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -50433,7 +50433,7 @@ namespace libsecondlife.Packets
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "MoneyBalance: " + MoneyBalance.ToString() + "" + Environment.NewLine;
                 output += "SquareMetersCredit: " + SquareMetersCredit.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "SquareMetersCommitted: " + SquareMetersCommitted.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output += "TransactionSuccess: " + TransactionSuccess.ToString() + "" + Environment.NewLine;
@@ -50485,7 +50485,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyBalanceReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -50629,7 +50629,7 @@ namespace libsecondlife.Packets
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "MoneyBalance: " + MoneyBalance.ToString() + "" + Environment.NewLine;
                 output += "SquareMetersCredit: " + SquareMetersCredit.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "SquareMetersCommitted: " + SquareMetersCommitted.ToString() + "" + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output += "TransactionSuccess: " + TransactionSuccess.ToString() + "" + Environment.NewLine;
@@ -50686,8 +50686,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RoutedMoneyBalanceReply ---" + Environment.NewLine;
-                output += TargetBlock.ToString() + "" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += TargetBlock.ToString() + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -50795,7 +50795,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyHistoryRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -50895,7 +50895,7 @@ namespace libsecondlife.Packets
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "Balance: " + Balance.ToString() + "" + Environment.NewLine;
                 output += "TaxEstimate: " + TaxEstimate.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "StartPeriod: " + StartPeriod.ToString() + "" + Environment.NewLine;
                 output += "StipendEstimate: " + StipendEstimate.ToString() + "" + Environment.NewLine;
                 output += "EndPeriod: " + EndPeriod.ToString() + "" + Environment.NewLine;
@@ -50965,7 +50965,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- HistoryData --" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -51076,12 +51076,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyHistoryReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             for (int j = 0; j < HistoryData.Length; j++)
             {
-                output += HistoryData[j].ToString() + "" + Environment.NewLine;
+                output += HistoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -51242,8 +51242,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneySummaryRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -51448,7 +51448,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "ParcelDirFeeCurrent: " + ParcelDirFeeCurrent.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TaxDate, "TaxDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TaxDate, "TaxDate") + Environment.NewLine;
                 output += "Balance: " + Balance.ToString() + "" + Environment.NewLine;
                 output += "ParcelDirFeeEstimate: " + ParcelDirFeeEstimate.ToString() + "" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
@@ -51462,8 +51462,8 @@ namespace libsecondlife.Packets
                 output += "LightTaxEstimate: " + LightTaxEstimate.ToString() + "" + Environment.NewLine;
                 output += "LandTaxEstimate: " + LandTaxEstimate.ToString() + "" + Environment.NewLine;
                 output += "GroupTaxEstimate: " + GroupTaxEstimate.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LastTaxDate, "LastTaxDate") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(LastTaxDate, "LastTaxDate") + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "TotalCredits: " + TotalCredits.ToString() + "" + Environment.NewLine;
                 output += "StipendEstimate: " + StipendEstimate.ToString() + "" + Environment.NewLine;
                 output += "CurrentInterval: " + CurrentInterval.ToString() + "" + Environment.NewLine;
@@ -51564,8 +51564,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneySummaryReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -51726,8 +51726,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyDetailsRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -51807,7 +51807,7 @@ namespace libsecondlife.Packets
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
                 output += "IntervalDays: " + IntervalDays.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "CurrentInterval: " + CurrentInterval.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -51874,7 +51874,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- HistoryData --" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -51985,12 +51985,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyDetailsReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             for (int j = 0; j < HistoryData.Length; j++)
             {
-                output += HistoryData[j].ToString() + "" + Environment.NewLine;
+                output += HistoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52151,8 +52151,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyTransactionsRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52232,7 +52232,7 @@ namespace libsecondlife.Packets
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
                 output += "IntervalDays: " + IntervalDays.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "CurrentInterval: " + CurrentInterval.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -52340,9 +52340,9 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- HistoryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Time, "Time") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Item, "Item") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(User, "User") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Time, "Time") + Environment.NewLine;
+                output += Helpers.FieldToString(Item, "Item") + Environment.NewLine;
+                output += Helpers.FieldToString(User, "User") + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -52455,12 +52455,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MoneyTransactionsReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             for (int j = 0; j < HistoryData.Length; j++)
             {
-                output += HistoryData[j].ToString() + "" + Environment.NewLine;
+                output += HistoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52558,7 +52558,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GestureRequest ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52735,9 +52735,9 @@ namespace libsecondlife.Packets
             string output = "--- ActivateGestures ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52909,9 +52909,9 @@ namespace libsecondlife.Packets
             string output = "--- DeactivateGestures ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52978,7 +52978,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MuteData --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Filename, "Filename") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Filename, "Filename") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -53026,7 +53026,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MuteListUpdate ---" + Environment.NewLine;
-                output += MuteData.ToString() + "" + Environment.NewLine;
+                output += MuteData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53120,7 +53120,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UseCachedMuteList ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53285,9 +53285,9 @@ namespace libsecondlife.Packets
             string output = "--- GrantUserRights ---" + Environment.NewLine;
             for (int j = 0; j < Rights.Length; j++)
             {
-                output += Rights[j].ToString() + "" + Environment.NewLine;
+                output += Rights[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53447,9 +53447,9 @@ namespace libsecondlife.Packets
             string output = "--- ChangeUserRights ---" + Environment.NewLine;
             for (int j = 0; j < Rights.Length; j++)
             {
-                output += Rights[j].ToString() + "" + Environment.NewLine;
+                output += Rights[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53554,7 +53554,7 @@ namespace libsecondlife.Packets
             string output = "--- OnlineNotification ---" + Environment.NewLine;
             for (int j = 0; j < AgentBlock.Length; j++)
             {
-                output += AgentBlock[j].ToString() + "" + Environment.NewLine;
+                output += AgentBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -53660,7 +53660,7 @@ namespace libsecondlife.Packets
             string output = "--- OfflineNotification ---" + Environment.NewLine;
             for (int j = 0; j < AgentBlock.Length; j++)
             {
-                output += AgentBlock[j].ToString() + "" + Environment.NewLine;
+                output += AgentBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -53736,7 +53736,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- StartLocationData --" + Environment.NewLine;
                 output += "LocationPos: " + LocationPos.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SimName, "SimName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimName, "SimName") + Environment.NewLine;
                 output += "LocationID: " + LocationID.ToString() + "" + Environment.NewLine;
                 output += "LocationLookAt: " + LocationLookAt.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -53840,8 +53840,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SetStartLocationRequest ---" + Environment.NewLine;
-                output += StartLocationData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += StartLocationData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53919,7 +53919,7 @@ namespace libsecondlife.Packets
                 string output = "-- AssetBlock --" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "Tempfile: " + Tempfile.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(AssetData, "AssetData") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(AssetData, "AssetData") + Environment.NewLine;
                 output += "TransactionID: " + TransactionID.ToString() + "" + Environment.NewLine;
                 output += "StoreLocal: " + StoreLocal.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -53969,7 +53969,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AssetUploadRequest ---" + Environment.NewLine;
-                output += AssetBlock.ToString() + "" + Environment.NewLine;
+                output += AssetBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54071,7 +54071,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AssetUploadComplete ---" + Environment.NewLine;
-                output += AssetBlock.ToString() + "" + Environment.NewLine;
+                output += AssetBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54192,7 +54192,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ReputationAgentAssign ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54291,7 +54291,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ReputationIndividualRequest ---" + Environment.NewLine;
-                output += ReputationData.ToString() + "" + Environment.NewLine;
+                output += ReputationData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54412,7 +54412,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ReputationIndividualReply ---" + Environment.NewLine;
-                output += ReputationData.ToString() + "" + Environment.NewLine;
+                output += ReputationData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54564,9 +54564,9 @@ namespace libsecondlife.Packets
             {
                 string output = "-- GroupData --" + Environment.NewLine;
                 output += "AllowPublish: " + AllowPublish.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Charter, "Charter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Charter, "Charter") + Environment.NewLine;
                 output += "ShowInList: " + ShowInList.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "InsigniaID: " + InsigniaID.ToString() + "" + Environment.NewLine;
                 output += "MembershipFee: " + MembershipFee.ToString() + "" + Environment.NewLine;
                 output += "MaturePublish: " + MaturePublish.ToString() + "" + Environment.NewLine;
@@ -54624,8 +54624,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CreateGroupRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54694,7 +54694,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ReplyData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Message, "Message") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Message, "Message") + Environment.NewLine;
                 output += "Success: " + Success.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -54792,8 +54792,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CreateGroupReply ---" + Environment.NewLine;
-                output += ReplyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ReplyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -54931,7 +54931,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- GroupData --" + Environment.NewLine;
                 output += "AllowPublish: " + AllowPublish.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Charter, "Charter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Charter, "Charter") + Environment.NewLine;
                 output += "ShowInList: " + ShowInList.ToString() + "" + Environment.NewLine;
                 output += "InsigniaID: " + InsigniaID.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
@@ -54991,8 +54991,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UpdateGroupInfo ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -55167,9 +55167,9 @@ namespace libsecondlife.Packets
             string output = "--- GroupRoleChanges ---" + Environment.NewLine;
             for (int j = 0; j < RoleChange.Length; j++)
             {
-                output += RoleChange[j].ToString() + "" + Environment.NewLine;
+                output += RoleChange[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -55317,8 +55317,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- JoinGroupRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -55464,8 +55464,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- JoinGroupReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -55669,12 +55669,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EjectGroupMemberRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < EjectData.Length; j++)
             {
-                output += EjectData[j].ToString() + "" + Environment.NewLine;
+                output += EjectData[j].ToString() + Environment.NewLine;
             }
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -55863,9 +55863,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- EjectGroupMemberReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += EjectData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += EjectData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -56012,8 +56012,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LeaveGroupRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -56159,8 +56159,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LeaveGroupReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -56371,10 +56371,10 @@ namespace libsecondlife.Packets
             string output = "--- InviteGroupRequest ---" + Environment.NewLine;
             for (int j = 0; j < InviteData.Length; j++)
             {
-                output += InviteData[j].ToString() + "" + Environment.NewLine;
+                output += InviteData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -56521,8 +56521,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupProfileRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -56728,11 +56728,11 @@ namespace libsecondlife.Packets
                 string output = "-- GroupData --" + Environment.NewLine;
                 output += "OwnerRole: " + OwnerRole.ToString() + "" + Environment.NewLine;
                 output += "AllowPublish: " + AllowPublish.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Charter, "Charter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Charter, "Charter") + Environment.NewLine;
                 output += "GroupMembershipCount: " + GroupMembershipCount.ToString() + "" + Environment.NewLine;
                 output += "ShowInList: " + ShowInList.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MemberTitle, "MemberTitle") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(MemberTitle, "MemberTitle") + Environment.NewLine;
                 output += "InsigniaID: " + InsigniaID.ToString() + "" + Environment.NewLine;
                 output += "GroupRolesCount: " + GroupRolesCount.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
@@ -56795,8 +56795,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupProfileReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -56963,8 +56963,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupAccountSummaryRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -57163,7 +57163,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "ParcelDirFeeCurrent: " + ParcelDirFeeCurrent.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TaxDate, "TaxDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TaxDate, "TaxDate") + Environment.NewLine;
                 output += "Balance: " + Balance.ToString() + "" + Environment.NewLine;
                 output += "ParcelDirFeeEstimate: " + ParcelDirFeeEstimate.ToString() + "" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
@@ -57177,9 +57177,9 @@ namespace libsecondlife.Packets
                 output += "LightTaxEstimate: " + LightTaxEstimate.ToString() + "" + Environment.NewLine;
                 output += "LandTaxEstimate: " + LandTaxEstimate.ToString() + "" + Environment.NewLine;
                 output += "GroupTaxEstimate: " + GroupTaxEstimate.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LastTaxDate, "LastTaxDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(LastTaxDate, "LastTaxDate") + Environment.NewLine;
                 output += "NonExemptMembers: " + NonExemptMembers.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "TotalCredits: " + TotalCredits.ToString() + "" + Environment.NewLine;
                 output += "CurrentInterval: " + CurrentInterval.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -57283,8 +57283,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupAccountSummaryReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -57451,8 +57451,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupAccountDetailsRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -57532,7 +57532,7 @@ namespace libsecondlife.Packets
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
                 output += "IntervalDays: " + IntervalDays.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "CurrentInterval: " + CurrentInterval.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -57599,7 +57599,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- HistoryData --" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -57715,12 +57715,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupAccountDetailsReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             for (int j = 0; j < HistoryData.Length; j++)
             {
-                output += HistoryData[j].ToString() + "" + Environment.NewLine;
+                output += HistoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -57887,8 +57887,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupAccountTransactionsRequest ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -57968,7 +57968,7 @@ namespace libsecondlife.Packets
                 string output = "-- MoneyData --" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
                 output += "IntervalDays: " + IntervalDays.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDate, "StartDate") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDate, "StartDate") + Environment.NewLine;
                 output += "CurrentInterval: " + CurrentInterval.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -58076,9 +58076,9 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- HistoryData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Time, "Time") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Item, "Item") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(User, "User") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Time, "Time") + Environment.NewLine;
+                output += Helpers.FieldToString(Item, "Item") + Environment.NewLine;
+                output += Helpers.FieldToString(User, "User") + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "Amount: " + Amount.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -58196,12 +58196,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupAccountTransactionsReply ---" + Environment.NewLine;
-                output += MoneyData.ToString() + "" + Environment.NewLine;
+                output += MoneyData.ToString() + Environment.NewLine;
             for (int j = 0; j < HistoryData.Length; j++)
             {
-                output += HistoryData[j].ToString() + "" + Environment.NewLine;
+                output += HistoryData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -58396,9 +58396,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupActiveProposalsRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += TransactionData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -58556,14 +58556,14 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ProposalData --" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDateTime, "StartDateTime") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ProposalText, "ProposalText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDateTime, "StartDateTime") + Environment.NewLine;
+                output += Helpers.FieldToString(ProposalText, "ProposalText") + Environment.NewLine;
                 output += "Majority: " + Majority.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TerseDateID, "TerseDateID") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(EndDateTime, "EndDateTime") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TerseDateID, "TerseDateID") + Environment.NewLine;
+                output += Helpers.FieldToString(EndDateTime, "EndDateTime") + Environment.NewLine;
                 output += "VoteID: " + VoteID.ToString() + "" + Environment.NewLine;
                 output += "AlreadyVoted: " + AlreadyVoted.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(VoteCast, "VoteCast") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(VoteCast, "VoteCast") + Environment.NewLine;
                 output += "Quorum: " + Quorum.ToString() + "" + Environment.NewLine;
                 output += "VoteInitiator: " + VoteInitiator.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -58733,10 +58733,10 @@ namespace libsecondlife.Packets
             string output = "--- GroupActiveProposalItemReply ---" + Environment.NewLine;
             for (int j = 0; j < ProposalData.Length; j++)
             {
-                output += ProposalData[j].ToString() + "" + Environment.NewLine;
+                output += ProposalData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += TransactionData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -58931,9 +58931,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupVoteHistoryRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += TransactionData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -59107,15 +59107,15 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- HistoryItemData --" + Environment.NewLine;
-                output += Helpers.FieldToString(StartDateTime, "StartDateTime") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(VoteResult, "VoteResult") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ProposalText, "ProposalText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(StartDateTime, "StartDateTime") + Environment.NewLine;
+                output += Helpers.FieldToString(VoteResult, "VoteResult") + Environment.NewLine;
+                output += Helpers.FieldToString(ProposalText, "ProposalText") + Environment.NewLine;
                 output += "Majority: " + Majority.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TerseDateID, "TerseDateID") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(EndDateTime, "EndDateTime") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TerseDateID, "TerseDateID") + Environment.NewLine;
+                output += Helpers.FieldToString(EndDateTime, "EndDateTime") + Environment.NewLine;
                 output += "VoteID: " + VoteID.ToString() + "" + Environment.NewLine;
                 output += "Quorum: " + Quorum.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(VoteType, "VoteType") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(VoteType, "VoteType") + Environment.NewLine;
                 output += "VoteInitiator: " + VoteInitiator.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -59186,7 +59186,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- VoteItem --" + Environment.NewLine;
                 output += "CandidateID: " + CandidateID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(VoteCast, "VoteCast") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(VoteCast, "VoteCast") + Environment.NewLine;
                 output += "NumVotes: " + NumVotes.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -59358,13 +59358,13 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupVoteHistoryItemReply ---" + Environment.NewLine;
-                output += HistoryItemData.ToString() + "" + Environment.NewLine;
+                output += HistoryItemData.ToString() + Environment.NewLine;
             for (int j = 0; j < VoteItem.Length; j++)
             {
-                output += VoteItem[j].ToString() + "" + Environment.NewLine;
+                output += VoteItem[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += TransactionData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -59450,7 +59450,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ProposalData --" + Environment.NewLine;
                 output += "Duration: " + Duration.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ProposalText, "ProposalText") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ProposalText, "ProposalText") + Environment.NewLine;
                 output += "Majority: " + Majority.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "Quorum: " + Quorum.ToString() + "" + Environment.NewLine;
@@ -59555,8 +59555,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- StartGroupProposal ---" + Environment.NewLine;
-                output += ProposalData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ProposalData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -59628,7 +59628,7 @@ namespace libsecondlife.Packets
                 string output = "-- ProposalData --" + Environment.NewLine;
                 output += "ProposalID: " + ProposalID.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(VoteCast, "VoteCast") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(VoteCast, "VoteCast") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -59729,8 +59729,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupProposalBallot ---" + Environment.NewLine;
-                output += ProposalData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ProposalData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -59882,8 +59882,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupMembersRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -59986,11 +59986,11 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- MemberData --" + Environment.NewLine;
-                output += Helpers.FieldToString(OnlineStatus, "OnlineStatus") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(OnlineStatus, "OnlineStatus") + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "Contribution: " + Contribution.ToString() + "" + Environment.NewLine;
                 output += "IsOwner: " + IsOwner.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Title, "Title") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Title, "Title") + Environment.NewLine;
                 output += "AgentPowers: " + AgentPowers.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -60159,10 +60159,10 @@ namespace libsecondlife.Packets
             string output = "--- GroupMembersReply ---" + Environment.NewLine;
             for (int j = 0; j < MemberData.Length; j++)
             {
-                output += MemberData[j].ToString() + "" + Environment.NewLine;
+                output += MemberData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -60267,7 +60267,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ActivateGroup ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -60421,8 +60421,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SetGroupContribution ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -60573,8 +60573,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SetGroupAcceptNotices ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -60726,8 +60726,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupRoleDataRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -60846,11 +60846,11 @@ namespace libsecondlife.Packets
             {
                 string output = "-- RoleData --" + Environment.NewLine;
                 output += "Members: " + Members.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "RoleID: " + RoleID.ToString() + "" + Environment.NewLine;
                 output += "Powers: " + Powers.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Title, "Title") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
+                output += Helpers.FieldToString(Title, "Title") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -61017,10 +61017,10 @@ namespace libsecondlife.Packets
             string output = "--- GroupRoleDataReply ---" + Environment.NewLine;
             for (int j = 0; j < RoleData.Length; j++)
             {
-                output += RoleData[j].ToString() + "" + Environment.NewLine;
+                output += RoleData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -61172,8 +61172,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupRoleMembersRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += GroupData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += GroupData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -61348,9 +61348,9 @@ namespace libsecondlife.Packets
             string output = "--- GroupRoleMembersReply ---" + Environment.NewLine;
             for (int j = 0; j < MemberData.Length; j++)
             {
-                output += MemberData[j].ToString() + "" + Environment.NewLine;
+                output += MemberData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -61459,7 +61459,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupTitlesRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -61583,7 +61583,7 @@ namespace libsecondlife.Packets
                 string output = "-- GroupData --" + Environment.NewLine;
                 output += "Selected: " + Selected.ToString() + "" + Environment.NewLine;
                 output += "RoleID: " + RoleID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Title, "Title") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Title, "Title") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -61646,10 +61646,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupTitlesReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < GroupData.Length; j++)
             {
-                output += GroupData[j].ToString() + "" + Environment.NewLine;
+                output += GroupData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -61759,7 +61759,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GroupTitleUpdate ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -61874,12 +61874,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- RoleData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "RoleID: " + RoleID.ToString() + "" + Environment.NewLine;
                 output += "UpdateType: " + UpdateType.ToString() + "" + Environment.NewLine;
                 output += "Powers: " + Powers.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Title, "Title") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
+                output += Helpers.FieldToString(Title, "Title") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -61996,9 +61996,9 @@ namespace libsecondlife.Packets
             string output = "--- GroupRoleUpdate ---" + Environment.NewLine;
             for (int j = 0; j < RoleData.Length; j++)
             {
-                output += RoleData[j].ToString() + "" + Environment.NewLine;
+                output += RoleData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62097,7 +62097,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LiveHelpGroupRequest ---" + Environment.NewLine;
-                output += RequestData.ToString() + "" + Environment.NewLine;
+                output += RequestData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62169,7 +62169,7 @@ namespace libsecondlife.Packets
                 string output = "-- ReplyData --" + Environment.NewLine;
                 output += "RequestID: " + RequestID.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Selection, "Selection") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Selection, "Selection") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -62217,7 +62217,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LiveHelpGroupReply ---" + Environment.NewLine;
-                output += ReplyData.ToString() + "" + Environment.NewLine;
+                output += ReplyData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62316,7 +62316,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentWearablesRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62491,9 +62491,9 @@ namespace libsecondlife.Packets
             string output = "--- AgentWearablesUpdate ---" + Environment.NewLine;
             for (int j = 0; j < WearableData.Length; j++)
             {
-                output += WearableData[j].ToString() + "" + Environment.NewLine;
+                output += WearableData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62656,9 +62656,9 @@ namespace libsecondlife.Packets
             string output = "--- AgentIsNowWearing ---" + Environment.NewLine;
             for (int j = 0; j < WearableData.Length; j++)
             {
-                output += WearableData[j].ToString() + "" + Environment.NewLine;
+                output += WearableData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62827,9 +62827,9 @@ namespace libsecondlife.Packets
             string output = "--- AgentCachedTexture ---" + Environment.NewLine;
             for (int j = 0; j < WearableData.Length; j++)
             {
-                output += WearableData[j].ToString() + "" + Environment.NewLine;
+                output += WearableData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -62900,7 +62900,7 @@ namespace libsecondlife.Packets
                 string output = "-- WearableData --" + Environment.NewLine;
                 output += "TextureID: " + TextureID.ToString() + "" + Environment.NewLine;
                 output += "TextureIndex: " + TextureIndex.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(HostName, "HostName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(HostName, "HostName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -63019,9 +63019,9 @@ namespace libsecondlife.Packets
             string output = "--- AgentCachedTextureResponse ---" + Environment.NewLine;
             for (int j = 0; j < WearableData.Length; j++)
             {
-                output += WearableData[j].ToString() + "" + Environment.NewLine;
+                output += WearableData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -63120,7 +63120,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentDataUpdateRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -63254,12 +63254,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- AgentData --" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupTitle, "GroupTitle") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupTitle, "GroupTitle") + Environment.NewLine;
                 output += "GroupPowers: " + GroupPowers.ToString() + "" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(LastName, "LastName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(FirstName, "FirstName") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupName, "GroupName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(LastName, "LastName") + Environment.NewLine;
+                output += Helpers.FieldToString(FirstName, "FirstName") + Environment.NewLine;
+                output += Helpers.FieldToString(GroupName, "GroupName") + Environment.NewLine;
                 output += "ActiveGroupID: " + ActiveGroupID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -63309,7 +63309,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentDataUpdate ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -63389,7 +63389,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- AgentGroupData --" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupTitle, "GroupTitle") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupTitle, "GroupTitle") + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "AgentPowers: " + AgentPowers.ToString() + "" + Environment.NewLine;
@@ -63452,7 +63452,7 @@ namespace libsecondlife.Packets
             string output = "--- GroupDataUpdate ---" + Environment.NewLine;
             for (int j = 0; j < AgentGroupData.Length; j++)
             {
-                output += AgentGroupData[j].ToString() + "" + Environment.NewLine;
+                output += AgentGroupData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -63590,7 +63590,7 @@ namespace libsecondlife.Packets
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "GroupInsigniaID: " + GroupInsigniaID.ToString() + "" + Environment.NewLine;
                 output += "AcceptNotices: " + AcceptNotices.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(GroupName, "GroupName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(GroupName, "GroupName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -63653,10 +63653,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentGroupDataUpdate ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < GroupData.Length; j++)
             {
-                output += GroupData[j].ToString() + "" + Environment.NewLine;
+                output += GroupData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -63757,7 +63757,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentDropGroup ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -63807,7 +63807,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- DataBlock --" + Environment.NewLine;
-                output += Helpers.FieldToString(Digest, "Digest") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Digest, "Digest") + Environment.NewLine;
                 output += "EndPointID: " + EndPointID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -63856,7 +63856,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CreateTrustedCircuit ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -63950,7 +63950,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DenyTrustedCircuit ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -64110,12 +64110,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "ItemFlags: " + ItemFlags.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "AttachmentPt: " + AttachmentPt.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -64220,8 +64220,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RezSingleAttachmentFromInv ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -64336,12 +64336,12 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "ItemFlags: " + ItemFlags.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "AttachmentPt: " + AttachmentPt.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -64513,10 +64513,10 @@ namespace libsecondlife.Packets
             string output = "--- RezMultipleAttachmentsFromInv ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += HeaderData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += HeaderData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -64615,7 +64615,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DetachAttachmentIntoInv ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -64826,10 +64826,10 @@ namespace libsecondlife.Packets
             string output = "--- CreateNewOutfitAttachments ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
-                output += HeaderData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
+                output += HeaderData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -64928,7 +64928,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UserInfoRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -65012,8 +65012,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- UserData --" + Environment.NewLine;
-                output += Helpers.FieldToString(EMail, "EMail") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(DirectoryVisibility, "DirectoryVisibility") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(EMail, "EMail") + Environment.NewLine;
+                output += Helpers.FieldToString(DirectoryVisibility, "DirectoryVisibility") + Environment.NewLine;
                 output += "IMViaEMail: " + IMViaEMail.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -65110,8 +65110,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UserInfoReply ---" + Environment.NewLine;
-                output += UserData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += UserData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -65176,7 +65176,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- UserData --" + Environment.NewLine;
-                output += Helpers.FieldToString(DirectoryVisibility, "DirectoryVisibility") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(DirectoryVisibility, "DirectoryVisibility") + Environment.NewLine;
                 output += "IMViaEMail: " + IMViaEMail.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -65278,8 +65278,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- UpdateUserInfo ---" + Environment.NewLine;
-                output += UserData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += UserData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -65438,9 +65438,9 @@ namespace libsecondlife.Packets
             string output = "--- GodExpungeUser ---" + Environment.NewLine;
             for (int j = 0; j < ExpungeData.Length; j++)
             {
-                output += ExpungeData[j].ToString() + "" + Environment.NewLine;
+                output += ExpungeData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -65565,8 +65565,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- FileData --" + Environment.NewLine;
-                output += Helpers.FieldToString(SimFilename, "SimFilename") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ViewerFilename, "ViewerFilename") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SimFilename, "SimFilename") + Environment.NewLine;
+                output += Helpers.FieldToString(ViewerFilename, "ViewerFilename") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -65662,8 +65662,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- InitiateDownload ---" + Environment.NewLine;
-                output += FileData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += FileData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -65734,8 +65734,8 @@ namespace libsecondlife.Packets
             {
                 string output = "-- MethodData --" + Environment.NewLine;
                 output += "Invoice: " + Invoice.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Digest, "Digest") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Method, "Method") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Digest, "Digest") + Environment.NewLine;
+                output += Helpers.FieldToString(Method, "Method") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -65794,7 +65794,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ParamList --" + Environment.NewLine;
-                output += Helpers.FieldToString(Parameter, "Parameter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Parameter, "Parameter") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -65857,10 +65857,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SystemMessage ---" + Environment.NewLine;
-                output += MethodData.ToString() + "" + Environment.NewLine;
+                output += MethodData.ToString() + Environment.NewLine;
             for (int j = 0; j < ParamList.Length; j++)
             {
-                output += ParamList[j].ToString() + "" + Environment.NewLine;
+                output += ParamList[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -65978,7 +65978,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MapLayerRequest ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -66164,10 +66164,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MapLayerReply ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < LayerData.Length; j++)
             {
-                output += LayerData[j].ToString() + "" + Environment.NewLine;
+                output += LayerData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -66348,8 +66348,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MapBlockRequest ---" + Environment.NewLine;
-                output += PositionData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += PositionData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -66411,7 +66411,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- NameData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -66530,8 +66530,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MapNameRequest ---" + Environment.NewLine;
-                output += NameData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += NameData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -66624,7 +66624,7 @@ namespace libsecondlife.Packets
                 output += "Y: " + Y.ToString() + "" + Environment.NewLine;
                 output += "RegionFlags: " + RegionFlags.ToString() + "" + Environment.NewLine;
                 output += "WaterHeight: " + WaterHeight.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Access: " + Access.ToString() + "" + Environment.NewLine;
                 output += "MapImageID: " + MapImageID.ToString() + "" + Environment.NewLine;
                 output += "Agents: " + Agents.ToString() + "" + Environment.NewLine;
@@ -66741,9 +66741,9 @@ namespace libsecondlife.Packets
             string output = "--- MapBlockReply ---" + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -66921,8 +66921,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MapItemRequest ---" + Environment.NewLine;
-                output += RequestData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RequestData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -67060,7 +67060,7 @@ namespace libsecondlife.Packets
                 output += "X: " + X.ToString() + "" + Environment.NewLine;
                 output += "Y: " + Y.ToString() + "" + Environment.NewLine;
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Extra2: " + Extra2.ToString() + "" + Environment.NewLine;
                 output += "Extra: " + Extra.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -67179,12 +67179,12 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- MapItemReply ---" + Environment.NewLine;
-                output += RequestData.ToString() + "" + Environment.NewLine;
+                output += RequestData.ToString() + Environment.NewLine;
             for (int j = 0; j < Data.Length; j++)
             {
-                output += Data[j].ToString() + "" + Environment.NewLine;
+                output += Data[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -67340,15 +67340,15 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- AgentData --" + Environment.NewLine;
-                output += Helpers.FieldToString(To, "To") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(To, "To") + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Msg, "Msg") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Msg, "Msg") + Environment.NewLine;
                 output += "AllowPublish: " + AllowPublish.ToString() + "" + Environment.NewLine;
                 output += "PosGlobal: " + PosGlobal.ToString() + "" + Environment.NewLine;
                 output += "SessionID: " + SessionID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Subject, "Subject") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(From, "From") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
+                output += Helpers.FieldToString(Subject, "Subject") + Environment.NewLine;
+                output += Helpers.FieldToString(From, "From") + Environment.NewLine;
                 output += "AssetID: " + AssetID.ToString() + "" + Environment.NewLine;
                 output += "MaturePublish: " + MaturePublish.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -67398,7 +67398,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SendPostcard ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -67509,7 +67509,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelMediaCommandMessage ---" + Environment.NewLine;
-                output += CommandBlock.ToString() + "" + Environment.NewLine;
+                output += CommandBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -67579,7 +67579,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- DataBlock --" + Environment.NewLine;
                 output += "MediaID: " + MediaID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MediaURL, "MediaURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MediaURL, "MediaURL") + Environment.NewLine;
                 output += "MediaAutoScale: " + MediaAutoScale.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -67628,7 +67628,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelMediaUpdate ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -67710,7 +67710,7 @@ namespace libsecondlife.Packets
                 string output = "-- RequestData --" + Environment.NewLine;
                 output += "RequestFlags: " + RequestFlags.ToString() + "" + Environment.NewLine;
                 output += "ReportType: " + ReportType.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Filter, "Filter") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Filter, "Filter") + Environment.NewLine;
                 output += "ParcelLocalID: " + ParcelLocalID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
                 return output;
@@ -67812,8 +67812,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LandStatRequest ---" + Environment.NewLine;
-                output += RequestData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += RequestData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -67990,11 +67990,11 @@ namespace libsecondlife.Packets
                 output += "LocationX: " + LocationX.ToString() + "" + Environment.NewLine;
                 output += "LocationY: " + LocationY.ToString() + "" + Environment.NewLine;
                 output += "LocationZ: " + LocationZ.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TaskName, "TaskName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TaskName, "TaskName") + Environment.NewLine;
                 output += "TaskID: " + TaskID.ToString() + "" + Environment.NewLine;
                 output += "Score: " + Score.ToString() + "" + Environment.NewLine;
                 output += "TaskLocalID: " + TaskLocalID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(OwnerName, "OwnerName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(OwnerName, "OwnerName") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -68056,10 +68056,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LandStatReply ---" + Environment.NewLine;
-                output += RequestData.ToString() + "" + Environment.NewLine;
+                output += RequestData.ToString() + Environment.NewLine;
             for (int j = 0; j < ReportData.Length; j++)
             {
-                output += ReportData[j].ToString() + "" + Environment.NewLine;
+                output += ReportData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -68154,7 +68154,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SecuredTemplateChecksumRequest ---" + Environment.NewLine;
-                output += TokenBlock.ToString() + "" + Environment.NewLine;
+                output += TokenBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -68261,7 +68261,7 @@ namespace libsecondlife.Packets
             string output = "--- PacketAck ---" + Environment.NewLine;
             for (int j = 0; j < Packets.Length; j++)
             {
-                output += Packets[j].ToString() + "" + Environment.NewLine;
+                output += Packets[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -68363,7 +68363,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- OpenCircuit ---" + Environment.NewLine;
-                output += CircuitInfo.ToString() + "" + Environment.NewLine;
+                output += CircuitInfo.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -68620,8 +68620,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TemplateChecksumReply ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
-                output += TokenBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
+                output += TokenBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -68889,8 +68889,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectAdd ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -68961,7 +68961,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
                 output += "ObjectLocalID: " + ObjectLocalID.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -69076,9 +69076,9 @@ namespace libsecondlife.Packets
             string output = "--- MultipleObjectUpdate ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -69243,9 +69243,9 @@ namespace libsecondlife.Packets
             string output = "--- RequestMultipleObjects ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -69410,9 +69410,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectPosition ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -69567,8 +69567,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- RequestObjectPropertiesFamily ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -69733,9 +69733,9 @@ namespace libsecondlife.Packets
             string output = "--- CoarseLocationUpdate ---" + Environment.NewLine;
             for (int j = 0; j < Location.Length; j++)
             {
-                output += Location[j].ToString() + "" + Environment.NewLine;
+                output += Location[j].ToString() + Environment.NewLine;
             }
-                output += Index.ToString() + "" + Environment.NewLine;
+                output += Index.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -69864,7 +69864,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- RegionData --" + Environment.NewLine;
-                output += Helpers.FieldToString(SeedCapability, "SeedCapability") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SeedCapability, "SeedCapability") + Environment.NewLine;
                 output += "SimPort: " + SimPort.ToString() + "" + Environment.NewLine;
                 output += "RegionHandle: " + RegionHandle.ToString() + "" + Environment.NewLine;
                 output += "SimIP: " + SimIP.ToString() + "" + Environment.NewLine;
@@ -69973,9 +69973,9 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CrossedRegion ---" + Environment.NewLine;
-                output += Info.ToString() + "" + Environment.NewLine;
-                output += RegionData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Info.ToString() + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -70074,7 +70074,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ConfirmEnableSimulator ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -70317,25 +70317,25 @@ namespace libsecondlife.Packets
                 output += "OwnershipCost: " + OwnershipCost.ToString() + "" + Environment.NewLine;
                 output += "CreationDate: " + CreationDate.ToString() + "" + Environment.NewLine;
                 output += "AggregatePermTexturesOwner: " + AggregatePermTexturesOwner.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(SitName, "SitName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(SitName, "SitName") + Environment.NewLine;
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "FromTaskID: " + FromTaskID.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "SalePrice: " + SalePrice.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "CreatorID: " + CreatorID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureID, "TextureID") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TouchName, "TouchName") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TextureID, "TextureID") + Environment.NewLine;
+                output += Helpers.FieldToString(TouchName, "TouchName") + Environment.NewLine;
                 output += "ItemID: " + ItemID.ToString() + "" + Environment.NewLine;
                 output += "AggregatePermTextures: " + AggregatePermTextures.ToString() + "" + Environment.NewLine;
                 output += "FolderID: " + FolderID.ToString() + "" + Environment.NewLine;
                 output += "InventorySerial: " + InventorySerial.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "LastOwnerID: " + LastOwnerID.ToString() + "" + Environment.NewLine;
                 output += "AggregatePerms: " + AggregatePerms.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
@@ -70400,7 +70400,7 @@ namespace libsecondlife.Packets
             string output = "--- ObjectProperties ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -70558,14 +70558,14 @@ namespace libsecondlife.Packets
                 output += "ObjectID: " + ObjectID.ToString() + "" + Environment.NewLine;
                 output += "SaleType: " + SaleType.ToString() + "" + Environment.NewLine;
                 output += "BaseMask: " + BaseMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "RequestFlags: " + RequestFlags.ToString() + "" + Environment.NewLine;
                 output += "Category: " + Category.ToString() + "" + Environment.NewLine;
                 output += "GroupID: " + GroupID.ToString() + "" + Environment.NewLine;
                 output += "SalePrice: " + SalePrice.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
                 output += "EveryoneMask: " + EveryoneMask.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Description, "Description") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Description, "Description") + Environment.NewLine;
                 output += "LastOwnerID: " + LastOwnerID.ToString() + "" + Environment.NewLine;
                 output += "NextOwnerMask: " + NextOwnerMask.ToString() + "" + Environment.NewLine;
                 output += "GroupMask: " + GroupMask.ToString() + "" + Environment.NewLine;
@@ -70618,7 +70618,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ObjectPropertiesFamily ---" + Environment.NewLine;
-                output += ObjectData.ToString() + "" + Environment.NewLine;
+                output += ObjectData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -70801,8 +70801,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelPropertiesRequest ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -70873,7 +70873,7 @@ namespace libsecondlife.Packets
                 string output = "-- AgentBlock --" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "ToViewer: " + ToViewer.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Filename, "Filename") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Filename, "Filename") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -70921,7 +70921,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- GestureUpdate ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + "" + Environment.NewLine;
+                output += AgentBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71037,7 +71037,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AttachedSound ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71139,7 +71139,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AttachedSoundGainChange ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71241,7 +71241,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AttachedSoundCutoffRadius ---" + Environment.NewLine;
-                output += DataBlock.ToString() + "" + Environment.NewLine;
+                output += DataBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71356,7 +71356,7 @@ namespace libsecondlife.Packets
             string output = "--- PreloadSound ---" + Environment.NewLine;
             for (int j = 0; j < DataBlock.Length; j++)
             {
-                output += DataBlock[j].ToString() + "" + Environment.NewLine;
+                output += DataBlock[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -71445,8 +71445,8 @@ namespace libsecondlife.Packets
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
                 output += "AgentID: " + AgentID.ToString() + "" + Environment.NewLine;
                 output += "Type: " + Type.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Color, "Color") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TypeData, "TypeData") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Color, "Color") + Environment.NewLine;
+                output += Helpers.FieldToString(TypeData, "TypeData") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -71559,9 +71559,9 @@ namespace libsecondlife.Packets
             string output = "--- ViewerEffect ---" + Environment.NewLine;
             for (int j = 0; j < Effect.Length; j++)
             {
-                output += Effect[j].ToString() + "" + Environment.NewLine;
+                output += Effect[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71711,8 +71711,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SetSunPhase ---" + Environment.NewLine;
-                output += Data.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += Data.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71812,7 +71812,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- StartPingCheck ---" + Environment.NewLine;
-                output += PingID.ToString() + "" + Environment.NewLine;
+                output += PingID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71905,7 +71905,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CompletePingCheck ---" + Environment.NewLine;
-                output += PingID.ToString() + "" + Environment.NewLine;
+                output += PingID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72052,7 +72052,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentUpdate ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72214,9 +72214,9 @@ namespace libsecondlife.Packets
             string output = "--- AgentAnimation ---" + Environment.NewLine;
             for (int j = 0; j < AnimationList.Length; j++)
             {
-                output += AnimationList[j].ToString() + "" + Environment.NewLine;
+                output += AnimationList[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72368,8 +72368,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentRequestSit ---" + Environment.NewLine;
-                output += TargetObject.ToString() + "" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += TargetObject.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72468,7 +72468,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentSit ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72649,9 +72649,9 @@ namespace libsecondlife.Packets
             string output = "--- RequestImage ---" + Environment.NewLine;
             for (int j = 0; j < RequestImage.Length; j++)
             {
-                output += RequestImage[j].ToString() + "" + Environment.NewLine;
+                output += RequestImage[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72773,7 +72773,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ImageData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -72826,8 +72826,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ImageData ---" + Environment.NewLine;
-                output += ImageID.ToString() + "" + Environment.NewLine;
-                output += ImageData.ToString() + "" + Environment.NewLine;
+                output += ImageID.ToString() + Environment.NewLine;
+                output += ImageData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -72938,7 +72938,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ImageData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -72991,8 +72991,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ImagePacket ---" + Environment.NewLine;
-                output += ImageID.ToString() + "" + Environment.NewLine;
-                output += ImageData.ToString() + "" + Environment.NewLine;
+                output += ImageID.ToString() + Environment.NewLine;
+                output += ImageData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -73097,7 +73097,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- LayerData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -73150,8 +73150,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- LayerData ---" + Environment.NewLine;
-                output += LayerID.ToString() + "" + Environment.NewLine;
-                output += LayerData.ToString() + "" + Environment.NewLine;
+                output += LayerID.ToString() + Environment.NewLine;
+                output += LayerData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -73496,29 +73496,29 @@ namespace libsecondlife.Packets
                 string output = "-- ObjectData --" + Environment.NewLine;
                 output += "ID: " + ID.ToString() + "" + Environment.NewLine;
                 output += "UpdateFlags: " + UpdateFlags.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ObjectData, "ObjectData") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ObjectData, "ObjectData") + Environment.NewLine;
                 output += "PathTwistBegin: " + PathTwistBegin.ToString() + "" + Environment.NewLine;
                 output += "CRC: " + CRC.ToString() + "" + Environment.NewLine;
                 output += "JointPivot: " + JointPivot.ToString() + "" + Environment.NewLine;
                 output += "PathEnd: " + PathEnd.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MediaURL, "MediaURL") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TextColor, "TextColor") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MediaURL, "MediaURL") + Environment.NewLine;
+                output += Helpers.FieldToString(TextColor, "TextColor") + Environment.NewLine;
                 output += "ClickAction: " + ClickAction.ToString() + "" + Environment.NewLine;
                 output += "ProfileBegin: " + ProfileBegin.ToString() + "" + Environment.NewLine;
                 output += "PathRadiusOffset: " + PathRadiusOffset.ToString() + "" + Environment.NewLine;
                 output += "Gain: " + Gain.ToString() + "" + Environment.NewLine;
                 output += "PathSkew: " + PathSkew.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureAnim, "TextureAnim") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
+                output += Helpers.FieldToString(TextureAnim, "TextureAnim") + Environment.NewLine;
                 output += "ParentID: " + ParentID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Text, "Text") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Text, "Text") + Environment.NewLine;
                 output += "ProfileCurve: " + ProfileCurve.ToString() + "" + Environment.NewLine;
                 output += "PathScaleX: " + PathScaleX.ToString() + "" + Environment.NewLine;
                 output += "PathScaleY: " + PathScaleY.ToString() + "" + Environment.NewLine;
                 output += "Material: " + Material.ToString() + "" + Environment.NewLine;
                 output += "OwnerID: " + OwnerID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(ExtraParams, "ExtraParams") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(NameValue, "NameValue") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(ExtraParams, "ExtraParams") + Environment.NewLine;
+                output += Helpers.FieldToString(NameValue, "NameValue") + Environment.NewLine;
                 output += "PathShearX: " + PathShearX.ToString() + "" + Environment.NewLine;
                 output += "PathShearY: " + PathShearY.ToString() + "" + Environment.NewLine;
                 output += "PathTaperX: " + PathTaperX.ToString() + "" + Environment.NewLine;
@@ -73527,7 +73527,7 @@ namespace libsecondlife.Packets
                 output += "ProfileEnd: " + ProfileEnd.ToString() + "" + Environment.NewLine;
                 output += "JointType: " + JointType.ToString() + "" + Environment.NewLine;
                 output += "PathBegin: " + PathBegin.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(PSBlock, "PSBlock") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(PSBlock, "PSBlock") + Environment.NewLine;
                 output += "PCode: " + PCode.ToString() + "" + Environment.NewLine;
                 output += "FullID: " + FullID.ToString() + "" + Environment.NewLine;
                 output += "PathCurve: " + PathCurve.ToString() + "" + Environment.NewLine;
@@ -73537,7 +73537,7 @@ namespace libsecondlife.Packets
                 output += "State: " + State.ToString() + "" + Environment.NewLine;
                 output += "PathTwist: " + PathTwist.ToString() + "" + Environment.NewLine;
                 output += "Sound: " + Sound.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + Environment.NewLine;
                 output += "ProfileHollow: " + ProfileHollow.ToString() + "" + Environment.NewLine;
                 output += "PathRevolutions: " + PathRevolutions.ToString() + "" + Environment.NewLine;
                 output = output.Trim();
@@ -73658,9 +73658,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectUpdate ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += RegionData.ToString() + "" + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -73730,7 +73730,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
                 output += "UpdateFlags: " + UpdateFlags.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -73848,9 +73848,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectUpdateCompressed ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += RegionData.ToString() + "" + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -74030,9 +74030,9 @@ namespace libsecondlife.Packets
             string output = "--- ObjectUpdateCached ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += RegionData.ToString() + "" + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -74113,8 +74113,8 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- ObjectData --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
-                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
+                output += Helpers.FieldToString(TextureEntry, "TextureEntry") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -74232,9 +74232,9 @@ namespace libsecondlife.Packets
             string output = "--- ImprovedTerseObjectUpdate ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
-                output += RegionData.ToString() + "" + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -74341,7 +74341,7 @@ namespace libsecondlife.Packets
             string output = "--- KillObject ---" + Environment.NewLine;
             for (int j = 0; j < ObjectData.Length; j++)
             {
-                output += ObjectData[j].ToString() + "" + Environment.NewLine;
+                output += ObjectData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -74459,7 +74459,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentToNewRegion ---" + Environment.NewLine;
-                output += RegionData.ToString() + "" + Environment.NewLine;
+                output += RegionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -74545,7 +74545,7 @@ namespace libsecondlife.Packets
             {
                 string output = "-- TransferData --" + Environment.NewLine;
                 output += "TransferID: " + TransferID.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output += "Packet: " + Packet.ToString() + "" + Environment.NewLine;
                 output += "ChannelType: " + ChannelType.ToString() + "" + Environment.NewLine;
                 output += "Status: " + Status.ToString() + "" + Environment.NewLine;
@@ -74596,7 +74596,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- TransferPacket ---" + Environment.NewLine;
-                output += TransferData.ToString() + "" + Environment.NewLine;
+                output += TransferData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -74659,7 +74659,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- DataPacket --" + Environment.NewLine;
-                output += Helpers.FieldToString(Data, "Data") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Data, "Data") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -74768,8 +74768,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SendXferPacket ---" + Environment.NewLine;
-                output += DataPacket.ToString() + "" + Environment.NewLine;
-                output += XferID.ToString() + "" + Environment.NewLine;
+                output += DataPacket.ToString() + Environment.NewLine;
+                output += XferID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -74876,7 +74876,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ConfirmXferPacket ---" + Environment.NewLine;
-                output += XferID.ToString() + "" + Environment.NewLine;
+                output += XferID.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -75093,12 +75093,12 @@ namespace libsecondlife.Packets
             string output = "--- AvatarAnimation ---" + Environment.NewLine;
             for (int j = 0; j < AnimationSourceList.Length; j++)
             {
-                output += AnimationSourceList[j].ToString() + "" + Environment.NewLine;
+                output += AnimationSourceList[j].ToString() + Environment.NewLine;
             }
-                output += Sender.ToString() + "" + Environment.NewLine;
+                output += Sender.ToString() + Environment.NewLine;
             for (int j = 0; j < AnimationList.Length; j++)
             {
-                output += AnimationList[j].ToString() + "" + Environment.NewLine;
+                output += AnimationList[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -75261,8 +75261,8 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarSitResponse ---" + Environment.NewLine;
-                output += SitTransform.ToString() + "" + Environment.NewLine;
-                output += SitObject.ToString() + "" + Environment.NewLine;
+                output += SitTransform.ToString() + Environment.NewLine;
+                output += SitObject.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -75356,7 +75356,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- CameraConstraint ---" + Environment.NewLine;
-                output += CameraCollidePlane.ToString() + "" + Environment.NewLine;
+                output += CameraCollidePlane.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -75718,7 +75718,7 @@ namespace libsecondlife.Packets
                 output += "OwnerPrims: " + OwnerPrims.ToString() + "" + Environment.NewLine;
                 output += "RegionPushOverride: " + RegionPushOverride.ToString() + "" + Environment.NewLine;
                 output += "RegionDenyAnonymous: " + RegionDenyAnonymous.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MediaURL, "MediaURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MediaURL, "MediaURL") + Environment.NewLine;
                 output += "LocalID: " + LocalID.ToString() + "" + Environment.NewLine;
                 output += "SimWideMaxPrims: " + SimWideMaxPrims.ToString() + "" + Environment.NewLine;
                 output += "TotalPrims: " + TotalPrims.ToString() + "" + Environment.NewLine;
@@ -75726,9 +75726,9 @@ namespace libsecondlife.Packets
                 output += "IsGroupOwned: " + IsGroupOwned.ToString() + "" + Environment.NewLine;
                 output += "UserLocation: " + UserLocation.ToString() + "" + Environment.NewLine;
                 output += "MaxPrims: " + MaxPrims.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Name, "Name") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Name, "Name") + Environment.NewLine;
                 output += "OtherCleanTime: " + OtherCleanTime.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Desc, "Desc") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Desc, "Desc") + Environment.NewLine;
                 output += "Area: " + Area.ToString() + "" + Environment.NewLine;
                 output += "OtherPrims: " + OtherPrims.ToString() + "" + Environment.NewLine;
                 output += "RegionDenyIdentified: " + RegionDenyIdentified.ToString() + "" + Environment.NewLine;
@@ -75740,7 +75740,7 @@ namespace libsecondlife.Packets
                 output += "SequenceID: " + SequenceID.ToString() + "" + Environment.NewLine;
                 output += "RegionDenyTransacted: " + RegionDenyTransacted.ToString() + "" + Environment.NewLine;
                 output += "SelfCount: " + SelfCount.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Bitmap, "Bitmap") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Bitmap, "Bitmap") + Environment.NewLine;
                 output += "Status: " + Status.ToString() + "" + Environment.NewLine;
                 output += "SnapshotID: " + SnapshotID.ToString() + "" + Environment.NewLine;
                 output += "SnapSelection: " + SnapSelection.ToString() + "" + Environment.NewLine;
@@ -75753,7 +75753,7 @@ namespace libsecondlife.Packets
                 output += "PassPrice: " + PassPrice.ToString() + "" + Environment.NewLine;
                 output += "ClaimDate: " + ClaimDate.ToString() + "" + Environment.NewLine;
                 output += "MediaAutoScale: " + MediaAutoScale.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(MusicURL, "MusicURL") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(MusicURL, "MusicURL") + Environment.NewLine;
                 output += "ParcelPrimBonus: " + ParcelPrimBonus.ToString() + "" + Environment.NewLine;
                 output += "ClaimPrice: " + ClaimPrice.ToString() + "" + Environment.NewLine;
                 output += "RentPrice: " + RentPrice.ToString() + "" + Environment.NewLine;
@@ -75805,7 +75805,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ParcelProperties ---" + Environment.NewLine;
-                output += ParcelData.ToString() + "" + Environment.NewLine;
+                output += ParcelData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -76136,9 +76136,9 @@ namespace libsecondlife.Packets
                 output += "AgentVel: " + AgentVel.ToString() + "" + Environment.NewLine;
                 output += "AgentPos: " + AgentPos.ToString() + "" + Environment.NewLine;
                 output += "PreyAgent: " + PreyAgent.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(Throttles, "Throttles") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(Throttles, "Throttles") + Environment.NewLine;
                 output += "UpAxis: " + UpAxis.ToString() + "" + Environment.NewLine;
-                output += Helpers.FieldToString(AgentTextures, "AgentTextures") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(AgentTextures, "AgentTextures") + Environment.NewLine;
                 output += "AtAxis: " + AtAxis.ToString() + "" + Environment.NewLine;
                 output += "Center: " + Center.ToString() + "" + Environment.NewLine;
                 output += "BodyRotation: " + BodyRotation.ToString() + "" + Environment.NewLine;
@@ -76264,7 +76264,7 @@ namespace libsecondlife.Packets
             public override string ToString()
             {
                 string output = "-- NVPairData --" + Environment.NewLine;
-                output += Helpers.FieldToString(NVPairs, "NVPairs") + "" + Environment.NewLine;
+                output += Helpers.FieldToString(NVPairs, "NVPairs") + Environment.NewLine;
                 output = output.Trim();
                 return output;
             }
@@ -76385,24 +76385,24 @@ namespace libsecondlife.Packets
             string output = "--- ChildAgentUpdate ---" + Environment.NewLine;
             for (int j = 0; j < VisualParam.Length; j++)
             {
-                output += VisualParam[j].ToString() + "" + Environment.NewLine;
+                output += VisualParam[j].ToString() + Environment.NewLine;
             }
             for (int j = 0; j < GranterBlock.Length; j++)
             {
-                output += GranterBlock[j].ToString() + "" + Environment.NewLine;
+                output += GranterBlock[j].ToString() + Environment.NewLine;
             }
             for (int j = 0; j < AnimationData.Length; j++)
             {
-                output += AnimationData[j].ToString() + "" + Environment.NewLine;
+                output += AnimationData[j].ToString() + Environment.NewLine;
             }
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             for (int j = 0; j < GroupData.Length; j++)
             {
-                output += GroupData[j].ToString() + "" + Environment.NewLine;
+                output += GroupData[j].ToString() + Environment.NewLine;
             }
             for (int j = 0; j < NVPairData.Length; j++)
             {
-                output += NVPairData[j].ToString() + "" + Environment.NewLine;
+                output += NVPairData[j].ToString() + Environment.NewLine;
             }
             return output;
         }
@@ -76520,7 +76520,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ChildAgentAlive ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -76669,7 +76669,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- ChildAgentPositionUpdate ---" + Environment.NewLine;
-                output += AgentData.ToString() + "" + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -76801,7 +76801,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- SoundTrigger ---" + Environment.NewLine;
-                output += SoundData.ToString() + "" + Environment.NewLine;
+                output += SoundData.ToString() + Environment.NewLine;
             return output;
         }
 

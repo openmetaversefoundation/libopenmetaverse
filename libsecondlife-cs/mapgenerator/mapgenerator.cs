@@ -428,7 +428,7 @@ namespace mapgenerator
             {
                 if (field.Type == FieldType.Variable || field.Type == FieldType.Fixed)
                 {
-                    writer.WriteLine("                output += Helpers.FieldToString(" + field.Name + ", \"" + field.Name + "\") + \"\" + Environment.NewLine;");
+                    writer.WriteLine("                output += Helpers.FieldToString(" + field.Name + ", \"" + field.Name + "\") + Environment.NewLine;");
                 }
                 else
                 {
@@ -690,11 +690,11 @@ namespace mapgenerator
                     writer.WriteLine("            for (int j = 0; j < " + 
                         sanitizedName + ".Length; j++)" + Environment.NewLine + "            {");
                     writer.WriteLine("                output += " + sanitizedName + 
-                        "[j].ToString() + \"\" + Environment.NewLine;" + Environment.NewLine + "            }");
+                        "[j].ToString() + Environment.NewLine;" + Environment.NewLine + "            }");
                 }
                 else if (block.Count == 1)
                 {
-                    writer.WriteLine("                output += " + sanitizedName + ".ToString() + \"\" + Environment.NewLine;");
+                    writer.WriteLine("                output += " + sanitizedName + ".ToString() + Environment.NewLine;");
                 }
                 else
                 {
@@ -702,7 +702,7 @@ namespace mapgenerator
                     writer.WriteLine("            for (int j = 0; j < " + 
                         block.Count + "; j++)" + Environment.NewLine + "            {");
                     writer.WriteLine("                output += " + sanitizedName + 
-                        "[j].ToString() + \"\" + Environment.NewLine;" + Environment.NewLine + "            }");
+                        "[j].ToString() + Environment.NewLine;" + Environment.NewLine + "            }");
                 }
             }
 

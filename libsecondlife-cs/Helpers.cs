@@ -171,20 +171,6 @@ namespace libsecondlife
         public static ushort BytesToUInt16(byte[] bytes, int pos)
         {
             if (bytes.Length <= pos + 1) return 0;
-            return (ushort)(bytes[pos + 1] + (bytes[pos] << 8));
-        }
-
-        /// <summary>
-        /// Convert the first two bytes starting at the given position in
-        /// big endian ordering to an unsigned short
-        /// </summary>
-        /// <param name="bytes">Byte array containing the ushort</param>
-        /// <param name="pos">Position to start reading the ushort from</param>
-        /// <returns>An unsigned short, will be zero if a ushort can't be read
-        /// at the given position</returns>
-        public static ushort BytesToUInt16Big(byte[] bytes, int pos)
-        {
-            if (bytes.Length <= pos + 1) return 0;
             return (ushort)(bytes[pos] + (bytes[pos + 1] << 8));
         }
 

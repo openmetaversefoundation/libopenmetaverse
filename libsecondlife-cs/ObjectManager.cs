@@ -1480,14 +1480,17 @@ namespace libsecondlife
             ImprovedTerseObjectUpdatePacket terse = (ImprovedTerseObjectUpdatePacket)packet;
 			UpdateDilation(simulator, terse.RegionData.TimeDilation);
 			
-            foreach (ImprovedTerseObjectUpdatePacket.ObjectDataBlock block in terse.ObjectData)
+            for (int i = 0; i < terse.ObjectData.Length; i++)
             {
+                ImprovedTerseObjectUpdatePacket.ObjectDataBlock block = terse.ObjectData[i];
+
                 try
                 {
                     ObjectUpdate update = new ObjectUpdate();
                     int pos = 0;
 
                     #region Decode Update Data
+
                     // Local ID
                     update.LocalID = Helpers.BytesToUIntBig(block.Data, pos);
                     pos += 4;
@@ -1511,7 +1514,7 @@ namespace libsecondlife
                         Helpers.UInt16ToFloat(block.Data, pos + 4, -128.0f, 128.0f));
                     pos += 6;
                     // Acceleration
-                    update.Velocity = new LLVector3(
+                    update.Acceleration = new LLVector3(
                         Helpers.UInt16ToFloat(block.Data, pos, -64.0f, 64.0f),
                         Helpers.UInt16ToFloat(block.Data, pos + 2, -64.0f, 64.0f),
                         Helpers.UInt16ToFloat(block.Data, pos + 4, -64.0f, 64.0f));
@@ -1521,7 +1524,7 @@ namespace libsecondlife
                         Helpers.UInt16ToFloat(block.Data, pos, -1.0f, 1.0f),
                         Helpers.UInt16ToFloat(block.Data, pos + 2, -1.0f, 1.0f),
                         Helpers.UInt16ToFloat(block.Data, pos + 4, -1.0f, 1.0f),
-                        Helpers.UInt16ToFloat(block.Data, pos + 8, -1.0f, 1.0f));
+                        Helpers.UInt16ToFloat(block.Data, pos + 6, -1.0f, 1.0f));
                     pos += 8;
                     // Angular velocity
                     update.AngularVelocity = new LLVector3(
@@ -1936,6 +1939,7 @@ namespace libsecondlife
 
         #endregion
 
+
         #region Utility Functions
 
         protected void SetAvatarSelfSittingOn(uint localid)
@@ -1950,30 +1954,11 @@ namespace libsecondlife
 
 		protected void UpdateDilation(Simulator s, uint dilation)
 		{
-			s.Dilation = (float) dilation / 65535;
+			s.Dilation = (float)dilation / 65535.0f;
 		}
 
-        /// <summary>
-        /// Takes a quantized 16-bit value from a byte array and its range and returns 
-        /// a float representation of the continuous value. For example, a value of 
-        /// 32767 and a range of -128.0 to 128.0 would return 0.0. The endian conversion 
-        /// from the 16-bit little endian to the native platform will also be handled.
-        /// </summary>
-        /// <param name="byteArray">The byte array containing the short value</param>
-        /// <param name="pos">The beginning position of the short (quantized) value</param>
-        /// <param name="lower">The lower quantization range</param>
-        /// <param name="upper">The upper quantization range</param>
-        /// <returns>A 32-bit floating point representation of the dequantized value</returns>
-        protected float Dequantize(byte[] byteArray, int pos, float lower, float upper)
-        {
-            // FIXME: Move this to Helpers and make it as solid as ByteToFloat
-            ushort value = (ushort)(byteArray[pos] + (byteArray[pos + 1] << 8));
-            float QV = (float)value;
-            float range = upper - lower;
-            float QF = range / 65536.0F;
-            return (float)((QV * QF - (0.5F * range)) + QF);
-        }
         #endregion
+
 
         #region Event Notification
 
@@ -2062,7 +2047,6 @@ namespace libsecondlife
 
 
         #region Subclass Indirection
-
 
         /// <summary>
         /// Primitive Factory, this allows a subclass to lookup a copy of the Primitive
