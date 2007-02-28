@@ -825,9 +825,10 @@ namespace libsecondlife.InventorySystem
                                 }
                             }
                         }
-                        if (iFolder != null)
+                        if (OnInventoryFolderReceived != null && iFolder != null)
                         {
-                            OnInventoryFolderReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, iFolder);
+                            try { OnInventoryFolderReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, iFolder); }
+                            catch (Exception e) { slClient.Log(e.ToString(), Helpers.LogLevel.Error); }
                             return;
                         } else {
                             Thread.Sleep(500);
@@ -886,9 +887,10 @@ namespace libsecondlife.InventorySystem
                             }
                         }
                         // If found, send out notification
-                        if (incomingItem != null)
+                        if (OnInventoryItemReceived != null && incomingItem != null)
                         {
-                            OnInventoryItemReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, incomingItem);
+                            try { OnInventoryItemReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, incomingItem); }
+                            catch (Exception e) { slClient.Log(e.ToString(), Helpers.LogLevel.Error); }
                             return;
                         }
                         else
