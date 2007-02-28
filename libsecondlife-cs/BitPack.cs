@@ -184,10 +184,11 @@ namespace libsecondlife
 
                 while (count > 0)
                 {
-                    if ((data[curBytePos] & (0x80 >> curBitPos)) != 0)
-                        Data[bytePos] |= (byte)(0x80 >> bitPos++);
+                    if ((data[curBytePos] & (0x01 << (count - 1))) != 0)
+                        Data[bytePos] |= (byte)(0x80 >> bitPos);
 
                     --count;
+                    ++bitPos;
                     ++curBitPos;
 
                     if (bitPos >= MAX_BITS)

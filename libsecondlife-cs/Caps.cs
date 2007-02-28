@@ -172,19 +172,19 @@ namespace libsecondlife
 
             if (buffer != null)
             {
-                Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
-                ArrayList events = (ArrayList)resp["events"];
-                ack = (long)resp["id"];
-
-                foreach (Hashtable evt in events)
+                lock (Client.Network.EventQueueCallbacks)
                 {
-                    string msg = (string)evt["message"];
-                    object body = (object)evt["body"];
+                    Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
+                    ArrayList events = (ArrayList)resp["events"];
+                    ack = (long)resp["id"];
 
-                    Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
-
-                    lock (Client.Network.EventQueueCallbacks)
+                    foreach (Hashtable evt in events)
                     {
+                        string msg = (string)evt["message"];
+                        object body = (object)evt["body"];
+
+                        Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
+
                         for (int i = 0; i < Client.Network.EventQueueCallbacks.Count; i++)
                         {
                             try { Client.Network.EventQueueCallbacks[i](msg, body); }

@@ -437,7 +437,7 @@ namespace libsecondlife
 			}
 			catch(Exception e) 
 			{
-				throw new Exception("Map file error", e);
+				throw new Exception("Map file loading error", e);
 			}
 
 			try
@@ -653,7 +653,7 @@ namespace libsecondlife
 			}
 			catch (Exception e)
 			{
-                throw e;
+                throw new Exception("Map file parsing error", e); ;
 			}
 		}
 

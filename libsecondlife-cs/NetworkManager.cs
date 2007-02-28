@@ -992,6 +992,10 @@ namespace libsecondlife
                     }
                 }
             }
+            else
+            {
+                DisconnectTimer.Stop();
+            }
         }
 
         /// <summary>
