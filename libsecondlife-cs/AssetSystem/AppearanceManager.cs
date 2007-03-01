@@ -263,6 +263,12 @@ namespace libsecondlife.AssetSystem
                 GetWearables();
             }
 
+            // Clear current look
+            AgentTextureEntry = new LLObject.TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
+            AgentAppearanceParams = new SerializableDictionary<int, float>();
+
+
+            // Build params and texture entries from wearable data
             foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in AgentWearablesData)
             {
                 if (wdb.ItemID == LLUUID.Zero)
@@ -345,8 +351,10 @@ namespace libsecondlife.AssetSystem
             AgentTextureEntry = te2;
         }
 
+
         protected void UpdateAgentTextureEntryAndAppearanceParams(AssetWearable wearableAsset)
         {
+
             try
             {
                 foreach (KeyValuePair<uint, LLUUID> texture in wearableAsset.Textures)

@@ -29,6 +29,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 
 using libsecondlife;
@@ -112,6 +113,10 @@ namespace libsecondlife.InventorySystem
             Gesture = 20
         }
 
+        /// <summary>
+        /// Used to turn on debug logging of descendant downloading.
+        /// </summary>
+        public bool LogDescendantQueue = false;
 
         /// <summary>
         /// Download event singalling that folder contents have been downloaded.
@@ -694,6 +699,48 @@ namespace libsecondlife.InventorySystem
             Packet p = InvPacketHelper.DetachAttachmentIntoInv(Item.ItemID);
             slClient.Network.SendPacket(p);
         }
+        #endregion
+
+
+        #region Folder Downloading
+
+        protected void LogDescendantQueueEvent(string msg)
+        {
+            if (LogDescendantQueue)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("==============================");
+                sb.AppendLine(msg);
+
+                if (CurrentlyDownloadingRequest == null)
+                {
+                    sb.AppendLine("CurrentlyDownloadingRequest: NULL");
+                }
+                else
+                {
+                    sb.AppendLine("CurrentlyDownloadingRequest: " + CurrentlyDownloadingRequest.ToString());
+                }
+
+                sb.AppendLine("Current queue status:");
+
+                lock (FolderRequests)
+                {
+                    if (FolderRequests.Count == 0)
+                    {
+                        sb.AppendLine(" *** Download Queue Empty ***");
+                    }
+                    else
+                    {
+                        foreach (DownloadRequest_Folder dr in FolderRequests)
+                        {
+                            sb.AppendLine(" * " + dr.ToString());
+                        }
+                    }
+                }
+                
+                slClient.Log(sb.ToString(), Helpers.LogLevel.Info);
+            }
+        }
 
         /// <summary>
         /// Append a request to the end of the queue.
@@ -701,19 +748,31 @@ namespace libsecondlife.InventorySystem
         /// <param name="dr"></param>
         internal void FolderRequestAppend(DownloadRequest_Folder dr)
         {
-            // Add new request to the end of the queue
+            // Add new request to the tail of the queue
             lock (FolderRequests)
             {
                 FolderRequests.Add(dr);
+                LogDescendantQueueEvent("Append: " + dr.ToString());
             }
 
             FolderRequestBegin();
         }
 
+        protected void FolderRequestPrepend(DownloadRequest_Folder dr)
+        {
+            // Prepend the request at the head of the queue
+            lock (FolderRequests)
+            {
+                FolderRequests.Insert(0, dr);
+                LogDescendantQueueEvent("Prepend: " + dr.ToString());
+            }
+            
+        }
+
         /// <summary>
         /// If not currently downloading a request, dequeue the next request and start it.
         /// </summary>
-        internal void FolderRequestBegin()
+        protected void FolderRequestBegin()
         {
             // Wait until it's safe to be modifying what is currently downloading.
             CurrentlyDownloadingMutex.WaitOne();
@@ -721,13 +780,19 @@ namespace libsecondlife.InventorySystem
             // If we not already downloading stuff, then lets start
             if (CurrentlyDownloadingAFolder == false)
             {
-                // Dequeue the first thing in the queue
+                // Start downloading the first thing at the head of the queue
                 lock (FolderRequests)
                 {
+                    while ((FolderRequests.Count > 0) && (FolderRequests[0].IsCompleted))
+                    {
+                        LogDescendantQueueEvent("Head request completed, notify recurse completed: " + FolderRequests[0]);
+                        FolderRequests.RemoveAt(0);
+                    }
+
                     if (FolderRequests.Count > 0)
                     {
                         CurrentlyDownloadingRequest = FolderRequests[0];
-                        FolderRequests.RemoveAt(0);
+                        LogDescendantQueueEvent("Starting download of head of queue: " + FolderRequests[0].ToString());
                     }
                     else
                     {
@@ -809,6 +874,12 @@ namespace libsecondlife.InventorySystem
                 // Handle the case of the incoming inventory folder
                 if (IncomingItemType == (sbyte)InventoryManager.InventoryType.Folder)
                 {
+                    if (OnInventoryFolderReceived == null)
+                    {
+                        // Short-circuit early exit, we're not interested...
+                        return;
+                    }
+
                     InventoryFolder iFolder = null;
                     int numAttempts = 2;
                     while( numAttempts-- > 0 )
@@ -825,7 +896,7 @@ namespace libsecondlife.InventorySystem
                                 }
                             }
                         }
-                        if (OnInventoryFolderReceived != null && iFolder != null)
+                        if ( iFolder != null)
                         {
                             try { OnInventoryFolderReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, iFolder); }
                             catch (Exception e) { slClient.Log(e.ToString(), Helpers.LogLevel.Error); }
@@ -837,6 +908,12 @@ namespace libsecondlife.InventorySystem
                     }
 
                     slClient.Log("Incoming folder [" + IncomingUUID.ToStringHyphenated() + "] not found in inventory.", Helpers.LogLevel.Error);
+                    return;
+                }
+
+                if (OnInventoryItemReceived == null)
+                {
+                    // Short-circuit, early exit, we're not interested
                     return;
                 }
 
@@ -890,7 +967,7 @@ namespace libsecondlife.InventorySystem
                             }
                         }
                         // If found, send out notification
-                        if (OnInventoryItemReceived != null && incomingItem != null)
+                        if (incomingItem != null)
                         {
                             try { OnInventoryItemReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position, timestamp, incomingItem); }
                             catch (Exception e) { slClient.Log(e.ToString(), Helpers.LogLevel.Error); }
@@ -979,13 +1056,13 @@ namespace libsecondlife.InventorySystem
             CurrentlyDownloadingMutex.WaitOne();
 
             // Make sure this request matches the one we believe is the currently downloading request
-            if ((CurrentlyDownloadingRequest != null) && (CurrentlyDownloadingRequest.FolderID != uuidFolderID))
+            if (((CurrentlyDownloadingRequest != null) && (CurrentlyDownloadingRequest.FolderID != uuidFolderID)) || (CurrentlyDownloadingRequest == null))
             {
                 // Release so that we can let other things look at and modify what is currently downloading.
                 CurrentlyDownloadingMutex.ReleaseMutex();
 
                 // Log problem
-                slClient.Log("Received an inventory descendent packet for a folder (" + uuidFolderID.ToStringHyphenated() + ") that is not the currently downloading request.", Helpers.LogLevel.Info);
+                LogDescendantQueueEvent("Unexpected descendent packet for folder: " + uuidFolderID.ToStringHyphenated());
 
                 // Just discard this packet...
                 return;
@@ -1129,10 +1206,7 @@ namespace libsecondlife.InventorySystem
                         // It's not the root, should be safe to "recurse"
                         if (!IncomingFolderID.Equals(slClient.Self.InventoryRootFolderUUID))
                         {
-                            lock (FolderRequests)
-                            {
-                                FolderRequests.Insert(0, new DownloadRequest_Folder(IncomingFolderID, CurrentlyDownloadingRequest.Recurse, CurrentlyDownloadingRequest.FetchFolders, CurrentlyDownloadingRequest.FetchItems));
-                            }
+                            FolderRequestPrepend(new DownloadRequest_Folder(IncomingFolderID, CurrentlyDownloadingRequest.Recurse, CurrentlyDownloadingRequest.FetchFolders, CurrentlyDownloadingRequest.FetchItems, CurrentlyDownloadingRequest.Name + "/" + IncomingName));
                         }
                     }
                 }
@@ -1147,12 +1221,7 @@ namespace libsecondlife.InventorySystem
             // Check if we're finished
             if (CurrentlyDownloadingRequest.Received >= CurrentlyDownloadingRequest.Expected)
             {
-                // Looks like after updating, we have all the immeadiate descendents for the current request, 
-                // remove from folder status.
-                lock (FolderRequests)
-                {
-                    FolderRequests.Remove(CurrentlyDownloadingRequest);
-                }
+                LogDescendantQueueEvent("Done downloading request: " + CurrentlyDownloadingRequest);
 
                 // Singal anyone that was waiting for this request to finish
                 CurrentlyDownloadingRequest.RequestComplete.Set();
