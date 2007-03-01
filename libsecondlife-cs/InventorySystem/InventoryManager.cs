@@ -1071,6 +1071,7 @@ namespace libsecondlife.InventorySystem
             // Get the Inventory folder that we'll be updating
             InventoryFolder InvFolderUpdating = (InventoryFolder)FoldersByUUID[uuidFolderID];
 
+
             // Update Inventory Manager's last tick point, used for timeouts and such
             LastPacketRecievedAtTick = Environment.TickCount;
 
@@ -1217,6 +1218,11 @@ namespace libsecondlife.InventorySystem
             CurrentlyDownloadingRequest.Expected = iDescendentsExpected;
             CurrentlyDownloadingRequest.Received += iDescendentsReceivedThisBlock;
             CurrentlyDownloadingRequest.LastReceivedAtTick = Environment.TickCount;
+
+            if (LogDescendantQueue)
+            {
+                slClient.Log("Received packet for: " + CurrentlyDownloadingRequest.ToString(), Helpers.LogLevel.Info);
+            }
 
             // Check if we're finished
             if (CurrentlyDownloadingRequest.Received >= CurrentlyDownloadingRequest.Expected)

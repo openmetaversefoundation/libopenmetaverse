@@ -27,6 +27,9 @@
 using System;
 using System.Collections.Generic;
 
+using System.Threading;
+using System.Globalization;
+
 using libsecondlife;
 
 namespace libsecondlife.AssetSystem
@@ -294,6 +297,9 @@ namespace libsecondlife.AssetSystem
         /// <returns></returns>
         internal void UpdateFromAssetData()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
+
             if ( AssetData == null || AssetData.Length == 0)
             {
                 return;
@@ -424,27 +430,7 @@ namespace libsecondlife.AssetSystem
                     try
                     {
                         int id = Int32.Parse(fields[0]);
-                        float weight = Single.Parse(fields[1]);
-/*
-                        if (Single.TryParse(fields[1], out weight) == false)
-                        {
-                            // probably a packed float that isn't parsing...  what to do, what to do...
-                            if (fields[1].StartsWith("."))
-                            {
-                                fields[1] = "0" + fields[1];
-                            }
-                            else if (fields[1].StartsWith("-."))
-                            {
-                                fields[1] = "-0" + fields[1].Remove(0,1);
-                            }
-
-                            if (Single.TryParse(fields[1], out weight) == false)
-                            {
-                                // give up...
-                                weight = 0.0f;
-                            }
-                        }
-*/
+                        float weight = Single.Parse(fields[1], System.Globalization.NumberStyles.Float);
                         _Parameters[id] = weight;
                     }
                     catch (Exception)
