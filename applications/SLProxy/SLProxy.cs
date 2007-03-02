@@ -561,20 +561,14 @@ namespace SLProxy {
 		// SeparateAck: create a standalone PacketAck for packet's appended ACKs
 		public Packet SeparateAck(Packet packet) {
             PacketAckPacket seperate = new PacketAckPacket();
-            int ackCount = ((packet.Header.Data[0] & Helpers.MSG_APPENDED_ACKS) == 0 ? 0 : (int)packet.Header.Data[packet.Header.Data.Length - 1]);
-            seperate.Packets = new PacketAckPacket.PacketsBlock[ackCount];	
+            seperate.Packets = new PacketAckPacket.PacketsBlock[packet.Header.AckList.Length];	
 		
-            for (int i = 0; i < ackCount; ++i)
+            for (int i = 0; i < packet.Header.AckList.Length; ++i)
             {
-            	int offset = packet.Header.Data.Length - (ackCount - i) * 4 - 1;
-                seperate.Packets[i].ID = (uint) ((packet.Header.Data[offset++] <<  0)
-				                                + (packet.Header.Data[offset++] <<  8)
-				                                + (packet.Header.Data[offset++] << 16)
-				                                + (packet.Header.Data[offset++] << 24))
-				                                ;
+                seperate.Packets[i].ID = packet.Header.AckList[i];
             }
 
-            Packet ack = (Packet)seperate;
+            Packet ack = seperate;
             ack.Header.Sequence = packet.Header.Sequence;
             return ack;
 		}
@@ -1100,9 +1094,18 @@ namespace SLProxy {
 
 		// CheckAgentToNewRegion: check AgentToNewRegion packets
 		private Packet CheckAgentToNewRegion(Packet packet) {
-            AgentToNewRegionPacket atnwp = (AgentToNewRegionPacket)packet;
-            GenericCheck(ref atnwp.RegionData.IP, ref atnwp.RegionData.Port, true);
-            return (Packet)atnwp;
+            if (packet.Type != PacketType.AgentToNewRegion) return packet;
+
+            try
+            {
+                AgentToNewRegionPacket atnwp = (AgentToNewRegionPacket)packet;
+                GenericCheck(ref atnwp.RegionData.IP, ref atnwp.RegionData.Port, true);
+                return (Packet)atnwp;
+            }
+            catch (Exception)
+            {
+                return packet;
+            }
 		}
 
 		// CheckEnableSimulator: check EnableSimulator packets
