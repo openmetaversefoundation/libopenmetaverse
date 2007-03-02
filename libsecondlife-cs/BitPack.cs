@@ -35,11 +35,30 @@ namespace libsecondlife
     /// </summary>
     public class BitPack
     {
+        /// <summary></summary>
+        public byte[] Data;
+
+        /// <summary></summary>
+        public int BytePos
+        {
+            get
+            {
+                if (bytePos != 0 && bitPos == 0)
+                    return bytePos - 1;
+                else
+                    return bytePos;
+            }
+        }
+
+        /// <summary></summary>
+        public int BitPos { get { return bitPos; } }
+
+
         private const int MAX_BITS = 8;
 
-        private byte[] Data;
         private int bytePos;
         private int bitPos;
+
 
         /// <summary>
         /// Default constructor, initialize the bit packer / bit unpacker

@@ -78,19 +78,28 @@ namespace libsecondlife
         /// </summary>
         public event LandPatchCallback OnLandPatch;
 
-
-        private const byte END_OF_PATCHES = 97;
         private const int PATCHES_PER_EDGE = 16;
         private const float OO_SQRT2 = 0.7071067811865475244008443621049f;
+        private const int STRIDE = 264;
+
+        // Bit packing codes
+        private const int ZERO_CODE = 0x0;
+        private const int ZERO_EOB = 0x2;
+        private const int POSITIVE_VALUE = 0x6;
+        private const int NEGATIVE_VALUE = 0x7;
+        private const int END_OF_PATCHES = 97;
 
         private SecondLife Client;
         private Dictionary<ulong, Patch[]> SimPatches = new Dictionary<ulong, Patch[]>();
         private float[] DequantizeTable16 = new float[16 * 16];
         private float[] DequantizeTable32 = new float[32 * 32];
-        private float[] ICosineTable16 = new float[16 * 16];
-        private float[] ICosineTable32 = new float[32 * 32];
-        private int[] DeCopyMatrix16 = new int[16 * 16];
-        private int[] DeCopyMatrix32 = new int[32 * 32];
+        private float[] CosineTable16 = new float[16 * 16];
+        private float[] CosineTable32 = new float[32 * 32];
+        private int[] CopyMatrix16 = new int[16 * 16];
+        private int[] CopyMatrix32 = new int[32 * 32];
+
+        // Not used by clients
+        private float[] QuantizeTable16 = new float[16 * 16];
 
 
         /// <summary>
@@ -104,10 +113,13 @@ namespace libsecondlife
             // Initialize the decompression tables
             BuildDequantizeTable16();
             BuildDequantizeTable32();
-            SetupICosines16();
-            SetupICosines32();
-            BuildDecopyMatrix16();
-            BuildDecopyMatrix32();
+            SetupCosines16();
+            SetupCosines32();
+            BuildCopyMatrix16();
+            BuildCopyMatrix32();
+
+            // Not used by clients
+            BuildQuantizeTable16();
 
             Client.Network.RegisterCallback(PacketType.LayerData, new NetworkManager.PacketCallback(LayerDataHandler));
         }
@@ -145,6 +157,83 @@ namespace libsecondlife
             return false;
         }
 
+        /// <summary>
+        /// Creates a LayerData packet for compressed land data given a full
+        /// simulator heightmap and an array of indices of patches to compress
+        /// </summary>
+        /// <param name="heightmap">A 256 * 256 array of floating point values
+        /// specifying the height at each meter in the simulator</param>
+        /// <param name="patches">Array of indexes in the 16x16 grid of patches
+        /// for this simulator. For example if 1 and 17 are specified, patches
+        /// x=1,y=0 and x=1,y=1 are sent</param>
+        /// <returns></returns>
+        public LayerDataPacket CreateLandPacket(float[] heightmap, int[] patches)
+        {
+            LayerDataPacket layer = new LayerDataPacket();
+            layer.LayerID.Type = (byte)LayerType.Land;
+
+            GroupHeader header = new GroupHeader();
+            header.Stride = STRIDE;
+            header.PatchSize = 16;
+            header.Type = LayerType.Land;
+
+            byte[] data = new byte[1536];
+            BitPack bitpack = new BitPack(data, 0);
+            bitpack.PackBits(header.Stride, 16);
+            bitpack.PackBits(header.PatchSize, 8);
+            bitpack.PackBits((int)header.Type, 8);
+
+            for (int i = 0; i < patches.Length; i++)
+            {
+                CreatePatch(bitpack, heightmap, patches[i] % 16, (patches[i] - (patches[i] % 16)) / 16);
+            }
+
+            bitpack.PackBits(END_OF_PATCHES, 8);
+
+            layer.LayerData.Data = new byte[bitpack.BytePos + 1];
+            Array.Copy(bitpack.Data, 0, layer.LayerData.Data, 0, bitpack.BytePos + 1);
+
+            return layer;
+        }
+
+        /// <summary>
+        /// Add a patch of terrain to a BitPacker
+        /// </summary>
+        /// <param name="output">BitPacker to write the patch to</param>
+        /// <param name="heightmap">Heightmap of the simulator, must be a 256 *
+        /// 256 float array</param>
+        /// <param name="x">X offset of the patch to create, valid values are
+        /// from 0 to 15</param>
+        /// <param name="y">Y offset of the patch to create, valid values are
+        /// from 0 to 15</param>
+        public void CreatePatch(BitPack output, float[] heightmap, int x, int y)
+        {
+            if (heightmap.Length != 256 * 256)
+            {
+                Client.Log("Invalid heightmap value of " + heightmap.Length + " passed to CreatePatch()",
+                    Helpers.LogLevel.Error);
+                return;
+            }
+
+            if (x < 0 || x > 15 || y < 0 || y > 15)
+            {
+                Client.Log("Invalid x or y patch offset passed to CreatePatch(), x=" + x + ", y=" + y,
+                    Helpers.LogLevel.Error);
+                return;
+            }
+
+            PatchHeader header = PrescanPatch(heightmap, x * 256 + y * 4096);
+            header.QuantWBits = 136;
+            header.PatchIDs = (y & 0x1F);
+            header.PatchIDs += (x << 5);
+
+            // TODO: What is prequant?
+            int[] patch = CompressPatch(heightmap, x * 256 + y * 4096, header, 10);
+            int wbits = EncodePatchHeader(output, header, patch);
+            // TODO: What is postquant?
+            EncodePatch(output, patch, 0, wbits);
+        }
+
         private void BuildDequantizeTable16()
         {
             for (int j = 0; j < 16; j++)
@@ -167,7 +256,18 @@ namespace libsecondlife
             }
         }
 
-        private void SetupICosines16()
+        private void BuildQuantizeTable16()
+        {
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    QuantizeTable16[j * 16 + i] = 1.0f / (1.0f + 2.0f * ((float)i + (float)j));
+                }
+            }
+        }
+
+        private void SetupCosines16()
         {
             const float hposz = (float)Math.PI * 0.5f / 16.0f;
 
@@ -175,12 +275,12 @@ namespace libsecondlife
             {
                 for (int n = 0; n < 16; n++)
                 {
-                    ICosineTable16[u * 16 + n] = (float)Math.Cos((2.0f * (float)n + 1.0f) * (float)u * hposz);
+                    CosineTable16[u * 16 + n] = (float)Math.Cos((2.0f * (float)n + 1.0f) * (float)u * hposz);
                 }
             }
         }
 
-        private void SetupICosines32()
+        private void SetupCosines32()
         {
             const float hposz = (float)Math.PI * 0.5f / 32.0f;
 
@@ -188,12 +288,12 @@ namespace libsecondlife
             {
                 for (int n = 0; n < 32; n++)
                 {
-                    ICosineTable32[u * 32 + n] = (float)Math.Cos((2.0f * (float)n + 1.0f) * (float)u * hposz);
+                    CosineTable32[u * 32 + n] = (float)Math.Cos((2.0f * (float)n + 1.0f) * (float)u * hposz);
                 }
             }
         }
 
-        private void BuildDecopyMatrix16()
+        private void BuildCopyMatrix16()
         {
             bool diag = false;
             bool right = true;
@@ -203,7 +303,7 @@ namespace libsecondlife
 
             while (i < 16 && j < 16)
             {
-                DeCopyMatrix16[j * 16 + i] = count++;
+                CopyMatrix16[j * 16 + i] = count++;
 
                 if (!diag)
                 {
@@ -242,7 +342,7 @@ namespace libsecondlife
             }
         }
 
-        private void BuildDecopyMatrix32()
+        private void BuildCopyMatrix32()
         {
             bool diag = false;
             bool right = true;
@@ -252,7 +352,7 @@ namespace libsecondlife
 
             while (i < 32 && j < 32)
             {
-                DeCopyMatrix32[j * 32 + i] = count++;
+                CopyMatrix32[j * 32 + i] = count++;
 
                 if (!diag)
                 {
@@ -291,6 +391,27 @@ namespace libsecondlife
             }
         }
 
+        private PatchHeader PrescanPatch(float[] heightmap, int offset)
+        {
+            PatchHeader header = new PatchHeader();
+            float zmax = -99999999.0f;
+            float zmin = 99999999.0f;
+
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    if (heightmap[offset + i + j * 16] > zmax) zmax = heightmap[offset + i + j * 16];
+                    if (heightmap[offset + i + j * 16] < zmin) zmin = heightmap[offset + i + j * 16];
+                }
+            }
+
+            header.DCOffset = zmin;
+            header.Range = (int)((zmax - zmin) + 1.0f);
+
+            return header;
+        }
+
         private PatchHeader DecodePatchHeader(BitPack bitpack)
         {
             PatchHeader header = new PatchHeader();
@@ -310,9 +431,65 @@ namespace libsecondlife
             header.PatchIDs = bitpack.UnpackBits(10);
 
             // Word bits
-            header.WordBits = (uint)((header.QuantWBits & 0xf) + 2);
+            header.WordBits = (uint)((header.QuantWBits & 0x0f) + 2);
 
             return header;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="header"></param>
+        /// <param name="patch"></param>
+        /// <returns>wbits</returns>
+        private int EncodePatchHeader(BitPack output, PatchHeader header, int[] patch)
+        {
+            int temp;
+            int wbits = (header.QuantWBits & 0x0f) + 2;
+            uint maxWbits = (uint)wbits + 5;
+            uint minWbits = ((uint)wbits >> 1);
+
+            wbits = (int)minWbits;
+
+            for (int i = 0; i < patch.Length; i++)
+            {
+                temp = patch[i];
+
+                if (temp != 0)
+                {
+                    // Get the absolute value
+                    if (temp < 0) temp *= -1;
+
+                    for (int j = (int)maxWbits; j > (int)minWbits; j--)
+                    {
+                        if ((temp & (1 << j)) != 0)
+                        {
+                            if (j > wbits) wbits = j;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            wbits += 1;
+
+            header.QuantWBits &= 0xf0;
+
+            if (wbits > 17 || wbits < 2)
+            {
+                Client.Log("Bits needed per word in EncodePatchHeader() are outside the allowed range", 
+                    Helpers.LogLevel.Error);
+            }
+
+            header.QuantWBits |= (wbits - 2);
+
+            output.PackBits(header.QuantWBits, 8);
+            output.PackFloat(header.DCOffset);
+            output.PackBits(header.Range, 16);
+            output.PackBits(header.PatchIDs, 10);
+
+            return wbits;
         }
 
         private void IDCTColumn16(float[] linein, float[] lineout, int column)
@@ -327,7 +504,7 @@ namespace libsecondlife
                 for (int u = 1; u < 16; u++)
                 {
                     usize = u * 16;
-                    total += linein[usize + column] * ICosineTable16[usize + n];
+                    total += linein[usize + column] * CosineTable16[usize + n];
                 }
 
                 lineout[16 * n + column] = total;
@@ -346,7 +523,7 @@ namespace libsecondlife
                 for (int u = 1; u < 32; u++)
                 {
                     usize = u * 32;
-                    total += linein[usize + column] * ICosineTable32[usize + n];
+                    total += linein[usize + column] * CosineTable32[usize + n];
                 }
 
                 lineout[32 * n + column] = total;
@@ -365,7 +542,7 @@ namespace libsecondlife
 
                 for (int u = 1; u < 16; u++)
                 {
-                    total += linein[lineSize + u] * ICosineTable16[u * 16 + n];
+                    total += linein[lineSize + u] * CosineTable16[u * 16 + n];
                 }
 
                 lineout[lineSize + n] = total * oosob;
@@ -384,10 +561,60 @@ namespace libsecondlife
 
                 for (int u = 1; u < 32; u++)
                 {
-                    total += linein[lineSize + u] * ICosineTable32[u * 32 + n];
+                    total += linein[lineSize + u] * CosineTable32[u * 32 + n];
                 }
 
                 lineout[lineSize + n] = total * oosob;
+            }
+        }
+
+        private void DCTLine16(float[] linein, float[] lineout, int line)
+        {
+            float total = 0.0f;
+            int lineSize = line * 16;
+
+            for (int n = 0; n < 16; n++)
+            {
+                total += linein[lineSize + n];
+            }
+
+            lineout[lineSize] = OO_SQRT2 * total;
+
+            for (int u = 1; u < 16; u++)
+            {
+                total = 0.0f;
+
+                for (int n = 0; n < 16; n++)
+                {
+                    total += linein[lineSize + n] * CosineTable16[u * 16 + n];
+                }
+
+                lineout[lineSize + u] = total;
+            }
+        }
+
+        private void DCTColumn16(float[] linein, int[] lineout, int column)
+        {
+            float total = 0.0f;
+            const float oosob = 2.0f / 16.0f;
+
+            for (int n = 0; n < 16; n++)
+            {
+                total += linein[16 * n + column];
+            }
+
+            lineout[CopyMatrix16[column]] = (int)(OO_SQRT2 * total * oosob * QuantizeTable16[column]);
+
+            for (int u = 1; u < 16; u++)
+            {
+                total = 0.0f;
+
+                for (int n = 0; n < 16; n++)
+                {
+                    total += linein[16 * n + column] * CosineTable16[u * 16 + n];
+                }
+
+                lineout[CopyMatrix16[16 * u + column]] = (int)(total * oosob * QuantizeTable16[16 * u + column]);
             }
         }
 
@@ -437,6 +664,69 @@ namespace libsecondlife
             }
         }
 
+        private void EncodePatch(BitPack output, int[] patch, int postquant, int wbits)
+        {
+            int temp;
+            bool eob;
+
+            if (postquant > 16 * 16 || postquant < 0)
+            {
+                Client.Log("Postquant is outside the range of allowed values in EncodePatch()", Helpers.LogLevel.Error);
+                return;
+            }
+
+            if (postquant != 0) patch[16 * 16 - postquant] = 0;
+
+            for (int i = 0; i < 16 * 16; i++)
+            {
+                eob = false;
+                temp = patch[i];
+
+                if (temp == 0)
+                {
+                    eob = true;
+
+                    for (int j = i; j < 16 * 16 - postquant; j++)
+                    {
+                        if (patch[j] != 0)
+                        {
+                            eob = false;
+                            break;
+                        }
+                    }
+
+                    if (eob)
+                    {
+                        output.PackBits(ZERO_EOB, 2);
+                        return;
+                    }
+                    else
+                    {
+                        output.PackBits(ZERO_CODE, 1);
+                    }
+                }
+                else
+                {
+                    if (temp < 0)
+                    {
+                        temp *= -1;
+
+                        if (temp > (1 << wbits)) temp = (1 << wbits);
+
+                        output.PackBits(NEGATIVE_VALUE, 3);
+                        output.PackBits(temp, wbits);
+                    }
+                    else
+                    {
+                        if (temp > (1 << wbits)) temp = (1 << wbits);
+
+                        output.PackBits(POSITIVE_VALUE, 3);
+                        output.PackBits(temp, wbits);
+                    }
+                }
+            }
+        }
+
         private float[] DecompressPatch(int[] patches, PatchHeader header, GroupHeader group)
         {
             float[] block = new float[group.PatchSize * group.PatchSize];
@@ -451,10 +741,10 @@ namespace libsecondlife
             {
                 for (int n = 0; n < 16 * 16; n++)
                 {
-                    block[n] = patches[DeCopyMatrix16[n]] * DequantizeTable16[n];
+                    block[n] = patches[CopyMatrix16[n]] * DequantizeTable16[n];
                 }
 
-                float[] ftemp = new float[32 * 32];
+                float[] ftemp = new float[16 * 16];
 
                 for (int o = 0; o < 16; o++)
                     IDCTColumn16(block, ftemp, o);
@@ -465,11 +755,10 @@ namespace libsecondlife
             {
                 for (int n = 0; n < 32 * 32; n++)
                 {
-                    block[n] = patches[DeCopyMatrix32[n]] * DequantizeTable32[n];
+                    block[n] = patches[CopyMatrix32[n]] * DequantizeTable32[n];
                 }
 
-                //IDCTPatchLarge(block);
-                Client.Log("Implement IDCTPatchLarge", Helpers.LogLevel.Warning);
+                Client.Log("Implement IDCTPatchLarge", Helpers.LogLevel.Error);
             }
 
             for (int j = 0; j < block.Length; j++)
@@ -480,13 +769,43 @@ namespace libsecondlife
             return output;
         }
 
+        private int[] CompressPatch(float[] heightmap, int offset, PatchHeader header, int prequant)
+        {
+            float[] block = new float[16 * 16];
+            int wordsize = prequant;
+            float oozrange = 1.0f / (float)header.Range;
+            float range = (float)(1 << prequant);
+            float premult = oozrange * range;
+            float sub = (float)(1 << (prequant - 1)) + header.DCOffset * premult;
+
+            header.QuantWBits = wordsize - 2;
+            header.QuantWBits |= (prequant - 2) << 4;
+
+            for (int j = 0; j < 16; j++)
+            {
+                for (int i = 0; i < 16; i++)
+                {
+                    block[j * 16 + i] = heightmap[offset + j * 16 + i] * premult - sub;
+                }
+            }
+
+            float[] ftemp = new float[16 * 16];
+            int[] itemp = new int[16 * 16];
+
+            for (int o = 0; o < 16; o++)
+                DCTLine16(block, ftemp, o);
+            for (int o = 0; o < 16; o++)
+                DCTColumn16(ftemp, itemp, o);
+
+            return itemp;
+        }
+
         private void DecompressLand(Simulator simulator, BitPack bitpack, GroupHeader group)
         {
             int x;
             int y;
             int[] patches = new int[32 * 32];
             int count = 0;
-            //group.Stride = 256;
 
             while (true)
             {
