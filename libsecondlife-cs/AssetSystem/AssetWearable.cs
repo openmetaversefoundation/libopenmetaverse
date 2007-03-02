@@ -430,7 +430,12 @@ namespace libsecondlife.AssetSystem
                     try
                     {
                         int id = Int32.Parse(fields[0]);
-                        float weight = Single.Parse(fields[1], System.Globalization.NumberStyles.Float);
+                        float weight; Single.Parse(fields[1], System.Globalization.NumberStyles.Float);
+                        if (Single.TryParse(fields[1], System.Globalization.NumberStyles.Float, new CultureInfo("en-us").NumberFormat, out weight) == false)
+                        {
+                            weight = 0.0f;
+                        }
+
                         _Parameters[id] = weight;
                     }
                     catch (Exception)

@@ -1219,6 +1219,12 @@ namespace libsecondlife.InventorySystem
             CurrentlyDownloadingRequest.Received += iDescendentsReceivedThisBlock;
             CurrentlyDownloadingRequest.LastReceivedAtTick = Environment.TickCount;
 
+            if ((iDescendentsExpected == 1) && (iDescendentsReceivedThisBlock == 0))
+            {
+                slClient.Log("Received an InventoryDescendant packet where it indicated that there should be at least 1 descendant, but none were present... [" + CurrentlyDownloadingRequest.Name + "]", Helpers.LogLevel.Warning); 
+                CurrentlyDownloadingRequest.Expected = 0;
+            }
+
             if (LogDescendantQueue)
             {
                 slClient.Log("Received packet for: " + CurrentlyDownloadingRequest.ToString(), Helpers.LogLevel.Info);
