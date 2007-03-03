@@ -446,12 +446,30 @@ namespace libsecondlife.Utilities
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class ParcelDownloader
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator">Simulator where the parcels are located</param>
+        /// <param name="Parcels">Mapping of parcel LocalIDs to Parcel objects</param>
+        public delegate void ParcelsDownloadedCallback(Simulator simulator, Dictionary<int, Parcel> Parcels);
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event ParcelsDownloadedCallback OnParcelsDownloaded;
+
+
         private SecondLife Client;
         /// <summary>Dictionary of 64x64 arrays of parcels which have been successfully downloaded 
         /// for each simulator (and their LocalID's, 0 = Null)</summary>
         private Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
+        /// <summary></summary>
         private Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
 
         /// <summary>
@@ -534,10 +552,11 @@ namespace libsecondlife.Utilities
                     parcels[parcel.LocalID] = parcel;
                 }
 
-                // This map is complete, fire callback
-                if (!hasTriggered)
+                if (!hasTriggered && OnParcelsDownloaded != null)
                 {
-                    // FIXME: Fire a callback indicating we finished downloading all the parcels
+                    // This map is complete, fire callback
+                    try { OnParcelsDownloaded(parcel.Simulator, parcels); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
             else
