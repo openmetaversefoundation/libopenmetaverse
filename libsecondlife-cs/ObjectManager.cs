@@ -231,7 +231,7 @@ namespace libsecondlife
             /// <summary></summary>
             RightPec,
             /// <summary></summary>
-            HUDCenter2 = 31,
+            HUDCenter2,
             /// <summary></summary>
             HUDTopRight,
             /// <summary></summary>
