@@ -918,7 +918,8 @@ namespace libsecondlife.InventorySystem
                     }
 
                     InventoryFolder iFolder = null;
-                    int numAttempts = 2;
+                    int numAttempts = 6;
+                    int timeBetweenAttempts = 500;
                     while( numAttempts-- > 0 )
                     {
                         foreach( InventoryBase ib in root.GetContents() )
@@ -939,7 +940,8 @@ namespace libsecondlife.InventorySystem
                             catch (Exception e) { slClient.Log(e.ToString(), Helpers.LogLevel.Error); }
                             return;
                         } else {
-                            Thread.Sleep(500);
+                            Thread.Sleep(timeBetweenAttempts);
+                            timeBetweenAttempts *= 2;
                             root.RequestDownloadContents(false, true, false).RequestComplete.WaitOne(3000, false);
                         }
                     }
