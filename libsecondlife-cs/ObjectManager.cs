@@ -229,7 +229,23 @@ namespace libsecondlife
             /// <summary></summary>
             LeftPec,
             /// <summary></summary>
-            RightPec
+            RightPec,
+            /// <summary></summary>
+            HUDCenter2 = 31,
+            /// <summary></summary>
+            HUDTopRight,
+            /// <summary></summary>
+            HUDTop,
+            /// <summary></summary>
+            HUDTopLeft,
+            /// <summary></summary>
+            HUDCenter,
+            /// <summary></summary>
+            HUDBottomLeft,
+            /// <summary></summary>
+            HUDBottom,
+            /// <summary></summary>
+            HUDBottomRight
         }
 
         /// <summary>
