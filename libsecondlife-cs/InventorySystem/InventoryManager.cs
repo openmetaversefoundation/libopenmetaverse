@@ -746,27 +746,64 @@ namespace libsecondlife.InventorySystem
         /// Append a request to the end of the queue.
         /// </summary>
         /// <param name="dr"></param>
-        internal void FolderRequestAppend(DownloadRequest_Folder dr)
+        internal DownloadRequest_Folder FolderRequestAppend(LLUUID folderID, bool recurse, bool fetchFolders, bool fetchItems, string requestName)
         {
+
+            DownloadRequest_Folder dr = new DownloadRequest_Folder(folderID, recurse, fetchFolders, fetchItems, requestName);
+
             // Add new request to the tail of the queue
             lock (FolderRequests)
             {
-                FolderRequests.Add(dr);
-                LogDescendantQueueEvent("Append: " + dr.ToString());
+                if (FolderRequests.Contains(dr))
+                {
+                    foreach (DownloadRequest_Folder existing in FolderRequests)
+                    {
+                        if (dr.Equals(existing))
+                        {
+                            dr = existing;
+                            break;
+                        }
+                    }
+                    LogDescendantQueueEvent("Append(returned existing): " + dr.ToString());
+                }
+                else
+                {
+                    FolderRequests.Add(dr);
+                    LogDescendantQueueEvent("Append: " + dr.ToString());
+                }
             }
 
             FolderRequestBegin();
+            return dr;
         }
 
-        protected void FolderRequestPrepend(DownloadRequest_Folder dr)
+        protected DownloadRequest_Folder FolderRequestPrepend(LLUUID folderID, bool recurse, bool fetchFolders, bool fetchItems, string requestName)
         {
+            DownloadRequest_Folder dr = new DownloadRequest_Folder(folderID, recurse, fetchFolders, fetchItems, requestName);
+
             // Prepend the request at the head of the queue
             lock (FolderRequests)
             {
-                FolderRequests.Insert(0, dr);
-                LogDescendantQueueEvent("Prepend: " + dr.ToString());
+                if (FolderRequests.Contains(dr))
+                {
+                    foreach (DownloadRequest_Folder existing in FolderRequests)
+                    {
+                        if (dr.Equals(existing))
+                        {
+                            dr = existing;
+                            break;
+                        }
+                    }
+
+                    LogDescendantQueueEvent("Append(returned existing): " + dr.ToString());
+                }
+                else
+                {
+                    FolderRequests.Insert(0, dr);
+                    LogDescendantQueueEvent("Prepend: " + dr.ToString());
+                }
             }
-            
+            return dr;
         }
 
         /// <summary>
@@ -1207,7 +1244,7 @@ namespace libsecondlife.InventorySystem
                         // It's not the root, should be safe to "recurse"
                         if (!IncomingFolderID.Equals(slClient.Self.InventoryRootFolderUUID))
                         {
-                            FolderRequestPrepend(new DownloadRequest_Folder(IncomingFolderID, CurrentlyDownloadingRequest.Recurse, CurrentlyDownloadingRequest.FetchFolders, CurrentlyDownloadingRequest.FetchItems, CurrentlyDownloadingRequest.Name + "/" + IncomingName));
+                            FolderRequestPrepend(IncomingFolderID, CurrentlyDownloadingRequest.Recurse, CurrentlyDownloadingRequest.FetchFolders, CurrentlyDownloadingRequest.FetchItems, CurrentlyDownloadingRequest.Name + "/" + IncomingName);
                         }
                     }
                 }

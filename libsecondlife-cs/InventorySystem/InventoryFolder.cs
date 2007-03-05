@@ -106,9 +106,7 @@ namespace libsecondlife.InventorySystem
         /// <returns>The Request object for this download</returns>
         public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, int timeout)
         {
-            DownloadRequest_Folder dr = new DownloadRequest_Folder(FolderID, recurse, true, items, Name);
-            iManager.FolderRequestAppend(dr);
-
+            DownloadRequest_Folder dr = iManager.FolderRequestAppend(FolderID, recurse, true, items, Name);
             dr.RequestComplete.WaitOne(timeout, false);
             return dr;
         }

@@ -28,7 +28,7 @@ namespace libsecondlife.InventorySystem
 
         public ManualResetEvent RequestComplete = new ManualResetEvent(false);
 
-        public DownloadRequest_Folder(LLUUID folderID, bool recurse, bool fetchFolders, bool fetchItems, string requestName)
+        internal DownloadRequest_Folder(LLUUID folderID, bool recurse, bool fetchFolders, bool fetchItems, string requestName)
         {
             FolderID = folderID;
             Recurse = recurse;
@@ -44,6 +44,38 @@ namespace libsecondlife.InventorySystem
             return " [Pg:" + Received + "/" + Expected + "](R:" + Recurse + ",F:" + FetchFolders + ",I:" + FetchItems + ")\t" + Name;
         }
 
+        public bool Equals(object obj)
+        {
+            if (obj is DownloadRequest_Folder)
+            {
+                DownloadRequest_Folder df = (DownloadRequest_Folder)obj;
+
+                if ((this.FolderID == df.FolderID)
+                    && (this.Recurse == df.Recurse)
+                    && (this.FetchFolders == df.FetchFolders)
+                    && (this.FetchItems == df.FetchItems)
+                    && (this.Received == df.Received)
+                    && (this.Expected == df.Expected)
+                    )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return base.Equals(obj);
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            string Compound = FolderID.ToString() + Recurse + Received + FetchFolders + Expected + FetchItems;
+            return Compound.GetHashCode();
+        }
     }
 
     public class DownloadRequest_EventArgs : EventArgs
