@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using libsecondlife;
@@ -456,7 +457,7 @@ namespace libsecondlife.Utilities
         /// </summary>
         /// <param name="simulator">Simulator where the parcels are located</param>
         /// <param name="Parcels">Mapping of parcel LocalIDs to Parcel objects</param>
-        public delegate void ParcelsDownloadedCallback(Simulator simulator, Dictionary<int, Parcel> Parcels);
+        public delegate void ParcelsDownloadedCallback(Simulator simulator, Dictionary<int, Parcel> Parcels, int[,] map);
 
 
         /// <summary>
@@ -464,13 +465,15 @@ namespace libsecondlife.Utilities
         /// </summary>
         public event ParcelsDownloadedCallback OnParcelsDownloaded;
 
-
         private SecondLife Client;
         /// <summary>Dictionary of 64x64 arrays of parcels which have been successfully downloaded 
         /// for each simulator (and their LocalID's, 0 = Null)</summary>
-        public Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
+        private Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
         /// <summary></summary>
-        public Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
+        private Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
+
+	private ParcelManager.ParcelPropertiesCallback packet_callback = null;
+	private ArrayList active_sims;
 
         /// <summary>
         /// Default constructor
@@ -479,12 +482,28 @@ namespace libsecondlife.Utilities
         public ParcelDownloader(SecondLife client)
         {
             Client = client;
-
-            Client.Parcels.OnParcelProperties += new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
+	    active_sims = new ArrayList();
         }
 
         public void DownloadSimParcels(Simulator simulator)
         {
+	    lock (active_sims) {
+		if(active_sims.Count == 0 && packet_callback != null) 
+		   Client.Log("DownloadSimParcels: no active sims, but I have a callback anyway?", Helpers.LogLevel.Error);
+
+		if(active_sims.Count != 0 && packet_callback == null) 
+		   Client.Log("DownloadSimParcels: active sims, but no callback?", Helpers.LogLevel.Error);
+
+		if(active_sims.Contains(simulator)) {
+		   Client.Log("DownloadSimParcels("+simulator+") called more than once?", Helpers.LogLevel.Error);
+		   return;
+		}
+
+		active_sims.Add(simulator);
+		packet_callback = new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
+                Client.Parcels.OnParcelProperties += packet_callback;
+	    }
+
             lock (ParcelMarked)
             {
                 if (!ParcelMarked.ContainsKey(simulator))
@@ -509,11 +528,8 @@ namespace libsecondlife.Utilities
 
                 // Mark this area as downloaded
                 for (x = 0; x < 64; x++)
-                {
                     for (y = 0; y < 64; y++)
-                    {
-                        if (markers[y, x] == 0)
-                        {
+                        if (markers[y, x] == 0) {
                             index = ((x * 64) + y);
                             subindex = index % 8;
                             index /= 8;
@@ -522,47 +538,35 @@ namespace libsecondlife.Utilities
 
                             markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
                         }
-                    }
-                }
 
-                for (x = 0; x < 64; x++)
-                {
+		// do we really need this next part?  We've already asked for all of the parcels...
+                for (x = 0; x < 64; x++) 
                     for (y = 0; y < 64; y++)
-                    {
-                        if (markers[x, y] == 0)
-                        {
+                        if (markers[x, y] == 0) {
                             Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
-                                (y * 4.0f) + 4.0f,
-                                (x * 4.0f) + 4.0f,
-                                (y * 4.0f),
-                                (x * 4.0f),
-                                -10000,
-                                false);
+                                (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
+                                (y * 4.0f), (x * 4.0f), -10000, false);
 
-                            hasTriggered = true;
                             goto Done;
                         }
-                    }
-                }
 
             Done:
 
                 if (!parcels.ContainsKey(parcel.LocalID))
-                {
                     parcels[parcel.LocalID] = parcel;
-                }
 
-                if (!hasTriggered && OnParcelsDownloaded != null)
-                {
-                    // This map is complete, fire callback
-                    try { OnParcelsDownloaded(parcel.Simulator, parcels); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
-            }
-            else
-            {
-                Client.Log("ParcelDownloader: Got parcel properties from a sim we're not downloading",
-                    Helpers.LogLevel.Info);
+		lock(active_sims) {
+		   if(active_sims.Contains(parcel.Simulator)) {
+		      active_sims.Remove(parcel.Simulator);
+		      if (OnParcelsDownloaded != null) {
+                         // This map is complete, fire callback
+                         try { OnParcelsDownloaded(parcel.Simulator, parcels, markers); }
+                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                      }
+                   } else
+                        Client.Log("ParcelDownloader: Got parcel properties from a sim we're not downloading",
+                                   Helpers.LogLevel.Info);
+                 }
             }
         }
     }
