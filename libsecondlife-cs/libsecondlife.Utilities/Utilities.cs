@@ -468,9 +468,9 @@ namespace libsecondlife.Utilities
         private SecondLife Client;
         /// <summary>Dictionary of 64x64 arrays of parcels which have been successfully downloaded 
         /// for each simulator (and their LocalID's, 0 = Null)</summary>
-        private Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
+        public Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
         /// <summary></summary>
-        private Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
+        public Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
 
         /// <summary>
         /// Default constructor
