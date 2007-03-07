@@ -167,7 +167,9 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                Client.DebugLog("EventQueue response: " + e.Message);
+                string extstring=e.Message;
+		if (e.Message.IndexOf("502") < 0)
+		   Client.DebugLog("EventQueue response: " + e.Message);
             }
 
             if (buffer != null)

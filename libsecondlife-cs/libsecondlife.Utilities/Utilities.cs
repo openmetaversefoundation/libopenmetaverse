@@ -518,56 +518,60 @@ namespace libsecondlife.Utilities
 
         private void Parcels_OnParcelProperties(Parcel parcel)
         {
-            if (ParcelMarked.ContainsKey(parcel.Simulator))
-            {
-                int x, y, index, subindex;
-                byte val;
-                bool hasTriggered = false;
-                int[,] markers = ParcelMarked[parcel.Simulator];
-                Dictionary<int, Parcel> parcels = Parcels[parcel.Simulator];
+            if (!ParcelMarked.ContainsKey(parcel.Simulator)) {
+		Client.Log("received unexpected parcel data for "+parcel.Simulator, Helpers.LogLevel.Info);
+		return;
+	    }
 
-                // Mark this area as downloaded
-                for (x = 0; x < 64; x++)
-                    for (y = 0; y < 64; y++)
-                        if (markers[y, x] == 0) {
-                            index = ((x * 64) + y);
-                            subindex = index % 8;
-                            index /= 8;
+	    int x, y, index, subindex;
+	    byte val;
+	    bool hasTriggered = false;
+	    int[,] markers = ParcelMarked[parcel.Simulator];
+	    Dictionary<int, Parcel> parcels = Parcels[parcel.Simulator];
 
-                            val = parcel.Bitmap[index];
+	    // Mark this area as downloaded
+	    for (x = 0; x < 64; x++)
+	      for (y = 0; y < 64; y++)
+		if (markers[y, x] == 0) {
+		  index = ((x * 64) + y);
+		  subindex = index % 8;
+		  index /= 8;
+		  
+		  val = parcel.Bitmap[index];
+		  
+		  markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
+		}
 
-                            markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
-                        }
+	    // do we really need this next part?  We've already asked for all of the parcels...
+	    for (x = 0; x < 64; x++) 
+	      for (y = 0; y < 64; y++)
+		if (markers[x, y] == 0) {
+		  Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
+							 (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
+							 (y * 4.0f), (x * 4.0f), -10000, false);
+		  
+		  return;
+		}
+	    
+	    // if we fall through there, there are no more zeroes in the markers map
 
-		// do we really need this next part?  We've already asked for all of the parcels...
-                for (x = 0; x < 64; x++) 
-                    for (y = 0; y < 64; y++)
-                        if (markers[x, y] == 0) {
-                            Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
-                                (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
-                                (y * 4.0f), (x * 4.0f), -10000, false);
-
-                            goto Done;
-                        }
-
-            Done:
-
-                if (!parcels.ContainsKey(parcel.LocalID))
-                    parcels[parcel.LocalID] = parcel;
-
-		lock(active_sims) {
-		   if(active_sims.Contains(parcel.Simulator)) {
-		      active_sims.Remove(parcel.Simulator);
-		      if (OnParcelsDownloaded != null) {
-                         // This map is complete, fire callback
-                         try { OnParcelsDownloaded(parcel.Simulator, parcels, markers); }
-                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                      }
-                   } else
-                        Client.Log("ParcelDownloader: Got parcel properties from a sim we're not downloading",
-                                   Helpers.LogLevel.Info);
-                 }
-            }
-        }
+	    if (!parcels.ContainsKey(parcel.LocalID))
+	      parcels[parcel.LocalID] = parcel;
+	    
+	    lock(active_sims) {
+	      if(active_sims.Contains(parcel.Simulator)) {
+		active_sims.Remove(parcel.Simulator);
+		if (OnParcelsDownloaded != null) {
+		  // This map is complete, fire callback
+		  Client.Parcels.OnParcelProperties -= packet_callback;
+		  try { OnParcelsDownloaded(parcel.Simulator, parcels, markers); }
+		  catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+		}
+	      } else
+		Client.Log("ParcelDownloader: Got parcel properties from a sim ("+parcel.Simulator+") we're not downloading",
+			   Helpers.LogLevel.Info);
+	    }
+	}
     }
 }
+
