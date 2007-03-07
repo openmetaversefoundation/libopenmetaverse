@@ -222,13 +222,13 @@ namespace libsecondlife
                 return;
             }
 
-            PatchHeader header = PrescanPatch(heightmap, x * 256 + y * 4096);
+            PatchHeader header = PrescanPatch(heightmap, x, y);
             header.QuantWBits = 136;
             header.PatchIDs = (y & 0x1F);
             header.PatchIDs += (x << 5);
 
             // TODO: What is prequant?
-            int[] patch = CompressPatch(heightmap, x * 256 + y * 4096, header, 10);
+            int[] patch = CompressPatch(heightmap, x, y, header, 10);
             int wbits = EncodePatchHeader(output, header, patch);
             // TODO: What is postquant?
             EncodePatch(output, patch, 0, wbits);
@@ -391,18 +391,18 @@ namespace libsecondlife
             }
         }
 
-        private PatchHeader PrescanPatch(float[] heightmap, int offset)
+        private PatchHeader PrescanPatch(float[] heightmap, int patchX, int patchY)
         {
             PatchHeader header = new PatchHeader();
             float zmax = -99999999.0f;
             float zmin = 99999999.0f;
 
-            for (int j = 0; j < 16; j++)
+            for (int j = patchY * 16; j < (patchY + 1) * 16; j++)
             {
-                for (int i = 0; i < 16; i++)
+                for (int i = patchX * 16; i < (patchX + 1) * 16; i++)
                 {
-                    if (heightmap[offset + i + j * 16] > zmax) zmax = heightmap[offset + i + j * 16];
-                    if (heightmap[offset + i + j * 16] < zmin) zmin = heightmap[offset + i + j * 16];
+                    if (heightmap[j * 256 + i] > zmax) zmax = heightmap[j * 256 + i];
+                    if (heightmap[j * 256 + i] < zmin) zmin = heightmap[j * 256 + i];
                 }
             }
 
@@ -769,7 +769,7 @@ namespace libsecondlife
             return output;
         }
 
-        private int[] CompressPatch(float[] heightmap, int offset, PatchHeader header, int prequant)
+        private int[] CompressPatch(float[] heightmap, int patchX, int patchY, PatchHeader header, int prequant)
         {
             float[] block = new float[16 * 16];
             int wordsize = prequant;
@@ -781,11 +781,12 @@ namespace libsecondlife
             header.QuantWBits = wordsize - 2;
             header.QuantWBits |= (prequant - 2) << 4;
 
-            for (int j = 0; j < 16; j++)
+            int k = 0;
+            for (int j = patchY * 16; j < (patchY + 1) * 16; j++)
             {
-                for (int i = 0; i < 16; i++)
+                for (int i = patchX * 16; i < (patchX + 1) * 16; i++)
                 {
-                    block[j * 16 + i] = heightmap[offset + j * 16 + i] * premult - sub;
+                    block[k++] = heightmap[j * 256 + i] * premult - sub;
                 }
             }
 
