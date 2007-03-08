@@ -7,6 +7,7 @@ using libsecondlife.AssetSystem;
 using libsecondlife.InventorySystem;
 using libsecondlife.Packets;
 
+using System.Text;
 
 
 namespace libsecondlife.AssetSystem
@@ -41,12 +42,14 @@ namespace libsecondlife.AssetSystem
 
         protected Dictionary<LLUUID, AssetWearable> WearableCache = new Dictionary<LLUUID, AssetWearable>();
         protected List<LLUUID> WearableAssetQueue = new List<LLUUID>();
+        protected Mutex WearableCacheQueueMutex = new Mutex();
 
         // This data defines all appearance info for an avatar
         public AgentWearablesUpdatePacket.WearableDataBlock[] AgentWearablesData;
         public SerializableDictionary<int, float> AgentAppearanceParams = new SerializableDictionary<int, float>();
         public LLObject.TextureEntry AgentTextureEntry = new LLObject.TextureEntry("C228D1CF4B5D4BA884F4899A0796AA97"); // if this isn't valid, blame JH ;-)
 
+        public bool LogWearableAssetQueue = false;
 
         /// <summary>
         /// 
@@ -81,9 +84,10 @@ namespace libsecondlife.AssetSystem
         public void Wear(List<InventoryWearable> wearables)
         {
             // Make sure we have some Wearable Data to start with.
-            if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
+            if (AgentWearablesSignal.WaitOne(1000, false) == false)
             {
-                GetWearables();
+                Client.Log("You must have set appearance at least once, before calling Wear().  AgentWearablesSignal not set.", Helpers.LogLevel.Error);
+                return;
             }
 
             // Update with specified wearables
@@ -124,13 +128,15 @@ namespace libsecondlife.AssetSystem
             // Refresh download of outfit folder
             if (!outfitFolder.RequestDownloadContents(false, false, true).RequestComplete.WaitOne(TimeOut, false))
             {
-                Console.WriteLine("An error occured while downloads the folder contents of : " + outfitFolder.Name);
+                Client.Log("Outfit not changed. An error occured while downloads the folder contents of : " + outfitFolder.Name, Helpers.LogLevel.Error);
+                return;
             }
 
             // Make sure we have some Wearable Data to start with.
-            if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
+            if (AgentWearablesSignal.WaitOne(1000, false) == false)
             {
-                GetWearables();
+                Client.Log("You must have set appearance at least once, before calling WearOutfit().  AgentWearablesSignal not set.", Helpers.LogLevel.Error);
+                return;
             }
 
             // Flush the cached clothing wearables so we can redefine them
@@ -176,11 +182,8 @@ namespace libsecondlife.AssetSystem
             // Create AgentIsNowWearing Packet, and send it
             SendAgentIsNowWearing();
 
-            // Update local Appearance Info
-            GetAvatarAppearanceInfoFromWearableAssets();
-
             // Send updated AgentSetAppearance to the grid
-            BeginAgentSendAppearance();
+            SendAgentSetAppearance();
         }
 
         public void AddAttachments(List<InventoryItem> attachments, bool removeExistingFirst)
@@ -235,32 +238,15 @@ namespace libsecondlife.AssetSystem
         }
 
         /// <summary>
-        /// Request from the server what wearables we're currently wearing.  Update cached info.
-        /// </summary>
-        /// <returns>The wearable info for what we're currently wearing</returns>
-        protected AgentWearablesUpdatePacket.WearableDataBlock[] GetWearables()
-        {
-            AgentWearablesSignal.Reset();
-
-            AgentWearablesRequestPacket p = new AgentWearablesRequestPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
-            Client.Network.SendPacket(p);
-
-            AgentWearablesSignal.WaitOne();
-
-            return AgentWearablesData;
-        }
-
-        /// <summary>
         /// Update the local Avatar Appearance information based on the contents of the assets as defined in the cached wearable data info.
         /// </summary>
         protected void GetAvatarAppearanceInfoFromWearableAssets()
         {
-            // Only request wearable data, if we have to.
-            if ((AgentWearablesData == null) || (AgentWearablesData.Length == 0))
+            // Make sure we have some Wearable Data to start with.
+            if (AgentWearablesSignal.WaitOne(1000, false) == false)
             {
-                GetWearables();
+                Client.Log("Cannot get Visual Param data from wearable assets.  AgentWearablesSignal not set.", Helpers.LogLevel.Error);
+                return;
             }
 
             // Clear current look
@@ -308,12 +294,17 @@ namespace libsecondlife.AssetSystem
                 }
 
                 UpdateAgentTextureEntryAndAppearanceParams(wearableAsset);
+
             }
 
 
             UpdateAgentTextureEntryOrder();
         }
 
+        /// <summary>
+        /// TextureEntry must have it's face textures in a specific order for avatars.  
+        /// Should be called at least once before sending an AgentSetAppearance packet.
+        /// </summary>
         protected void UpdateAgentTextureEntryOrder()
         {
             // Correct the order of the textures
@@ -351,7 +342,11 @@ namespace libsecondlife.AssetSystem
             AgentTextureEntry = te2;
         }
 
-
+        /// <summary>
+        /// Updates the TextureEntry and Appearance Param structures with the data from an asset wearable.
+        /// Called once for each weable asset.
+        /// </summary>
+        /// <param name="wearableAsset"></param>
         protected void UpdateAgentTextureEntryAndAppearanceParams(AssetWearable wearableAsset)
         {
 
@@ -396,21 +391,20 @@ namespace libsecondlife.AssetSystem
         protected void SendAgentSetAppearance()
         {
             // Get latest appearance info
-            if (AgentAppearanceParams.Count == 0)
-            {
-                GetAvatarAppearanceInfoFromWearableAssets();
-            }
+            GetAvatarAppearanceInfoFromWearableAssets();
 
             AgentSetAppearancePacket p = new AgentSetAppearancePacket();
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
-            p.AgentData.SerialNum = ++SerialNum;
+            p.AgentData.SerialNum = SerialNum++;
 
             // Add Texture Data
             p.ObjectData.TextureEntry = AgentTextureEntry.ToBytes();
 
 
             p.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
+
+            string visualParamData = "";
 
             // Add Visual Params
             lock (AgentAppearanceParams)
@@ -420,18 +414,27 @@ namespace libsecondlife.AssetSystem
                     VisualParam param = VisualParams.Params[i];
                     p.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
 
+                    visualParamData += i + "," + param.ParamID + ",";
+
                     if (AgentAppearanceParams.ContainsKey(param.ParamID))
                     {
                         p.VisualParam[i].ParamValue = Helpers.FloatToByte(AgentAppearanceParams[param.ParamID],
                             param.MinValue, param.MaxValue);
+
+                        visualParamData += AgentAppearanceParams[param.ParamID] + "," + p.VisualParam[i].ParamValue + Environment.NewLine;
                     }
                     else
                     {
                         // Use the default value for this parameter
                         p.VisualParam[i].ParamValue = Helpers.FloatToByte(param.DefaultValue, param.MinValue,
                             param.MaxValue);
+
+                        visualParamData += "NA," + p.VisualParam[i].ParamValue + Environment.NewLine;
+
                     }
                 }
+
+
             }
 
             // Add Size Data
@@ -463,6 +466,8 @@ namespace libsecondlife.AssetSystem
             AgentWearablesData = wearablesPacket.WearableData;
             AgentWearablesSignal.Set();
 
+            // Grab access mutex...
+            WearableCacheQueueMutex.WaitOne();
 
             // Queue download of wearables
             foreach (AgentWearablesUpdatePacket.WearableDataBlock wdb in AgentWearablesData)
@@ -485,9 +490,12 @@ namespace libsecondlife.AssetSystem
                 }
 
                 // Don't try to download, if it's already in the download queue
-                if (WearableAssetQueue.Contains(wdb.AssetID))
+                lock (WearableAssetQueue)
                 {
-                    continue;
+                    if (WearableAssetQueue.Contains(wdb.AssetID))
+                    {
+                        continue;
+                    }
                 }
 
                 AssetWearable wearableAsset;
@@ -512,14 +520,59 @@ namespace libsecondlife.AssetSystem
                     if (!WearableAssetQueue.Contains(wdb.AssetID))
                     {
                         WearableAssetQueue.Add(wdb.AssetID);
+
+                        LogWearableAssetQueueActivity("Added wearable asset to download queue: " + wearableAsset.GetType().Name + " : " + wdb.AssetID);
                     }
                 }
-
-                AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
-
             }
 
-            
+            RequestNextQueuedWearableAsset();
+
+            WearableCacheQueueMutex.ReleaseMutex();
+        }
+
+        /// <summary>
+        /// Sends a request for the next wearable asset.
+        /// </summary>
+        protected void RequestNextQueuedWearableAsset()
+        {
+            lock (WearableAssetQueue)
+            {
+                if (WearableAssetQueue.Count > 0)
+                {
+                    AssetWearable wearableAsset = WearableCache[WearableAssetQueue[0]];
+                    AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
+                    LogWearableAssetQueueActivity("Requesting: " + wearableAsset.AssetID);
+                }
+                else
+                {
+                    if (AgentWearablesSignal.WaitOne(0, false) == true)
+                    {
+                        // Send updated AgentSetAppearance
+                        SendAgentSetAppearance();
+                    }
+                }
+            }            
+        }
+
+        /// <summary>
+        /// use to debug wearable asset queue activity
+        /// </summary>
+        /// <param name="msg"></param>
+        protected void LogWearableAssetQueueActivity(string msg)
+        {
+            if (LogWearableAssetQueue)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("==================");
+                sb.AppendLine(msg);
+                sb.AppendLine("Current Queue:");
+                foreach (LLUUID uuid in WearableAssetQueue)
+                {
+                    sb.AppendLine(" ** " + uuid.ToStringHyphenated());
+                }
+                Client.Log(sb.ToString(), Helpers.LogLevel.Info);
+            }
         }
 
         /// <summary>
@@ -540,20 +593,30 @@ namespace libsecondlife.AssetSystem
                 Client.Log("AssetID is null in AssetRequestDownload: " + dlrequest.StatusMsg, Helpers.LogLevel.Error);
             }
 
-            lock( WearableAssetQueue )
+            WearableCacheQueueMutex.WaitOne();
+
+            // Remove from the download queue
+            lock (WearableAssetQueue)
             {
-                // Remove from the download queue
                 if (!WearableAssetQueue.Contains(dlrequest.AssetID))
                 {
+                    // Looks like we got an asset for something other then what we're waiting for, ignore it
+                    WearableCacheQueueMutex.ReleaseMutex();
+
                     return;
                 }
-
-                WearableAssetQueue.Remove(dlrequest.AssetID);
             }
+
+            // Since we got a response for this asset, remove it from the queue
+            WearableAssetQueue.Remove(dlrequest.AssetID);
+            LogWearableAssetQueueActivity("Received queued asset, and removed: " + dlrequest.AssetID);
 
             // If the request wasn't successful, then don't try to process it.
             if (request.Status != AssetRequest.RequestStatus.Success)
             {
+                Client.Log("Error downloading wearable asset: " + dlrequest.AssetID, Helpers.LogLevel.Error);
+                WearableCacheQueueMutex.ReleaseMutex();
+
                 return;
             }
 
@@ -563,7 +626,9 @@ namespace libsecondlife.AssetSystem
 
             if ((wearableAsset.AssetData == null) || (wearableAsset.AssetData.Length == 0))
             {
-                Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Warning);
+                Client.Log("Asset retrieval failed for AssetID: " + wearableAsset.AssetID, Helpers.LogLevel.Error);
+                WearableCacheQueueMutex.ReleaseMutex();
+                return;
             }
             else
             {
@@ -571,13 +636,23 @@ namespace libsecondlife.AssetSystem
 
                 UpdateAgentTextureEntryOrder();
 
-                if (WearableAssetQueue.Count == 0)
+                lock(WearableAssetQueue)
                 {
+                    if (WearableAssetQueue.Count > 0)
+                    {
+                        RequestNextQueuedWearableAsset();
+                        WearableCacheQueueMutex.ReleaseMutex();
+                        return;
 
-                    // Now that all the wearable assets are done downloading
-                    // , we can send an appearance packet
-                    SendAgentSetAppearance();
+                    }
                 }
+
+                // Now that all the wearable assets are done downloading,
+                // send an appearance packet
+                SendAgentSetAppearance();
+
+                WearableCacheQueueMutex.ReleaseMutex();
+                return;
             }
         }
 
