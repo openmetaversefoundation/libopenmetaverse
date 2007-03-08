@@ -64,7 +64,7 @@ namespace libsecondlife
         public int RESEND_TIMEOUT = 4000;
         /// <summary>Milliseconds without receiving a packet before the 
         /// connection to a simulator is assumed lost</summary>
-        public int SIMULATOR_TIMEOUT = 30 * 1000;
+        public int SIMULATOR_TIMEOUT = 5 * 1000;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
         public int MAX_PENDING_ACKS = 10;
@@ -87,7 +87,16 @@ namespace libsecondlife
         /// set a throttle your connection will by default be throttled well
         /// below the minimum values and you may experience connection problems</remarks>
         public bool SEND_THROTTLE = true;
-
+        /// <summary>Enable/disable the sending of pings to monitor lag and packet loss</summary
+		public bool SEND_PINGS = false;
+		/// <summary>Number of milliseconds between sending pings to each sim</summary>
+		public int PING_INTERVAL = 550;
+		/// <summary>Ping-time change beyond which a warning is displayed
+		public float LAG_WARNING_DELTA  = 0.50f;
+		/// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
+		public bool USE_WATCHDOG = false;
+		/// <summary>Number of seconds to wait for pong before killing</summary>
+		public int WATCHDOG_SECONDS = 5;
         private SecondLife Client;
         private int priceUpload = 0;
 

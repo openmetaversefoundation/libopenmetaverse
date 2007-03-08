@@ -111,8 +111,8 @@ namespace libsecondlife
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
         internal List<LLVector3> avatarPositions = new List<LLVector3>();
-		public uint SentPackets = 0;
-		public uint RecvPackets = 0;
+		public ulong SentPackets = 0;  // <-- these could probably be uints
+		public ulong RecvPackets = 0;
 		public ulong SentBytes = 0;
 		public ulong RecvBytes = 0;
 		public int ConnectTime = 0;
@@ -135,8 +135,14 @@ namespace libsecondlife
         private IPEndPoint ipEndPoint;
         private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
-
-
+		private System.Timers.Timer PingTimer;
+		
+		/* Ping processing, to measure link health */
+		public int LastPingSent = 0;
+		public byte LastPingID = 0;
+		public int LastLag = 0;
+		public int MissedPings =0;
+		
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -152,10 +158,17 @@ namespace libsecondlife
             Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
 
             // Start the ACK timer
-            AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
+ 			AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
             AckTimer.Start();
 
+			if(Client.Settings.SEND_PINGS) {
+	            // Start the PING timer
+	            PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
+	            PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
+	            PingTimer.Start();
+			}
+			
             // Initialize the callback for receiving a new packet
             ReceivedData = new AsyncCallback(OnReceivedData);
 
@@ -190,6 +203,7 @@ namespace libsecondlife
                 if (Client.Settings.SEND_AGENT_UPDATES)
                     Client.Self.Status.SendUpdate(true, this);
 
+				SendPing();
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
                     Client.Log("Giving up on waiting for RegionHandshake", Helpers.LogLevel.Warning);
@@ -211,7 +225,8 @@ namespace libsecondlife
             {
                 connected = false;
                 AckTimer.Stop();
-
+				if (Client.Settings.SEND_PINGS) PingTimer.Stop();
+				
                 // Send the CloseCircuit notice
                 CloseCircuitPacket close = new CloseCircuitPacket();
 
@@ -380,6 +395,15 @@ namespace libsecondlife
             }
         }
 
+		public void SendPing() {
+			StartPingCheckPacket ping = new StartPingCheckPacket();
+			ping.PingID.PingID=LastPingID++;
+			ping.PingID.OldestUnacked=0; // FIXME
+			ping.Header.Reliable = false;
+			SendPacket(ping, true);
+			LastPingSent=Environment.TickCount;
+		}
+		
         /// <summary>
         /// 
         /// </summary>
@@ -673,5 +697,11 @@ namespace libsecondlife
             SendAcks();
             ResendUnacked();
         }
+
+        private void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
+        {
+			SendPing();
+        }
+
     }
 }

@@ -168,7 +168,8 @@ namespace libsecondlife
             RegisterCallback(PacketType.EnableSimulator, new PacketCallback(EnableSimulatorHandler));
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
-
+			RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
+			
             // The proper timeout for this will get set at Login
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
@@ -1038,12 +1039,22 @@ namespace libsecondlife
             StartPingCheckPacket incomingPing = (StartPingCheckPacket)packet;
             CompletePingCheckPacket ping = new CompletePingCheckPacket();
             ping.PingID.PingID = incomingPing.PingID.PingID;
-
+			ping.Header.Reliable = false;
             // TODO: We can use OldestUnacked to correct transmission errors
-
+			//   I don't think that's right.  As far as I can tell, the Viewer
+			//   only uses this to prune its duplicate-checking buffer. -bushing
+			
             SendPacket(ping, simulator);
         }
 
+		private void PongHandler(Packet packet, Simulator simulator) {
+			CompletePingCheckPacket pong = (CompletePingCheckPacket)packet;
+			String retval = "Pong: "+(Environment.TickCount-simulator.LastPingSent);
+			if (pong.PingID.PingID != (simulator.LastPingID+1))
+				retval += " (gap of "+(pong.PingID.PingID - simulator.LastPingID+1)+")";
+			Client.Log(retval, Helpers.LogLevel.Info);
+		}
+		
         private void RegionHandshakeHandler(Packet packet, Simulator simulator)
         {
             RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
