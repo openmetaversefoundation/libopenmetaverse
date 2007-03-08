@@ -27,11 +27,20 @@
 using System;
 using System.Collections.Generic;
 using libsecondlife;
+using libsecondlife.Utilities;
 
-namespace ParcelDownloader
+namespace ParcelDownload
 {
 	class ParcelDownload
 	{
+		static private void MyParcelCallback(Simulator sim, Dictionary<int, Parcel> Parcels, int[,] map) {
+		  Console.WriteLine("MyParcelCallback({0}), {1} parcels", sim, Parcels.Count);
+		  foreach( int pkey in Parcels.Keys ) {
+  		  	Parcel parcel = Parcels[ pkey ];
+			  Console.WriteLine("Parcels[{0}]={1} / ${2}", pkey, parcel.Name, parcel.Desc);
+		  }
+	        }
+
 		[STAThread]
 		static void Main(string[] args)
 		{
@@ -50,8 +59,13 @@ namespace ParcelDownloader
 				return;
 			}
 
-			// FIXME: Use libsecondlife.Utilities to download parcel information from the current sim
+			ParcelDownloader downloader = new ParcelDownloader(client);
+			downloader.OnParcelsDownloaded += new ParcelDownloader.ParcelsDownloadedCallback(MyParcelCallback);
+			downloader.DownloadSimParcels(client.Network.CurrentSim);
 
+			while(true) {
+			  System.Threading.Thread.Sleep(1000);
+			}
 			// Dump some info about our parcels
             //foreach (int pkey in client.Network.CurrentSim.Region.Parcels.Keys) 
             //{
