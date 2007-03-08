@@ -111,7 +111,13 @@ namespace libsecondlife
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
         internal List<LLVector3> avatarPositions = new List<LLVector3>();
-
+		public uint SentPackets = 0;
+		public uint RecvPackets = 0;
+		public ulong SentBytes = 0;
+		public ulong RecvBytes = 0;
+		public int ConnectTime = 0;
+		public int ResentPackets = 0;
+		
         private NetworkManager Network;
         private uint Sequence = 0;
         private object SequenceLock = new object();
@@ -177,6 +183,7 @@ namespace libsecondlife
                 // Send the initial packet out
                 SendPacket(use, true);
 
+				ConnectTime = Environment.TickCount;
                 // Move our agent in to the sim to complete the connection
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
@@ -309,7 +316,9 @@ namespace libsecondlife
             // Serialize the packet
             buffer = packet.ToBytes();
             bytes = buffer.Length;
-
+            SentBytes += (ulong)bytes;
+			SentPackets++;
+			
             try
             {
                 // Zerocode if needed
@@ -356,7 +365,9 @@ namespace libsecondlife
                         Sequence++;
                     }
                 }
-
+                
+				SentBytes += (ulong)payload.Length;
+				SentPackets++;
                 Connection.Send(payload, payload.Length, SocketFlags.None);
             }
             catch (SocketException)
@@ -493,6 +504,7 @@ namespace libsecondlife
                             "), " + (now - packet.TickCount) + "ms have passed");
 
                         packet.Header.Resent = true;
+                        ResentPackets++;
                         SendPacket(packet, false);
                     }
                 }
@@ -541,6 +553,9 @@ namespace libsecondlife
                 return;
             }
 
+			RecvBytes += (ulong)numBytes;
+			RecvPackets++;
+			
             #endregion Packet Decoding
 
             #region Reliable Handling
