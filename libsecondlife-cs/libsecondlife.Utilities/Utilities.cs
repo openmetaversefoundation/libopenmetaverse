@@ -139,7 +139,7 @@ namespace libsecondlife.Utilities
     public class AvatarTracker
     {
         protected SecondLife Client;
-        protected Dictionary<LLUUID, Avatar> avatars = new Dictionary<LLUUID,Avatar>();
+        protected Dictionary<LLUUID, Avatar> avatars = new Dictionary<LLUUID, Avatar>();
         protected Dictionary<LLUUID, ManualResetEvent> NameLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
         protected Dictionary<LLUUID, ManualResetEvent> StatisticsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
         protected Dictionary<LLUUID, ManualResetEvent> PropertiesLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
@@ -268,11 +268,11 @@ namespace libsecondlife.Utilities
         //    }
         //}
 
-        public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.AvatarProperties properties, 
+        public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.AvatarProperties properties,
             out Avatar.Statistics statistics, out List<LLUUID> groups)
         {
             // Do a local lookup first
-            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null && 
+            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null &&
                 avatars[id].ProfileProperties.BornOn != String.Empty)
             {
                 interests = avatars[id].ProfileInterests;
@@ -317,7 +317,7 @@ namespace libsecondlife.Utilities
                 GroupsLookupEvents.Remove(id);
 
             // If we got a filled in profile return everything
-            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null && 
+            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null &&
                 avatars[id].ProfileProperties.BornOn != String.Empty)
             {
                 interests = avatars[id].ProfileInterests;
@@ -472,8 +472,8 @@ namespace libsecondlife.Utilities
         /// <summary></summary>
         private Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
 
-	private ParcelManager.ParcelPropertiesCallback packet_callback = null;
-	private ArrayList active_sims;
+        private ParcelManager.ParcelPropertiesCallback packet_callback = null;
+        private ArrayList active_sims;
 
         /// <summary>
         /// Default constructor
@@ -482,27 +482,29 @@ namespace libsecondlife.Utilities
         public ParcelDownloader(SecondLife client)
         {
             Client = client;
-	    active_sims = new ArrayList();
+            active_sims = new ArrayList();
         }
 
         public void DownloadSimParcels(Simulator simulator)
         {
-	    lock (active_sims) {
-		if(active_sims.Count == 0 && packet_callback != null) 
-		   Client.Log("DownloadSimParcels: no active sims, but I have a callback anyway?", Helpers.LogLevel.Error);
+            lock (active_sims)
+            {
+                if (active_sims.Count == 0 && packet_callback != null)
+                    Client.Log("DownloadSimParcels: no active sims, but I have a callback anyway?", Helpers.LogLevel.Error);
 
-		if(active_sims.Count != 0 && packet_callback == null) 
-		   Client.Log("DownloadSimParcels: active sims, but no callback?", Helpers.LogLevel.Error);
+                if (active_sims.Count != 0 && packet_callback == null)
+                    Client.Log("DownloadSimParcels: active sims, but no callback?", Helpers.LogLevel.Error);
 
-		if(active_sims.Contains(simulator)) {
-		   Client.Log("DownloadSimParcels("+simulator+") called more than once?", Helpers.LogLevel.Error);
-		   return;
-		}
+                if (active_sims.Contains(simulator))
+                {
+                    Client.Log("DownloadSimParcels(" + simulator + ") called more than once?", Helpers.LogLevel.Error);
+                    return;
+                }
 
-		active_sims.Add(simulator);
-		packet_callback = new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
+                active_sims.Add(simulator);
+                packet_callback = new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
                 Client.Parcels.OnParcelProperties += packet_callback;
-	    }
+            }
 
             lock (ParcelMarked)
             {
@@ -518,60 +520,69 @@ namespace libsecondlife.Utilities
 
         private void Parcels_OnParcelProperties(Parcel parcel)
         {
-            if (!ParcelMarked.ContainsKey(parcel.Simulator)) {
-		Client.Log("received unexpected parcel data for "+parcel.Simulator, Helpers.LogLevel.Info);
-		return;
-	    }
+            if (!ParcelMarked.ContainsKey(parcel.Simulator))
+            {
+                Client.Log("received unexpected parcel data for " + parcel.Simulator, Helpers.LogLevel.Info);
+                return;
+            }
 
-	    int x, y, index, subindex;
-	    byte val;
-	    bool hasTriggered = false;
-	    int[,] markers = ParcelMarked[parcel.Simulator];
-	    Dictionary<int, Parcel> parcels = Parcels[parcel.Simulator];
+            int x, y, index, subindex;
+            byte val;
+            bool hasTriggered = false;
+            int[,] markers = ParcelMarked[parcel.Simulator];
+            Dictionary<int, Parcel> simParcels = Parcels[parcel.Simulator];
 
-	    // Mark this area as downloaded
-	    for (x = 0; x < 64; x++)
-	      for (y = 0; y < 64; y++)
-		if (markers[y, x] == 0) {
-		  index = ((x * 64) + y);
-		  subindex = index % 8;
-		  index /= 8;
-		  
-		  val = parcel.Bitmap[index];
-		  
-		  markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
-		}
+            lock (simParcels)
+            {
+                if (!simParcels.ContainsKey(parcel.LocalID))
+                    simParcels[parcel.LocalID] = parcel;
+            }
 
-	    // do we really need this next part?  We've already asked for all of the parcels...
-	    for (x = 0; x < 64; x++) 
-	      for (y = 0; y < 64; y++)
-		if (markers[x, y] == 0) {
-		  Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
-							 (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
-							 (y * 4.0f), (x * 4.0f), -10000, false);
-		  
-		  return;
-		}
-	    
-	    // if we fall through there, there are no more zeroes in the markers map
+            // Mark this area as downloaded
+            for (x = 0; x < 64; x++)
+                for (y = 0; y < 64; y++)
+                    if (markers[y, x] == 0)
+                    {
+                        index = ((x * 64) + y);
+                        subindex = index % 8;
+                        index /= 8;
 
-	    if (!parcels.ContainsKey(parcel.LocalID))
-	      parcels[parcel.LocalID] = parcel;
-	    
-	    lock(active_sims) {
-	      if(active_sims.Contains(parcel.Simulator)) {
-		active_sims.Remove(parcel.Simulator);
-		if (OnParcelsDownloaded != null) {
-		  // This map is complete, fire callback
-		  Client.Parcels.OnParcelProperties -= packet_callback;
-		  try { OnParcelsDownloaded(parcel.Simulator, parcels, markers); }
-		  catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-		}
-	      } else
-		Client.Log("ParcelDownloader: Got parcel properties from a sim ("+parcel.Simulator+") we're not downloading",
-			   Helpers.LogLevel.Info);
-	    }
-	}
+                        val = parcel.Bitmap[index];
+
+                        markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
+                    }
+
+            // do we really need this next part?  We've already asked for all of the parcels...
+            for (x = 0; x < 64; x++)
+                for (y = 0; y < 64; y++)
+                    if (markers[x, y] == 0)
+                    {
+                        Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
+                                           (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
+                                           (y * 4.0f), (x * 4.0f), -10000, false);
+
+                        return;
+                    }
+
+            // if we fall through there, there are no more zeroes in the markers map
+            lock (active_sims)
+            {
+                if (active_sims.Contains(parcel.Simulator))
+                {
+                    active_sims.Remove(parcel.Simulator);
+                    if (OnParcelsDownloaded != null)
+                    {
+                        // This map is complete, fire callback
+                        Client.Parcels.OnParcelProperties -= packet_callback;
+                        try { OnParcelsDownloaded(parcel.Simulator, simParcels, markers); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+                }
+                else
+                    Client.Log("ParcelDownloader: Got parcel properties from a sim (" + parcel.Simulator + ") we're not downloading",
+                           Helpers.LogLevel.Info);
+            }
+        }
     }
 }
 

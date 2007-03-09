@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using libsecondlife;
-using libsecondlife.Packets;
 
 namespace libsecondlife.TestClient
 {
@@ -18,7 +17,7 @@ namespace libsecondlife.TestClient
 		{
             int channel = 0;
             int startIndex = 0;
-            string message = String.Empty;
+            
             if (args.Length < 1)
             {
                 return "usage: say (optional channel) whatever";
@@ -28,14 +27,18 @@ namespace libsecondlife.TestClient
                 if (Int32.TryParse(args[0], out channel))
 					startIndex = 1;
             }
-            
-			for (int i = startIndex; i < args.Length; i++) {
-				message += args[i] + " ";
+
+            StringBuilder message = new StringBuilder();
+
+			for (int i = startIndex; i < args.Length; i++)
+            {
+                message.Append(args[i]);
+                if (i != args.Length - 1) message.Append(" ");
             }
 
-			Client.Self.Chat(message, channel, MainAvatar.ChatType.Normal);
+			Client.Self.Chat(message.ToString(), channel, MainAvatar.ChatType.Normal);
 
-            return "Said " + message;
+            return "Said " + message.ToString();
 		}
     }
 }

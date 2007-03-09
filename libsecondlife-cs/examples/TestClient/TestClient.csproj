@@ -67,6 +67,7 @@
     <Compile Include="Commands\Movement\LocationCommand.cs" />
     <Compile Include="Commands\Movement\SitCommand.cs" />
     <Compile Include="Commands\PacketLogCommand.cs" />
+    <Compile Include="Commands\ParcelInfoCommand.cs" />
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
