@@ -100,7 +100,21 @@ namespace libsecondlife
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewAgentInventory");
+            req.Add("NewFileAgentInventory");
             req.Add("EventQueueGet");
+            req.Add("UpdateGestureAgentInventory");
+            req.Add("UpdateNotecardAgentInventory");
+            req.Add("UpdateScriptAgentInventory");
+            req.Add("UpdateGestureTaskInventory");
+            req.Add("UpdateNotecardTaskInventory");
+            req.Add("UpdateScriptTaskInventory");
+            req.Add("SendPostcard");
+            req.Add("ViewerStartAuction");
+            req.Add("ParcelGodReserveForNewbie");
+            req.Add("SendUserReport");
+            req.Add("SendUserReportWithScreenshot");
+            req.Add("RequestTextureDownload");
+
             byte[] data = LLSD.LLSDSerialize(req);
 
         MakeRequest:
