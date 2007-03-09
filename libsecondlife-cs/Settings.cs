@@ -53,10 +53,10 @@ namespace libsecondlife
         /// out</summary>
         public readonly int TELEPORT_TIMEOUT = 25 * 1000;
 		
-		/// <summary>Number of milliseconds before NetworkManager.Logout() will time out</summary>
-		public int LOGOUT_TIMEOUT = 5 * 1000;
-		/// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-		public int LOGIN_TIMEOUT = 60 * 1000;
+	/// <summary>Number of milliseconds before NetworkManager.Logout() will time out</summary>
+	public int LOGOUT_TIMEOUT = 5 * 1000;
+	/// <summary>Number of milliseconds for xml-rpc to timeout</summary>
+	public int LOGIN_TIMEOUT = 60 * 1000;
         /// <summary>The maximum size of the sequence number inbox, used to
         /// check for resent and/or duplicate packets</summary>
         public int INBOX_SIZE = 100;
@@ -88,15 +88,15 @@ namespace libsecondlife
         /// below the minimum values and you may experience connection problems</remarks>
         public bool SEND_THROTTLE = true;
         /// <summary>Enable/disable the sending of pings to monitor lag and packet loss</summary
-		public bool SEND_PINGS = false;
-		/// <summary>Number of milliseconds between sending pings to each sim</summary>
-		public int PING_INTERVAL = 550;
-		/// <summary>Ping-time change beyond which a warning is displayed
-		public float LAG_WARNING_DELTA  = 0.50f;
-		/// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
-		public bool USE_WATCHDOG = false;
-		/// <summary>Number of seconds to wait for pong before killing</summary>
-		public int WATCHDOG_SECONDS = 5;
+	public bool SEND_PINGS = false;
+	/// <summary>Number of milliseconds between sending pings to each sim</summary>
+	public int PING_INTERVAL = 1100;
+	/// <summary>Ping-time change beyond which a warning is displayed
+	public float LAG_WARNING_DELTA  = 0.50f;
+	/// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
+	public bool USE_WATCHDOG = false;
+	/// <summary>Number of seconds to wait for pong before killing</summary>
+	public int WATCHDOG_SECONDS = 10;
         private SecondLife Client;
         private int priceUpload = 0;
 
