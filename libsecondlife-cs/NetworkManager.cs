@@ -1052,6 +1052,7 @@ namespace libsecondlife
 			String retval = "Pong: "+(Environment.TickCount-simulator.LastPingSent);
 			if (pong.PingID.PingID != (simulator.LastPingID+1))
 				retval += " (gap of "+(pong.PingID.PingID - simulator.LastPingID+1)+")";
+			else simulator.LastLag=Environment.TickCount-simulator.LastPingSent;
 			Client.Log(retval, Helpers.LogLevel.Info);
 		}
 		
