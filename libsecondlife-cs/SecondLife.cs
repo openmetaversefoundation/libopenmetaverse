@@ -132,7 +132,10 @@ namespace libsecondlife
             }
             else
             {
-                Console.WriteLine(level.ToString().ToUpper() + ": " + message);
+		if (Settings.LOG_NAMES)
+                   Console.WriteLine(level.ToString().ToUpper() + "["+Self.FirstName+" "+Self.LastName+"]: " + message);
+		else
+		   Console.WriteLine(level.ToString().ToUpper() + ": " + message);
             }
         }
 

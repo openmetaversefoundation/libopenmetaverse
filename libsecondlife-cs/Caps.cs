@@ -152,14 +152,14 @@ namespace libsecondlife
 
             foreach (string cap in resp.Keys)
             {
-                Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
+//                Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
                 Capabilities[cap] = (string)resp[cap];
             }
 
             if (Capabilities.ContainsKey("EventQueueGet"))
             {
                 EventQueueCap = Capabilities["EventQueueGet"];
-                Client.Log("Running event queue", Helpers.LogLevel.Info);
+  //              Client.Log("Running event queue", Helpers.LogLevel.Info);
                 EventQueueHandler(null);
             }
         }

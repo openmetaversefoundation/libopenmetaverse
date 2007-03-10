@@ -1049,11 +1049,12 @@ namespace libsecondlife
 
 		private void PongHandler(Packet packet, Simulator simulator) {
 			CompletePingCheckPacket pong = (CompletePingCheckPacket)packet;
-			String retval = "Pong: "+(Environment.TickCount-simulator.LastPingSent);
-			if (pong.PingID.PingID != (simulator.LastPingID+1))
+			String retval = "Pong2: "+(Environment.TickCount-simulator.LastPingSent);
+			if ((pong.PingID.PingID - simulator.LastPingID+1)!=0)
 				retval += " (gap of "+(pong.PingID.PingID - simulator.LastPingID+1)+")";
-			else simulator.LastLag=Environment.TickCount-simulator.LastPingSent;
-			Client.Log(retval, Helpers.LogLevel.Info);
+
+			simulator.LastLag=Environment.TickCount-simulator.LastPingSent;
+//			Client.Log(retval, Helpers.LogLevel.Info);
 		}
 		
         private void RegionHandshakeHandler(Packet packet, Simulator simulator)

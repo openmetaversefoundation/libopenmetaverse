@@ -74,6 +74,8 @@ namespace libsecondlife
         public int UPLOAD_COST { get { return priceUpload; } }
         /// <summary>Enable/disable debugging log messages</summary>
         public bool DEBUG = true;
+        /// <summary>Attach avatar names to log messages</summary>
+        public bool LOG_NAMES = true;
         /// <summary>Enable/disable storing terrain heightmaps in the TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
         /// <summary>Enable/disable sending periodic camera updates</summary>
@@ -87,10 +89,12 @@ namespace libsecondlife
         /// set a throttle your connection will by default be throttled well
         /// below the minimum values and you may experience connection problems</remarks>
         public bool SEND_THROTTLE = true;
-        /// <summary>Enable/disable the sending of pings to monitor lag and packet loss</summary
+        /// <summary>Network stats queue length (seconds)</summary>
+	public int STATS_QUEUE_SIZE = 5;
+        /// <summary>Enable/disable the sending of pings to monitor lag and packet loss</summary>
 	public bool SEND_PINGS = false;
 	/// <summary>Number of milliseconds between sending pings to each sim</summary>
-	public int PING_INTERVAL = 1100;
+	public int PING_INTERVAL = 2200;
 	/// <summary>Ping-time change beyond which a warning is displayed
 	public float LAG_WARNING_DELTA  = 0.50f;
 	/// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
