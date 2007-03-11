@@ -147,8 +147,8 @@ namespace libsecondlife
 
         private SecondLife Client;
         private List<Simulator> Simulators = new List<Simulator>();
-        private System.Timers.Timer DisconnectTimer;
-        private System.Timers.Timer LogoutTimer;
+        private List<IPEndPoint> IPEndPoints = new List<IPEndPoint>();
+        private System.Timers.Timer DisconnectTimer, LogoutTimer;
         private bool connected = false;
         private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
 
@@ -696,7 +696,8 @@ namespace libsecondlife
         /// <returns>A Simulator object on success, otherwise null</returns>
         public Simulator Connect(IPAddress ip, ushort port, bool setDefault, string seedcaps)
         {
-            Simulator simulator = new Simulator(Client, ip, (int)port, setDefault);
+ 			lock (IPEndPoints) IPEndPoints.Add(new IPEndPoint(ip, port));
+ 			Simulator simulator = new Simulator(Client, ip, (int)port, setDefault);
 
             if (!simulator.Connected)
             {
@@ -819,6 +820,7 @@ namespace libsecondlife
                 }
 
                 lock (Simulators) Simulators.Remove(sim);
+                lock (IPEndPoints) IPEndPoints.Remove(sim.IPEndPoint);
             }
             else
             {
@@ -1129,14 +1131,30 @@ namespace libsecondlife
 
         private void EnableSimulatorHandler(Packet packet, Simulator simulator)
         {
-            // TODO: Actually connect to the simulator
+			EnableSimulatorPacket p = (EnableSimulatorPacket) packet;
+			// first, check to see if we've already started connecting to this sim	
+            lock (IPEndPoints) {
+                for (int i = 0; i < IPEndPoints.Count; i++) {
+                    if (IPEndPoints[i] != null && 
+                        IPEndPoints[i].Equals(new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port))) {
+//                        Client.Log("Received duplicate EnableSimulatorHandler", Helpers.LogLevel.Error);
+                        return;
+                	}    
+                }
+			}
 
-            // TODO: Sending ConfirmEnableSimulator completely screws things up. :-?
+            if (Connect(new IPAddress(p.SimulatorInfo.IP), p.SimulatorInfo.Port,
+               false, (string)LoginValues["seed_capability"]) == null)
+                {
+                    Client.Log("Unabled to connect to new sim", Helpers.LogLevel.Error);
+                    return;
+                }
 
-            // Respond to the simulator connection request
-            //Packet replyPacket = Packets.Network.ConfirmEnableSimulator(Protocol, AgentID, SessionID);
-            //SendPacket(replyPacket, circuit);
-        }
+			// we *shouldn't* have to do this here, right?
+			if (Client.Settings.SEND_THROTTLE)
+                Client.Throttle.Set(simulator);
+
+         }
 
         private void KickUserHandler(Packet packet, Simulator simulator)
         {

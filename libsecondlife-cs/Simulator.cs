@@ -173,13 +173,13 @@ namespace libsecondlife
             StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
             StatsTimer.Start();
 
-	    	if(Client.Settings.SEND_PINGS) {
+/*	    	if(Client.Settings.SEND_PINGS) {
 	            // Start the PING timer
 	            PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
 	            PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
 	            PingTimer.Start();
 	     	}
-			
+*/			
             // Initialize the callback for receiving a new packet
             ReceivedData = new AsyncCallback(OnReceivedData);
 
@@ -262,8 +262,8 @@ namespace libsecondlife
         {
             byte[] buffer;
             int bytes;
-
-			if (Client.Settings.SEND_THROTTLE) DoThrottle();
+//s			Console.Error.WriteLine(this.Name+"/Send: "+packet.Type);
+//			if (Client.Settings.SEND_THROTTLE) DoThrottle();
             // Scrub any appended ACKs since all of the ACK handling is done here
             if (packet.Header.AckList.Length > 0)
                 packet.Header.AckList = new uint[0];
@@ -579,7 +579,8 @@ namespace libsecondlife
 
 	    RecvBytes += (ulong)numBytes;
 	    RecvPackets++;
-			
+	   // Console.Error.WriteLine(this.Name+"/Recv: "+packet.Type);
+	
             #endregion Packet Decoding
 
             #region Reliable Handling
@@ -712,8 +713,8 @@ namespace libsecondlife
 	   			OutgoingBPS = (int) (SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
 /*	   			Client.Log("Incoming: "+IncomingBPS +" Out: "+OutgoingBPS +
 	   				    " Lag: "+LastLag+" Pings: "+ReceivedPongs +
-	   				    "/"+SentPings, Helpers.LogLevel.Debug); */
-	   		}
+	   				    "/"+SentPings, Helpers.LogLevel.Debug); 
+*/	   		}
         }
 
         private void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
