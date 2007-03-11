@@ -53,10 +53,10 @@ namespace libsecondlife
         /// out</summary>
         public readonly int TELEPORT_TIMEOUT = 25 * 1000;
 		
-	/// <summary>Number of milliseconds before NetworkManager.Logout() will time out</summary>
-	public int LOGOUT_TIMEOUT = 5 * 1000;
-	/// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-	public int LOGIN_TIMEOUT = 60 * 1000;
+		/// <summary>Number of milliseconds before NetworkManager.Logout() will time out</summary>
+		public int LOGOUT_TIMEOUT = 5 * 1000;
+		/// <summary>Number of milliseconds for xml-rpc to timeout</summary>
+		public int LOGIN_TIMEOUT = 60 * 1000;
         /// <summary>The maximum size of the sequence number inbox, used to
         /// check for resent and/or duplicate packets</summary>
         public int INBOX_SIZE = 100;
@@ -88,19 +88,19 @@ namespace libsecondlife
         /// the maximum bandwidth setting in the official client. If you do not
         /// set a throttle your connection will by default be throttled well
         /// below the minimum values and you may experience connection problems</remarks>
-        public bool SEND_THROTTLE = true;
+        public bool SEND_THROTTLE = false;
+        /// <summary>Maximum outgoing bytes/sec, per sim</summary>
+		public int SEND_THROTTLE_RATE = 1500;
         /// <summary>Network stats queue length (seconds)</summary>
-	public int STATS_QUEUE_SIZE = 5;
+		public int STATS_QUEUE_SIZE = 5;
         /// <summary>Enable/disable the sending of pings to monitor lag and packet loss</summary>
-	public bool SEND_PINGS = false;
-	/// <summary>Number of milliseconds between sending pings to each sim</summary>
-	public int PING_INTERVAL = 2200;
-	/// <summary>Ping-time change beyond which a warning is displayed
-	public float LAG_WARNING_DELTA  = 0.50f;
-	/// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
-	public bool USE_WATCHDOG = false;
-	/// <summary>Number of seconds to wait for pong before killing</summary>
-	public int WATCHDOG_SECONDS = 10;
+		public bool SEND_PINGS = false;
+		/// <summary>Number of milliseconds between sending pings to each sim</summary>
+		public int PING_INTERVAL = 2200;
+		/// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
+//		public bool USE_WATCHDOG = false;
+		/// <summary>Number of seconds to wait for pong before killing</summary>
+//		public int WATCHDOG_SECONDS = 10;
         private SecondLife Client;
         private int priceUpload = 0;
 

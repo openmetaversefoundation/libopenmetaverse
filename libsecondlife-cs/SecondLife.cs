@@ -156,9 +156,7 @@ namespace libsecondlife
                     catch (Exception e) { Console.WriteLine(e.ToString()); }
                 }
                 else
-                {
-                    Console.WriteLine("DEBUG: " + message);
-                }
+                    Log(message, Helpers.LogLevel.Debug);
             }
         }
     }
