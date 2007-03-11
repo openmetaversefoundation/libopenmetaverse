@@ -610,6 +610,7 @@
 		4054E2A50B5733B200B0667D = {
 			isa = PBXGroup;
 			children = (
+				4054E2B50B5733D200B0667D /* libsecondlife-cs */,
 				40E06B160B7932F600A4AE9E /* openjpegnet */,
 				40AAAB570B60C02700EC04F0 /* mapgenerator */,
 				40147FED0B59A1310070ABA4 /* libjasper.dll */,
@@ -918,7 +919,6 @@
 		4054E4730B575DBD00B0667D /* examples */ = {
 			isa = PBXGroup;
 			children = (
-				4054E2B50B5733D200B0667D /* libsecondlife-cs */,
 				40C88D6F0B59DE950002929B /* IA_NotecardTool */,
 				40147FD10B59984A0070ABA4 /* IA_ImageTool */,
 				4054E4550B575BBA00B0667D /* IA_SimpleInventory */,
