@@ -44,7 +44,7 @@ namespace libsecondlife.InventorySystem
             return " [Pg:" + Received + "/" + Expected + "](R:" + Recurse + ",F:" + FetchFolders + ",I:" + FetchItems + ")\t" + Name;
         }
 
-        public bool Equals(object obj)
+        public override bool Equals(object obj)
         {
             if (obj is DownloadRequest_Folder)
             {

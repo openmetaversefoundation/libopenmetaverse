@@ -511,7 +511,7 @@ namespace libsecondlife
             }
         }
 
-        private void IDCTColumn32(float[] linein, float[] lineout, int column)
+/*        private void IDCTColumn32(float[] linein, float[] lineout, int column)
         {
             float total;
             int usize;
@@ -529,7 +529,7 @@ namespace libsecondlife
                 lineout[32 * n + column] = total;
             }
         }
-
+*/
         private void IDCTLine16(float[] linein, float[] lineout, int line)
         {
             const float oosob = 2.0f / 16.0f;
@@ -549,7 +549,7 @@ namespace libsecondlife
             }
         }
 
-        private void IDCTLine32(float[] linein, float[] lineout, int line)
+ /*       private void IDCTLine32(float[] linein, float[] lineout, int line)
         {
             const float oosob = 2.0f / 32.0f;
             int lineSize = line * 32;
@@ -566,7 +566,7 @@ namespace libsecondlife
 
                 lineout[lineSize + n] = total * oosob;
             }
-        }
+        } */
 
         private void DCTLine16(float[] linein, float[] lineout, int line)
         {

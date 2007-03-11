@@ -70,7 +70,6 @@ namespace libsecondlife
         /// <param name="client"></param>
         /// <param name="simulator"></param>
         /// <param name="seedcaps"></param>
-        /// <param name="callbacks"></param>
         internal Caps(SecondLife client, Simulator simulator, string seedcaps)
         {
             Client = client;
@@ -181,7 +180,6 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                string extstring=e.Message;
 		if (e.Message.IndexOf("502") < 0)
 		   Client.DebugLog("EventQueue response: " + e.Message);
             }

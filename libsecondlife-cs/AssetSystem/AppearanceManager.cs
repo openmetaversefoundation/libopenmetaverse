@@ -541,7 +541,7 @@ namespace libsecondlife.AssetSystem
                 if (WearableAssetQueue.Count > 0)
                 {
                     AssetWearable wearableAsset = WearableCache[WearableAssetQueue[0]];
-                    AssetRequestDownload request = Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
+                    /*AssetRequestDownload request =*/Client.Assets.RequestInventoryAsset(wearableAsset.AssetID, wearableAsset.Type);
                     LogWearableAssetQueueActivity("Requesting: " + wearableAsset.AssetID);
                 }
                 else

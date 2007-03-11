@@ -119,7 +119,7 @@ namespace libsecondlife.AssetSystem
         {
             UpdateLastPacketTime();
 
-            uint TimeStarted = LastPacketTime;
+//            uint TimeStarted = LastPacketTime;
 
             while (!_Completed.WaitOne(900, false))
             {

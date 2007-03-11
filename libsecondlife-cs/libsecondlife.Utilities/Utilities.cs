@@ -81,7 +81,7 @@ namespace libsecondlife.Utilities
         private SecondLife Client;
         private ulong SimHandle = 0;
         private LLVector3 Position = LLVector3.Zero;
-        private LLUUID Seat = LLUUID.Zero;
+//        private LLUUID Seat = LLUUID.Zero;
         private System.Timers.Timer CheckTimer;
 
         public Connection(SecondLife client, int timerFrequency)
@@ -528,7 +528,6 @@ namespace libsecondlife.Utilities
 
             int x, y, index, subindex;
             byte val;
-            bool hasTriggered = false;
             int[,] markers = ParcelMarked[parcel.Simulator];
             Dictionary<int, Parcel> simParcels = Parcels[parcel.Simulator];
 

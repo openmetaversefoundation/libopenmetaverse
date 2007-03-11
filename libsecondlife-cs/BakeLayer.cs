@@ -156,6 +156,8 @@ namespace libsecondlife
             if (TotalLayers == 1)
             {
                 // FIXME: Create a properly formatted JP2 bake (5 comps)
+		// to silence the warning:
+		GetResource("fixme");
             }
             else
             {

@@ -443,7 +443,7 @@ namespace libsecondlife
                         //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
                         break;
                     case MainAvatar.EffectType.PointAt:
-                        if (block.TypeData.Length == 57)
+/*                      if (block.TypeData.Length == 57)
                         {
                             LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
                             LLUUID targetObject = new LLUUID(block.TypeData, 16);
@@ -465,7 +465,7 @@ namespace libsecondlife
                         {
                             Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
                                 block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
-                        }
+                        } */
                         break;
                 }
             }

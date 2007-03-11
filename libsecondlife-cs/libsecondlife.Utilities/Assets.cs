@@ -387,28 +387,21 @@ namespace libsecondlife.Utilities.Assets
         /// <param name="tempFile"></param>
         /// <param name="storeLocal"></param>
         /// <param name="isPriority"></param>
-        public void RequestUpload(LLUUID transactionID, AssetType type, byte[] data, bool tempFile, bool storeLocal,
-            bool isPriority)
+        public void RequestUpload(LLUUID transactionID, AssetType type, byte[] data,
+	    bool tempFile, bool storeLocal, bool isPriority)
         {
             if (!Transfers.ContainsKey(transactionID))
             {
-                LLUUID assetID;
-
-                if (transactionID != LLUUID.Zero)
-                    assetID = transactionID.Combine(Client.Network.SecureSessionID);
-                else
-                    assetID = LLUUID.Zero;
-
                 AssetUpload upload = new AssetUpload();
                 upload.AssetData = data;
-                upload.ID = transactionID;
+                upload.ID = transactionID == LLUUID.Zero ? transactionID : transactionID.Combine(Client.Network.SecureSessionID);
                 upload.Size = data.Length;
 
                 // Build and send the upload packet
                 AssetUploadRequestPacket request = new AssetUploadRequestPacket();
                 request.AssetBlock.StoreLocal = storeLocal;
                 request.AssetBlock.Tempfile = tempFile;
-                request.AssetBlock.TransactionID = transactionID;
+                request.AssetBlock.TransactionID = upload.ID;
                 request.AssetBlock.Type = (sbyte)type;
 
                 if (data.Length + 100 < Client.Settings.MAX_PACKET_SIZE)

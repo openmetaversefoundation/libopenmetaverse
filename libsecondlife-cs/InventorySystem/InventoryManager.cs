@@ -48,7 +48,7 @@ namespace libsecondlife.InventorySystem
 
         // Reference to the SLClient Library
         private SecondLife slClient;
-        private ManualResetEvent InventoryManagerInitialized = new ManualResetEvent(false);
+//        private ManualResetEvent InventoryManagerInitialized = new ManualResetEvent(false);
 
         // Reference to the Asset Manager
         internal AssetManager AssetManager
@@ -77,7 +77,7 @@ namespace libsecondlife.InventorySystem
         public ManualResetEvent ItemCreationCompleted;
 
         // Used to track to see if a download has timed out or not
-        private int LastPacketRecievedAtTick;
+//        private int LastPacketRecievedAtTick;
 
         public enum InventoryType : sbyte
         {
@@ -272,7 +272,6 @@ namespace libsecondlife.InventorySystem
         /// <summary>
         /// Recursive helper function for public InventoryFolder getFolder(String sFolderPath)
         /// </summary>
-        /// <see cref="getFolder(string sFolderPath)"/>
         /// <param name="qFolderPath"></param>
         /// <param name="ifRoot"></param>
         /// <returns></returns>
@@ -745,7 +744,6 @@ namespace libsecondlife.InventorySystem
         /// <summary>
         /// Append a request to the end of the queue.
         /// </summary>
-        /// <param name="dr"></param>
         internal DownloadRequest_Folder FolderRequestAppend(LLUUID folderID, bool recurse, bool fetchFolders, bool fetchItems, string requestName)
         {
 
@@ -1081,7 +1079,6 @@ namespace libsecondlife.InventorySystem
         /// Returned in response to a FetchInventoryDescendents request.  Contains information about the
         /// contents of a folder.
         /// </summary>
-        /// <seealso cref="InventoryManager.RequestFolder"/>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
         public void InventoryDescendentsHandler(Packet packet, Simulator simulator)
@@ -1112,7 +1109,7 @@ namespace libsecondlife.InventorySystem
 
 
             // Update Inventory Manager's last tick point, used for timeouts and such
-            LastPacketRecievedAtTick = Environment.TickCount;
+//            LastPacketRecievedAtTick = Environment.TickCount;
 
             // Used to count the number of descendants received to see if we're finished or not.
             int iDescendentsExpected = reply.AgentData.Descendents;

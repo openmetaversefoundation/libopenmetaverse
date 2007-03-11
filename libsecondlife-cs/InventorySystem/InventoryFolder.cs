@@ -79,8 +79,8 @@ namespace libsecondlife.InventorySystem
         /// Request a download of this folder's content information.
         /// </summary>
         /// <param name="recurse">Indicate if we should recursively download content information.</param>
-        /// <param name="items">Indicate if item data should be downloaded too (true), or only folders(false)</param>
-        /// <param name="clear">Indicate if item data should be downloaded too (true), or only folders(false)</param>
+        /// <param name="folders">Indicate if folders data should be downloaded</param>
+        /// <param name="items">Indicate if item data should be downloaded</param>
         /// <returns>The Request object for this download</returns>
         public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items)
         {
@@ -100,9 +100,7 @@ namespace libsecondlife.InventorySystem
         /// <param name="recurse">Indicate if we should recursively download content information.</param>
         /// <param name="folders">Indicate if sub-folder data should be downloaded (true)</param>
         /// <param name="items">Indicate if item data should be downloaded too (true)</param>
-        /// <param name="clear">Delete locale cache information for the this folder and it's children, before downloading</param>
         /// <param name="timeout">Milliseconds to wait before timing out, or -1 to wait indefinately.</param>
-        /// <param name="requestName">Name to assign to this request for debug output</param>
         /// <returns>The Request object for this download</returns>
         public DownloadRequest_Folder RequestDownloadContents(bool recurse, bool folders, bool items, int timeout)
         {

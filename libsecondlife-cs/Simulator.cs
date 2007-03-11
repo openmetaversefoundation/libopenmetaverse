@@ -130,7 +130,7 @@ namespace libsecondlife
         // Packets we sent out that need ACKs from the simulator
         private Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
         // Sequence numbers of packets we've received from the simulator
-        private Queue<uint> Inbox, PingTimes;
+        private Queue<uint> Inbox;//, PingTimes;
         private Queue<ulong> InBytes,OutBytes;
 
         // ACKs that are queued up to be sent to the simulator
@@ -162,7 +162,7 @@ namespace libsecondlife
             Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
 		    InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
 		    OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-			PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE);
+//			PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE);
 			
             // Start the ACK timer
  		    AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);

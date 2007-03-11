@@ -71,17 +71,6 @@ namespace libsecondlife.AssetSystem
             }
         }
 
-        private string _Sale_Type = "not";
-        public string Sale_Type
-        {
-            get { return _Sale_Type; }
-            set
-            {
-                _Sale_Type = value;
-                UpdateAssetData();
-            }
-        }
-
         private uint _Sale_Price = 10;
         public uint Sale_Price
         {
@@ -245,8 +234,6 @@ namespace libsecondlife.AssetSystem
         }
 
         private _ForSale _Sale = _ForSale.Not;
-        private int _SalePrice = 0;
-
 
         public enum AppearanceLayerType : byte
         {
@@ -402,7 +389,7 @@ namespace libsecondlife.AssetSystem
                         }
                         else if (fields[0] == "sale_price")
                         {
-                            _SalePrice = Int32.Parse(fields[1]);
+                            _Sale_Price = UInt32.Parse(fields[1]);
                         }
                         else if (fields[0] == "perm_mask")
                         {
@@ -489,7 +476,7 @@ namespace libsecondlife.AssetSystem
             data += "\n\t}";
             data += "\n\tsale_info\t0";
             data += "\n\t{";
-            data += "\n\t\tsale_type\t" + this._Sale_Type;
+            data += "\n\t\tsale_type\t" + _ForSaleNames[(int)this._Sale];
             data += "\n\t\tsale_price\t" + this._Sale_Price;
             data += "\n\t}";
             data += "\ntype " + this._AppearanceLayer;
