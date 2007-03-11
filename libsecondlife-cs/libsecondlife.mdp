@@ -71,7 +71,7 @@
     <File name="./AssetSystem/AssetWearable.cs" subtype="Code" buildaction="Compile" />
     <File name="./AssetSystem/AssetWearable_Body.cs" subtype="Code" buildaction="Compile" />
     <File name="./AssetSystem/AssetWearable_Clothing.cs" subtype="Code" buildaction="Compile" />
-    <File name="./AssetSystem/BodyPart_Depricated.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/BodyPart_Deprecated.cs" subtype="Code" buildaction="Compile" />
     <File name="./AssetSystem/_BodyShapeParams_.cs" subtype="Code" buildaction="Compile" />
     <File name="./AssetSystem/ImageManager.cs" subtype="Code" buildaction="Compile" />
     <File name="./AssetSystem/ImagePacketHelpers.cs" subtype="Code" buildaction="Compile" />
