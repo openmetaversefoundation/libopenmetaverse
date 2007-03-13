@@ -714,7 +714,7 @@ namespace libsecondlife
             DisconnectTimer.Start();
 
             // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
-            if (Client.Settings.SEND_THROTTLE)
+            if (Client.Settings.SEND_AGENT_THROTTLE)
                 Client.Throttle.Set(simulator);
 
             if (setDefault)
@@ -1129,32 +1129,31 @@ namespace libsecondlife
             }
         }
 
-        private void EnableSimulatorHandler(Packet packet, Simulator simulator)
-        {
-			EnableSimulatorPacket p = (EnableSimulatorPacket) packet;
-			// first, check to see if we've already started connecting to this sim	
-            lock (IPEndPoints) {
-                for (int i = 0; i < IPEndPoints.Count; i++) {
-                    if (IPEndPoints[i] != null && 
-                        IPEndPoints[i].Equals(new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port))) {
+        private void EnableSimulatorHandler(Packet packet, Simulator simulator) {
+	  EnableSimulatorPacket p = (EnableSimulatorPacket) packet;
+	  if (!Client.Settings.CROSS_BORDERS) return;
+
+	  // first, check to see if we've already started connecting to this sim	
+	  lock (IPEndPoints) {
+	    for (int i = 0; i < IPEndPoints.Count; i++) {
+	      if (IPEndPoints[i] != null && 
+		  IPEndPoints[i].Equals(new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port))) {
 //                        Client.Log("Received duplicate EnableSimulatorHandler", Helpers.LogLevel.Error);
-                        return;
-                	}    
-                }
-			}
-
-            if (Connect(new IPAddress(p.SimulatorInfo.IP), p.SimulatorInfo.Port,
-               false, (string)LoginValues["seed_capability"]) == null)
-                {
-                    Client.Log("Unabled to connect to new sim", Helpers.LogLevel.Error);
-                    return;
-                }
-
-			// we *shouldn't* have to do this here, right?
-			if (Client.Settings.SEND_THROTTLE)
-                Client.Throttle.Set(simulator);
-
-         }
+		return;
+	      }    
+	    }
+	  }
+	  
+	  if (Connect(new IPAddress(p.SimulatorInfo.IP), p.SimulatorInfo.Port,
+		      false, (string)LoginValues["seed_capability"]) == null) {
+	    Client.Log("Unabled to connect to new sim", Helpers.LogLevel.Error);
+	    return;
+	  }
+	  
+	  // we *shouldn't* have to do this here, right?
+	  if (Client.Settings.SEND_AGENT_THROTTLE)
+	    Client.Throttle.Set(simulator);
+	}
 
         private void KickUserHandler(Packet packet, Simulator simulator)
         {
