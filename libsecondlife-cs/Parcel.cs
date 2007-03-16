@@ -392,6 +392,14 @@ namespace libsecondlife
         public int AuctionID;
     }
 
+    public enum ParcelAccessFlags : uint { NoAccess = 0, Access = 1 };
+    public struct ParcelAccessEntry
+    {
+        public LLUUID AgentID;
+        public int Time;
+        public uint Flags;
+    }
+
     /// <summary>
     /// Parcel (subdivided simulator lots) subsystem
     /// </summary>
@@ -406,6 +414,7 @@ namespace libsecondlife
         public delegate void ParcelDwellCallback(LLUUID parcelID, int localID, float dwell);
         public delegate void ParcelInfoCallback(ParcelInfo parcel);
         public delegate void ParcelPropertiesCallback(Parcel parcel);
+        public delegate void ParcelAccessListReplyCallback(int sequenceID, int localID, uint flags, List<ParcelAccessEntry> accessEntries);
 
         /// <summary>
         /// 
@@ -413,6 +422,7 @@ namespace libsecondlife
         public event ParcelDwellCallback OnParcelDwell;
         public event ParcelInfoCallback OnParcelInfo;
         public event ParcelPropertiesCallback OnParcelProperties;
+        public event ParcelAccessListReplyCallback OnAccessListReply;
 
 
         private SecondLife Client;
@@ -429,6 +439,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new NetworkManager.PacketCallback(ParcelInfoReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelProperties, new NetworkManager.PacketCallback(ParcelPropertiesHandler));
             Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new NetworkManager.PacketCallback(ParcelDwellReplyHandler));
+            Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
         }
 
         /// <summary>
@@ -572,6 +583,31 @@ namespace libsecondlife
                 // Fire the callback
                 try { OnParcelProperties(parcel); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        protected void ParcelAccessListReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnAccessListReply != null)
+            {
+                ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
+
+                List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>();
+
+                foreach( ParcelAccessListReplyPacket.ListBlock block in reply.List )
+                {
+                    ParcelAccessEntry pae = new ParcelAccessEntry();
+                    pae.AgentID = block.ID;
+                    pae.Flags   = block.Flags;
+                    pae.Time    = block.Time;
+
+                    accessList.Add(pae);
+                }
+
+                try
+                {
+                    OnAccessListReply(reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags, accessList);
+                } catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
     }
