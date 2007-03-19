@@ -155,9 +155,7 @@
     <Compile Include="ObjectManager.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Parcel.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="ParcelManager.cs" />
     <Compile Include="ParticleSystem.cs">
       <SubType>Code</SubType>
     </Compile>

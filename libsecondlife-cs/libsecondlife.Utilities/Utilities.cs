@@ -515,14 +515,23 @@ namespace libsecondlife.Utilities
                 }
             }
 
-            Client.Parcels.ParcelPropertiesRequest(simulator, 0.0f, 0.0f, 0.0f, 0.0f, -10000, false);
+            Client.Parcels.PropertiesRequest(simulator, 0.0f, 0.0f, 0.0f, 0.0f, -10000, false);
         }
 
-        private void Parcels_OnParcelProperties(Parcel parcel)
+        private void Parcels_OnParcelProperties(Parcel parcel, ParcelManager.ParcelResult result, int sequenceID, 
+            bool snapSelection)
         {
+            if (result == ParcelManager.ParcelResult.NoData)
+            {
+                Client.Log("ParcelDownloader received a NoData response, sequenceID " + sequenceID, 
+                    Helpers.LogLevel.Warning);
+                return;
+            }
+
             if (!ParcelMarked.ContainsKey(parcel.Simulator))
             {
-                Client.Log("received unexpected parcel data for " + parcel.Simulator, Helpers.LogLevel.Info);
+                Client.Log("ParcelDownloader received unexpected parcel data for " + parcel.Simulator, 
+                    Helpers.LogLevel.Info);
                 return;
             }
 
@@ -551,19 +560,23 @@ namespace libsecondlife.Utilities
                         markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
                     }
 
-            // do we really need this next part?  We've already asked for all of the parcels...
+            // Request parcel information for the next missing area
             for (x = 0; x < 64; x++)
+            {
                 for (y = 0; y < 64; y++)
+                {
                     if (markers[x, y] == 0)
                     {
-                        Client.Parcels.ParcelPropertiesRequest(parcel.Simulator,
+                        Client.Parcels.PropertiesRequest(parcel.Simulator,
                                            (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
                                            (y * 4.0f), (x * 4.0f), -10000, false);
 
                         return;
                     }
+                }
+            }
 
-            // if we fall through there, there are no more zeroes in the markers map
+            // If we get here, there are no more zeroes in the markers map
             lock (active_sims)
             {
                 if (active_sims.Contains(parcel.Simulator))
@@ -578,8 +591,8 @@ namespace libsecondlife.Utilities
                     }
                 }
                 else
-                    Client.Log("ParcelDownloader: Got parcel properties from a sim (" + parcel.Simulator + ") we're not downloading",
-                           Helpers.LogLevel.Info);
+                    Client.Log("ParcelDownloader: Got parcel properties from a sim (" + parcel.Simulator + 
+                        ") we're not downloading", Helpers.LogLevel.Info);
             }
         }
     }

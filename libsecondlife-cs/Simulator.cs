@@ -118,7 +118,7 @@ namespace libsecondlife
         // Calculated bandwidth -- it would be nice to have these calculated
         // on the fly, but this is far, far easier :/  These are bytes per second.
         public int IncomingBPS = 0, OutgoingBPS = 0;
-                
+
         private NetworkManager Network;
         private uint Sequence = 0;
         private object SequenceLock = new object();
@@ -131,7 +131,7 @@ namespace libsecondlife
         private Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
         // Sequence numbers of packets we've received from the simulator
         private Queue<uint> Inbox;//, PingTimes;
-        private Queue<ulong> InBytes,OutBytes;
+        private Queue<ulong> InBytes, OutBytes;
 
         // ACKs that are queued up to be sent to the simulator
         private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
@@ -140,13 +140,13 @@ namespace libsecondlife
         private System.Timers.Timer AckTimer;
         private System.Timers.Timer PingTimer;
         private System.Timers.Timer StatsTimer;
-                
+
         /* Ping processing, to measure link health */
         public int LastPingSent = 0;
         public byte LastPingID = 0;
         public int LastLag = 0;
-        public int MissedPings =0;
-                
+        public int MissedPings = 0;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -162,8 +162,8 @@ namespace libsecondlife
             Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
             InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-//          PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE);
-                        
+            //          PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE);
+
             // Start the ACK timer
             AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
@@ -173,19 +173,18 @@ namespace libsecondlife
             StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
             StatsTimer.Start();
 
-/*              if(Client.Settings.SEND_PINGS) {
-                    // Start the PING timer
-                    PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
-                    PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
-                    PingTimer.Start();
-                }
-*/                      
+            // Start the PING timer
+            PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
+            PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
+            PingTimer.Enabled = Client.Settings.SEND_PINGS;
+
             // Initialize the callback for receiving a new packet
             ReceivedData = new AsyncCallback(OnReceivedData);
 
             Client.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
 
-            try {
+            try
+            {
                 ConnectedEvent.Reset();
 
                 // Create an endpoint that we will be communicating with (need it in two 
@@ -228,29 +227,28 @@ namespace libsecondlife
         /// <summary>
         /// Disconnect a Simulator
         /// </summary>
-        public void Disconnect() {
+        public void Disconnect()
+        {
             if (!connected) return;
 
             connected = false;
             AckTimer.Stop();
             StatsTimer.Stop();
-                        if (Client.Settings.SEND_PINGS) PingTimer.Stop();
-                                
+            if (Client.Settings.SEND_PINGS) PingTimer.Stop();
+
             // Try to send the CloseCircuit notice
             CloseCircuitPacket close = new CloseCircuitPacket();
 
             if (!Connection.Connected) return;
-            
-            try {
-                Connection.Send(close.ToBytes());
-            } catch (SocketException) {
-                // There's a high probability of this failing if the network is
-                // disconnecting, so don't even bother logging the error
-            }
-               
-            try { // Shut the socket communication down    
-                Connection.Shutdown(SocketShutdown.Both);
-            } catch (SocketException) {}               
+
+            // There's a high probability of this failing if the network is
+            // disconnecting, so don't even bother logging the error
+            try { Connection.Send(close.ToBytes()); }
+            catch (SocketException) { }
+
+            // Shut the socket communication down
+            try { Connection.Shutdown(SocketShutdown.Both); }
+            catch (SocketException) { }
         }
 
         /// <summary>
@@ -266,9 +264,11 @@ namespace libsecondlife
             // Keep track of when this packet was sent out
             packet.TickCount = Environment.TickCount;
 
-            if (incrementSequence) {
+            if (incrementSequence)
+            {
                 // Set the sequence number
-                lock (SequenceLock) {
+                lock (SequenceLock)
+                {
                     if (Sequence > Client.Settings.MAX_SEQUENCE)
                         Sequence = 1;
                     else
@@ -282,8 +282,10 @@ namespace libsecondlife
 
                 packet.Header.AppendedAcks = false;
 
-                if (packet.Header.Reliable) {
-                    lock (NeedAck) {
+                if (packet.Header.Reliable)
+                {
+                    lock (NeedAck)
+                    {
                         if (!NeedAck.ContainsKey(packet.Header.Sequence))
                             NeedAck.Add(packet.Header.Sequence, packet);
                         else
@@ -294,18 +296,21 @@ namespace libsecondlife
 
                     // Don't append ACKs to resent packets, in case that's what was causing the
                     // delivery to fail
-                    if (!packet.Header.Resent) {
+                    if (!packet.Header.Resent)
+                    {
                         // Append any ACKs that need to be sent out to this packet
-                        lock (PendingAcks) {
+                        lock (PendingAcks)
+                        {
                             if (PendingAcks.Count > 0 && PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS &&
                                 packet.Type != PacketType.PacketAck &&
-                                packet.Type != PacketType.LogoutRequest) {
-                                
+                                packet.Type != PacketType.LogoutRequest)
+                            {
+
                                 packet.Header.AckList = new uint[PendingAcks.Count];
 
                                 for (int i = 0; i < PendingAcks.Count; i++)
                                     packet.Header.AckList[i] = PendingAcks.Values[i];
-                                
+
                                 PendingAcks.Clear();
                                 packet.Header.AppendedAcks = true;
                             }
@@ -319,7 +324,7 @@ namespace libsecondlife
             bytes = buffer.Length;
             SentBytes += (ulong)bytes;
             SentPackets++;
-                        
+
             try
             {
                 // Zerocode if needed
@@ -354,7 +359,7 @@ namespace libsecondlife
         /// should be modified to the current stream sequence number</param>
         public void SendPacket(byte[] payload, bool setSequence)
         {
-        if (Client.Settings.OUTBOUND_THROTTLE) DoThrottle();
+            if (Client.Settings.OUTBOUND_THROTTLE) DoThrottle();
 
             try
             {
@@ -368,7 +373,7 @@ namespace libsecondlife
                         Sequence++;
                     }
                 }
-                
+
                 SentBytes += (ulong)payload.Length;
                 SentPackets++;
                 Connection.Send(payload, payload.Length, SocketFlags.None);
@@ -383,24 +388,27 @@ namespace libsecondlife
             }
         }
 
-                public void SendPing() {
-                        StartPingCheckPacket ping = new StartPingCheckPacket();
-                        ping.PingID.PingID=LastPingID++;
-                        ping.PingID.OldestUnacked=0; // FIXME
-                        ping.Header.Reliable = false;
-                        SendPacket(ping, true);
-                        LastPingSent=Environment.TickCount;
-                }
-                
-                public void DoThrottle() {
-                        float throttle;
-                        if (OutgoingBPS > Client.Settings.OUTBOUND_THROTTLE_RATE) {
-                                throttle =(OutgoingBPS - Client.Settings.OUTBOUND_THROTTLE_RATE) * 2000 /
-                                                         Client.Settings.OUTBOUND_THROTTLE_RATE;
-//                              Client.Log("Throttling "+throttle, Helpers.LogLevel.Debug);
-                                Thread.Sleep((int)throttle);
-                        }
-                }
+        public void SendPing()
+        {
+            StartPingCheckPacket ping = new StartPingCheckPacket();
+            ping.PingID.PingID = LastPingID++;
+            ping.PingID.OldestUnacked = 0; // FIXME
+            ping.Header.Reliable = false;
+            SendPacket(ping, true);
+            LastPingSent = Environment.TickCount;
+        }
+
+        public void DoThrottle()
+        {
+            float throttle;
+            if (OutgoingBPS > Client.Settings.OUTBOUND_THROTTLE_RATE)
+            {
+                throttle = (OutgoingBPS - Client.Settings.OUTBOUND_THROTTLE_RATE) * 2000 /
+                                         Client.Settings.OUTBOUND_THROTTLE_RATE;
+                //                              Client.Log("Throttling "+throttle, Helpers.LogLevel.Debug);
+                Thread.Sleep((int)throttle);
+            }
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -500,7 +508,7 @@ namespace libsecondlife
                         acks.Packets[i] = new PacketAckPacket.PacketsBlock();
                         acks.Packets[i].ID = PendingAcks.Values[i];
                     }
-                    
+
                     SendPacket(acks, true);
 
                     PendingAcks.Clear();
@@ -521,14 +529,18 @@ namespace libsecondlife
                 {
                     if (now - packet.TickCount > Client.Settings.RESEND_TIMEOUT)
                     {
-                        try {
-                        Client.DebugLog("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
-                            "), " + (now - packet.TickCount) + "ms have passed");
-                        packet.Header.Resent = true;
-                        ResentPackets++;
-                                SendPacket(packet, false);
-                        } catch (Exception ex) {
-                                Client.DebugLog("got exception trying to resend packet: "+ex.ToString()); }
+                        try
+                        {
+                            Client.DebugLog("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
+                                "), " + (now - packet.TickCount) + "ms have passed");
+                            packet.Header.Resent = true;
+                            ResentPackets++;
+                            SendPacket(packet, false);
+                        }
+                        catch (Exception ex)
+                        {
+                            Client.DebugLog("got exception trying to resend packet: " + ex.ToString());
+                        }
                     }
                 }
             }
@@ -578,7 +590,7 @@ namespace libsecondlife
 
             RecvBytes += (ulong)numBytes;
             RecvPackets++;
-        
+
             #endregion Packet Decoding
 
             #region Reliable Handling
@@ -699,27 +711,28 @@ namespace libsecondlife
 
         private void StatsTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
         {
-                ulong old_in = 0, old_out = 0;
-                        if (InBytes.Count >= Client.Settings.STATS_QUEUE_SIZE) 
-                                old_in = InBytes.Dequeue();
-                        if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE) 
-                                old_out = OutBytes.Dequeue();
-                        InBytes.Enqueue(RecvBytes);
-                        OutBytes.Enqueue(SentBytes);
-                        if (old_in>0 && old_out>0) {
-                                IncomingBPS = (int) (RecvBytes - old_in) /  Client.Settings.STATS_QUEUE_SIZE;
-                                OutgoingBPS = (int) (SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
-/*                              Client.Log("Incoming: "+IncomingBPS +" Out: "+OutgoingBPS +
-                                            " Lag: "+LastLag+" Pings: "+ReceivedPongs +
-                                            "/"+SentPings, Helpers.LogLevel.Debug); 
-*/                      }
+            ulong old_in = 0, old_out = 0;
+            if (InBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
+                old_in = InBytes.Dequeue();
+            if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
+                old_out = OutBytes.Dequeue();
+            InBytes.Enqueue(RecvBytes);
+            OutBytes.Enqueue(SentBytes);
+            if (old_in > 0 && old_out > 0)
+            {
+                IncomingBPS = (int)(RecvBytes - old_in) / Client.Settings.STATS_QUEUE_SIZE;
+                OutgoingBPS = (int)(SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
+                /*                              Client.Log("Incoming: "+IncomingBPS +" Out: "+OutgoingBPS +
+                                                            " Lag: "+LastLag+" Pings: "+ReceivedPongs +
+                                                            "/"+SentPings, Helpers.LogLevel.Debug); 
+                */
+            }
         }
 
-/*        private void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
+        private void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
         {
-                        SendPing();
-                        SentPings++;
-        } */
-
+            SendPing();
+            SentPings++;
+        }
     }
 }
