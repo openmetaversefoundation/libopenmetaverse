@@ -1048,7 +1048,7 @@ namespace libsecondlife.InventorySystem
                 iiCreationInProgress._CreationDate = reply.InventoryData[0].CreationDate;
                 iiCreationInProgress._BaseMask = reply.InventoryData[0].BaseMask;
 
-                iiCreationInProgress._Name = Helpers.FieldToString(reply.InventoryData[0].Name);
+                iiCreationInProgress._Name = Helpers.FieldToUTF8String(reply.InventoryData[0].Name);
                 iiCreationInProgress._InvType = reply.InventoryData[0].InvType;
                 iiCreationInProgress._Type = reply.InventoryData[0].Type;
                 iiCreationInProgress._AssetID = reply.InventoryData[0].AssetID;
@@ -1059,7 +1059,7 @@ namespace libsecondlife.InventorySystem
                 iiCreationInProgress._ItemID = reply.InventoryData[0].ItemID;
                 iiCreationInProgress._FolderID = reply.InventoryData[0].FolderID;
                 iiCreationInProgress._EveryoneMask = reply.InventoryData[0].EveryoneMask;
-                iiCreationInProgress._Description = Helpers.FieldToString(reply.InventoryData[0].Description);
+                iiCreationInProgress._Description = Helpers.FieldToUTF8String(reply.InventoryData[0].Description);
                 iiCreationInProgress._NextOwnerMask = reply.InventoryData[0].NextOwnerMask;
                 iiCreationInProgress._GroupMask = reply.InventoryData[0].GroupMask;
                 iiCreationInProgress._OwnerMask = reply.InventoryData[0].OwnerMask;

@@ -383,7 +383,7 @@ namespace SLAccountant
             foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
             {
                 ListViewItem listItem = new ListViewItem(new string[] { 
-                Helpers.FieldToString(block.FirstName) + " " + Helpers.FieldToString(block.LastName), 
+                Helpers.FieldToUTF8String(block.FirstName) + " " + Helpers.FieldToUTF8String(block.LastName), 
                 (block.Online ? "Yes" : "No"), block.AgentID.ToString() });
 
                 this.BeginInvoke(new ListViewItemParamInvoker(AddFindItem), new object[] { listItem });

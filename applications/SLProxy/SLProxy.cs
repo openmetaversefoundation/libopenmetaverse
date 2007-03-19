@@ -502,7 +502,7 @@ namespace SLProxy
             byte[] content = new byte[contentLength];
             reader.Read(content, 0, contentLength);
 
-            if (contentLength < 8192) Console.WriteLine("[" + reqNo + "] request length = " + contentLength + ":\n" + Helpers.FieldToString(content) + "\n-------------");
+            if (contentLength < 8192) Console.WriteLine("[" + reqNo + "] request length = " + contentLength + ":\n" + Helpers.FieldToUTF8String(content) + "\n-------------");
 
             if (uri == "/")
             {

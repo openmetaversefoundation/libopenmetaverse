@@ -491,7 +491,7 @@ namespace libsecondlife
 
                     group.ID = block.GroupID;
                     group.InsigniaID = block.GroupInsigniaID;
-                    group.Name = Helpers.FieldToString(block.GroupName);
+                    group.Name = Helpers.FieldToUTF8String(block.GroupName);
                     group.Powers = block.GroupPowers;
                     group.Contribution = block.Contribution;
                     group.AcceptNotices = block.AcceptNotices;
@@ -512,16 +512,16 @@ namespace libsecondlife
                 GroupProfile group = new GroupProfile();
 
                 group.AllowPublish = profile.GroupData.AllowPublish;
-                group.Charter = Helpers.FieldToString(profile.GroupData.Charter);
+                group.Charter = Helpers.FieldToUTF8String(profile.GroupData.Charter);
                 group.FounderID = profile.GroupData.FounderID;
                 group.GroupMembershipCount = profile.GroupData.GroupMembershipCount;
                 group.GroupRolesCount = profile.GroupData.GroupRolesCount;
                 group.InsigniaID = profile.GroupData.InsigniaID;
                 group.MaturePublish = profile.GroupData.MaturePublish;
                 group.MembershipFee = profile.GroupData.MembershipFee;
-                group.MemberTitle = Helpers.FieldToString(profile.GroupData.MemberTitle);
+                group.MemberTitle = Helpers.FieldToUTF8String(profile.GroupData.MemberTitle);
                 group.Money = profile.GroupData.Money;
-                group.Name = Helpers.FieldToString(profile.GroupData.Name);
+                group.Name = Helpers.FieldToUTF8String(profile.GroupData.Name);
                 group.OpenEnrollment = profile.GroupData.OpenEnrollment;
                 group.OwnerRole = profile.GroupData.OwnerRole;
                 group.Powers = profile.GroupData.PowersMask;
@@ -543,7 +543,7 @@ namespace libsecondlife
                 {
                     GroupTitle groupTitle = new GroupTitle();
 
-                    groupTitle.Title = Helpers.FieldToString(block.Title);
+                    groupTitle.Title = Helpers.FieldToUTF8String(block.Title);
                     groupTitle.Selected = block.Selected;
 
                     groupTitleCache[block.RoleID] = groupTitle;
@@ -573,9 +573,9 @@ namespace libsecondlife
                         groupMember.ID = block.AgentID;
                         groupMember.Contribution = block.Contribution;
                         groupMember.IsOwner = block.IsOwner;
-                        groupMember.OnlineStatus = Helpers.FieldToString(block.OnlineStatus);
+                        groupMember.OnlineStatus = Helpers.FieldToUTF8String(block.OnlineStatus);
                         groupMember.Powers = block.AgentPowers;
-                        groupMember.Title = Helpers.FieldToString(block.Title);
+                        groupMember.Title = Helpers.FieldToUTF8String(block.Title);
 
                         groupMemberCache[block.AgentID] = groupMember;
                     }
@@ -607,10 +607,10 @@ namespace libsecondlife
                         GroupRole groupRole = new GroupRole();
 
                         groupRole.ID = block.RoleID;
-                        groupRole.Description = Helpers.FieldToString(block.Description);
-                        groupRole.Name = Helpers.FieldToString(block.Name);
+                        groupRole.Description = Helpers.FieldToUTF8String(block.Description);
+                        groupRole.Name = Helpers.FieldToUTF8String(block.Name);
                         groupRole.Powers = block.Powers;
-                        groupRole.Title = Helpers.FieldToString(block.Title);
+                        groupRole.Title = Helpers.FieldToUTF8String(block.Title);
 
                         groupRoleCache[block.RoleID] = groupRole;
                     }
@@ -684,7 +684,7 @@ namespace libsecondlife
                 account.IntervalDays = summary.MoneyData.IntervalDays;
                 account.LandTaxCurrent = summary.MoneyData.LandTaxCurrent;
                 account.LandTaxEstimate = summary.MoneyData.LandTaxEstimate;
-                account.LastTaxDate = Helpers.FieldToString(summary.MoneyData.LastTaxDate);
+                account.LastTaxDate = Helpers.FieldToUTF8String(summary.MoneyData.LastTaxDate);
                 account.LightTaxCurrent = summary.MoneyData.LightTaxCurrent;
                 account.LightTaxEstimate = summary.MoneyData.LightTaxEstimate;
                 account.NonExemptMembers = summary.MoneyData.NonExemptMembers;
@@ -692,8 +692,8 @@ namespace libsecondlife
                 account.ObjectTaxEstimate = summary.MoneyData.ObjectTaxEstimate;
                 account.ParcelDirFeeCurrent = summary.MoneyData.ParcelDirFeeCurrent;
                 account.ParcelDirFeeEstimate = summary.MoneyData.ParcelDirFeeEstimate;
-                account.StartDate = Helpers.FieldToString(summary.MoneyData.StartDate);
-                account.TaxDate = Helpers.FieldToString(summary.MoneyData.TaxDate);
+                account.StartDate = Helpers.FieldToUTF8String(summary.MoneyData.StartDate);
+                account.TaxDate = Helpers.FieldToUTF8String(summary.MoneyData.TaxDate);
                 account.TotalCredits = summary.MoneyData.TotalCredits;
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
@@ -711,14 +711,14 @@ namespace libsecondlife
 
                 account.CurrentInterval = details.MoneyData.CurrentInterval;
                 account.IntervalDays = details.MoneyData.IntervalDays;
-                account.StartDate = Helpers.FieldToString(details.MoneyData.StartDate);
+                account.StartDate = Helpers.FieldToUTF8String(details.MoneyData.StartDate);
 
                 account.HistoryItems = new List<KeyValuePair<string, int>>();
 
                 foreach (GroupAccountDetailsReplyPacket.HistoryDataBlock block in details.HistoryData)
                 {
                     KeyValuePair<string, int> item =
-                        new KeyValuePair<string, int>(Helpers.FieldToString(block.Description), block.Amount);
+                        new KeyValuePair<string, int>(Helpers.FieldToUTF8String(block.Description), block.Amount);
 
                     account.HistoryItems.Add(item);
                 }

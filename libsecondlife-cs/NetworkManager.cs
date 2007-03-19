@@ -1072,7 +1072,7 @@ namespace libsecondlife
             //handshake.RegionInfo.SimAccess;
 
             simulator.IsEstateManager = handshake.RegionInfo.IsEstateManager;
-            simulator.Name = Helpers.FieldToString(handshake.RegionInfo.SimName);
+            simulator.Name = Helpers.FieldToUTF8String(handshake.RegionInfo.SimName);
             simulator.SimOwner = handshake.RegionInfo.SimOwner;
             simulator.TerrainBase0 = handshake.RegionInfo.TerrainBase0;
             simulator.TerrainBase1 = handshake.RegionInfo.TerrainBase1;
@@ -1157,7 +1157,7 @@ namespace libsecondlife
 
         private void KickUserHandler(Packet packet, Simulator simulator)
         {
-            string message = Helpers.FieldToString(((KickUserPacket)packet).UserInfo.Reason);
+            string message = Helpers.FieldToUTF8String(((KickUserPacket)packet).UserInfo.Reason);
 
             // Shutdown the network layer
             Shutdown();

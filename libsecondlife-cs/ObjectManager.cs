@@ -1137,7 +1137,7 @@ namespace libsecondlife
                     SerializableDictionary<string, NameValue> nameValues = new SerializableDictionary<string, NameValue>();
 
                     // Parse the name values
-                    string nameValue = Helpers.FieldToString(block.NameValue);
+                    string nameValue = Helpers.FieldToUTF8String(block.NameValue);
                     if (nameValue.Length > 0)
                     {
                         string[] lines = nameValue.Split(new char[] { '\n' });
@@ -1936,12 +1936,12 @@ namespace libsecondlife
             props.RequestFlags = (LLObject.ObjectPropertiesFamily.RequestFlagsType)op.ObjectData.RequestFlags;
             props.BaseMask = op.ObjectData.BaseMask;
             props.Category = op.ObjectData.Category;
-            props.Description = Helpers.FieldToString(op.ObjectData.Description);
+            props.Description = Helpers.FieldToUTF8String(op.ObjectData.Description);
             props.EveryoneMask = op.ObjectData.EveryoneMask;
             props.GroupID = op.ObjectData.GroupID;
             props.GroupMask = op.ObjectData.GroupMask;
             props.LastOwnerID = op.ObjectData.LastOwnerID;
-            props.Name = Helpers.FieldToString(op.ObjectData.Name);
+            props.Name = Helpers.FieldToUTF8String(op.ObjectData.Name);
             props.NextOwnerMask = op.ObjectData.NextOwnerMask;
             props.ObjectID = op.ObjectData.ObjectID;
             props.OwnerID = op.ObjectData.OwnerID;

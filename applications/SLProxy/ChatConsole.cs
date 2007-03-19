@@ -92,8 +92,8 @@ public class ChatConsole {
 	private static Packet ChatFromSimulator(Packet packet, IPEndPoint sim) {
 		// deconstruct the packet
         ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
-        string message = Helpers.FieldToString(chat.ChatData.Message);
-        string name = Helpers.FieldToString(chat.ChatData.FromName);
+        string message = Helpers.FieldToUTF8String(chat.ChatData.Message);
+        string name = Helpers.FieldToUTF8String(chat.ChatData.FromName);
         byte audible = chat.ChatData.Audible;
         byte type = chat.ChatData.ChatType;
 

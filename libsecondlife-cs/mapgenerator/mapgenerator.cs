@@ -420,25 +420,27 @@ namespace mapgenerator
             writer.WriteLine("            }" + Environment.NewLine);
 
             // ToString() function
-            //writer.WriteLine("            /// <summary>Serialize this block to a string</summary><returns>A string containing the serialized block</returns>");
             writer.WriteLine("            public override string ToString()" + Environment.NewLine + "            {");
-            writer.WriteLine("                string output = \"-- " + block.Name + " --\" + Environment.NewLine;");
+            writer.WriteLine("                StringBuilder output = new StringBuilder();");
+            writer.WriteLine("                output.AppendLine(\"-- " + block.Name + " --\");");
 
-            foreach (MapField field in block.Fields)
+            for (int i = 0; i < block.Fields.Count; i++)
             {
+                MapField field = block.Fields[i];
+
                 if (field.Type == FieldType.Variable || field.Type == FieldType.Fixed)
                 {
-                    writer.WriteLine("                output += Helpers.FieldToString(" + field.Name + ", \"" + field.Name + "\") + Environment.NewLine;");
+                    writer.WriteLine("                Helpers.FieldToString(output, " + field.Name + ", \"" + field.Name + "\");");
+                    if (i != block.Fields.Count - 1) writer.WriteLine("                output.Append(Environment.NewLine);");
                 }
                 else
                 {
-                    writer.WriteLine("                output += \"" + field.Name + ": \" + " + field.Name + ".ToString() + \"\" + Environment.NewLine;");
+                    if (i != block.Fields.Count - 1) writer.WriteLine("                output.AppendLine(String.Format(\"" + field.Name + ": {0}\", " + field.Name + "));");
+                    else writer.WriteLine("                output.Append(String.Format(\"" + field.Name + ": {0}\", " + field.Name + "));");
                 }
             }
 
-            writer.WriteLine("                output = output.Trim();" + Environment.NewLine +
-                "                return output;" + Environment.NewLine + "            }");
-
+            writer.WriteLine("                return output.ToString();" + Environment.NewLine + "            }");
             writer.WriteLine("        }" + Environment.NewLine);
         }
 

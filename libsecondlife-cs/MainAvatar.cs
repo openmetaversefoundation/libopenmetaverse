@@ -1621,11 +1621,11 @@ namespace libsecondlife
 
                 foreach (ScriptDialogPacket.ButtonsBlock button in dialog.Buttons)
                 {
-                    buttons.Add(Helpers.FieldToString(button.ButtonLabel));
+                    buttons.Add(Helpers.FieldToUTF8String(button.ButtonLabel));
                 }
 
                 OnScriptDialog(Helpers.FieldToUTF8String(dialog.Data.Message),
-                    Helpers.FieldToString(dialog.Data.ObjectName),
+                    Helpers.FieldToUTF8String(dialog.Data.ObjectName),
                     dialog.Data.ImageID,
                     dialog.Data.ObjectID,
                     Helpers.FieldToUTF8String(dialog.Data.FirstName),
@@ -1730,7 +1730,7 @@ namespace libsecondlife
 
             if (OnMoneyBalanceReplyReceived != null)
             {
-                OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, Helpers.FieldToString(mbrp.MoneyData.Description));
+                OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, Helpers.FieldToUTF8String(mbrp.MoneyData.Description));
             }
 
             if (OnBalanceUpdated != null)

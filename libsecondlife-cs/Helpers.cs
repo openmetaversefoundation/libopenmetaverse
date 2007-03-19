@@ -398,13 +398,12 @@ namespace libsecondlife
         /// Convert a variable length field (byte array) to a string
         /// </summary>
         /// <remarks>If the byte array has unprintable characters in it, a 
-        /// hex dump will be put in the string instead</remarks>
+        /// hex dump will be written instead</remarks>
+        /// <param name="output">The StringBuilder object to write to</param>
         /// <param name="bytes">The byte array to convert to a string</param>
-        /// <returns>An ASCII string or a string containing a hex dump, minus 
-        /// the null terminator</returns>
-        public static string FieldToString(byte[] bytes)
+        public static void FieldToString(StringBuilder output, byte[] bytes)
         {
-            return FieldToString(bytes, String.Empty);
+            FieldToString(output, bytes, String.Empty);
         }
 
         /// <summary>
@@ -412,17 +411,15 @@ namespace libsecondlife
         /// field name prepended to each line of the output
         /// </summary>
         /// <remarks>If the byte array has unprintable characters in it, a 
-        /// hex dump will be put in the string instead</remarks>
+        /// hex dump will be written instead</remarks>
+        /// <param name="output">The StringBuilder object to write to</param>
         /// <param name="bytes">The byte array to convert to a string</param>
         /// <param name="fieldName">A field name to prepend to each line of output</param>
-        /// <returns>An ASCII string or a string containing a hex dump, minus 
-        /// the null terminator</returns>
-        public static string FieldToString(byte[] bytes, string fieldName)
+        internal static void FieldToString(StringBuilder output, byte[] bytes, string fieldName)
         {
             // Check for a common case
-            if (bytes.Length == 0) return String.Empty;
+            if (bytes.Length == 0) return;
 
-            StringBuilder output = new StringBuilder();
             bool printable = true;
 
             for (int i = 0; i < bytes.Length; ++i)
@@ -478,8 +475,6 @@ namespace libsecondlife
                     }
                 }
             }
-
-            return output.ToString();
         }
 
         /// <summary>
@@ -736,7 +731,7 @@ namespace libsecondlife
             {
                 Console.WriteLine("Zerodecoding error: " + Environment.NewLine +
                     "i=" + i + "srclen=" + srclen + ", bodylen=" + bodylen + ", zerolen=" + zerolen + Environment.NewLine +
-                    FieldToString(src, "src") + Environment.NewLine + 
+                    FieldToHexString(src, "src") + Environment.NewLine + 
                     e.ToString());
             }
 

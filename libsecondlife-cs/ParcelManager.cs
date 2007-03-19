@@ -159,7 +159,7 @@ namespace libsecondlife
         public LLVector3 AABBMax;
         /// <summary>Bitmap describing land layout in 4x4m squares across the entire region</summary>
         public byte[] Bitmap;
-        /// <summary>Total land area</summary>
+        /// <summary>Total parcel land area</summary>
         public int Area;
         /// <summary></summary>
         public ParcelStatus Status;
@@ -641,17 +641,17 @@ namespace libsecondlife
                 parcelInfo.ActualArea = info.Data.ActualArea;
                 parcelInfo.AuctionID = info.Data.AuctionID;
                 parcelInfo.BillableArea = info.Data.BillableArea;
-                parcelInfo.Description = Helpers.FieldToString(info.Data.Desc);
+                parcelInfo.Description = Helpers.FieldToUTF8String(info.Data.Desc);
                 parcelInfo.Dwell = info.Data.Dwell;
                 parcelInfo.GlobalX = info.Data.GlobalX;
                 parcelInfo.GlobalY = info.Data.GlobalY;
                 parcelInfo.GlobalZ = info.Data.GlobalZ;
                 parcelInfo.ID = info.Data.ParcelID;
                 parcelInfo.Mature = ((info.Data.Flags & 1) != 0) ? true : false;
-                parcelInfo.Name = Helpers.FieldToString(info.Data.Name);
+                parcelInfo.Name = Helpers.FieldToUTF8String(info.Data.Name);
                 parcelInfo.OwnerID = info.Data.OwnerID;
                 parcelInfo.SalePrice = info.Data.SalePrice;
-                parcelInfo.SimName = Helpers.FieldToString(info.Data.SimName);
+                parcelInfo.SimName = Helpers.FieldToUTF8String(info.Data.SimName);
                 parcelInfo.SnapshotID = info.Data.SnapshotID;
 
                 try { OnParcelInfo(parcelInfo); }

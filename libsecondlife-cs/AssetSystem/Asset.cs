@@ -171,7 +171,7 @@ namespace libsecondlife.AssetSystem
         /// </summary>
 		public string AssetDataToString()
 		{
-            return Helpers.FieldToString((byte[])_AssetData);
+            return Helpers.FieldToUTF8String((byte[])_AssetData);
 		}
 
         public virtual void SetAssetData(byte[] data)

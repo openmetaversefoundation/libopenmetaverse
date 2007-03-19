@@ -247,7 +247,7 @@ namespace libsecondlife
 
                     region.X = block.X;
                     region.Y = block.Y;
-                    region.Name = Helpers.FieldToString(block.Name);
+                    region.Name = Helpers.FieldToUTF8String(block.Name);
                     region.RegionFlags = block.RegionFlags;
                     region.WaterHeight = block.WaterHeight;
                     region.Agents = block.Agents;

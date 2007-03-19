@@ -343,7 +343,7 @@ namespace libsecondlife
                     classified.ExpirationDate = Helpers.UnixTimeToDateTime(block.ExpirationDate);
                     classified.Flags = block.ClassifiedFlags;
                     classified.ID = block.ClassifiedID;
-                    classified.Name = Helpers.FieldToString(block.Name);
+                    classified.Name = Helpers.FieldToUTF8String(block.Name);
                     classified.Price = block.PriceForListing;
 
                     classifieds.Add(classified);
@@ -367,7 +367,7 @@ namespace libsecondlife
 
                     dirParcel.ActualArea = block.ActualArea;
                     dirParcel.ID = block.ParcelID;
-                    dirParcel.Name = Helpers.FieldToString(block.Name);
+                    dirParcel.Name = Helpers.FieldToUTF8String(block.Name);
                     dirParcel.SalePrice = block.SalePrice;
                     dirParcel.Auction = block.Auction;
                     dirParcel.ForSale = block.ForSale;

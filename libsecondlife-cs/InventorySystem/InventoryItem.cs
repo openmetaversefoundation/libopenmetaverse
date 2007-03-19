@@ -566,7 +566,7 @@ namespace libsecondlife.InventorySystem
             {
                 if (AssetID != LLUUID.Zero)
                 {
-                    output += xmlSafe(Helpers.FieldToString(Asset.AssetData));
+                    output += xmlSafe(Helpers.FieldToUTF8String(Asset.AssetData));
                 }
             }
             output += "</item>";
