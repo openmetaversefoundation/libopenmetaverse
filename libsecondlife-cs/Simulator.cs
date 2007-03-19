@@ -151,46 +151,56 @@ namespace libsecondlife
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="ip">IP address of the simulator</param>
-        /// <param name="port">Port on the simulator to connect to</param>
-        /// <param name="moveToSim">Whether to move our agent in to this sim or not</param>
-        public Simulator(SecondLife client, IPAddress ip, int port, bool moveToSim)
+        /// <param name="address">IP address and port of the simulator</param>
+        public Simulator(SecondLife client, IPEndPoint address)
         {
             Client = client;
+
             Estate = new EstateTools(Client);
             Network = client.Network;
             Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
             InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-            //          PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE);
+            //PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE); //TODO: Is this here for a purpose?
 
-            // Start the ACK timer
-            AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
-            AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
-            AckTimer.Start();
-
-            StatsTimer = new System.Timers.Timer(1000);
-            StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
-            StatsTimer.Start();
-
-            // Start the PING timer
-            PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
-            PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
-            PingTimer.Enabled = Client.Settings.SEND_PINGS;
+            // Create an endpoint that we will be communicating with (need it in two 
+            // types due to .NET weirdness)
+            ipEndPoint = address;
+            endPoint = (EndPoint)ipEndPoint;
 
             // Initialize the callback for receiving a new packet
             ReceivedData = new AsyncCallback(OnReceivedData);
 
-            Client.Log("Connecting to " + ip.ToString() + ":" + port, Helpers.LogLevel.Info);
+            AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
+            AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
+
+            StatsTimer = new System.Timers.Timer(1000);
+            StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
+
+            PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
+            PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
+        }
+
+        /// <summary>
+        /// Attempt to connect to this simulator
+        /// </summary>
+        /// <param name="moveToSim">Whether to move our agent in to this sim or not</param>
+        /// <returns>True if the connection succeeded or connection status is
+        /// unknown, false if there was a failure</returns>
+        public bool Connect(bool moveToSim)
+        {
+            Disconnect();
+
+            // Start the timers
+            AckTimer.Start();
+            StatsTimer.Start();
+            PingTimer.Enabled = Client.Settings.SEND_PINGS;
+
+            Client.Log("Connecting to " + ipEndPoint.ToString(), Helpers.LogLevel.Info);
 
             try
             {
                 ConnectedEvent.Reset();
-
-                // Create an endpoint that we will be communicating with (need it in two 
-                // types due to .NET weirdness)
-                ipEndPoint = new IPEndPoint(ip, port);
-                endPoint = (EndPoint)ipEndPoint;
 
                 // Associate this simulator's socket with the given ip/port and start listening
                 Connection.Connect(endPoint);
@@ -206,6 +216,7 @@ namespace libsecondlife
                 SendPacket(use, true);
 
                 ConnectTime = Environment.TickCount;
+
                 // Move our agent in to the sim to complete the connection
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
@@ -214,18 +225,23 @@ namespace libsecondlife
 
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
-                    Client.Log("Giving up on waiting for RegionHandshake", Helpers.LogLevel.Warning);
+                    Client.Log("Giving up on waiting for RegionHandshake for " + this.ToString(), 
+                        Helpers.LogLevel.Warning);
                     connected = true;
                 }
+
+                return true;
             }
             catch (Exception e)
             {
                 Client.Log(e.ToString(), Helpers.LogLevel.Error);
             }
+
+            return false;
         }
 
         /// <summary>
-        /// Disconnect a Simulator
+        /// Disconnect from this simulator
         /// </summary>
         public void Disconnect()
         {

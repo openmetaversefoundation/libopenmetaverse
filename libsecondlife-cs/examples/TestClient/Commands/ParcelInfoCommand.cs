@@ -26,7 +26,7 @@ namespace libsecondlife.TestClient
             Parcels.DownloadSimParcels(Client.Network.CurrentSim);
 
             ParcelsDownloaded.Reset();
-            ParcelsDownloaded.WaitOne();
+            ParcelsDownloaded.WaitOne(20000, false);
 
             return "Downloaded information for " + ParcelCount + " parcels in " + Client.Network.CurrentSim.Name;
         }

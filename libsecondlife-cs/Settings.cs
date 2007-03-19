@@ -65,7 +65,7 @@ namespace libsecondlife
         public int RESEND_TIMEOUT = 4000;
         /// <summary>Milliseconds without receiving a packet before the 
         /// connection to a simulator is assumed lost</summary>
-        public int SIMULATOR_TIMEOUT = 5 * 1000;
+        public int SIMULATOR_TIMEOUT = 15 * 1000;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
         public int MAX_PENDING_ACKS = 10;

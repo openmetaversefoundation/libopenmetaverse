@@ -144,10 +144,10 @@ namespace libsecondlife
         internal Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         /// <summary></summary>
         internal List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
+        /// <summary></summary>
+        internal List<Simulator> Simulators = new List<Simulator>();
 
         private SecondLife Client;
-        private List<Simulator> Simulators = new List<Simulator>();
-        private List<IPEndPoint> IPEndPoints = new List<IPEndPoint>();
         private System.Timers.Timer DisconnectTimer, LogoutTimer;
         private bool connected = false;
         private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
@@ -168,8 +168,8 @@ namespace libsecondlife
             RegisterCallback(PacketType.EnableSimulator, new PacketCallback(EnableSimulatorHandler));
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
-			RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
-			
+            RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
+
             // The proper timeout for this will get set at Login
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
@@ -391,7 +391,7 @@ namespace libsecondlife
         /// LoginError string will contain the error</returns>
         public bool Login(string firstName, string lastName, string password, string userAgent, string author)
         {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password, 
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password,
                 "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0", userAgent, author, false);
             return Login(loginParams);
         }
@@ -406,10 +406,10 @@ namespace libsecondlife
         /// <param name="author"></param>
         /// <param name="md5pass"></param>
         /// <returns></returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string author, 
+        public bool Login(string firstName, string lastName, string password, string userAgent, string author,
             bool md5pass)
         {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password, 
+            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password,
                 "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
             return Login(loginParams);
         }
@@ -696,43 +696,53 @@ namespace libsecondlife
         /// <returns>A Simulator object on success, otherwise null</returns>
         public Simulator Connect(IPAddress ip, ushort port, bool setDefault, string seedcaps)
         {
- 			lock (IPEndPoints) IPEndPoints.Add(new IPEndPoint(ip, port));
- 			Simulator simulator = new Simulator(Client, ip, (int)port, setDefault);
+            IPEndPoint endPoint = new IPEndPoint(ip, (int)port);
+            Simulator simulator = FindSimulator(endPoint);
+
+            if (simulator == null)
+            {
+                // We're not tracking this sim, create a new Simulator object
+                simulator = new Simulator(Client, endPoint);
+
+                // Immediately add this simulator to the list of current sims. It will be removed if the
+                // connection fails
+                lock (Simulators) Simulators.Add(simulator);
+            }
 
             if (!simulator.Connected)
             {
-                simulator = null;
-                return null;
-            }
-
-            lock (Simulators) Simulators.Add(simulator);
-
-            // Mark that we are connected to the grid (in case we weren't before)
-            connected = true;
-
-            // Start a timer that checks if we've been disconnected
-            DisconnectTimer.Start();
-
-            // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
-            if (Client.Settings.SEND_AGENT_THROTTLE)
-                Client.Throttle.Set(simulator);
-
-            if (setDefault)
-            {
-                Simulator oldSim = CurrentSim;
-                lock (Simulators) CurrentSim = simulator;
-
-                if (CurrentCaps != null) CurrentCaps.Disconnect(false);
-                CurrentCaps = null;
-
-                if (seedcaps != null && seedcaps.Length > 0)
-                    CurrentCaps = new Caps(Client, simulator, seedcaps);
-
-                if (OnCurrentSimChanged != null && simulator != oldSim)
+                // We're not connected to this simulator, attempt to establish a connection
+                if (simulator.Connect(setDefault))
                 {
-                    try { OnCurrentSimChanged(oldSim); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    // Mark that we are connected to the grid (in case we weren't before)
+                    connected = true;
+
+                    // Start a timer that checks if we've been disconnected
+                    DisconnectTimer.Start();
+
+                    // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
+                    if (Client.Settings.SEND_AGENT_THROTTLE) Client.Throttle.Set(simulator);
+
+                    if (setDefault) SetCurrentSim(simulator, seedcaps);
                 }
+                else
+                {
+                    // Connection failed, so remove this simulator from our list and destroy it
+                    lock (Simulators) Simulators.Remove(simulator);
+                    simulator = null;
+                }
+            }
+            else if (setDefault)
+            {
+                // We're already connected to this server, but need to set it to the default
+                SetCurrentSim(simulator, seedcaps);
+
+                // Move in to this simulator
+                Client.Self.CompleteAgentMovement(simulator);
+
+                // Send an initial AgentUpdate to complete our movement in to the sim
+                if (Client.Settings.SEND_AGENT_UPDATES)
+                    Client.Self.Status.SendUpdate(true, simulator);
             }
 
             return simulator;
@@ -820,11 +830,36 @@ namespace libsecondlife
                 }
 
                 lock (Simulators) Simulators.Remove(sim);
-                lock (IPEndPoints) IPEndPoints.Remove(sim.IPEndPoint);
             }
             else
             {
                 Client.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning);
+            }
+        }
+
+        private void SetCurrentSim(Simulator simulator, string seedcaps)
+        {
+            if (simulator != CurrentSim)
+            {
+                Simulator oldSim = CurrentSim;
+                lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
+
+                // Disable the current CAPS system
+                if (CurrentCaps != null) CurrentCaps.Disconnect(false);
+                CurrentCaps = null;
+
+                // Connect to the new CAPS system
+                if (seedcaps != null && seedcaps.Length > 0)
+                    CurrentCaps = new Caps(Client, simulator, seedcaps);
+                else
+                    Client.Log("Setting the current sim without a seed CAPS URL", Helpers.LogLevel.Warning);
+
+                // If the current simulator changed fire the callback
+                if (OnCurrentSimChanged != null && simulator != oldSim)
+                {
+                    try { OnCurrentSimChanged(oldSim); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
 
@@ -836,7 +871,7 @@ namespace libsecondlife
             LogoutTimer.Stop();
 
             // Shutdown the network layer
-            Shutdown();
+            Shutdown(DisconnectType.ClientInitiated);
 
             if (OnDisconnected != null)
             {
@@ -859,7 +894,7 @@ namespace libsecondlife
         /// Shutdown will disconnect all the sims except for the current sim
         /// first, and then kill the connection to CurrentSim.
         /// </summary>
-        private void Shutdown()
+        private void Shutdown(DisconnectType type)
         {
             Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
 
@@ -870,12 +905,14 @@ namespace libsecondlife
                 {
                     if (Simulators[i] != null && Simulators[i] != CurrentSim)
                     {
-                        DisconnectSim(Simulators[i]);
+                        Simulators[i].Disconnect();
 
                         // Fire the SimDisconnected event if a handler is registered
+                        // FIXME: This is a recipe for disaster, locking Simulators and
+                        // firing a callback
                         if (OnSimDisconnected != null)
                         {
-                            try { OnSimDisconnected(Simulators[i], DisconnectType.NetworkTimeout); }
+                            try { OnSimDisconnected(Simulators[i], type); }
                             catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                         }
                     }
@@ -886,18 +923,21 @@ namespace libsecondlife
 
             if (CurrentSim != null)
             {
-                Simulator oldSim = CurrentSim;
+                // Kill the connection to the curent simulator
+                CurrentSim.Disconnect();
 
-                DisconnectSim(CurrentSim);
-                lock (Simulators) CurrentSim = null;
-
-                if (OnCurrentSimChanged != null)
+                // Fire the SimDisconnected event if a handler is registered
+                if (OnSimDisconnected != null)
                 {
-                    try { OnCurrentSimChanged(oldSim); }
+                    try { OnSimDisconnected(CurrentSim, type); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
+
+                // Destroy the CurrentSim object
+                lock (Simulators) CurrentSim = null;
             }
 
+            // Kill the current CAPS system
             if (CurrentCaps != null)
             {
                 CurrentCaps.Disconnect(true);
@@ -905,6 +945,20 @@ namespace libsecondlife
             }
 
             connected = false;
+        }
+
+        private Simulator FindSimulator(IPEndPoint endPoint)
+        {
+            lock (Simulators)
+            {
+                for (int i = 0; i < Simulators.Count; i++)
+                {
+                    if (Simulators[i].IPEndPoint.Equals(endPoint))
+                        return Simulators[i];
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -938,7 +992,7 @@ namespace libsecondlife
                     connected = false;
 
                     // Shutdown the network layer
-                    Shutdown();
+                    Shutdown(DisconnectType.NetworkTimeout);
 
                     if (OnDisconnected != null)
                     {
@@ -1041,25 +1095,26 @@ namespace libsecondlife
             StartPingCheckPacket incomingPing = (StartPingCheckPacket)packet;
             CompletePingCheckPacket ping = new CompletePingCheckPacket();
             ping.PingID.PingID = incomingPing.PingID.PingID;
-			ping.Header.Reliable = false;
+            ping.Header.Reliable = false;
             // TODO: We can use OldestUnacked to correct transmission errors
-			//   I don't think that's right.  As far as I can tell, the Viewer
-			//   only uses this to prune its duplicate-checking buffer. -bushing
-			
+            //   I don't think that's right.  As far as I can tell, the Viewer
+            //   only uses this to prune its duplicate-checking buffer. -bushing
+
             SendPacket(ping, simulator);
         }
 
-		private void PongHandler(Packet packet, Simulator simulator) {
-			CompletePingCheckPacket pong = (CompletePingCheckPacket)packet;
-			String retval = "Pong2: "+(Environment.TickCount-simulator.LastPingSent);
-			if ((pong.PingID.PingID - simulator.LastPingID+1)!=0)
-				retval += " (gap of "+(pong.PingID.PingID - simulator.LastPingID+1)+")";
+        private void PongHandler(Packet packet, Simulator simulator)
+        {
+            CompletePingCheckPacket pong = (CompletePingCheckPacket)packet;
+            String retval = "Pong2: " + (Environment.TickCount - simulator.LastPingSent);
+            if ((pong.PingID.PingID - simulator.LastPingID + 1) != 0)
+                retval += " (gap of " + (pong.PingID.PingID - simulator.LastPingID + 1) + ")";
 
-			simulator.LastLag=Environment.TickCount-simulator.LastPingSent;
-			simulator.ReceivedPongs++;
-//			Client.Log(retval, Helpers.LogLevel.Info);
-		}
-		
+            simulator.LastLag = Environment.TickCount - simulator.LastPingSent;
+            simulator.ReceivedPongs++;
+            //			Client.Log(retval, Helpers.LogLevel.Info);
+        }
+
         private void RegionHandshakeHandler(Packet packet, Simulator simulator)
         {
             RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
@@ -1129,50 +1184,35 @@ namespace libsecondlife
             }
         }
 
-        private void EnableSimulatorHandler(Packet packet, Simulator simulator) {
-	  EnableSimulatorPacket p = (EnableSimulatorPacket) packet;
-	  if (!Client.Settings.CROSS_BORDERS) return;
+        private void EnableSimulatorHandler(Packet packet, Simulator simulator)
+        {
+            if (!Client.Settings.CROSS_BORDERS) return;
 
-	  // first, check to see if we've already started connecting to this sim	
-	  lock (IPEndPoints) {
-	    for (int i = 0; i < IPEndPoints.Count; i++) {
-	      if (IPEndPoints[i] != null && 
-		  IPEndPoints[i].Equals(new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port))) {
-//                        Client.Log("Received duplicate EnableSimulatorHandler", Helpers.LogLevel.Error);
-		return;
-	      }    
-	    }
-	  }
-	  
-	  if (Connect(new IPAddress(p.SimulatorInfo.IP), p.SimulatorInfo.Port,
-		      false, (string)LoginValues["seed_capability"]) == null) {
-	    Client.Log("Unabled to connect to new sim", Helpers.LogLevel.Error);
-	    return;
-	  }
-	  
-	  // we *shouldn't* have to do this here, right?
-	  if (Client.Settings.SEND_AGENT_THROTTLE)
-	    Client.Throttle.Set(simulator);
-	}
+            EnableSimulatorPacket p = (EnableSimulatorPacket)packet;
+            IPEndPoint endPoint = new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port);
+
+            // First, check to see if we've already started connecting to this sim
+            if (FindSimulator(endPoint) != null) return;
+
+            if (Connect(new IPAddress(p.SimulatorInfo.IP), p.SimulatorInfo.Port,
+                    false, (string)LoginValues["seed_capability"]) == null)
+            {
+                Client.Log("Unabled to connect to new sim", Helpers.LogLevel.Error);
+                return;
+            }
+        }
 
         private void KickUserHandler(Packet packet, Simulator simulator)
         {
             string message = Helpers.FieldToUTF8String(((KickUserPacket)packet).UserInfo.Reason);
 
             // Shutdown the network layer
-            Shutdown();
+            Shutdown(DisconnectType.ServerInitiated);
 
             if (OnDisconnected != null)
             {
-                try
-                {
-                    OnDisconnected(DisconnectType.ServerInitiated, message);
-                }
-                catch (Exception e)
-                {
-                    Client.Log("Caught an exception in OnDisconnected(): " + e.ToString(),
-                        Helpers.LogLevel.Error);
-                }
+                try { OnDisconnected(DisconnectType.ServerInitiated, message); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
     }
