@@ -470,6 +470,16 @@ namespace libsecondlife
             LLUUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons);
 
         /// <summary>
+        /// Triggered when a script asks for permissions
+        /// </summary>
+        /// <param name="taskID">Task ID of the script requesting permissions</param>
+        /// <param name="itemID">ID of the object containing the script</param>
+        /// <param name="objectName">Name of the object containing the script</param>
+        /// <param name="objectOwner">Name of the object's owner</param>
+        /// <param name="questions">Bitwise value representing the requested permissions</param>
+        public delegate void ScriptQuestionCallback(LLUUID taskID, LLUUID itemID, string objectName, string objectOwner, int questions);
+
+        /// <summary>
         /// Triggered when the L$ account balance for this avatar changes
         /// </summary>
         /// <param name="balance">The new account balance</param>
@@ -541,6 +551,8 @@ namespace libsecondlife
         public event ChatCallback OnChat;
         /// <summary>Callback for pop-up dialogs from scripts</summary>
         public event ScriptDialogCallback OnScriptDialog;
+        /// <summary>Callback for pop-up dialogs regarding permissions</summary>
+        public event ScriptQuestionCallback OnScriptQuestion;
         /// <summary>Callback for incoming IMs</summary>
         public event InstantMessageCallback OnInstantMessage;
         /// <summary>Callback for Teleport request update</summary>
@@ -699,6 +711,9 @@ namespace libsecondlife
 
             // Script dialog callback
             Client.Network.RegisterCallback(PacketType.ScriptDialog, new NetworkManager.PacketCallback(ScriptDialogHandler));
+
+            // Script question callback
+            Client.Network.RegisterCallback(PacketType.ScriptQuestion, new NetworkManager.PacketCallback(ScriptQuestionHandler));
 
             // Movement complete callback
             Client.Network.RegisterCallback(PacketType.AgentMovementComplete, new NetworkManager.PacketCallback(MovementCompleteHandler));
@@ -1632,6 +1647,25 @@ namespace libsecondlife
                     Helpers.FieldToUTF8String(dialog.Data.LastName),
                     dialog.Data.ChatChannel,
                     buttons);
+            }
+        }
+
+        /// <summary>
+        /// Used for parsing llRequestPermissions dialogs
+        /// </summary>
+        /// <param name="packet">Incoming ScriptDialog packet</param>
+        /// <param name="simulator">Unused</param>
+        private void ScriptQuestionHandler(Packet packet, Simulator simulator)
+        {
+            if (OnScriptQuestion != null)
+            {
+                ScriptQuestionPacket question = (ScriptQuestionPacket)packet;
+
+                OnScriptQuestion(question.Data.TaskID,
+                    question.Data.ItemID,
+                    Helpers.FieldToUTF8String(question.Data.ObjectOwner),
+                    Helpers.FieldToUTF8String(question.Data.ObjectName),
+                    question.Data.Questions);
             }
         }
 
