@@ -117,6 +117,24 @@ namespace libsecondlife
             AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
         }
 
+        public enum ScriptPermission
+        {
+            /// <summary></summary>
+            PERMISSION_DEBIT = 2,
+            /// <summary></summary>
+            PERMISSION_TAKE_CONTROLS = 4,
+            /// <summary></summary>
+            PERMISSION_TRIGGER_ANIMATION = 16,
+            /// <summary></summary>
+            PERMISSION_ATTACH = 32,
+            /// <summary></summary>
+            PERMISSION_CHANGE_LINKS = 128,
+            /// <summary></summary>
+            PERMISSION_TRACK_CAMERA = 1024,
+            /// <summary></summary>
+            PERMISSION_CONTROL_CAMERA = 2048
+        }
+
         /// <summary>
         /// Current teleport status
         /// </summary>
