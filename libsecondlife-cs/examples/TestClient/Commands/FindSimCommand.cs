@@ -8,8 +8,6 @@ namespace libsecondlife.TestClient
 {
     public class FindSimCommand : Command
     {
-        Dictionary<SecondLife, bool> GridDataCached = new Dictionary<SecondLife, bool>();
-
         public FindSimCommand(TestClient testClient)
         {
             Name = "findsim";
@@ -21,33 +19,23 @@ namespace libsecondlife.TestClient
             if (args.Length < 1)
                 return "Usage: findsim [Simulator Name]";
 
+            // Build the simulator name from the args list
             string simName = string.Empty;
             for (int i = 0; i < args.Length; i++)
                 simName += args[i] + " ";
             simName = simName.TrimEnd().ToLower();
 
-            if (!GridDataCached.ContainsKey(Client))
-            {
-                GridDataCached[Client] = false;
-            }
+            //if (!GridDataCached[Client])
+            //{
+            //    Client.Grid.RequestAllSims(GridManager.MapLayerType.Objects);
+            //    System.Threading.Thread.Sleep(5000);
+            //    GridDataCached[Client] = true;
+            //}
 
-            if (!GridDataCached[Client])
-            {
-                Client.Grid.RequestAllSims(GridManager.MapLayerType.Objects);
-                System.Threading.Thread.Sleep(5000);
-                GridDataCached[Client] = true;
-            }
+            GridRegion region;
 
-            int attempts = 0;
-            GridRegion region = null;
-            while (region == null && attempts++ < 5)
-            {
-                region = Client.Grid.GetGridRegion(simName);
-            }
-
-            if (region != null)
-                return "Found " + region.Name + ": handle=" + region.RegionHandle +
-                    "(" + region.X + "," + region.Y + ")";
+            if (Client.Grid.GetGridRegion(simName, out region))
+                return String.Format("{0}: handle={1} ({2},{3})", region.Name, region.RegionHandle, region.X, region.Y);
             else
                 return "Lookup of " + simName + " failed";
         }

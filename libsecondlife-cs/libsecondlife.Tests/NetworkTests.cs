@@ -60,7 +60,6 @@ namespace libsecondlife.Tests
                 if (Environment.TickCount - start > 10000)
                 {
                     Assert.Fail("Timeout waiting for an ObjectUpdate packet");
-                    return;
                 }
             }
         }
@@ -74,7 +73,6 @@ namespace libsecondlife.Tests
                 if (Environment.TickCount - start > 10000)
                 {
                     Assert.Fail("Timeout waiting for an ObjectUpdate packet");
-                    return;
                 }
             }
 

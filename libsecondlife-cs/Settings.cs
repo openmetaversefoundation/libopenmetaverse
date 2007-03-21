@@ -33,34 +33,45 @@ namespace libsecondlife
     /// <summary>
     /// Class for controlling various system settings.
     /// </summary>
+    /// <remarks>Some values are readonly because they affect things that
+    /// happen when the SecondLife object is initialized, so changing them at 
+    /// runtime won't do any good. Non-readonly values may affect things that 
+    /// happen at login or dynamically</remarks>
     public class Settings
     {
         /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
         public string VERSION = "libsecondlife 0.0.9";
         /// <summary>XML-RPC login server to connect to</summary>
-        public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+        public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";       
 
         /// <summary>Maximum size of packet that we want to send over the wire</summary>
         public readonly int MAX_PACKET_SIZE = 1200;
         /// <summary>Millisecond interval between ticks, where all ACKs are 
         /// sent out and the age of unACKed packets is checked</summary>
         public readonly int NETWORK_TICK_LENGTH = 500;
-        /// <summary>The maximum value of a packet sequence number. After that 
-        /// we assume the sequence number just rolls over? Or maybe the 
-        /// protocol isn't able to sustain a connection past that</summary>
+        /// <summary>The maximum value of a packet sequence number before it
+        /// rolls over back to one</summary>
         public readonly int MAX_SEQUENCE = 0xFFFFFF;
-        /// <summary>Number of milliseconds before a teleport attempt will time
-        /// out</summary>
-        public readonly int TELEPORT_TIMEOUT = 25 * 1000;
-		
-        /// <summary>Number of milliseconds before NetworkManager.Logout() will time out</summary>
-        public int LOGOUT_TIMEOUT = 5 * 1000;
-        /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-        public int LOGIN_TIMEOUT = 60 * 1000;
-
         /// <summary>The maximum size of the sequence number inbox, used to
         /// check for resent and/or duplicate packets</summary>
-        public int INBOX_SIZE = 100;
+        public readonly int INBOX_SIZE = 100;
+        /// <summary>Number of milliseconds between sending pings to each sim</summary>
+        public readonly int PING_INTERVAL = 2200;
+
+        /// <summary>Number of milliseconds before a teleport attempt will time
+        /// out</summary>
+        public int TELEPORT_TIMEOUT = 25 * 1000;
+        /// <summary>Number of milliseconds before NetworkManager.Logout() will
+        /// time out</summary>
+        public int LOGOUT_TIMEOUT = 5 * 1000;
+        /// <summary>Number of milliseconds before a CAPS call will time out 
+        /// and try again</summary>
+        /// <remarks>Setting this too low will cause web requests to repeatedly
+        /// time out and retry. Too high of a setting may cause the library to 
+        /// block for a long time during network shutdown</remarks>
+        public int CAPS_TIMEOUT = 8 * 1000;
+        /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
+        public int LOGIN_TIMEOUT = 60 * 1000;
         /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
         public int RESEND_TIMEOUT = 4000;
         /// <summary>Milliseconds without receiving a packet before the 
@@ -71,13 +82,12 @@ namespace libsecondlife
         public int MAX_PENDING_ACKS = 10;
         /// <summary>Maximum number of ACKs to append to a packet</summary>
         public int MAX_APPENDED_ACKS = 10;
-        /// <summary>Cost of uploading an asset</summary>
-        public int UPLOAD_COST { get { return priceUpload; } }
         /// <summary>Enable/disable debugging log messages</summary>
         public bool DEBUG = true;
         /// <summary>Attach avatar names to log messages</summary>
         public bool LOG_NAMES = true;
-        /// <summary>Enable/disable storing terrain heightmaps in the TerrainManager</summary>
+        /// <summary>Enable/disable storing terrain heightmaps in the 
+        /// TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
         /// <summary>Enable/disable sending periodic camera updates</summary>
         public bool SEND_AGENT_UPDATES = true;
@@ -90,21 +100,31 @@ namespace libsecondlife
         /// set a throttle your connection will by default be throttled well
         /// below the minimum values and you may experience connection problems</remarks>
         public bool SEND_AGENT_THROTTLE = true;
-	public bool OUTBOUND_THROTTLE = false;
+        /// <summary></summary>
+        public bool OUTBOUND_THROTTLE = false;
         /// <summary>Maximum outgoing bytes/sec, per sim</summary>
         public int OUTBOUND_THROTTLE_RATE = 1500;
         /// <summary>Network stats queue length (seconds)</summary>
         public int STATS_QUEUE_SIZE = 5;
-        /// <summary>Enable/disable the sending of pings to monitor lag and packet loss</summary>
+        /// <summary>Enable/disable the sending of pings to monitor lag and 
+        /// packet loss</summary>
         public bool SEND_PINGS = false;
-        /// <summary>Number of milliseconds between sending pings to each sim</summary>
-        public int PING_INTERVAL = 2200;
-        /// <summary>If this is true, connection will be killed if we stop receiving pongs</summary>
-//		public bool USE_WATCHDOG = false;
-	/// <summary>Number of seconds to wait for pong before killing</summary>
-//		public int WATCHDOG_SECONDS = 10;
-	/// <summary>Do we want to be able to cross sim borders?  (Experimental)</summary>
-	public bool CROSS_BORDERS = true;
+        /// <summary>If this is true, connection will be killed if we stop 
+        /// receiving pongs</summary>
+        //public bool USE_WATCHDOG = false;
+        /// <summary>Number of seconds to wait for pong before killing</summary>
+        //public int WATCHDOG_SECONDS = 10;
+        /// <summary>Should we connect to multiple sims? This will allow
+        /// viewing in to neighboring simulators and sim crossings
+        /// (Experimental)</summary>
+        public bool MULTIPLE_SIMS = true;
+        /// <summary>Milliseconds to wait for a simulator info request through
+        /// the grid interface</summary>
+        public int MAP_REQUEST_TIMEOUT = 5 * 1000;
+
+        /// <summary>Cost of uploading an asset</summary>
+        /// <remarks>Read-only since this value is dynamically fetched at login</remarks>
+        public int UPLOAD_COST { get { return priceUpload; } }
 
         private SecondLife Client;
         private int priceUpload = 0;

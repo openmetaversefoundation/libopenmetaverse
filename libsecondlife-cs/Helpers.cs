@@ -493,8 +493,12 @@ namespace libsecondlife
             {
                 if (i != 0)
                     output.Append(Environment.NewLine);
+
                 if (fieldName.Length > 0)
+                {
+                    output.Append(fieldName);
                     output.Append(": ");
+                }
 
                 for (int j = 0; j < 16; j++)
                 {

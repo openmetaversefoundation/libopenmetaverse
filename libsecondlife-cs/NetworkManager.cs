@@ -63,7 +63,9 @@ namespace libsecondlife
             /// <summary>The server notified us that it is disconnecting</summary>
             ServerInitiated,
             /// <summary>Either a socket was closed or network traffic timed out</summary>
-            NetworkTimeout
+            NetworkTimeout,
+            /// <summary>The last active simulator shut down</summary>
+            SimShutdown
         }
 
 
@@ -830,6 +832,8 @@ namespace libsecondlife
                 }
 
                 lock (Simulators) Simulators.Remove(sim);
+
+                if (Simulators.Count == 0) Shutdown(DisconnectType.SimShutdown);
             }
             else
             {
@@ -1186,7 +1190,7 @@ namespace libsecondlife
 
         private void EnableSimulatorHandler(Packet packet, Simulator simulator)
         {
-            if (!Client.Settings.CROSS_BORDERS) return;
+            if (!Client.Settings.MULTIPLE_SIMS) return;
 
             EnableSimulatorPacket p = (EnableSimulatorPacket)packet;
             IPEndPoint endPoint = new IPEndPoint(p.SimulatorInfo.IP, p.SimulatorInfo.Port);

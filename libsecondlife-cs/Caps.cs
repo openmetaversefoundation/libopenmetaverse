@@ -42,11 +42,18 @@ namespace libsecondlife
     public class Caps
     {
         /// <summary>
-        /// Triggered when an event is received via the EventQueueGet capability;
+        /// Triggered when an event is received via the EventQueueGet capability
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="body"></param>
-        public delegate void EventQueueCallback(string message, object body);
+        /// <param name="message">Event name</param>
+        /// <param name="body">Decoded event data</param>
+        /// <param name="caps">The CAPS system that made the call</param>
+        public delegate void EventQueueCallback(string message, Hashtable body, Caps caps);
+        /// <summary>
+        /// Triggered when an HTTP call in the queue is executed and a response
+        /// is received
+        /// </summary>
+        /// <param name="body">Decoded response</param>
+        public delegate void HTTPResponseCallback(Hashtable body);
 
         /// <summary>Reference to the SecondLife client this system is connected to</summary>
         public SecondLife Client;
@@ -56,13 +63,13 @@ namespace libsecondlife
         /// <summary></summary>
         public string SeedCapsURI { get { return Seedcaps; } }
 
-        internal bool Dead = false;
         internal string Seedcaps;
+        internal StringDictionary Capabilities = new StringDictionary();
 
-        private StringDictionary Capabilities = new StringDictionary();
+        private bool Dead = false;
         private Thread CapsThread;
         private string EventQueueCap = String.Empty;
-        private WebRequest EventQueueRequest = null;
+        private HttpWebRequest EventQueueRequest = null;
 
         /// <summary>
         /// Default constructor
@@ -81,11 +88,26 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Add an outgoing message to the HTTP queue, used for making CAPS
+        /// calls
+        /// </summary>
+        /// <param name="url">CAPS URL to make the POST to</param>
+        /// <param name="message">LLSD message to post to the URL</param>
+        /// <param name="callback">Callback to fire when the request completes
+        /// and a response is available</param>
+        public void Post(string url, object message, HTTPResponseCallback callback)
+        {
+            //FIXME:
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="immediate"></param>
-        internal void Disconnect(bool immediate)
+        public void Disconnect(bool immediate)
         {
+            Client.DebugLog("Disconnecting CAPS for " + Simulator.ToString());
+
             Dead = true;
 
             if (immediate && EventQueueRequest != null)
@@ -120,7 +142,9 @@ namespace libsecondlife
 
             try
             {
-                WebRequest request = WebRequest.Create(Seedcaps);
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(Seedcaps);
+                request.KeepAlive = false;
+                request.Timeout = Client.Settings.CAPS_TIMEOUT;
                 request.Method = "POST";
                 request.ContentLength = data.Length;
 
@@ -142,23 +166,31 @@ namespace libsecondlife
                     Disconnect(true);
                     return;
                 }
-
-                Client.Log("CAPS initialization error: " + e.Message + ", retrying", Helpers.LogLevel.Warning);
-                goto MakeRequest;
+                else if (Dead)
+                {
+                    // Someone else shut down CAPS while we were trying to connect
+                    return;
+                }
+                else
+                {
+                    Client.Log("CAPS initialization error for " + Simulator.ToString() + ": " + e.Message +
+                        ", retrying", Helpers.LogLevel.Warning);
+                    goto MakeRequest;
+                }
             }
 
             Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
 
             foreach (string cap in resp.Keys)
             {
-//                Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
+                //Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
                 Capabilities[cap] = (string)resp[cap];
             }
 
             if (Capabilities.ContainsKey("EventQueueGet"))
             {
                 EventQueueCap = Capabilities["EventQueueGet"];
-  //              Client.Log("Running event queue", Helpers.LogLevel.Info);
+                Client.DebugLog("Running event queue for " + Simulator.ToString());
                 EventQueueHandler(null);
             }
         }
@@ -166,7 +198,7 @@ namespace libsecondlife
         private void EventQueueHandler(IAsyncResult result)
         {
             byte[] buffer = null;
-            long ack = 0;
+            int ack = 0;
 
             // Special handler for the first request
             if (result == null) goto MakeRequest;
@@ -180,8 +212,16 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-		if (e.Message.IndexOf("502") < 0)
-		   Client.DebugLog("EventQueue response: " + e.Message);
+                if (e.Message.IndexOf("404") > 0)
+                {
+                    Client.DebugLog("Got a 404 from the CAPS system, disabling");
+                    // This capability no longer exists, disable it
+                    Disconnect(true);
+                }
+                else if (e.Message.IndexOf("502") < 0)
+                {
+                    Client.DebugLog("EventQueue response exception for " + Simulator.ToString() + ": " + e.Message);
+                }
             }
 
             if (buffer != null)
@@ -190,18 +230,18 @@ namespace libsecondlife
                 {
                     Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
                     ArrayList events = (ArrayList)resp["events"];
-                    ack = (long)resp["id"];
+                    ack = (int)resp["id"];
 
                     foreach (Hashtable evt in events)
                     {
                         string msg = (string)evt["message"];
-                        object body = (object)evt["body"];
+                        Hashtable body = (Hashtable)evt["body"];
 
                         Client.DebugLog("Event " + msg + ":" + Environment.NewLine + LLSD.LLSDDump(body, 0));
 
                         for (int i = 0; i < Client.Network.EventQueueCallbacks.Count; i++)
                         {
-                            try { Client.Network.EventQueueCallbacks[i](msg, body); }
+                            try { Client.Network.EventQueueCallbacks[i](msg, body, this); }
                             catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                         }
                     }
@@ -220,7 +260,8 @@ namespace libsecondlife
 
             try
             {
-                EventQueueRequest = WebRequest.Create(EventQueueCap);
+                EventQueueRequest = (HttpWebRequest)HttpWebRequest.Create(EventQueueCap);
+                EventQueueRequest.KeepAlive = false;
                 EventQueueRequest.Method = "POST";
                 EventQueueRequest.ContentLength = data.Length;
 
@@ -235,7 +276,7 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                Client.DebugLog("EventQueue request: " + e.Message);
+                Client.DebugLog("EventQueue request exception for " + Simulator.ToString() + ": " + e.Message);
                 // If the CAPS system is shutting down don't bother trying too hard
                 if (!Dead) goto MakeRequest;
             }

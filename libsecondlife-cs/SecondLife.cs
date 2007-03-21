@@ -132,10 +132,10 @@ namespace libsecondlife
             }
             else
             {
-		if (Settings.LOG_NAMES)
-                   Console.WriteLine(level.ToString().ToUpper() + "["+Self.FirstName+" "+Self.LastName+"]: " + message);
-		else
-		   Console.WriteLine(level.ToString().ToUpper() + ": " + message);
+                if (Settings.LOG_NAMES)
+                    Console.WriteLine("{0} [{1} {2}]: {3}", level.ToString().ToUpper(), Self.FirstName, Self.LastName, message);
+                else
+                    Console.WriteLine("{0}: {1}", level.ToString().ToUpper(), message);
             }
         }
 
@@ -156,7 +156,12 @@ namespace libsecondlife
                     catch (Exception e) { Console.WriteLine(e.ToString()); }
                 }
                 else
-                    Log(message, Helpers.LogLevel.Debug);
+                {
+                    if (Settings.LOG_NAMES)
+                        Console.WriteLine("DEBUG [{0} {1}]: {2}", Self.FirstName, Self.LastName, message);
+                    else
+                        Console.WriteLine("DEBUG: {0}", message);
+                }
             }
         }
     }

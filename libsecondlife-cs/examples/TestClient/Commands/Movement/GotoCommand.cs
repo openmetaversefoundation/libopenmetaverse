@@ -8,8 +8,6 @@ namespace libsecondlife.TestClient
 {
     public class GotoCommand: Command
     {
-        private bool EstateLookupFinished = false;
-
         public GotoCommand(TestClient testClient)
 		{
 			Name = "goto";
@@ -42,13 +40,13 @@ namespace libsecondlife.TestClient
             float.TryParse(tokens[2], out y);
             float.TryParse(tokens[3], out z);
 
-            if (!EstateLookupFinished)
-            {
-                Client.Grid.RequestEstateSims(GridManager.MapLayerType.Objects);
-                System.Threading.Thread.Sleep(3000);
+            //if (!EstateLookupFinished)
+            //{
+            //    Client.Grid.RequestEstateSims(GridManager.MapLayerType.Objects);
+            //    System.Threading.Thread.Sleep(3000);
 
-                EstateLookupFinished = true;
-            }
+            //    EstateLookupFinished = true;
+            //}
 
 			Client.Self.Teleport(sim, new LLVector3(x, y, z));
 

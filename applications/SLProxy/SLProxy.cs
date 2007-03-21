@@ -642,54 +642,62 @@ namespace SLProxy
                     }
                 }
 
-                Stream respStream = resp.GetResponseStream();
-                int read; int length = 0;
-                respBuf = new byte[256];
-                do
+                try
                 {
-                    read = respStream.Read(respBuf, length, 256);
-                    if (read > 0)
+                    Stream respStream = resp.GetResponseStream();
+                    int read;
+                    int length = 0;
+                    respBuf = new byte[256];
+
+                    do
                     {
-                        length += read;
-                        Array.Resize(ref respBuf, length + 256);
+                        read = respStream.Read(respBuf, length, 256);
+                        if (read > 0)
+                        {
+                            length += read;
+                            Array.Resize(ref respBuf, length + 256);
+                        }
+                    } while (read > 0);
+
+                    Array.Resize(ref respBuf, length);
+
+                    if (capReq != null && !requestFailed)
+                    {
+                        if (cap.RespFmt == CapsDataFormat.LLSD)
+                        {
+                            capReq.Response = LLSD.LLSDDeserialize(respBuf);
+                        }
+                        else
+                        {
+                            capReq.Response = respBuf;
+                        }
+
                     }
-                } while (read > 0);
-                Array.Resize(ref respBuf, length);
 
-                if (capReq != null && !requestFailed)
-                {
-                    if (cap.RespFmt == CapsDataFormat.LLSD)
+                    consoleMsg += "[" + reqNo + "] Response from " + uri + "\nStatus: " + (int)resp.StatusCode + " " + resp.StatusDescription + "\n";
+
                     {
-                        capReq.Response = LLSD.LLSDDeserialize(respBuf);
-                    }
-                    else
-                    {
-                        capReq.Response = respBuf;
-                    }
-
-                }
-
-                consoleMsg += "[" + reqNo + "] Response from " + uri + "\nStatus: " + (int)resp.StatusCode + " " + resp.StatusDescription + "\n";
-
-                {
-                    byte[] wr = Encoding.UTF8.GetBytes("HTTP/1.0 " + (int)resp.StatusCode + " " + resp.StatusDescription + "\r\n");
-                    netStream.Write(wr, 0, wr.Length);
-                }
-
-                for (int i = 0; i < resp.Headers.Count; i++)
-                {
-                    string key = resp.Headers.Keys[i];
-                    string val = resp.Headers[i];
-                    string lkey = key.ToLower();
-                    if (lkey != "content-length" && lkey != "transfer-encoding" && lkey != "connection")
-                    {
-                        consoleMsg += key + ": " + val + "\n";
-                        byte[] wr = Encoding.UTF8.GetBytes(key + ": " + val + "\r\n");
+                        byte[] wr = Encoding.UTF8.GetBytes("HTTP/1.0 " + (int)resp.StatusCode + " " + resp.StatusDescription + "\r\n");
                         netStream.Write(wr, 0, wr.Length);
                     }
+
+                    for (int i = 0; i < resp.Headers.Count; i++)
+                    {
+                        string key = resp.Headers.Keys[i];
+                        string val = resp.Headers[i];
+                        string lkey = key.ToLower();
+                        if (lkey != "content-length" && lkey != "transfer-encoding" && lkey != "connection")
+                        {
+                            consoleMsg += key + ": " + val + "\n";
+                            byte[] wr = Encoding.UTF8.GetBytes(key + ": " + val + "\r\n");
+                            netStream.Write(wr, 0, wr.Length);
+                        }
+                    }
                 }
-
-
+                catch (Exception)
+                {
+                    // TODO: Should we handle this somehow?
+                }
             }
 
             if (cap != null && !requestFailed)
@@ -839,7 +847,7 @@ namespace SLProxy
                         info = (Hashtable)body["RegionData"];
                     byte[] bytes = (byte[])info["SimIP"];
                     uint simIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
-                    ushort simPort = (ushort)(long)info["SimPort"];
+                    ushort simPort = (ushort)(int)info["SimPort"];
                     string capsURL = (string)info["SeedCapability"];
                     GenericCheck(ref simIP, ref simPort, ref capsURL, capReq.Info.Sim == activeCircuit);
                     info["SeedCapability"] = capsURL;
@@ -848,7 +856,7 @@ namespace SLProxy
                     bytes[2] = (byte)((simIP >> 16) % 256);
                     bytes[3] = (byte)((simIP >> 24) % 256);
                     info["SimIP"] = bytes;
-                    info["SimPort"] = (long)simPort;
+                    info["SimPort"] = (int)simPort;
                 }
             }
             return false;
@@ -898,7 +906,7 @@ namespace SLProxy
                             info = (Hashtable) body["RegionData"];
                         byte[] bytes = (byte[]) info["SimIP"];
                         uint simIP = Helpers.BytesToUIntBig((byte[]) info["SimIP"]);
-                        ushort simPort = (ushort)(long)info["SimPort"];
+                        ushort simPort = (ushort)(int)info["SimPort"];
                         string capsURL = (string)info["SeedCapability"];
                         GenericCheck(ref simIP, ref simPort, ref capsURL, cap.Sim == activeCircuit);
                         info["SeedCapability"] = capsURL;
@@ -907,7 +915,7 @@ namespace SLProxy
                                 bytes[2] = (byte)((simIP >> 16) % 256);
                                 bytes[3] = (byte)((simIP >> 24) % 256);
                         info["SimIP"] = bytes;
-                        info["SimPort"] = (long)simPort;
+                        info["SimPort"] = (int)simPort;
                     }
                 }
             }

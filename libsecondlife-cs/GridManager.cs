@@ -25,32 +25,48 @@
  */
 
 using System;
+using System.Text;
 using System.Collections.Generic;
+using System.Threading;
 using libsecondlife.Packets;
 
 namespace libsecondlife
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="region"></param>
-    public delegate void GridRegionCallback(GridRegion region);
-
 	/// <summary>
 	/// Region information returned from the spaceserver, used for the world map
 	/// </summary>
-	public class GridRegion
+	public struct GridRegion
 	{
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum SimAccess : byte
+        {
+            /// <summary></summary>
+            Min = 0,
+            /// <summary></summary>
+            Trial = 7,
+            /// <summary></summary>
+            PG = 13,
+            /// <summary></summary>
+            Mature = 21,
+            /// <summary></summary>
+            Down = 254,
+            /// <summary></summary>
+            NonExistent = 255
+        }
+
+
         /// <summary>Sim X position on World Map</summary>
 		public int X;
         /// <summary>Sim Y position on World Map</summary>
 		public int Y;
         /// <summary>Sim Name (NOTE: In lowercase!)</summary>
 		public string Name;
-        /// <summary></summary> 
-		public byte Access;
+        /// <summary></summary>
+		public SimAccess Access;
         /// <summary>Various flags for the region (presumably things like PG/Mature)</summary>
-		public uint RegionFlags;
+		public Simulator.RegionFlags RegionFlags;
         /// <summary>Sim's defined Water Height</summary>
 		public byte WaterHeight;
         /// <summary></summary>
@@ -61,27 +77,24 @@ namespace libsecondlife
         /// and Y position</summary>
 		public ulong RegionHandle;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-		public GridRegion() 
-		{
-		}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
-            string output = "GridRegion";
-            output += Environment.NewLine + "Name: " + Name;
-            output += Environment.NewLine + "RegionHandle: " + RegionHandle;
-            output += Environment.NewLine + "X: " + X;
-            output += Environment.NewLine + "Y: " + Y;
-            output += Environment.NewLine + "MapImageID: " + MapImageID;
-            output += Environment.NewLine + "Access: " + Access;
-            output += Environment.NewLine + "RegionFlags: " + RegionFlags;
-            output += Environment.NewLine + "WaterHeight: " + WaterHeight;
-            output += Environment.NewLine + "Agents: " + Agents;
+            StringBuilder output = new StringBuilder("GridRegion: ");
+            output.AppendLine(Name);
+            output.AppendLine("RegionHandle: " + RegionHandle);
+            output.AppendLine(String.Format("X: {0} Y: {1}", X, Y));
+            output.AppendLine("MapImageID: " + MapImageID);
+            output.AppendLine("Access: " + Access);
+            output.AppendLine("RegionFlags: " + RegionFlags);
+            output.AppendLine("WaterHeight: " + WaterHeight);
+            output.Append("Agents: " + Agents);
 
-            return output;
+            return output.ToString();
         }
 	}
 
@@ -90,11 +103,25 @@ namespace libsecondlife
 	/// </summary>
 	public class GridManager
 	{
+        /// <summary>
+        /// 
+        /// </summary>
         public enum MapLayerType : uint
         {
+            /// <summary>Objects and terrain are shown</summary>
             Objects = 0,
-            Terrain = 1
+            /// <summary>Only the terrain is shown, no objects</summary>
+            Terrain = 1,
+            /// <summary>Overlay showing land for sale and for auction</summary>
+            LandForSale = 2
         }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="region"></param>
+        public delegate void GridRegionCallback(GridRegion region);
 
 
         /// <summary>
@@ -119,6 +146,8 @@ namespace libsecondlife
         private float sunPhase = 0.0f;
         private LLVector3 sunDirection = LLVector3.Zero;
         private LLVector3 sunAngVelocity = LLVector3.Zero;
+        private Dictionary<string, ManualResetEvent> RequestingRegions = new Dictionary<string, ManualResetEvent>();
+        private ManualResetEvent RegionRequestEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Constructor
@@ -133,66 +162,66 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
 		}
 
-        /// <summary>
-        /// Fire off packet for Estate/Island sim data request.
-        /// </summary>
-        public void RequestEstateSims(MapLayerType layer)
+        public void RequestMapLayer(MapLayerType layer)
         {
-            MapLayerRequestPacket request = new MapLayerRequestPacket();
+            //if (Client.Network.CurrentCaps.Capabilities.ContainsKey("MapLayer"))
+            if (false)
+            {
+                //string url = Client.Network.CurrentCaps.Capabilities["MapLayer"];
+
+                // FIXME: CAPS is currently disabled until the message pumps are implemented
+            }
+            else
+            {
+                MapLayerRequestPacket request = new MapLayerRequestPacket();
+
+                request.AgentData.AgentID = Client.Network.AgentID;
+                request.AgentData.SessionID = Client.Network.SessionID;
+                request.AgentData.Godlike = false; // Filled in at the simulator
+                request.AgentData.Flags = (uint)layer;
+                request.AgentData.EstateID = 0; // Filled in at the simulator
+
+                Client.Network.SendPacket(request);
+            }
+        }
+
+        public void RequestMapRegion(string regionName)
+        {
+            MapNameRequestPacket request = new MapNameRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
-            request.AgentData.Godlike = true;
-            request.AgentData.Flags = (uint)layer;
-            request.AgentData.EstateID = 0; // TODO get a better value here.
+            request.NameData.Name = Helpers.StringToField(regionName.ToLower());
 
             Client.Network.SendPacket(request);
         }
 
-        /// <summary>
-        /// Fire off packet for Linden/Mainland sim data request.
-        /// </summary>
-        public void RequestLindenSims(MapLayerType layer)
+        public void RequestMapBlocks(MapLayerType layer, ushort minX, ushort minY, ushort maxX, ushort maxY, 
+            bool returnNonExistent)
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
-            request.AgentData.EstateID = 0; // TODO: ?
             request.AgentData.Flags = (uint)layer;
-            request.PositionData.MaxX = 65535;
-            request.PositionData.MaxY = 65535;
-            request.PositionData.MinX = 0;
-            request.PositionData.MinY = 0;
+            request.AgentData.Flags |= (uint)(returnNonExistent ? 0x10000 : 0);
+            request.AgentData.EstateID = 0; // Filled in at the simulator
+            request.AgentData.Godlike = false; // Filled in at the simulator
+
+            request.PositionData.MinX = minX;
+            request.PositionData.MinY = minY;
+            request.PositionData.MaxX = maxX;
+            request.PositionData.MaxY = maxY;
 
             Client.Network.SendPacket(request);
         }
 
         /// <summary>
-        /// Send Request Packets for lists of Linden ('mainland') and Estate (Island) sims.
-        /// <remarks>
-        /// LL's protocol for some reason uses a different request packet for Estate sims.
-        /// </remarks>
+        /// Request data for all mainland (Linden managed) simulators
         /// </summary>
-		public void RequestAllSims(MapLayerType layer) 
-		{
-            RequestLindenSims(layer);
-            RequestEstateSims(layer);
-		}
-
-        /// <summary>
-        /// Begin process to get information for a Region
-        /// </summary>
-        /// <param name="name">Region name you're requesting data for</param>
-        public void BeginGetGridRegion(string name)
+        public void RequestMainlandSims(MapLayerType layer)
         {
-            MapNameRequestPacket map = new MapNameRequestPacket();
-
-            map.AgentData.AgentID = Client.Network.AgentID;
-            map.AgentData.SessionID = Client.Network.SessionID;
-            map.NameData.Name = Helpers.StringToField(name.ToLower());
-
-            Client.Network.SendPacket(map);
+            RequestMapBlocks(layer, 0, 0, 65535, 65535, true);
         }
 
         /// <summary>
@@ -200,34 +229,61 @@ namespace libsecondlife
         /// will block until it can find the region or gives up
         /// </summary>
         /// <param name="name">Name of sim you're looking for</param>
-        /// <returns>GridRegion for the sim you're looking for, or null if it's not available</returns>
-        /// <example>GridRegion regiondata = GetGridRegion("Ahern");</example>
-		public GridRegion GetGridRegion(string name) 
-		{
+        /// <param name="region">Will contain a GridRegion for the sim you're
+        /// looking for if successful, otherwise an empty structure</param>
+        /// <returns>True if the GridRegion was successfully fetched, otherwise
+        /// false</returns>
+        /// <example>bool success = GetGridRegion("Ahern", out myGridRegion);</example>
+        public bool GetGridRegion(string name, out GridRegion region)
+        {
             name = name.ToLower();
 
             if (Regions.ContainsKey(name))
             {
-                return Regions[name];
+                // We already have this GridRegion structure
+                region = Regions[name];
+                return true;
             }
             else
             {
-                BeginGetGridRegion(name);
+                ManualResetEvent requestEvent = new ManualResetEvent(false);
 
-                // FIXME: We shouldn't be sleeping in a library call, hopefully this goes away soon
-                System.Threading.Thread.Sleep(5000);
+                if (RequestingRegions.ContainsKey(name))
+                {
+                    Client.Log("GetGridRegion called for " + name + " multiple times, ignoring", 
+                        Helpers.LogLevel.Warning);
+                    region = new GridRegion();
+                    return false;
+                }
+                else
+                {
+                    // Add this region request to the list of requests we are tracking
+                    lock (RequestingRegions) RequestingRegions.Add(name, requestEvent);
+                }
+
+                // Make the request
+                RequestMapRegion(name);
+
+                // Wait until an answer is retrieved
+                requestEvent.WaitOne(Client.Settings.MAP_REQUEST_TIMEOUT, false);
+
+                // Remove the dictionary entry for this lookup
+                lock (RequestingRegions) RequestingRegions.Remove(name);
 
                 if (Regions.ContainsKey(name))
                 {
-                    return Regions[name];
+                    // The region was found after our request
+                    region = Regions[name];
+                    return true;
                 }
                 else
                 {
                     Client.Log("Couldn't find region " + name, Helpers.LogLevel.Warning);
-                    return null;
+                    region = new GridRegion();
+                    return false;
                 }
             }
-		}
+        }
 
         /// <summary>
         /// Populate Grid info based on data from MapBlockReplyPacket
@@ -248,15 +304,20 @@ namespace libsecondlife
                     region.X = block.X;
                     region.Y = block.Y;
                     region.Name = Helpers.FieldToUTF8String(block.Name);
-                    region.RegionFlags = block.RegionFlags;
+                    region.RegionFlags = (Simulator.RegionFlags)block.RegionFlags;
                     region.WaterHeight = block.WaterHeight;
                     region.Agents = block.Agents;
-                    region.Access = block.Access;
+                    region.Access = (GridRegion.SimAccess)block.Access;
                     region.MapImageID = block.MapImageID;
-                    region.RegionHandle = Helpers.UIntsToLong((uint)region.X * (uint)256, (uint)region.Y * (uint)256);
+                    region.RegionHandle = Helpers.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
 
                     lock (Regions) Regions[region.Name.ToLower()] = region;
 					lock (RegionsByHandle) RegionsByHandle[region.RegionHandle] = region;
+                    lock (RequestingRegions)
+                    {
+                        if (RequestingRegions.ContainsKey(region.Name.ToLower()))
+                            RequestingRegions[region.Name.ToLower()].Set();
+                    }
 
                     if (OnRegionAdd != null)
                     {

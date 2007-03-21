@@ -39,6 +39,74 @@ namespace libsecondlife
     /// </summary>
     public class Simulator
     {
+        /// <summary>
+        /// Simulator (region) properties
+        /// </summary>
+        [Flags]
+        public enum RegionFlags
+        {
+            /// <summary>No flags set</summary>
+            None = 0,
+            /// <summary>Agents can take damage and be killed</summary>
+            AllowDamage = 1 << 0,
+            /// <summary>Landmarks can be created here</summary>
+            AllowLandmark = 1 << 1,
+            /// <summary>Home position can be set in this sim</summary>
+            AllowSetHome = 1 << 2,
+            /// <summary>Home position is reset when an agent teleports away</summary>
+            ResetHomeOnTeleport = 1 << 3,
+            /// <summary>Sun does not move</summary>
+            SunFixed = 1 << 4,
+            /// <summary>No object, land, etc. taxes</summary>
+            TaxFree = 1 << 5,
+            /// <summary>Disable heightmap alterations (agents can still plant
+            /// foliage)</summary>
+            BlockTerraform = 1 << 6,
+            /// <summary>Land cannot be released, sold, or purchased</summary>
+            BlockLandResell = 1 << 7,
+            /// <summary>All content is wiped nightly</summary>
+            Sandbox = 1 << 8,
+            /// <summary></summary>
+            NullLayer = 1 << 9,
+            /// <summary></summary>
+            SkipAgentAction = 1 << 10,
+            /// <summary></summary>
+            SkipUpdateInterestList = 1 << 11,
+            /// <summary>No collision detection for non-agent objects</summary>
+            SkipCollisions = 1 << 12,
+            /// <summary>No scripts are ran</summary>
+            SkipScripts = 1 << 13,
+            /// <summary>All physics processing is turned off</summary>
+            SkipPhysics = 1 << 14,
+            /// <summary></summary>
+            ExternallyVisible = 1 << 15,
+            /// <summary></summary>
+            MainlandVisible = 1 << 16,
+            /// <summary></summary>
+            PublicAllowed = 1 << 17,
+            /// <summary></summary>
+            BlockDwell = 1 << 18,
+            /// <summary>Flight is disabled (not currently enforced by the sim)</summary>
+            NoFly = 1 << 19,
+            /// <summary>Allow direct (p2p) teleporting</summary>
+            AllowDirectTeleport = 1 << 20,
+            /// <summary>Estate owner has temporarily disabled scripting</summary>
+            EstateSkipScripts = 1 << 21,
+            /// <summary></summary>
+            RestrictPushObject = 1 << 22,
+            /// <summary>Deny agents with no payment info on file</summary>
+            DenyAnonymous = 1 << 23,
+            /// <summary>Deny agents with payment info on file</summary>
+            DenyIdentified = 1 << 24,
+            /// <summary>Deny agents who have made a monetary transaction</summary>
+            DenyTransacted = 1 << 25,
+            /// <summary></summary>
+            AllowParcelChanges = 1 << 26,
+            /// <summary></summary>
+            AbuseEmailToEstateOwner = 1 << 27
+        }
+
+
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
         public SecondLife Client;
@@ -189,14 +257,18 @@ namespace libsecondlife
         /// unknown, false if there was a failure</returns>
         public bool Connect(bool moveToSim)
         {
-            Disconnect();
+            if (connected)
+            {
+                Client.Self.CompleteAgentMovement(this);
+                return true;
+            }
 
             // Start the timers
             AckTimer.Start();
             StatsTimer.Start();
             PingTimer.Enabled = Client.Settings.SEND_PINGS;
 
-            Client.Log("Connecting to " + ipEndPoint.ToString(), Helpers.LogLevel.Info);
+            Client.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info);
 
             try
             {
@@ -245,17 +317,16 @@ namespace libsecondlife
         /// </summary>
         public void Disconnect()
         {
-            if (!connected) return;
-
             connected = false;
             AckTimer.Stop();
             StatsTimer.Stop();
             if (Client.Settings.SEND_PINGS) PingTimer.Stop();
 
+            // Make sure the socket is hooked up
+            if (!Connection.Connected) return;
+
             // Try to send the CloseCircuit notice
             CloseCircuitPacket close = new CloseCircuitPacket();
-
-            if (!Connection.Connected) return;
 
             // There's a high probability of this failing if the network is
             // disconnecting, so don't even bother logging the error
@@ -321,7 +392,6 @@ namespace libsecondlife
                                 packet.Type != PacketType.PacketAck &&
                                 packet.Type != PacketType.LogoutRequest)
                             {
-
                                 packet.Header.AckList = new uint[PendingAcks.Count];
 
                                 for (int i = 0; i < PendingAcks.Count; i++)
@@ -414,17 +484,6 @@ namespace libsecondlife
             LastPingSent = Environment.TickCount;
         }
 
-        public void DoThrottle()
-        {
-            float throttle;
-            if (OutgoingBPS > Client.Settings.OUTBOUND_THROTTLE_RATE)
-            {
-                throttle = (OutgoingBPS - Client.Settings.OUTBOUND_THROTTLE_RATE) * 2000 /
-                                         Client.Settings.OUTBOUND_THROTTLE_RATE;
-                //                              Client.Log("Throttling "+throttle, Helpers.LogLevel.Debug);
-                Thread.Sleep((int)throttle);
-            }
-        }
         /// <summary>
         /// 
         /// </summary>
@@ -496,7 +555,45 @@ namespace libsecondlife
             Simulator sim = obj as Simulator;
             if (sim == null)
                 return false;
-            return ID.Equals(sim.ID);
+            return (ipEndPoint.Equals(sim.ipEndPoint));
+        }
+
+        public static bool operator ==(Simulator lhs, Simulator rhs)
+        {
+            // If both are null, or both are same instance, return true
+            if (System.Object.ReferenceEquals(lhs, rhs))
+            {
+                return true;
+            }
+
+            // If one is null, but not both, return false.
+            if (((object)lhs == null) || ((object)rhs == null))
+            {
+                return false;
+            }
+
+            return lhs.ipEndPoint.Equals(rhs.ipEndPoint);
+        }
+
+        public static bool operator !=(Simulator lhs, Simulator rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        private void DoThrottle()
+        {
+            int throttle;
+
+            if (OutgoingBPS > Client.Settings.OUTBOUND_THROTTLE_RATE)
+            {
+                throttle = (int)((OutgoingBPS - Client.Settings.OUTBOUND_THROTTLE_RATE) * 2000 /
+                    Client.Settings.OUTBOUND_THROTTLE_RATE);
+
+                Client.DebugLog(String.Format("Simulator {0} throttling for {1}ms", this.ToString(), throttle));
+                // FIXME: When the outgoing message pumps are in place we won't need to throttle by locking up
+                // the application
+                Thread.Sleep(throttle);
+            }
         }
 
         /// <summary>
@@ -510,7 +607,6 @@ namespace libsecondlife
                 {
                     if (PendingAcks.Count > 250)
                     {
-                        // FIXME: Handle the odd case where we have too many pending ACKs queued up
                         Client.Log("Too many ACKs queued up!", Helpers.LogLevel.Error);
                         return;
                     }

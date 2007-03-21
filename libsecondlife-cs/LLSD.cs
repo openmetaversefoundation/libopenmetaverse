@@ -12,7 +12,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    public class LLSD
+    public static class LLSD
     {
         /// <summary>
         /// 
@@ -48,16 +48,19 @@ namespace libsecondlife
         public static object LLSDDeserialize(Stream st)
         {
             XmlTextReader reader = new XmlTextReader(st);
-            reader.Read(); SkipWS(reader);
+            reader.Read();
+            SkipWS(reader);
+
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "llsd")
-            {
                 throw new LLSDParseException("Expected <llsd>");
-            }
+
             reader.Read();
             object ret = LLSDParseOne(reader);
             SkipWS(reader);
+
             if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != "llsd")
                 throw new LLSDParseException("Expected </llsd>");
+
             return ret;
         }
 
@@ -71,10 +74,13 @@ namespace libsecondlife
             StringWriter sw = new StringWriter();
             XmlTextWriter writer = new XmlTextWriter(sw);
             writer.Formatting = Formatting.None;
-            writer.WriteStartElement("", "llsd", "");
+
+            writer.WriteStartElement(String.Empty, "llsd", String.Empty);
             LLSDWriteOne(writer, obj);
             writer.WriteEndElement();
+
             writer.Close();
+
             return Encoding.UTF8.GetBytes(sw.ToString());
         }
 
@@ -87,86 +93,95 @@ namespace libsecondlife
         {
             if (obj == null)
             {
-                writer.WriteStartElement("", "undef", "");
+                writer.WriteStartElement(String.Empty, "undef", String.Empty);
                 writer.WriteEndElement();
                 return;
             }
 
-            Type t = obj.GetType();
-            if (t == typeof(string))
+            if (obj is string)
             {
-                writer.WriteStartElement("", "string", "");
+                writer.WriteStartElement(String.Empty, "string", String.Empty);
                 writer.WriteString((string)obj);
                 writer.WriteEndElement();
             }
-            else if (t == typeof(long))
+            else if (obj is int)
             {
-                writer.WriteStartElement("", "integer", "");
+                writer.WriteStartElement(String.Empty, "integer", String.Empty);
                 writer.WriteString(obj.ToString());
                 writer.WriteEndElement();
             }
-            else if (t == typeof(double))
+            else if (obj is double)
             {
-                writer.WriteStartElement("", "real", "");
+                writer.WriteStartElement(String.Empty, "real", String.Empty);
                 writer.WriteString(obj.ToString());
                 writer.WriteEndElement();
             }
-            else if (t == typeof(bool))
+            else if (obj is bool)
             {
                 bool b = (bool)obj;
-                writer.WriteStartElement("", "boolean", "");
-                if (b)
-                    writer.WriteString("1");
-                else writer.WriteString("0");
+                writer.WriteStartElement(String.Empty, "boolean", String.Empty);
+                writer.WriteString(b ? "1" : "0");
                 writer.WriteEndElement();
             }
-            else if (t == typeof(LLUUID))
+            else if (obj is ulong)
             {
-                LLUUID u = (LLUUID)obj;
-                writer.WriteStartElement("", "uuid", "");
+                throw new Exception("ulong in LLSD is currently not implemented, fix me!");
+            }
+            else if (obj is LLUUID)
+            {
+                LLUUID u = obj as LLUUID;
+                writer.WriteStartElement(String.Empty, "uuid", String.Empty);
                 writer.WriteString(u.ToStringHyphenated());
                 writer.WriteEndElement();
             }
-            else if (t == typeof(Hashtable))
+            else if (obj is Hashtable)
             {
-                Hashtable h = (Hashtable)obj;
-                writer.WriteStartElement("", "map", "");
+                Hashtable h = obj as Hashtable;
+                writer.WriteStartElement(String.Empty, "map", String.Empty);
                 foreach (string key in h.Keys)
                 {
-                    writer.WriteStartElement("", "key", "");
+                    writer.WriteStartElement(String.Empty, "key", String.Empty);
                     writer.WriteString(key);
                     writer.WriteEndElement();
                     LLSDWriteOne(writer, h[key]);
                 }
                 writer.WriteEndElement();
             }
-            else if (t == typeof(ArrayList))
+            else if (obj is ArrayList)
             {
-                ArrayList a = (ArrayList)obj;
-                writer.WriteStartElement("", "array", "");
+                ArrayList a = obj as ArrayList;
+                writer.WriteStartElement(String.Empty, "array", String.Empty);
                 foreach (object item in a)
                 {
                     LLSDWriteOne(writer, item);
                 }
                 writer.WriteEndElement();
             }
-            else if (t == typeof(byte[]))
+            else if (obj is byte[])
             {
-                byte[] b = (byte[])obj;
-                writer.WriteStartElement("", "binary", "");
-                writer.WriteStartAttribute("", "encoding", "");
+                byte[] b = obj as byte[];
+                writer.WriteStartElement(String.Empty, "binary", String.Empty);
+
+                writer.WriteStartAttribute(String.Empty, "encoding", String.Empty);
                 writer.WriteString("base64");
                 writer.WriteEndAttribute();
-                char[] tmp = new char[b.Length * 2]; // too much
-                int i = Convert.ToBase64CharArray(b, 0, b.Length, tmp, 0);
-                Array.Resize(ref tmp, i);
-                writer.WriteString(new String(tmp));
-                writer.WriteEndElement();
 
+                //// Calculate the length of the base64 output
+                //long length = (long)(4.0d * b.Length / 3.0d);
+                //if (length % 4 != 0) length += 4 - (length % 4);
+
+                //// Create the char[] for base64 output and fill it
+                //char[] tmp = new char[length];
+                //int i = Convert.ToBase64CharArray(b, 0, b.Length, tmp, 0);
+
+                //writer.WriteString(new String(tmp));
+
+                writer.WriteString(Convert.ToBase64String(b));
+                writer.WriteEndElement();
             }
             else
             {
-                throw new LLSDSerializeException("Unknown type " + t.Name);
+                throw new LLSDSerializeException("Unknown type " + obj.GetType().Name);
             }
         }
 
@@ -180,8 +195,9 @@ namespace libsecondlife
             SkipWS(reader);
             if (reader.NodeType != XmlNodeType.Element)
                 throw new LLSDParseException("Expected an element");
-            string dtype = reader.LocalName; object ret = null;
-            //bool st = false;
+
+            string dtype = reader.LocalName;
+            object ret = null;
 
             switch (dtype)
             {
@@ -189,9 +205,14 @@ namespace libsecondlife
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return null;
+                            reader.Read();
+                            return null;
                         }
-                        reader.Read(); SkipWS(reader); ret = null; break;
+
+                        reader.Read();
+                        SkipWS(reader);
+                        ret = null;
+                        break;
                     }
                 case "boolean":
                     {
@@ -199,38 +220,39 @@ namespace libsecondlife
                         {
                             reader.Read(); return false;
                         }
+
                         reader.Read();
                         string s = reader.ReadString().Trim();
-                        if (s == "" || s == "false" || s == "0")
-                        {
+
+                        if (s == String.Empty || s == "false" || s == "0")
                             ret = false;
-                        }
                         else if (s == "true" || s == "1")
-                        {
                             ret = true;
-                        }
                         else
-                        {
                             throw new LLSDParseException("Bad boolean value " + s);
-                        }
+
                         break;
                     }
                 case "integer":
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return 0L;
+                            reader.Read();
+                            return 0;
                         }
+
                         reader.Read();
-                        ret = Convert.ToInt64(reader.ReadString().Trim());
+                        ret = Convert.ToInt32(reader.ReadString().Trim());
                         break;
                     }
                 case "real":
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return 0.0f;
+                            reader.Read();
+                            return 0.0f;
                         }
+
                         reader.Read();
                         ret = Convert.ToDouble(reader.ReadString().Trim());
                         break;
@@ -239,8 +261,10 @@ namespace libsecondlife
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return new LLUUID();
+                            reader.Read();
+                            return LLUUID.Zero;
                         }
+
                         reader.Read();
                         ret = new LLUUID(reader.ReadString().Trim());
                         break;
@@ -249,8 +273,10 @@ namespace libsecondlife
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return String.Empty;
+                            reader.Read();
+                            return String.Empty;
                         }
+
                         reader.Read();
                         ret = reader.ReadString();
                         break;
@@ -259,12 +285,16 @@ namespace libsecondlife
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return new byte[0];
+                            reader.Read();
+                            return new byte[0];
                         }
+
                         if (reader.GetAttribute("encoding") != null &&
-                           reader.GetAttribute("encoding") != "base64")
-                            throw new LLSDParseException("Unknown encoding: " +
-                                reader.GetAttribute("encoding"));
+                            reader.GetAttribute("encoding") != "base64")
+                        {
+                            throw new LLSDParseException("Unknown encoding: " + reader.GetAttribute("encoding"));
+                        }
+
                         reader.Read();
                         FromBase64Transform b64 = new FromBase64Transform(FromBase64TransformMode.IgnoreWhiteSpaces);
                         byte[] inp = Encoding.ASCII.GetBytes(reader.ReadString());
@@ -287,10 +317,12 @@ namespace libsecondlife
                 default:
                     throw new LLSDParseException("Unknown element <" + dtype + ">");
             }
+
             if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != dtype)
             {
                 throw new LLSDParseException("Expected </" + dtype + ">");
             }
+
             reader.Read();
             return ret;
         }
@@ -302,32 +334,41 @@ namespace libsecondlife
         /// <returns></returns>
         public static Hashtable LLSDParseMap(XmlTextReader reader)
         {
+            Hashtable ret = new Hashtable();
+
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "map")
                 throw new LLSDParseException("Expected <map>");
+
             if (reader.IsEmptyElement)
             {
-                reader.Read(); return new Hashtable();
+                reader.Read();
+                return ret;
             }
-            reader.Read();
 
-            Hashtable ret = new Hashtable();
+            reader.Read();
 
             while (true)
             {
                 SkipWS(reader);
                 if (reader.NodeType == XmlNodeType.EndElement && reader.LocalName == "map")
                 {
-                    reader.Read(); break;
+                    reader.Read();
+                    break;
                 }
+
                 if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "key")
                     throw new LLSDParseException("Expected <key>");
+
                 string key = reader.ReadString();
+
                 if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != "key")
                     throw new LLSDParseException("Expected </key>");
+
                 reader.Read();
                 object val = LLSDParseOne(reader);
                 ret[key] = val;
             }
+
             return ret; // TODO
         }
 
@@ -338,25 +379,32 @@ namespace libsecondlife
         /// <returns></returns>
         public static ArrayList LLSDParseArray(XmlTextReader reader)
         {
+            ArrayList ret = new ArrayList();
+
             if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "array")
                 throw new LLSDParseException("Expected <array>");
+
             if (reader.IsEmptyElement)
             {
-                reader.Read(); return new ArrayList();
+                reader.Read();
+                return ret;
             }
-            reader.Read();
 
-            ArrayList ret = new ArrayList();
+            reader.Read();
 
             while (true)
             {
                 SkipWS(reader);
+
                 if (reader.NodeType == XmlNodeType.EndElement && reader.LocalName == "array")
                 {
-                    reader.Read(); break;
+                    reader.Read();
+                    break;
                 }
+
                 ret.Insert(ret.Count, LLSDParseOne(reader));
             }
+
             return ret; // TODO
         }
 
@@ -384,23 +432,23 @@ namespace libsecondlife
             {
                 return GetSpaces(indent) + "- undef\n";
             }
-            else if (obj.GetType() == typeof(string))
+            else if (obj is string)
             {
                 return GetSpaces(indent) + "- string \"" + (string)obj + "\"\n";
             }
-            else if (obj.GetType() == typeof(long))
+            else if (obj is int)
             {
                 return GetSpaces(indent) + "- integer " + obj.ToString() + "\n";
             }
-            else if (obj.GetType() == typeof(double))
+            else if (obj is double)
             {
                 return GetSpaces(indent) + "- float " + obj.ToString() + "\n";
             }
-            else if (obj.GetType() == typeof(LLUUID))
+            else if (obj is LLUUID)
             {
                 return GetSpaces(indent) + "- uuid " + ((LLUUID)obj).ToStringHyphenated() + Environment.NewLine;
             }
-            else if (obj.GetType() == typeof(Hashtable))
+            else if (obj is Hashtable)
             {
                 StringBuilder ret = new StringBuilder();
                 ret.Append(GetSpaces(indent) + "- map" + Environment.NewLine);
@@ -414,7 +462,7 @@ namespace libsecondlife
 
                 return ret.ToString();
             }
-            else if (obj.GetType() == typeof(ArrayList))
+            else if (obj is ArrayList)
             {
                 StringBuilder ret = new StringBuilder();
                 ret.Append(GetSpaces(indent) + "- array\n");
@@ -427,9 +475,10 @@ namespace libsecondlife
 
                 return ret.ToString();
             }
-            else if (obj.GetType() == typeof(byte[]))
+            else if (obj is byte[])
             {
-                return GetSpaces(indent) + "- binary\n" + Helpers.FieldToHexString((byte[])obj, "") + Environment.NewLine;
+                return GetSpaces(indent) + "- binary\n" + Helpers.FieldToHexString((byte[])obj, GetSpaces(indent)) + 
+                    Environment.NewLine;
             }
             else
             {
@@ -443,7 +492,14 @@ namespace libsecondlife
         /// <param name="reader"></param>
         private static void SkipWS(XmlTextReader reader)
         {
-            while (reader.NodeType == XmlNodeType.Comment || reader.NodeType == XmlNodeType.Whitespace || reader.NodeType == XmlNodeType.SignificantWhitespace || reader.NodeType == XmlNodeType.XmlDeclaration) reader.Read();
+            while (
+                reader.NodeType == XmlNodeType.Comment ||
+                reader.NodeType == XmlNodeType.Whitespace ||
+                reader.NodeType == XmlNodeType.SignificantWhitespace ||
+                reader.NodeType == XmlNodeType.XmlDeclaration)
+            {
+                reader.Read();
+            }
         }
     }
 }

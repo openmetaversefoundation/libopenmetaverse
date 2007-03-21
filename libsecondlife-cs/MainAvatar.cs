@@ -1318,9 +1318,9 @@ namespace libsecondlife
             if (simName != Client.Network.CurrentSim.Name.ToLower())
             {
                 // Teleporting to a foreign sim
-                GridRegion region = Client.Grid.GetGridRegion(simName);
+                GridRegion region;
 
-                if (region != null)
+                if (Client.Grid.GetGridRegion(simName, out region))
                 {
                     return Teleport(region.RegionHandle, position, lookAt);
                 }
@@ -1792,12 +1792,11 @@ namespace libsecondlife
 
         }
 
-	    private void EventQueueHandler(string message, object body)
+	    private void EventQueueHandler(string message, Hashtable body, Caps caps)
         {
             if (message == "TeleportFinish")
             {
-                Hashtable tpt = (Hashtable)body;
-                Hashtable info = (Hashtable)tpt["Info"];
+                Hashtable info = (Hashtable)body["Info"];
 
                 // Backwards compatibility hack
                 TeleportFinishPacket packet = new TeleportFinishPacket();
@@ -1808,11 +1807,12 @@ namespace libsecondlife
                 packet.Info.AgentID = (LLUUID)info["AgentID"];
                 packet.Info.RegionHandle = Helpers.BytesToUInt64((byte[])info["RegionHandle"]);
                 packet.Info.SeedCapability = Helpers.StringToField((string)info["SeedCapability"]);
-                packet.Info.SimPort = (ushort)(long)info["SimPort"];
-                packet.Info.SimAccess = (byte)(long)info["SimAccess"];
+                packet.Info.SimPort = (ushort)(int)info["SimPort"];
+                packet.Info.SimAccess = (byte)(int)info["SimAccess"];
 
-                Client.DebugLog("Received a TeleportFinish event, SimIP: " + new IPAddress(packet.Info.SimIP) +
-                    ", LocationID: " + packet.Info.LocationID + ", RegionHandle: " + packet.Info.RegionHandle);
+                Client.DebugLog(String.Format(
+                    "Received a TeleportFinish event from {0}, SimIP: {1}, Location: {2}, RegionHandle: {3}", 
+                    caps.Simulator.ToString(), packet.Info.SimIP, packet.Info.LocationID, packet.Info.RegionHandle));
 
                 TeleportHandler(packet, Client.Network.CurrentSim);
             }
@@ -1867,29 +1867,25 @@ namespace libsecondlife
             {
                 TeleportFinishPacket finish = (TeleportFinishPacket)packet;
 
-                Simulator previousSim = Client.Network.CurrentSim;
                 flags = (TeleportFlags)finish.Info.TeleportFlags;
                 string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
-                IPAddress simIP = new IPAddress(finish.Info.SimIP);
                 finished = true;
 
                 Client.DebugLog("TeleportFinish received from " + simulator.ToString() + ", Flags: " + flags.ToString());
 
-                // Disable CAPS on the current sim since we are moving
-                if (Client.Network.CurrentCaps != null) Client.Network.CurrentCaps.Dead = true;
-
                 // Connect to the new sim
-                Simulator sim = Client.Network.Connect(simIP, finish.Info.SimPort, true, seedcaps);
+                Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP), 
+                    finish.Info.SimPort, true, seedcaps);
 
-                if (sim != null)
+                if (newSimulator != null)
                 {
                     teleportMessage = "Teleport finished";
                     TeleportStat = TeleportStatus.Finished;
 
                     // Disconnect from the previous sim
-                    Client.Network.DisconnectSim(previousSim);
+                    Client.Network.DisconnectSim(simulator);
 
-                    Client.Log("Moved to new sim " + sim.ToString(), Helpers.LogLevel.Info);
+                    Client.Log("Moved to new sim " + newSimulator.ToString(), Helpers.LogLevel.Info);
                 }
                 else
                 {
@@ -1898,7 +1894,7 @@ namespace libsecondlife
 
                     // Attempt to reconnect to the previous simulator
                     // TODO: This hasn't been tested at all
-                    Client.Network.Connect(previousSim.IPEndPoint.Address, (ushort)previousSim.IPEndPoint.Port,
+                    Client.Network.Connect(simulator.IPEndPoint.Address, (ushort)simulator.IPEndPoint.Port,
                         true, Client.Network.CurrentCaps.Seedcaps);
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
