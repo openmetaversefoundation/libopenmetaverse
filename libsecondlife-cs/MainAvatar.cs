@@ -117,22 +117,36 @@ namespace libsecondlife
             AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
         }
 
-        public enum ScriptPermission
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum ScriptPermission : int
         {
+            /// <summary>Placeholder for empty values, shouldn't ever see this</summary>
+            None = 0,
+            /// <summary>Script wants to take money from you</summary>
+            Debit = 1 << 1,
             /// <summary></summary>
-            PERMISSION_DEBIT = 2,
+            TakeControls = 1 << 2,
             /// <summary></summary>
-            PERMISSION_TAKE_CONTROLS = 4,
+            RemapControls = 1 << 3,
+            /// <summary>Script wants to trigger avatar animations</summary>
+            TriggerAnimation = 1 << 4,
             /// <summary></summary>
-            PERMISSION_TRIGGER_ANIMATION = 16,
+            Attach = 1 << 5,
             /// <summary></summary>
-            PERMISSION_ATTACH = 32,
+            ReleaseOwnership = 1 << 6,
             /// <summary></summary>
-            PERMISSION_CHANGE_LINKS = 128,
+            ChangeLinks = 1 << 7,
             /// <summary></summary>
-            PERMISSION_TRACK_CAMERA = 1024,
+            ChangeJoints = 1 << 8,
             /// <summary></summary>
-            PERMISSION_CONTROL_CAMERA = 2048
+            ChangePermissions = 1 << 9,
+            /// <summary></summary>
+            TrackCamera = 1 << 10,
+            /// <summary>Script wants to control your camera</summary>
+            ControlCamera = 1 << 11
         }
 
         /// <summary>
@@ -495,7 +509,7 @@ namespace libsecondlife
         /// <param name="objectName">Name of the object containing the script</param>
         /// <param name="objectOwner">Name of the object's owner</param>
         /// <param name="questions">Bitwise value representing the requested permissions</param>
-        public delegate void ScriptQuestionCallback(LLUUID taskID, LLUUID itemID, string objectName, string objectOwner, int questions);
+        public delegate void ScriptQuestionCallback(LLUUID taskID, LLUUID itemID, string objectName, string objectOwner, ScriptPermission questions);
 
         /// <summary>
         /// Triggered when the L$ account balance for this avatar changes
@@ -1584,6 +1598,25 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="itemID"></param>
+        /// <param name="taskID"></param>
+        /// <param name="permissions"></param>
+        public void ScriptQuestionReply(Simulator simulator, LLUUID itemID, LLUUID taskID, ScriptPermission permissions)
+        {
+            ScriptAnswerYesPacket yes = new ScriptAnswerYesPacket();
+            yes.AgentData.AgentID = Client.Network.AgentID;
+            yes.AgentData.SessionID = Client.Network.SessionID;
+            yes.Data.ItemID = itemID;
+            yes.Data.TaskID = taskID;
+            yes.Data.Questions = (int)permissions;
+
+            Client.Network.SendPacket(yes, simulator);
+        }
+
+        /// <summary>
         /// Take an incoming ImprovedInstantMessage packet, auto-parse, and if
         /// OnInstantMessage is defined call that with the appropriate arguments
         /// </summary>
@@ -1679,11 +1712,15 @@ namespace libsecondlife
             {
                 ScriptQuestionPacket question = (ScriptQuestionPacket)packet;
 
-                OnScriptQuestion(question.Data.TaskID,
-                    question.Data.ItemID,
-                    Helpers.FieldToUTF8String(question.Data.ObjectOwner),
-                    Helpers.FieldToUTF8String(question.Data.ObjectName),
-                    question.Data.Questions);
+                try
+                {
+                    OnScriptQuestion(question.Data.TaskID,
+                        question.Data.ItemID,
+                        Helpers.FieldToUTF8String(question.Data.ObjectName),
+                        Helpers.FieldToUTF8String(question.Data.ObjectOwner),
+                        (ScriptPermission)question.Data.Questions);
+                }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
