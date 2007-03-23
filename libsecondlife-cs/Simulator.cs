@@ -106,6 +106,25 @@ namespace libsecondlife
             AbuseEmailToEstateOwner = 1 << 27
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum SimAccess : byte
+        {
+            /// <summary></summary>
+            Min = 0,
+            /// <summary></summary>
+            Trial = 7,
+            /// <summary></summary>
+            PG = 13,
+            /// <summary></summary>
+            Mature = 21,
+            /// <summary></summary>
+            Down = 254,
+            /// <summary></summary>
+            NonExistent = 255
+        }
+
 
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
@@ -162,6 +181,12 @@ namespace libsecondlife
         public EstateTools Estate;
         /// <summary>Current time dilation of this simulator</summary>
         public float Dilation;
+        /// <summary></summary>
+        public RegionFlags Flags;
+        /// <summary></summary>
+        public SimAccess Access;
+        /// <summary></summary>
+        public float BillableFactor;
 
         /// <summary>The IP address and port of the server</summary>
         public IPEndPoint IPEndPoint { get { return ipEndPoint; } }

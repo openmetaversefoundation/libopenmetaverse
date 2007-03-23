@@ -122,6 +122,43 @@ namespace libsecondlife
             Abandoned = 2
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ParcelCategory : sbyte
+        {
+            /// <summary>No assigned category</summary>
+            None = 0,
+            /// <summary></summary>
+            Linden,
+            /// <summary></summary>
+            Adult,
+            /// <summary></summary>
+            Arts,
+            /// <summary></summary>
+            Business,
+            /// <summary></summary>
+            Educational,
+            /// <summary></summary>
+            Gaming,
+            /// <summary></summary>
+            Hangout,
+            /// <summary></summary>
+            Newcomer,
+            /// <summary></summary>
+            Park,
+            /// <summary></summary>
+            Residential,
+            /// <summary></summary>
+            Shopping,
+            /// <summary></summary>
+            Stage,
+            /// <summary></summary>
+            Other,
+            /// <summary>Not an actual category, only used for queries</summary>
+            Any = -1
+        }
+
         
         /// <summary></summary>
         public int RequestResult;
@@ -147,7 +184,8 @@ namespace libsecondlife
         public bool ReservedNewbie;
         /// <summary>Date land was claimed</summary>
         public DateTime ClaimDate;
-        /// <summary>Price land was claimed for</summary>
+        /// <summary>Marked obsolete since it appears to always be zero</summary>
+        [Obsolete]
         public int ClaimPrice;
         /// <summary></summary>
         public int RentPrice;
@@ -209,7 +247,7 @@ namespace libsecondlife
         /// <summary>How long is pass valid for</summary>
         public float PassHours;
         /// <summary></summary>
-        public byte Category;
+        public ParcelCategory Category;
         /// <summary>Key of authorized buyer</summary>
         public LLUUID AuthBuyerID;
         /// <summary>Key of parcel snapshot</summary>
@@ -261,7 +299,7 @@ namespace libsecondlife
             request.ParcelData.LocalID = this.LocalID;
 
             request.ParcelData.AuthBuyerID = this.AuthBuyerID;
-            request.ParcelData.Category = this.Category;
+            request.ParcelData.Category = (byte)this.Category;
             request.ParcelData.Desc = Helpers.StringToField(this.Desc);
             request.ParcelData.GroupID = this.GroupID;
             request.ParcelData.LandingType = this.LandingType;
@@ -673,8 +711,9 @@ namespace libsecondlife
                 parcel.AuctionID = properties.ParcelData.AuctionID;
                 parcel.AuthBuyerID = properties.ParcelData.AuthBuyerID;
                 parcel.Bitmap = properties.ParcelData.Bitmap;
-                parcel.Category = properties.ParcelData.Category;
+                parcel.Category = (Parcel.ParcelCategory)(sbyte)properties.ParcelData.Category;
                 parcel.ClaimDate = Helpers.UnixTimeToDateTime((uint)properties.ParcelData.ClaimDate);
+                // ClaimPrice seems to always be zero?
                 parcel.ClaimPrice = properties.ParcelData.ClaimPrice;
                 parcel.Desc = Helpers.FieldToUTF8String(properties.ParcelData.Desc);
                 parcel.GroupID = properties.ParcelData.GroupID;

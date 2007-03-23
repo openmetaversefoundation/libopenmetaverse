@@ -1125,11 +1125,6 @@ namespace libsecondlife
 
             simulator.ID = handshake.RegionInfo.CacheID;
 
-            // TODO: What do we need these for? RegionFlags probably contains good stuff
-            //handshake.RegionInfo.BillableFactor;
-            //handshake.RegionInfo.RegionFlags;
-            //handshake.RegionInfo.SimAccess;
-
             simulator.IsEstateManager = handshake.RegionInfo.IsEstateManager;
             simulator.Name = Helpers.FieldToUTF8String(handshake.RegionInfo.SimName);
             simulator.SimOwner = handshake.RegionInfo.SimOwner;
@@ -1150,6 +1145,9 @@ namespace libsecondlife
             simulator.TerrainStartHeight10 = handshake.RegionInfo.TerrainStartHeight10;
             simulator.TerrainStartHeight11 = handshake.RegionInfo.TerrainStartHeight11;
             simulator.WaterHeight = handshake.RegionInfo.WaterHeight;
+            simulator.Flags = (Simulator.RegionFlags)handshake.RegionInfo.RegionFlags;
+            simulator.BillableFactor = handshake.RegionInfo.BillableFactor;
+            simulator.Access = (Simulator.SimAccess)handshake.RegionInfo.SimAccess;
 
             Client.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info);
 

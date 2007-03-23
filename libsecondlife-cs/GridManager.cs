@@ -37,26 +37,6 @@ namespace libsecondlife
 	/// </summary>
 	public struct GridRegion
 	{
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum SimAccess : byte
-        {
-            /// <summary></summary>
-            Min = 0,
-            /// <summary></summary>
-            Trial = 7,
-            /// <summary></summary>
-            PG = 13,
-            /// <summary></summary>
-            Mature = 21,
-            /// <summary></summary>
-            Down = 254,
-            /// <summary></summary>
-            NonExistent = 255
-        }
-
-
         /// <summary>Sim X position on World Map</summary>
 		public int X;
         /// <summary>Sim Y position on World Map</summary>
@@ -64,9 +44,10 @@ namespace libsecondlife
         /// <summary>Sim Name (NOTE: In lowercase!)</summary>
 		public string Name;
         /// <summary></summary>
-		public SimAccess Access;
-        /// <summary>Various flags for the region (presumably things like PG/Mature)</summary>
-		public Simulator.RegionFlags RegionFlags;
+		public Simulator.SimAccess Access;
+        /// <summary>Marked obsolete since it appears to always be zero (None)</summary>
+		[Obsolete]
+        public Simulator.RegionFlags RegionFlags;
         /// <summary>Sim's defined Water Height</summary>
 		public byte WaterHeight;
         /// <summary></summary>
@@ -88,13 +69,40 @@ namespace libsecondlife
             output.AppendLine(Name);
             output.AppendLine("RegionHandle: " + RegionHandle);
             output.AppendLine(String.Format("X: {0} Y: {1}", X, Y));
-            output.AppendLine("MapImageID: " + MapImageID);
+            output.AppendLine("MapImageID: " + MapImageID.ToStringHyphenated());
             output.AppendLine("Access: " + Access);
             output.AppendLine("RegionFlags: " + RegionFlags);
             output.AppendLine("WaterHeight: " + WaterHeight);
             output.Append("Agents: " + Agents);
 
             return output.ToString();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return X.GetHashCode() ^ Y.GetHashCode();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is GridRegion)
+                return Equals((GridRegion)obj);
+            else
+                return false;
+        }
+
+        private bool Equals(GridRegion region)
+        {
+            return (this.X == region.X && this.Y == region.Y);
         }
 	}
 
@@ -221,7 +229,7 @@ namespace libsecondlife
         /// </summary>
         public void RequestMainlandSims(MapLayerType layer)
         {
-            RequestMapBlocks(layer, 0, 0, 65535, 65535, true);
+            RequestMapBlocks(layer, 0, 0, 65535, 65535, false);
         }
 
         /// <summary>
@@ -304,10 +312,11 @@ namespace libsecondlife
                     region.X = block.X;
                     region.Y = block.Y;
                     region.Name = Helpers.FieldToUTF8String(block.Name);
+                    // RegionFlags seems to always be zero here?
                     region.RegionFlags = (Simulator.RegionFlags)block.RegionFlags;
                     region.WaterHeight = block.WaterHeight;
                     region.Agents = block.Agents;
-                    region.Access = (GridRegion.SimAccess)block.Access;
+                    region.Access = (Simulator.SimAccess)block.Access;
                     region.MapImageID = block.MapImageID;
                     region.RegionHandle = Helpers.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
 
