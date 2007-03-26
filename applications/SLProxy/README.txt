@@ -1,1 +1,0 @@
-All information about SLProxy can be found on the libsecondlife wiki at http://www.libsecondlife.org/wiki/SLProxy

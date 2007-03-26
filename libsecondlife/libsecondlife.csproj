@@ -1,0 +1,252 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>libsecondlife</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>libsecondlife</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>..\bin\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>..\bin\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>
+    </NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|.NET 1.1' ">
+    <OutputPath>..\bin\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssetSystem\AppearanceManager.cs" />
+    <Compile Include="AssetSystem\Asset.cs" />
+    <Compile Include="AssetSystem\AssetImage.cs" />
+    <Compile Include="AssetSystem\AssetManager.cs" />
+    <Compile Include="AssetSystem\AssetNotecard.cs" />
+    <Compile Include="AssetSystem\AssetPacketHelpers.cs" />
+    <Compile Include="AssetSystem\AssetRequestUpload.cs" />
+    <Compile Include="AssetSystem\AssetScript.cs" />
+    <Compile Include="AssetSystem\AssetWearable.cs" />
+    <Compile Include="AssetSystem\AssetWearable_Body.cs" />
+    <Compile Include="AssetSystem\AssetWearable_Clothing.cs" />
+    <Compile Include="AssetSystem\AssetRequest.cs" />
+    <Compile Include="AssetSystem\ImageManager.cs" />
+    <Compile Include="AssetSystem\ImagePacketHelpers.cs" />
+    <Compile Include="Avatar.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AvatarManager.cs" />
+    <Compile Include="BakeLayer.cs" />
+    <Compile Include="BitPack.cs" />
+    <Compile Include="Caps.cs" />
+    <Compile Include="DirectoryManager.cs" />
+    <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
+    <Compile Include="InventorySystem\InventoryScript.cs" />
+    <Compile Include="InventorySystem\InventoryWearable.cs" />
+    <Compile Include="LLObject.cs" />
+    <Compile Include="LLSD.cs" />
+    <Compile Include="MainAvatarStatus.cs" />
+    <Compile Include="MainAvatar.cs" />
+    <Compile Include="EstateTools.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GridManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GroupManager.cs" />
+    <Compile Include="Helpers.cs" />
+    <Compile Include="InventorySystem\InventoryBase.cs" />
+    <Compile Include="InventorySystem\InventoryFolder.cs" />
+    <Compile Include="InventorySystem\InventoryImage.cs" />
+    <Compile Include="InventorySystem\InventoryItem.cs" />
+    <Compile Include="InventorySystem\InventoryManager.cs" />
+    <Compile Include="InventorySystem\InventoryNotecard.cs" />
+    <Compile Include="InventorySystem\InventoryPacketHelper.cs" />
+    <Compile Include="JSON\JSONArray.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JSON\JSONFacade.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JSON\JSONObject.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JSON\JSONTokener.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="NameValue.cs" />
+    <Compile Include="NetworkManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ObjectManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ParcelManager.cs" />
+    <Compile Include="ParticleSystem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Prims.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProtocolManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SecondLife.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SerializableDictionary.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="Simulator.cs" />
+    <Compile Include="TerrainManager.cs" />
+    <Compile Include="Textures.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Types.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\Logger.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\SimpleHttpRequest.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcErrorCodes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcExposedAttribute.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcRequestDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcRequestSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcResponder.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcResponse.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcResponseDeserializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcResponseSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcSerializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XmlRpcCS\XmlRpcServer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcSystemObject.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcXmlTokens.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="_Packets_.cs" />
+    <Compile Include="_VisualParam_.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\gloves_fingers_alpha.tga" />
+    <EmbeddedResource Include="Resources\glove_length_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_length_lower_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_length_upper_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_open_lower_alpha.tga" />
+    <EmbeddedResource Include="Resources\jacket_open_upper_alpha.tga" />
+    <EmbeddedResource Include="Resources\pants_length_alpha.tga" />
+    <EmbeddedResource Include="Resources\pants_waist_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_bottom_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_collar_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_collar_back_alpha.tga" />
+    <EmbeddedResource Include="Resources\shirt_sleeve_alpha.tga" />
+    <EmbeddedResource Include="Resources\shoe_height_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_length_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_back_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_front_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_left_alpha.tga" />
+    <EmbeddedResource Include="Resources\skirt_slit_right_alpha.tga" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

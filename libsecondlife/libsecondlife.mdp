@@ -1,0 +1,95 @@
+<Project name="libsecondlife" fileversion="2.0" language="C#" clr-version="Net_2_0" ctype="DotNetProject">
+  <Configurations active="Debug">
+    <Configuration name="Debug" ctype="DotNetProjectConfiguration">
+      <Output directory="./bin/Debug" assembly="libsecondlife" />
+      <Build debugmode="True" target="Library" />
+      <Execution runwithwarnings="True" consolepause="True" runtime="MsNet" clr-version="Net_2_0" />
+      <CodeGeneration compiler="Csc" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" mainclass="" generatexmldocumentation="False" ctype="CSharpCompilerParameters" />
+    </Configuration>
+    <Configuration name="Release" ctype="DotNetProjectConfiguration">
+      <Output directory="./bin/Release" assembly="libsecondlife" />
+      <Build debugmode="False" target="Library" />
+      <Execution runwithwarnings="True" consolepause="True" runtime="MsNet" clr-version="Net_2_0" />
+      <CodeGeneration compiler="Csc" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" mainclass="" generatexmldocumentation="False" ctype="CSharpCompilerParameters" />
+    </Configuration>
+  </Configurations>
+  <DeployTargets />
+  <Contents>
+    <File name="./AssemblyInfo.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Avatar.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AvatarManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./EstateTools.cs" subtype="Code" buildaction="Compile" />
+    <File name="./GridManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./GroupManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Helpers.cs" subtype="Code" buildaction="Compile" />
+    <File name="./MainAvatar.cs" subtype="Code" buildaction="Compile" />
+    <File name="./MainAvatarStatus.cs" subtype="Code" buildaction="Compile" />
+    <File name="./NetworkManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./ObjectManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./_Packets_.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Parcel.cs" subtype="Code" buildaction="Compile" />
+    <File name="./ParticleSystem.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Prims.cs" subtype="Code" buildaction="Compile" />
+    <File name="./ProtocolManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Region.cs" subtype="Code" buildaction="Compile" />
+    <File name="./SecondLife.cs" subtype="Code" buildaction="Compile" />
+    <File name="./SerializableDictionary.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Settings.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Textures.cs" subtype="Code" buildaction="Compile" />
+    <File name="./Types.cs" subtype="Code" buildaction="Compile" />
+    <File name="./JSON/JSONArray.cs" subtype="Code" buildaction="Compile" />
+    <File name="./JSON/JSONFacade.cs" subtype="Code" buildaction="Compile" />
+    <File name="./JSON/JSONObject.cs" subtype="Code" buildaction="Compile" />
+    <File name="./JSON/JSONTokener.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/Logger.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/SimpleHttpRequest.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcBoxcarRequest.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcClientProxy.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcDeserializer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcErrorCodes.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcException.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcExposedAttribute.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcRequest.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcRequestDeserializer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcRequestSerializer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcResponder.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcResponse.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcResponseDeserializer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcResponseSerializer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcSerializer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcServer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcSystemObject.cs" subtype="Code" buildaction="Compile" />
+    <File name="./XmlRpcCS/XmlRpcXmlTokens.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AppearanceManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/Asset.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetImage.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetNotecard.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetPacketHelpers.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetRequestDownload.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetRequestUpload.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetWearable.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetWearable_Body.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetWearable_Clothing.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/BodyPart_Deprecated.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/_BodyShapeParams_.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/ImageManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/ImagePacketHelpers.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/DownloadRequest_Folder.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryBase.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryFolder.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryImage.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryItem.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryNotecard.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryPacketHelper.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryWearable.cs" subtype="Code" buildaction="Compile" />
+    <File name="./DirectoryManager.cs" subtype="Code" buildaction="Compile" />
+    <File name="./InventorySystem/InventoryScript.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssetSystem/AssetScript.cs" subtype="Code" buildaction="Compile" />
+  </Contents>
+  <References>
+    <ProjectReference type="Gac" localcopy="True" refto="System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <ProjectReference type="Gac" localcopy="True" refto="System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  </References>
+</Project>
