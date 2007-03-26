@@ -53,14 +53,14 @@ public class Analyst : ProxyPlugin
 
     public Analyst(ProxyFrame frame)
     {
-	this.frame = frame; this.proxy = frame.proxy;
+        this.frame = frame;
+        this.proxy = frame.proxy;
     }
 
     public override void Init()
     {
         libslAssembly = Assembly.Load("libsecondlife");
         if (libslAssembly == null) throw new Exception("Assembly load exception");
-
 
         // build the table of /command delegates
         InitializeCommandDelegates();
@@ -69,12 +69,14 @@ public class Analyst : ProxyPlugin
         foreach (string arg in frame.Args)
             if (arg == "--log-all")
                 LogAll();
+
+        Console.WriteLine("Analyst loaded");
     }
 
     // InitializeCommandDelegates: configure Analyst's commands
     private void InitializeCommandDelegates()
     {
-        frame.AddCommand("/log",  new ProxyFrame.CommandDelegate(CmdLog));
+        frame.AddCommand("/log", new ProxyFrame.CommandDelegate(CmdLog));
         frame.AddCommand("/-log", new ProxyFrame.CommandDelegate(CmdNoLog));
         // frame.AddCommand("/grep", new ProxyFrame.CommandDelegate(CmdGrep));
         frame.AddCommand("/set", new ProxyFrame.CommandDelegate(CmdSet));
@@ -135,7 +137,7 @@ public class Analyst : ProxyPlugin
             PacketType pType = packetTypeFromName(words[1]);
             loggedPackets.Remove(pType);
 
-	    proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
+            proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(LogPacketIn));
             proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(LogPacketOut));
             SayToUser("stopped logging " + words[1]);
         }
@@ -208,10 +210,10 @@ public class Analyst : ProxyPlugin
         if (words.Length == 2 && words[1] == "*")
         {
             foreach (PacketType pType in modifiedPackets.Keys)
-                {
-                    proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
-                    proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
-                }
+            {
+                proxy.RemoveDelegate(pType, Direction.Incoming, new PacketDelegate(ModifyIn));
+                proxy.RemoveDelegate(pType, Direction.Outgoing, new PacketDelegate(ModifyOut));
+            }
             modifiedPackets = new Hashtable();
 
             SayToUser("stopped setting all fields");
@@ -266,10 +268,8 @@ public class Analyst : ProxyPlugin
             StreamReader sr = null;
             Direction direction = Direction.Incoming;
             string name = null;
-            //Hashtable blocks = new Hashtable();
             string block = null;
             object blockObj = null;
-            //Hashtable fields = new Hashtable();
             Type packetClass = null;
             Packet packet = null;
 
@@ -321,24 +321,24 @@ public class Analyst : ProxyPlugin
                             block = match.Groups[1].Captures[0].ToString();
                             FieldInfo blockField = packetClass.GetField(block);
                             if (blockField == null) throw new Exception("Couldn't get " + name + "Packet." + block);
-			    Type blockClass = blockField.FieldType;
-			    if (blockClass.IsArray)
-			    {
-				blockClass = blockClass.GetElementType();
-				ConstructorInfo ctr = blockClass.GetConstructor(new Type[] { });
-				if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + blockClass.Name);
-				blockObj = ctr.Invoke(new object[] { });
-				object[] arr = (object[])blockField.GetValue(packet);
-				object[] narr = (object[])Array.CreateInstance(blockClass, arr.Length + 1);
-				Array.Copy(arr,narr,arr.Length);
-				narr[arr.Length] = blockObj;
-				blockField.SetValue(packet,narr);
-				//Console.WriteLine("Added block "+block);
-			    } 
-			    else
-			    {
-				blockObj = blockField.GetValue(packet);
-			    }
+                            Type blockClass = blockField.FieldType;
+                            if (blockClass.IsArray)
+                            {
+                                blockClass = blockClass.GetElementType();
+                                ConstructorInfo ctr = blockClass.GetConstructor(new Type[] { });
+                                if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + blockClass.Name);
+                                blockObj = ctr.Invoke(new object[] { });
+                                object[] arr = (object[])blockField.GetValue(packet);
+                                object[] narr = (object[])Array.CreateInstance(blockClass, arr.Length + 1);
+                                Array.Copy(arr, narr, arr.Length);
+                                narr[arr.Length] = blockObj;
+                                blockField.SetValue(packet, narr);
+                                //Console.WriteLine("Added block "+block);
+                            }
+                            else
+                            {
+                                blockObj = blockField.GetValue(packet);
+                            }
                             if (blockObj == null) throw new Exception("Got " + name + "Packet." + block + " == null");
                             //Console.WriteLine("Got block " + name + "Packet." + block);
 
@@ -596,35 +596,6 @@ public class Analyst : ProxyPlugin
         {
             throw new Exception("unable to interpret " + value + " as " + fieldClass);
         }
-        /*				try {
-                            switch (fieldMap.Type) {
-                                case FieldType.LLVector3:
-                                case FieldType.IPADDR:
-                                    return IPAddress.Parse(value);
-                                case FieldType.IPPORT:
-                                    return Convert.ToUInt16(value);
-                                case FieldType.Variable:
-                                    Match match = Regex.Match(value, @"^0x([0-9a-fA-F]{2})*", RegexOptions.IgnoreCase);
-                                    if (match.Success) {
-                                        byte[] buf = new byte[match.Groups[1].Captures.Count];
-                                        int i = 0;
-                                        foreach (Capture capture in match.Groups[1].Captures)
-                                            buf[i++] = Byte.Parse(capture.ToString(), NumberStyles.AllowHexSpecifier);
-                                        return buf;
-                                    } else
-                                        return value;
-                            }
-                        } catch {
-                            throw new Exception("unable to interpret " + value + " as " + fieldMap.Type);
-                        }
-
-                        throw new Exception("unsupported field type " + fieldMap.Type);
-                    }
-
-                    throw new Exception("unknown field " + name + "." + block + "." + field);
-                }
-
-                throw new Exception("unknown block " + name + "." + block); */
     }
 
     // ModifyIn: modify an incoming packet
@@ -672,14 +643,14 @@ public class Analyst : ProxyPlugin
     // LogPacketIn: log an incoming packet
     private Packet LogPacketIn(Packet packet, IPEndPoint endPoint)
     {
-	LogPacket(packet, endPoint, Direction.Incoming);
+        LogPacket(packet, endPoint, Direction.Incoming);
         return packet;
     }
 
     // LogPacketOut: log an outgoing packet
     private Packet LogPacketOut(Packet packet, IPEndPoint endPoint)
     {
-	LogPacket(packet, endPoint, Direction.Outgoing);
+        LogPacket(packet, endPoint, Direction.Outgoing);
         return packet;
     }
 
@@ -746,36 +717,6 @@ public class Analyst : ProxyPlugin
     // LogPacket: dump a packet to the console
     private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
-        /* if (logGrep != null) {
-            bool match = false;
-            foreach (Block block in packet.Blocks())
-                foreach (Field field in block.Fields) {
-                    string value;
-                    if (field.Layout.Type == FieldType.Variable)
-                        value = DataConvert.toChoppedString(field.Data);
-                    else
-                        value = field.Data.ToString();
-                    if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + value, logGrep, RegexOptions.IgnoreCase).Success) {
-                        match = true;
-                        break;
-                    }
-
-                    // try matching variable fields in 0x notation
-                    if (field.Layout.Type == FieldType.Variable) {
-                        StringWriter sw = new StringWriter();
-                        sw.Write("0x");
-                        foreach (byte b in (byte[])field.Data)
-                            sw.Write("{0:x2}", b);
-                        if (Regex.Match(packet.Layout.Name + "." + block.Layout.Name + "." + field.Layout.Name + " = " + sw, logGrep, RegexOptions.IgnoreCase).Success) {
-                            match = true;
-                            break;
-                        }
-                    }
-                }
-            if (!match)
-                return;
-        } */
-
         Console.WriteLine("{0} {1,21} {2,5} {3}{4}{5}"
                  , direction == Direction.Incoming ? "<--" : "-->"
                  , endPoint
