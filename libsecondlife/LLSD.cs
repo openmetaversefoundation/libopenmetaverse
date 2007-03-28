@@ -218,7 +218,8 @@ namespace libsecondlife
                     {
                         if (reader.IsEmptyElement)
                         {
-                            reader.Read(); return false;
+                            reader.Read();
+                            return false;
                         }
 
                         reader.Read();

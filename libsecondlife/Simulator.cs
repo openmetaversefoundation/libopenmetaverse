@@ -668,10 +668,11 @@ namespace libsecondlife
                     {
                         try
                         {
-                            Client.DebugLog("Resending " + packet.Type.ToString() + " packet (" + packet.Header.Sequence +
-                                "), " + (now - packet.TickCount) + "ms have passed");
+                            Client.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed", 
+                                packet.Header.Sequence, now - packet.TickCount));
+
                             packet.Header.Resent = true;
-                            ResentPackets++;
+                            ++ResentPackets;
                             SendPacket(packet, false);
                         }
                         catch (Exception ex)

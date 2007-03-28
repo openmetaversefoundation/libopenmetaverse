@@ -48,6 +48,7 @@ namespace libsecondlife.TestClient
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
             Settings.DEBUG = false;
+            Settings.STORE_LAND_PATCHES = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 

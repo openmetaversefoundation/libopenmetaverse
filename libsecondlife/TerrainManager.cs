@@ -838,17 +838,17 @@ namespace libsecondlife
                 {
                     try { OnLandPatch(simulator, x, y, group.PatchSize, heightmap); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
 
-                    if (Client.Settings.STORE_LAND_PATCHES)
+                if (Client.Settings.STORE_LAND_PATCHES)
+                {
+                    lock (SimPatches)
                     {
-                        lock (SimPatches)
-                        {
-                            if (!SimPatches.ContainsKey(simulator.Handle))
-                                SimPatches.Add(simulator.Handle, new Patch[16 * 16]);
+                        if (!SimPatches.ContainsKey(simulator.Handle))
+                            SimPatches.Add(simulator.Handle, new Patch[16 * 16]);
 
-                            SimPatches[simulator.Handle][y * 16 + x] = new Patch();
-                            SimPatches[simulator.Handle][y * 16 + x].Heightmap = heightmap;
-                        }
+                        SimPatches[simulator.Handle][y * 16 + x] = new Patch();
+                        SimPatches[simulator.Handle][y * 16 + x].Heightmap = heightmap;
                     }
                 }
             }
@@ -878,17 +878,14 @@ namespace libsecondlife
             // Layer type
             header.Type = (LayerType)bitpack.UnpackBits(8);
 
-            if (type != header.Type)
-                Client.DebugLog("LayerData: LayerID.Type " + type.ToString() + " does not match decoded type " +
-                    header.Type.ToString());
-
             switch (type)
             {
                 case LayerType.Land:
-                    if (OnLandPatch != null) DecompressLand(simulator, bitpack, header);
+                    if (OnLandPatch != null || Client.Settings.STORE_LAND_PATCHES)
+                        DecompressLand(simulator, bitpack, header);
                     break;
                 case LayerType.Water:
-                    Client.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Info);
+                    Client.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Error);
                     break;
                 case LayerType.Wind:
                     DecompressWind(simulator, bitpack, header);

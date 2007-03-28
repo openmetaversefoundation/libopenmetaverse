@@ -154,9 +154,9 @@ namespace libsecondlife
             /// <summary></summary>
             Rotation = 1 << 6,
             /// <summary></summary>
-            Flags1 = 1 << 7,
+            Material = 1 << 7,
             /// <summary></summary>
-            Flags2 = 1 << 8,
+            Media = 1 << 8,
             /// <summary></summary>
             All = 0xFFFFFFFF
         }
@@ -353,20 +353,20 @@ namespace libsecondlife
                             Rotations[value] = (uint)(1 << (int)face.Key);
                     }
 
-                    if (face.Value.Flags1 != DefaultTexture.Flags1)
+                    if (face.Value.material != DefaultTexture.material)
                     {
-                        if (Flag1s.ContainsKey(face.Value.Flags1))
-                            Flag1s[face.Value.Flags1] |= (uint)(1 << (int)face.Key);
+                        if (Flag1s.ContainsKey(face.Value.material))
+                            Flag1s[face.Value.material] |= (uint)(1 << (int)face.Key);
                         else
-                            Flag1s[face.Value.Flags1] = (uint)(1 << (int)face.Key);
+                            Flag1s[face.Value.material] = (uint)(1 << (int)face.Key);
                     }
 
-                    if (face.Value.Flags2 != DefaultTexture.Flags2)
+                    if (face.Value.media != DefaultTexture.media)
                     {
-                        if (Flag2s.ContainsKey(face.Value.Flags2))
-                            Flag2s[face.Value.Flags2] |= (uint)(1 << (int)face.Key);
+                        if (Flag2s.ContainsKey(face.Value.media))
+                            Flag2s[face.Value.media] |= (uint)(1 << (int)face.Key);
                         else
-                            Flag2s[face.Value.Flags2] = (uint)(1 << (int)face.Key);
+                            Flag2s[face.Value.media] = (uint)(1 << (int)face.Key);
                     }
                 }
 
@@ -429,7 +429,7 @@ namespace libsecondlife
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(DefaultTexture.Flags1);
+                binWriter.Write(DefaultTexture.material);
                 foreach (KeyValuePair<byte, uint> kv in Flag1s)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
@@ -437,7 +437,7 @@ namespace libsecondlife
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(DefaultTexture.Flags2);
+                binWriter.Write(DefaultTexture.media);
                 foreach (KeyValuePair<byte, uint> kv in Flag2s)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
@@ -493,10 +493,9 @@ namespace libsecondlife
 
             private float DequantizeSigned(byte[] byteArray, int pos, float upper)
             {
-                short value = (short)(byteArray[pos] | (byteArray[pos + 1] << 8));
-                float QV = (float)value;
+                float QV = (float)(byteArray[pos] | (byteArray[pos + 1] << 8));
                 float QF = upper / 32767.0f;
-                return (float)(QV * QF);
+                return QV * QF;
             }
 
             private short QuantizeSigned(float f, float upper)
@@ -638,8 +637,8 @@ namespace libsecondlife
                         if ((faceBits & bit) != 0)
                             CreateFace(face).Rotation = tmpFloat;
                 }
-                //Read Flags1 ------------------------------------------
-                DefaultTexture.Flags1 = data[i];
+                //Read Material Flags ------------------------------------------
+                DefaultTexture.material = data[i];
                 i++;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
@@ -649,10 +648,10 @@ namespace libsecondlife
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                         if ((faceBits & bit) != 0)
-                            CreateFace(face).Flags1 = tmpByte;
+                            CreateFace(face).material = tmpByte;
                 }
-                //Read Flags2 ------------------------------------------
-                DefaultTexture.Flags2 = data[i];
+                //Read Media Flags ------------------------------------------
+                DefaultTexture.media = data[i];
                 i++;
 
                 while (i - pos < length && ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
@@ -662,7 +661,7 @@ namespace libsecondlife
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                         if ((faceBits & bit) != 0)
-                            CreateFace(face).Flags2 = tmpByte;
+                            CreateFace(face).media = tmpByte;
                 }
             }
         }
@@ -674,35 +673,112 @@ namespace libsecondlife
         [Serializable]
         public class TextureEntryFace
         {
-            [XmlAttribute("rgba")]
+            /// <summary>
+            /// 
+            /// </summary>
+            public enum Bumpmap : byte
+            {
+                /// <summary></summary>
+                None = 0,
+                /// <summary></summary>
+                Brightness,
+                /// <summary></summary>
+                Darkness,
+                /// <summary></summary>
+                Woodgrain,
+                /// <summary></summary>
+                Bark,
+                /// <summary></summary>
+                Bricks,
+                /// <summary></summary>
+                Checher,
+                /// <summary></summary>
+                Concrete,
+                /// <summary></summary>
+                Crustytile,
+                /// <summary></summary>
+                Cutstone,
+                /// <summary></summary>
+                Discs,
+                /// <summary></summary>
+                Gravel,
+                /// <summary></summary>
+                Petridish,
+                /// <summary></summary>
+                Siding,
+                /// <summary></summary>
+                Stonetile,
+                /// <summary></summary>
+                Stucco,
+                /// <summary></summary>
+                Suction,
+                /// <summary></summary>
+                Weave
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public enum TextureMapping : byte
+            {
+                /// <summary></summary>
+                Default = 0,
+                /// <summary></summary>
+                Planar = 2,
+                /// <summary></summary>
+                Spherical = 4,
+                /// <summary></summary>
+                Cylindrical = 6
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public enum ShinyLevel : byte
+            {
+                /// <summary></summary>
+                None = 0,
+                /// <summary></summary>
+                Quarter = 0x40,
+                /// <summary></summary>
+                Half = 0x80,
+                /// <summary></summary>
+                ThreeQuarters = 0xC0
+            }
+
             private uint rgba;
-            [XmlAttribute("repeatu")]
             private float repeatU = 1.0f;
-            [XmlAttribute("repeatv")]
             private float repeatV = 1.0f;
-            [XmlAttribute("offsetu")]
             private float offsetU;
-            [XmlAttribute("offsetv")]
             private float offsetV;
-            [XmlAttribute("rotation")]
             private float rotation;
-            [XmlAttribute("flags1")]
-            private byte flags1;
-            [XmlAttribute("flags2")]
-            private byte flags2;
-            [XmlAttribute("textureattributes")]
             private TextureAttributes hasAttribute;
-            [XmlText]
             private LLUUID textureID;
-            [XmlElement("defaulttexture")]
             private TextureEntryFace DefaultTexture = null;
+
+            // +----------+ S = Shiny
+            // | SSFBBBBB | F = Fullbright
+            // | 76543210 | B = Bumpmap
+            // +----------+
+            private const byte BUMP_MASK = 0x1F;
+            private const byte FULLBRIGHT_MASK = 0x20;
+            private const byte SHINY_MASK = 0xC0;
+
+            // +----------+ M = Media Flags (web page)
+            // | .....TTM | T = Texture Mapping
+            // | 76543210 | . = Unused
+            // +----------+
+            private const byte MEDIA_MASK = 0x01;
+            private const byte TEX_MAP_MASK = 0x06;
+
+            internal byte material;
+            internal byte media;
 
             //////////////////////
             ///// Properties /////
             //////////////////////
 
             /// <summary></summary>
-            [XmlAttribute("rgba")]
             public uint RGBA
             {
                 get
@@ -720,7 +796,6 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            [XmlAttribute("repeatu")]
             public float RepeatU
             {
                 get
@@ -738,7 +813,6 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            [XmlAttribute("repeatv")]
             public float RepeatV
             {
                 get
@@ -756,7 +830,6 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            [XmlAttribute("offsetu")]
             public float OffsetU
             {
                 get
@@ -774,7 +847,6 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            [XmlAttribute("offsetv")]
             public float OffsetV
             {
                 get
@@ -792,7 +864,6 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            [XmlAttribute("rotation")]
             public float Rotation
             {
                 get
@@ -810,43 +881,108 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            [XmlAttribute("flags1")]
-            public byte Flags1
+            public Bumpmap Bump
             {
                 get
                 {
-                    if ((hasAttribute & TextureAttributes.Flags1) != 0)
-                        return flags1;
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return (Bumpmap)(material & BUMP_MASK);
                     else
-                        return DefaultTexture.flags1;
+                        return DefaultTexture.Bump;
                 }
                 set
                 {
-                    flags1 = value;
-                    hasAttribute |= TextureAttributes.Flags1;
+                    // Clear out the old material value
+                    material &= 0xE0;
+                    // Put the new bump value in the material byte
+                    material |= (byte)value;
+                    hasAttribute |= TextureAttributes.Material;
+                }
+            }
+
+            public ShinyLevel Shiny
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return (ShinyLevel)(material & SHINY_MASK);
+                    else
+                        return DefaultTexture.Shiny;
+                }
+                set
+                {
+                    // Clear out the old shiny value
+                    material &= 0x3F;
+                    // Put the new shiny value in the material byte
+                    material |= (byte)value;
+                    hasAttribute |= TextureAttributes.Material;
+                }
+            }
+
+            public bool Fullbright
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return (material & FULLBRIGHT_MASK) != 0;
+                    else
+                        return DefaultTexture.Fullbright;
+                }
+                set
+                {
+                    // Clear out the old fullbright value
+                    material &= 0xDF;
+                    if (value)
+                    {
+                        material |= 0x20;
+                        hasAttribute |= TextureAttributes.Material;
+                    }
+                }
+            }
+
+            /// <summary>In the future this will specify whether a webpage is
+            /// attached to this face</summary>
+            public bool MediaFlags
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Media) != 0)
+                        return (media & MEDIA_MASK) != 0;
+                    else
+                        return DefaultTexture.MediaFlags;
+                }
+                set
+                {
+                    // Clear out the old mediaflags value
+                    media &= 0xFE;
+                    if (value)
+                    {
+                        media |= 0x01;
+                        hasAttribute |= TextureAttributes.Media;
+                    }
+                }
+            }
+
+            public TextureMapping TexMapType
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Media) != 0)
+                        return (TextureMapping)(media & TEX_MAP_MASK);
+                    else
+                        return DefaultTexture.TexMapType;
+                }
+                set
+                {
+                    // Clear out the old texmap value
+                    media &= 0xF9;
+                    // Put the new texmap value in the media byte
+                    media |= (byte)value;
+                    hasAttribute |= TextureAttributes.Media;
                 }
             }
 
             /// <summary></summary>
-            [XmlAttribute("flags2")]
-            public byte Flags2
-            {
-                get
-                {
-                    if ((hasAttribute & TextureAttributes.Flags2) != 0)
-                        return flags2;
-                    else
-                        return DefaultTexture.flags2;
-                }
-                set
-                {
-                    flags2 = value;
-                    hasAttribute |= TextureAttributes.Flags2;
-                }
-            }
-
-            /// <summary></summary>
-            [XmlElement("id")]
             public LLUUID TextureID
             {
                 get
