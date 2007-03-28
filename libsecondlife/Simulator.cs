@@ -838,6 +838,18 @@ namespace libsecondlife
             }
 
             #endregion FireCallbacks
+
+            if (Client.Settings.DEBUG)
+            {
+                int workerThreads, completionPortThreads;
+                ThreadPool.GetAvailableThreads(out workerThreads, out completionPortThreads);
+                if (workerThreads < 5 || completionPortThreads < 50)
+                {
+                    Client.Log(String.Format(
+                        "Resource starvation approaching, WorkerThreads: {0}, CompletionPortThreads: {1}",
+                        workerThreads, completionPortThreads), Helpers.LogLevel.Warning);
+                }
+            }
         }
 
         private void AckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
