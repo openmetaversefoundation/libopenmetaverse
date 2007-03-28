@@ -5,6 +5,8 @@
 @implementation SLProxy
 
 - (SLProxy *)init {
+	[super init];
+	
 	NSPipe *pipe = [NSPipe pipe];
 	
 	/* Launch the proxy. */
@@ -18,6 +20,7 @@
 	NS_HANDLER
 		[Controller failBecause:@"Mono does not appear to be installed on your system."];
 	NS_ENDHANDLER
+	[Controller terminateOnFailure:task];
 	
 	/* Read the proxy's output to determine the login URL to give SL. */
 	int reader = [[pipe fileHandleForReading] fileDescriptor];
