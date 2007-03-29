@@ -9,7 +9,7 @@ environment with Perl installed should suffice.
 To use MacProxy, navigate to the MacProxy directory and type
 
 	./build.pl "Application Name" path/to/executable.exe \
-	path/to/SLProxy.dll path/to/libsecondlife.dll
+	path/to/libraries.dll ...
 
 For example, to create a standalone ChatConsole for the Mac:
 

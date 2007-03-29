@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
-die "Usage: $0 \"Application Name\" path/to/executable.exe path/to/SLProxy.dll path/to/libsecondlife.dll\n" unless @ARGV == 4;
+die "Usage: $0 \"Application Name\" path/to/executable.exe path/to/libraries.dll ...\n" unless @ARGV >= 2;
 
 die "Please run MacProxy from within its own directory.\n" unless -d 'Launcher';
 
-my ($appname, $exe, $slproxy, $libsl) = @ARGV;
+my ($appname, $exe, @libs) = @ARGV;
 
 print "Creating application bundle...\n";
 
@@ -14,7 +14,7 @@ and die "Failed; aborting.\n";
 
 print "Embedding assemblies...\n";
 
-system('cp', $exe, $slproxy, $libsl, "$appname.app/Contents/Resources/Assemblies/")
+system('cp', $exe, @libs, "$appname.app/Contents/Resources/Assemblies/")
 and die "Failed; aborting.\n";
 
 print "Writing metadata...\n";
@@ -27,7 +27,7 @@ or die "Failed to open $appname.app/Contents/Info.plist; aborting.\n";
 my $id = $appname;
 $id =~ s/[^a-z]//gi;
 $id = 'x' unless length $id;
-$$_ =~ s!.*/!! foreach \$exe, \$slproxy, \$libsl;
+$exe =~ s!.*/!!;
 while (<$ii>) {
 	s/##NAME##/$appname/;
 	s/##ID##/$id/;

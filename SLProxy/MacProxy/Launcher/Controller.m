@@ -7,7 +7,6 @@
 }
 
 + (void)failBecause:(NSString *)reason {
-	[killtask terminate];
 	NSRunCriticalAlertPanel(@"Failed to start Second Life.", reason, @"Quit", nil, nil);
 	[NSApp terminate:nil];
 }
@@ -28,14 +27,26 @@
 	[task release];
 }
 
-- (void)awakeFromNib {
+- (id)init {
+	[super init];
 	killtask = nil;
+	return self;
+}
 
+- (void)awakeFromNib {
+	[NSApp setDelegate:self];
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
 	/* Start the proxy, run Second Life, stop the proxy, and terminate. */
 	SLProxy *proxy = [[SLProxy alloc] init];
 	[self runSecondLifeWithLoginURL:[proxy loginURL]];
 	[proxy release];
 	[NSApp terminate:self];
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification {
+	[killtask terminate];
 }
 
 @end
