@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections.Generic;
+using System.Threading;
 using libsecondlife.Packets;
 using libsecondlife.AssetSystem;
 using libsecondlife.InventorySystem;
@@ -105,6 +105,25 @@ namespace libsecondlife
             Directory = new DirectoryManager(this);
             Terrain = new TerrainManager(this);
             Throttle = new AgentThrottle(this);
+
+            ConfigureThreadPool();
+        }
+
+        /// <summary>
+        /// Under certain configurations or circumstances, the .NET or mono
+        /// frameworks don't give us enough I/O Completion Port threads to
+        /// handle all of the incoming network traffic from Second Life. This
+        /// function increases the number of worker threads and IOCP threads to
+        /// a safe value
+        /// </summary>
+        public void ConfigureThreadPool()
+        {
+            // Make sure we are running enough IOCP threads to safely handle all the requests
+            int workerThreads, completionPortThreads;
+            ThreadPool.GetMaxThreads(out workerThreads, out completionPortThreads);
+            DebugLog(String.Format("Had {0} worker threads and {1} IOCP threads, setting to 50 and 1000",
+                workerThreads, completionPortThreads));
+            ThreadPool.SetMaxThreads(50, 1000);
         }
 
         /// <summary>
