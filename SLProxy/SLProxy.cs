@@ -169,6 +169,7 @@ namespace SLProxy
     public class Proxy
     {
         private ProxyConfig proxyConfig;
+	private string loginURI;
 
         /*
          * Proxy Management
@@ -205,8 +206,9 @@ namespace SLProxy
                     displayAddress = IPAddress.Loopback;
                 else
                     displayAddress = endPoint.Address;
+                loginURI = "http://" + displayAddress + ":" + endPoint.Port + "/";
 
-                Log("proxy ready at http://" + displayAddress + ":" + endPoint.Port + "/", false);
+                Log("proxy ready at " + loginURI, false);
             }
         }
 
@@ -758,7 +760,7 @@ namespace SLProxy
                         newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
                         lock (this) { KnownCaps[val] = newCap; }
                     }
-                    nm[key] = "http://127.0.0.1:8080/" + val;
+                    nm[key] = loginURI + val;
                 }
                 else
                 {
@@ -983,7 +985,7 @@ namespace SLProxy
                     info.AddDelegate(new CapsDelegate(FixupSeedCapsResponse));
 
                     KnownCaps[(string)responseData["seed_capability"]] = info;
-                    responseData["seed_capability"] = "http://127.0.0.1:8080/" + responseData["seed_capability"];
+                    responseData["seed_capability"] = loginURI + responseData["seed_capability"];
                 }
 
                 // call the loginResponseDelegate
@@ -1807,7 +1809,7 @@ namespace SLProxy
                 {
                     KnownCaps[simCaps] = info;
                 }
-                simCaps = "http://127.0.0.1:8080/" + simCaps;
+                simCaps = loginURI + simCaps;
             }
 
             if (active)
