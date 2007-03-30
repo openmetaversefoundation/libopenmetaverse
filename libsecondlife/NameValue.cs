@@ -30,7 +30,8 @@ using System.Collections.Generic;
 namespace libsecondlife
 {
     /// <summary>
-    /// A Name Value pair with additional settings
+    /// A Name Value pair with additional settings, used in the protocol
+    /// primarily to transmit avatar names and active group in object packets
     /// </summary>
     [Serializable]
     public class NameValue

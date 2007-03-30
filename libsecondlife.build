@@ -29,10 +29,10 @@
   </fileset>
   <fileset id="lib">
     <include name="openjpegnet/*.build" />
-    <include name="libsecondlife-cs/*.build" />
+    <include name="libsecondlife/*.build" />
   </fileset>
   <fileset id="examples">
-    <include name="libsecondlife-cs/examples/examples.build" />
+    <include name="libsecondlife/examples/examples.build" />
   </fileset>
 
   <!-- named configurations -->

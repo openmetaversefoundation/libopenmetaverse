@@ -100,7 +100,6 @@
 				<include name="*.cs" />
 				<include name="AssetSystem/*.cs" />
 				<include name="InventorySystem/*.cs" />
-				<include name="JSON/*.cs" />
 				<include name="XmlRpcCS/*.cs" />
 				<include name="libsecondlife.Utilities/*.cs" />
 			</sources>

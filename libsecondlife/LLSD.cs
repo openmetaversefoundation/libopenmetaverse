@@ -487,6 +487,147 @@ namespace libsecondlife
             }
         }
 
+        public static object ParseTerseLLSD(string llsd)
+        {
+            int notused;
+            return ParseTerseLLSD(llsd, out notused);
+        }
+
+        public static object ParseTerseLLSD(string llsd, out int endPos)
+        {
+            if (llsd.Length == 0)
+            {
+                endPos = 0;
+                return null;
+            }
+
+            // Identify what type of object this is
+            switch (llsd[0])
+            {
+                case '!':
+                    throw new LLSDParseException("Undefined value type encountered");
+                case '1':
+                    endPos = 1;
+                    return true;
+                case '0':
+                    endPos = 1;
+                    return false;
+                case 'i':
+                    {
+                        if (llsd.Length < 2) throw new LLSDParseException("Integer value type with no value");
+                        int value;
+                        endPos = FindEnd(llsd, 1);
+
+                        if (Int32.TryParse(llsd.Substring(1, endPos - 1), out value))
+                            return value;
+                        else
+                            throw new LLSDParseException("Failed to parse integer value type");
+                    }
+                case 'r':
+                    {
+                        if (llsd.Length < 2) throw new LLSDParseException("Real value type with no value");
+                        double value;
+                        endPos = FindEnd(llsd, 1);
+
+                        if (Double.TryParse(llsd.Substring(1, endPos - 1), out value))
+                            return value;
+                        else
+                            throw new LLSDParseException("Failed to parse double value type");
+                    }
+                case 'u':
+                    {
+                        if (llsd.Length < 17) throw new LLSDParseException("LLUUID value type with no value");
+                        LLUUID value;
+                        endPos = FindEnd(llsd, 1);
+
+                        if (LLUUID.TryParse(llsd.Substring(1, endPos - 1), out value))
+                            return value;
+                        else
+                            throw new LLSDParseException("Failed to parse LLUUID value type");
+                    }
+                case 'b':
+                    //byte[] value = new byte[llsd.Length - 1];
+                    // This isn't the actual binary LLSD format, just the terse format sent
+                    // at login so I don't even know if there is a binary type
+                    throw new LLSDParseException("Binary value type is unimplemented");
+                case 's':
+                case 'l':
+                    if (llsd.Length < 2) throw new LLSDParseException("String value type with no value");
+                    endPos = FindEnd(llsd, 1);
+                    return llsd.Substring(1, endPos - 1);
+                case 'd':
+                    // Never seen one before, don't know what the format is
+                    throw new LLSDParseException("Date value type is unimplemented");
+                case '[':
+                    {
+                        if (llsd.IndexOf(']') == -1) throw new LLSDParseException("Invalid array");
+
+                        int pos = 0;
+                        ArrayList array = new ArrayList();
+
+                        while (llsd[pos] != ']')
+                        {
+                            ++pos;
+
+                            // Advance past comma if need be
+                            if (llsd[pos] == ',') ++pos;
+
+                            // Allow a single whitespace character
+                            if (pos < llsd.Length && llsd[pos] == ' ') ++pos;
+
+                            int end;
+                            array.Add(ParseTerseLLSD(llsd.Substring(pos), out end));
+                            pos += end;
+                        }
+
+                        endPos = pos + 1;
+                        return array;
+                    }
+                case '{':
+                    {
+                        if (llsd.IndexOf('}') == -1) throw new LLSDParseException("Invalid map");
+
+                        int pos = 0;
+                        Hashtable hashtable = new Hashtable();
+
+                        while (llsd[pos] != '}')
+                        {
+                            ++pos;
+
+                            // Advance past comma if need be
+                            if (llsd[pos] == ',') ++pos;
+
+                            // Allow a single whitespace character
+                            if (pos < llsd.Length && llsd[pos] == ' ') ++pos;
+
+                            if (llsd[pos] != '\'') throw new LLSDParseException("Expected a map key");
+                            int endquote = llsd.IndexOf('\'', pos + 1);
+                            if (endquote == -1 || (endquote + 1) >= llsd.Length || llsd[endquote + 1] != ':')
+                                throw new LLSDParseException("Invalid map format");
+                            string key = llsd.Substring(pos, endquote - pos);
+                            key = key.Replace("'", String.Empty);
+                            pos += (endquote - pos) + 2;
+
+                            int end;
+                            hashtable.Add(key, ParseTerseLLSD(llsd.Substring(pos), out end));
+                            pos += end;
+                        }
+
+                        endPos = pos + 1;
+                        return hashtable;
+                    }
+                default:
+                    throw new Exception("Unknown value type");
+            }
+        }
+
+        private static int FindEnd(string llsd, int start)
+        {
+            int end = llsd.IndexOfAny(new char[] { ',', ']', '}' });
+            if (end == -1) end = llsd.Length - 1;
+            return end;
+        }
+
         /// <summary>
         /// 
         /// </summary>

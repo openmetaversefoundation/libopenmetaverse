@@ -34,7 +34,6 @@ using System.Net.Sockets;
 using System.Globalization;
 using System.IO;
 using Nwc.XmlRpc;
-using Nii.JSON;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -537,7 +536,21 @@ namespace libsecondlife
             Hashtable values = (Hashtable)result.Value;
             foreach (DictionaryEntry entry in values)
             {
-                LoginValues[(string)entry.Key] = entry.Value;
+                string key = (string)entry.Key;
+
+                try
+                {
+                    // TODO: Find a generic way of determining if a field is LLSD or not
+                    if (key == "look_at" || key == "home")
+                        LoginValues[key] = LLSD.ParseTerseLLSD((string)entry.Value);
+                    else
+                        LoginValues[key] = entry.Value;
+                }
+                catch (Exception e)
+                {
+                    Client.Log(e.ToString(), Helpers.LogLevel.Warning);
+                    LoginValues[key] = null;
+                }
             }
 
             if ((string)LoginValues["login"] == "indeterminate")
@@ -560,104 +573,36 @@ namespace libsecondlife
                 return false;
             }
 
-            System.Text.RegularExpressions.Regex LLSDtoJSON =
-                new System.Text.RegularExpressions.Regex(@"('|r([0-9])|r(\-))");
-            string json;
-            Dictionary<string, object> jsonObject = null;
-            LLVector3 vector = LLVector3.Zero;
-            LLVector3 posVector = LLVector3.Zero;
-            LLVector3 lookatVector = LLVector3.Zero;
-            ulong regionHandle = 0;
-
-            try
-            {
-                if (LoginValues.ContainsKey("look_at"))
-                {
-                    // Replace LLSD variables with object representations
-
-                    // Convert LLSD string to JSON
-                    json = "{vector:" + LLSDtoJSON.Replace((string)LoginValues["look_at"], "$2") + "}";
-
-                    // Convert JSON string to a JSON object
-                    jsonObject = JsonFacade.fromJSON(json);
-                    JSONArray jsonVector = (JSONArray)jsonObject["vector"];
-
-                    // Convert the JSON object to an LLVector3
-                    vector = new LLVector3(Convert.ToSingle(jsonVector[0], CultureInfo.InvariantCulture),
-                        Convert.ToSingle(jsonVector[1], CultureInfo.InvariantCulture), Convert.ToSingle(jsonVector[2], CultureInfo.InvariantCulture));
-
-                    LoginValues["look_at"] = vector;
-                }
-            }
-            catch (Exception e)
-            {
-                Client.Log(e.ToString(), Helpers.LogLevel.Warning);
-                LoginValues["look_at"] = null;
-            }
-
-            try
-            {
-                if (LoginValues.ContainsKey("home"))
-                {
-                    Dictionary<string, object> home;
-
-                    // Convert LLSD string to JSON
-                    json = LLSDtoJSON.Replace((string)LoginValues["home"], "$2");
-
-                    // Convert JSON string to an object
-                    jsonObject = JsonFacade.fromJSON(json);
-
-                    // Create the position vector
-                    JSONArray array = (JSONArray)jsonObject["position"];
-                    posVector = new LLVector3(Convert.ToSingle(array[0], CultureInfo.InvariantCulture), Convert.ToSingle(array[1], CultureInfo.InvariantCulture),
-                        Convert.ToSingle(array[2], CultureInfo.InvariantCulture));
-
-                    // Create the look_at vector
-                    array = (JSONArray)jsonObject["look_at"];
-                    lookatVector = new LLVector3(Convert.ToSingle(array[0], CultureInfo.InvariantCulture),
-                        Convert.ToSingle(array[1], CultureInfo.InvariantCulture), Convert.ToSingle(array[2], CultureInfo.InvariantCulture));
-
-                    // Create the regionhandle
-                    array = (JSONArray)jsonObject["region_handle"];
-                    regionHandle = Helpers.UIntsToLong((uint)(int)array[0], (uint)(int)array[1]);
-
-                    Client.Self.Position = posVector;
-                    Client.Self.LookAt = lookatVector;
-
-                    // Create a dictionary to hold the home values
-                    home = new Dictionary<string, object>();
-                    home["position"] = posVector;
-                    home["look_at"] = lookatVector;
-                    home["region_handle"] = regionHandle;
-                    LoginValues["home"] = home;
-                }
-            }
-            catch (Exception e)
-            {
-                Client.Log(e.ToString(), Helpers.LogLevel.Warning);
-                LoginValues["home"] = null;
-            }
-
             try
             {
                 this.AgentID = new LLUUID((string)LoginValues["agent_id"]);
                 this.SessionID = new LLUUID((string)LoginValues["session_id"]);
                 this.SecureSessionID = new LLUUID((string)LoginValues["secure_session_id"]);
                 Client.Self.ID = this.AgentID;
+
+                // Set the Circuit Code
+                CircuitCode = (uint)(int)LoginValues["circuit_code"];
+
                 // Names are wrapped in quotes now, have to strip those
                 Client.Self.FirstName = ((string)LoginValues["first_name"]).Trim(new char[] { '"' });
                 Client.Self.LastName = ((string)LoginValues["last_name"]).Trim(new char[] { '"' });
-                Client.Self.LookAt = vector;
-                Client.Self.HomePosition = posVector;
-                Client.Self.HomeLookAt = lookatVector;
+
+                // Set current LookAt value and home information
+                ArrayList array = (ArrayList)LoginValues["look_at"];
+                Client.Self.LookAt = new LLVector3((float)(double)array[0], (float)(double)array[1], 
+                    (float)(double)array[2]);
+                Hashtable home = (Hashtable)LoginValues["home"];
+                array = (ArrayList)home["position"];
+                Client.Self.HomePosition = new LLVector3((float)(double)array[0], (float)(double)array[1],
+                    (float)(double)array[2]);
+                array = (ArrayList)home["look_at"];
+                Client.Self.HomeLookAt = new LLVector3((float)(double)array[0], (float)(double)array[1],
+                    (float)(double)array[2]);
 
                 // Get Inventory Root Folder
                 ArrayList alInventoryRoot = (ArrayList)LoginValues["inventory-root"];
                 Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
                 Client.Self.InventoryRootFolderUUID = new LLUUID((string)htInventoryRoot["folder_id"]);
-
-                // Set the Circuit Code
-                CircuitCode = (uint)(int)LoginValues["circuit_code"];
 
                 // Connect to the sim given in the login reply
                 if (Connect(IPAddress.Parse((string)LoginValues["sim_ip"]), (ushort)(int)LoginValues["sim_port"],

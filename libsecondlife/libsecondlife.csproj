@@ -136,18 +136,6 @@
     <Compile Include="InventorySystem\InventoryManager.cs" />
     <Compile Include="InventorySystem\InventoryNotecard.cs" />
     <Compile Include="InventorySystem\InventoryPacketHelper.cs" />
-    <Compile Include="JSON\JSONArray.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="JSON\JSONFacade.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="JSON\JSONObject.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="JSON\JSONTokener.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="NameValue.cs" />
     <Compile Include="NetworkManager.cs">
       <SubType>Code</SubType>
