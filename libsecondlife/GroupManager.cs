@@ -64,6 +64,14 @@ namespace libsecondlife
         public string Description;
         /// <summary>Abilities Associated with Role</summary>
         public ulong Powers;
+        /// <summary>
+        /// Returns the role's title
+        /// </summary>
+        /// <returns>The role's title</returns>
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 
     /// <summary>
@@ -459,6 +467,22 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
+        public void BeginGetGroupRoleMembers(LLUUID group)
+        {
+            LLUUID requestID = LLUUID.Random();
+            lock (GroupRolesMembersCaches)
+            {
+                GroupRolesMembersCaches[requestID] = new List<KeyValuePair<LLUUID, LLUUID>>();
+            }
+
+            GroupRoleMembersRequestPacket request = new GroupRoleMembersRequestPacket();
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.GroupData.GroupID = group;
+            request.GroupData.RequestID = requestID;
+            Client.Network.SendPacket(request);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -647,7 +671,7 @@ namespace libsecondlife
                     }
                 }
             }
-
+            Console.WriteLine("ZOmg: " + groupRoleMemberCache.Count.ToString() + members.AgentData.TotalPairs.ToString());
             // Check if we've received all the pairs that are showing up
             if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
@@ -743,6 +767,240 @@ namespace libsecondlife
             //    try { OnGroupAccountTransactions(account); }
             //    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             //}
+        }
+        /// <summary>
+        /// Invites a user to a group
+        /// </summary>
+        /// <param name="group">The group to invite to.</param>
+        /// <param name="roles">A list of roles to invite a person to</param>
+        /// <param name="personkey">Key of person to invite</param>
+        public void Invite(LLUUID group, List<LLUUID> roles, LLUUID personkey)
+        {
+            libsecondlife.Packets.InviteGroupRequestPacket igp = new libsecondlife.Packets.InviteGroupRequestPacket();
+            igp.AgentData = new libsecondlife.Packets.InviteGroupRequestPacket.AgentDataBlock();
+            igp.AgentData.AgentID = Client.Network.AgentID;
+            igp.AgentData.SessionID = Client.Network.SessionID;
+            igp.GroupData = new libsecondlife.Packets.InviteGroupRequestPacket.GroupDataBlock();
+            igp.GroupData.GroupID = group;
+            List<libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock> idbs = new List<libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock>();
+            foreach (LLUUID role in roles)
+            {
+                libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock idb = new libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock();
+                idb.InviteeID = personkey;
+                idb.RoleID = role;
+                idbs.Add(idb);
+            }
+            igp.InviteData = idbs.ToArray();
+            Client.Network.SendPacket(igp);
+        }
+        /// <summary>
+        /// Create a new group. This method automaticaly deducts the group creation feild
+        /// </summary>
+        /// <param name="group">Group struct containing the new group info</param>
+        public void CreateGroup(Group group)
+        {
+            libsecondlife.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
+            //Fill in agent data
+            cgrp.AgentData = new CreateGroupRequestPacket.AgentDataBlock();
+            cgrp.AgentData.AgentID = Client.Network.AgentID;
+            cgrp.AgentData.SessionID = Client.Network.SessionID;
+            //Fill in group data
+            cgrp.GroupData = new CreateGroupRequestPacket.GroupDataBlock();
+            cgrp.GroupData.AllowPublish = group.AllowPublish;
+            cgrp.GroupData.Charter = Helpers.StringToField(group.Charter);
+            cgrp.GroupData.InsigniaID = group.InsigniaID;
+            cgrp.GroupData.MaturePublish = group.MaturePublish;
+            cgrp.GroupData.MembershipFee = group.MembershipFee;
+            cgrp.GroupData.Name = Helpers.StringToField(group.Name);
+            cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
+            cgrp.GroupData.ShowInList = group.ShowInList;
+            //Send it
+            Client.Network.SendPacket(cgrp);
+        }
+        /// <summary>
+        /// Update a group's profile and other information
+        /// </summary>
+        /// <param name="group">Group struct to update</param>
+        public void UpdateGroup(Group group)
+        {
+            libsecondlife.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
+            //Fill in agent data
+            cgrp.AgentData = new UpdateGroupInfoPacket.AgentDataBlock();
+            cgrp.AgentData.AgentID = Client.Network.AgentID;
+            cgrp.AgentData.SessionID = Client.Network.SessionID;
+            //Fill in group data
+            cgrp.GroupData = new UpdateGroupInfoPacket.GroupDataBlock();
+            cgrp.GroupData.AllowPublish = group.AllowPublish;
+            cgrp.GroupData.Charter = Helpers.StringToField(group.Charter);
+            cgrp.GroupData.InsigniaID = group.InsigniaID;
+            cgrp.GroupData.MaturePublish = group.MaturePublish;
+            cgrp.GroupData.MembershipFee = group.MembershipFee;
+            cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
+            cgrp.GroupData.ShowInList = group.ShowInList;
+            //Send it
+            Client.Network.SendPacket(cgrp);
+        }
+        /// <summary>
+        /// Eject a user from a group
+        /// </summary>
+        /// <param name="group">Group to eject the user from</param>
+        /// <param name="member">Avatar's key to eject</param>
+        public void EjectUser(LLUUID group, LLUUID member)
+        {
+            libsecondlife.Packets.EjectGroupMemberRequestPacket eject = new EjectGroupMemberRequestPacket();
+            eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
+            eject.AgentData.AgentID = Client.Network.AgentID;
+            eject.AgentData.SessionID = Client.Network.SessionID;
+            //Group
+            eject.GroupData = new EjectGroupMemberRequestPacket.GroupDataBlock();
+            eject.GroupData.GroupID = group;
+            //People to eject
+            eject.EjectData = new EjectGroupMemberRequestPacket.EjectDataBlock[1];
+            eject.EjectData[0].EjecteeID = member;
+            //send it
+            Client.Network.SendPacket(eject);
+        }
+        /// <summary>
+        /// Update role information
+        /// </summary>
+        /// <param name="group">Group to update</param>
+        /// <param name="role">Role to update</param>
+        public void UpdateRole(LLUUID group, GroupRole role)
+        {
+            libsecondlife.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
+            gru.AgentData.AgentID = Client.Network.AgentID;
+            gru.AgentData.SessionID = Client.Network.SessionID;
+            gru.AgentData.GroupID = group;
+            gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
+            gru.RoleData[0].Name = Helpers.StringToField(role.Name);
+            gru.RoleData[0].Description = Helpers.StringToField(role.Description);
+            gru.RoleData[0].Powers = role.Powers;
+            gru.RoleData[0].Title = Helpers.StringToField(role.Title);
+            gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.UpdateAll;
+            Client.Network.SendPacket(gru);
+        }
+        /// <summary>
+        /// Create a new role
+        /// </summary>
+        /// <param name="group">Group to update</param>
+        /// <param name="role">Role to create</param>
+        public void CreateRole(LLUUID group, GroupRole role)
+        {
+            libsecondlife.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
+            gru.AgentData.AgentID = Client.Network.AgentID;
+            gru.AgentData.SessionID = Client.Network.SessionID;
+            gru.AgentData.GroupID = group;
+            gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
+            gru.RoleData[0].Name = Helpers.StringToField(role.Name);
+            gru.RoleData[0].Description = Helpers.StringToField(role.Description);
+            gru.RoleData[0].Powers = role.Powers;
+            gru.RoleData[0].Title = Helpers.StringToField(role.Title);
+            gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.Create;
+            Client.Network.SendPacket(gru);
+        }
+        /// <summary>
+        /// Remove an avatar from a role
+        /// </summary>
+        /// <param name="group">Group to update</param>
+        /// <param name="role">Role to be removed from</param>
+        /// <param name="member">Avatar to remove</param>
+        public void RemoveFromRole(LLUUID group, LLUUID role, LLUUID member)
+        {
+            libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
+            grc.AgentData.AgentID = Client.Network.AgentID;
+            grc.AgentData.SessionID = Client.Network.SessionID;
+            grc.AgentData.GroupID = group;
+            grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
+            //Add to members and role
+            grc.RoleChange[0].MemberID = member;
+            grc.RoleChange[0].RoleID = role;
+            //1 = Remove From Role
+            grc.RoleChange[0].Change = 1;
+            Client.Network.SendPacket(grc);
+        }
+        /// <summary>
+        /// Assign an avatar to a role
+        /// </summary>
+        /// <param name="group">Group to update</param>
+        /// <param name="role">Role to assign to</param>
+        /// <param name="member">Avatar to assign</param>
+        public void AddToRole(LLUUID group, LLUUID role, LLUUID member)
+        {
+            libsecondlife.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
+            grc.AgentData.AgentID = Client.Network.AgentID;
+            grc.AgentData.SessionID = Client.Network.SessionID;
+            grc.AgentData.GroupID = group;
+            grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
+            grc.RoleChange[0] = new GroupRoleChangesPacket.RoleChangeBlock();
+            //Add to members and role
+            grc.RoleChange[0].MemberID = member;
+            grc.RoleChange[0].RoleID = role;
+            //0 = Add to Role
+            grc.RoleChange[0].Change = 0;
+            Client.Network.SendPacket(grc);
+        }
+        
+        /// <summary>
+        /// Role update flags
+        /// </summary>
+        public enum GroupRoleUpdate : uint
+        {
+            NoUpdate,
+            UpdateData,
+            UpdatePowers,
+            UpdateAll,
+            Create,
+            Delete
+        }
+        /// <summary>
+        /// Group role powers flags
+        /// </summary>
+        [Flags]
+        public enum GroupRolePowers : long
+        {
+            None = 0,
+            Invite = 1 << 1,
+            Eject = 1 << 2,
+            ChangeOptions = 1 << 3,
+            CreateRole = 1 << 4,
+            DeleteRole = 1 << 5,
+            RoleProperties = 1 << 6,
+            AssignMemberLimited = 1 << 7,
+            AssignMember = 1 << 8,
+            RemoveMember = 1 << 9,
+            ChangeActions = 1 << 10,
+            ChangeIdentity = 1 << 11,
+            LandDeed = 1 << 12,
+            LandRelease = 1 << 13,
+            LandSetSale = 1 << 14,
+            LandDevideJoin = 1 << 15,
+            FindPlaces = 1 << 17,
+            LandChangeIdentity = 1 << 18,
+            SetLandingPoint = 1 << 19,
+            ChangeMedia = 1 << 20,
+            LandEdit = 1 << 21,
+            LandOptions = 1 << 22,
+            AllowEditLand = 1 << 23,
+            AllowFly = 1 << 24,
+            AllowRez = 1 << 25,
+            AllowLandmark = 1 << 26,
+            AllowSetHome = 1 << 28,
+            LandManageAllowed = 1 << 29,
+            LandManageBanned = 1 << 30,
+            LandManagePasses = 1 << 31,
+            LandEjectAndFreeze = 1 << 32,
+            ReturnGroupOwned = 1 << 48,
+            ReturnGroupSet = 1 << 33,
+            ReturnNonGroup = 1 << 34,
+            LandGardening = 1 << 35,
+            DeedObject = 1 << 36,
+            ObjectManipulate = 1 << 38,
+            ObjectSetForSale = 1 << 39,
+            Accountable = 1 << 40,
+            SendNotices = 1 << 42,
+            ReceiveNotices = 1 << 43,
+            StartProposal = 1 << 44,
+            VoteOnProposal = 1 << 45
         }
     }
 }

@@ -1971,5 +1971,37 @@ namespace libsecondlife
 
             if (finished) TeleportEvent.Set();
         }
+
+        /// <summary>
+        /// Set this avatar's tier contribution
+        /// </summary>
+        /// <param name="group">Group to change tier in</param>
+        /// <param name="contribution">amount of tier to donate</param>
+        public void SetGroupContribution(LLUUID group, int contribution)
+        {
+            libsecondlife.Packets.SetGroupContributionPacket sgp = new SetGroupContributionPacket();
+            sgp.AgentData.AgentID = Client.Network.AgentID;
+            sgp.AgentData.SessionID = Client.Network.SessionID;
+            sgp.Data.GroupID = group;
+            sgp.Data.Contribution = contribution;
+            Client.Network.SendPacket(sgp);
+        }
+
+        /// <summary>
+        /// Change the role that determines your active title
+        /// </summary>
+        /// <param name="group">Group to use</param>
+        /// <param name="role">Role to change to</param>
+        public void ChangeTitle(LLUUID group, LLUUID role)
+        {
+            libsecondlife.Packets.GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
+            gtu.AgentData.AgentID = Client.Network.AgentID;
+            gtu.AgentData.SessionID = Client.Network.SessionID;
+            gtu.AgentData.TitleRoleID = role;
+            gtu.AgentData.GroupID = group;
+            Client.Network.SendPacket(gtu);
+        }
+
     }
+
 }
