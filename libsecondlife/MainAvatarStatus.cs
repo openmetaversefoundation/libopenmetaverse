@@ -38,203 +38,197 @@ namespace libsecondlife
         /// </summary> 
         public class MainAvatarStatus
         {
-            /// <summary>
-            /// Contains properties for client control key states
-            /// </summary>
-            public struct ControlStatus
+            /// <summary></summary>
+            public bool AtPos
             {
-                /// <summary></summary>
-                public bool AtPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_POS, value); }
-                }
-                /// <summary></summary>
-                public bool AtNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool LeftPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_POS, value); }
-                }
-                /// <summary></summary>
-                public bool LeftNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool UpPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_POS, value); }
-                }
-                /// <summary></summary>
-                public bool UpNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool PitchPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_POS, value); }
-                }
-                /// <summary></summary>
-                public bool PitchNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool YawPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_POS, value); }
-                }
-                /// <summary></summary>
-                public bool YawNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool FastAt
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_AT); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_AT, value); }
-                }
-                /// <summary></summary>
-                public bool FastLeft
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_LEFT); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_LEFT, value); }
-                }
-                /// <summary></summary>
-                public bool FastUp
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_UP); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_UP, value); }
-                }
-                /// <summary></summary>
-                public bool Fly
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FLY); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FLY, value); }
-                }
-                /// <summary></summary>
-                public bool Stop
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STOP); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STOP, value); }
-                }
-                /// <summary></summary>
-                public bool FinishAnim
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM, value); }
-                }
-                /// <summary></summary>
-                public bool StandUp
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP, value); }
-                }
-                /// <summary></summary>
-                public bool SitOnGround
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_SIT_ON_GROUND); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_SIT_ON_GROUND, value); }
-                }
-                /// <summary></summary>
-                public bool Mouselook
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_MOUSELOOK); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_MOUSELOOK, value); }
-                }
-                /// <summary></summary>
-                public bool NudgeAtPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_POS, value); }
-                }
-                /// <summary></summary>
-                public bool NudgeAtNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool NudgeLeftPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_POS, value); }
-                }
-                /// <summary></summary>
-                public bool NudgeLeftNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool NudgeUpPos
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_POS); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_POS, value); }
-                }
-                /// <summary></summary>
-                public bool NudgeUpNeg
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_NEG); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_NEG, value); }
-                }
-                /// <summary></summary>
-                public bool TurnLeft
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_LEFT); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_LEFT, value); }
-                }
-                /// <summary></summary>
-                public bool TurnRight
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_RIGHT); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_RIGHT, value); }
-                }
-                /// <summary></summary>
-                public bool Away
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AWAY); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AWAY, value); }
-                }
-                /// <summary></summary>
-                public bool LButtonDown
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_DOWN); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_DOWN, value); }
-                }
-                /// <summary></summary>
-                public bool LButtonUp
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_UP); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_UP, value); }
-                }
-                /// <summary></summary>
-                public bool MLButtonDown
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_DOWN); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_DOWN, value); }
-                }
-                /// <summary></summary>
-                public bool MLButtonUp
-                {
-                    get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_UP); }
-                    set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_UP, value); }
-                }
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_POS, value); }
+            }
+            /// <summary></summary>
+            public bool AtNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AT_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool LeftPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_POS, value); }
+            }
+            /// <summary></summary>
+            public bool LeftNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LEFT_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool UpPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_POS, value); }
+            }
+            /// <summary></summary>
+            public bool UpNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_UP_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool PitchPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_POS, value); }
+            }
+            /// <summary></summary>
+            public bool PitchNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_PITCH_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool YawPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_POS, value); }
+            }
+            /// <summary></summary>
+            public bool YawNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_YAW_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool FastAt
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_AT); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_AT, value); }
+            }
+            /// <summary></summary>
+            public bool FastLeft
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_LEFT); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_LEFT, value); }
+            }
+            /// <summary></summary>
+            public bool FastUp
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_UP); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FAST_UP, value); }
+            }
+            /// <summary></summary>
+            public bool Fly
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FLY); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FLY, value); }
+            }
+            /// <summary></summary>
+            public bool Stop
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STOP); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STOP, value); }
+            }
+            /// <summary></summary>
+            public bool FinishAnim
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_FINISH_ANIM, value); }
+            }
+            /// <summary></summary>
+            public bool StandUp
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_STAND_UP, value); }
+            }
+            /// <summary></summary>
+            public bool SitOnGround
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_SIT_ON_GROUND); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_SIT_ON_GROUND, value); }
+            }
+            /// <summary></summary>
+            public bool Mouselook
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_MOUSELOOK); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_MOUSELOOK, value); }
+            }
+            /// <summary></summary>
+            public bool NudgeAtPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_POS, value); }
+            }
+            /// <summary></summary>
+            public bool NudgeAtNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_AT_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool NudgeLeftPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_POS, value); }
+            }
+            /// <summary></summary>
+            public bool NudgeLeftNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_LEFT_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool NudgeUpPos
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_POS); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_POS, value); }
+            }
+            /// <summary></summary>
+            public bool NudgeUpNeg
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_NEG); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_NUDGE_UP_NEG, value); }
+            }
+            /// <summary></summary>
+            public bool TurnLeft
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_LEFT); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_LEFT, value); }
+            }
+            /// <summary></summary>
+            public bool TurnRight
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_RIGHT); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_TURN_RIGHT, value); }
+            }
+            /// <summary></summary>
+            public bool Away
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AWAY); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_AWAY, value); }
+            }
+            /// <summary></summary>
+            public bool LButtonDown
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_DOWN); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_DOWN, value); }
+            }
+            /// <summary></summary>
+            public bool LButtonUp
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_UP); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_LBUTTON_UP, value); }
+            }
+            /// <summary></summary>
+            public bool MLButtonDown
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_DOWN); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_DOWN, value); }
+            }
+            /// <summary></summary>
+            public bool MLButtonUp
+            {
+                get { return GetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_UP); }
+                set { SetControlFlag(MainAvatar.AgentUpdateFlags.AGENT_CONTROL_ML_LBUTTON_UP, value); }
             }
 
             /// <summary>
@@ -263,10 +257,6 @@ namespace libsecondlife
             /// Timer for sending AgentUpdate packets, disabled by default
             /// </summary>
             public Timer UpdateTimer;
-            /// <summary>
-            /// Holds control flags
-            /// </summary>
-            public ControlStatus Controls;
             /// <summary>
             /// Holds camera flags
             /// </summary>
@@ -297,7 +287,7 @@ namespace libsecondlife
 
             private bool alwaysRun = false;
             private SecondLife Client;
-            private static uint agentControls;
+            private uint agentControls;
 
 
             /// <summary>Constructor for class MainAvatarStatus</summary>
@@ -365,13 +355,13 @@ namespace libsecondlife
                 Client.Network.SendPacket(update, simulator);
             }
 
-            private static bool GetControlFlag(MainAvatar.AgentUpdateFlags flag)
+            private bool GetControlFlag(MainAvatar.AgentUpdateFlags flag)
             {
                 uint control = (uint)flag;
                 return ((agentControls & control) == control);
             }
 
-            private static void SetControlFlag(MainAvatar.AgentUpdateFlags flag, bool value)
+            private void SetControlFlag(MainAvatar.AgentUpdateFlags flag, bool value)
             {
                 uint control = (uint)flag;
                 if (value && ((agentControls & control) != control)) agentControls ^= control;
