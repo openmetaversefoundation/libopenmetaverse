@@ -840,16 +840,13 @@ namespace libsecondlife
 
             #endregion FireCallbacks
 
-            if (Client.Settings.DEBUG)
+            int workerThreads, completionPortThreads;
+            ThreadPool.GetAvailableThreads(out workerThreads, out completionPortThreads);
+            if (workerThreads == 0 || completionPortThreads == 0)
             {
-                int workerThreads, completionPortThreads;
-                ThreadPool.GetAvailableThreads(out workerThreads, out completionPortThreads);
-                if (workerThreads == 0 || completionPortThreads == 0)
-                {
-                    Client.Log(String.Format(
-                        "Thread starvation, packets will be dropped. WorkerThreads: {0}, CompletionPortThreads: {1}",
-                        workerThreads, completionPortThreads), Helpers.LogLevel.Error);
-                }
+                Client.Log(String.Format(
+                    "Thread starvation, packets will be dropped. WorkerThreads: {0}, CompletionPortThreads: {1}",
+                    workerThreads, completionPortThreads), Helpers.LogLevel.Error);
             }
         }
 

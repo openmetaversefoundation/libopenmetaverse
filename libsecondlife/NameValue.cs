@@ -213,7 +213,7 @@ namespace libsecondlife
                 case ValueType.F32:
                 {
                     float temp = 0.0f;
-                    Single.TryParse(value, out temp);
+                    Single.TryParse(value, System.Globalization.NumberStyles.Float, Helpers.EnUsCulture.NumberFormat, out temp);
                     Value = temp;
                     break;
                 }

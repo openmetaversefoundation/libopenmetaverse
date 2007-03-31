@@ -387,8 +387,8 @@ namespace libsecondlife.Utilities.Assets
         /// <param name="tempFile"></param>
         /// <param name="storeLocal"></param>
         /// <param name="isPriority"></param>
-        public void RequestUpload(LLUUID transactionID, AssetType type, byte[] data,
-	    bool tempFile, bool storeLocal, bool isPriority)
+        public void RequestUpload(LLUUID transactionID, AssetType type, byte[] data, bool tempFile, bool storeLocal, 
+            bool isPriority)
         {
             if (!Transfers.ContainsKey(transactionID))
             {
@@ -485,7 +485,7 @@ namespace libsecondlife.Utilities.Assets
                         else
                         {
                             Client.Log("Received a TransferInfo packet with a SourceType of " + transfer.Source.ToString() +
-                                " and a Params field length of " + info.TransferInfo.Params.Length, 
+                                " and a Params field length of " + info.TransferInfo.Params.Length,
                                 Helpers.LogLevel.Warning);
                         }
                     }
@@ -723,7 +723,7 @@ namespace libsecondlife.Utilities.Assets
                     }
 
                     // The header is downloaded, we can insert this data in to the proper position
-                    Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize + 
+                    Array.Copy(image.ImageData.Data, 0, transfer.AssetData, transfer.InitialDataSize +
                         (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
                     transfer.Transferred += image.ImageData.Data.Length;
 

@@ -284,9 +284,6 @@ namespace libsecondlife.AssetSystem
         /// <returns></returns>
         internal void UpdateFromAssetData()
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-us");
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-us");
-
             if ( AssetData == null || AssetData.Length == 0)
             {
                 return;
@@ -417,12 +414,10 @@ namespace libsecondlife.AssetSystem
                     try
                     {
                         int id = Int32.Parse(fields[0]);
-                        float weight; Single.Parse(fields[1], System.Globalization.NumberStyles.Float);
-                        if (Single.TryParse(fields[1], System.Globalization.NumberStyles.Float, new CultureInfo("en-us").NumberFormat, out weight) == false)
-                        {
-                            weight = 0.0f;
-                        }
 
+                        float weight = 0.0f;
+                        Single.TryParse(fields[1], System.Globalization.NumberStyles.Float,
+                            Helpers.EnUsCulture.NumberFormat, out weight);
                         _Parameters[id] = weight;
                     }
                     catch (Exception)

@@ -8,6 +8,9 @@ namespace VisualParamGenerator
 {
     class VisualParamGenerator
     {
+        public static readonly System.Globalization.CultureInfo EnUsCulture = 
+            new System.Globalization.CultureInfo("en-us");
+
         static void Main(string[] args)
         {
             if (args.Length < 3)
@@ -109,12 +112,15 @@ namespace VisualParamGenerator
                         if (node.Attributes["label_max"] != null)
                             label_max = node.Attributes["label_max"].Value;
 
-                        float min = Single.Parse(node.Attributes["value_min"].Value);
-                        float max = Single.Parse(node.Attributes["value_max"].Value);
+                        float min = Single.Parse(node.Attributes["value_min"].Value, 
+                            System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat);
+                        float max = Single.Parse(node.Attributes["value_max"].Value,
+                            System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat);
 
                         float def;
                         if (node.Attributes["value_default"] != null)
-                            def = Single.Parse(node.Attributes["value_default"].Value);
+                            def = Single.Parse(node.Attributes["value_default"].Value,
+                                System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat);
                         else
                             def = min;
 

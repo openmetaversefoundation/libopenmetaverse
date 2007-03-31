@@ -109,6 +109,12 @@ namespace libsecondlife
         public static System.Security.Cryptography.MD5 MD5Builder = 
             new System.Security.Cryptography.MD5CryptoServiceProvider();
 
+        /// <summary>Provide a single instance of the CultureInfo class to
+        /// help parsing in situations where Second Life assumes an en-us 
+        /// culture</summary>
+        public static readonly System.Globalization.CultureInfo EnUsCulture =
+            new System.Globalization.CultureInfo("en-us");
+
         /// <summary>
         /// Converts an unsigned integer to a hexadecimal string
         /// </summary>

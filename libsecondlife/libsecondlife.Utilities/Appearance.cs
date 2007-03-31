@@ -277,7 +277,8 @@ namespace libsecondlife.Utilities.Appearance
                     try
                     {
                         int id = Int32.Parse(fields[0]);
-                        float weight = Single.Parse(fields[1]);
+                        float weight = Single.Parse(fields[1], System.Globalization.NumberStyles.Float, 
+                            Helpers.EnUsCulture.NumberFormat);
 
                         Params[id] = weight;
                     }
