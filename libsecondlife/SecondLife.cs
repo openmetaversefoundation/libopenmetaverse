@@ -106,7 +106,7 @@ namespace libsecondlife
             Terrain = new TerrainManager(this);
             Throttle = new AgentThrottle(this);
 
-            ConfigureThreadPool();
+            CheckThreadPool();
         }
 
         /// <summary>
@@ -116,14 +116,16 @@ namespace libsecondlife
         /// function increases the number of worker threads and IOCP threads to
         /// a safe value
         /// </summary>
-        public void ConfigureThreadPool()
+        public void CheckThreadPool()
         {
             // Make sure we are running enough IOCP threads to safely handle all the requests
             int workerThreads, completionPortThreads;
-            ThreadPool.GetMaxThreads(out workerThreads, out completionPortThreads);
-            DebugLog(String.Format("Had {0} worker threads and {1} IOCP threads, setting to 50 and 1000",
-                workerThreads, completionPortThreads));
-            ThreadPool.SetMaxThreads(50, 1000);
+            ThreadPool.GetAvailableThreads(out workerThreads, out completionPortThreads);
+            if (completionPortThreads < 50)
+            {
+                Log(completionPortThreads + " IOCP threads available which may not be enough for heavy traffic",
+                    Helpers.LogLevel.Warning);
+            }
         }
 
         /// <summary>
