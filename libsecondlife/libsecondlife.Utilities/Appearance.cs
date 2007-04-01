@@ -976,9 +976,10 @@ namespace libsecondlife.Utilities.Appearance
                                 break;
                         }
 
-                        if (imageCount > 0)
+                        if (imageCount > 0 && !PendingBakes.ContainsKey(bakeType))
                         {
-                            PendingBakes.Add(bakeType, new BakeLayer(Client, imageCount, paramValues));
+                            lock (PendingBakes)
+                                PendingBakes.Add(bakeType, new BakeLayer(Client, imageCount, paramValues));
                         }
                         else
                         {
@@ -1010,13 +1011,15 @@ namespace libsecondlife.Utilities.Appearance
         private int AddImageDownload(TextureIndex index)
         {
             LLUUID image = AgentTextures[(int)index];
-            if (image != LLUUID.Zero && !ImageDownloads.ContainsKey(image))
+            if (image != LLUUID.Zero)
             {
-                ImageDownloads.Add(image, index);
+                if (!ImageDownloads.ContainsKey(image)) ImageDownloads.Add(image, index);
                 return 1;
             }
-
-            return 0;
+            else
+            {
+                return 0;
+            }
         }
 
         private void Assets_OnAssetReceived(AssetDownload asset)
