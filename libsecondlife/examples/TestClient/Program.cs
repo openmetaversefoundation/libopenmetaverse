@@ -21,9 +21,9 @@ namespace libsecondlife.TestClient
             ClientManager manager;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
-            string master = "";
-            string file = "";
-			string contact = "";
+            string master = String.Empty;
+            string file = String.Empty;
+			string contact = String.Empty;
 
             if (arguments["master"] != null)
             {

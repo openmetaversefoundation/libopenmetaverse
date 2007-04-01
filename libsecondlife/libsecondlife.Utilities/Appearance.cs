@@ -925,94 +925,41 @@ namespace libsecondlife.Utilities.Appearance
                         BakeType bakeType = BakeType.Unknown;
                         int imageCount = 0;
 
-                        // Download all of the images in this layer. This is kind of hacky to be
-                        // hardcoded in but it is the most straightforward way to do what we need
+                        // Download all of the images in this layer
                         switch ((BakeType)block.TextureIndex)
                         {
                             case BakeType.Head:
                                 lock (ImageDownloads)
                                 {
-                                    if (AgentTextures[(int)TextureIndex.HeadBodypaint] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.HeadBodypaint], TextureIndex.HeadBodypaint);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.Hair] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.Hair], TextureIndex.Hair);
-                                        ++imageCount;
-                                    }
+                                    imageCount += AddImageDownload(TextureIndex.HeadBodypaint);
+                                    imageCount += AddImageDownload(TextureIndex.Hair);
                                 }
                                 break;
                             case BakeType.UpperBody:
                                 lock (ImageDownloads)
                                 {
-                                    if (AgentTextures[(int)TextureIndex.UpperBodypaint] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperBodypaint], TextureIndex.UpperBodypaint);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.UpperUndershirt] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperUndershirt], TextureIndex.UpperUndershirt);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.UpperShirt] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperShirt], TextureIndex.UpperShirt);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.UpperJacket] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.UpperJacket], TextureIndex.UpperJacket);
-                                        ++imageCount;
-                                    }
+                                    imageCount += AddImageDownload(TextureIndex.UpperBodypaint);
+                                    imageCount += AddImageDownload(TextureIndex.UpperUndershirt);
+                                    imageCount += AddImageDownload(TextureIndex.UpperShirt);
+                                    imageCount += AddImageDownload(TextureIndex.UpperJacket);
                                     // TODO: Where are the gloves?
                                 }
                                 break;
                             case BakeType.LowerBody:
                                 lock (ImageDownloads)
                                 {
-                                    if (AgentTextures[(int)TextureIndex.LowerBodypaint] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerBodypaint], TextureIndex.LowerBodypaint);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.LowerUnderpants] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerUnderpants], TextureIndex.LowerUnderpants);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.LowerSocks] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerSocks], TextureIndex.LowerSocks);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.LowerShoes] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerShoes], TextureIndex.LowerShoes);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.LowerPants] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerPants], TextureIndex.LowerPants);
-                                        ++imageCount;
-                                    }
-                                    if (AgentTextures[(int)TextureIndex.LowerJacket] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.LowerJacket], TextureIndex.LowerJacket);
-                                        ++imageCount;
-                                    }
+                                    imageCount += AddImageDownload(TextureIndex.LowerBodypaint);
+                                    imageCount += AddImageDownload(TextureIndex.LowerUnderpants);
+                                    imageCount += AddImageDownload(TextureIndex.LowerSocks);
+                                    imageCount += AddImageDownload(TextureIndex.LowerShoes);
+                                    imageCount += AddImageDownload(TextureIndex.LowerPants);
+                                    imageCount += AddImageDownload(TextureIndex.LowerJacket);
                                 }
                                 break;
                             case BakeType.Eyes:
                                 lock (ImageDownloads)
                                 {
-                                    if (AgentTextures[(int)TextureIndex.EyesIris] != LLUUID.Zero)
-                                    {
-                                        ImageDownloads.Add(AgentTextures[(int)TextureIndex.EyesIris], TextureIndex.EyesIris);
-                                        ++imageCount;
-                                    }
+                                    imageCount += AddImageDownload(TextureIndex.EyesIris);
                                 }
                                 break;
                             case BakeType.Skirt:
@@ -1020,11 +967,7 @@ namespace libsecondlife.Utilities.Appearance
                                 {
                                     lock (ImageDownloads)
                                     {
-                                        if (AgentTextures[(int)TextureIndex.Skirt] != LLUUID.Zero)
-                                        {
-                                            ImageDownloads.Add(AgentTextures[(int)TextureIndex.Skirt], TextureIndex.Skirt);
-                                            ++imageCount;
-                                        }
+                                        imageCount += AddImageDownload(TextureIndex.Skirt);
                                     }
                                 }
                                 break;
@@ -1062,6 +1005,18 @@ namespace libsecondlife.Utilities.Appearance
                     }
                 }
             }
+        }
+
+        private int AddImageDownload(TextureIndex index)
+        {
+            LLUUID image = AgentTextures[(int)index];
+            if (image != LLUUID.Zero && !ImageDownloads.ContainsKey(image))
+            {
+                ImageDownloads.Add(image, index);
+                return 1;
+            }
+
+            return 0;
         }
 
         private void Assets_OnAssetReceived(AssetDownload asset)

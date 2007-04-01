@@ -47,6 +47,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>cp $(ProjectDir)\openjpeg.dll $(TargetDir)</PostBuildEvent>
+    <PostBuildEvent>copy $(ProjectDir)\openjpeg.dll $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
 </Project>

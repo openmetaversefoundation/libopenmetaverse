@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 namespace libsecondlife
@@ -38,6 +39,16 @@ namespace libsecondlife
     [Serializable]
     public class SerializableDictionary<TKey, TValue> : Dictionary<TKey, TValue>, IXmlSerializable
     {
+        public SerializableDictionary()
+            : base()
+        {
+        }
+
+        public SerializableDictionary(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+
         #region IXmlSerializable Members
 
         /// <summary>
