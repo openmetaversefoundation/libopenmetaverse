@@ -452,18 +452,6 @@ namespace libsecondlife
 
 
         /// <summary>
-        /// If true, when a cached object check is received from the server 
-        /// the full object info will automatically be requested.
-        /// </summary>
-        /// 
-        public bool RequestAllObjects = false;
-        /// <summary>
-        /// Used to flag if Object updates should always be decoded, 
-        /// even if no object event listenners/callbacks are registered.
-        /// </summary>
-        public bool AlwaysDecode = false;		
-
-        /// <summary>
         /// Reference to the SecondLife client
         /// </summary>
         protected SecondLife Client;
@@ -1121,7 +1109,8 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void UpdateHandler(Packet packet, Simulator simulator)
         {
-            if (AlwaysDecode || OnNewPrim != null || OnNewAttachment != null || OnNewAvatar != null || OnNewFoliage != null)
+            if (Client.Settings.ALWAYS_DECODE_OBJECTS || OnNewPrim != null || OnNewAttachment != null || 
+                OnNewAvatar != null || OnNewFoliage != null)
             {
                 ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
 				UpdateDilation(simulator, update.RegionData.TimeDilation);
@@ -1400,7 +1389,7 @@ namespace libsecondlife
                                 }
                             }
 
-                            if (AlwaysDecode || (OnNewAvatar != null))
+                            if (Client.Settings.ALWAYS_DECODE_OBJECTS || (OnNewAvatar != null))
                             {
                                 Avatar avatar = GetAvatar(simulator, block.ID, block.FullID);
 
@@ -1557,7 +1546,7 @@ namespace libsecondlife
 
                     // TODO: this really only needs to be called when this class is an instance of a subclass of this class...
                     // Get primitive from factory, so subclasses can have a chance to have cached data updated
-                    if (AlwaysDecode)
+                    if (Client.Settings.ALWAYS_DECODE_OBJECTS)
                     {
                         LLObject obj;
 
@@ -1598,7 +1587,8 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
-            if (AlwaysDecode || OnNewPrim != null || OnNewAvatar != null || OnNewAttachment != null || OnNewFoliage != null)
+            if (Client.Settings.ALWAYS_DECODE_OBJECTS || OnNewPrim != null || OnNewAvatar != null || 
+                OnNewAttachment != null || OnNewFoliage != null)
             {
                 ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
                 Primitive prim;
@@ -1859,7 +1849,7 @@ namespace libsecondlife
 
         protected void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
-            if (RequestAllObjects)
+            if (Client.Settings.ALWAYS_REQUEST_OBJECTS)
             {
                 List<uint> ids = new List<uint>();
                 ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;

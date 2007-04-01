@@ -69,7 +69,7 @@ namespace libsecondlife
         /// <remarks>Setting this too low will cause web requests to repeatedly
         /// time out and retry. Too high of a setting may cause the library to 
         /// block for a long time during network shutdown</remarks>
-        public int CAPS_TIMEOUT = 8 * 1000;
+        public int CAPS_TIMEOUT = 20 * 1000;
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
         public int LOGIN_TIMEOUT = 60 * 1000;
         /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
@@ -121,6 +121,12 @@ namespace libsecondlife
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
         public int MAP_REQUEST_TIMEOUT = 5 * 1000;
+        /// <summary>Used to flag if Object updates should always be decoded, 
+        /// even if no object event listeners/callbacks are registered</summary>
+        public bool ALWAYS_DECODE_OBJECTS = false;
+        /// <summary>If true, when a cached object check is received from the
+        /// server the full object info will automatically be requested</summary>
+        public bool ALWAYS_REQUEST_OBJECTS = false;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

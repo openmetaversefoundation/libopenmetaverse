@@ -302,7 +302,6 @@ namespace primexport
 
             // Setup the callbacks
             client.OnLogMessage += new SecondLife.LogCallback(client_OnLogMessage);
-            client.Objects.RequestAllObjects = true;
             client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(PrimSeen);
             client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(AvatarSeen);
             client.Objects.OnNewAttachment += new ObjectManager.NewAttachmentCallback(AttachmentSeen);
@@ -311,6 +310,9 @@ namespace primexport
             client.Throttle.Cloud = 0;
             client.Throttle.Land = 0;
             client.Throttle.Wind = 0;
+
+            // Make sure we download all objects
+            client.Settings.ALWAYS_REQUEST_OBJECTS = true;
 
             grpLogin.Enabled = true;
         }

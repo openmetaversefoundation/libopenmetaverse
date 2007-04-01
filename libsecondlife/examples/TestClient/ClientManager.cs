@@ -39,7 +39,7 @@ namespace libsecondlife.TestClient
 
         public bool Running = true;
 		
-		string contactPerson = "";
+		string contactPerson = String.Empty;
 		StartPosition startpos = new StartPosition();
 
         /// <summary>

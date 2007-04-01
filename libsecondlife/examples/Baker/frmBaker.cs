@@ -6,86 +6,61 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
-using libsecondlife;
-using libsecondlife.Packets;
+using System.IO;
 
 namespace Baker
 {
     public partial class frmBaker : Form
     {
-        private SecondLife Client = new SecondLife();
-        //private PictureBox[,] Boxes = new PictureBox[16, 16];
-        //private System.Timers.Timer UpdateTimer = new System.Timers.Timer(500);
-        private string FirstName, LastName, Password;
-
-        //LLVector3 center = new LLVector3(128, 128, 40);
-        //LLVector3 up = new LLVector3(0, 0, 0.9999f);
-        //LLVector3 forward = new LLVector3(0, 0.9999f, 0);
-        //LLVector3 left = new LLVector3(0.9999f, 0, 0);
-
-        public frmBaker(string firstName, string lastName, string password)
+        public frmBaker()
         {
-            FirstName = firstName;
-            LastName = lastName;
-            Password = password;
-
-            // Build the picture boxes
-            //this.SuspendLayout();
-            //for (int y = 0; y < 16; y++)
-            //{
-            //    for (int x = 0; x < 16; x++)
-            //    {
-            //        Boxes[x, y] = new System.Windows.Forms.PictureBox();
-            //        PictureBox box = Boxes[x, y];
-            //        ((System.ComponentModel.ISupportInitialize)(box)).BeginInit();
-            //        box.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            //        box.Name = x + "," + y;
-            //        box.Location = new System.Drawing.Point(x * 16, y * 16);
-            //        box.Size = new System.Drawing.Size(16, 16);
-            //        box.Visible = true;
-            //        box.MouseUp += new MouseEventHandler(box_MouseUp);
-            //        ((System.ComponentModel.ISupportInitialize)(box)).EndInit();
-
-            //        this.Controls.Add(box);
-            //    }
-            //}
-            //this.ResumeLayout();
-
             InitializeComponent();
         }
 
         private void frmBaker_Load(object sender, EventArgs e)
         {
-            if (Client.Network.Login(FirstName, LastName, Password, "Baker", "jhurliman@wsu.edu"))
-            {
-                //UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
-                //UpdateTimer.Start();
-            }
-            else
-            {
-                Console.WriteLine("Login failed: " + Client.Network.LoginError);
-                Console.ReadKey();
-                this.Close();
-                return;
-            }
         }
-
-        //void UpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        //{
-        //    forward.Y += 0.2f;
-        //    left.X += 0.2f;
-
-        //    if (forward.Y >= 1.0f) forward.Y = 0.0f;
-        //    if (left.X >= 1.0f) left.X = 0.0f;
-
-        //    // Spin our camera in circles at the center of the sim to load all the terrain
-        //    Client.Self.UpdateCamera(MainAvatar.AgentUpdateFlags.NONE, center, forward, left, up,
-        //        LLQuaternion.Identity, LLQuaternion.Identity, 384.0f, false);
-        //}
 
         private void frmBaker_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Client.Network.Logout();
+        }
+
+        private void cmdLoadPic_Click(object sender, EventArgs e)
+        {
+            Button caller = (Button)sender;
+            PictureBox pic = null;
+
+            switch (caller.Name)
+            {
+                case "cmdLoadPic1":
+                    pic = pic1;
+                    break;
+                case "cmdLoadPic2":
+                    pic = pic2;
+                    break;
+                case "cmdLoadPic3":
+                    pic = pic3;
+                    break;
+            }
+
+            if (pic != null)
+            {
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.Filter = "JPEG2000 (*.jp2,*.j2c,*.j2k)|";
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        byte[] j2kdata = File.ReadAllBytes(dialog.FileName);
+                        Image image = OpenJPEGNet.OpenJPEG.DecodeToImage(j2kdata);
+                        pic.Image = image;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            }
         }
     }
 }

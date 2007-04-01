@@ -49,6 +49,7 @@ namespace libsecondlife.TestClient
 
             Settings.DEBUG = false;
             Settings.STORE_LAND_PATCHES = true;
+            Settings.ALWAYS_REQUEST_OBJECTS = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
@@ -61,8 +62,6 @@ namespace libsecondlife.TestClient
             this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
-
-            Objects.RequestAllObjects = true;
 
             updateTimer.Start();
         }
