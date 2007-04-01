@@ -856,6 +856,7 @@ namespace libsecondlife
             eject.GroupData.GroupID = group;
             //People to eject
             eject.EjectData = new EjectGroupMemberRequestPacket.EjectDataBlock[1];
+            eject.EjectData[0] = new EjectGroupMemberRequestPacket.EjectDataBlock();
             eject.EjectData[0].EjecteeID = member;
             //send it
             Client.Network.SendPacket(eject);
