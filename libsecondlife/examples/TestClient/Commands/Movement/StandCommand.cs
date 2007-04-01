@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 	
         public override string Execute(string[] args, LLUUID fromAgentID)
 	{
-		Client.Self.Status.Controls.StandUp = true;
+		Client.Self.Status.StandUp = true;
 		stand(Client);
 		return "Standing up.";  
 	}
