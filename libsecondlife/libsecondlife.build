@@ -114,11 +114,12 @@
 	</target>
 
 	<target name="test-dll" depends="init build" description="makes the test dll">
-		<csc target="library" output="tests/tests.dll">
+		<csc target="library" output="libsecondlife.Tests/tests.dll">
 			<sources>
-				<include name="tests/*.cs" />
+				<include name="libsecondlife.Tests/*.cs" />
 			</sources>
 			<references>
+				<include name="libsecondlife.dll" />
 				<include name="NUnit.dll" />
 			</references>
 		</csc>

@@ -297,7 +297,7 @@ namespace libsecondlife.Utilities.Appearance
                     try
                     {
                         int id = Int32.Parse(fields[0]);
-                        LLUUID texture = LLUUID.Parse(fields[1]);
+                        LLUUID texture = new LLUUID(fields[1]);
 
                         Textures[id] = texture;
                     }

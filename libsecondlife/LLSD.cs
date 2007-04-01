@@ -129,7 +129,7 @@ namespace libsecondlife
             }
             else if (obj is LLUUID)
             {
-                LLUUID u = obj as LLUUID;
+                LLUUID u = (LLUUID) obj;
                 writer.WriteStartElement(String.Empty, "uuid", String.Empty);
                 writer.WriteString(u.ToStringHyphenated());
                 writer.WriteEndElement();

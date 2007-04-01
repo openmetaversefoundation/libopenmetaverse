@@ -435,7 +435,7 @@ namespace libsecondlife.AssetSystem
                     try
                     {
                         uint id = UInt32.Parse(fields[0]);
-                        LLUUID texture = LLUUID.Parse(fields[1]);
+                        LLUUID texture = new LLUUID(fields[1]);
 
                         _Textures[id] = texture;
                     }
