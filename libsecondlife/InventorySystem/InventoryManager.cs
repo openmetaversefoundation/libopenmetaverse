@@ -1071,7 +1071,11 @@ namespace libsecondlife.InventorySystem
             else
             {
                 slClient.DebugLog(packet.ToString());
-                throw new Exception("Received a packet for item creation, but no such response was expected.  This is probably a bad thing...");
+
+                // TODO:  Looks like this packet may be sent in response to a Buy.  
+                //        Should probably use it to update local cached inventory, to show the bought item(s)
+                //
+                // throw new Exception("Received a packet for item creation, but no such response was expected.  This is probably a bad thing...");
             }
         }
 
