@@ -75,7 +75,7 @@ namespace groupmanager
                 }
                 else
                 {
-                    MessageBox.Show(this, "Error logging in: " + Client.Network.LoginError);
+                    MessageBox.Show(this, "Error logging in: " + Client.Network.LoginMessage);
                     cmdConnect.Text = "Connect";
                     txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                     groupBox.Enabled = false;

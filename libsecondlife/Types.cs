@@ -61,7 +61,10 @@ namespace libsecondlife
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
 		public LLUUID(string val)
 		{
-            data = StringToBytes(val);
+            if (val != null)
+                data = StringToBytes(val);
+            else
+                data = new byte[16];
 		}
 
         /// <summary>
@@ -207,19 +210,7 @@ namespace libsecondlife
         public void ReadXml(System.Xml.XmlReader reader)
         {
             string val = reader.ReadString();
-
-			if (val.Length > 0)
-			{
-				if (val.Length == 36) val = val.Replace("-", "");
-
-				if (val.Length != 32) throw new Exception("Malformed data passed to LLUUID constructor: " + val);
-
-				for (int i = 0; i < 16; ++i)
-				{
-					data[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
-				}
-			}
-
+			if (val.Length > 0) data = StringToBytes(val);
             reader.Skip();
         }
 
@@ -229,8 +220,7 @@ namespace libsecondlife
         /// <param name="writer">XmlWriter to serialize to</param>
         public void WriteXml(System.Xml.XmlWriter writer)
         {
-			if (this != LLUUID.Zero)
-				writer.WriteString(this.ToString());
+			writer.WriteString(this.ToStringHyphenated());
         }
 
         /// <summary>

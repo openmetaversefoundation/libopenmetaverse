@@ -440,7 +440,7 @@ namespace SLAccountant
 				}
 				else
 				{
-					MessageBox.Show(this, "Error logging in: " + client.Network.LoginError);
+					MessageBox.Show(this, "Error logging in: " + client.Network.LoginMessage);
 					cmdConnect.Text = "Connect";
 					txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
 					txtFind.Enabled = cmdFind.Enabled = false;

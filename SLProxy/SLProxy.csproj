@@ -51,7 +51,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>..\..\bin\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
@@ -91,6 +91,25 @@
     </Compile>
     <Compile Include="SLProxyLoader.cs" />
     <Compile Include="SLProxyMain.cs" />
+    <Compile Include="XmlRpcCS\Logger.cs" />
+    <Compile Include="XmlRpcCS\SimpleHttpRequest.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcBoxcarRequest.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcClientProxy.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcDeserializer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcErrorCodes.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcException.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcExposedAttribute.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcRequest.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcRequestDeserializer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcRequestSerializer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcResponder.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcResponse.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcResponseDeserializer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcResponseSerializer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcSerializer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcServer.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcSystemObject.cs" />
+    <Compile Include="XmlRpcCS\XmlRpcXmlTokens.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\libsecondlife\libsecondlife.csproj">

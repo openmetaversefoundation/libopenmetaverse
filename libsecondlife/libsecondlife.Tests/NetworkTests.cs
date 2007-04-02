@@ -43,7 +43,7 @@ namespace libsecondlife.Tests
         [SetUp]
         public void Init()
         {
-            Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid: " + Client.Network.LoginError);
+            Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid: " + Client.Network.LoginMessage);
 
             int start = Environment.TickCount;
 

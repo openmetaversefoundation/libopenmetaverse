@@ -89,6 +89,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AgentThrottle.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -119,6 +120,7 @@
     <Compile Include="InventorySystem\InventoryWearable.cs" />
     <Compile Include="LLObject.cs" />
     <Compile Include="LLSD.cs" />
+    <Compile Include="Login.cs" />
     <Compile Include="MainAvatarStatus.cs" />
     <Compile Include="MainAvatar.cs" />
     <Compile Include="EstateTools.cs">
@@ -156,7 +158,9 @@
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SerializableDictionary.cs" />
+    <Compile Include="SerializableDictionary.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Simulator.cs" />
     <Compile Include="TerrainManager.cs" />
@@ -164,47 +168,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Types.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\Logger.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\SimpleHttpRequest.cs" />
-    <Compile Include="XmlRpcCS\XmlRpcDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcErrorCodes.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcException.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcExposedAttribute.cs" />
-    <Compile Include="XmlRpcCS\XmlRpcRequest.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcRequestDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcRequestSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcResponder.cs" />
-    <Compile Include="XmlRpcCS\XmlRpcResponse.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcResponseDeserializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcResponseSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcSerializer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="XmlRpcCS\XmlRpcServer.cs" />
-    <Compile Include="XmlRpcCS\XmlRpcSystemObject.cs" />
-    <Compile Include="XmlRpcCS\XmlRpcXmlTokens.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="_Packets_.cs" />

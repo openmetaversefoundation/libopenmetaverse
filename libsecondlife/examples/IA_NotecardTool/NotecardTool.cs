@@ -118,7 +118,7 @@ namespace IA_NotecardTool
             if (!_Client.Network.Login(FirstName, LastName, Password, "createnotecard", "static.sprocket@gmail.com"))
             {
                 // Login failed
-                Console.WriteLine("Error logging in: " + _Client.Network.LoginError);
+                Console.WriteLine("Error logging in: " + _Client.Network.LoginMessage);
                 return false;
             }
 

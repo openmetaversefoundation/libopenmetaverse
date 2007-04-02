@@ -106,7 +106,6 @@ namespace sldump
             client.Throttle.Land = 0;
             client.Throttle.Wind = 0;
             client.Throttle.Cloud = 0;
-            client.Throttle.Texture = 0;
 
 			// Setup the packet callback and disconnect event handler
             client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
@@ -115,12 +114,12 @@ namespace sldump
 			if (!client.Network.Login(args[0], args[1], args[2], "sldump", "contact@libsecondlife.org"))
 			{
 				// Login failed
-				Console.WriteLine("Error logging in: " + client.Network.LoginError);
+				Console.WriteLine("Error logging in: " + client.Network.LoginMessage);
 				return;
 			}
 
 			// Login was successful
-			Console.WriteLine("Message of the day: " + client.Network.LoginValues["message"]);
+			Console.WriteLine("Message of the day: " + client.Network.LoginMessage);
 
             int start = Environment.TickCount;
             int milliseconds = Int32.Parse(args[3]) * 1000;

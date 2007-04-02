@@ -108,7 +108,7 @@ namespace libsecondlife.TestClient
                     contactPerson))
                 {
                     Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                        client.Network.LoginError);
+                        client.Network.LoginMessage);
                 }
 			}
 

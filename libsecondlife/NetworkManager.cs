@@ -33,7 +33,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
 using System.IO;
-using Nwc.XmlRpc;
 using libsecondlife.Packets;
 
 namespace libsecondlife
@@ -50,7 +49,7 @@ namespace libsecondlife
     /// outgoing traffic and deserializes incoming traffic, and provides
     /// instances of delegates for network-related events.
     /// </summary>
-    public class NetworkManager
+    public partial class NetworkManager
     {
         /// <summary>
         /// Explains why a simulator or the grid disconnected from us
@@ -123,18 +122,11 @@ namespace libsecondlife
         /// <summary>Uniquely identifier associated with our connections to
         /// simulators</summary>
         public uint CircuitCode;
-        /// <summary>String holding a descriptive error on login failure, empty
-        /// otherwise</summary>
-        public string LoginError = String.Empty;
         /// <summary>The simulator that the logged in avatar is currently 
         /// occupying</summary>
         public Simulator CurrentSim = null;
         /// <summary>The capabilities for the current simulator</summary>
         public Caps CurrentCaps = null;
-        /// <summary>The complete dictionary of all the login values returned 
-        /// by the RPC login server, converted to native data types wherever 
-        /// possible</summary>
-        public Dictionary<string, object> LoginValues = new Dictionary<string, object>();
 
         /// <summary>
         /// Shows whether the network layer is logged in to the grid or not
@@ -171,7 +163,7 @@ namespace libsecondlife
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
             RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
 
-            // The proper timeout for this will get set at Login
+            // The proper timeout for this will get set again at Login
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
         }
@@ -290,8 +282,7 @@ namespace libsecondlife
         /// location</returns>
         public static string StartLocation(string sim, int x, int y, int z)
         {
-            // uri:sim name&x&y&z
-            return "uri:" + sim.ToLower() + "&" + x + "&" + y + "&" + z;
+            return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
         }
 
         /// <summary>
@@ -378,258 +369,6 @@ namespace libsecondlife
         /// Event raised when a logout is confirmed by the simulator
         /// </summary>
         public event LogoutCallback OnLogoutReply;
-
-        /// <summary>
-        /// Simplified login that takes the most common fields as parameters
-        /// and uses defaults for the rest
-        /// </summary>
-        /// <param name="firstName">Account first name</param>
-        /// <param name="lastName">Account last name</param>
-        /// <param name="password">Account password</param>
-        /// <param name="userAgent">Client application name and version</param>
-        /// <param name="author">Client application author</param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginError string will contain the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string author)
-        {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password,
-                "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0", userAgent, author, false);
-            return Login(loginParams);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="author"></param>
-        /// <param name="md5pass"></param>
-        /// <returns></returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string author,
-            bool md5pass)
-        {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password,
-                "00:00:00:00:00:00", "last", 1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
-            return Login(loginParams);
-        }
-
-        /// <summary>
-        /// Simplified login that takes the most common fields along with a
-        /// starting location URI, and can accept an MD5 string instead of a
-        /// plaintext password
-        /// </summary>
-        /// <param name="firstName">Account first name</param>
-        /// <param name="lastName">Account last name</param>
-        /// <param name="password">Account password or MD5 hash of the password
-        /// such as $1$1682a1e45e9f957dcdf0bb56eb43319c</param>
-        /// <param name="userAgent">Client application name and version</param>
-        /// <param name="start">Starting location URI that can be built with
-        /// StartLocation()</param>
-        /// <param name="author">Client application author</param>
-        /// <param name="md5pass">If true, the password field contains </param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginError string will contain the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string start,
-            string author, bool md5pass)
-        {
-            Dictionary<string, object> loginParams = DefaultLoginValues(firstName, lastName, password,
-                "00:00:00:00:00:00", start, 1, 50, 50, 50, "Win", "0", userAgent, author, md5pass);
-            return Login(loginParams);
-        }
-
-        /// <summary>
-        /// Login that takes a custom built dictionary of login parameters and
-        /// values
-        /// </summary>
-        /// <param name="loginParams">Dictionary of login parameters and values
-        /// that can be created with DefaultLoginValues()</param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginError string will contain the error</returns>
-        public bool Login(Dictionary<string, object> loginParams)
-        {
-            return Login(loginParams, Client.Settings.LOGIN_SERVER, "login_to_simulator");
-        }
-
-        /// <summary>
-        /// Login that takes a custom built dictionary of login parameters and
-        /// values and the URL of the login server
-        /// </summary>
-        /// <param name="loginParams">Dictionary of login parameters and values
-        /// that can be created with DefaultLoginValues()</param>
-        /// <param name="url">URL of the login server to authenticate with</param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginError string will contain the error</returns>
-        public bool Login(Dictionary<string, object> loginParams, string url)
-        {
-            return Login(loginParams, url, "login_to_simulator");
-        }
-
-        /// <summary>
-        /// Login that takes a custom built dictionary of login parameters and
-        /// values, URL of the login server, and the name of the XML-RPC method
-        /// to use
-        /// </summary>
-        /// <param name="loginParams">Dictionary of login parameters and values
-        /// that can be created with DefaultLoginValues()</param>
-        /// <param name="url">URL of the login server to authenticate with</param>
-        /// <param name="method">The XML-RPC method to execute on the login 
-        /// server. This is generally login_to_simulator</param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginError string will contain the error</returns>
-        public bool Login(Dictionary<string, object> loginParams, string url, string method)
-        {
-            XmlRpcResponse result;
-            XmlRpcRequest xmlrpc;
-            Hashtable loginValues;
-
-            // Re-read the timeout value for the DisconnectTimer
-            DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
-
-            // Clear possible old values from the last login
-            LoginValues.Clear();
-
-            // Rebuild the Dictionary<> in to a Hashtable for compatibility with XmlRpcCS
-            loginValues = new Hashtable(loginParams.Count);
-            foreach (KeyValuePair<string, object> kvp in loginParams)
-            {
-                if (kvp.Value is IList)
-                {
-                    IList list = ((IList)kvp.Value);
-                    ArrayList array = new ArrayList(list.Count);
-                    foreach (object obj in list)
-                    {
-                        array.Add(obj);
-                    }
-                    loginValues[kvp.Key] = array;
-                }
-                else
-                {
-                    loginValues[kvp.Key] = kvp.Value;
-                }
-            }
-
-            // Build the XML-RPC request
-            xmlrpc = new XmlRpcRequest();
-            xmlrpc.MethodName = method;
-            xmlrpc.Params.Clear();
-            xmlrpc.Params.Add(loginValues);
-
-            try
-            {
-                result = (XmlRpcResponse)xmlrpc.Send(url, Client.Settings.LOGIN_TIMEOUT);
-            }
-            catch (Exception e)
-            {
-                LoginError = "XML-RPC Error: " + e.Message;
-                return false;
-            }
-
-            if (result.IsFault)
-            {
-                Client.Log("Fault " + result.FaultCode + ": " + result.FaultString, Helpers.LogLevel.Error);
-                LoginError = "XML-RPC Fault: " + result.FaultCode + ": " + result.FaultString;
-                return false;
-            }
-
-            Hashtable values = (Hashtable)result.Value;
-            foreach (DictionaryEntry entry in values)
-            {
-                string key = (string)entry.Key;
-
-                try
-                {
-                    // TODO: Find a generic way of determining if a field is LLSD or not
-                    if (key == "look_at" || key == "home")
-                        LoginValues[key] = LLSD.ParseTerseLLSD((string)entry.Value);
-                    else
-                        LoginValues[key] = entry.Value;
-                }
-                catch (Exception e)
-                {
-                    Client.Log(e.ToString(), Helpers.LogLevel.Warning);
-                    LoginValues[key] = null;
-                }
-            }
-
-            if ((string)LoginValues["login"] == "indeterminate")
-            {
-                string nexturl = (string)LoginValues["next_url"];
-                string nextmethod = (string)LoginValues["next_method"];
-                string message = (string)LoginValues["message"];
-                Client.Log("Login redirected: " + nexturl + ", message: " + message, Helpers.LogLevel.Info);
-
-                return Login(loginParams, nexturl, nextmethod);
-            }
-            else if ((string)LoginValues["login"] == "false")
-            {
-                LoginError = LoginValues["reason"] + ": " + LoginValues["message"];
-                return false;
-            }
-            else if ((string)LoginValues["login"] != "true")
-            {
-                LoginError = "Unknown error";
-                return false;
-            }
-
-            try
-            {
-                this.AgentID = new LLUUID((string)LoginValues["agent_id"]);
-                this.SessionID = new LLUUID((string)LoginValues["session_id"]);
-                this.SecureSessionID = new LLUUID((string)LoginValues["secure_session_id"]);
-                Client.Self.ID = this.AgentID;
-
-                // Set the Circuit Code
-                CircuitCode = (uint)(int)LoginValues["circuit_code"];
-
-                // Names are wrapped in quotes now, have to strip those
-                Client.Self.FirstName = ((string)LoginValues["first_name"]).Trim(new char[] { '"' });
-                Client.Self.LastName = ((string)LoginValues["last_name"]).Trim(new char[] { '"' });
-
-                // Set current LookAt value and home information
-                ArrayList array = (ArrayList)LoginValues["look_at"];
-                Client.Self.LookAt = new LLVector3((float)(double)array[0], (float)(double)array[1], 
-                    (float)(double)array[2]);
-                Hashtable home = (Hashtable)LoginValues["home"];
-                array = (ArrayList)home["position"];
-                Client.Self.HomePosition = new LLVector3((float)(double)array[0], (float)(double)array[1],
-                    (float)(double)array[2]);
-                array = (ArrayList)home["look_at"];
-                Client.Self.HomeLookAt = new LLVector3((float)(double)array[0], (float)(double)array[1],
-                    (float)(double)array[2]);
-
-                // Get Inventory Root Folder
-                ArrayList alInventoryRoot = (ArrayList)LoginValues["inventory-root"];
-                Hashtable htInventoryRoot = (Hashtable)alInventoryRoot[0];
-                Client.Self.InventoryRootFolderUUID = new LLUUID((string)htInventoryRoot["folder_id"]);
-
-                // Connect to the sim given in the login reply
-                if (Connect(IPAddress.Parse((string)LoginValues["sim_ip"]), (ushort)(int)LoginValues["sim_port"],
-                    true, (string)LoginValues["seed_capability"]) == null)
-                {
-                    LoginError = "Unable to connect to the simulator";
-                    return false;
-                }
-
-                // Request the economy data right after login
-                SendPacket(new EconomyDataRequestPacket());
-
-                // Fire an event for connecting to the grid
-                if (OnConnected != null)
-                {
-                    try { OnConnected(this.Client); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                Client.Log("Login error: " + e.ToString(), Helpers.LogLevel.Error);
-                return false;
-            }
-        }
 
         /// <summary>
         /// Connect to a simulator
@@ -910,6 +649,8 @@ namespace libsecondlife
             return null;
         }
 
+        #region Timers
+
         /// <summary>
         /// Triggered if a LogoutReply is not received
         /// </summary>
@@ -998,11 +739,11 @@ namespace libsecondlife
                     }
                 }
             }
-            else
-            {
-                DisconnectTimer.Stop();
-            }
         }
+
+        #endregion Timers
+
+        #region PacketHandlers
 
         /// <summary>
         /// Called to deal with LogoutReply packet and fires off callback
@@ -1141,10 +882,11 @@ namespace libsecondlife
             // First, check to see if we've already started connecting to this sim
             if (FindSimulator(endPoint) != null) return;
 
-            if (Connect(new IPAddress(p.SimulatorInfo.IP), p.SimulatorInfo.Port,
-                    false, (string)LoginValues["seed_capability"]) == null)
+            IPAddress address = new IPAddress(p.SimulatorInfo.IP);
+            if (Connect(address, p.SimulatorInfo.Port, false, LoginSeedCapability) == null)
             {
-                Client.Log("Unabled to connect to new sim", Helpers.LogLevel.Error);
+                Client.Log("Unabled to connect to new sim " + address + ":" + p.SimulatorInfo.Port, 
+                    Helpers.LogLevel.Error);
                 return;
             }
         }
@@ -1162,202 +904,7 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
-    }
 
-    /// <summary>
-    /// Throttles the network traffic for various different traffic types.
-    /// Access this class through SecondLife.Throttle
-    /// </summary>
-    public class AgentThrottle
-    {
-        /// <summary>Maximum bytes per second for resending unacknowledged packets</summary>
-        public float Resend
-        {
-            get { return resend; }
-            set
-            {
-                if (value > 150000.0f) resend = 150000.0f;
-                else if (value < 10000.0f) resend = 10000.0f;
-                else resend = value;
-            }
-        }
-        /// <summary>Maximum bytes per second for LayerData terrain</summary>
-        public float Land
-        {
-            get { return land; }
-            set
-            {
-                if (value > 170000.0f) land = 170000.0f;
-                else if (value < 0.0f) land = 0.0f; // We don't have control of these so allow throttling to 0
-                else land = value;
-            }
-        }
-        /// <summary>Maximum bytes per second for LayerData wind data</summary>
-        public float Wind
-        {
-            get { return wind; }
-            set
-            {
-                if (value > 34000.0f) wind = 34000.0f;
-                else if (value < 0.0f) wind = 0.0f; // We don't have control of these so allow throttling to 0
-                else wind = value;
-            }
-        }
-        /// <summary>Maximum bytes per second for LayerData clouds</summary>
-        public float Cloud
-        {
-            get { return cloud; }
-            set
-            {
-                if (value > 34000.0f) cloud = 34000.0f;
-                else if (value < 0.0f) cloud = 0.0f; // We don't have control of these so allow throttling to 0
-                else cloud = value;
-            }
-        }
-        /// <summary>Unknown, includes object data</summary>
-        public float Task
-        {
-            get { return task; }
-            set
-            {
-                if (value > 446000.0f) task = 446000.0f;
-                else if (value < 4000.0f) task = 4000.0f;
-                else task = value;
-            }
-        }
-        /// <summary>Maximum bytes per second for textures</summary>
-        public float Texture
-        {
-            get { return texture; }
-            set
-            {
-                if (value > 446000.0f) texture = 446000.0f;
-                else if (value < 4000.0f) texture = 4000.0f;
-                else texture = value;
-            }
-        }
-        /// <summary>Maximum bytes per second for downloaded assets</summary>
-        public float Asset
-        {
-            get { return asset; }
-            set
-            {
-                if (value > 220000.0f) asset = 220000.0f;
-                else if (value < 10000.0f) asset = 10000.0f;
-                else asset = value;
-            }
-        }
-
-        /// <summary>Maximum bytes per second the entire connection, divided up
-        /// between invidiual streams using default multipliers</summary>
-        public float Total
-        {
-            get { return Resend + Land + Wind + Cloud + Task + Texture + Asset; }
-            set
-            {
-                // These sane initial values were pulled from the Second Life client
-                Resend = (value * 0.1f);
-                Land = (float)(value * 0.52f / 3f);
-                Wind = (float)(value * 0.05f);
-                Cloud = (float)(value * 0.05f);
-                Task = (float)(value * 0.704f / 3f);
-                Texture = (float)(value * 0.704f / 3f);
-                Asset = (float)(value * 0.484f / 3f);
-            }
-        }
-
-        private SecondLife Client;
-        private float resend;
-        private float land;
-        private float wind;
-        private float cloud;
-        private float task;
-        private float texture;
-        private float asset;
-
-        /// <summary>
-        /// Default constructor, uses a default high total of 1500 KBps (1536000)
-        /// </summary>
-        public AgentThrottle(SecondLife client)
-        {
-            Client = client;
-            Total = 1536000.0f;
-        }
-
-        /// <summary>
-        /// Constructor that decodes an existing AgentThrottle packet in to
-        /// individual values
-        /// </summary>
-        /// <param name="data">Reference to the throttle data in an AgentThrottle
-        /// packet</param>
-        /// <param name="pos">Offset position to start reading at in the 
-        /// throttle data</param>
-        /// <remarks>This is generally not needed in libsecondlife clients as 
-        /// the server will never send a throttle packet to the client</remarks>
-        public AgentThrottle(byte[] data, int pos)
-        {
-            int i;
-            if (!BitConverter.IsLittleEndian)
-                for (i = 0; i < 7; i++)
-                    Array.Reverse(data, pos + i * 4, 4);
-
-            Resend = BitConverter.ToSingle(data, pos); pos += 4;
-            Land = BitConverter.ToSingle(data, pos); pos += 4;
-            Wind = BitConverter.ToSingle(data, pos); pos += 4;
-            Cloud = BitConverter.ToSingle(data, pos); pos += 4;
-            Task = BitConverter.ToSingle(data, pos); pos += 4;
-            Texture = BitConverter.ToSingle(data, pos); pos += 4;
-            Asset = BitConverter.ToSingle(data, pos);
-        }
-
-        /// <summary>
-        /// Send an AgentThrottle packet to the current server using the 
-        /// current values
-        /// </summary>
-        public void Set()
-        {
-            Set(Client.Network.CurrentSim);
-        }
-
-        /// <summary>
-        /// Send an AgentThrottle packet to the specified server using the 
-        /// current values
-        /// </summary>
-        public void Set(Simulator simulator)
-        {
-            AgentThrottlePacket throttle = new AgentThrottlePacket();
-            throttle.AgentData.AgentID = Client.Network.AgentID;
-            throttle.AgentData.SessionID = Client.Network.SessionID;
-            throttle.AgentData.CircuitCode = Client.Network.CircuitCode;
-            throttle.Throttle.GenCounter = 0;
-            throttle.Throttle.Throttles = this.ToBytes();
-
-            Client.Network.SendPacket(throttle, simulator);
-        }
-
-        /// <summary>
-        /// Convert the current throttle values to a byte array that can be put
-        /// in an AgentThrottle packet
-        /// </summary>
-        /// <returns>Byte array containing all the throttle values</returns>
-        public byte[] ToBytes()
-        {
-            byte[] data = new byte[7 * 4];
-            int i = 0;
-
-            BitConverter.GetBytes(Resend).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Land).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Wind).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Cloud).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Task).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Texture).CopyTo(data, i); i += 4;
-            BitConverter.GetBytes(Asset).CopyTo(data, i); i += 4;
-
-            if (!BitConverter.IsLittleEndian)
-                for (i = 0; i < 7; i++)
-                    Array.Reverse(data, i * 4, 4);
-
-            return data;
-        }
+        #endregion PacketHandlers
     }
 }

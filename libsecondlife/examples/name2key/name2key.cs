@@ -79,7 +79,7 @@ namespace name2key
 			if (!client.Network.Login(args[0], args[1], args[2], "name2key", "jhurliman@wsu.edu"))
 			{
 				// Login failed
-				Console.WriteLine("ERROR: " + client.Network.LoginError);
+				Console.WriteLine("ERROR: " + client.Network.LoginMessage);
 				return;
 			}
 
@@ -89,7 +89,7 @@ namespace name2key
             find.AgentData.SessionID = client.Network.SessionID;
             find.QueryData.QueryFlags = 1;
             find.QueryData.QueryText = Helpers.StringToField(args[3] + " " + args[4]);
-            find.QueryData.QueryID = new LLUUID("00000000000000000000000000000001");
+            find.QueryData.QueryID = LLUUID.Random();
             find.QueryData.QueryStart = 0;
             
 			client.Network.SendPacket((Packet)find);

@@ -613,6 +613,11 @@ namespace libsecondlife
         public string FirstName = String.Empty;
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
         public string LastName = String.Empty;
+        /// <summary>Where the avatar started at login. Can be "last", "home" 
+        /// or a login URI</summary>
+        public string StartLocation = String.Empty;
+        /// <summary>The access level of this agent, usually M or PG</summary>
+        public string AgentAccess = String.Empty;
         /// <summary>Positive and negative ratings</summary>
         /// <remarks>This information is read-only and any changes will not be
         /// reflected on the server</remarks>
