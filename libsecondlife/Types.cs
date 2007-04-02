@@ -36,22 +36,13 @@ namespace libsecondlife
     /// Life networking protocol
     /// </summary>
     [Serializable]
-    public class LLUUID : IXmlSerializable
+    public struct LLUUID
 	{
+        /// <summary>The System.Guid object this struct wraps around</summary>
+        public Guid UUID;
+
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
-		public byte[] Data { get { return data; } }
-
-        /// <summary>The 16 bytes that make up the UUID</summary>
-        protected byte[] data;
-
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-		public LLUUID()
-		{
-            data = new byte[16];
-		}
+        public byte[] Data { get { return GetBytes(); } }
 
         /// <summary>
         /// Constructor that takes a string UUID representation
@@ -61,21 +52,35 @@ namespace libsecondlife
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
 		public LLUUID(string val)
 		{
-            if (val != null)
-                data = StringToBytes(val);
+            if (val == null)
+                UUID = new Guid();
             else
-                data = new byte[16];
+                UUID = new Guid(val);
 		}
+
+        /// <summary>
+        /// Constructor that takes a System.Guid object
+        /// </summary>
+        /// <param name="val">A Guid object that contains the unique identifier
+        /// to be represented by this LLUUID</param>
+        public LLUUID(Guid val)
+        {
+            UUID = val;
+        }
 
         /// <summary>
         /// Constructor that takes a byte array containing a UUID
         /// </summary>
-        /// <param name="byteArray">Byte array containing a 16 byte UUID</param>
+        /// <param name="source">Byte array containing a 16 byte UUID</param>
         /// <param name="pos">Beginning offset in the array</param>
-        public LLUUID(byte[] byteArray, int pos)
+        public LLUUID(byte[] source, int pos)
         {
-            data = new byte[16];
-            Array.Copy(byteArray, pos, data, 0, 16);
+            UUID = new Guid(
+                (source[pos + 0] << 24) | (source[pos + 1] << 16) | (source[pos + 2] << 8) | source[pos + 3],
+                (short)((source[pos + 4] << 8) | source[pos + 5]),
+                (short)((source[pos + 6] << 8) | source[pos + 7]),
+                source[pos +  8], source[pos +  9], source[pos + 10], source[pos + 11],
+                source[pos + 12], source[pos + 13], source[pos + 14], source[pos + 15]);
         }
 
         /// <summary>
@@ -85,9 +90,7 @@ namespace libsecondlife
         /// <param name="val">64-bit unsigned integer to convert to a UUID</param>
         public LLUUID(ulong val)
         {
-            data = new byte[16];
-            byte[] bytes = BitConverter.GetBytes(val);
-            Array.Copy(bytes, data, bytes.Length);
+            UUID = new Guid(0, 0, 0, BitConverter.GetBytes(val));
         }
 
         /// <summary>
@@ -96,7 +99,27 @@ namespace libsecondlife
         /// <returns>A 16 byte array containing this UUID</returns>
         public byte[] GetBytes()
         {
-            return data;
+            byte[] bytes = UUID.ToByteArray();
+
+            if (BitConverter.IsLittleEndian)
+            {
+                byte[] output = new byte[16];
+                output[0] = bytes[3];
+                output[1] = bytes[2];
+                output[2] = bytes[1];
+                output[3] = bytes[0];
+                output[4] = bytes[5];
+                output[5] = bytes[4];
+                output[6] = bytes[7];
+                output[7] = bytes[6];
+                Array.Copy(bytes, 8, output, 8, 8);
+
+                return output;
+            }
+            else
+            {
+                return bytes;
+            }
         }
 
 		/// <summary>
@@ -106,11 +129,12 @@ namespace libsecondlife
 		public uint CRC() 
 		{
 			uint retval = 0;
+            byte[] bytes = GetBytes();
 
-			retval += (uint)((Data[3] << 24) + (Data[2] << 16) + (Data[1] << 8) + Data[0]);
-			retval += (uint)((Data[7] << 24) + (Data[6] << 16) + (Data[5] << 8) + Data[4]);
-			retval += (uint)((Data[11] << 24) + (Data[10] << 16) + (Data[9] << 8) + Data[8]);
-			retval += (uint)((Data[15] << 24) + (Data[14] << 16) + (Data[13] << 8) + Data[12]);
+            retval += (uint)((bytes[ 3] << 24) + (bytes[ 2] << 16) + (bytes[ 1] << 8) + bytes[ 0]);
+            retval += (uint)((bytes[ 7] << 24) + (bytes[ 6] << 16) + (bytes[ 5] << 8) + bytes[ 4]);
+            retval += (uint)((bytes[11] << 24) + (bytes[10] << 16) + (bytes[ 9] << 8) + bytes[ 8]);
+            retval += (uint)((bytes[15] << 24) + (bytes[14] << 16) + (bytes[13] << 8) + bytes[12]);
 
 			return retval;
 		}
@@ -125,30 +149,10 @@ namespace libsecondlife
         {
             // Build the buffer to MD5
             byte[] input = new byte[32];
-            Array.Copy(data, input, 16);
+            Array.Copy(GetBytes(), input, 16);
             Array.Copy(other.Data, 0, input, 16, 16);
 
             return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
-        }
-
-        /// <summary>
-        /// Parse the bytes for a LLUUID from a string
-        /// </summary>
-        /// <param name="val">String containing 32 (or 36 with hyphens) character UUID</param>
-        /// <returns></returns>
-        protected static byte[] StringToBytes(string val)
-        {
-            if (val.Length == 36) val = val.Replace("-", "");
-            if (val.Length != 32) throw new Exception("Malformed LLUUID: " + val);
-
-            byte[] parseData = new byte[16];
-
-            for (int i = 0; i < 16; ++i)
-            {
-                parseData[i] = Convert.ToByte(val.Substring(i * 2, 2), 16);
-            }
-
-            return parseData;
         }
 
         /// <summary>
@@ -159,7 +163,7 @@ namespace libsecondlife
         /// <example>LLUUID.Parse("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
         public static LLUUID Parse(string val)
         {
-            return new LLUUID(StringToBytes(val), 0);
+            return new LLUUID(val);
         }
 
         /// <summary>
@@ -180,7 +184,7 @@ namespace libsecondlife
             }
             catch (Exception)
             {
-                result = null;
+                result = LLUUID.Zero;
                 return false;
             }
         }
@@ -191,37 +195,8 @@ namespace libsecondlife
         /// <returns></returns>
 		public static LLUUID Random()
 		{
-			return new LLUUID(Guid.NewGuid().ToByteArray(), 0);
+			return new LLUUID(Guid.NewGuid());
 		}
-
-        /// <summary>
-        /// Required implementation for XML serialization
-        /// </summary>
-        /// <returns>null</returns>
-        public System.Xml.Schema.XmlSchema GetSchema()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Deserializes an XML UUID
-        /// </summary>
-        /// <param name="reader">XmlReader containing the UUID to deserialize</param>
-        public void ReadXml(System.Xml.XmlReader reader)
-        {
-            string val = reader.ReadString();
-			if (val.Length > 0) data = StringToBytes(val);
-            reader.Skip();
-        }
-
-        /// <summary>
-        /// Serialize this UUID to XML
-        /// </summary>
-        /// <param name="writer">XmlWriter to serialize to</param>
-        public void WriteXml(System.Xml.XmlWriter writer)
-        {
-			writer.WriteString(this.ToStringHyphenated());
-        }
 
         /// <summary>
         /// Return a hash code for this UUID, used by .NET for hash tables
@@ -229,14 +204,7 @@ namespace libsecondlife
         /// <returns>An integer composed of all the UUID bytes XORed together</returns>
 		public override int GetHashCode()
 		{
-            int hash = data[0];
-
-            for (int i = 1; i < 16; i++)
-            {
-                hash ^= data[i];
-            }
-
-			return hash;
+            return UUID.GetHashCode();
 		}
 
         /// <summary>
@@ -250,13 +218,7 @@ namespace libsecondlife
 			if (!(o is LLUUID)) return false;
 
 			LLUUID uuid = (LLUUID)o;
-
-			for (int i = 0; i < 16; ++i)
-			{
-				if (Data[i] != uuid.Data[i]) return false;
-			}
-
-			return true;
+            return UUID == uuid.UUID;
 		}
 
         /// <summary>
@@ -267,24 +229,7 @@ namespace libsecondlife
         /// <returns>True if the UUIDs are byte for byte equal, otherwise false</returns>
 		public static bool operator==(LLUUID lhs, LLUUID rhs)
 		{
-            // If both are null, or both are same instance, return true
-            if (System.Object.ReferenceEquals(lhs, rhs))
-            {
-                return true;
-            }
-
-            // If one is null, but not both, return false.
-            if (((object)lhs == null) || ((object)rhs == null))
-            {
-                return false;
-            }
-
-			for (int i = 0; i < 16; ++i)
-			{
-				if (lhs.Data[i] != rhs.Data[i]) return false;
-			}
-
-			return true;
+            return lhs.UUID == rhs.UUID;
 		}
 
         /// <summary>
@@ -306,14 +251,16 @@ namespace libsecondlife
         /// <returns>A UUID that is a XOR combination of the two input UUIDs</returns>
         public static LLUUID operator ^(LLUUID lhs, LLUUID rhs)
         {
-            LLUUID returnUUID = new LLUUID();
+            byte[] lhsbytes = lhs.GetBytes();
+            byte[] rhsbytes = rhs.GetBytes();
+            byte[] output = new byte[16];
 
-            for (int count = 0; count < returnUUID.Data.Length; count++)
+            for (int i = 0; i < 16; i++)
             {
-                returnUUID.Data[count] = (byte)(lhs.Data[count] ^ rhs.Data[count]);
+                output[i] = (byte)(lhsbytes[i] ^ rhsbytes[i]);
             }
 
-            return returnUUID;
+            return new LLUUID(output, 0);
         }
 
         /// <summary>
@@ -335,14 +282,8 @@ namespace libsecondlife
         /// <example>11f8aa9cb0714242836b13b7abe0d489</example>
 		public override string ToString()
 		{
-			string uuid = String.Empty;
-
-			for (int i = 0; i < 16; ++i)
-			{
-				uuid += Data[i].ToString("x2");
-			}
-
-			return uuid;
+			string uuid = UUID.ToString();
+			return uuid.Replace("-", String.Empty);
 		}
 
         /// <summary>
@@ -353,18 +294,7 @@ namespace libsecondlife
         /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
 		public string ToStringHyphenated()
 		{
-			string uuid = String.Empty;
-
-			for (int i = 0; i < 16; ++i)
-			{
-				uuid += Data[i].ToString("x2");
-			}
-			uuid = uuid.Insert(20, "-");
-			uuid = uuid.Insert(16, "-");
-			uuid = uuid.Insert(12, "-");
-			uuid = uuid.Insert(8, "-");
-			
-			return uuid;
+            return UUID.ToString();
 		}
 
         /// <summary>

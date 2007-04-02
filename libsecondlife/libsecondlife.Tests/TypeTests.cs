@@ -13,9 +13,15 @@ namespace libsecondlife.Tests
         [Test]
         public void LLUUIDs()
         {
+            // Creation
+            LLUUID a = new LLUUID();
+            byte[] bytes = a.GetBytes();
+            for (int i = 0; i < 16; i++)
+                Assert.IsTrue(bytes[i] == 0x00);
+
             // Comparison
-            LLUUID a = new LLUUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
-                0x0B, 0x0C, 0x0D, 0x0E, 0x0F }, 0);
+            a = new LLUUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+                0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0xFF, 0xFF }, 0);
             LLUUID b = new LLUUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
                 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }, 0);
 
@@ -25,10 +31,20 @@ namespace libsecondlife.Tests
             // From string
             a = new LLUUID(new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
                 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }, 0);
-            b = new LLUUID("00010203-0405-0607-0809-0a0b0c0d0e0f");
+            string zeroonetwo = "00010203-0405-0607-0809-0a0b0c0d0e0f";
+            b = new LLUUID(zeroonetwo);
 
             Assert.IsTrue(a == b, "LLUUID hyphenated string constructor failed, should have " + a.ToString() + 
                 " but we got " + b.ToString());
+
+            // ToString()
+            string one = a.ToString();
+            string two = b.ToString();
+            Assert.IsTrue(a == b);
+            one = a.ToStringHyphenated();
+            two = b.ToStringHyphenated();
+            Assert.IsTrue(a == b);
+            Assert.IsTrue(a == zeroonetwo);
 
             // TODO: CRC test
         }
