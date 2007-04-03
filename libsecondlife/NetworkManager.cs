@@ -52,6 +52,32 @@ namespace libsecondlife
     public partial class NetworkManager
     {
         /// <summary>
+        /// Holds a simulator reference and a packet, these structs are put in
+        /// the packet inbox for decoding
+        /// </summary>
+        internal struct IncomingPacket
+        {
+            /// <summary>Reference to the simulator that this packet came from</summary>
+            public Simulator Simulator;
+            /// <summary>The packet that needs to be processed</summary>
+            public Packet Packet;
+        }
+
+        /// <summary>
+        /// Object that is passed to worker threads in the ThreadPool for
+        /// firing packet callbacks
+        /// </summary>
+        private struct PacketCallbackWrapper
+        {
+            /// <summary>Callback to fire for this packet</summary>
+            public PacketCallback Callback;
+            /// <summary>Reference to the simulator that this packet came from</summary>
+            public Simulator Simulator;
+            /// <summary>The packet that needs to be processed</summary>
+            public Packet Packet;
+        }
+
+        /// <summary>
         /// Explains why a simulator or the grid disconnected from us
         /// </summary>
         public enum DisconnectType
@@ -95,8 +121,27 @@ namespace libsecondlife
         /// </summary>
         /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
         public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
+        /// <summary>
+        /// Assigned by the OnConnected event. Raised when login was a success
+        /// </summary>
+        /// <param name="sender">Reference to the SecondLife class that called the event</param>
+        public delegate void ConnectedCallback(object sender);
 
 
+        /// <summary>
+        /// Event raised when the client was able to connected successfully.
+        /// </summary>
+        /// <remarks>Uses the ConnectedCallback delegate.</remarks>
+        public event ConnectedCallback OnConnected;
+        /// <summary>
+        /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
+        /// </summary>
+        /// <param name="inventoryItems"></param>
+        public delegate void LogoutCallback(List<LLUUID> inventoryItems);
+        /// <summary>
+        /// Event raised when a logout is confirmed by the simulator
+        /// </summary>
+        public event LogoutCallback OnLogoutReply;
         /// <summary>
         /// An event for the connection to a simulator other than the currently
         /// occupied one disconnecting
@@ -111,6 +156,7 @@ namespace libsecondlife
         /// An event for when CurrentSim changes
         /// </summary>
         public event CurrentSimChangedCallback OnCurrentSimChanged;
+
 
         /// <summary>The permanent UUID for the logged in avatar</summary>
         public LLUUID AgentID = LLUUID.Zero;
@@ -127,23 +173,26 @@ namespace libsecondlife
         public Simulator CurrentSim = null;
         /// <summary>The capabilities for the current simulator</summary>
         public Caps CurrentCaps = null;
+        /// <summary>All of the simulators we are currently connected to</summary>
+        public List<Simulator> Simulators = new List<Simulator>();
 
         /// <summary>
         /// Shows whether the network layer is logged in to the grid or not
         /// </summary>
         public bool Connected { get { return connected; } }
+        public int InboxCount { get { return PacketInbox.Count; } }
 
-        /// <summary></summary>
-        internal Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         /// <summary></summary>
         internal List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
-        /// <summary></summary>
-        internal List<Simulator> Simulators = new List<Simulator>();
+        /// <summary>Incoming packets that are awaiting handling</summary>
+        internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
         private SecondLife Client;
+        private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         private System.Timers.Timer DisconnectTimer, LogoutTimer;
         private bool connected = false;
         private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
+
 
         /// <summary>
         /// Default constructor
@@ -153,7 +202,7 @@ namespace libsecondlife
         {
             Client = client;
             CurrentSim = null;
-
+            
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
             RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
@@ -272,105 +321,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Build a start location URI for passing to the Login function
-        /// </summary>
-        /// <param name="sim">Name of the simulator to start in</param>
-        /// <param name="x">X coordinate to start at</param>
-        /// <param name="y">Y coordinate to start at</param>
-        /// <param name="z">Z coordinate to start at</param>
-        /// <returns>String with a URI that can be used to login to a specified
-        /// location</returns>
-        public static string StartLocation(string sim, int x, int y, int z)
-        {
-            return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="firstName"></param>
-        /// <param name="lastName"></param>
-        /// <param name="password"></param>
-        /// <param name="mac"></param>
-        /// <param name="startLocation"></param>
-        /// <param name="major"></param>
-        /// <param name="minor"></param>
-        /// <param name="patch"></param>
-        /// <param name="build"></param>
-        /// <param name="platform"></param>
-        /// <param name="viewerDigest"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="author"></param>
-        /// <param name="md5pass"></param>
-        /// <returns></returns>
-        public Dictionary<string, object> DefaultLoginValues(string firstName, string lastName,
-            string password, string mac, string startLocation, int major, int minor, int patch,
-            int build, string platform, string viewerDigest, string userAgent, string author,
-            bool md5pass)
-        {
-            Dictionary<string, object> values = new Dictionary<string, object>();
-
-            values["first"] = firstName;
-            values["last"] = lastName;
-            values["passwd"] = md5pass ? password : Helpers.MD5(password);
-            values["start"] = startLocation;
-            values["major"] = major;
-            values["minor"] = minor;
-            values["patch"] = patch;
-            values["build"] = build;
-            values["platform"] = platform;
-            values["mac"] = mac;
-            values["agree_to_tos"] = "true";
-            values["read_critical"] = "true";
-            values["viewer_digest"] = viewerDigest;
-            values["user-agent"] = userAgent + " (" + Client.Settings.VERSION + ")";
-            values["author"] = author;
-
-            // Build the options array
-            List<object> optionsArray = new List<object>();
-            optionsArray.Add("inventory-root");
-            optionsArray.Add("inventory-skeleton");
-            optionsArray.Add("inventory-lib-root");
-            optionsArray.Add("inventory-lib-owner");
-            optionsArray.Add("inventory-skel-lib");
-            optionsArray.Add("initial-outfit");
-            optionsArray.Add("gestures");
-            optionsArray.Add("event_categories");
-            optionsArray.Add("event_notifications");
-            optionsArray.Add("classified_categories");
-            optionsArray.Add("buddy-list");
-            optionsArray.Add("ui-config");
-            optionsArray.Add("login-flags");
-            optionsArray.Add("global-textures");
-
-            values["options"] = optionsArray;
-
-            return values;
-        }
-
-        /// <summary>
-        /// Assigned by the OnConnected event. Raised when login was a success
-        /// </summary>
-        /// <param name="sender">Reference to the SecondLife class that called the event</param>
-        public delegate void ConnectedCallback(object sender);
-
-
-        /// <summary>
-        /// Event raised when the client was able to connected successfully.
-        /// </summary>
-        /// <remarks>Uses the ConnectedCallback delegate.</remarks>
-        public event ConnectedCallback OnConnected;
-        /// <summary>
-        /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
-        /// </summary>
-        /// <param name="inventoryItems"></param>
-        public delegate void LogoutCallback(List<LLUUID> inventoryItems);
-        /// <summary>
-        /// Event raised when a logout is confirmed by the simulator
-        /// </summary>
-        public event LogoutCallback OnLogoutReply;
-
-        /// <summary>
         /// Connect to a simulator
         /// </summary>
         /// <param name="ip">IP address to connect to</param>
@@ -397,12 +347,21 @@ namespace libsecondlife
 
             if (!simulator.Connected)
             {
+                if (!connected)
+                {
+                    // Mark that we are connected to the grid
+                    // HACK: This sucks but right now decodeThread loops while connected 
+                    // is true, so we have to be "connected" before we start connecting
+                    connected = true;
+
+                    // Start the packet decoding thread
+                    Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
+                    decodeThread.Start();
+                }
+
                 // We're not connected to this simulator, attempt to establish a connection
                 if (simulator.Connect(setDefault))
                 {
-                    // Mark that we are connected to the grid (in case we weren't before)
-                    connected = true;
-
                     // Start a timer that checks if we've been disconnected
                     DisconnectTimer.Start();
 
@@ -525,6 +484,144 @@ namespace libsecondlife
             }
         }
 
+        private void PacketHandler()
+        {
+            IncomingPacket incomingPacket;
+            Packet packet = null;
+            Simulator simulator = null;
+            WaitCallback callback = new WaitCallback(CallPacketDelegate);
+
+            while (connected)
+            {
+                // Reset packet to null for the check below
+                packet = null;
+
+                try
+                {
+                    incomingPacket = (IncomingPacket)PacketInbox.Dequeue(Client.Settings.SIMULATOR_TIMEOUT);
+                    packet = incomingPacket.Packet;
+                    simulator = incomingPacket.Simulator;
+                }
+                catch (Exception)
+                {
+                }
+
+                if (packet != null)
+                {
+                    #region Archive Duplicate Search
+
+                    // TODO: Replace PacketArchive Queue<> with something more efficient
+
+                    // Check the archives to see whether we already received this packet
+                    lock (simulator.PacketArchive)
+                    {
+                        if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                        {
+                            if (packet.Header.Resent)
+                            {
+                                Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                            }
+                            else
+                            {
+                                Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
+                                    Helpers.LogLevel.Error);
+                            }
+
+                            // Avoid firing a callback twice for the same packet
+                            goto End;
+                        }
+                        else
+                        {
+                            // Keep the Inbox size within a certain capacity
+                            while (simulator.PacketArchive.Count >= Client.Settings.PACKET_ARCHIVE_SIZE)
+                            {
+                                simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                            }
+
+                            simulator.PacketArchive.Enqueue(packet.Header.Sequence);
+                        }
+                    }
+
+                    #endregion Archive Duplicate Search
+
+                    #region ACK handling
+
+                    // Handle appended ACKs
+                    if (packet.Header.AppendedAcks)
+                    {
+                        lock (simulator.NeedAck)
+                        {
+                            for (int i = 0; i < packet.Header.AckList.Length; i++)
+                                simulator.NeedAck.Remove(packet.Header.AckList[i]);
+                        }
+                    }
+
+                    // Handle PacketAck packets
+                    if (packet.Type == PacketType.PacketAck)
+                    {
+                        PacketAckPacket ackPacket = (PacketAckPacket)packet;
+
+                        lock (simulator.NeedAck)
+                        {
+                            for (int i = 0; i < ackPacket.Packets.Length; i++)
+                                simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
+                        }
+                    }
+
+                    #endregion ACK handling
+
+                    #region FireCallbacks
+
+                    if (Callbacks.ContainsKey(packet.Type))
+                    {
+                        List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
+
+                        // Fire any registered callbacks
+                        for (int i = 0; i < callbackArray.Count; i++)
+                        {
+                            if (callbackArray[i] != null)
+                            {
+                                PacketCallbackWrapper wrapper;
+                                wrapper.Callback = callbackArray[i];
+                                wrapper.Packet = packet;
+                                wrapper.Simulator = simulator;
+                                Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                            }
+                        }
+                    }
+
+                    if (Callbacks.ContainsKey(PacketType.Default))
+                    {
+                        List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
+
+                        // Fire any registered callbacks
+                        for (int i = 0; i < callbackArray.Count; i++)
+                        {
+                            if (callbackArray[i] != null)
+                            {
+                                PacketCallbackWrapper wrapper;
+                                wrapper.Callback = callbackArray[i];
+                                wrapper.Packet = packet;
+                                wrapper.Simulator = simulator;
+                                Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                            }
+                        }
+                    }
+
+                    #endregion FireCallbacks
+
+                End:;
+                }
+            }
+        }
+
+        private void CallPacketDelegate(Object state)
+        {
+            PacketCallbackWrapper wrapper = (PacketCallbackWrapper)state;
+            wrapper.Callback(wrapper.Packet, wrapper.Simulator);
+        }
+
         private void SetCurrentSim(Simulator simulator, string seedcaps)
         {
             if (simulator != CurrentSim)
@@ -631,6 +728,9 @@ namespace libsecondlife
                 CurrentCaps.Disconnect(true);
                 CurrentCaps = null;
             }
+
+            // Clear out all of the packets that never had time to process
+            lock (PacketInbox) PacketInbox.Clear();
 
             connected = false;
         }
@@ -743,7 +843,7 @@ namespace libsecondlife
 
         #endregion Timers
 
-        #region PacketHandlers
+        #region Packet Callbacks
 
         /// <summary>
         /// Called to deal with LogoutReply packet and fires off callback
@@ -905,6 +1005,6 @@ namespace libsecondlife
             }
         }
 
-        #endregion PacketHandlers
+        #endregion Packet Callbacks
     }
 }

@@ -39,6 +39,8 @@ namespace libsecondlife
     /// </summary>
     public class Simulator
     {
+        #region Enums
+
         /// <summary>
         /// Simulator (region) properties
         /// </summary>
@@ -125,6 +127,9 @@ namespace libsecondlife
             NonExistent = 255
         }
 
+        #endregion Enums
+
+        #region Public Members
 
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
@@ -187,6 +192,48 @@ namespace libsecondlife
         public SimAccess Access;
         /// <summary></summary>
         public float BillableFactor;
+        /// <summary></summary>
+        public ulong SentPackets = 0;
+        /// <summary></summary>
+        public ulong RecvPackets = 0;
+        /// <summary></summary>
+        public ulong SentBytes = 0;
+        /// <summary></summary>
+        public ulong RecvBytes = 0;
+        /// <summary></summary>
+        public int ConnectTime = 0;
+        /// <summary></summary>
+        public int ResentPackets = 0;
+        /// <summary></summary>
+        public int ReceivedResends = 0;
+        /// <summary></summary>
+        public int SentPings = 0;
+        /// <summary></summary>
+        public int ReceivedPongs = 0;
+        /// <summary>
+        /// Incoming bytes per second
+        /// </summary>
+        /// <remarks>It would be nice to have this claculated on the fly, but
+        /// this is far, far easier</remarks>
+        public int IncomingBPS = 0;
+        /// <summary>
+        /// Outgoing bytes per second
+        /// </summary>
+        /// <remarks>It would be nice to have this claculated on the fly, but
+        /// this is far, far easier</remarks>
+        public int OutgoingBPS = 0;
+        /// <summary></summary>
+        public int LastPingSent = 0;
+        /// <summary></summary>
+        public byte LastPingID = 0;
+        /// <summary></summary>
+        public int LastLag = 0;
+        /// <summary></summary>
+        public int MissedPings = 0;
+
+        #endregion Public Members
+
+        #region Properties
 
         /// <summary>The IP address and port of the server</summary>
         public IPEndPoint IPEndPoint { get { return ipEndPoint; } }
@@ -196,22 +243,26 @@ namespace libsecondlife
         /// <summary>Coarse locations of avatars in this simulator</summary>
         public List<LLVector3> AvatarPositions { get { return avatarPositions; } }
 
+        #endregion Properties
+
+        #region Internal/Private Members
+
         /// <summary>Used internally to track sim disconnections</summary>
         internal bool DisconnectCandidate = false;
-        /// <summary></summary>
+        /// <summary>Event that is triggered when the simulator successfully
+        /// establishes a connection</summary>
         internal ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
-        /// <summary></summary>
+        /// <summary>Whether this sim is currently connected or not. Hooked up
+        /// to the property Connected</summary>
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
         internal List<LLVector3> avatarPositions = new List<LLVector3>();
-        public ulong SentPackets = 0, RecvPackets = 0;
-        public ulong SentBytes = 0, RecvBytes = 0;
-        public int ConnectTime = 0, ResentPackets = 0;
-        public int SentPings = 0, ReceivedPongs = 0;
-        // Calculated bandwidth -- it would be nice to have these calculated
-        // on the fly, but this is far, far easier :/  These are bytes per second.
-        public int IncomingBPS = 0, OutgoingBPS = 0;
-
+        /// <summary>Sequence numbers of packets we've finished processing 
+        /// (for duplicate checking)</summary>
+        internal Queue<uint> PacketArchive;
+        /// <summary>Packets we sent out that need ACKs from the simulator</summary>
+        internal Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
+        
         private NetworkManager Network;
         private uint Sequence = 0;
         private object SequenceLock = new object();
@@ -220,12 +271,7 @@ namespace libsecondlife
         private byte[] ZeroOutBuffer = new byte[4096];
         private Socket Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         private AsyncCallback ReceivedData;
-        // Packets we sent out that need ACKs from the simulator
-        private Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
-        // Sequence numbers of packets we've received from the simulator
-        private Queue<uint> Inbox;//, PingTimes;
         private Queue<ulong> InBytes, OutBytes;
-
         // ACKs that are queued up to be sent to the simulator
         private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
         private IPEndPoint ipEndPoint;
@@ -234,11 +280,8 @@ namespace libsecondlife
         private System.Timers.Timer PingTimer;
         private System.Timers.Timer StatsTimer;
 
-        /* Ping processing, to measure link health */
-        public int LastPingSent = 0;
-        public byte LastPingID = 0;
-        public int LastLag = 0;
-        public int MissedPings = 0;
+        #endregion Internal/Private Members
+
 
         /// <summary>
         /// Default constructor
@@ -251,10 +294,9 @@ namespace libsecondlife
 
             Estate = new EstateTools(Client);
             Network = client.Network;
-            Inbox = new Queue<uint>(Client.Settings.INBOX_SIZE);
+            PacketArchive = new Queue<uint>(Client.Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-            //PingTimes = new Queue<uint>(Client.Settings.STATS_QUEUE_SIZE); //TODO: Is this here for a purpose?
 
             // Create an endpoint that we will be communicating with (need it in two 
             // types due to .NET weirdness)
@@ -303,6 +345,9 @@ namespace libsecondlife
                 Connection.Connect(endPoint);
                 Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
 
+                // Mark ourselves as connected before firing everything else up
+                connected = true;
+
                 // Send the UseCircuitCode packet to initiate the connection
                 UseCircuitCodePacket use = new UseCircuitCodePacket();
                 use.CircuitCode.Code = Network.CircuitCode;
@@ -324,7 +369,6 @@ namespace libsecondlife
                 {
                     Client.Log("Giving up on waiting for RegionHandshake for " + this.ToString(), 
                         Helpers.LogLevel.Warning);
-                    connected = true;
                 }
 
                 return true;
@@ -677,7 +721,7 @@ namespace libsecondlife
                         }
                         catch (Exception ex)
                         {
-                            Client.DebugLog("got exception trying to resend packet: " + ex.ToString());
+                            Client.DebugLog("Exception trying to resend packet: " + ex.ToString());
                         }
                     }
                 }
@@ -745,100 +789,22 @@ namespace libsecondlife
                 // Send out ACKs if we have a lot of them
                 if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
                     SendAcks();
+
+                if (packet.Header.Resent) ++ReceivedResends;
             }
 
             #endregion Reliable Handling
 
-            #region Inbox Tracking
+            #region Inbox Insertion
 
-            // The Inbox doesn't serve a functional purpose any more, it's only used for debugging
-            lock (Inbox)
-            {
-                // Check if we already received this packet
-                if (Inbox.Contains(packet.Header.Sequence))
-                {
-                    Client.DebugLog("Received a duplicate " + packet.Type.ToString() + ", sequence=" +
-                        packet.Header.Sequence + ", resent=" + ((packet.Header.Resent) ? "Yes" : "No") +
-                        ", Inbox.Count=" + Inbox.Count + ", NeedAck.Count=" + NeedAck.Count);
+            NetworkManager.IncomingPacket incomingPacket;
+            incomingPacket.Simulator = this;
+            incomingPacket.Packet = packet;
 
-                    // Avoid firing a callback twice for the same packet
-                    return;
-                }
-                else
-                {
-                    // Keep the Inbox size within a certain capacity
-                    while (Inbox.Count >= Client.Settings.INBOX_SIZE)
-                    {
-                        Inbox.Dequeue(); Inbox.Dequeue();
-                        Inbox.Dequeue(); Inbox.Dequeue();
-                    }
+            // TODO: Prioritize the queue
+            Network.PacketInbox.Enqueue(incomingPacket);
 
-                    // Add this packet to the inbox
-                    Inbox.Enqueue(packet.Header.Sequence);
-                }
-            }
-
-            #endregion Inbox Tracking
-
-            #region ACK handling
-
-            // Handle appended ACKs
-            if (packet.Header.AppendedAcks)
-            {
-                lock (NeedAck)
-                {
-                    for (int i = 0; i < packet.Header.AckList.Length; i++)
-                        NeedAck.Remove(packet.Header.AckList[i]);
-                }
-            }
-
-            // Handle PacketAck packets
-            if (packet.Type == PacketType.PacketAck)
-            {
-                PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                lock (NeedAck)
-                {
-                    for (int i = 0; i < ackPacket.Packets.Length; i++)
-                        NeedAck.Remove(ackPacket.Packets[i].ID);
-                }
-            }
-
-            #endregion ACK handling
-
-            #region FireCallbacks
-
-            if (Network.Callbacks.ContainsKey(packet.Type))
-            {
-                List<NetworkManager.PacketCallback> callbackArray = Network.Callbacks[packet.Type];
-
-                // Fire any registered callbacks
-                for (int i = 0; i < callbackArray.Count; i++)
-                {
-                    if (callbackArray[i] != null)
-                    {
-                        try { callbackArray[i](packet, this); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                    }
-                }
-            }
-
-            if (Network.Callbacks.ContainsKey(PacketType.Default))
-            {
-                List<NetworkManager.PacketCallback> callbackArray = Network.Callbacks[PacketType.Default];
-
-                // Fire any registered callbacks
-                for (int i = 0; i < callbackArray.Count; i++)
-                {
-                    if (callbackArray[i] != null)
-                    {
-                        try { callbackArray[i](packet, this); }
-                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                    }
-                }
-            }
-
-            #endregion FireCallbacks
+            #endregion Inbox Insertion
         }
 
         private void AckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
@@ -850,20 +816,22 @@ namespace libsecondlife
         private void StatsTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
         {
             ulong old_in = 0, old_out = 0;
+
             if (InBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_in = InBytes.Dequeue();
             if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_out = OutBytes.Dequeue();
+
             InBytes.Enqueue(RecvBytes);
             OutBytes.Enqueue(SentBytes);
+
             if (old_in > 0 && old_out > 0)
             {
                 IncomingBPS = (int)(RecvBytes - old_in) / Client.Settings.STATS_QUEUE_SIZE;
                 OutgoingBPS = (int)(SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
-                /*                              Client.Log("Incoming: "+IncomingBPS +" Out: "+OutgoingBPS +
-                                                            " Lag: "+LastLag+" Pings: "+ReceivedPongs +
-                                                            "/"+SentPings, Helpers.LogLevel.Debug); 
-                */
+                //Client.Log("Incoming: " + IncomingBPS + " Out: " + OutgoingBPS +
+                //    " Lag: " + LastLag + " Pings: " + ReceivedPongs +
+                //    "/" + SentPings, Helpers.LogLevel.Debug); 
             }
         }
 

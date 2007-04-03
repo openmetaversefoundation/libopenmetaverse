@@ -150,7 +150,7 @@ namespace libsecondlife
             // Build the buffer to MD5
             byte[] input = new byte[32];
             Array.Copy(GetBytes(), input, 16);
-            Array.Copy(other.Data, 0, input, 16, 16);
+            Array.Copy(other.GetBytes(), 0, input, 16, 16);
 
             return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
         }

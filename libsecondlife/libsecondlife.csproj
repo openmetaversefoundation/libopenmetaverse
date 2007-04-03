@@ -113,6 +113,7 @@
     <Compile Include="AvatarManager.cs" />
     <Compile Include="BakeLayer.cs" />
     <Compile Include="BitPack.cs" />
+    <Compile Include="BlockingQueue.cs" />
     <Compile Include="Caps.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="InventorySystem\InventoryManager.cs" />
     <Compile Include="InventorySystem\InventoryNotecard.cs" />
     <Compile Include="InventorySystem\InventoryPacketHelper.cs" />
+    <Compile Include="ManagedThreadPool.cs" />
     <Compile Include="NameValue.cs" />
     <Compile Include="NetworkManager.cs">
       <SubType>Code</SubType>

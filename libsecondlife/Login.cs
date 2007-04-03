@@ -272,6 +272,20 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Build a start location URI for passing to the Login function
+        /// </summary>
+        /// <param name="sim">Name of the simulator to start in</param>
+        /// <param name="x">X coordinate to start at</param>
+        /// <param name="y">Y coordinate to start at</param>
+        /// <param name="z">Z coordinate to start at</param>
+        /// <returns>String with a URI that can be used to login to a specified
+        /// location</returns>
+        public static string StartLocation(string sim, int x, int y, int z)
+        {
+            return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
+        }
+
         private void LoginRequestCallback(IAsyncResult result)
         {
             try

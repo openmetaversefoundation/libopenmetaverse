@@ -42,7 +42,11 @@ namespace libsecondlife
         /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
         public string VERSION = "libsecondlife 0.0.9";
         /// <summary>XML-RPC login server to connect to</summary>
-        public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";       
+        public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+
+        /// <summary>The initial size of the packet inbox, where packets are
+        /// stored before processing</summary>
+        public const int PACKET_INBOX_SIZE = 100;
 
         /// <summary>Maximum size of packet that we want to send over the wire</summary>
         public readonly int MAX_PACKET_SIZE = 1200;
@@ -52,9 +56,9 @@ namespace libsecondlife
         /// <summary>The maximum value of a packet sequence number before it
         /// rolls over back to one</summary>
         public readonly int MAX_SEQUENCE = 0xFFFFFF;
-        /// <summary>The maximum size of the sequence number inbox, used to
+        /// <summary>The maximum size of the sequence number archive, used to
         /// check for resent and/or duplicate packets</summary>
-        public readonly int INBOX_SIZE = 100;
+        public readonly int PACKET_ARCHIVE_SIZE = 50;
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public readonly int PING_INTERVAL = 2200;
 
