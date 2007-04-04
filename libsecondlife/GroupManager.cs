@@ -912,6 +912,7 @@ namespace libsecondlife
             grc.AgentData.SessionID = Client.Network.SessionID;
             grc.AgentData.GroupID = group;
             grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
+            grc.RoleChange[0] = new GroupRoleChangesPacket.RoleChangeBlock();
             //Add to members and role
             grc.RoleChange[0].MemberID = member;
             grc.RoleChange[0].RoleID = role;

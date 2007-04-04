@@ -239,6 +239,8 @@ namespace libsecondlife
             WriteStringMember(login, "build", loginParams.Build);
             WriteStringMember(login, "platform", loginParams.Platform);
             WriteStringMember(login, "mac", loginParams.MAC);
+            WriteStringMember(login, "agree_to_tos", "true");
+            WriteStringMember(login, "read_critical", "true");
             WriteStringMember(login, "viewer_digest", loginParams.ViewerDigest);
 
             WriteOptionsMember(login, loginParams.Options);
