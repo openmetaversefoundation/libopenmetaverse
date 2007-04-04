@@ -231,7 +231,7 @@ namespace libsecondlife
                 {
                     // If the agent is offline
                     foreach (OfflineNotificationPacket.AgentBlockBlock block in ((OfflineNotificationPacket)packet).AgentBlock)
-                        OnFriendNotification(block.AgentID, true);
+                        OnFriendNotification(block.AgentID, false);
                 }
             }
         }
