@@ -61,6 +61,7 @@
       output="${bin_dir}/SLProxy.dll">
       <sources failonempty="true">
         <include name="SLProxy.cs" />
+        <include name="XmlRpcCs/*.cs" />
         <!-- include name="SLProxyLoader.cs" / -->
         <!-- <include name="legacy/*.cs" /> -->
       </sources>
