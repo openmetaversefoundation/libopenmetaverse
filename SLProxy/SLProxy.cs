@@ -31,6 +31,7 @@
  */
 
 // #define DEBUG_SEQUENCE
+// #define DEBUG_CAPS
 
 using Nwc.XmlRpc;
 using System;
@@ -343,7 +344,9 @@ namespace SLProxy
                     Socket client = loginServer.Accept();
                     IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
 
+#if DEBUG_CAPS
                     Log("handling HTTP request from " + clientEndPoint, false);
+#endif
 
 
                     try
@@ -463,7 +466,9 @@ namespace SLProxy
 
             meth = match.Groups[1].Captures[0].ToString();
             uri = match.Groups[2].Captures[0].ToString();
+#if DEBUG_CAPS
             Console.WriteLine("[" + reqNo + "] " + meth + ": " + uri); // FIXME - for debugging only
+#endif
 
             // read HTTP header
             do
@@ -498,13 +503,17 @@ namespace SLProxy
                 contentLength = Convert.ToInt32(headers["content-length"]);
             }
 
+#if DEBUG_CAPS
             Console.WriteLine("[" + reqNo + "] request length = " + contentLength);
+#endif
 
             // read the HTTP body into a buffer
             byte[] content = new byte[contentLength];
             reader.Read(content, 0, contentLength);
 
+#if DEBUG_CAPS
             if (contentLength < 8192) Console.WriteLine("[" + reqNo + "] request length = " + contentLength + ":\n" + Helpers.FieldToUTF8String(content) + "\n-------------");
+#endif
 
             if (uri == "/")
             {
@@ -721,7 +730,9 @@ namespace SLProxy
 
 
             consoleMsg += "\n" + Encoding.UTF8.GetString(respBuf) + "\n--------";
+#if DEBUG_CAPS
             Console.WriteLine(consoleMsg);
+#endif
 
             /* try {
                 if(resp.StatusCode == HttpStatusCode.OK) respBuf = CapsFixup(uri,respBuf);
@@ -729,7 +740,9 @@ namespace SLProxy
                 Console.WriteLine("["+reqNo+"] Couldn't fixup response: "+e.ToString());
             } */
 
+#if DEBUG_CAPS
             Console.WriteLine("[" + reqNo + "] Fixed-up response:\n" + Encoding.UTF8.GetString(respBuf) + "\n--------");
+#endif
 
 
             {
