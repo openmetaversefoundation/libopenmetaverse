@@ -112,8 +112,9 @@ namespace Heightmap
             if (left.X >= 1.0f) left.X = 0.0f;
 
             // Spin our camera in circles at the center of the sim to load all the terrain
-            Client.Self.UpdateCamera(MainAvatar.AgentUpdateFlags.NONE, center, forward, left, up,
-                LLQuaternion.Identity, LLQuaternion.Identity, 384.0f, false);
+            Client.Self.UpdateCamera(MainAvatar.ControlFlags.NONE, center, forward, left, up,
+                LLQuaternion.Identity, LLQuaternion.Identity, 384.0f, MainAvatar.AgentFlags.None, 
+                MainAvatar.AgentState.None, false);
         }
 
         void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)

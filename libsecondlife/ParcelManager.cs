@@ -289,7 +289,7 @@ namespace libsecondlife
         /// <summary>
         /// Update the simulator with any local changes to this Parcel object
         /// </summary>
-        public void Update()
+        public void Update(bool wantReply)
         {
             ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
 
@@ -308,7 +308,7 @@ namespace libsecondlife
             request.ParcelData.MediaURL = Helpers.StringToField(this.MediaURL);
             request.ParcelData.MusicURL = Helpers.StringToField(this.MusicURL);
             request.ParcelData.Name = Helpers.StringToField(this.Name);
-            request.ParcelData.Flags = (uint)this.Flags;
+            if (wantReply) request.ParcelData.Flags = 1;
             request.ParcelData.ParcelFlags = (uint)this.Flags;
             request.ParcelData.PassHours = this.PassHours;
             request.ParcelData.PassPrice = this.PassPrice;

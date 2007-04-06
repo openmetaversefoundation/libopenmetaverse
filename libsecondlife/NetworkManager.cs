@@ -55,7 +55,7 @@ namespace libsecondlife
         /// Holds a simulator reference and a packet, these structs are put in
         /// the packet inbox for decoding
         /// </summary>
-        internal struct IncomingPacket
+        public struct IncomingPacket
         {
             /// <summary>Reference to the simulator that this packet came from</summary>
             public Simulator Simulator;
@@ -486,7 +486,7 @@ namespace libsecondlife
 
         private void PacketHandler()
         {
-            IncomingPacket incomingPacket;
+            IncomingPacket incomingPacket = new IncomingPacket();
             Packet packet = null;
             Simulator simulator = null;
             WaitCallback callback = new WaitCallback(CallPacketDelegate);
@@ -496,122 +496,118 @@ namespace libsecondlife
                 // Reset packet to null for the check below
                 packet = null;
 
-                try
+                if (PacketInbox.Dequeue(500, ref incomingPacket))
                 {
-                    incomingPacket = (IncomingPacket)PacketInbox.Dequeue(Client.Settings.SIMULATOR_TIMEOUT);
                     packet = incomingPacket.Packet;
                     simulator = incomingPacket.Simulator;
-                }
-                catch (Exception)
-                {
-                }
 
-                if (packet != null)
-                {
-                    #region Archive Duplicate Search
-
-                    // TODO: Replace PacketArchive Queue<> with something more efficient
-
-                    // Check the archives to see whether we already received this packet
-                    lock (simulator.PacketArchive)
+                    if (packet != null)
                     {
-                        if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                        #region Archive Duplicate Search
+
+                        // TODO: Replace PacketArchive Queue<> with something more efficient
+
+                        // Check the archives to see whether we already received this packet
+                        lock (simulator.PacketArchive)
                         {
-                            if (packet.Header.Resent)
+                            if (simulator.PacketArchive.Contains(packet.Header.Sequence))
                             {
-                                Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                if (packet.Header.Resent)
+                                {
+                                    Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                }
+                                else
+                                {
+                                    Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
+                                        Helpers.LogLevel.Error);
+                                }
+
+                                // Avoid firing a callback twice for the same packet
+                                goto End;
                             }
                             else
                             {
-                                Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
-                                    Helpers.LogLevel.Error);
-                            }
+                                // Keep the Inbox size within a certain capacity
+                                while (simulator.PacketArchive.Count >= Client.Settings.PACKET_ARCHIVE_SIZE)
+                                {
+                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                }
 
-                            // Avoid firing a callback twice for the same packet
-                            goto End;
+                                simulator.PacketArchive.Enqueue(packet.Header.Sequence);
+                            }
                         }
-                        else
+
+                        #endregion Archive Duplicate Search
+
+                        #region ACK handling
+
+                        // Handle appended ACKs
+                        if (packet.Header.AppendedAcks)
                         {
-                            // Keep the Inbox size within a certain capacity
-                            while (simulator.PacketArchive.Count >= Client.Settings.PACKET_ARCHIVE_SIZE)
+                            lock (simulator.NeedAck)
                             {
-                                simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                                simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                for (int i = 0; i < packet.Header.AckList.Length; i++)
+                                    simulator.NeedAck.Remove(packet.Header.AckList[i]);
                             }
-
-                            simulator.PacketArchive.Enqueue(packet.Header.Sequence);
                         }
-                    }
 
-                    #endregion Archive Duplicate Search
-
-                    #region ACK handling
-
-                    // Handle appended ACKs
-                    if (packet.Header.AppendedAcks)
-                    {
-                        lock (simulator.NeedAck)
+                        // Handle PacketAck packets
+                        if (packet.Type == PacketType.PacketAck)
                         {
-                            for (int i = 0; i < packet.Header.AckList.Length; i++)
-                                simulator.NeedAck.Remove(packet.Header.AckList[i]);
-                        }
-                    }
+                            PacketAckPacket ackPacket = (PacketAckPacket)packet;
 
-                    // Handle PacketAck packets
-                    if (packet.Type == PacketType.PacketAck)
-                    {
-                        PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                        lock (simulator.NeedAck)
-                        {
-                            for (int i = 0; i < ackPacket.Packets.Length; i++)
-                                simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
-                        }
-                    }
-
-                    #endregion ACK handling
-
-                    #region FireCallbacks
-
-                    if (Callbacks.ContainsKey(packet.Type))
-                    {
-                        List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
-
-                        // Fire any registered callbacks
-                        for (int i = 0; i < callbackArray.Count; i++)
-                        {
-                            if (callbackArray[i] != null)
+                            lock (simulator.NeedAck)
                             {
-                                PacketCallbackWrapper wrapper;
-                                wrapper.Callback = callbackArray[i];
-                                wrapper.Packet = packet;
-                                wrapper.Simulator = simulator;
-                                Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                for (int i = 0; i < ackPacket.Packets.Length; i++)
+                                    simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
                             }
                         }
-                    }
 
-                    if (Callbacks.ContainsKey(PacketType.Default))
-                    {
-                        List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
+                        #endregion ACK handling
 
-                        // Fire any registered callbacks
-                        for (int i = 0; i < callbackArray.Count; i++)
+                        #region FireCallbacks
+
+                        if (Callbacks.ContainsKey(packet.Type))
                         {
-                            if (callbackArray[i] != null)
+                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
+
+                            // Fire any registered callbacks
+                            for (int i = 0; i < callbackArray.Count; i++)
                             {
-                                PacketCallbackWrapper wrapper;
-                                wrapper.Callback = callbackArray[i];
-                                wrapper.Packet = packet;
-                                wrapper.Simulator = simulator;
-                                Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                if (callbackArray[i] != null)
+                                {
+                                    PacketCallbackWrapper wrapper;
+                                    wrapper.Callback = callbackArray[i];
+                                    wrapper.Packet = packet;
+                                    wrapper.Simulator = simulator;
+                                    Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                }
                             }
                         }
+
+                        if (Callbacks.ContainsKey(PacketType.Default))
+                        {
+                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
+
+                            // Fire any registered callbacks
+                            for (int i = 0; i < callbackArray.Count; i++)
+                            {
+                                if (callbackArray[i] != null)
+                                {
+                                    PacketCallbackWrapper wrapper;
+                                    wrapper.Callback = callbackArray[i];
+                                    wrapper.Packet = packet;
+                                    wrapper.Simulator = simulator;
+                                    Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                }
+                            }
+                        }
+
+                        #endregion FireCallbacks
+
+                    End: ;
                     }
-
-                    #endregion FireCallbacks
-
-                End:;
                 }
             }
         }

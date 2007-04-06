@@ -1,7 +1,9 @@
+using System;
+using System.Threading;
+using libsecondlife;
+
 namespace System.Collections
 {
-    using System.Threading;
-
     /// <summary>
     /// Same as Queue except Dequeue function blocks until there is an object to return.
     /// Note: This class does not need to be synchronized
@@ -96,7 +98,7 @@ namespace System.Collections
         /// </summary>
         /// <param name="timeout">time to wait before returning</param>
         /// <returns>Object in queue.</returns>
-        public object Dequeue(TimeSpan timeout)
+        public NetworkManager.IncomingPacket Dequeue(TimeSpan timeout)
         {
             return Dequeue(timeout.Milliseconds);
         }
@@ -106,7 +108,7 @@ namespace System.Collections
         /// </summary>
         /// <param name="timeout">time to wait before returning (in milliseconds)</param>
         /// <returns>Object in queue.</returns>
-        public object Dequeue(int timeout)
+        public NetworkManager.IncomingPacket Dequeue(int timeout)
         {
             lock (base.SyncRoot)
             {
@@ -116,9 +118,28 @@ namespace System.Collections
                         throw new InvalidOperationException("Timeout");
                 }
                 if (open)
-                    return base.Dequeue();
+                    return (NetworkManager.IncomingPacket)base.Dequeue();
                 else
                     throw new InvalidOperationException("Queue Closed");
+            }
+        }
+
+        public bool Dequeue(int timeout, ref NetworkManager.IncomingPacket packet)
+        {
+            lock (base.SyncRoot)
+            {
+                while (open && (base.Count == 0))
+                {
+                    if (!Monitor.Wait(base.SyncRoot, timeout))
+                        return false;
+                }
+                if (open)
+                {
+                    packet = (NetworkManager.IncomingPacket)base.Dequeue();
+                    return true;
+                }
+                else
+                    return false;
             }
         }
 

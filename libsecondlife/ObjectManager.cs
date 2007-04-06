@@ -1379,14 +1379,14 @@ namespace libsecondlife
                                 // Detect if we are sitting or standing
                                 uint oldSittingOn = Client.Self.SittingOn;
 
-                                #endregion
-
                                 // Fire the callback for our sitting orientation changing
                                 if (block.ParentID != oldSittingOn)
                                 {
                                     SetAvatarSelfSittingOn(block.ParentID);
                                     FireOnAvatarSitChanged(simulator, Client.Self.SittingOn);
                                 }
+
+                                #endregion
                             }
 
                             if (Client.Settings.ALWAYS_DECODE_OBJECTS || (OnNewAvatar != null))
@@ -1557,6 +1557,23 @@ namespace libsecondlife
                         else
                         {
                             obj = GetPrimitive(simulator, update.LocalID, null);
+                        }
+
+                        if (update.LocalID == Client.Self.LocalID)
+                        {
+                            #region Update Client.Self
+
+                            Client.Self.CollisionPlane = update.CollisionPlane;
+                            Client.Self.Position = update.Position;
+                            Client.Self.Velocity = update.Velocity;
+                            Client.Self.Acceleration = update.Acceleration;
+                            Client.Self.Rotation = update.Rotation;
+                            Client.Self.AngularVelocity = update.AngularVelocity;
+
+                            // Detect if we are sitting or standing
+                            uint oldSittingOn = Client.Self.SittingOn;
+
+                            #endregion
                         }
 
                         obj.Acceleration = update.Acceleration;

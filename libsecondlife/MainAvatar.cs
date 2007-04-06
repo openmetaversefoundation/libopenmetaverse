@@ -46,7 +46,7 @@ namespace libsecondlife
         /// Used to specify movement actions for your agent
         /// </summary>
         [Flags]
-        public enum AgentUpdateFlags
+        public enum ControlFlags
         {
             /// <summary>Empty flag</summary>
             NONE = 0,
@@ -115,6 +115,33 @@ namespace libsecondlife
             AGENT_CONTROL_ML_LBUTTON_DOWN = 0x1 << CONTROL_ML_LBUTTON_DOWN_INDEX,
             /// <summary></summary>
             AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
+        }
+
+        /// <summary>
+        /// Currently only used to hide your group title
+        /// </summary>
+        [Flags]
+        public enum AgentFlags : byte
+        {
+            /// <summary>No flags set</summary>
+            None = 0,
+            /// <summary>Hide your group title</summary>
+            HideTitle = 0x01,
+        }
+
+        /// <summary>
+        /// Action state of the avatar, which can currently be typing and
+        /// editing
+        /// </summary>
+        [Flags]
+        public enum AgentState : byte
+        {
+            /// <summary></summary>
+            None = 0x00,
+            /// <summary></summary>
+            Typing = 0x04,
+            /// <summary></summary>
+            Editing = 0x10
         }
 
         /// <summary>
@@ -1579,15 +1606,14 @@ namespace libsecondlife
         /// <param name="headRotation"></param>
         /// <param name="farClip"></param>
         /// <param name="reliable"></param>
-        public void UpdateCamera(MainAvatar.AgentUpdateFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
+        public void UpdateCamera(MainAvatar.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
             LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
-            bool reliable)
+            AgentFlags flags, AgentState state, bool reliable)
         {
             AgentUpdatePacket update = new AgentUpdatePacket();
 
             update.AgentData.AgentID = Client.Network.AgentID;
             update.AgentData.SessionID = Client.Network.SessionID;
-            update.AgentData.State = 0;
             update.AgentData.BodyRotation = bodyRotation;
             update.AgentData.HeadRotation = headRotation;
             update.AgentData.CameraCenter = position;
@@ -1596,7 +1622,8 @@ namespace libsecondlife
             update.AgentData.CameraUpAxis = upAxis;
             update.AgentData.Far = farClip;
             update.AgentData.ControlFlags = (uint)controlFlags;
-            update.AgentData.Flags = 0;
+            update.AgentData.Flags = (byte)flags;
+            update.AgentData.State = (byte)state;
             update.Header.Reliable = reliable;
 
             Client.Network.SendPacket(update);

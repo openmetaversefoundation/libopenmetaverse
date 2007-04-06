@@ -61,6 +61,8 @@ namespace libsecondlife
         public readonly int PACKET_ARCHIVE_SIZE = 50;
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public readonly int PING_INTERVAL = 2200;
+        /// <summary>Number of milliseconds between sending camera updates</summary>
+        public readonly int AGENT_UPDATE_INTERVAL = 500;
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
@@ -95,8 +97,6 @@ namespace libsecondlife
         public bool STORE_LAND_PATCHES = false;
         /// <summary>Enable/disable sending periodic camera updates</summary>
         public bool SEND_AGENT_UPDATES = true;
-        /// <summary>Number of milliseconds between sending camera updates</summary>
-        public int AGENT_UPDATE_INTERVAL = 500;
         /// <summary>Enable/disable libsecondlife automatically setting the
         /// bandwidth throttle after connecting to each simulator</summary>
         /// <remarks>The default libsecondlife throttle uses the equivalent of
