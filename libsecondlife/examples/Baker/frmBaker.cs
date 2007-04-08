@@ -19,6 +19,16 @@ namespace Baker
 
         private void frmBaker_Load(object sender, EventArgs e)
         {
+        	Stream stream = libsecondlife.Helpers.GetResourceStream("shirt_sleeve_alpha.tga");
+        	
+        	if (stream != null)
+        	{
+        		pic1.Image = OpenJPEGNet.LoadTGAClass.LoadTGA(stream);
+        	}
+        	else
+        	{
+        		;
+        	}
         }
 
         private void frmBaker_FormClosing(object sender, FormClosingEventArgs e)

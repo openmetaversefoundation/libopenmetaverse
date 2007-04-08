@@ -394,7 +394,7 @@ namespace libsecondlife
                     Camera.LastCameraAtAxis = Camera.CameraAtAxis;
                     Camera.LastCameraCenter = Camera.CameraCenter;
                     Camera.LastCameraLeftAxis = Camera.CameraLeftAxis;
-                    Camera.LastCameraUpAxis = Camera.LastCameraUpAxis;
+                    Camera.LastCameraUpAxis = Camera.CameraUpAxis;
                     Camera.LastFar = Camera.Far;
                     lastState = State;
 
