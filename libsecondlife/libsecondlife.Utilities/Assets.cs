@@ -404,7 +404,7 @@ namespace libsecondlife.Utilities.Assets
                 request.AssetBlock.TransactionID = upload.ID;
                 request.AssetBlock.Type = (sbyte)type;
 
-                if (data.Length + 100 < Client.Settings.MAX_PACKET_SIZE)
+                if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
                 {
                     // The whole asset will fit in this packet, makes things easy
                     request.AssetBlock.AssetData = data;

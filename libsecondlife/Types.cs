@@ -310,11 +310,11 @@ namespace libsecondlife
 	public struct LLVector3
 	{
         /// <summary>X value</summary>
-        [XmlAttribute("x"), DefaultValue(0)] public float X;
+        public float X;
 		/// <summary>Y value</summary>
-        [XmlAttribute("y"), DefaultValue(0)] public float Y;
+        public float Y;
         /// <summary>Z value</summary>
-        [XmlAttribute("z"), DefaultValue(0)] public float Z;
+        public float Z;
 
         /// <summary>
         /// Constructor, builds a single-precision vector from a 
@@ -507,6 +507,28 @@ namespace libsecondlife
         public static LLVector3 operator -(LLVector3 lhs, LLVector3 rhs)
         {
             return new LLVector3(lhs.X - rhs.X,lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vec"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static LLVector3 operator *(LLVector3 vec, float val)
+        {
+            return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="vec"></param>
+        /// <returns></returns>
+        public static LLVector3 operator *(float val, LLVector3 vec)
+        {
+            return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
         public static LLVector3 operator *(LLVector3 vec, LLQuaternion quat)

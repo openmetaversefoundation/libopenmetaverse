@@ -334,7 +334,7 @@ namespace libsecondlife
                 Camera.CameraUpAxis = new LLVector3(0, 0, 0.9999f);
                 Camera.Far = 384.0f;
 
-                UpdateTimer = new Timer(Client.Settings.AGENT_UPDATE_INTERVAL);
+                UpdateTimer = new Timer(Settings.AGENT_UPDATE_INTERVAL);
                 UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
                 UpdateTimer.Enabled = Client.Settings.SEND_AGENT_UPDATES;
             }

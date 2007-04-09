@@ -47,6 +47,7 @@ namespace Baker
             this.pic1.Size = new System.Drawing.Size(256, 256);
             this.pic1.TabIndex = 0;
             this.pic1.TabStop = false;
+            this.pic1.AutoSize = true;
             // 
             // cmdLoadPic1
             // 
@@ -66,6 +67,7 @@ namespace Baker
             this.pic2.Size = new System.Drawing.Size(256, 256);
             this.pic2.TabIndex = 2;
             this.pic2.TabStop = false;
+            this.pic1.AutoSize = true;
             // 
             // pic3
             // 
@@ -75,6 +77,7 @@ namespace Baker
             this.pic3.Size = new System.Drawing.Size(256, 256);
             this.pic3.TabIndex = 3;
             this.pic3.TabStop = false;
+            this.pic1.AutoSize = true;
             // 
             // cmdLoadPic2
             // 
@@ -129,4 +132,5 @@ namespace Baker
 
     }
 }
+
 

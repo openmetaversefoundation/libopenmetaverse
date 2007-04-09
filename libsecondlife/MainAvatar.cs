@@ -699,6 +699,7 @@ namespace libsecondlife
 
         internal uint sittingOn = 0;
         internal string teleportMessage = String.Empty;
+        internal DateTime lastInterpolation;
 
         private SecondLife Client;
         private TeleportStatus TeleportStat = TeleportStatus.None;

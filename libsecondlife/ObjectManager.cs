@@ -451,10 +451,16 @@ namespace libsecondlife
         #endregion
 
 
+        private const float HAVOK_TIMESTEP = 1.0f / 45.0f;
+
+
         /// <summary>
         /// Reference to the SecondLife client
         /// </summary>
         protected SecondLife Client;
+
+
+        private System.Timers.Timer InterpolationTimer;
 
 
         /// <summary>
@@ -495,6 +501,12 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new NetworkManager.PacketCallback(CachedUpdateHandler));
             Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, new NetworkManager.PacketCallback(ObjectPropertiesFamilyHandler));
+
+            // If the callbacks aren't registered there's not point in doing client-side path prediction,
+            // so we set it up here
+            InterpolationTimer = new System.Timers.Timer(Settings.INTERPOLATION_UPDATE);
+            InterpolationTimer.Elapsed += new System.Timers.ElapsedEventHandler(InterpolationTimer_Elapsed);
+            InterpolationTimer.Start();
         }
 
         #region Action Methods
@@ -1962,7 +1974,6 @@ namespace libsecondlife
 
         #endregion
 
-
         #region Utility Functions
 
         protected void SetAvatarSelfSittingOn(uint localid)
@@ -1980,8 +1991,30 @@ namespace libsecondlife
 			s.Dilation = (float)dilation / 65535.0f;
 		}
 
-        #endregion
+        protected void InterpolationTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (Client.Network.Connected)
+            {
+                // For now we only update Client.Self since there is no object tracking
+                // built in to the library
 
+                // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
+                // no acceleration
+                if (Client.Self.Velocity != LLVector3.Zero || Client.Self.Acceleration != LLVector3.Zero)
+                {
+                    TimeSpan interval = DateTime.Now - Client.Self.lastInterpolation;
+                    float adjSeconds = (float)interval.TotalSeconds * Client.Network.CurrentSim.Dilation;
+
+                    Client.Self.Position += (Client.Self.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
+                        Client.Self.Acceleration) * adjSeconds;
+                }
+            }
+
+            // Make sure the last interpolated time is always updated
+            Client.Self.lastInterpolation = DateTime.Now;
+        }
+
+        #endregion
 
         #region Event Notification
 
@@ -2067,7 +2100,6 @@ namespace libsecondlife
         }
 
         #endregion
-
 
         #region Subclass Indirection
 

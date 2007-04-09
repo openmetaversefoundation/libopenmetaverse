@@ -294,7 +294,7 @@ namespace libsecondlife
 
             Estate = new EstateTools(Client);
             Network = client.Network;
-            PacketArchive = new Queue<uint>(Client.Settings.PACKET_ARCHIVE_SIZE);
+            PacketArchive = new Queue<uint>(Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
 
@@ -306,13 +306,13 @@ namespace libsecondlife
             // Initialize the callback for receiving a new packet
             ReceivedData = new AsyncCallback(OnReceivedData);
 
-            AckTimer = new System.Timers.Timer(Client.Settings.NETWORK_TICK_LENGTH);
+            AckTimer = new System.Timers.Timer(Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
 
             StatsTimer = new System.Timers.Timer(1000);
             StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
 
-            PingTimer = new System.Timers.Timer(Client.Settings.PING_INTERVAL);
+            PingTimer = new System.Timers.Timer(Settings.PING_INTERVAL);
             PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
         }
 
@@ -425,7 +425,7 @@ namespace libsecondlife
                 // Set the sequence number
                 lock (SequenceLock)
                 {
-                    if (Sequence > Client.Settings.MAX_SEQUENCE)
+                    if (Sequence > Settings.MAX_SEQUENCE)
                         Sequence = 1;
                     else
                         Sequence++;

@@ -346,9 +346,15 @@ namespace libsecondlife
         #endregion Public Properties
 
 
-        internal ObjectData data = new ObjectData();
+        internal ObjectData data;
+        internal DateTime lastInterpolation;
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             LLObject llobj = obj as LLObject;
@@ -357,6 +363,10 @@ namespace libsecondlife
             return ID.Equals(llobj.ID);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             return ID.GetHashCode();

@@ -41,6 +41,7 @@
       <DependentUpon>frmBaker.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <Compile Include="Oven.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Baker.cs" />

@@ -47,22 +47,24 @@ namespace libsecondlife
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
         public const int PACKET_INBOX_SIZE = 100;
-
         /// <summary>Maximum size of packet that we want to send over the wire</summary>
-        public readonly int MAX_PACKET_SIZE = 1200;
+        public const int MAX_PACKET_SIZE = 1200;
         /// <summary>Millisecond interval between ticks, where all ACKs are 
         /// sent out and the age of unACKed packets is checked</summary>
-        public readonly int NETWORK_TICK_LENGTH = 500;
+        public const int NETWORK_TICK_LENGTH = 500;
         /// <summary>The maximum value of a packet sequence number before it
         /// rolls over back to one</summary>
-        public readonly int MAX_SEQUENCE = 0xFFFFFF;
+        public const int MAX_SEQUENCE = 0xFFFFFF;
         /// <summary>The maximum size of the sequence number archive, used to
         /// check for resent and/or duplicate packets</summary>
-        public readonly int PACKET_ARCHIVE_SIZE = 50;
+        public const int PACKET_ARCHIVE_SIZE = 50;
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
-        public readonly int PING_INTERVAL = 2200;
+        public const int PING_INTERVAL = 2200;
         /// <summary>Number of milliseconds between sending camera updates</summary>
-        public readonly int AGENT_UPDATE_INTERVAL = 500;
+        public const int AGENT_UPDATE_INTERVAL = 500;
+        /// <summary>Number of milliseconds between updating the current
+        /// positions of moving, non-accelerating and non-colliding objects</summary>
+        public const int INTERPOLATION_UPDATE = 250;
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>

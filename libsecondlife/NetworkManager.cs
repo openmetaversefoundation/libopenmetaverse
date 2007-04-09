@@ -528,7 +528,7 @@ namespace libsecondlife
                             else
                             {
                                 // Keep the Inbox size within a certain capacity
-                                while (simulator.PacketArchive.Count >= Client.Settings.PACKET_ARCHIVE_SIZE)
+                                while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
                                 {
                                     simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
                                     simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();

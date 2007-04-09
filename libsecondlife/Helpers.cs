@@ -958,5 +958,16 @@ namespace libsecondlife
             object list = serializer.Deserialize(reader);
             return (List<Packet>)list;
         }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resourceName"></param>
+        /// <returns></returns>
+        public static System.IO.Stream GetResourceStream(string resourceName)
+        {
+        	System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+        	return a.GetManifestResourceStream("libsecondlife.Resources." + resourceName);
+        }
     }
 }
