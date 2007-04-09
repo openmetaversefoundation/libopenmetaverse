@@ -105,23 +105,23 @@ namespace OpenJPEGNet
         static uint UnpackColor(
             uint sourceColor, ref tgaCD cd)
         {
-            uint rpermute = (sourceColor << cd.RShift) | (sourceColor >> (32 - cd.RShift));
-            uint gpermute = (sourceColor << cd.GShift) | (sourceColor >> (32 - cd.GShift));
-            uint bpermute = (sourceColor << cd.BShift) | (sourceColor >> (32 - cd.BShift));
-            uint apermute = (sourceColor << cd.AShift) | (sourceColor >> (32 - cd.AShift));
-            uint result =
-                (rpermute & cd.RMask) | (gpermute & cd.GMask)
-                | (bpermute & cd.BMask) | (apermute & cd.AMask) | cd.FinalOr;
-
-            /*if (result >= 0x10000000)
-                result |= 0x0F000000;
-            /*else if (result >= 0x10000000)
-                result = 0x66222222;*/
-            /*else
-                result = 0;*/
-
-
-            return result;
+        	if (cd.RMask == 0xFF && cd.GMask == 0xFF && cd.BMask == 0xFF)
+        	{
+        		// Special case to deal with 8-bit TGA files that we treat as alpha masks
+        		return sourceColor << 24;
+        	}
+        	else
+        	{
+	            uint rpermute = (sourceColor << cd.RShift) | (sourceColor >> (32 - cd.RShift));
+	            uint gpermute = (sourceColor << cd.GShift) | (sourceColor >> (32 - cd.GShift));
+	            uint bpermute = (sourceColor << cd.BShift) | (sourceColor >> (32 - cd.BShift));
+	            uint apermute = (sourceColor << cd.AShift) | (sourceColor >> (32 - cd.AShift));
+	            uint result =
+	                (rpermute & cd.RMask) | (gpermute & cd.GMask)
+	                | (bpermute & cd.BMask) | (apermute & cd.AMask) | cd.FinalOr;
+	
+	            return result;
+        	}
         }
 
         static unsafe void decodeLine(
@@ -257,16 +257,15 @@ namespace OpenJPEGNet
         	System.IO.BinaryReader br)
         {
         	tgaCD cd = new tgaCD();
-        	// FIXME: Adjust these values for 8-bit TGAs
         	cd.RMask = 0x000000ff;
         	cd.GMask = 0x000000ff;
             cd.BMask = 0x000000ff;
-            cd.AMask = 0x00000000;
+            cd.AMask = 0x000000ff;
             cd.RShift = 0;
             cd.GShift = 0;
             cd.BShift = 0;
             cd.AShift = 0;
-            cd.FinalOr = 0xff000000;
+            cd.FinalOr = 0x00000000;
             if (hdr.RleEncoded)
                 decodeRle(b, 1, cd, br, hdr.ImageSpec.BottomUp);
             else
