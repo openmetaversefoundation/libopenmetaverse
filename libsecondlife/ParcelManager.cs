@@ -271,7 +271,6 @@ namespace libsecondlife
         /// <summary></summary>
         public Simulator Simulator;
 
-
         private int localid;
 
 
@@ -448,7 +447,7 @@ namespace libsecondlife
         /// <param name="localID"></param>
         /// <param name="flags"></param>
         /// <param name="accessEntries"></param>
-        public delegate void ParcelAccessListReplyCallback(int sequenceID, int localID, uint flags, List<ParcelAccessEntry> accessEntries);
+        public delegate void ParcelAccessListReplyCallback(Simulator simulator, int sequenceID, int localID, uint flags, List<ParcelAccessEntry> accessEntries);
 
 
         /// <summary></summary>
@@ -499,7 +498,7 @@ namespace libsecondlife
         /// <param name="localID">Simulator-local ID of the parcel</param>
         /// <param name="sequenceID">An arbitrary integer that will be returned
         /// with the ParcelProperties reply, useful for distinguishing between
-        /// different types of parcel property requests</param>
+        /// multiple simultaneous  requests</param>
         public void PropertiesRequest(Simulator simulator, int localID, int sequenceID)
         {
             ParcelPropertiesRequestByIDPacket request = new ParcelPropertiesRequestByIDPacket();
@@ -509,6 +508,26 @@ namespace libsecondlife
 
             request.ParcelData.LocalID = localID;
             request.ParcelData.SequenceID = sequenceID;
+        }
+
+        /// <summary>
+        /// Request the access list for a single parcel
+        /// </summary>
+        /// <param name="simulator">Simulator containing the parcel</param>
+        /// <param name="localID">Simulator-local ID of the parcel</param>
+        /// <param name="sequenceID">An arbitrary integer that will be returned
+        /// with the ParcelAccessList reply, useful for distinguishing between
+        /// multiple simultaneous requests</param>
+        public void AccessListRequest(Simulator simulator, int localID, int sequenceID)
+        {
+            ParcelAccessListRequestPacket request = new ParcelAccessListRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+
+            request.Data.LocalID = localID;
+            request.Data.Flags = 3;  // AL_ACCESS | AL_BAN
+            request.Data.SequenceID = sequenceID;
         }
 
         /// <summary>
@@ -783,7 +802,7 @@ namespace libsecondlife
 
                 try
                 {
-                    OnAccessListReply(reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags, accessList);
+                    OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags, accessList);
                 } catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
