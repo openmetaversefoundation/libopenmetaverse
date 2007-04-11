@@ -31,11 +31,56 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    #region Structs
+
+    /// <summary>
+    /// Some information about a parcel of land
+    /// </summary>
+    public struct ParcelInfo
+    {
+        /// <summary></summary>
+        public LLUUID ID;
+        /// <summary></summary>
+        public LLUUID OwnerID;
+        /// <summary></summary>
+        public string Name;
+        /// <summary></summary>
+        public string Description;
+        /// <summary></summary>
+        public int ActualArea;
+        /// <summary></summary>
+        public int BillableArea;
+        /// <summary></summary>
+        public bool Mature;
+        /// <summary></summary>
+        public float GlobalX;
+        /// <summary></summary>
+        public float GlobalY;
+        /// <summary></summary>
+        public float GlobalZ;
+        /// <summary></summary>
+        public string SimName;
+        /// <summary></summary>
+        public LLUUID SnapshotID;
+        /// <summary></summary>
+        public float Dwell;
+        /// <summary></summary>
+        public int SalePrice;
+        /// <summary></summary>
+        public int AuctionID;
+    }
+
+    #endregion Structs
+
+    #region Parcel Class
+
     /// <summary>
     /// Parcel of land, a portion of virtual real estate in a simulator
     /// </summary>
     public class Parcel
     {
+        #region Enums
+
         /// <summary>
         /// Various parcel properties
         /// </summary>
@@ -52,9 +97,10 @@ namespace libsecondlife
             ForSale = 1 << 2,
             /// <summary>Allow avatars to create a landmark on this parcel</summary>
             AllowLandmark = 1 << 3,
-            /// <summary></summary>
+            /// <summary>Allows all avatars to edit the terrain on this parcel</summary>
             AllowTerraform = 1 << 4,
-            /// <summary>Avatars have health and can take damage on this parcel</summary>
+            /// <summary>Avatars have health and can take damage on this parcel.
+            /// If set, avatars can be killed and sent home here</summary>
             AllowDamage = 1 << 5,
             /// <summary>Foreign avatars can create objects here</summary>
             CreateObjects = 1 << 6,
@@ -159,7 +205,8 @@ namespace libsecondlife
             Any = -1
         }
 
-        
+        #endregion Enums
+
         /// <summary></summary>
         public int RequestResult;
         /// <summary></summary>
@@ -222,11 +269,14 @@ namespace libsecondlife
         public int SelectedPrims;
         /// <summary></summary>
         public float ParcelPrimBonus;
-        /// <summary></summary>
+        /// <summary>Autoreturn value in minutes for others' objects</summary>
         public int OtherCleanTime;
         /// <summary></summary>
         public ParcelFlags Flags;
-        /// <summary></summary>
+        /// <summary>Sale price of the parcel, only useful if ForSale is set</summary>
+        /// <remarks>The SalePrice will remain the same after an ownership
+        /// transfer (sale), so it can be used to see the purchase price after
+        /// a sale if the new owner has not changed it</remarks>
         public int SalePrice;
         /// <summary>Parcel Name</summary>
         public string Name;
@@ -288,6 +338,8 @@ namespace libsecondlife
         /// <summary>
         /// Update the simulator with any local changes to this Parcel object
         /// </summary>
+        /// <param name="wantReply">Whether we want the simulator to confirm
+        /// the update with a reply packet or not</param>
         public void Update(bool wantReply)
         {
             ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
@@ -317,51 +369,31 @@ namespace libsecondlife
             request.ParcelData.UserLookAt = this.UserLookAt;
 
             Simulator.Client.Network.SendPacket(request, Simulator);
+
+            UpdateOtherCleanTime();
+        }
+
+        public void UpdateOtherCleanTime()
+        {
+            ParcelSetOtherCleanTimePacket request = new ParcelSetOtherCleanTimePacket();
+            request.AgentData.AgentID = Simulator.Client.Network.AgentID;
+            request.AgentData.SessionID = Simulator.Client.Network.SessionID;
+            request.ParcelData.LocalID = this.LocalID;
+            request.ParcelData.OtherCleanTime = this.OtherCleanTime;
+
+            Simulator.Client.Network.SendPacket(request, Simulator);
         }
     }
 
-    /// <summary>
-    /// Some information about a parcel of land
-    /// </summary>
-    public struct ParcelInfo
-    {
-        /// <summary></summary>
-        public LLUUID ID;
-        /// <summary></summary>
-        public LLUUID OwnerID;
-        /// <summary></summary>
-        public string Name;
-        /// <summary></summary>
-        public string Description;
-        /// <summary></summary>
-        public int ActualArea;
-        /// <summary></summary>
-        public int BillableArea;
-        /// <summary></summary>
-        public bool Mature;
-        /// <summary></summary>
-        public float GlobalX;
-        /// <summary></summary>
-        public float GlobalY;
-        /// <summary></summary>
-        public float GlobalZ;
-        /// <summary></summary>
-        public string SimName;
-        /// <summary></summary>
-        public LLUUID SnapshotID;
-        /// <summary></summary>
-        public float Dwell;
-        /// <summary></summary>
-        public int SalePrice;
-        /// <summary></summary>
-        public int AuctionID;
-    }
+    #endregion Parcel Class
 
     /// <summary>
     /// Parcel (subdivided simulator lots) subsystem
     /// </summary>
     public class ParcelManager
     {
+        #region Enums
+
         /// <summary>
         /// Type of return to use when returning objects from a parcel
         /// </summary>
@@ -393,19 +425,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public struct ParcelAccessEntry
-        {
-            /// <summary></summary>
-            public LLUUID AgentID;
-            /// <summary></summary>
-            public int Time;
-            /// <summary></summary>
-            public uint Flags;
-        }
-
-        /// <summary>
         /// The result of a request for parcel properties
         /// </summary>
         public enum ParcelResult : int
@@ -418,6 +437,41 @@ namespace libsecondlife
             Multiple = 1
         }
 
+        /// <summary>
+        /// Flags used in the ParcelAccessListRequest packet to specify whether
+        /// we want the access list (whitelist), ban list (blacklist), or both
+        /// </summary>
+        [Flags]
+        public enum AccessList : uint
+        {
+            /// <summary>Request the access list</summary>
+            Access = 1 << 0,
+            /// <summary>Request the ban list</summary>
+            Ban = 1 << 1,
+            /// <summary>Request both the access list and ban list</summary>
+            Both = Access | Ban
+        }
+
+        #endregion Enums
+
+        #region Structs
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public struct ParcelAccessEntry
+        {
+            /// <summary></summary>
+            public LLUUID AgentID;
+            /// <summary></summary>
+            public DateTime Time;
+            /// <summary></summary>
+            public AccessList Flags;
+        }
+
+        #endregion Structs
+
+        #region Delegates
 
         /// <summary>
         /// 
@@ -449,6 +503,9 @@ namespace libsecondlife
         /// <param name="accessEntries"></param>
         public delegate void ParcelAccessListReplyCallback(Simulator simulator, int sequenceID, int localID, uint flags, List<ParcelAccessEntry> accessEntries);
 
+        #endregion Delegates
+
+        #region Events
 
         /// <summary></summary>
         public event ParcelDwellCallback OnParcelDwell;
@@ -459,8 +516,11 @@ namespace libsecondlife
         /// <summary></summary>
         public event ParcelAccessListReplyCallback OnAccessListReply;
 
+        #endregion Events
 
         private SecondLife Client;
+
+        #region Public Methods
 
         /// <summary>
         /// Default constructor
@@ -498,7 +558,7 @@ namespace libsecondlife
         /// <param name="localID">Simulator-local ID of the parcel</param>
         /// <param name="sequenceID">An arbitrary integer that will be returned
         /// with the ParcelProperties reply, useful for distinguishing between
-        /// multiple simultaneous  requests</param>
+        /// multiple simultaneous requests</param>
         public void PropertiesRequest(Simulator simulator, int localID, int sequenceID)
         {
             ParcelPropertiesRequestByIDPacket request = new ParcelPropertiesRequestByIDPacket();
@@ -518,16 +578,17 @@ namespace libsecondlife
         /// <param name="sequenceID">An arbitrary integer that will be returned
         /// with the ParcelAccessList reply, useful for distinguishing between
         /// multiple simultaneous requests</param>
-        public void AccessListRequest(Simulator simulator, int localID, int sequenceID)
+        public void AccessListRequest(Simulator simulator, int localID, AccessList flags, int sequenceID)
         {
             ParcelAccessListRequestPacket request = new ParcelAccessListRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
-
             request.Data.LocalID = localID;
-            request.Data.Flags = 3;  // AL_ACCESS | AL_BAN
+            request.Data.Flags = (uint)flags;
             request.Data.SequenceID = sequenceID;
+
+            Client.Network.SendPacket(request, simulator);
         }
 
         /// <summary>
@@ -676,6 +737,10 @@ namespace libsecondlife
             Client.Network.SendPacket(request, simulator);
         }
 
+        #endregion Public Methods
+
+        #region Packet Handlers
+
         private void ParcelDwellReplyHandler(Packet packet, Simulator simulator)
         {
             if (OnParcelDwell != null)
@@ -787,24 +852,24 @@ namespace libsecondlife
             if (OnAccessListReply != null)
             {
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
+                List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>(reply.List.Length);
 
-                List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>();
-
-                foreach( ParcelAccessListReplyPacket.ListBlock block in reply.List )
+                for (int i = 0; i < reply.List.Length; i++)
                 {
                     ParcelAccessEntry pae = new ParcelAccessEntry();
-                    pae.AgentID = block.ID;
-                    pae.Flags   = block.Flags;
-                    pae.Time    = block.Time;
+                    pae.AgentID = reply.List[i].ID;
+                    pae.Flags = (AccessList)reply.List[i].Flags;
+                    pae.Time = Helpers.UnixTimeToDateTime((uint)reply.List[i].Time);
 
                     accessList.Add(pae);
                 }
 
-                try
-                {
-                    OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags, accessList);
-                } catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                try { OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
+                    accessList); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
+
+        #endregion Packet Handlers
     }
 }

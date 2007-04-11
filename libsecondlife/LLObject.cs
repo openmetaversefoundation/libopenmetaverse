@@ -118,67 +118,46 @@ namespace libsecondlife
         public struct ObjectData
         {
             /// <summary></summary>
-            [XmlAttribute("pathtwistbegin")]
             public int PathTwistBegin;
             /// <summary></summary>
-            [XmlAttribute("pathend")]
             public float PathEnd;
             /// <summary></summary>
-            [XmlAttribute("profilebegin")]
             public float ProfileBegin;
             /// <summary></summary>
-            [XmlAttribute("pathradiusoffset")]
             public float PathRadiusOffset;
             /// <summary></summary>
-            [XmlAttribute("pathskew")]
             public float PathSkew;
             /// <summary></summary>
-            [XmlAttribute("profilecurve")]
             public uint ProfileCurve;
             /// <summary></summary>
-            [XmlAttribute("pathscalex")]
             public float PathScaleX;
             /// <summary></summary>
-            [XmlAttribute("pathscaley")]
             public float PathScaleY;
             /// <summary></summary>
-            [XmlAttribute("material")]
             public uint Material;
             /// <summary></summary>
-            [XmlAttribute("pathshearx")]
             public float PathShearX;
             /// <summary></summary>
-            [XmlAttribute("pathsheary")]
             public float PathShearY;
             /// <summary></summary>
-            [XmlAttribute("pathtaperx")]
             public float PathTaperX;
             /// <summary></summary>
-            [XmlAttribute("pathtapery")]
             public float PathTaperY;
             /// <summary></summary>
-            [XmlAttribute("profileend")]
             public float ProfileEnd;
             /// <summary></summary>
-            [XmlAttribute("pathbegin")]
             public float PathBegin;
             /// <summary></summary>
-            [XmlAttribute("pathcurve")]
             public uint PathCurve;
             /// <summary></summary>
-            [XmlAttribute("pathtwist")]
             public int PathTwist;
             /// <summary></summary>
-            [XmlAttribute("profilehollow")]
             public uint ProfileHollow;
             /// <summary></summary>
-            [XmlAttribute("pathrevolutions")]
             public float PathRevolutions;
             /// <summary></summary>
-            [XmlAttribute("state")]
             public uint State;
             /// <summary></summary>
-            [XmlIgnore]
             public ObjectManager.PCode PCode;
         }
 
