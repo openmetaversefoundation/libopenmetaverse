@@ -147,7 +147,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum PCode
+        public enum PCode : byte
         {
             /// <summary></summary>
             Prim = 9,
@@ -166,7 +166,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum AttachmentPoint
+        public enum AttachmentPoint : byte
         {
             /// <summary></summary>
             Default = 0,
@@ -253,7 +253,7 @@ namespace libsecondlife
         /// which options are present for each object
         /// </summary>
         [Flags]
-        public enum CompressedFlags
+        public enum CompressedFlags : uint
         {
             /// <summary>Hasn't been spotted in the wild yet</summary>
             ScratchPad = 0x01,
@@ -280,7 +280,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum Tree
+        public enum Tree : byte
         {
             /// <summary></summary>
             Pine1 = 0,
@@ -329,7 +329,7 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum Grass
+        public enum Grass : byte
         {
             /// <summary></summary>
             Grass0 = 0,
@@ -1348,7 +1348,7 @@ namespace libsecondlife
                             prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
                             prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
 
-                            // Unknown
+                            // PCode-specific data
                             prim.GenericData = block.Data;
 
                             // Packed parameters
@@ -1635,9 +1635,7 @@ namespace libsecondlife
                         uint LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
                             (block.Data[i++] << 16) + (block.Data[i++] << 24));
 
-
                         prim = GetPrimitive(simulator, LocalID, FullID);
-
 
                         prim.LocalID = LocalID;
                         prim.ID = FullID;
@@ -1691,17 +1689,16 @@ namespace libsecondlife
                                 // Tree data
                                 if ((flags & CompressedFlags.Tree) != 0)
                                 {
-                                    // FIXME: Decode the tree data in to an enum and do something with it
-                                    byte treeData = block.Data[i++];
-                                    Client.DebugLog("Compressed object with Tree flag set, TreeData: " + treeData);
+                                    prim.GenericData = new byte[1];
+                                    prim.GenericData[0] = block.Data[i++];
                                 }
                                 // Scratch pad
                                 else if ((flags & CompressedFlags.ScratchPad) != 0)
                                 {
                                     int size = block.Data[i++];
+                                    prim.GenericData = new byte[size];
+                                    Array.Copy(block.Data, i, prim.GenericData, 0, size);
                                     i += size;
-                                    Client.Log("Compressed object with ScratchPad flag set, Size: " + size,
-                                        Helpers.LogLevel.Warning);
                                 }
                                 
                                 // Floating text
@@ -1856,7 +1853,32 @@ namespace libsecondlife
                             case PCode.Grass:
                             case PCode.Tree:
                             case PCode.NewTree:
-                                // FIXME: Implement these!!!
+                                #region Foliage Decoding
+                                // State
+                                prim.data.State = (uint)block.Data[i++];
+                                // CRC
+                                i += 4;
+                                // Material
+                                prim.data.Material = (uint)block.Data[i++];
+                                // Click action
+                                prim.ClickAction = (ClickAction)block.Data[i++];
+                                // Scale
+                                prim.Scale = new LLVector3(block.Data, i);
+                                i += 12;
+                                // Position
+                                prim.Position = new LLVector3(block.Data, i);
+                                i += 12;
+                                // Rotation
+                                prim.Rotation = new LLQuaternion(block.Data, i, true);
+                                i += 12;
+                                #endregion Foliage Decoding
+
+                                // FIXME: We are leaving a lot of data left undecoded here, including the
+                                // tree species. Need to understand what is going on with these packets
+                                // and fix it soon!
+
+                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+
                                 break;
                             default:
                                 Client.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() + 

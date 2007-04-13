@@ -19,6 +19,7 @@ namespace libsecondlife.TestClient
 
             Parcels = new ParcelDownloader(testClient);
             Parcels.OnParcelsDownloaded += new ParcelDownloader.ParcelsDownloadedCallback(Parcels_OnParcelsDownloaded);
+            testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -28,7 +29,10 @@ namespace libsecondlife.TestClient
             ParcelsDownloaded.Reset();
             ParcelsDownloaded.WaitOne(20000, false);
 
-            return "Downloaded information for " + ParcelCount + " parcels in " + Client.Network.CurrentSim.Name;
+            if (Client.Network.CurrentSim != null)
+                return "Downloaded information for " + ParcelCount + " parcels in " + Client.Network.CurrentSim.Name;
+            else
+                return String.Empty;
         }
 
         void Parcels_OnParcelsDownloaded(Simulator simulator, Dictionary<int, Parcel> Parcels, int[,] map)
@@ -41,6 +45,11 @@ namespace libsecondlife.TestClient
 
             ParcelCount = Parcels.Count;
 
+            ParcelsDownloaded.Set();
+        }
+
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
             ParcelsDownloaded.Set();
         }
     }

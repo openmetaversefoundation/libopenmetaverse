@@ -69,6 +69,7 @@ namespace libsecondlife
         private bool Dead = false;
         private Thread CapsThread;
         private string EventQueueCap = String.Empty;
+        private HttpWebRequest CapsRequest = null;
         private HttpWebRequest EventQueueRequest = null;
 
         /// <summary>
@@ -116,7 +117,6 @@ namespace libsecondlife
 
         private void Run()
         {
-            byte[] buffer = null;
             ArrayList req = new ArrayList();
             req.Add("MapLayer");
             req.Add("MapLayerGod");
@@ -142,20 +142,15 @@ namespace libsecondlife
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(Seedcaps);
-                request.KeepAlive = false;
-                request.Timeout = Client.Settings.CAPS_TIMEOUT;
-                request.Method = "POST";
-                request.ContentLength = data.Length;
+                CapsRequest = (HttpWebRequest)HttpWebRequest.Create(Seedcaps);
+                CapsRequest.KeepAlive = false;
+                CapsRequest.Timeout = Client.Settings.CAPS_TIMEOUT;
+                CapsRequest.Method = "POST";
+                CapsRequest.ContentLength = data.Length;
 
-                Stream reqStream = request.GetRequestStream();
-                reqStream.Write(data, 0, data.Length);
-                reqStream.Close();
+                CapsRequest.BeginGetRequestStream(new AsyncCallback(CapsRequestCallback), data);
 
-                WebResponse response = request.GetResponse();
-                BinaryReader reader = new BinaryReader(response.GetResponseStream());
-                buffer = reader.ReadBytes((int)response.ContentLength);
-                response.Close();
+                Client.DebugLog("Requesting initial CAPS request stream");
             }
             catch (WebException e)
             {
@@ -175,23 +170,57 @@ namespace libsecondlife
                 {
                     Client.Log("CAPS initialization error for " + Simulator.ToString() + ": " + e.Message +
                         ", retrying", Helpers.LogLevel.Warning);
+                    // FIXME: No
                     goto MakeRequest;
                 }
             }
+        }
 
-            Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
+        private void CapsRequestCallback(IAsyncResult result)
+        {
+            byte[] buffer = null;
 
-            foreach (string cap in resp.Keys)
+            try
             {
-                //Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
-                Capabilities[cap] = (string)resp[cap];
+                Client.DebugLog("Writing to initial CAPS request stream");
+
+                byte[] data = (byte[])result.AsyncState;
+                Stream reqStream = CapsRequest.EndGetRequestStream(result);
+
+                reqStream.Write(data, 0, data.Length);
+                reqStream.Close();
+
+                Client.DebugLog("Requesting initial CAPS response stream");
+
+                WebResponse response = CapsRequest.GetResponse();
+                BinaryReader reader = new BinaryReader(response.GetResponseStream());
+                buffer = reader.ReadBytes((int)response.ContentLength);
+                response.Close();
+            }
+            catch (WebException e)
+            {
+                Client.Log("CAPS error initializing the connection, retrying. " + e.Message,
+                    Helpers.LogLevel.Warning);
+                Run();
+                return;
             }
 
-            if (Capabilities.ContainsKey("EventQueueGet"))
+            if (buffer != null)
             {
-                EventQueueCap = Capabilities["EventQueueGet"];
-                Client.DebugLog("Running event queue for " + Simulator.ToString());
-                EventQueueHandler(null);
+                Hashtable resp = (Hashtable)LLSD.LLSDDeserialize(buffer);
+
+                foreach (string cap in resp.Keys)
+                {
+                    Client.DebugLog(String.Format("Got cap {0}: {1}", cap, (string)resp[cap]));
+                    Capabilities[cap] = (string)resp[cap];
+                }
+
+                if (Capabilities.ContainsKey("EventQueueGet"))
+                {
+                    EventQueueCap = Capabilities["EventQueueGet"];
+                    Client.DebugLog("Running event queue for " + Simulator.ToString());
+                    EventQueueHandler(null);
+                }
             }
         }
 

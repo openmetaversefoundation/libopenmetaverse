@@ -68,16 +68,15 @@ namespace libsecondlife
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
-        public int TELEPORT_TIMEOUT = 25 * 1000;
+        public int TELEPORT_TIMEOUT = 40 * 1000;
         /// <summary>Number of milliseconds before NetworkManager.Logout() will
         /// time out</summary>
         public int LOGOUT_TIMEOUT = 5 * 1000;
         /// <summary>Number of milliseconds before a CAPS call will time out 
         /// and try again</summary>
         /// <remarks>Setting this too low will cause web requests to repeatedly
-        /// time out and retry. Too high of a setting may cause the library to 
-        /// block for a long time during network shutdown</remarks>
-        public int CAPS_TIMEOUT = 20 * 1000;
+        /// time out and retry</remarks>
+        public int CAPS_TIMEOUT = 60 * 1000;
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
         public int LOGIN_TIMEOUT = 60 * 1000;
         /// <summary>Milliseconds before a packet is assumed lost and resent</summary>

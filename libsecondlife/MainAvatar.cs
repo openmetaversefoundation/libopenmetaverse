@@ -498,7 +498,6 @@ namespace libsecondlife
 
         #endregion
 
-
         #region Callbacks & Events
         /// <summary>
         /// Triggered on incoming chat messages
@@ -629,7 +628,6 @@ namespace libsecondlife
 
         #endregion
 
-
         #region Public Members
 
         /// <summary>Your (client) avatar UUID</summary>
@@ -696,7 +694,6 @@ namespace libsecondlife
 
         #endregion Public Members
 
-
         internal uint sittingOn = 0;
         internal string teleportMessage = String.Empty;
         internal DateTime lastInterpolation;
@@ -708,7 +705,6 @@ namespace libsecondlife
         private float health = 0.0f;
         private int balance = 0;
 		private LLUUID activeGroup = LLUUID.Zero;
-
 
         #region AgentUpdate Constants
 
@@ -792,8 +788,6 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.MoneySummaryReply, callback);
             Client.Network.RegisterCallback(PacketType.AdjustBalance, callback);
 
-            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(MoneyBalanceReplyHandler));
-
             // Group callbacks
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupHandler));
@@ -813,7 +807,7 @@ namespace libsecondlife
         /// <param name="message">Text message being sent</param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(FirstName + " " + LastName, target, message, LLUUID.Random(),
+            InstantMessage(Client.ToString(), target, message, LLUUID.Random(),
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.Position,
                 LLUUID.Zero, new byte[0]);
         }
@@ -826,7 +820,7 @@ namespace libsecondlife
         /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
         public void InstantMessage(LLUUID target, string message, LLUUID imSessionID)
         {
-            InstantMessage(FirstName + " " + LastName, target, message, imSessionID,
+            InstantMessage(Client.ToString(), target, message, imSessionID,
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.Position,
                 LLUUID.Zero, new byte[0]);
         }
@@ -910,7 +904,7 @@ namespace libsecondlife
         /// <param name="message">Text Message being sent.</param>
         public void InstantMessageGroup(LLUUID groupUUID, string message)
         {
-            InstantMessageGroup(FirstName + " " + LastName, groupUUID, message);
+            InstantMessageGroup(Client.ToString(), groupUUID, message);
         }
 
         /// <summary>
@@ -1085,7 +1079,6 @@ namespace libsecondlife
         {
             // Basic profile properties
             AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
-
             apup.AgentData.AgentID = this.ID;
             apup.AgentData.SessionID = Client.Network.SessionID;
             apup.PropertiesData.AboutText = Helpers.StringToField(this.ProfileProperties.AboutText);
@@ -1096,9 +1089,10 @@ namespace libsecondlife
             apup.PropertiesData.MaturePublish = this.ProfileProperties.MaturePublish;
             apup.PropertiesData.ProfileURL = Helpers.StringToField(this.ProfileProperties.ProfileURL);
 
+            Client.Network.SendPacket(apup);
+
             // Interests
             AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
-
             aiup.AgentData.AgentID = this.ID;
             aiup.AgentData.SessionID = Client.Network.SessionID;
             aiup.PropertiesData.LanguagesText = Helpers.StringToField(this.ProfileInterests.LanguagesText);
@@ -1107,8 +1101,6 @@ namespace libsecondlife
             aiup.PropertiesData.WantToMask = this.ProfileInterests.WantToMask;
             aiup.PropertiesData.WantToText = Helpers.StringToField(this.ProfileInterests.WantToText);
 
-            //Send packets
-            Client.Network.SendPacket(apup);
             Client.Network.SendPacket(aiup);
         }
 
@@ -1448,7 +1440,7 @@ namespace libsecondlife
             teleport.Info.Position = position;
             teleport.Info.RegionHandle = regionHandle;
 
-            Client.Log("Teleporting to region " + regionHandle.ToString(), Helpers.LogLevel.Info);
+            Client.Log("Requesting teleport to region handle " + regionHandle.ToString(), Helpers.LogLevel.Info);
 
             Client.Network.SendPacket(teleport);
         }
@@ -1461,7 +1453,7 @@ namespace libsecondlife
         /// <param name="accept">Accept the teleport request or deny it</param>
         public void TeleportLureRespond(LLUUID requesterID, bool accept)
         {
-            InstantMessage(FirstName + " " + LastName, requesterID, String.Empty, LLUUID.Random(), 
+            InstantMessage(Client.ToString(), requesterID, String.Empty, LLUUID.Random(), 
                 accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
                 InstantMessageOnline.Offline, this.Position, LLUUID.Zero, new byte[0]);
 
@@ -1594,6 +1586,36 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Set this avatar's tier contribution
+        /// </summary>
+        /// <param name="group">Group to change tier in</param>
+        /// <param name="contribution">amount of tier to donate</param>
+        public void SetGroupContribution(LLUUID group, int contribution)
+        {
+            libsecondlife.Packets.SetGroupContributionPacket sgp = new SetGroupContributionPacket();
+            sgp.AgentData.AgentID = Client.Network.AgentID;
+            sgp.AgentData.SessionID = Client.Network.SessionID;
+            sgp.Data.GroupID = group;
+            sgp.Data.Contribution = contribution;
+            Client.Network.SendPacket(sgp);
+        }
+
+        /// <summary>
+        /// Change the role that determines your active title
+        /// </summary>
+        /// <param name="group">Group to use</param>
+        /// <param name="role">Role to change to</param>
+        public void ChangeTitle(LLUUID group, LLUUID role)
+        {
+            libsecondlife.Packets.GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
+            gtu.AgentData.AgentID = Client.Network.AgentID;
+            gtu.AgentData.SessionID = Client.Network.SessionID;
+            gtu.AgentData.TitleRoleID = role;
+            gtu.AgentData.GroupID = group;
+            Client.Network.SendPacket(gtu);
+        }
+
+        /// <summary>
         /// Sends camera and action updates to the server including the 
         /// position and orientation of our camera, and a ControlFlags field
         /// specifying our current movement actions
@@ -1648,6 +1670,8 @@ namespace libsecondlife
 
             Client.Network.SendPacket(yes, simulator);
         }
+
+        #region Packet Handlers
 
         /// <summary>
         /// Take an incoming ImprovedInstantMessage packet, auto-parse, and if
@@ -1832,34 +1856,26 @@ namespace libsecondlife
             {
                 balance += ((AdjustBalancePacket)packet).AgentData.Delta;
             }
-
-            if (OnBalanceUpdated != null)
+            else if (packet.Type == PacketType.MoneyBalanceReply)
             {
-                OnBalanceUpdated(balance);
-            }
-        }
+                MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
+                balance = mbrp.MoneyData.MoneyBalance;
 
-        /// <summary>
-        /// Update Client Avatar's L$ balance from incoming packet, and
-        /// trigger a complete callback with all available fields.
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void MoneyBalanceReplyHandler(Packet packet, Simulator simulator)
-        {
-            MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
-            balance = mbrp.MoneyData.MoneyBalance;
-
-            if (OnMoneyBalanceReplyReceived != null)
-            {
-                OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, Helpers.FieldToUTF8String(mbrp.MoneyData.Description));
+                if (OnMoneyBalanceReplyReceived != null)
+                {
+                    try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
+                        mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
+                        mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
+                        Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
 
             if (OnBalanceUpdated != null)
             {
-                OnBalanceUpdated(balance);
+                try { OnBalanceUpdated(balance); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
-
         }
 
 	    private void EventQueueHandler(string message, Hashtable body, Caps caps)
@@ -1921,7 +1937,8 @@ namespace libsecondlife
                 flags = (TeleportFlags)progress.Info.TeleportFlags;
                 TeleportStat = TeleportStatus.Progress;
 
-                Client.DebugLog("TeleportProgress received from " + simulator.ToString() + ", Flags: " + flags.ToString());
+                Client.DebugLog("TeleportProgress received from " + simulator.ToString() + "Message: " + 
+                    teleportMessage + ", Flags: " + flags.ToString());
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
@@ -1974,7 +1991,7 @@ namespace libsecondlife
             {
                 //TeleportCancelPacket cancel = (TeleportCancelPacket)packet;
 
-                teleportMessage = "Cancelled.";
+                teleportMessage = "Cancelled";
                 TeleportStat = TeleportStatus.Cancelled;
                 finished = true;
 
@@ -2004,37 +2021,7 @@ namespace libsecondlife
 
             if (finished) TeleportEvent.Set();
         }
-
-        /// <summary>
-        /// Set this avatar's tier contribution
-        /// </summary>
-        /// <param name="group">Group to change tier in</param>
-        /// <param name="contribution">amount of tier to donate</param>
-        public void SetGroupContribution(LLUUID group, int contribution)
-        {
-            libsecondlife.Packets.SetGroupContributionPacket sgp = new SetGroupContributionPacket();
-            sgp.AgentData.AgentID = Client.Network.AgentID;
-            sgp.AgentData.SessionID = Client.Network.SessionID;
-            sgp.Data.GroupID = group;
-            sgp.Data.Contribution = contribution;
-            Client.Network.SendPacket(sgp);
-        }
-
-        /// <summary>
-        /// Change the role that determines your active title
-        /// </summary>
-        /// <param name="group">Group to use</param>
-        /// <param name="role">Role to change to</param>
-        public void ChangeTitle(LLUUID group, LLUUID role)
-        {
-            libsecondlife.Packets.GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
-            gtu.AgentData.AgentID = Client.Network.AgentID;
-            gtu.AgentData.SessionID = Client.Network.SessionID;
-            gtu.AgentData.TitleRoleID = role;
-            gtu.AgentData.GroupID = group;
-            Client.Network.SendPacket(gtu);
-        }
-
     }
 
+    #endregion Packet Handlers
 }

@@ -554,7 +554,9 @@ namespace libsecondlife
                                                 // FIXME:
                                                 break;
                                             default:
-                                                // FIXME:
+                                                Client.Log("Unhandled element in login reply (gestures)", 
+                                                    Helpers.LogLevel.Error);
+                                                reader.Skip();
                                                 break;
                                         }
 
@@ -578,7 +580,7 @@ namespace libsecondlife
                                     int categoryID;
                                     string categoryName;
 
-                                    while (ReadCategoryMember(reader, out categoryID, out categoryName))
+                                    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
                                     {
                                         // FIXME:
                                     }
@@ -597,7 +599,7 @@ namespace libsecondlife
                                     int categoryID;
                                     string categoryName;
 
-                                    while (ReadCategoryMember(reader, out categoryID, out categoryName))
+                                    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
                                     {
                                         // FIXME:
                                     }
@@ -626,7 +628,8 @@ namespace libsecondlife
                                 int buddyRightsGiven, buddyRightsHas;
                                 LLUUID buddyID;
 
-                                while (ReadBuddyMember(reader, out buddyRightsGiven, out buddyRightsHas, out buddyID))
+                                while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas, 
+                                    out buddyID))
                                 {
                                     // FIXME:
                                 }
@@ -650,7 +653,9 @@ namespace libsecondlife
                                             // FIXME:
                                             break;
                                         default:
-                                            // FIXME:
+                                            Client.Log("Unhandled element in login reply (ui-config)", 
+                                                Helpers.LogLevel.Error);
+                                            reader.Skip();
                                             break;
                                     }
                                 }
@@ -685,7 +690,9 @@ namespace libsecondlife
                                             // FIXME:
                                             break;
                                         default:
-                                            // FIXME:
+                                            Client.Log("Unhandled element in login reply (login-flags)", 
+                                                Helpers.LogLevel.Error);
+                                            reader.Skip();
                                             break;
                                     }
                                 }
@@ -717,7 +724,9 @@ namespace libsecondlife
                                             // FIXME:
                                             break;
                                         default:
-                                            // FIXME:
+                                            Client.Log("Unhandled element in login reply (global-textures)", 
+                                                Helpers.LogLevel.Error);
+                                            reader.Skip();
                                             break;
                                     }
                                 }
@@ -729,7 +738,8 @@ namespace libsecondlife
                                 reader.ReadEndElement();
                                 break;
                             default:
-                                // FIXME:
+                                Client.Log("Unhandled element in login reply", Helpers.LogLevel.Error);
+                                reader.Skip();
                                 break;
                         }
 
@@ -783,6 +793,9 @@ namespace libsecondlife
 
                     Client.Network.LoginMessage = value;
                 }
+
+                reader.Close();
+                response.Close();
             }
             catch (WebException e)
             {
@@ -792,7 +805,7 @@ namespace libsecondlife
             catch (XmlException e)
             {
                 LoginErrorKey = "libsl";
-                LoginMessage = "Error parsing reply XML: " + e.Message;
+                LoginMessage = "Error parsing reply XML: " + e.Message + Environment.NewLine + e.StackTrace;
             }
 
             LoginEvent.Set();
@@ -898,7 +911,8 @@ namespace libsecondlife
             return ret;
         }
 
-        private static bool ReadCategoryMember(XmlReader reader, out int categoryID, out string categoryName)
+        private static bool ReadCategoryMember(SecondLife client, XmlReader reader, out int categoryID, 
+            out string categoryName)
         {
             categoryID = 0;
             categoryName = String.Empty;
@@ -928,7 +942,9 @@ namespace libsecondlife
                                 categoryName = ReadStringValue(reader);
                                 break;
                             default:
-                                // FIXME:
+                                client.Log("Unhandled element in login reply (CategoryMember)", 
+                                    Helpers.LogLevel.Error);
+                                reader.Skip();
                                 break;
                         }
 
@@ -945,8 +961,8 @@ namespace libsecondlife
             return ret;
         }
 
-        private static bool ReadBuddyMember(XmlReader reader, out int buddyRightsGiven, out int buddyRightsHas, 
-            out LLUUID buddyID)
+        private static bool ReadBuddyMember(SecondLife client, XmlReader reader, out int buddyRightsGiven, 
+            out int buddyRightsHas, out LLUUID buddyID)
         {
             buddyRightsGiven = 0;
             buddyRightsHas = 0;
@@ -981,7 +997,9 @@ namespace libsecondlife
                                 buddyRightsHas = ReadIntegerValue(reader);
                                 break;
                             default:
-                                // FIXME:
+                                client.Log("Unhandled element in login reply (BuddyMember)", 
+                                    Helpers.LogLevel.Error);
+                                reader.Skip();
                                 break;
                         }
 

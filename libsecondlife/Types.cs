@@ -531,6 +531,17 @@ namespace libsecondlife
             return new LLVector3(vec.X * val, vec.Y * val, vec.Z * val);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lhs"></param>
+        /// <param name="rhs"></param>
+        /// <returns></returns>
+        public static LLVector3 operator *(LLVector3 lhs, LLVector3 rhs)
+        {
+            return new LLVector3(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
+        }
+
         public static LLVector3 operator *(LLVector3 vec, LLQuaternion quat)
         {
             LLQuaternion vq = new LLQuaternion(vec.X, vec.Y, vec.Z, 0);
