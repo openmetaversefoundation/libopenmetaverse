@@ -410,19 +410,16 @@ namespace libsecondlife.AssetSystem
                 {
                     string[] fields = line.Split(' ');
 
-                    // Use exception handling to deal with all the lines we aren't interested in
-                    try
+                    int id;
+                    if( Int32.TryParse(fields[0], out id) == false )
                     {
-                        int id = Int32.Parse(fields[0]);
+                        continue; // Not interested in this line
+                    }
 
-                        float weight = 0.0f;
-                        Single.TryParse(fields[1], System.Globalization.NumberStyles.Float,
-                            Helpers.EnUsCulture.NumberFormat, out weight);
-                        _Parameters[id] = weight;
-                    }
-                    catch (Exception)
-                    {
-                    }
+                    float weight = 0.0f;
+                    Single.TryParse(fields[1], System.Globalization.NumberStyles.Float,
+                        Helpers.EnUsCulture.NumberFormat, out weight);
+                    _Parameters[id] = weight;
                 }
 
                 // Parse the textures
@@ -431,17 +428,20 @@ namespace libsecondlife.AssetSystem
                 {
                     string[] fields = line.Split(' ');
 
-                    // Use exception handling to deal with all the lines we aren't interested in
-                    try
+                    uint id;
+                    if (UInt32.TryParse(fields[0], out id) == false)
                     {
-                        uint id = UInt32.Parse(fields[0]);
-                        LLUUID texture = new LLUUID(fields[1]);
+                        continue; // Not interested in this line
+                    }
 
-                        _Textures[id] = texture;
-                    }
-                    catch (Exception)
+                    LLUUID texture;
+                    
+                    if( LLUUID.TryParse(fields[1], out texture) == false )
                     {
+                        continue; // if it won't parse, ignore and continue
                     }
+
+                    _Textures[id] = texture;
                 }
 
                 return;
