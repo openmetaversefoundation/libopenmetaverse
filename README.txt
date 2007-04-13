@@ -7,13 +7,16 @@ We're still working on getting some documentation prepared for our first
 have a couple of resources, the primary one being the #libsl IRC channel 
 on EFNet. There are also the web forums at 
 http://www.libsecondlife.org/forums/ and the libsecondlife-dev mailing 
-list at https://lists.berlios.de/mailman/listinfo/libsecondlife-dev and lastly you can use 
-the e-mail contact@libsecondlife.org for any general inquiries (although 
-we prefer developer-related questions to go to IRC, forums, or the 
-mailing list). You can find us in-world at http://tinyurl.com/y472fj.
+list at https://lists.berlios.de/mailman/listinfo/libsecondlife-dev and 
+lastly you can use the e-mail contact@libsecondlife.org for any general 
+inquiries (although we prefer developer-related questions to go to IRC, 
+forums, or the mailing list). You can find us in-world at 
+http://tinyurl.com/y472fj.
 
 To checkout a copy of libsecondlife trunk see 
 https://developer.berlios.de/svn/?group_id=7710 for details. 
+
+
 Windows
 ------------------------------------------------------------------
 ------------------------------------------------------------------
