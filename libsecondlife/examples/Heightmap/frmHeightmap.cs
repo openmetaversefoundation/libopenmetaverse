@@ -34,6 +34,8 @@ namespace Heightmap
             Client.Throttle.Land = 1000000;
             Client.Throttle.Wind = 0;
 
+            Client.Settings.MULTIPLE_SIMS = false;
+
             // Build the picture boxes
             this.SuspendLayout();
             for (int y = 0; y < 16; y++)
