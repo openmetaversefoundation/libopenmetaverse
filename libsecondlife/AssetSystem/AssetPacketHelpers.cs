@@ -120,22 +120,22 @@ namespace libsecondlife.AssetSystem
 			byte[] param = new byte[100];
 			int pos = 0;
 
-			Array.Copy(AgentID.Data, 0, param, pos, 16);
+			Buffer.BlockCopy(AgentID.Data, 0, param, pos, 16);
 			pos += 16;
 
-			Array.Copy(SessionID.Data, 0, param, pos, 16);
+			Buffer.BlockCopy(SessionID.Data, 0, param, pos, 16);
 			pos += 16;
 
-			Array.Copy(item.OwnerID.Data, 0, param, pos, 16);
+			Buffer.BlockCopy(item.OwnerID.Data, 0, param, pos, 16);
 			pos += 16;
 
-			Array.Copy(item.GroupID.Data, 0, param, pos, 16);
+			Buffer.BlockCopy(item.GroupID.Data, 0, param, pos, 16);
 			pos += 16;
 
-			Array.Copy(item.ItemID.Data, 0, param, pos, 16);
+			Buffer.BlockCopy(item.ItemID.Data, 0, param, pos, 16);
 			pos += 16;
 
-			Array.Copy(item.AssetID.Data, 0, param, pos, 16);
+			Buffer.BlockCopy(item.AssetID.Data, 0, param, pos, 16);
 			pos += 16;
 
 			param[pos] = (byte)item.Type;
@@ -159,7 +159,7 @@ namespace libsecondlife.AssetSystem
             byte[] param = new byte[20];
             int pos = 0;
 
-            Array.Copy(AssetID.Data, 0, param, pos, 16);
+            Buffer.BlockCopy(AssetID.Data, 0, param, pos, 16);
             pos += 16;
 
             param[pos] = (byte)Type;

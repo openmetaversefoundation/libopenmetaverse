@@ -691,11 +691,13 @@ namespace libsecondlife
         public uint SittingOn { get { return sittingOn; } }
 		/// <summary>Gets the UUID of the active group.</summary>
 		public LLUUID ActiveGroup { get { return activeGroup; } }
+        /// <summary>Current status message for teleporting</summary>
+        public string TeleportMessage { get { return teleportMessage; } }
 
         #endregion Public Members
 
-        internal uint sittingOn = 0;
         internal string teleportMessage = String.Empty;
+        internal uint sittingOn = 0;
         internal DateTime lastInterpolation;
 
         private SecondLife Client;
@@ -842,7 +844,7 @@ namespace libsecondlife
             {
                 binaryBucket = new byte[16 * conferenceIDs.Length];
                 for (int i = 0; i < conferenceIDs.Length; ++i)
-                    Array.Copy(conferenceIDs[i].Data, 0, binaryBucket, i * 16, 16);
+                    Buffer.BlockCopy(conferenceIDs[i].Data, 0, binaryBucket, i * 16, 16);
             }
             else
             {
@@ -959,10 +961,10 @@ namespace libsecondlife
 
             byte[] typeData = new byte[57];
             if (sourceAvatar != null)
-                Array.Copy(sourceAvatar.GetBytes(), typeData, 16);
+                Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
             if (targetObject != null)
-                Array.Copy(targetObject.GetBytes(), 0, typeData, 16, 16);
-            Array.Copy(globalOffset.GetBytes(), 0, typeData, 32, 24);
+                Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Buffer.BlockCopy(globalOffset.GetBytes(), 0, typeData, 32, 24);
             typeData[56] = (byte)type;
 
             effect.Effect[0].TypeData = typeData;
@@ -1026,9 +1028,9 @@ namespace libsecondlife
 
             byte[] typeData = new byte[57];
             if (sourceAvatar != null)
-                Array.Copy(sourceAvatar.GetBytes(), typeData, 16);
+                Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
             if (targetObject != null)
-                Array.Copy(targetObject.GetBytes(), 0, typeData, 16, 16);
+                Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
             typeData[56] = (byte)type;
 
             effect.Effect[0].TypeData = typeData;
@@ -1062,10 +1064,10 @@ namespace libsecondlife
 
             byte[] typeData = new byte[56];
             if (sourceAvatar != null)
-                Array.Copy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
+                Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
             if (targetObject != null)
-                Array.Copy(targetObject.GetBytes(), 0, typeData, 16, 16);
-            Array.Copy(globalOffset.GetBytes(), 0, typeData, 32, 24);
+                Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Buffer.BlockCopy(globalOffset.GetBytes(), 0, typeData, 32, 24);
 
             effect.Effect[0].TypeData = typeData;
 
@@ -1433,16 +1435,25 @@ namespace libsecondlife
         /// <param name="lookAt">Target to look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
-            teleport.AgentData.AgentID = Client.Network.AgentID;
-            teleport.AgentData.SessionID = Client.Network.SessionID;
-            teleport.Info.LookAt = lookAt;
-            teleport.Info.Position = position;
-            teleport.Info.RegionHandle = regionHandle;
+            if (Client.Network.CurrentCaps.IsEventQueueRunning)
+            {
+                TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
+                teleport.AgentData.AgentID = Client.Network.AgentID;
+                teleport.AgentData.SessionID = Client.Network.SessionID;
+                teleport.Info.LookAt = lookAt;
+                teleport.Info.Position = position;
+                teleport.Info.RegionHandle = regionHandle;
 
-            Client.Log("Requesting teleport to region handle " + regionHandle.ToString(), Helpers.LogLevel.Info);
+                Client.Log("Requesting teleport to region handle " + regionHandle.ToString(), Helpers.LogLevel.Info);
 
-            Client.Network.SendPacket(teleport);
+                Client.Network.SendPacket(teleport);
+            }
+            else
+            {
+                teleportMessage = "CAPS event queue is not running";
+                TeleportEvent.Set();
+                TeleportStat = TeleportStatus.Failed;
+            }
         }
 
         /// <summary>

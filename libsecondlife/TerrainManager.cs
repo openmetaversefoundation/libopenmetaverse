@@ -191,7 +191,7 @@ namespace libsecondlife
             bitpack.PackBits(END_OF_PATCHES, 8);
 
             layer.LayerData.Data = new byte[bitpack.BytePos + 1];
-            Array.Copy(bitpack.Data, 0, layer.LayerData.Data, 0, bitpack.BytePos + 1);
+            Buffer.BlockCopy(bitpack.Data, 0, layer.LayerData.Data, 0, bitpack.BytePos + 1);
 
             return layer;
         }

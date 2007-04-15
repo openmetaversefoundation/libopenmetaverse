@@ -377,7 +377,7 @@ namespace libsecondlife.AssetSystem
             tr.BaseDataReceived = Data.Length;
 
             // Copy the first block of image data into the request.
-            Array.Copy(Data, 0, tr.AssetData, tr.Received, Data.Length);
+            Buffer.BlockCopy(Data, 0, tr.AssetData, (int)tr.Received, Data.Length);
             tr.Received += (uint)Data.Length;
 
             // Mark that the TransferRequest has received this header packet
@@ -445,7 +445,7 @@ namespace libsecondlife.AssetSystem
             }
 
             // Add this packet's data to the request.
-            Array.Copy(reply.ImageData.Data, 0, tr.AssetData, tr.BaseDataReceived + (1000 * (reply.ImageID.Packet - 1)), reply.ImageData.Data.Length);
+            Buffer.BlockCopy(reply.ImageData.Data, 0, tr.AssetData, tr.BaseDataReceived + (1000 * (reply.ImageID.Packet - 1)), reply.ImageData.Data.Length);
             tr.Received += (uint)reply.ImageData.Data.Length;
 
             tr.TimeOfLastPacket = Helpers.GetUnixTime(); // last time we recevied a packet for this request

@@ -9,7 +9,7 @@ namespace mapgenerator
     {
         static void WriteFieldMember(TextWriter writer, MapField field)
         {
-            string type = "";
+            string type = String.Empty;
 
             switch (field.Type)
             {
@@ -81,9 +81,9 @@ namespace mapgenerator
                 writer.WriteLine("                    if (value.Length > " + 
                     ((field.Count == 1) ? "255" : "1500") + ") { throw new OverflowException(" + 
                     "\"Value exceeds " + ((field.Count == 1) ? "255" : "1500") + " characters\"); }");
-                writer.WriteLine("                    else { _" + field.Name.ToLower() + 
-                    " = new byte[value.Length]; Array.Copy(value, _" + 
-                    field.Name.ToLower() + ", value.Length); }");
+                writer.WriteLine("                    else { _" + field.Name.ToLower() +
+                    " = new byte[value.Length]; Buffer.BlockCopy(value, 0, _" + 
+                    field.Name.ToLower() + ", 0, value.Length); }");
                 writer.WriteLine("                }" + Environment.NewLine + "            }");
             }
         }
@@ -110,7 +110,7 @@ namespace mapgenerator
                     break;
                 case FieldType.Fixed:
                     writer.WriteLine("                    " + field.Name + " = new byte[" + field.Count + "];");
-                    writer.WriteLine("                    Array.Copy(bytes, i, " + field.Name +
+                    writer.WriteLine("                    Buffer.BlockCopy(bytes, i, " + field.Name +
                         ", 0, " + field.Count + "); i += " + field.Count + ";");
                     break;
                 case FieldType.IPADDR:
@@ -180,7 +180,7 @@ namespace mapgenerator
                         writer.WriteLine("                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));");
                     }
                     writer.WriteLine("                    _" + field.Name.ToLower() + " = new byte[length];");
-                    writer.WriteLine("                    Array.Copy(bytes, i, _" + field.Name.ToLower() +
+                    writer.WriteLine("                    Buffer.BlockCopy(bytes, i, _" + field.Name.ToLower() +
                         ", 0, length); i += length;");
                     break;
                 default:
@@ -201,15 +201,15 @@ namespace mapgenerator
                 case FieldType.F32:
                     writer.WriteLine("ba = BitConverter.GetBytes(" + field.Name + ");" + Environment.NewLine +
                         "                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }" + Environment.NewLine +
-                        "                Array.Copy(ba, 0, bytes, i, 4); i += 4;");
+                        "                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;");
                     break;
                 case FieldType.F64:
                     writer.WriteLine("ba = BitConverter.GetBytes(" + field.Name + ");" + Environment.NewLine +
                         "                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }" + Environment.NewLine +
-                        "                Array.Copy(ba, 0, bytes, i, 8); i += 8;");
+                        "                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;");
                     break;
                 case FieldType.Fixed:
-                    writer.WriteLine("                Array.Copy(" + field.Name + ", 0, bytes, i, " + field.Count + ");" + 
+                    writer.WriteLine("                Buffer.BlockCopy(" + field.Name + ", 0, bytes, i, " + field.Count + ");" + 
                         "i += " + field.Count + ";");
                     break;
                 case FieldType.IPPORT:
@@ -223,17 +223,17 @@ namespace mapgenerator
                     writer.WriteLine("                bytes[i++] = (byte)((" + field.Name + " >> 8) % 256);");
                     break;
                 case FieldType.LLUUID:
-                    writer.WriteLine("Array.Copy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
+                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
                     break;
                 case FieldType.LLVector4:
-                    writer.WriteLine("Array.Copy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
+                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 16); i += 16;");
                     break;
                 case FieldType.LLQuaternion:
                 case FieldType.LLVector3:
-                    writer.WriteLine("Array.Copy(" + field.Name + ".GetBytes(), 0, bytes, i, 12); i += 12;");
+                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 12); i += 12;");
                     break;
                 case FieldType.LLVector3d:
-                    writer.WriteLine("Array.Copy(" + field.Name + ".GetBytes(), 0, bytes, i, 24); i += 24;");
+                    writer.WriteLine("Buffer.BlockCopy(" + field.Name + ".GetBytes(), 0, bytes, i, 24); i += 24;");
                     break;
                 case FieldType.U8:
                     writer.WriteLine("bytes[i++] = " + field.Name + ";");
@@ -272,7 +272,7 @@ namespace mapgenerator
                         writer.WriteLine("                bytes[i++] = (byte)((" + 
                             field.Name + ".Length >> 8) % 256);");
                     }
-                    writer.WriteLine("                Array.Copy(" + field.Name + ", 0, bytes, i, " + 
+                    writer.WriteLine("                Buffer.BlockCopy(" + field.Name + ", 0, bytes, i, " + 
                         field.Name + ".Length); " + "i += " + field.Name + ".Length;");
                     break;
                 default:

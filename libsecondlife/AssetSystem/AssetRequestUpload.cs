@@ -160,15 +160,15 @@ namespace libsecondlife.AssetSystem
 
                 // Prefix the first Xfer packet with the data length
                 // FIXME: Apply endianness patch
-                Array.Copy(BitConverter.GetBytes((int)AssetBeingTransferd._AssetData.Length), 0, packetData, 0, 4);
-                Array.Copy(AssetBeingTransferd._AssetData, 0, packetData, 4, dataSize);
+                Buffer.BlockCopy(BitConverter.GetBytes((int)AssetBeingTransferd._AssetData.Length), 0, packetData, 0, 4);
+                Buffer.BlockCopy(AssetBeingTransferd._AssetData, 0, packetData, 4, dataSize);
 
                 uploadPacket = AssetPacketHelpers.SendXferPacket(_XferID, packetData, packetNum);
             }
             else if (packetNum < _NumPackets2Send)
             {
                 byte[] packetData = new byte[1000];
-                Array.Copy(AssetBeingTransferd._AssetData, packetNum * 1000, packetData, 0, 1000);
+                Buffer.BlockCopy(AssetBeingTransferd._AssetData, (int)packetNum * 1000, packetData, 0, 1000);
 
                 uploadPacket = AssetPacketHelpers.SendXferPacket(_XferID, packetData, packetNum);
             }
@@ -177,7 +177,7 @@ namespace libsecondlife.AssetSystem
                 // The last packet has to be handled slightly differently
                 int lastLen = this.AssetBeingTransferd._AssetData.Length - (_NumPackets2Send * 1000);
                 byte[] packetData = new byte[lastLen];
-                Array.Copy(this.AssetBeingTransferd._AssetData, _NumPackets2Send * 1000, packetData, 0, lastLen);
+                Buffer.BlockCopy(this.AssetBeingTransferd._AssetData, _NumPackets2Send * 1000, packetData, 0, lastLen);
 
                 uint lastPacket = (uint)int.MaxValue + (uint)_NumPackets2Send + (uint)1;
                 uploadPacket = AssetPacketHelpers.SendXferPacket(_XferID, packetData, lastPacket);

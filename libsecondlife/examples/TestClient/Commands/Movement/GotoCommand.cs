@@ -19,7 +19,7 @@ namespace libsecondlife.TestClient
 			if (args.Length < 1)
                 return "usage: Destination should be specified as sim/x/y/z";
 
-            string destination = "";
+            string destination = String.Empty;
 
             // Handle multi-word sim names by combining the arguments
             foreach (string arg in args)
@@ -40,17 +40,14 @@ namespace libsecondlife.TestClient
             float.TryParse(tokens[2], out y);
             float.TryParse(tokens[3], out z);
 
-            //if (!EstateLookupFinished)
-            //{
-            //    Client.Grid.RequestEstateSims(GridManager.MapLayerType.Objects);
-            //    System.Threading.Thread.Sleep(3000);
-
-            //    EstateLookupFinished = true;
-            //}
-
-			Client.Self.Teleport(sim, new LLVector3(x, y, z));
-
-            return "Attempted to teleport to " + sim + " {" + x + "," + y + "," + z + "}";
+            if (Client.Self.Teleport(sim, new LLVector3(x, y, z)))
+            {
+                return "Teleported to " + Client.Network.CurrentSim;
+            }
+            else
+            {
+                return "Teleport failed: " + Client.Self.TeleportMessage;
+            }
 		}
     }
 }

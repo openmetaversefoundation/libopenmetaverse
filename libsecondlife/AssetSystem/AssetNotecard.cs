@@ -106,7 +106,7 @@ namespace libsecondlife.AssetSystem
 			// Assume this is a string, add 1 for the null terminator
 			byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)lindenText);
 			byte[] assetData = new byte[stringBytes.Length + 1];
-			Array.Copy(stringBytes, 0, assetData, 0, stringBytes.Length);
+            Buffer.BlockCopy(stringBytes, 0, assetData, 0, stringBytes.Length);
 
 			SetAssetData( assetData );
 		}

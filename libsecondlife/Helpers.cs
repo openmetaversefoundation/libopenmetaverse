@@ -720,7 +720,7 @@ namespace libsecondlife
 
             try
             {
-                Array.Copy(src, 0, dest, 0, 4);
+                Buffer.BlockCopy(src, 0, dest, 0, 4);
                 zerolen = 4;
                 bodylen = srclen;
 
@@ -803,7 +803,7 @@ namespace libsecondlife
             uint zerolen = 0;
             byte zerocount = 0;
 
-            Array.Copy(src, 0, dest, 0, 4);
+            Buffer.BlockCopy(src, 0, dest, 0, 4);
             zerolen += 4;
 
             int bodylen;

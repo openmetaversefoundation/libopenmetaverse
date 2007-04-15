@@ -630,10 +630,10 @@ namespace libsecondlife
                 CurrentCaps = null;
 
                 // Connect to the new CAPS system
-                if (seedcaps != null && seedcaps.Length > 0)
+                if (!String.IsNullOrEmpty(seedcaps))
                     CurrentCaps = new Caps(Client, simulator, seedcaps);
                 else
-                    Client.Log("Setting the current sim without a seed CAPS URL", Helpers.LogLevel.Warning);
+                    Client.Log("Setting the current sim without a capabilities server!", Helpers.LogLevel.Error);
 
                 // If the current simulator changed fire the callback
                 if (OnCurrentSimChanged != null && simulator != oldSim)
@@ -951,7 +951,7 @@ namespace libsecondlife
 
             if (overlay.ParcelData.SequenceID >= 0 && overlay.ParcelData.SequenceID <= 3)
             {
-                Array.Copy(overlay.ParcelData.Data, 0, simulator.ParcelOverlay,
+                Buffer.BlockCopy(overlay.ParcelData.Data, 0, simulator.ParcelOverlay, 
                     overlay.ParcelData.SequenceID * 1024, 1024);
                 simulator.ParcelOverlaysReceived++;
 

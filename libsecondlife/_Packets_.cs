@@ -241,7 +241,7 @@ namespace libsecondlife.Packets
         {
             if (bytes.Length < 8) { throw new MalformedDataException(); }
             Data = new byte[8];
-            Array.Copy(bytes, Data, 8);
+            Buffer.BlockCopy(bytes, 0, Data, 0, 8);
 
             if ((bytes[0] & Helpers.MSG_ZEROCODED) != 0 && bytes[6] == 0)
             {
@@ -266,7 +266,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Array.Copy(Data, 0, bytes, i, 8);
+            Buffer.BlockCopy(Data, 0, bytes, i, 8);
             i += 8;
         }
     }
@@ -305,7 +305,7 @@ namespace libsecondlife.Packets
         {
             if (bytes.Length < 6) { throw new MalformedDataException(); }
             Data = new byte[6];
-            Array.Copy(bytes, Data, 6);
+            Buffer.BlockCopy(bytes, 0, Data, 0, 6);
             pos = 6;
             CreateAckList(bytes, ref packetEnd);
         }
@@ -317,7 +317,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Array.Copy(Data, 0, bytes, i, 6);
+            Buffer.BlockCopy(Data, 0, bytes, i, 6);
             i += 6;
         }
     }
@@ -355,7 +355,7 @@ namespace libsecondlife.Packets
         {
             if (bytes.Length < 5) { throw new MalformedDataException(); }
             Data = new byte[5];
-            Array.Copy(bytes, Data, 5);
+            Buffer.BlockCopy(bytes, 0, Data, 0, 5);
             pos = 5;
             CreateAckList(bytes, ref packetEnd);
         }
@@ -367,7 +367,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Array.Copy(Data, 0, bytes, i, 5);
+            Buffer.BlockCopy(Data, 0, bytes, i, 5);
             i += 5;
         }
     }
@@ -2396,8 +2396,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Code % 256);
                 bytes[i++] = (byte)((Code >> 8) % 256);
                 bytes[i++] = (byte)((Code >> 16) % 256);
@@ -2683,7 +2683,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Array.Copy(value, _objectname, value.Length); }
+                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
             public LLUUID ObjectID;
@@ -2709,7 +2709,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _objectname = new byte[length];
-                    Array.Copy(bytes, i, _objectname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
                     ObjectID = new LLUUID(bytes, i); i += 16;
                     TelehubPos = new LLVector3(bytes, i); i += 12;
                     TelehubRot = new LLQuaternion(bytes, i, true); i += 12;
@@ -2724,10 +2724,10 @@ namespace libsecondlife.Packets
             {
                 if(ObjectName == null) { Console.WriteLine("Warning: ObjectName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectName.Length;
-                Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TelehubPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(TelehubRot.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TelehubPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(TelehubRot.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -2773,7 +2773,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(SpawnPointPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SpawnPointPos.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -2969,28 +2969,28 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(PriceParcelClaimFactor);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(ObjectCapacity % 256);
                 bytes[i++] = (byte)((ObjectCapacity >> 8) % 256);
                 bytes[i++] = (byte)((ObjectCapacity >> 16) % 256);
                 bytes[i++] = (byte)((ObjectCapacity >> 24) % 256);
                 ba = BitConverter.GetBytes(EnergyEfficiency);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(ObjectCount % 256);
                 bytes[i++] = (byte)((ObjectCount >> 8) % 256);
                 bytes[i++] = (byte)((ObjectCount >> 16) % 256);
                 bytes[i++] = (byte)((ObjectCount >> 24) % 256);
                 ba = BitConverter.GetBytes(TeleportPriceExponent);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(PriceGroupCreate % 256);
                 bytes[i++] = (byte)((PriceGroupCreate >> 8) % 256);
                 bytes[i++] = (byte)((PriceGroupCreate >> 16) % 256);
                 bytes[i++] = (byte)((PriceGroupCreate >> 24) % 256);
                 ba = BitConverter.GetBytes(PriceObjectRent);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(PricePublicObjectDelete % 256);
                 bytes[i++] = (byte)((PricePublicObjectDelete >> 8) % 256);
                 bytes[i++] = (byte)((PricePublicObjectDelete >> 16) % 256);
@@ -3017,7 +3017,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((PriceParcelClaim >> 24) % 256);
                 ba = BitConverter.GetBytes(PriceObjectScaleFactor);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(PriceRentLight % 256);
                 bytes[i++] = (byte)((PriceRentLight >> 8) % 256);
                 bytes[i++] = (byte)((PriceRentLight >> 16) % 256);
@@ -3121,7 +3121,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
 
@@ -3144,7 +3144,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -3156,7 +3156,7 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
             }
 
             public override string ToString()
@@ -3202,9 +3202,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -3287,7 +3287,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lastname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Array.Copy(value, _lastname, value.Length); }
+                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
                 }
             }
             private byte[] _firstname;
@@ -3298,7 +3298,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _firstname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Array.Copy(value, _firstname, value.Length); }
+                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
                 }
             }
             public LLUUID AvatarID;
@@ -3323,10 +3323,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _lastname = new byte[length];
-                    Array.Copy(bytes, i, _lastname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _firstname = new byte[length];
-                    Array.Copy(bytes, i, _firstname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
                     AvatarID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -3339,11 +3339,11 @@ namespace libsecondlife.Packets
             {
                 if(LastName == null) { Console.WriteLine("Warning: LastName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastName.Length;
-                Array.Copy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
+                Buffer.BlockCopy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
                 if(FirstName == null) { Console.WriteLine("Warning: FirstName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FirstName.Length;
-                Array.Copy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
-                Array.Copy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
+                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -3391,8 +3391,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -3486,7 +3486,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public sbyte Category;
@@ -3499,7 +3499,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _querytext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Array.Copy(value, _querytext, value.Length); }
+                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
                 }
             }
 
@@ -3523,12 +3523,12 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     Category = (sbyte)bytes[i++];
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _querytext = new byte[length];
-                    Array.Copy(bytes, i, _querytext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -3540,7 +3540,7 @@ namespace libsecondlife.Packets
             {
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)Category;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
@@ -3548,7 +3548,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((QueryFlags >> 24) % 256);
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
-                Array.Copy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
+                Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
             }
 
             public override string ToString()
@@ -3598,9 +3598,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -3644,7 +3644,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -3732,7 +3732,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public int BillableArea;
@@ -3748,7 +3748,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -3759,7 +3759,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public LLUUID OwnerID;
@@ -3789,7 +3789,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     BillableArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
@@ -3800,10 +3800,10 @@ namespace libsecondlife.Packets
                     GlobalZ = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     SnapshotID = new LLUUID(bytes, i); i += 16;
                     Flags = (byte)bytes[i++];
@@ -3822,7 +3822,7 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)(BillableArea % 256);
                 bytes[i++] = (byte)((BillableArea >> 8) % 256);
                 bytes[i++] = (byte)((BillableArea >> 16) % 256);
@@ -3833,21 +3833,21 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ActualArea >> 24) % 256);
                 ba = BitConverter.GetBytes(GlobalX);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(GlobalY);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(GlobalZ);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Desc.Length;
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Flags;
                 bytes[i++] = (byte)(Price % 256);
                 bytes[i++] = (byte)((Price >> 8) % 256);
@@ -3855,7 +3855,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Price >> 24) % 256);
                 ba = BitConverter.GetBytes(Dwell);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -3914,8 +3914,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -3958,7 +3958,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4061,7 +4061,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _querytext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Array.Copy(value, _querytext, value.Length); }
+                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
                 }
             }
 
@@ -4087,7 +4087,7 @@ namespace libsecondlife.Packets
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _querytext = new byte[length];
-                    Array.Copy(bytes, i, _querytext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -4097,7 +4097,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
@@ -4108,7 +4108,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((QueryStart >> 24) % 256);
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
-                Array.Copy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
+                Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
             }
 
             public override string ToString()
@@ -4155,8 +4155,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4239,7 +4239,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public LLUUID QueryID;
@@ -4254,7 +4254,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _querytext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Array.Copy(value, _querytext, value.Length); }
+                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
                 }
             }
 
@@ -4278,14 +4278,14 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     QueryID = new LLUUID(bytes, i); i += 16;
                     Category = (sbyte)bytes[i++];
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _querytext = new byte[length];
-                    Array.Copy(bytes, i, _querytext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -4297,8 +4297,8 @@ namespace libsecondlife.Packets
             {
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Category;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
@@ -4310,7 +4310,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((QueryStart >> 24) % 256);
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
-                Array.Copy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
+                Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
             }
 
             public override string ToString()
@@ -4360,8 +4360,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4447,7 +4447,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public bool Auction;
@@ -4475,7 +4475,7 @@ namespace libsecondlife.Packets
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Auction = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Dwell = BitConverter.ToSingle(bytes, i); i += 4;
@@ -4491,14 +4491,14 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 bytes[i++] = (byte)((ReservedNewbie) ? 1 : 0);
                 bytes[i++] = (byte)((ForSale) ? 1 : 0);
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)((Auction) ? 1 : 0);
                 ba = BitConverter.GetBytes(Dwell);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -4546,7 +4546,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4588,7 +4588,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4701,7 +4701,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lastname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Array.Copy(value, _lastname, value.Length); }
+                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
                 }
             }
             private byte[] _firstname;
@@ -4712,7 +4712,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _firstname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Array.Copy(value, _firstname, value.Length); }
+                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
                 }
             }
             public bool Online;
@@ -4725,7 +4725,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _group = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _group = new byte[value.Length]; Array.Copy(value, _group, value.Length); }
+                    else { _group = new byte[value.Length]; Buffer.BlockCopy(value, 0, _group, 0, value.Length); }
                 }
             }
 
@@ -4751,15 +4751,15 @@ namespace libsecondlife.Packets
                     AgentID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _lastname = new byte[length];
-                    Array.Copy(bytes, i, _lastname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _firstname = new byte[length];
-                    Array.Copy(bytes, i, _firstname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
                     Online = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     Reputation = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _group = new byte[length];
-                    Array.Copy(bytes, i, _group, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _group, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -4769,13 +4769,13 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(LastName == null) { Console.WriteLine("Warning: LastName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastName.Length;
-                Array.Copy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
+                Buffer.BlockCopy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
                 if(FirstName == null) { Console.WriteLine("Warning: FirstName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FirstName.Length;
-                Array.Copy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
+                Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)((Online) ? 1 : 0);
                 bytes[i++] = (byte)(Reputation % 256);
                 bytes[i++] = (byte)((Reputation >> 8) % 256);
@@ -4783,7 +4783,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Reputation >> 24) % 256);
                 if(Group == null) { Console.WriteLine("Warning: Group is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Group.Length;
-                Array.Copy(Group, 0, bytes, i, Group.Length); i += Group.Length;
+                Buffer.BlockCopy(Group, 0, bytes, i, Group.Length); i += Group.Length;
             }
 
             public override string ToString()
@@ -4832,7 +4832,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4874,7 +4874,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -4974,7 +4974,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _date;
@@ -4985,7 +4985,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _date = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _date = new byte[value.Length]; Array.Copy(value, _date, value.Length); }
+                    else { _date = new byte[value.Length]; Buffer.BlockCopy(value, 0, _date, 0, value.Length); }
                 }
             }
             public uint EventID;
@@ -5013,10 +5013,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _date = new byte[length];
-                    Array.Copy(bytes, i, _date, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _date, 0, length); i += length;
                     EventID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     EventFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -5032,15 +5032,15 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Date == null) { Console.WriteLine("Warning: Date is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Date.Length;
-                Array.Copy(Date, 0, bytes, i, Date.Length); i += Date.Length;
+                Buffer.BlockCopy(Date, 0, bytes, i, Date.Length); i += Date.Length;
                 bytes[i++] = (byte)(EventID % 256);
                 bytes[i++] = (byte)((EventID >> 8) % 256);
                 bytes[i++] = (byte)((EventID >> 16) % 256);
                 bytes[i++] = (byte)((EventID >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EventFlags % 256);
                 bytes[i++] = (byte)((EventFlags >> 8) % 256);
                 bytes[i++] = (byte)((EventFlags >> 16) % 256);
@@ -5097,7 +5097,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5139,7 +5139,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5243,7 +5243,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _groupname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Array.Copy(value, _groupname, value.Length); }
+                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
 
@@ -5270,7 +5270,7 @@ namespace libsecondlife.Packets
                     OpenEnrollment = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _groupname = new byte[length];
-                    Array.Copy(bytes, i, _groupname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -5284,7 +5284,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Members >> 8) % 256);
                 bytes[i++] = (byte)((Members >> 16) % 256);
                 bytes[i++] = (byte)((Members >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MembershipFee % 256);
                 bytes[i++] = (byte)((MembershipFee >> 8) % 256);
                 bytes[i++] = (byte)((MembershipFee >> 16) % 256);
@@ -5292,7 +5292,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
-                Array.Copy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
+                Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
             }
 
             public override string ToString()
@@ -5338,7 +5338,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5380,7 +5380,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5484,7 +5484,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _querytext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Array.Copy(value, _querytext, value.Length); }
+                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
                 }
             }
 
@@ -5511,7 +5511,7 @@ namespace libsecondlife.Packets
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _querytext = new byte[length];
-                    Array.Copy(bytes, i, _querytext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -5521,7 +5521,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Category % 256);
                 bytes[i++] = (byte)((Category >> 8) % 256);
                 bytes[i++] = (byte)((Category >> 16) % 256);
@@ -5536,7 +5536,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((QueryStart >> 24) % 256);
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
-                Array.Copy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
+                Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
             }
 
             public override string ToString()
@@ -5584,8 +5584,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5671,7 +5671,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public int PriceForListing;
@@ -5699,7 +5699,7 @@ namespace libsecondlife.Packets
                     ClassifiedID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     PriceForListing = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ExpirationDate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -5716,10 +5716,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((CreationDate >> 8) % 256);
                 bytes[i++] = (byte)((CreationDate >> 16) % 256);
                 bytes[i++] = (byte)((CreationDate >> 24) % 256);
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(PriceForListing % 256);
                 bytes[i++] = (byte)((PriceForListing >> 8) % 256);
                 bytes[i++] = (byte)((PriceForListing >> 16) % 256);
@@ -5775,7 +5775,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5817,7 +5817,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -5918,7 +5918,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
 
@@ -5942,7 +5942,7 @@ namespace libsecondlife.Packets
                     ClassifiedID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -5952,10 +5952,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
             }
 
             public override string ToString()
@@ -6000,8 +6000,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6113,7 +6113,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6157,8 +6157,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6243,7 +6243,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public LLUUID ClassifiedID;
@@ -6257,7 +6257,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -6268,7 +6268,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             private byte[] _parcelname;
@@ -6279,7 +6279,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _parcelname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parcelname = new byte[value.Length]; Array.Copy(value, _parcelname, value.Length); }
+                    else { _parcelname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parcelname, 0, value.Length); }
                 }
             }
             public uint Category;
@@ -6313,19 +6313,19 @@ namespace libsecondlife.Packets
                     CreationDate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     ClassifiedID = new LLUUID(bytes, i); i += 16;
                     PosGlobal = new LLVector3d(bytes, i); i += 24;
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _parcelname = new byte[length];
-                    Array.Copy(bytes, i, _parcelname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _parcelname, 0, length); i += length;
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CreatorID = new LLUUID(bytes, i); i += 16;
                     SnapshotID = new LLUUID(bytes, i); i += 16;
@@ -6348,26 +6348,26 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((CreationDate >> 24) % 256);
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 if(ParcelName == null) { Console.WriteLine("Warning: ParcelName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ParcelName.Length;
-                Array.Copy(ParcelName, 0, bytes, i, ParcelName.Length); i += ParcelName.Length;
+                Buffer.BlockCopy(ParcelName, 0, bytes, i, ParcelName.Length); i += ParcelName.Length;
                 bytes[i++] = (byte)(Category % 256);
                 bytes[i++] = (byte)((Category >> 8) % 256);
                 bytes[i++] = (byte)((Category >> 16) % 256);
                 bytes[i++] = (byte)((Category >> 24) % 256);
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(PriceForListing % 256);
                 bytes[i++] = (byte)((PriceForListing >> 8) % 256);
                 bytes[i++] = (byte)((PriceForListing >> 16) % 256);
@@ -6439,7 +6439,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6524,7 +6524,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -6535,7 +6535,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public uint Category;
@@ -6567,10 +6567,10 @@ namespace libsecondlife.Packets
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SnapshotID = new LLUUID(bytes, i); i += 16;
                     PriceForListing = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -6585,21 +6585,21 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = ClassifiedFlags;
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 bytes[i++] = (byte)(Category % 256);
                 bytes[i++] = (byte)((Category >> 8) % 256);
                 bytes[i++] = (byte)((Category >> 16) % 256);
                 bytes[i++] = (byte)((Category >> 24) % 256);
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(PriceForListing % 256);
                 bytes[i++] = (byte)((PriceForListing >> 8) % 256);
                 bytes[i++] = (byte)((PriceForListing >> 16) % 256);
@@ -6662,8 +6662,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6763,7 +6763,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6807,8 +6807,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6910,8 +6910,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ClassifiedID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -6956,8 +6956,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7059,7 +7059,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
@@ -7108,8 +7108,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7193,7 +7193,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID PickID;
@@ -7218,7 +7218,7 @@ namespace libsecondlife.Packets
                     Enabled = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     PickID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -7232,8 +7232,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7278,7 +7278,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7320,7 +7320,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7456,7 +7456,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Area >> 8) % 256);
                 bytes[i++] = (byte)((Area >> 16) % 256);
                 bytes[i++] = (byte)((Area >> 24) % 256);
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
@@ -7517,8 +7517,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7605,7 +7605,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public bool Auction;
@@ -7634,7 +7634,7 @@ namespace libsecondlife.Packets
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Auction = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -7652,10 +7652,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ActualArea >> 16) % 256);
                 bytes[i++] = (byte)((ActualArea >> 24) % 256);
                 bytes[i++] = (byte)((ForSale) ? 1 : 0);
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)((Auction) ? 1 : 0);
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
@@ -7709,7 +7709,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7751,7 +7751,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -7871,7 +7871,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
@@ -7920,8 +7920,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8005,7 +8005,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public float Dwell;
@@ -8030,7 +8030,7 @@ namespace libsecondlife.Packets
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Dwell = BitConverter.ToSingle(bytes, i); i += 4;
                 }
@@ -8043,13 +8043,13 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 ba = BitConverter.GetBytes(Dwell);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -8094,7 +8094,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8136,7 +8136,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8254,7 +8254,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8298,8 +8298,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8381,7 +8381,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public int BillableArea;
@@ -8398,7 +8398,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -8409,7 +8409,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public int SalePrice;
@@ -8440,7 +8440,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     BillableArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
@@ -8452,10 +8452,10 @@ namespace libsecondlife.Packets
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     SnapshotID = new LLUUID(bytes, i); i += 16;
@@ -8475,7 +8475,7 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)(BillableArea % 256);
                 bytes[i++] = (byte)((BillableArea >> 8) % 256);
                 bytes[i++] = (byte)((BillableArea >> 16) % 256);
@@ -8486,26 +8486,26 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ActualArea >> 24) % 256);
                 ba = BitConverter.GetBytes(GlobalX);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(GlobalY);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(GlobalZ);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Desc.Length;
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Flags;
                 bytes[i++] = (byte)(AuctionID % 256);
                 bytes[i++] = (byte)((AuctionID >> 8) % 256);
@@ -8513,7 +8513,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((AuctionID >> 24) % 256);
                 ba = BitConverter.GetBytes(Dwell);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -8572,7 +8572,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8719,8 +8719,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8828,7 +8828,7 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((OnlineStatus) ? 1 : 0);
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Count % 256);
                 bytes[i++] = (byte)((Count >> 8) % 256);
                 bytes[i++] = (byte)((Count >> 16) % 256);
@@ -8941,7 +8941,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -8985,8 +8985,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9069,7 +9069,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _subject = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _subject = new byte[value.Length]; Array.Copy(value, _subject, value.Length); }
+                    else { _subject = new byte[value.Length]; Buffer.BlockCopy(value, 0, _subject, 0, value.Length); }
                 }
             }
             public bool HasAttachment;
@@ -9082,7 +9082,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _fromname = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _fromname = new byte[value.Length]; Array.Copy(value, _fromname, value.Length); }
+                    else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
                 }
             }
             public byte AssetType;
@@ -9108,12 +9108,12 @@ namespace libsecondlife.Packets
                     Timestamp = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _subject = new byte[length];
-                    Array.Copy(bytes, i, _subject, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _subject, 0, length); i += length;
                     HasAttachment = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     NoticeID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _fromname = new byte[length];
-                    Array.Copy(bytes, i, _fromname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _fromname, 0, length); i += length;
                     AssetType = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -9131,13 +9131,13 @@ namespace libsecondlife.Packets
                 if(Subject == null) { Console.WriteLine("Warning: Subject is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Subject.Length % 256);
                 bytes[i++] = (byte)((Subject.Length >> 8) % 256);
-                Array.Copy(Subject, 0, bytes, i, Subject.Length); i += Subject.Length;
+                Buffer.BlockCopy(Subject, 0, bytes, i, Subject.Length); i += Subject.Length;
                 bytes[i++] = (byte)((HasAttachment) ? 1 : 0);
-                Array.Copy(NoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(FromName == null) { Console.WriteLine("Warning: FromName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(FromName.Length % 256);
                 bytes[i++] = (byte)((FromName.Length >> 8) % 256);
-                Array.Copy(FromName, 0, bytes, i, FromName.Length); i += FromName.Length;
+                Buffer.BlockCopy(FromName, 0, bytes, i, FromName.Length); i += FromName.Length;
                 bytes[i++] = AssetType;
             }
 
@@ -9189,8 +9189,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9302,7 +9302,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupNoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupNoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9346,8 +9346,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9449,8 +9449,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupNoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupNoticeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9495,8 +9495,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9600,9 +9600,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -9648,8 +9648,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9761,8 +9761,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -9808,8 +9808,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -9917,17 +9917,17 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(LocationID % 256);
                 bytes[i++] = (byte)((LocationID >> 8) % 256);
                 bytes[i++] = (byte)((LocationID >> 16) % 256);
                 bytes[i++] = (byte)((LocationID >> 24) % 256);
-                Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(TeleportFlags % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 24) % 256);
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -10028,9 +10028,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(LandmarkID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(LandmarkID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -10108,7 +10108,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public uint TeleportFlags;
@@ -10132,7 +10132,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     TeleportFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -10145,7 +10145,7 @@ namespace libsecondlife.Packets
             {
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = (byte)(TeleportFlags % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
@@ -10193,7 +10193,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -10274,7 +10274,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _seedcapability = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _seedcapability = new byte[value.Length]; Array.Copy(value, _seedcapability, value.Length); }
+                    else { _seedcapability = new byte[value.Length]; Buffer.BlockCopy(value, 0, _seedcapability, 0, value.Length); }
                 }
             }
             public LLUUID AgentID;
@@ -10304,7 +10304,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _seedcapability = new byte[length];
-                    Array.Copy(bytes, i, _seedcapability, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _seedcapability, 0, length); i += length;
                     AgentID = new LLUUID(bytes, i); i += 16;
                     SimPort = (ushort)((bytes[i++] << 8) + bytes[i++]);
                     RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
@@ -10324,8 +10324,8 @@ namespace libsecondlife.Packets
                 if(SeedCapability == null) { Console.WriteLine("Warning: SeedCapability is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(SeedCapability.Length % 256);
                 bytes[i++] = (byte)((SeedCapability.Length >> 8) % 256);
-                Array.Copy(SeedCapability, 0, bytes, i, SeedCapability.Length); i += SeedCapability.Length;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SeedCapability, 0, bytes, i, SeedCapability.Length); i += SeedCapability.Length;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((SimPort >> 8) % 256);
                 bytes[i++] = (byte)(SimPort % 256);
                 bytes[i++] = (byte)(RegionHandle % 256);
@@ -10431,7 +10431,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public byte LureType;
@@ -10455,7 +10455,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     LureType = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -10468,7 +10468,7 @@ namespace libsecondlife.Packets
             {
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = LureType;
             }
 
@@ -10513,7 +10513,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -10557,8 +10557,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -10682,9 +10682,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(LureID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(LureID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(TeleportFlags % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 8) % 256);
                 bytes[i++] = (byte)((TeleportFlags >> 16) % 256);
@@ -10786,8 +10786,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -10960,7 +10960,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _reason = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _reason = new byte[value.Length]; Array.Copy(value, _reason, value.Length); }
+                    else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
                 }
             }
 
@@ -10984,7 +10984,7 @@ namespace libsecondlife.Packets
                     AgentID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _reason = new byte[length];
-                    Array.Copy(bytes, i, _reason, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _reason, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -10994,10 +10994,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Reason == null) { Console.WriteLine("Warning: Reason is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Reason.Length;
-                Array.Copy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
+                Buffer.BlockCopy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
             }
 
             public override string ToString()
@@ -11095,8 +11095,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Type % 256);
                 bytes[i++] = (byte)((Type >> 8) % 256);
                 bytes[i++] = (byte)((Type >> 16) % 256);
@@ -11177,7 +11177,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _timestring = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _timestring = new byte[value.Length]; Array.Copy(value, _timestring, value.Length); }
+                    else { _timestring = new byte[value.Length]; Buffer.BlockCopy(value, 0, _timestring, 0, value.Length); }
                 }
             }
             public int MaxPlace;
@@ -11203,7 +11203,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _timestring = new byte[length];
-                    Array.Copy(bytes, i, _timestring, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _timestring, 0, length); i += length;
                     MaxPlace = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     MinPlace = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -11218,7 +11218,7 @@ namespace libsecondlife.Packets
             {
                 if(TimeString == null) { Console.WriteLine("Warning: TimeString is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TimeString.Length;
-                Array.Copy(TimeString, 0, bytes, i, TimeString.Length); i += TimeString.Length;
+                Buffer.BlockCopy(TimeString, 0, bytes, i, TimeString.Length); i += TimeString.Length;
                 bytes[i++] = (byte)(MaxPlace % 256);
                 bytes[i++] = (byte)((MaxPlace >> 8) % 256);
                 bytes[i++] = (byte)((MaxPlace >> 16) % 256);
@@ -11272,7 +11272,7 @@ namespace libsecondlife.Packets
                 {
                     ID = new LLUUID(bytes, i); i += 16;
                     Name = new byte[32];
-                    Array.Copy(bytes, i, Name, 0, 32); i += 32;
+                    Buffer.BlockCopy(bytes, i, Name, 0, 32); i += 32;
                     Sequence = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Place = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Score = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -11285,8 +11285,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                                Array.Copy(Name, 0, bytes, i, 32);i += 32;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                                Buffer.BlockCopy(Name, 0, bytes, i, 32);i += 32;
                 bytes[i++] = (byte)(Sequence % 256);
                 bytes[i++] = (byte)((Sequence >> 8) % 256);
                 bytes[i++] = (byte)((Sequence >> 16) % 256);
@@ -11345,7 +11345,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11463,7 +11463,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11509,9 +11509,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11624,7 +11624,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11670,9 +11670,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11787,8 +11787,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11884,8 +11884,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -11987,8 +11987,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SerialNum >> 8) % 256);
                 bytes[i++] = (byte)((SerialNum >> 16) % 256);
                 bytes[i++] = (byte)((SerialNum >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -12091,8 +12091,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SerialNum >> 8) % 256);
                 bytes[i++] = (byte)((SerialNum >> 16) % 256);
                 bytes[i++] = (byte)((SerialNum >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -12170,7 +12170,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public byte Type;
@@ -12195,7 +12195,7 @@ namespace libsecondlife.Packets
                     Channel = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     Type = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -12213,7 +12213,7 @@ namespace libsecondlife.Packets
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Message.Length % 256);
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = Type;
             }
 
@@ -12261,8 +12261,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -12346,7 +12346,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _throttles = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _throttles = new byte[value.Length]; Array.Copy(value, _throttles, value.Length); }
+                    else { _throttles = new byte[value.Length]; Buffer.BlockCopy(value, 0, _throttles, 0, value.Length); }
                 }
             }
 
@@ -12370,7 +12370,7 @@ namespace libsecondlife.Packets
                     GenCounter = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _throttles = new byte[length];
-                    Array.Copy(bytes, i, _throttles, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _throttles, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -12386,7 +12386,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GenCounter >> 24) % 256);
                 if(Throttles == null) { Console.WriteLine("Warning: Throttles is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Throttles.Length;
-                Array.Copy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
+                Buffer.BlockCopy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
             }
 
             public override string ToString()
@@ -12433,8 +12433,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(CircuitCode % 256);
                 bytes[i++] = (byte)((CircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((CircuitCode >> 16) % 256);
@@ -12550,7 +12550,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GenCounter >> 24) % 256);
                 ba = BitConverter.GetBytes(VerticalAngle);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -12597,8 +12597,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(CircuitCode % 256);
                 bytes[i++] = (byte)((CircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((CircuitCode >> 16) % 256);
@@ -12762,8 +12762,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(CircuitCode % 256);
                 bytes[i++] = (byte)((CircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((CircuitCode >> 16) % 256);
@@ -12892,7 +12892,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureentry = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
+                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
 
@@ -12915,7 +12915,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _textureentry = new byte[length];
-                    Array.Copy(bytes, i, _textureentry, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -12928,7 +12928,7 @@ namespace libsecondlife.Packets
                 if(TextureEntry == null) { Console.WriteLine("Warning: TextureEntry is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(TextureEntry.Length % 256);
                 bytes[i++] = (byte)((TextureEntry.Length >> 8) % 256);
-                Array.Copy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
+                Buffer.BlockCopy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
             }
 
             public override string ToString()
@@ -12973,7 +12973,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = TextureIndex;
-                Array.Copy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -13026,9 +13026,9 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SerialNum >> 8) % 256);
                 bytes[i++] = (byte)((SerialNum >> 16) % 256);
                 bytes[i++] = (byte)((SerialNum >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -13169,8 +13169,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -13311,8 +13311,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -13412,7 +13412,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -13505,7 +13505,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TextureID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TextureID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -13602,8 +13602,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AlwaysRun) ? 1 : 0);
             }
 
@@ -13748,8 +13748,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Force) ? 1 : 0);
             }
 
@@ -13915,7 +13915,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((DuplicateFlags >> 8) % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 16) % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 24) % 256);
-                Array.Copy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -13962,9 +13962,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -14149,20 +14149,20 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(DuplicateFlags % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 8) % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 16) % 256);
                 bytes[i++] = (byte)((DuplicateFlags >> 24) % 256);
                 bytes[i++] = (byte)((CopyRotates) ? 1 : 0);
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
-                Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)((BypassRaycast) ? 1 : 0);
                 bytes[i++] = (byte)((CopyCenters) ? 1 : 0);
-                Array.Copy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -14290,7 +14290,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -14335,8 +14335,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -14455,7 +14455,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -14500,8 +14500,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -14626,8 +14626,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsTemporary) ? 1 : 0);
                 bytes[i++] = (byte)(ObjectLocalID % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
@@ -14786,8 +14786,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -14882,7 +14882,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mediaurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Array.Copy(value, _mediaurl, value.Length); }
+                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
             public uint ObjectLocalID;
@@ -14894,7 +14894,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureentry = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
+                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
 
@@ -14918,11 +14918,11 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _mediaurl = new byte[length];
-                    Array.Copy(bytes, i, _mediaurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
                     ObjectLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _textureentry = new byte[length];
-                    Array.Copy(bytes, i, _textureentry, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -14934,7 +14934,7 @@ namespace libsecondlife.Packets
             {
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
-                Array.Copy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
+                Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
                 bytes[i++] = (byte)(ObjectLocalID % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
@@ -14942,7 +14942,7 @@ namespace libsecondlife.Packets
                 if(TextureEntry == null) { Console.WriteLine("Warning: TextureEntry is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(TextureEntry.Length % 256);
                 bytes[i++] = (byte)((TextureEntry.Length >> 8) % 256);
-                Array.Copy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
+                Buffer.BlockCopy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
             }
 
             public override string ToString()
@@ -14989,8 +14989,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -15154,8 +15154,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -15387,8 +15387,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -15485,7 +15485,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _paramdata = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _paramdata = new byte[value.Length]; Array.Copy(value, _paramdata, value.Length); }
+                    else { _paramdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _paramdata, 0, value.Length); }
                 }
             }
             public uint ParamSize;
@@ -15512,7 +15512,7 @@ namespace libsecondlife.Packets
                     ObjectLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _paramdata = new byte[length];
-                    Array.Copy(bytes, i, _paramdata, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _paramdata, 0, length); i += length;
                     ParamSize = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParamType = (ushort)(bytes[i++] + (bytes[i++] << 8));
                 }
@@ -15531,7 +15531,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
                 if(ParamData == null) { Console.WriteLine("Warning: ParamData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ParamData.Length;
-                Array.Copy(ParamData, 0, bytes, i, ParamData.Length); i += ParamData.Length;
+                Buffer.BlockCopy(ParamData, 0, bytes, i, ParamData.Length); i += ParamData.Length;
                 bytes[i++] = (byte)(ParamSize % 256);
                 bytes[i++] = (byte)((ParamSize >> 8) % 256);
                 bytes[i++] = (byte)((ParamSize >> 16) % 256);
@@ -15586,8 +15586,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -15747,8 +15747,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -15795,8 +15795,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Override) ? 1 : 0);
             }
 
@@ -15966,9 +15966,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -16144,10 +16144,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CategoryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CategoryID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -16266,9 +16266,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -16314,8 +16314,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -16418,7 +16418,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Delete) ? 1 : 0);
             }
 
@@ -16576,8 +16576,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -16796,8 +16796,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -16893,7 +16893,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
 
@@ -16917,7 +16917,7 @@ namespace libsecondlife.Packets
                     LocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -16933,7 +16933,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
             }
 
             public override string ToString()
@@ -16978,8 +16978,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -17075,7 +17075,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
 
@@ -17099,7 +17099,7 @@ namespace libsecondlife.Packets
                     LocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -17115,7 +17115,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
             }
 
             public override string ToString()
@@ -17160,8 +17160,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -17328,8 +17328,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -17489,8 +17489,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -17650,8 +17650,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -17770,7 +17770,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -17818,8 +17818,8 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = AttachmentPoint;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -17980,8 +17980,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -18140,8 +18140,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -18300,8 +18300,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -18460,8 +18460,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -18662,8 +18662,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -18828,8 +18828,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -18943,7 +18943,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GrabOffset.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(GrabOffset.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(LocalID % 256);
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
@@ -18992,8 +18992,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19104,9 +19104,9 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TimeSinceLast >> 8) % 256);
                 bytes[i++] = (byte)((TimeSinceLast >> 16) % 256);
                 bytes[i++] = (byte)((TimeSinceLast >> 24) % 256);
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GrabOffsetInitial.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(GrabPosition.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GrabOffsetInitial.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(GrabPosition.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -19153,8 +19153,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19302,8 +19302,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19403,7 +19403,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19447,8 +19447,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19551,8 +19551,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -19597,8 +19597,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19699,7 +19699,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19743,8 +19743,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19845,7 +19845,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -19891,8 +19891,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(VolumeDetail % 256);
                 bytes[i++] = (byte)((VolumeDetail >> 8) % 256);
             }
@@ -20010,8 +20010,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -20036,7 +20036,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Array.Copy(value, _objectname, value.Length); }
+                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
             public LLUUID FileID;
@@ -20048,7 +20048,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
 
@@ -20072,11 +20072,11 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _objectname = new byte[length];
-                    Array.Copy(bytes, i, _objectname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
                     FileID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -20088,11 +20088,11 @@ namespace libsecondlife.Packets
             {
                 if(ObjectName == null) { Console.WriteLine("Warning: ObjectName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectName.Length;
-                Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
-                Array.Copy(FileID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
+                Buffer.BlockCopy(FileID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
             }
 
             public override string ToString()
@@ -20207,10 +20207,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = BrushSize;
                 ba = BitConverter.GetBytes(Seconds);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(Height);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = Action;
             }
 
@@ -20275,16 +20275,16 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
                 ba = BitConverter.GetBytes(East);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(West);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(North);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(South);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -20332,8 +20332,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -20454,8 +20454,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -20551,8 +20551,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -20628,7 +20628,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _filename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Array.Copy(value, _filename, value.Length); }
+                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
                 }
             }
 
@@ -20651,7 +20651,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _filename = new byte[length];
-                    Array.Copy(bytes, i, _filename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -20663,7 +20663,7 @@ namespace libsecondlife.Packets
             {
                 if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filename.Length;
-                Array.Copy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
+                Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
             }
 
             public override string ToString()
@@ -20707,8 +20707,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -20913,7 +20913,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -20962,8 +20962,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -21063,7 +21063,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(PreyID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PreyID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -21107,8 +21107,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -21277,7 +21277,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Type >> 24) % 256);
                 ba = BitConverter.GetBytes(Value);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Array.Copy(ba, 0, bytes, i, 8); i += 8;
+                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
             }
 
             public override string ToString()
@@ -21458,7 +21458,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _syscpu = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _syscpu = new byte[value.Length]; Array.Copy(value, _syscpu, value.Length); }
+                    else { _syscpu = new byte[value.Length]; Buffer.BlockCopy(value, 0, _syscpu, 0, value.Length); }
                 }
             }
             private byte[] _sysgpu;
@@ -21469,7 +21469,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _sysgpu = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sysgpu = new byte[value.Length]; Array.Copy(value, _sysgpu, value.Length); }
+                    else { _sysgpu = new byte[value.Length]; Buffer.BlockCopy(value, 0, _sysgpu, 0, value.Length); }
                 }
             }
             public uint SysRAM;
@@ -21482,7 +21482,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _sysos = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sysos = new byte[value.Length]; Array.Copy(value, _sysos, value.Length); }
+                    else { _sysos = new byte[value.Length]; Buffer.BlockCopy(value, 0, _sysos, 0, value.Length); }
                 }
             }
 
@@ -21522,15 +21522,15 @@ namespace libsecondlife.Packets
                     SimFPS = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _syscpu = new byte[length];
-                    Array.Copy(bytes, i, _syscpu, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _syscpu, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _sysgpu = new byte[length];
-                    Array.Copy(bytes, i, _sysgpu, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _sysgpu, 0, length); i += length;
                     SysRAM = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     StartTime = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _sysos = new byte[length];
-                    Array.Copy(bytes, i, _sysos, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _sysos, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -21548,31 +21548,31 @@ namespace libsecondlife.Packets
                 bytes[i++] = AgentsInView;
                 ba = BitConverter.GetBytes(FPS);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(RegionsVisited % 256);
                 bytes[i++] = (byte)((RegionsVisited >> 8) % 256);
                 bytes[i++] = (byte)((RegionsVisited >> 16) % 256);
                 bytes[i++] = (byte)((RegionsVisited >> 24) % 256);
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Ping);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(RunTime);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(MetersTraveled);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Array.Copy(ba, 0, bytes, i, 8); i += 8;
+                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
                 ba = BitConverter.GetBytes(SimFPS);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(SysCPU == null) { Console.WriteLine("Warning: SysCPU is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SysCPU.Length;
-                Array.Copy(SysCPU, 0, bytes, i, SysCPU.Length); i += SysCPU.Length;
+                Buffer.BlockCopy(SysCPU, 0, bytes, i, SysCPU.Length); i += SysCPU.Length;
                 if(SysGPU == null) { Console.WriteLine("Warning: SysGPU is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SysGPU.Length;
-                Array.Copy(SysGPU, 0, bytes, i, SysGPU.Length); i += SysGPU.Length;
+                Buffer.BlockCopy(SysGPU, 0, bytes, i, SysGPU.Length); i += SysGPU.Length;
                 bytes[i++] = (byte)(SysRAM % 256);
                 bytes[i++] = (byte)((SysRAM >> 8) % 256);
                 bytes[i++] = (byte)((SysRAM >> 16) % 256);
@@ -21583,7 +21583,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((StartTime >> 24) % 256);
                 if(SysOS == null) { Console.WriteLine("Warning: SysOS is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SysOS.Length;
-                Array.Copy(SysOS, 0, bytes, i, SysOS.Length); i += SysOS.Length;
+                Buffer.BlockCopy(SysOS, 0, bytes, i, SysOS.Length); i += SysOS.Length;
             }
 
             public override string ToString()
@@ -21741,8 +21741,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Questions % 256);
                 bytes[i++] = (byte)((Questions >> 8) % 256);
                 bytes[i++] = (byte)((Questions >> 16) % 256);
@@ -21792,8 +21792,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -21876,7 +21876,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _details = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _details = new byte[value.Length]; Array.Copy(value, _details, value.Length); }
+                    else { _details = new byte[value.Length]; Buffer.BlockCopy(value, 0, _details, 0, value.Length); }
                 }
             }
             private byte[] _versionstring;
@@ -21887,7 +21887,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _versionstring = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _versionstring = new byte[value.Length]; Array.Copy(value, _versionstring, value.Length); }
+                    else { _versionstring = new byte[value.Length]; Buffer.BlockCopy(value, 0, _versionstring, 0, value.Length); }
                 }
             }
             public LLUUID AbuseRegionID;
@@ -21901,7 +21901,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _summary = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _summary = new byte[value.Length]; Array.Copy(value, _summary, value.Length); }
+                    else { _summary = new byte[value.Length]; Buffer.BlockCopy(value, 0, _summary, 0, value.Length); }
                 }
             }
             public byte ReportType;
@@ -21914,7 +21914,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _abuseregionname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _abuseregionname = new byte[value.Length]; Array.Copy(value, _abuseregionname, value.Length); }
+                    else { _abuseregionname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abuseregionname, 0, value.Length); }
                 }
             }
             public LLUUID ScreenshotID;
@@ -21943,21 +21943,21 @@ namespace libsecondlife.Packets
                     ObjectID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _details = new byte[length];
-                    Array.Copy(bytes, i, _details, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _details, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _versionstring = new byte[length];
-                    Array.Copy(bytes, i, _versionstring, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _versionstring, 0, length); i += length;
                     AbuseRegionID = new LLUUID(bytes, i); i += 16;
                     CheckFlags = (byte)bytes[i++];
                     Category = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _summary = new byte[length];
-                    Array.Copy(bytes, i, _summary, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _summary, 0, length); i += length;
                     ReportType = (byte)bytes[i++];
                     AbuserID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _abuseregionname = new byte[length];
-                    Array.Copy(bytes, i, _abuseregionname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _abuseregionname, 0, length); i += length;
                     ScreenshotID = new LLUUID(bytes, i); i += 16;
                     Position = new LLVector3(bytes, i); i += 12;
                 }
@@ -21969,27 +21969,27 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Details == null) { Console.WriteLine("Warning: Details is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Details.Length % 256);
                 bytes[i++] = (byte)((Details.Length >> 8) % 256);
-                Array.Copy(Details, 0, bytes, i, Details.Length); i += Details.Length;
+                Buffer.BlockCopy(Details, 0, bytes, i, Details.Length); i += Details.Length;
                 if(VersionString == null) { Console.WriteLine("Warning: VersionString is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VersionString.Length;
-                Array.Copy(VersionString, 0, bytes, i, VersionString.Length); i += VersionString.Length;
-                Array.Copy(AbuseRegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(VersionString, 0, bytes, i, VersionString.Length); i += VersionString.Length;
+                Buffer.BlockCopy(AbuseRegionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = CheckFlags;
                 bytes[i++] = Category;
                 if(Summary == null) { Console.WriteLine("Warning: Summary is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Summary.Length;
-                Array.Copy(Summary, 0, bytes, i, Summary.Length); i += Summary.Length;
+                Buffer.BlockCopy(Summary, 0, bytes, i, Summary.Length); i += Summary.Length;
                 bytes[i++] = ReportType;
-                Array.Copy(AbuserID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AbuserID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(AbuseRegionName == null) { Console.WriteLine("Warning: AbuseRegionName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)AbuseRegionName.Length;
-                Array.Copy(AbuseRegionName, 0, bytes, i, AbuseRegionName.Length); i += AbuseRegionName.Length;
-                Array.Copy(ScreenshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AbuseRegionName, 0, bytes, i, AbuseRegionName.Length); i += AbuseRegionName.Length;
+                Buffer.BlockCopy(ScreenshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -22048,8 +22048,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -22132,7 +22132,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
 
@@ -22155,7 +22155,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -22167,7 +22167,7 @@ namespace libsecondlife.Packets
             {
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
             }
 
             public override string ToString()
@@ -22242,7 +22242,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public bool Modal;
@@ -22266,7 +22266,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     Modal = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
                 catch (Exception)
@@ -22279,7 +22279,7 @@ namespace libsecondlife.Packets
             {
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = (byte)((Modal) ? 1 : 0);
             }
 
@@ -22324,7 +22324,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -22435,14 +22435,14 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(Mag);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(Time % 256);
                 bytes[i++] = (byte)((Time >> 8) % 256);
                 bytes[i++] = (byte)((Time >> 16) % 256);
                 bytes[i++] = (byte)((Time >> 24) % 256);
-                Array.Copy(Perp.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Perp.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Type;
-                Array.Copy(Victim.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Victim.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -22649,7 +22649,7 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(Health);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -22725,7 +22725,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public byte Audible;
@@ -22739,7 +22739,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _fromname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _fromname = new byte[value.Length]; Array.Copy(value, _fromname, value.Length); }
+                    else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
                 }
             }
             public byte SourceType;
@@ -22766,13 +22766,13 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     Audible = (byte)bytes[i++];
                     ChatType = (byte)bytes[i++];
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _fromname = new byte[length];
-                    Array.Copy(bytes, i, _fromname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _fromname, 0, length); i += length;
                     SourceType = (byte)bytes[i++];
                     SourceID = new LLUUID(bytes, i); i += 16;
                     Position = new LLVector3(bytes, i); i += 12;
@@ -22788,16 +22788,16 @@ namespace libsecondlife.Packets
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Message.Length % 256);
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = Audible;
                 bytes[i++] = ChatType;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(FromName == null) { Console.WriteLine("Warning: FromName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FromName.Length;
-                Array.Copy(FromName, 0, bytes, i, FromName.Length); i += FromName.Length;
+                Buffer.BlockCopy(FromName, 0, bytes, i, FromName.Length); i += FromName.Length;
                 bytes[i++] = SourceType;
-                Array.Copy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -22905,7 +22905,7 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(StatValue);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(StatID % 256);
                 bytes[i++] = (byte)((StatID >> 8) % 256);
                 bytes[i++] = (byte)((StatID >> 16) % 256);
@@ -23089,8 +23089,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -23170,7 +23170,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public int PricePerMeter;
@@ -23210,7 +23210,7 @@ namespace libsecondlife.Packets
                     RedirectGridY = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     PricePerMeter = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
@@ -23238,10 +23238,10 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(BillableFactor);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(ObjectBonusFactor);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(RedirectGridX % 256);
                 bytes[i++] = (byte)((RedirectGridX >> 8) % 256);
                 bytes[i++] = (byte)((RedirectGridX >> 16) % 256);
@@ -23252,7 +23252,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RedirectGridY >> 24) % 256);
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)(PricePerMeter % 256);
                 bytes[i++] = (byte)((PricePerMeter >> 8) % 256);
                 bytes[i++] = (byte)((PricePerMeter >> 16) % 256);
@@ -23263,23 +23263,23 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionFlags >> 24) % 256);
                 ba = BitConverter.GetBytes(WaterHeight);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)((UseEstateSun) ? 1 : 0);
                 ba = BitConverter.GetBytes(SunHour);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = MaxAgents;
                 bytes[i++] = SimAccess;
                 ba = BitConverter.GetBytes(TerrainLowerLimit);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(ParentEstateID % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 8) % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 16) % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 24) % 256);
                 ba = BitConverter.GetBytes(TerrainRaiseLimit);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(EstateID % 256);
                 bytes[i++] = (byte)((EstateID >> 8) % 256);
                 bytes[i++] = (byte)((EstateID >> 16) % 256);
@@ -23343,8 +23343,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -23430,7 +23430,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public int PricePerMeter;
@@ -23461,7 +23461,7 @@ namespace libsecondlife.Packets
                     RedirectGridY = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     PricePerMeter = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParentEstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -23478,7 +23478,7 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(BillableFactor);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(RedirectGridX % 256);
                 bytes[i++] = (byte)((RedirectGridX >> 8) % 256);
                 bytes[i++] = (byte)((RedirectGridX >> 16) % 256);
@@ -23489,7 +23489,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RedirectGridY >> 24) % 256);
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)(PricePerMeter % 256);
                 bytes[i++] = (byte)((PricePerMeter >> 8) % 256);
                 bytes[i++] = (byte)((PricePerMeter >> 16) % 256);
@@ -23557,8 +23557,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -23746,7 +23746,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public uint RegionFlags;
@@ -23797,7 +23797,7 @@ namespace libsecondlife.Packets
                     TerrainHeightRange11 = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     TerrainStartHeight00 = BitConverter.ToSingle(bytes, i); i += 4;
@@ -23833,53 +23833,53 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(BillableFactor);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainHeightRange00);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainHeightRange01);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainHeightRange10);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainHeightRange11);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)(RegionFlags % 256);
                 bytes[i++] = (byte)((RegionFlags >> 8) % 256);
                 bytes[i++] = (byte)((RegionFlags >> 16) % 256);
                 bytes[i++] = (byte)((RegionFlags >> 24) % 256);
                 ba = BitConverter.GetBytes(TerrainStartHeight00);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainStartHeight01);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainStartHeight10);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(TerrainStartHeight11);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(WaterHeight);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(SimOwner.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(SimOwner.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = SimAccess;
-                Array.Copy(TerrainBase0.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainBase1.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainBase2.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainBase3.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainDetail0.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainDetail1.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainDetail2.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TerrainDetail3.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainBase0.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainBase1.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainBase2.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainBase3.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainDetail0.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainDetail1.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainDetail2.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TerrainDetail3.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsEstateManager) ? 1 : 0);
-                Array.Copy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CacheID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -24044,8 +24044,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -24174,11 +24174,11 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SecPerYear >> 8) % 256);
                 bytes[i++] = (byte)((SecPerYear >> 16) % 256);
                 bytes[i++] = (byte)((SecPerYear >> 24) % 256);
-                Array.Copy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SunAngVelocity.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(SunPhase);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(SunDirection.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -24416,7 +24416,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _params = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _params = new byte[value.Length]; Array.Copy(value, _params, value.Length); }
+                    else { _params = new byte[value.Length]; Buffer.BlockCopy(value, 0, _params, 0, value.Length); }
                 }
             }
             public int ChannelType;
@@ -24443,7 +24443,7 @@ namespace libsecondlife.Packets
                     TransferID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _params = new byte[length];
-                    Array.Copy(bytes, i, _params, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _params, 0, length); i += length;
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SourceType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
@@ -24458,11 +24458,11 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Params == null) { Console.WriteLine("Warning: Params is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Params.Length % 256);
                 bytes[i++] = (byte)((Params.Length >> 8) % 256);
-                Array.Copy(Params, 0, bytes, i, Params.Length); i += Params.Length;
+                Buffer.BlockCopy(Params, 0, bytes, i, Params.Length); i += Params.Length;
                 bytes[i++] = (byte)(ChannelType % 256);
                 bytes[i++] = (byte)((ChannelType >> 8) % 256);
                 bytes[i++] = (byte)((ChannelType >> 16) % 256);
@@ -24473,7 +24473,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SourceType >> 24) % 256);
                 ba = BitConverter.GetBytes(Priority);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -24556,7 +24556,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _params = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _params = new byte[value.Length]; Array.Copy(value, _params, value.Length); }
+                    else { _params = new byte[value.Length]; Buffer.BlockCopy(value, 0, _params, 0, value.Length); }
                 }
             }
             public int ChannelType;
@@ -24584,7 +24584,7 @@ namespace libsecondlife.Packets
                     Size = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _params = new byte[length];
-                    Array.Copy(bytes, i, _params, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _params, 0, length); i += length;
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TargetType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Status = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -24597,7 +24597,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Size % 256);
                 bytes[i++] = (byte)((Size >> 8) % 256);
                 bytes[i++] = (byte)((Size >> 16) % 256);
@@ -24605,7 +24605,7 @@ namespace libsecondlife.Packets
                 if(Params == null) { Console.WriteLine("Warning: Params is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Params.Length % 256);
                 bytes[i++] = (byte)((Params.Length >> 8) % 256);
-                Array.Copy(Params, 0, bytes, i, Params.Length); i += Params.Length;
+                Buffer.BlockCopy(Params, 0, bytes, i, Params.Length); i += Params.Length;
                 bytes[i++] = (byte)(ChannelType % 256);
                 bytes[i++] = (byte)((ChannelType >> 8) % 256);
                 bytes[i++] = (byte)((ChannelType >> 16) % 256);
@@ -24719,7 +24719,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(ChannelType % 256);
                 bytes[i++] = (byte)((ChannelType >> 8) % 256);
                 bytes[i++] = (byte)((ChannelType >> 16) % 256);
@@ -24824,14 +24824,14 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(ChannelType % 256);
                 bytes[i++] = (byte)((ChannelType >> 8) % 256);
                 bytes[i++] = (byte)((ChannelType >> 16) % 256);
                 bytes[i++] = (byte)((ChannelType >> 24) % 256);
                 ba = BitConverter.GetBytes(Priority);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -24913,7 +24913,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _filename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Array.Copy(value, _filename, value.Length); }
+                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
                 }
             }
             public LLUUID VFileID;
@@ -24942,7 +24942,7 @@ namespace libsecondlife.Packets
                     FilePath = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _filename = new byte[length];
-                    Array.Copy(bytes, i, _filename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
                     VFileID = new LLUUID(bytes, i); i += 16;
                     VFileType = (short)(bytes[i++] + (bytes[i++] << 8));
                 }
@@ -24967,8 +24967,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = FilePath;
                 if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filename.Length;
-                Array.Copy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
-                Array.Copy(VFileID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
+                Buffer.BlockCopy(VFileID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(VFileType % 256);
                 bytes[i++] = (byte)((VFileType >> 8) % 256);
             }
@@ -25178,7 +25178,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -25295,7 +25295,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureentry = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
+                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
 
@@ -25318,7 +25318,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _textureentry = new byte[length];
-                    Array.Copy(bytes, i, _textureentry, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -25331,7 +25331,7 @@ namespace libsecondlife.Packets
                 if(TextureEntry == null) { Console.WriteLine("Warning: TextureEntry is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(TextureEntry.Length % 256);
                 bytes[i++] = (byte)((TextureEntry.Length >> 8) % 256);
-                Array.Copy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
+                Buffer.BlockCopy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
             }
 
             public override string ToString()
@@ -25375,7 +25375,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsTrial) ? 1 : 0);
             }
 
@@ -25505,7 +25505,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Type >> 24) % 256);
                 ba = BitConverter.GetBytes(Value);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -25548,7 +25548,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -25659,7 +25659,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -25752,7 +25752,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -25847,7 +25847,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(DefaultPayPrice % 256);
                 bytes[i++] = (byte)((DefaultPayPrice >> 8) % 256);
                 bytes[i++] = (byte)((DefaultPayPrice >> 16) % 256);
@@ -26042,7 +26042,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _reason = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _reason = new byte[value.Length]; Array.Copy(value, _reason, value.Length); }
+                    else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
                 }
             }
 
@@ -26067,7 +26067,7 @@ namespace libsecondlife.Packets
                     SessionID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _reason = new byte[length];
-                    Array.Copy(bytes, i, _reason, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _reason, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -26077,12 +26077,12 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Reason == null) { Console.WriteLine("Warning: Reason is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Reason.Length % 256);
                 bytes[i++] = (byte)((Reason.Length >> 8) % 256);
-                Array.Copy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
+                Buffer.BlockCopy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
             }
 
             public override string ToString()
@@ -26185,7 +26185,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -26267,7 +26267,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _reason = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _reason = new byte[value.Length]; Array.Copy(value, _reason, value.Length); }
+                    else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
                 }
             }
             public uint KickFlags;
@@ -26294,7 +26294,7 @@ namespace libsecondlife.Packets
                     AgentID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _reason = new byte[length];
-                    Array.Copy(bytes, i, _reason, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _reason, 0, length); i += length;
                     KickFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GodID = new LLUUID(bytes, i); i += 16;
                 }
@@ -26306,17 +26306,17 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GodSessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GodSessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Reason == null) { Console.WriteLine("Warning: Reason is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Reason.Length % 256);
                 bytes[i++] = (byte)((Reason.Length >> 8) % 256);
-                Array.Copy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
+                Buffer.BlockCopy(Reason, 0, bytes, i, Reason.Length); i += Reason.Length;
                 bytes[i++] = (byte)(KickFlags % 256);
                 bytes[i++] = (byte)((KickFlags >> 8) % 256);
                 bytes[i++] = (byte)((KickFlags >> 16) % 256);
                 bytes[i++] = (byte)((KickFlags >> 24) % 256);
-                Array.Copy(GodID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GodID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -26416,7 +26416,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -26465,8 +26465,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -26568,7 +26568,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -26617,8 +26617,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -26722,9 +26722,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -26802,7 +26802,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _abouttext = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _abouttext = new byte[value.Length]; Array.Copy(value, _abouttext, value.Length); }
+                    else { _abouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abouttext, 0, value.Length); }
                 }
             }
             private byte[] _chartermember;
@@ -26813,7 +26813,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _chartermember = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _chartermember = new byte[value.Length]; Array.Copy(value, _chartermember, value.Length); }
+                    else { _chartermember = new byte[value.Length]; Buffer.BlockCopy(value, 0, _chartermember, 0, value.Length); }
                 }
             }
             private byte[] _flabouttext;
@@ -26824,7 +26824,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _flabouttext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _flabouttext = new byte[value.Length]; Array.Copy(value, _flabouttext, value.Length); }
+                    else { _flabouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _flabouttext, 0, value.Length); }
                 }
             }
             public LLUUID ImageID;
@@ -26837,7 +26837,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _profileurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _profileurl = new byte[value.Length]; Array.Copy(value, _profileurl, value.Length); }
+                    else { _profileurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _profileurl, 0, value.Length); }
                 }
             }
             private byte[] _bornon;
@@ -26848,7 +26848,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _bornon = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _bornon = new byte[value.Length]; Array.Copy(value, _bornon, value.Length); }
+                    else { _bornon = new byte[value.Length]; Buffer.BlockCopy(value, 0, _bornon, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -26877,21 +26877,21 @@ namespace libsecondlife.Packets
                     PartnerID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _abouttext = new byte[length];
-                    Array.Copy(bytes, i, _abouttext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _abouttext, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _chartermember = new byte[length];
-                    Array.Copy(bytes, i, _chartermember, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _chartermember, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _flabouttext = new byte[length];
-                    Array.Copy(bytes, i, _flabouttext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _flabouttext, 0, length); i += length;
                     ImageID = new LLUUID(bytes, i); i += 16;
                     FLImageID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _profileurl = new byte[length];
-                    Array.Copy(bytes, i, _profileurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _profileurl, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _bornon = new byte[length];
-                    Array.Copy(bytes, i, _bornon, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _bornon, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -26902,25 +26902,25 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(PartnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PartnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(AboutText == null) { Console.WriteLine("Warning: AboutText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(AboutText.Length % 256);
                 bytes[i++] = (byte)((AboutText.Length >> 8) % 256);
-                Array.Copy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
+                Buffer.BlockCopy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
                 if(CharterMember == null) { Console.WriteLine("Warning: CharterMember is null, in " + this.GetType()); }
                 bytes[i++] = (byte)CharterMember.Length;
-                Array.Copy(CharterMember, 0, bytes, i, CharterMember.Length); i += CharterMember.Length;
+                Buffer.BlockCopy(CharterMember, 0, bytes, i, CharterMember.Length); i += CharterMember.Length;
                 if(FLAboutText == null) { Console.WriteLine("Warning: FLAboutText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FLAboutText.Length;
-                Array.Copy(FLAboutText, 0, bytes, i, FLAboutText.Length); i += FLAboutText.Length;
-                Array.Copy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FLAboutText, 0, bytes, i, FLAboutText.Length); i += FLAboutText.Length;
+                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(ProfileURL == null) { Console.WriteLine("Warning: ProfileURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProfileURL.Length;
-                Array.Copy(ProfileURL, 0, bytes, i, ProfileURL.Length); i += ProfileURL.Length;
+                Buffer.BlockCopy(ProfileURL, 0, bytes, i, ProfileURL.Length); i += ProfileURL.Length;
                 if(BornOn == null) { Console.WriteLine("Warning: BornOn is null, in " + this.GetType()); }
                 bytes[i++] = (byte)BornOn.Length;
-                Array.Copy(BornOn, 0, bytes, i, BornOn.Length); i += BornOn.Length;
+                Buffer.BlockCopy(BornOn, 0, bytes, i, BornOn.Length); i += BornOn.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -26981,8 +26981,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -27066,7 +27066,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _wanttotext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _wanttotext = new byte[value.Length]; Array.Copy(value, _wanttotext, value.Length); }
+                    else { _wanttotext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _wanttotext, 0, value.Length); }
                 }
             }
             public uint SkillsMask;
@@ -27078,7 +27078,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _skillstext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _skillstext = new byte[value.Length]; Array.Copy(value, _skillstext, value.Length); }
+                    else { _skillstext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _skillstext, 0, value.Length); }
                 }
             }
             private byte[] _languagestext;
@@ -27089,7 +27089,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _languagestext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _languagestext = new byte[value.Length]; Array.Copy(value, _languagestext, value.Length); }
+                    else { _languagestext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _languagestext, 0, value.Length); }
                 }
             }
 
@@ -27115,14 +27115,14 @@ namespace libsecondlife.Packets
                     WantToMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _wanttotext = new byte[length];
-                    Array.Copy(bytes, i, _wanttotext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _wanttotext, 0, length); i += length;
                     SkillsMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _skillstext = new byte[length];
-                    Array.Copy(bytes, i, _skillstext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _skillstext, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _languagestext = new byte[length];
-                    Array.Copy(bytes, i, _languagestext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _languagestext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -27138,17 +27138,17 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((WantToMask >> 24) % 256);
                 if(WantToText == null) { Console.WriteLine("Warning: WantToText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)WantToText.Length;
-                Array.Copy(WantToText, 0, bytes, i, WantToText.Length); i += WantToText.Length;
+                Buffer.BlockCopy(WantToText, 0, bytes, i, WantToText.Length); i += WantToText.Length;
                 bytes[i++] = (byte)(SkillsMask % 256);
                 bytes[i++] = (byte)((SkillsMask >> 8) % 256);
                 bytes[i++] = (byte)((SkillsMask >> 16) % 256);
                 bytes[i++] = (byte)((SkillsMask >> 24) % 256);
                 if(SkillsText == null) { Console.WriteLine("Warning: SkillsText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SkillsText.Length;
-                Array.Copy(SkillsText, 0, bytes, i, SkillsText.Length); i += SkillsText.Length;
+                Buffer.BlockCopy(SkillsText, 0, bytes, i, SkillsText.Length); i += SkillsText.Length;
                 if(LanguagesText == null) { Console.WriteLine("Warning: LanguagesText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LanguagesText.Length;
-                Array.Copy(LanguagesText, 0, bytes, i, LanguagesText.Length); i += LanguagesText.Length;
+                Buffer.BlockCopy(LanguagesText, 0, bytes, i, LanguagesText.Length); i += LanguagesText.Length;
             }
 
             public override string ToString()
@@ -27198,8 +27198,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -27302,8 +27302,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -27328,7 +27328,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _grouptitle = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _grouptitle = new byte[value.Length]; Array.Copy(value, _grouptitle, value.Length); }
+                    else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
             public ulong GroupPowers;
@@ -27343,7 +27343,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _groupname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Array.Copy(value, _groupname, value.Length); }
+                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
 
@@ -27367,14 +27367,14 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _grouptitle = new byte[length];
-                    Array.Copy(bytes, i, _grouptitle, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _grouptitle, 0, length); i += length;
                     GroupPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     GroupID = new LLUUID(bytes, i); i += 16;
                     GroupInsigniaID = new LLUUID(bytes, i); i += 16;
                     AcceptNotices = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _groupname = new byte[length];
-                    Array.Copy(bytes, i, _groupname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -27386,7 +27386,7 @@ namespace libsecondlife.Packets
             {
                 if(GroupTitle == null) { Console.WriteLine("Warning: GroupTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupTitle.Length;
-                Array.Copy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
+                Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
                 bytes[i++] = (byte)(GroupPowers % 256);
                 bytes[i++] = (byte)((GroupPowers >> 8) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 16) % 256);
@@ -27395,12 +27395,12 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupPowers >> 40) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 48) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 56) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
-                Array.Copy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
+                Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
             }
 
             public override string ToString()
@@ -27500,7 +27500,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _abouttext = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _abouttext = new byte[value.Length]; Array.Copy(value, _abouttext, value.Length); }
+                    else { _abouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abouttext, 0, value.Length); }
                 }
             }
             private byte[] _flabouttext;
@@ -27511,7 +27511,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _flabouttext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _flabouttext = new byte[value.Length]; Array.Copy(value, _flabouttext, value.Length); }
+                    else { _flabouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _flabouttext, 0, value.Length); }
                 }
             }
             public LLUUID ImageID;
@@ -27525,7 +27525,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _profileurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _profileurl = new byte[value.Length]; Array.Copy(value, _profileurl, value.Length); }
+                    else { _profileurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _profileurl, 0, value.Length); }
                 }
             }
             public bool MaturePublish;
@@ -27551,16 +27551,16 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _abouttext = new byte[length];
-                    Array.Copy(bytes, i, _abouttext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _abouttext, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _flabouttext = new byte[length];
-                    Array.Copy(bytes, i, _flabouttext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _flabouttext, 0, length); i += length;
                     ImageID = new LLUUID(bytes, i); i += 16;
                     FLImageID = new LLUUID(bytes, i); i += 16;
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _profileurl = new byte[length];
-                    Array.Copy(bytes, i, _profileurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _profileurl, 0, length); i += length;
                     MaturePublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
                 catch (Exception)
@@ -27574,16 +27574,16 @@ namespace libsecondlife.Packets
                 if(AboutText == null) { Console.WriteLine("Warning: AboutText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(AboutText.Length % 256);
                 bytes[i++] = (byte)((AboutText.Length >> 8) % 256);
-                Array.Copy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
+                Buffer.BlockCopy(AboutText, 0, bytes, i, AboutText.Length); i += AboutText.Length;
                 if(FLAboutText == null) { Console.WriteLine("Warning: FLAboutText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FLAboutText.Length;
-                Array.Copy(FLAboutText, 0, bytes, i, FLAboutText.Length); i += FLAboutText.Length;
-                Array.Copy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FLAboutText, 0, bytes, i, FLAboutText.Length); i += FLAboutText.Length;
+                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FLImageID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 if(ProfileURL == null) { Console.WriteLine("Warning: ProfileURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProfileURL.Length;
-                Array.Copy(ProfileURL, 0, bytes, i, ProfileURL.Length); i += ProfileURL.Length;
+                Buffer.BlockCopy(ProfileURL, 0, bytes, i, ProfileURL.Length); i += ProfileURL.Length;
                 bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
             }
 
@@ -27637,8 +27637,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -27722,7 +27722,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _wanttotext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _wanttotext = new byte[value.Length]; Array.Copy(value, _wanttotext, value.Length); }
+                    else { _wanttotext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _wanttotext, 0, value.Length); }
                 }
             }
             public uint SkillsMask;
@@ -27734,7 +27734,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _skillstext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _skillstext = new byte[value.Length]; Array.Copy(value, _skillstext, value.Length); }
+                    else { _skillstext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _skillstext, 0, value.Length); }
                 }
             }
             private byte[] _languagestext;
@@ -27745,7 +27745,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _languagestext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _languagestext = new byte[value.Length]; Array.Copy(value, _languagestext, value.Length); }
+                    else { _languagestext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _languagestext, 0, value.Length); }
                 }
             }
 
@@ -27771,14 +27771,14 @@ namespace libsecondlife.Packets
                     WantToMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _wanttotext = new byte[length];
-                    Array.Copy(bytes, i, _wanttotext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _wanttotext, 0, length); i += length;
                     SkillsMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _skillstext = new byte[length];
-                    Array.Copy(bytes, i, _skillstext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _skillstext, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _languagestext = new byte[length];
-                    Array.Copy(bytes, i, _languagestext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _languagestext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -27794,17 +27794,17 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((WantToMask >> 24) % 256);
                 if(WantToText == null) { Console.WriteLine("Warning: WantToText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)WantToText.Length;
-                Array.Copy(WantToText, 0, bytes, i, WantToText.Length); i += WantToText.Length;
+                Buffer.BlockCopy(WantToText, 0, bytes, i, WantToText.Length); i += WantToText.Length;
                 bytes[i++] = (byte)(SkillsMask % 256);
                 bytes[i++] = (byte)((SkillsMask >> 8) % 256);
                 bytes[i++] = (byte)((SkillsMask >> 16) % 256);
                 bytes[i++] = (byte)((SkillsMask >> 24) % 256);
                 if(SkillsText == null) { Console.WriteLine("Warning: SkillsText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SkillsText.Length;
-                Array.Copy(SkillsText, 0, bytes, i, SkillsText.Length); i += SkillsText.Length;
+                Buffer.BlockCopy(SkillsText, 0, bytes, i, SkillsText.Length); i += SkillsText.Length;
                 if(LanguagesText == null) { Console.WriteLine("Warning: LanguagesText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LanguagesText.Length;
-                Array.Copy(LanguagesText, 0, bytes, i, LanguagesText.Length); i += LanguagesText.Length;
+                Buffer.BlockCopy(LanguagesText, 0, bytes, i, LanguagesText.Length); i += LanguagesText.Length;
             }
 
             public override string ToString()
@@ -27854,8 +27854,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -27938,7 +27938,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public int Negative;
@@ -27963,7 +27963,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Negative = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Positive = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -27977,7 +27977,7 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Negative % 256);
                 bytes[i++] = (byte)((Negative >> 8) % 256);
                 bytes[i++] = (byte)((Negative >> 16) % 256);
@@ -28030,7 +28030,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AvatarID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28072,7 +28072,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28173,7 +28173,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _notes = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _notes = new byte[value.Length]; Array.Copy(value, _notes, value.Length); }
+                    else { _notes = new byte[value.Length]; Buffer.BlockCopy(value, 0, _notes, 0, value.Length); }
                 }
             }
 
@@ -28197,7 +28197,7 @@ namespace libsecondlife.Packets
                     TargetID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _notes = new byte[length];
-                    Array.Copy(bytes, i, _notes, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _notes, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -28207,11 +28207,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Notes == null) { Console.WriteLine("Warning: Notes is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Notes.Length % 256);
                 bytes[i++] = (byte)((Notes.Length >> 8) % 256);
-                Array.Copy(Notes, 0, bytes, i, Notes.Length); i += Notes.Length;
+                Buffer.BlockCopy(Notes, 0, bytes, i, Notes.Length); i += Notes.Length;
             }
 
             public override string ToString()
@@ -28254,7 +28254,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28336,7 +28336,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _notes = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _notes = new byte[value.Length]; Array.Copy(value, _notes, value.Length); }
+                    else { _notes = new byte[value.Length]; Buffer.BlockCopy(value, 0, _notes, 0, value.Length); }
                 }
             }
 
@@ -28360,7 +28360,7 @@ namespace libsecondlife.Packets
                     TargetID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _notes = new byte[length];
-                    Array.Copy(bytes, i, _notes, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _notes, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -28370,11 +28370,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Notes == null) { Console.WriteLine("Warning: Notes is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Notes.Length % 256);
                 bytes[i++] = (byte)((Notes.Length >> 8) % 256);
-                Array.Copy(Notes, 0, bytes, i, Notes.Length); i += Notes.Length;
+                Buffer.BlockCopy(Notes, 0, bytes, i, Notes.Length); i += Notes.Length;
             }
 
             public override string ToString()
@@ -28419,8 +28419,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28502,7 +28502,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _pickname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _pickname = new byte[value.Length]; Array.Copy(value, _pickname, value.Length); }
+                    else { _pickname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _pickname, 0, value.Length); }
                 }
             }
             public LLUUID PickID;
@@ -28526,7 +28526,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _pickname = new byte[length];
-                    Array.Copy(bytes, i, _pickname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _pickname, 0, length); i += length;
                     PickID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -28539,8 +28539,8 @@ namespace libsecondlife.Packets
             {
                 if(PickName == null) { Console.WriteLine("Warning: PickName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)PickName.Length;
-                Array.Copy(PickName, 0, bytes, i, PickName.Length); i += PickName.Length;
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PickName, 0, bytes, i, PickName.Length); i += PickName.Length;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28586,8 +28586,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28746,8 +28746,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -28831,7 +28831,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public LLVector3d GlobalPos;
@@ -28843,7 +28843,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _creator = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _creator = new byte[value.Length]; Array.Copy(value, _creator, value.Length); }
+                    else { _creator = new byte[value.Length]; Buffer.BlockCopy(value, 0, _creator, 0, value.Length); }
                 }
             }
             private byte[] _name;
@@ -28854,7 +28854,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _date;
@@ -28865,7 +28865,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _date = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _date = new byte[value.Length]; Array.Copy(value, _date, value.Length); }
+                    else { _date = new byte[value.Length]; Buffer.BlockCopy(value, 0, _date, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -28876,7 +28876,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public uint EventID;
@@ -28888,7 +28888,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _category = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _category = new byte[value.Length]; Array.Copy(value, _category, value.Length); }
+                    else { _category = new byte[value.Length]; Buffer.BlockCopy(value, 0, _category, 0, value.Length); }
                 }
             }
             public uint EventFlags;
@@ -28921,24 +28921,24 @@ namespace libsecondlife.Packets
                     DateUTC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     GlobalPos = new LLVector3d(bytes, i); i += 24;
                     length = (ushort)bytes[i++];
                     _creator = new byte[length];
-                    Array.Copy(bytes, i, _creator, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _creator, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _date = new byte[length];
-                    Array.Copy(bytes, i, _date, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _date, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     EventID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _category = new byte[length];
-                    Array.Copy(bytes, i, _category, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _category, 0, length); i += length;
                     EventFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Amount = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Cover = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -28961,28 +28961,28 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((DateUTC >> 24) % 256);
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Array.Copy(GlobalPos.GetBytes(), 0, bytes, i, 24); i += 24;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(GlobalPos.GetBytes(), 0, bytes, i, 24); i += 24;
                 if(Creator == null) { Console.WriteLine("Warning: Creator is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Creator.Length;
-                Array.Copy(Creator, 0, bytes, i, Creator.Length); i += Creator.Length;
+                Buffer.BlockCopy(Creator, 0, bytes, i, Creator.Length); i += Creator.Length;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Date == null) { Console.WriteLine("Warning: Date is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Date.Length;
-                Array.Copy(Date, 0, bytes, i, Date.Length); i += Date.Length;
+                Buffer.BlockCopy(Date, 0, bytes, i, Date.Length); i += Date.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 bytes[i++] = (byte)(EventID % 256);
                 bytes[i++] = (byte)((EventID >> 8) % 256);
                 bytes[i++] = (byte)((EventID >> 16) % 256);
                 bytes[i++] = (byte)((EventID >> 24) % 256);
                 if(Category == null) { Console.WriteLine("Warning: Category is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Category.Length;
-                Array.Copy(Category, 0, bytes, i, Category.Length); i += Category.Length;
+                Buffer.BlockCopy(Category, 0, bytes, i, Category.Length); i += Category.Length;
                 bytes[i++] = (byte)(EventFlags % 256);
                 bytes[i++] = (byte)((EventFlags >> 8) % 256);
                 bytes[i++] = (byte)((EventFlags >> 16) % 256);
@@ -29054,7 +29054,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -29200,8 +29200,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -29348,8 +29348,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -29479,7 +29479,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _querytext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Array.Copy(value, _querytext, value.Length); }
+                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
                 }
             }
 
@@ -29505,7 +29505,7 @@ namespace libsecondlife.Packets
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _querytext = new byte[length];
-                    Array.Copy(bytes, i, _querytext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -29515,7 +29515,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(QueryFlags % 256);
                 bytes[i++] = (byte)((QueryFlags >> 8) % 256);
                 bytes[i++] = (byte)((QueryFlags >> 16) % 256);
@@ -29526,7 +29526,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((QueryStart >> 24) % 256);
                 if(QueryText == null) { Console.WriteLine("Warning: QueryText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)QueryText.Length;
-                Array.Copy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
+                Buffer.BlockCopy(QueryText, 0, bytes, i, QueryText.Length); i += QueryText.Length;
             }
 
             public override string ToString()
@@ -29573,8 +29573,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -29680,7 +29680,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -29724,8 +29724,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -29808,7 +29808,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _originalname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _originalname = new byte[value.Length]; Array.Copy(value, _originalname, value.Length); }
+                    else { _originalname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _originalname, 0, value.Length); }
                 }
             }
             private byte[] _simname;
@@ -29819,7 +29819,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public bool Enabled;
@@ -29834,7 +29834,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -29845,7 +29845,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             private byte[] _user;
@@ -29856,7 +29856,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _user = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _user = new byte[value.Length]; Array.Copy(value, _user, value.Length); }
+                    else { _user = new byte[value.Length]; Buffer.BlockCopy(value, 0, _user, 0, value.Length); }
                 }
             }
             public LLUUID CreatorID;
@@ -29887,23 +29887,23 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _originalname = new byte[length];
-                    Array.Copy(bytes, i, _originalname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _originalname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     Enabled = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     PosGlobal = new LLVector3d(bytes, i); i += 24;
                     TopPick = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _user = new byte[length];
-                    Array.Copy(bytes, i, _user, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _user, 0, length); i += length;
                     CreatorID = new LLUUID(bytes, i); i += 16;
                     PickID = new LLUUID(bytes, i); i += 16;
                     SnapshotID = new LLUUID(bytes, i); i += 16;
@@ -29919,27 +29919,27 @@ namespace libsecondlife.Packets
             {
                 if(OriginalName == null) { Console.WriteLine("Warning: OriginalName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)OriginalName.Length;
-                Array.Copy(OriginalName, 0, bytes, i, OriginalName.Length); i += OriginalName.Length;
+                Buffer.BlockCopy(OriginalName, 0, bytes, i, OriginalName.Length); i += OriginalName.Length;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
-                Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 bytes[i++] = (byte)((TopPick) ? 1 : 0);
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 if(User == null) { Console.WriteLine("Warning: User is null, in " + this.GetType()); }
                 bytes[i++] = (byte)User.Length;
-                Array.Copy(User, 0, bytes, i, User.Length); i += User.Length;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(User, 0, bytes, i, User.Length); i += User.Length;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SortOrder % 256);
                 bytes[i++] = (byte)((SortOrder >> 8) % 256);
                 bytes[i++] = (byte)((SortOrder >> 16) % 256);
@@ -30002,7 +30002,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -30087,7 +30087,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -30098,7 +30098,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public LLUUID CreatorID;
@@ -30130,10 +30130,10 @@ namespace libsecondlife.Packets
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     CreatorID = new LLUUID(bytes, i); i += 16;
                     PickID = new LLUUID(bytes, i); i += 16;
                     SnapshotID = new LLUUID(bytes, i); i += 16;
@@ -30148,19 +30148,19 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Enabled) ? 1 : 0);
-                Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
                 bytes[i++] = (byte)((TopPick) ? 1 : 0);
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Desc.Length % 256);
                 bytes[i++] = (byte)((Desc.Length >> 8) % 256);
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SortOrder % 256);
                 bytes[i++] = (byte)((SortOrder >> 8) % 256);
                 bytes[i++] = (byte)((SortOrder >> 16) % 256);
@@ -30219,8 +30219,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -30320,7 +30320,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -30364,8 +30364,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -30467,8 +30467,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PickID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -30513,8 +30513,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -30596,7 +30596,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Array.Copy(value, _objectname, value.Length); }
+                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
             private byte[] _objectowner;
@@ -30607,7 +30607,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectowner = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectowner = new byte[value.Length]; Array.Copy(value, _objectowner, value.Length); }
+                    else { _objectowner = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectowner, 0, value.Length); }
                 }
             }
             public LLUUID TaskID;
@@ -30634,10 +30634,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _objectname = new byte[length];
-                    Array.Copy(bytes, i, _objectname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _objectowner = new byte[length];
-                    Array.Copy(bytes, i, _objectowner, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectowner, 0, length); i += length;
                     TaskID = new LLUUID(bytes, i); i += 16;
                     ItemID = new LLUUID(bytes, i); i += 16;
                     Questions = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -30652,12 +30652,12 @@ namespace libsecondlife.Packets
             {
                 if(ObjectName == null) { Console.WriteLine("Warning: ObjectName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectName.Length;
-                Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
+                Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
                 if(ObjectOwner == null) { Console.WriteLine("Warning: ObjectOwner is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectOwner.Length;
-                Array.Copy(ObjectOwner, 0, bytes, i, ObjectOwner.Length); i += ObjectOwner.Length;
-                Array.Copy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectOwner, 0, bytes, i, ObjectOwner.Length); i += ObjectOwner.Length;
+                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Questions % 256);
                 bytes[i++] = (byte)((Questions >> 8) % 256);
                 bytes[i++] = (byte)((Questions >> 16) % 256);
@@ -30858,7 +30858,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Array.Copy(value, _objectname, value.Length); }
+                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
             public LLUUID ImageID;
@@ -30871,7 +30871,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             private byte[] _lastname;
@@ -30882,7 +30882,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lastname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Array.Copy(value, _lastname, value.Length); }
+                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
                 }
             }
             private byte[] _firstname;
@@ -30893,7 +30893,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _firstname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Array.Copy(value, _firstname, value.Length); }
+                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
                 }
             }
             public int ChatChannel;
@@ -30920,18 +30920,18 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _objectname = new byte[length];
-                    Array.Copy(bytes, i, _objectname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
                     ImageID = new LLUUID(bytes, i); i += 16;
                     ObjectID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _lastname = new byte[length];
-                    Array.Copy(bytes, i, _lastname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _firstname = new byte[length];
-                    Array.Copy(bytes, i, _firstname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
                     ChatChannel = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -30944,19 +30944,19 @@ namespace libsecondlife.Packets
             {
                 if(ObjectName == null) { Console.WriteLine("Warning: ObjectName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectName.Length;
-                Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
-                Array.Copy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
+                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Message.Length % 256);
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 if(LastName == null) { Console.WriteLine("Warning: LastName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastName.Length;
-                Array.Copy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
+                Buffer.BlockCopy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
                 if(FirstName == null) { Console.WriteLine("Warning: FirstName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FirstName.Length;
-                Array.Copy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
+                Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 bytes[i++] = (byte)(ChatChannel % 256);
                 bytes[i++] = (byte)((ChatChannel >> 8) % 256);
                 bytes[i++] = (byte)((ChatChannel >> 16) % 256);
@@ -30994,7 +30994,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _buttonlabel = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _buttonlabel = new byte[value.Length]; Array.Copy(value, _buttonlabel, value.Length); }
+                    else { _buttonlabel = new byte[value.Length]; Buffer.BlockCopy(value, 0, _buttonlabel, 0, value.Length); }
                 }
             }
 
@@ -31017,7 +31017,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _buttonlabel = new byte[length];
-                    Array.Copy(bytes, i, _buttonlabel, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _buttonlabel, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -31029,7 +31029,7 @@ namespace libsecondlife.Packets
             {
                 if(ButtonLabel == null) { Console.WriteLine("Warning: ButtonLabel is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ButtonLabel.Length;
-                Array.Copy(ButtonLabel, 0, bytes, i, ButtonLabel.Length); i += ButtonLabel.Length;
+                Buffer.BlockCopy(ButtonLabel, 0, bytes, i, ButtonLabel.Length); i += ButtonLabel.Length;
             }
 
             public override string ToString()
@@ -31124,7 +31124,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _buttonlabel = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _buttonlabel = new byte[value.Length]; Array.Copy(value, _buttonlabel, value.Length); }
+                    else { _buttonlabel = new byte[value.Length]; Buffer.BlockCopy(value, 0, _buttonlabel, 0, value.Length); }
                 }
             }
             public int ButtonIndex;
@@ -31150,7 +31150,7 @@ namespace libsecondlife.Packets
                     ObjectID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _buttonlabel = new byte[length];
-                    Array.Copy(bytes, i, _buttonlabel, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _buttonlabel, 0, length); i += length;
                     ButtonIndex = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ChatChannel = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -31162,10 +31162,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(ButtonLabel == null) { Console.WriteLine("Warning: ButtonLabel is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ButtonLabel.Length;
-                Array.Copy(ButtonLabel, 0, bytes, i, ButtonLabel.Length); i += ButtonLabel.Length;
+                Buffer.BlockCopy(ButtonLabel, 0, bytes, i, ButtonLabel.Length); i += ButtonLabel.Length;
                 bytes[i++] = (byte)(ButtonIndex % 256);
                 bytes[i++] = (byte)((ButtonIndex >> 8) % 256);
                 bytes[i++] = (byte)((ButtonIndex >> 16) % 256);
@@ -31221,8 +31221,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -31325,8 +31325,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -31426,7 +31426,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectPermissions >> 8) % 256);
                 bytes[i++] = (byte)((ObjectPermissions >> 16) % 256);
                 bytes[i++] = (byte)((ObjectPermissions >> 24) % 256);
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -31471,8 +31471,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -31554,7 +31554,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _url = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _url = new byte[value.Length]; Array.Copy(value, _url, value.Length); }
+                    else { _url = new byte[value.Length]; Buffer.BlockCopy(value, 0, _url, 0, value.Length); }
                 }
             }
             private byte[] _objectname;
@@ -31565,7 +31565,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Array.Copy(value, _objectname, value.Length); }
+                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
             public bool OwnerIsGroup;
@@ -31578,7 +31578,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public LLUUID OwnerID;
@@ -31604,15 +31604,15 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _url = new byte[length];
-                    Array.Copy(bytes, i, _url, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _url, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _objectname = new byte[length];
-                    Array.Copy(bytes, i, _objectname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
                     OwnerIsGroup = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ObjectID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     OwnerID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -31625,16 +31625,16 @@ namespace libsecondlife.Packets
             {
                 if(URL == null) { Console.WriteLine("Warning: URL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)URL.Length;
-                Array.Copy(URL, 0, bytes, i, URL.Length); i += URL.Length;
+                Buffer.BlockCopy(URL, 0, bytes, i, URL.Length); i += URL.Length;
                 if(ObjectName == null) { Console.WriteLine("Warning: ObjectName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectName.Length;
-                Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
+                Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
                 bytes[i++] = (byte)((OwnerIsGroup) ? 1 : 0);
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -31717,7 +31717,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Array.Copy(value, _objectname, value.Length); }
+                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
                 }
             }
             private byte[] _simname;
@@ -31728,7 +31728,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public LLVector3 LookAt;
@@ -31754,10 +31754,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _objectname = new byte[length];
-                    Array.Copy(bytes, i, _objectname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     LookAt = new LLVector3(bytes, i); i += 12;
                     SimPosition = new LLVector3(bytes, i); i += 12;
                 }
@@ -31771,12 +31771,12 @@ namespace libsecondlife.Packets
             {
                 if(ObjectName == null) { Console.WriteLine("Warning: ObjectName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectName.Length;
-                Array.Copy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
+                Buffer.BlockCopy(ObjectName, 0, bytes, i, ObjectName.Length); i += ObjectName.Length;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
-                Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(SimPosition.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SimPosition.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -31856,7 +31856,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
             public int SequenceID;
@@ -31880,7 +31880,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                     SequenceID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -31894,7 +31894,7 @@ namespace libsecondlife.Packets
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
                 bytes[i++] = (byte)(SequenceID % 256);
                 bytes[i++] = (byte)((SequenceID >> 8) % 256);
                 bytes[i++] = (byte)((SequenceID >> 16) % 256);
@@ -32048,8 +32048,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32134,7 +32134,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mediaurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Array.Copy(value, _mediaurl, value.Length); }
+                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
             public int LocalID;
@@ -32147,7 +32147,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _desc;
@@ -32158,7 +32158,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public byte Category;
@@ -32180,7 +32180,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _musicurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _musicurl = new byte[value.Length]; Array.Copy(value, _musicurl, value.Length); }
+                    else { _musicurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _musicurl, 0, value.Length); }
                 }
             }
 
@@ -32208,15 +32208,15 @@ namespace libsecondlife.Packets
                     UserLookAt = new LLVector3(bytes, i); i += 12;
                     length = (ushort)bytes[i++];
                     _mediaurl = new byte[length];
-                    Array.Copy(bytes, i, _mediaurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
                     LocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     UserLocation = new LLVector3(bytes, i); i += 12;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     Category = (byte)bytes[i++];
                     GroupID = new LLUUID(bytes, i); i += 16;
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -32231,7 +32231,7 @@ namespace libsecondlife.Packets
                     MediaAutoScale = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _musicurl = new byte[length];
-                    Array.Copy(bytes, i, _musicurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _musicurl, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -32242,38 +32242,38 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
-                Array.Copy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
+                Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
                 bytes[i++] = (byte)(LocalID % 256);
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Desc.Length;
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 bytes[i++] = Category;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
                 bytes[i++] = (byte)((Flags >> 24) % 256);
                 bytes[i++] = LandingType;
-                Array.Copy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(PassHours);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(ParcelFlags % 256);
                 bytes[i++] = (byte)((ParcelFlags >> 8) % 256);
                 bytes[i++] = (byte)((ParcelFlags >> 16) % 256);
@@ -32285,7 +32285,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = MediaAutoScale;
                 if(MusicURL == null) { Console.WriteLine("Warning: MusicURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MusicURL.Length;
-                Array.Copy(MusicURL, 0, bytes, i, MusicURL.Length); i += MusicURL.Length;
+                Buffer.BlockCopy(MusicURL, 0, bytes, i, MusicURL.Length); i += MusicURL.Length;
             }
 
             public override string ToString()
@@ -32350,8 +32350,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32452,7 +32452,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32548,8 +32548,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32592,7 +32592,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32782,8 +32782,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32884,7 +32884,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -32980,8 +32980,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33024,7 +33024,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33160,7 +33160,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ReturnID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ReturnID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33256,8 +33256,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33378,8 +33378,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33457,7 +33457,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _estatename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _estatename = new byte[value.Length]; Array.Copy(value, _estatename, value.Length); }
+                    else { _estatename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _estatename, 0, value.Length); }
                 }
             }
             public LLUUID EstateOwnerID;
@@ -33483,7 +33483,7 @@ namespace libsecondlife.Packets
                     CovenantTimestamp = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _estatename = new byte[length];
-                    Array.Copy(bytes, i, _estatename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _estatename, 0, length); i += length;
                     EstateOwnerID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -33494,15 +33494,15 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(CovenantID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CovenantID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(CovenantTimestamp % 256);
                 bytes[i++] = (byte)((CovenantTimestamp >> 8) % 256);
                 bytes[i++] = (byte)((CovenantTimestamp >> 16) % 256);
                 bytes[i++] = (byte)((CovenantTimestamp >> 24) % 256);
                 if(EstateName == null) { Console.WriteLine("Warning: EstateName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)EstateName.Length;
-                Array.Copy(EstateName, 0, bytes, i, EstateName.Length); i += EstateName.Length;
-                Array.Copy(EstateOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(EstateName, 0, bytes, i, EstateName.Length); i += EstateName.Length;
+                Buffer.BlockCopy(EstateOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33802,8 +33802,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33909,7 +33909,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -33954,8 +33954,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -34102,8 +34102,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -34208,7 +34208,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Final) ? 1 : 0);
             }
 
@@ -34266,16 +34266,16 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(East);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(West);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(North);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(South);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -34322,8 +34322,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -34455,16 +34455,16 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(East);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(West);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(North);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(South);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -34511,8 +34511,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -34625,16 +34625,16 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(East);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(West);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(North);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(South);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -34681,8 +34681,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -34829,8 +34829,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -34944,7 +34944,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Final) ? 1 : 0);
             }
 
@@ -34993,8 +34993,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35101,7 +35101,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35146,8 +35146,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35309,8 +35309,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35417,7 +35417,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(LocalID % 256);
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
@@ -35478,7 +35478,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Time % 256);
                 bytes[i++] = (byte)((Time >> 8) % 256);
                 bytes[i++] = (byte)((Time >> 16) % 256);
@@ -35624,7 +35624,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
                 bytes[i++] = (byte)((Flags >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35674,7 +35674,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Time % 256);
                 bytes[i++] = (byte)((Time >> 8) % 256);
                 bytes[i++] = (byte)((Time >> 16) % 256);
@@ -35728,8 +35728,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35854,7 +35854,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -35899,8 +35899,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36010,10 +36010,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Dwell);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -36057,7 +36057,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36203,8 +36203,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36310,7 +36310,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36355,8 +36355,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36462,7 +36462,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36507,8 +36507,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36608,7 +36608,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36696,7 +36696,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lastname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Array.Copy(value, _lastname, value.Length); }
+                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
                 }
             }
             private byte[] _firstname;
@@ -36707,7 +36707,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _firstname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Array.Copy(value, _firstname, value.Length); }
+                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
                 }
             }
 
@@ -36732,10 +36732,10 @@ namespace libsecondlife.Packets
                     ID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _lastname = new byte[length];
-                    Array.Copy(bytes, i, _lastname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _firstname = new byte[length];
-                    Array.Copy(bytes, i, _firstname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -36745,13 +36745,13 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(LastName == null) { Console.WriteLine("Warning: LastName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastName.Length;
-                Array.Copy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
+                Buffer.BlockCopy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
                 if(FirstName == null) { Console.WriteLine("Warning: FirstName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FirstName.Length;
-                Array.Copy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
+                Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
             }
 
             public override string ToString()
@@ -36859,7 +36859,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -36947,7 +36947,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _groupname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Array.Copy(value, _groupname, value.Length); }
+                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
 
@@ -36971,7 +36971,7 @@ namespace libsecondlife.Packets
                     ID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _groupname = new byte[length];
-                    Array.Copy(bytes, i, _groupname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -36981,10 +36981,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
-                Array.Copy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
+                Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
             }
 
             public override string ToString()
@@ -37092,8 +37092,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37190,8 +37190,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37287,8 +37287,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37386,9 +37386,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Running) ? 1 : 0);
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37487,9 +37487,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Running) ? 1 : 0);
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37535,8 +37535,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37638,8 +37638,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37684,8 +37684,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -37789,8 +37789,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(CircuitCode % 256);
                 bytes[i++] = (byte)((CircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((CircuitCode >> 16) % 256);
@@ -37907,8 +37907,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -37955,8 +37955,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38058,8 +38058,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38200,8 +38200,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38297,8 +38297,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38392,7 +38392,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38436,8 +38436,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38550,7 +38550,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38629,7 +38629,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public LLUUID RegionID;
@@ -38643,7 +38643,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _binarybucket = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _binarybucket = new byte[value.Length]; Array.Copy(value, _binarybucket, value.Length); }
+                    else { _binarybucket = new byte[value.Length]; Buffer.BlockCopy(value, 0, _binarybucket, 0, value.Length); }
                 }
             }
             public uint ParentEstateID;
@@ -38655,7 +38655,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _fromagentname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _fromagentname = new byte[value.Length]; Array.Copy(value, _fromagentname, value.Length); }
+                    else { _fromagentname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromagentname, 0, value.Length); }
                 }
             }
             public LLVector3 Position;
@@ -38685,17 +38685,17 @@ namespace libsecondlife.Packets
                     Timestamp = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     RegionID = new LLUUID(bytes, i); i += 16;
                     Dialog = (byte)bytes[i++];
                     FromGroup = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _binarybucket = new byte[length];
-                    Array.Copy(bytes, i, _binarybucket, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _binarybucket, 0, length); i += length;
                     ParentEstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _fromagentname = new byte[length];
-                    Array.Copy(bytes, i, _fromagentname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _fromagentname, 0, length); i += length;
                     Position = new LLVector3(bytes, i); i += 12;
                 }
                 catch (Exception)
@@ -38706,8 +38706,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ToAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ToAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Offline;
                 bytes[i++] = (byte)(Timestamp % 256);
                 bytes[i++] = (byte)((Timestamp >> 8) % 256);
@@ -38716,22 +38716,22 @@ namespace libsecondlife.Packets
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Message.Length % 256);
                 bytes[i++] = (byte)((Message.Length >> 8) % 256);
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
-                Array.Copy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Dialog;
                 bytes[i++] = (byte)((FromGroup) ? 1 : 0);
                 if(BinaryBucket == null) { Console.WriteLine("Warning: BinaryBucket is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(BinaryBucket.Length % 256);
                 bytes[i++] = (byte)((BinaryBucket.Length >> 8) % 256);
-                Array.Copy(BinaryBucket, 0, bytes, i, BinaryBucket.Length); i += BinaryBucket.Length;
+                Buffer.BlockCopy(BinaryBucket, 0, bytes, i, BinaryBucket.Length); i += BinaryBucket.Length;
                 bytes[i++] = (byte)(ParentEstateID % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 8) % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 16) % 256);
                 bytes[i++] = (byte)((ParentEstateID >> 24) % 256);
                 if(FromAgentName == null) { Console.WriteLine("Warning: FromAgentName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FromAgentName.Length;
-                Array.Copy(FromAgentName, 0, bytes, i, FromAgentName.Length); i += FromAgentName.Length;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(FromAgentName, 0, bytes, i, FromAgentName.Length); i += FromAgentName.Length;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -38789,8 +38789,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -38893,8 +38893,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39040,10 +39040,10 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(GlobalX);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Array.Copy(ba, 0, bytes, i, 8); i += 8;
+                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
                 ba = BitConverter.GetBytes(GlobalY);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 8); }
-                Array.Copy(ba, 0, bytes, i, 8); i += 8;
+                Buffer.BlockCopy(ba, 0, bytes, i, 8); i += 8;
             }
 
             public override string ToString()
@@ -39094,8 +39094,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SpaceIP >> 8) % 256);
                 bytes[i++] = (byte)((SpaceIP >> 16) % 256);
                 bytes[i++] = (byte)((SpaceIP >> 24) % 256);
-                Array.Copy(Prey.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Hunter.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Prey.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Hunter.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39211,7 +39211,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
-                Array.Copy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39256,8 +39256,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39360,7 +39360,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = GodLevel;
-                Array.Copy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39405,8 +39405,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39489,7 +39489,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _method = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Array.Copy(value, _method, value.Length); }
+                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
 
@@ -39513,7 +39513,7 @@ namespace libsecondlife.Packets
                     Invoice = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _method = new byte[length];
-                    Array.Copy(bytes, i, _method, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -39523,10 +39523,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Method == null) { Console.WriteLine("Warning: Method is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Method.Length;
-                Array.Copy(Method, 0, bytes, i, Method.Length); i += Method.Length;
+                Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
             }
 
             public override string ToString()
@@ -39551,7 +39551,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _parameter = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Array.Copy(value, _parameter, value.Length); }
+                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
                 }
             }
 
@@ -39574,7 +39574,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _parameter = new byte[length];
-                    Array.Copy(bytes, i, _parameter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -39586,7 +39586,7 @@ namespace libsecondlife.Packets
             {
                 if(Parameter == null) { Console.WriteLine("Warning: Parameter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Parameter.Length;
-                Array.Copy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
+                Buffer.BlockCopy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
             }
 
             public override string ToString()
@@ -39632,9 +39632,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39737,7 +39737,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _method = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Array.Copy(value, _method, value.Length); }
+                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
 
@@ -39761,7 +39761,7 @@ namespace libsecondlife.Packets
                     Invoice = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _method = new byte[length];
-                    Array.Copy(bytes, i, _method, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -39771,10 +39771,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Method == null) { Console.WriteLine("Warning: Method is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Method.Length;
-                Array.Copy(Method, 0, bytes, i, Method.Length); i += Method.Length;
+                Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
             }
 
             public override string ToString()
@@ -39799,7 +39799,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _parameter = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Array.Copy(value, _parameter, value.Length); }
+                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
                 }
             }
 
@@ -39822,7 +39822,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _parameter = new byte[length];
-                    Array.Copy(bytes, i, _parameter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -39834,7 +39834,7 @@ namespace libsecondlife.Packets
             {
                 if(Parameter == null) { Console.WriteLine("Warning: Parameter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Parameter.Length;
-                Array.Copy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
+                Buffer.BlockCopy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
             }
 
             public override string ToString()
@@ -39880,9 +39880,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -39985,7 +39985,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _method = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Array.Copy(value, _method, value.Length); }
+                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
 
@@ -40009,7 +40009,7 @@ namespace libsecondlife.Packets
                     Invoice = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _method = new byte[length];
-                    Array.Copy(bytes, i, _method, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -40019,10 +40019,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Method == null) { Console.WriteLine("Warning: Method is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Method.Length;
-                Array.Copy(Method, 0, bytes, i, Method.Length); i += Method.Length;
+                Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
             }
 
             public override string ToString()
@@ -40047,7 +40047,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _parameter = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Array.Copy(value, _parameter, value.Length); }
+                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
                 }
             }
 
@@ -40070,7 +40070,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _parameter = new byte[length];
-                    Array.Copy(bytes, i, _parameter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -40082,7 +40082,7 @@ namespace libsecondlife.Packets
             {
                 if(Parameter == null) { Console.WriteLine("Warning: Parameter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Parameter.Length;
-                Array.Copy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
+                Buffer.BlockCopy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
             }
 
             public override string ToString()
@@ -40128,9 +40128,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40252,8 +40252,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40400,8 +40400,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40428,7 +40428,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mutename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mutename = new byte[value.Length]; Array.Copy(value, _mutename, value.Length); }
+                    else { _mutename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mutename, 0, value.Length); }
                 }
             }
             public int MuteType;
@@ -40454,7 +40454,7 @@ namespace libsecondlife.Packets
                     MuteFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _mutename = new byte[length];
-                    Array.Copy(bytes, i, _mutename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mutename, 0, length); i += length;
                     MuteType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -40465,14 +40465,14 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(MuteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MuteID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MuteFlags % 256);
                 bytes[i++] = (byte)((MuteFlags >> 8) % 256);
                 bytes[i++] = (byte)((MuteFlags >> 16) % 256);
                 bytes[i++] = (byte)((MuteFlags >> 24) % 256);
                 if(MuteName == null) { Console.WriteLine("Warning: MuteName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MuteName.Length;
-                Array.Copy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
+                Buffer.BlockCopy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
                 bytes[i++] = (byte)(MuteType % 256);
                 bytes[i++] = (byte)((MuteType >> 8) % 256);
                 bytes[i++] = (byte)((MuteType >> 16) % 256);
@@ -40581,8 +40581,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40608,7 +40608,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mutename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mutename = new byte[value.Length]; Array.Copy(value, _mutename, value.Length); }
+                    else { _mutename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mutename, 0, value.Length); }
                 }
             }
 
@@ -40632,7 +40632,7 @@ namespace libsecondlife.Packets
                     MuteID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _mutename = new byte[length];
-                    Array.Copy(bytes, i, _mutename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mutename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -40642,10 +40642,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(MuteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MuteID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(MuteName == null) { Console.WriteLine("Warning: MuteName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MuteName.Length;
-                Array.Copy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
+                Buffer.BlockCopy(MuteName, 0, bytes, i, MuteName.Length); i += MuteName.Length;
             }
 
             public override string ToString()
@@ -40747,8 +40747,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40793,8 +40793,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(NotecardItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NotecardItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40839,8 +40839,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -40947,7 +40947,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -40967,7 +40967,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -41002,7 +41002,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -41014,7 +41014,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
@@ -41049,25 +41049,25 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -41076,7 +41076,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(GroupMask % 256);
                 bytes[i++] = (byte)((GroupMask >> 8) % 256);
                 bytes[i++] = (byte)((GroupMask >> 16) % 256);
@@ -41151,8 +41151,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41253,7 +41253,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -41274,7 +41274,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -41308,7 +41308,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     AssetID = new LLUUID(bytes, i); i += 16;
@@ -41321,7 +41321,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -41355,26 +41355,26 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -41457,7 +41457,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((SimApproved) ? 1 : 0);
             }
 
@@ -41553,7 +41553,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _newname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _newname = new byte[value.Length]; Array.Copy(value, _newname, value.Length); }
+                    else { _newname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _newname, 0, value.Length); }
                 }
             }
             public LLUUID ItemID;
@@ -41578,7 +41578,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _newname = new byte[length];
-                    Array.Copy(bytes, i, _newname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _newname, 0, length); i += length;
                     ItemID = new LLUUID(bytes, i); i += 16;
                     FolderID = new LLUUID(bytes, i); i += 16;
                 }
@@ -41592,9 +41592,9 @@ namespace libsecondlife.Packets
             {
                 if(NewName == null) { Console.WriteLine("Warning: NewName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)NewName.Length;
-                Array.Copy(NewName, 0, bytes, i, NewName.Length); i += NewName.Length;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NewName, 0, bytes, i, NewName.Length); i += NewName.Length;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41643,8 +41643,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Stamp) ? 1 : 0);
             }
 
@@ -41741,7 +41741,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _newname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _newname = new byte[value.Length]; Array.Copy(value, _newname, value.Length); }
+                    else { _newname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _newname, 0, value.Length); }
                 }
             }
             public LLUUID NewFolderID;
@@ -41768,7 +41768,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _newname = new byte[length];
-                    Array.Copy(bytes, i, _newname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _newname, 0, length); i += length;
                     NewFolderID = new LLUUID(bytes, i); i += 16;
                     CallbackID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OldItemID = new LLUUID(bytes, i); i += 16;
@@ -41784,14 +41784,14 @@ namespace libsecondlife.Packets
             {
                 if(NewName == null) { Console.WriteLine("Warning: NewName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)NewName.Length;
-                Array.Copy(NewName, 0, bytes, i, NewName.Length); i += NewName.Length;
-                Array.Copy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NewName, 0, bytes, i, NewName.Length); i += NewName.Length;
+                Buffer.BlockCopy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(CallbackID % 256);
                 bytes[i++] = (byte)((CallbackID >> 8) % 256);
                 bytes[i++] = (byte)((CallbackID >> 16) % 256);
                 bytes[i++] = (byte)((CallbackID >> 24) % 256);
-                Array.Copy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OldAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OldAgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41840,8 +41840,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41954,7 +41954,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41998,8 +41998,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42113,7 +42113,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -42162,8 +42162,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42277,8 +42277,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(NewAssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NewAssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42321,7 +42321,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42422,8 +42422,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42448,7 +42448,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID ParentID;
@@ -42474,7 +42474,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ParentID = new LLUUID(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
                     FolderID = new LLUUID(bytes, i); i += 16;
@@ -42489,10 +42489,10 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42597,8 +42597,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42623,7 +42623,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID ParentID;
@@ -42649,7 +42649,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ParentID = new LLUUID(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
                     FolderID = new LLUUID(bytes, i); i += 16;
@@ -42664,10 +42664,10 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42784,8 +42784,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42832,8 +42832,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Stamp) ? 1 : 0);
             }
 
@@ -42950,8 +42950,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -42994,7 +42994,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -43113,8 +43113,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SortOrder % 256);
                 bytes[i++] = (byte)((SortOrder >> 8) % 256);
                 bytes[i++] = (byte)((SortOrder >> 16) % 256);
@@ -43168,8 +43168,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -43257,7 +43257,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -43278,7 +43278,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -43311,7 +43311,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     AssetID = new LLUUID(bytes, i); i += 16;
@@ -43324,7 +43324,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -43354,26 +43354,26 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -43461,7 +43461,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Descendents % 256);
                 bytes[i++] = (byte)((Descendents >> 8) % 256);
                 bytes[i++] = (byte)((Descendents >> 16) % 256);
@@ -43470,8 +43470,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Version >> 8) % 256);
                 bytes[i++] = (byte)((Version >> 16) % 256);
                 bytes[i++] = (byte)((Version >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -43499,7 +43499,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID ParentID;
@@ -43525,7 +43525,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ParentID = new LLUUID(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
                     FolderID = new LLUUID(bytes, i); i += 16;
@@ -43540,10 +43540,10 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -43679,8 +43679,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -43725,8 +43725,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -43826,7 +43826,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -43847,7 +43847,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -43880,7 +43880,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     AssetID = new LLUUID(bytes, i); i += 16;
@@ -43893,7 +43893,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -43923,26 +43923,26 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -44022,7 +44022,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44122,7 +44122,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -44143,7 +44143,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -44177,7 +44177,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     AssetID = new LLUUID(bytes, i); i += 16;
@@ -44190,7 +44190,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -44224,26 +44224,26 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -44326,8 +44326,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44352,7 +44352,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID ParentID;
@@ -44378,7 +44378,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ParentID = new LLUUID(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
                     FolderID = new LLUUID(bytes, i); i += 16;
@@ -44393,10 +44393,10 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)Type;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44536,10 +44536,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44639,8 +44639,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(QueryID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((IsReadable) ? 1 : 0);
             }
 
@@ -44736,7 +44736,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44780,8 +44780,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44824,7 +44824,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44953,7 +44953,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -44997,8 +44997,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45086,7 +45086,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -45106,7 +45106,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -45140,7 +45140,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -45152,7 +45152,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
@@ -45183,25 +45183,25 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -45210,7 +45210,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(GroupMask % 256);
                 bytes[i++] = (byte)((GroupMask >> 8) % 256);
                 bytes[i++] = (byte)((GroupMask >> 16) % 256);
@@ -45333,8 +45333,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45447,7 +45447,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45492,8 +45492,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45600,7 +45600,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
                 bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45647,9 +45647,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45797,8 +45797,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -45881,7 +45881,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _filename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Array.Copy(value, _filename, value.Length); }
+                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
                 }
             }
             public short Serial;
@@ -45906,7 +45906,7 @@ namespace libsecondlife.Packets
                     TaskID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _filename = new byte[length];
-                    Array.Copy(bytes, i, _filename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
                     Serial = (short)(bytes[i++] + (bytes[i++] << 8));
                 }
                 catch (Exception)
@@ -45917,10 +45917,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filename.Length;
-                Array.Copy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
+                Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
                 bytes[i++] = (byte)(Serial % 256);
                 bytes[i++] = (byte)((Serial >> 8) % 256);
             }
@@ -46074,12 +46074,12 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Destination;
                 bytes[i++] = PacketNumber;
                 bytes[i++] = PacketCount;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(DestinationID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(DestinationID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46128,8 +46128,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46280,7 +46280,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -46300,7 +46300,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -46334,7 +46334,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -46346,7 +46346,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
@@ -46377,25 +46377,25 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -46404,7 +46404,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(GroupMask % 256);
                 bytes[i++] = (byte)((GroupMask >> 8) % 256);
                 bytes[i++] = (byte)((GroupMask >> 16) % 256);
@@ -46500,14 +46500,14 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
-                Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(ItemFlags % 256);
                 bytes[i++] = (byte)((ItemFlags >> 8) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 16) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                Array.Copy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
-                Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
@@ -46521,7 +46521,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupMask >> 8) % 256);
                 bytes[i++] = (byte)((GroupMask >> 16) % 256);
                 bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                Array.Copy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46578,9 +46578,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46688,7 +46688,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46754,14 +46754,14 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((RezSelected) ? 1 : 0);
                 bytes[i++] = (byte)((RemoveItem) ? 1 : 0);
-                Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(ItemFlags % 256);
                 bytes[i++] = (byte)((ItemFlags >> 8) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 16) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                Array.Copy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((RayEndIsIntersection) ? 1 : 0);
-                Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
@@ -46775,7 +46775,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupMask >> 8) % 256);
                 bytes[i++] = (byte)((GroupMask >> 16) % 256);
                 bytes[i++] = (byte)((GroupMask >> 24) % 256);
-                Array.Copy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46830,8 +46830,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(NotecardItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NotecardItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -46878,9 +46878,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47006,7 +47006,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47103,9 +47103,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47151,8 +47151,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47252,7 +47252,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47296,8 +47296,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47340,7 +47340,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47457,7 +47457,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47501,8 +47501,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47604,8 +47604,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47699,7 +47699,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OtherID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OtherID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47743,8 +47743,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47846,8 +47846,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47892,8 +47892,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -47993,7 +47993,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48037,8 +48037,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48081,7 +48081,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48198,7 +48198,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48242,8 +48242,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48379,7 +48379,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -48399,7 +48399,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint Flags;
@@ -48433,7 +48433,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -48445,7 +48445,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
@@ -48476,25 +48476,25 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -48503,7 +48503,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(GroupMask % 256);
                 bytes[i++] = (byte)((GroupMask >> 8) % 256);
                 bytes[i++] = (byte)((GroupMask >> 16) % 256);
@@ -48579,9 +48579,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48673,7 +48673,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public sbyte InvType;
@@ -48687,7 +48687,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public uint NextOwnerMask;
@@ -48715,13 +48715,13 @@ namespace libsecondlife.Packets
                     WearableType = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InvType = (sbyte)bytes[i++];
                     Type = (sbyte)bytes[i++];
                     FolderID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
                 }
@@ -48740,18 +48740,18 @@ namespace libsecondlife.Packets
                 bytes[i++] = WearableType;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)InvType;
                 bytes[i++] = (byte)Type;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(NextOwnerMask % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48805,8 +48805,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -48889,7 +48889,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID FolderID;
@@ -48913,7 +48913,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     FolderID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -48926,8 +48926,8 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -49018,8 +49018,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -49126,7 +49126,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -49221,7 +49221,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RegionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(RegionHandle % 256);
                 bytes[i++] = (byte)((RegionHandle >> 8) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 16) % 256);
@@ -49309,7 +49309,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public byte Flags;
@@ -49339,7 +49339,7 @@ namespace libsecondlife.Packets
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     Flags = (byte)bytes[i++];
                     SourceID = new LLUUID(bytes, i); i += 16;
                     TransactionType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -49354,16 +49354,16 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = AggregatePermInventory;
                 bytes[i++] = AggregatePermNextOwner;
-                Array.Copy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(DestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Amount % 256);
                 bytes[i++] = (byte)((Amount >> 8) % 256);
                 bytes[i++] = (byte)((Amount >> 16) % 256);
                 bytes[i++] = (byte)((Amount >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = Flags;
-                Array.Copy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(TransactionType % 256);
                 bytes[i++] = (byte)((TransactionType >> 8) % 256);
                 bytes[i++] = (byte)((TransactionType >> 16) % 256);
@@ -49419,8 +49419,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -49523,7 +49523,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Delta % 256);
                 bytes[i++] = (byte)((Delta >> 8) % 256);
                 bytes[i++] = (byte)((Delta >> 16) % 256);
@@ -49622,7 +49622,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -49666,8 +49666,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -49753,7 +49753,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public int SquareMetersCommitted;
@@ -49782,7 +49782,7 @@ namespace libsecondlife.Packets
                     SquareMetersCredit = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     SquareMetersCommitted = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
                     TransactionSuccess = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -49795,7 +49795,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MoneyBalance % 256);
                 bytes[i++] = (byte)((MoneyBalance >> 8) % 256);
                 bytes[i++] = (byte)((MoneyBalance >> 16) % 256);
@@ -49806,12 +49806,12 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SquareMetersCredit >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(SquareMetersCommitted % 256);
                 bytes[i++] = (byte)((SquareMetersCommitted >> 8) % 256);
                 bytes[i++] = (byte)((SquareMetersCommitted >> 16) % 256);
                 bytes[i++] = (byte)((SquareMetersCommitted >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((TransactionSuccess) ? 1 : 0);
             }
 
@@ -49948,7 +49948,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public int SquareMetersCommitted;
@@ -49977,7 +49977,7 @@ namespace libsecondlife.Packets
                     SquareMetersCredit = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     SquareMetersCommitted = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TransactionID = new LLUUID(bytes, i); i += 16;
                     TransactionSuccess = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -49990,7 +49990,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MoneyBalance % 256);
                 bytes[i++] = (byte)((MoneyBalance >> 8) % 256);
                 bytes[i++] = (byte)((MoneyBalance >> 16) % 256);
@@ -50001,12 +50001,12 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SquareMetersCredit >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = (byte)(SquareMetersCommitted % 256);
                 bytes[i++] = (byte)((SquareMetersCommitted >> 8) % 256);
                 bytes[i++] = (byte)((SquareMetersCommitted >> 16) % 256);
                 bytes[i++] = (byte)((SquareMetersCommitted >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((TransactionSuccess) ? 1 : 0);
             }
 
@@ -50118,7 +50118,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(StartPeriod % 256);
                 bytes[i++] = (byte)((StartPeriod >> 8) % 256);
                 bytes[i++] = (byte)((StartPeriod >> 16) % 256);
@@ -50205,7 +50205,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int StartPeriod;
@@ -50234,7 +50234,7 @@ namespace libsecondlife.Packets
                     TaxEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     StartPeriod = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     StipendEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     EndPeriod = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -50258,7 +50258,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TaxEstimate >> 24) % 256);
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(StartPeriod % 256);
                 bytes[i++] = (byte)((StartPeriod >> 8) % 256);
                 bytes[i++] = (byte)((StartPeriod >> 16) % 256);
@@ -50306,7 +50306,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
 
@@ -50330,7 +50330,7 @@ namespace libsecondlife.Packets
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -50346,7 +50346,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Amount >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
             }
 
             public override string ToString()
@@ -50389,7 +50389,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -50511,7 +50511,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
@@ -50565,8 +50565,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -50649,7 +50649,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _taxdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _taxdate = new byte[value.Length]; Array.Copy(value, _taxdate, value.Length); }
+                    else { _taxdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _taxdate, 0, value.Length); }
                 }
             }
             public int Balance;
@@ -50673,7 +50673,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lasttaxdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lasttaxdate = new byte[value.Length]; Array.Copy(value, _lasttaxdate, value.Length); }
+                    else { _lasttaxdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lasttaxdate, 0, value.Length); }
                 }
             }
             private byte[] _startdate;
@@ -50684,7 +50684,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int TotalCredits;
@@ -50714,7 +50714,7 @@ namespace libsecondlife.Packets
                     ParcelDirFeeCurrent = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _taxdate = new byte[length];
-                    Array.Copy(bytes, i, _taxdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _taxdate, 0, length); i += length;
                     Balance = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelDirFeeEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RequestID = new LLUUID(bytes, i); i += 16;
@@ -50730,10 +50730,10 @@ namespace libsecondlife.Packets
                     GroupTaxEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _lasttaxdate = new byte[length];
-                    Array.Copy(bytes, i, _lasttaxdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lasttaxdate, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     TotalCredits = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     StipendEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -50753,7 +50753,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ParcelDirFeeCurrent >> 24) % 256);
                 if(TaxDate == null) { Console.WriteLine("Warning: TaxDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TaxDate.Length;
-                Array.Copy(TaxDate, 0, bytes, i, TaxDate.Length); i += TaxDate.Length;
+                Buffer.BlockCopy(TaxDate, 0, bytes, i, TaxDate.Length); i += TaxDate.Length;
                 bytes[i++] = (byte)(Balance % 256);
                 bytes[i++] = (byte)((Balance >> 8) % 256);
                 bytes[i++] = (byte)((Balance >> 16) % 256);
@@ -50762,7 +50762,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ParcelDirFeeEstimate >> 8) % 256);
                 bytes[i++] = (byte)((ParcelDirFeeEstimate >> 16) % 256);
                 bytes[i++] = (byte)((ParcelDirFeeEstimate >> 24) % 256);
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(ObjectTaxCurrent % 256);
                 bytes[i++] = (byte)((ObjectTaxCurrent >> 8) % 256);
                 bytes[i++] = (byte)((ObjectTaxCurrent >> 16) % 256);
@@ -50805,10 +50805,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupTaxEstimate >> 24) % 256);
                 if(LastTaxDate == null) { Console.WriteLine("Warning: LastTaxDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastTaxDate.Length;
-                Array.Copy(LastTaxDate, 0, bytes, i, LastTaxDate.Length); i += LastTaxDate.Length;
+                Buffer.BlockCopy(LastTaxDate, 0, bytes, i, LastTaxDate.Length); i += LastTaxDate.Length;
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(TotalCredits % 256);
                 bytes[i++] = (byte)((TotalCredits >> 8) % 256);
                 bytes[i++] = (byte)((TotalCredits >> 16) % 256);
@@ -50889,7 +50889,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -50993,7 +50993,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
@@ -51047,8 +51047,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -51132,7 +51132,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int CurrentInterval;
@@ -51158,7 +51158,7 @@ namespace libsecondlife.Packets
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -51169,14 +51169,14 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 24) % 256);
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(CurrentInterval % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
@@ -51209,7 +51209,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
 
@@ -51233,7 +51233,7 @@ namespace libsecondlife.Packets
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -51249,7 +51249,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Amount >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
             }
 
             public override string ToString()
@@ -51292,7 +51292,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -51414,7 +51414,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
@@ -51468,8 +51468,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -51553,7 +51553,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int CurrentInterval;
@@ -51579,7 +51579,7 @@ namespace libsecondlife.Packets
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -51590,14 +51590,14 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 24) % 256);
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(CurrentInterval % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
@@ -51629,7 +51629,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _time = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _time = new byte[value.Length]; Array.Copy(value, _time, value.Length); }
+                    else { _time = new byte[value.Length]; Buffer.BlockCopy(value, 0, _time, 0, value.Length); }
                 }
             }
             private byte[] _item;
@@ -51640,7 +51640,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _item = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _item = new byte[value.Length]; Array.Copy(value, _item, value.Length); }
+                    else { _item = new byte[value.Length]; Buffer.BlockCopy(value, 0, _item, 0, value.Length); }
                 }
             }
             private byte[] _user;
@@ -51651,7 +51651,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _user = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _user = new byte[value.Length]; Array.Copy(value, _user, value.Length); }
+                    else { _user = new byte[value.Length]; Buffer.BlockCopy(value, 0, _user, 0, value.Length); }
                 }
             }
             public int Type;
@@ -51678,13 +51678,13 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _time = new byte[length];
-                    Array.Copy(bytes, i, _time, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _time, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _item = new byte[length];
-                    Array.Copy(bytes, i, _item, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _item, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _user = new byte[length];
-                    Array.Copy(bytes, i, _user, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _user, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -51698,13 +51698,13 @@ namespace libsecondlife.Packets
             {
                 if(Time == null) { Console.WriteLine("Warning: Time is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Time.Length;
-                Array.Copy(Time, 0, bytes, i, Time.Length); i += Time.Length;
+                Buffer.BlockCopy(Time, 0, bytes, i, Time.Length); i += Time.Length;
                 if(Item == null) { Console.WriteLine("Warning: Item is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Item.Length;
-                Array.Copy(Item, 0, bytes, i, Item.Length); i += Item.Length;
+                Buffer.BlockCopy(Item, 0, bytes, i, Item.Length); i += Item.Length;
                 if(User == null) { Console.WriteLine("Warning: User is null, in " + this.GetType()); }
                 bytes[i++] = (byte)User.Length;
-                Array.Copy(User, 0, bytes, i, User.Length); i += User.Length;
+                Buffer.BlockCopy(User, 0, bytes, i, User.Length); i += User.Length;
                 bytes[i++] = (byte)(Type % 256);
                 bytes[i++] = (byte)((Type >> 8) % 256);
                 bytes[i++] = (byte)((Type >> 16) % 256);
@@ -51761,7 +51761,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -51881,7 +51881,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Reset) ? 1 : 0);
             }
 
@@ -51980,12 +51980,12 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(GestureFlags % 256);
                 bytes[i++] = (byte)((GestureFlags >> 8) % 256);
                 bytes[i++] = (byte)((GestureFlags >> 16) % 256);
                 bytes[i++] = (byte)((GestureFlags >> 24) % 256);
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52033,8 +52033,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -52157,7 +52157,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GestureFlags >> 8) % 256);
                 bytes[i++] = (byte)((GestureFlags >> 16) % 256);
                 bytes[i++] = (byte)((GestureFlags >> 24) % 256);
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52204,8 +52204,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -52305,7 +52305,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _filename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Array.Copy(value, _filename, value.Length); }
+                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
                 }
             }
 
@@ -52329,7 +52329,7 @@ namespace libsecondlife.Packets
                     AgentID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _filename = new byte[length];
-                    Array.Copy(bytes, i, _filename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -52339,10 +52339,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filename.Length;
-                Array.Copy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
+                Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
             }
 
             public override string ToString()
@@ -52436,7 +52436,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52535,7 +52535,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RelatedRights >> 8) % 256);
                 bytes[i++] = (byte)((RelatedRights >> 16) % 256);
                 bytes[i++] = (byte)((RelatedRights >> 24) % 256);
-                Array.Copy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52580,8 +52580,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52699,7 +52699,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RelatedRights >> 8) % 256);
                 bytes[i++] = (byte)((RelatedRights >> 16) % 256);
                 bytes[i++] = (byte)((RelatedRights >> 24) % 256);
-                Array.Copy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentRelated.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52742,7 +52742,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52853,7 +52853,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -52958,7 +52958,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -53046,7 +53046,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Array.Copy(value, _simname, value.Length); }
+                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
                 }
             }
             public uint LocationID;
@@ -53072,7 +53072,7 @@ namespace libsecondlife.Packets
                     LocationPos = new LLVector3(bytes, i); i += 12;
                     length = (ushort)bytes[i++];
                     _simname = new byte[length];
-                    Array.Copy(bytes, i, _simname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
                     LocationID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     LocationLookAt = new LLVector3(bytes, i); i += 12;
                 }
@@ -53084,15 +53084,15 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(LocationPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(LocationPos.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(SimName == null) { Console.WriteLine("Warning: SimName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimName.Length;
-                Array.Copy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
+                Buffer.BlockCopy(SimName, 0, bytes, i, SimName.Length); i += SimName.Length;
                 bytes[i++] = (byte)(LocationID % 256);
                 bytes[i++] = (byte)((LocationID >> 8) % 256);
                 bytes[i++] = (byte)((LocationID >> 16) % 256);
                 bytes[i++] = (byte)((LocationID >> 24) % 256);
-                Array.Copy(LocationLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(LocationLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -53140,8 +53140,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -53226,7 +53226,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _assetdata = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _assetdata = new byte[value.Length]; Array.Copy(value, _assetdata, value.Length); }
+                    else { _assetdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _assetdata, 0, value.Length); }
                 }
             }
             public LLUUID TransactionID;
@@ -53253,7 +53253,7 @@ namespace libsecondlife.Packets
                     Tempfile = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _assetdata = new byte[length];
-                    Array.Copy(bytes, i, _assetdata, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _assetdata, 0, length); i += length;
                     TransactionID = new LLUUID(bytes, i); i += 16;
                     StoreLocal = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
@@ -53270,8 +53270,8 @@ namespace libsecondlife.Packets
                 if(AssetData == null) { Console.WriteLine("Warning: AssetData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(AssetData.Length % 256);
                 bytes[i++] = (byte)((AssetData.Length >> 8) % 256);
-                Array.Copy(AssetData, 0, bytes, i, AssetData.Length); i += AssetData.Length;
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetData, 0, bytes, i, AssetData.Length); i += AssetData.Length;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((StoreLocal) ? 1 : 0);
             }
 
@@ -53374,7 +53374,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(UUID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(UUID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
                 bytes[i++] = (byte)Type;
             }
@@ -53483,17 +53483,17 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(RateeID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RateeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Appearance);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(Behavior);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(Building);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -53592,8 +53592,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ToID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(FromID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ToID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FromID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -53701,15 +53701,15 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(Appearance);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(ToID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ToID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Behavior);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(FromID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(FromID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Building);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -53808,8 +53808,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -53835,7 +53835,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _charter = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _charter = new byte[value.Length]; Array.Copy(value, _charter, value.Length); }
+                    else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
                 }
             }
             public bool ShowInList;
@@ -53847,7 +53847,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID InsigniaID;
@@ -53876,11 +53876,11 @@ namespace libsecondlife.Packets
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _charter = new byte[length];
-                    Array.Copy(bytes, i, _charter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _charter, 0, length); i += length;
                     ShowInList = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     InsigniaID = new LLUUID(bytes, i); i += 16;
                     MembershipFee = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     MaturePublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -53898,12 +53898,12 @@ namespace libsecondlife.Packets
                 if(Charter == null) { Console.WriteLine("Warning: Charter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Charter.Length % 256);
                 bytes[i++] = (byte)((Charter.Length >> 8) % 256);
-                Array.Copy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
+                Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MembershipFee % 256);
                 bytes[i++] = (byte)((MembershipFee >> 8) % 256);
                 bytes[i++] = (byte)((MembershipFee >> 16) % 256);
@@ -54000,7 +54000,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _message = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Array.Copy(value, _message, value.Length); }
+                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
                 }
             }
             public bool Success;
@@ -54025,7 +54025,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _message = new byte[length];
-                    Array.Copy(bytes, i, _message, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
                     Success = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     GroupID = new LLUUID(bytes, i); i += 16;
                 }
@@ -54039,9 +54039,9 @@ namespace libsecondlife.Packets
             {
                 if(Message == null) { Console.WriteLine("Warning: Message is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Message.Length;
-                Array.Copy(Message, 0, bytes, i, Message.Length); i += Message.Length;
+                Buffer.BlockCopy(Message, 0, bytes, i, Message.Length); i += Message.Length;
                 bytes[i++] = (byte)((Success) ? 1 : 0);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54086,7 +54086,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54187,8 +54187,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54214,7 +54214,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _charter = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _charter = new byte[value.Length]; Array.Copy(value, _charter, value.Length); }
+                    else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
                 }
             }
             public bool ShowInList;
@@ -54244,7 +54244,7 @@ namespace libsecondlife.Packets
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _charter = new byte[length];
-                    Array.Copy(bytes, i, _charter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _charter, 0, length); i += length;
                     ShowInList = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     InsigniaID = new LLUUID(bytes, i); i += 16;
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -54264,10 +54264,10 @@ namespace libsecondlife.Packets
                 if(Charter == null) { Console.WriteLine("Warning: Charter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Charter.Length % 256);
                 bytes[i++] = (byte)((Charter.Length >> 8) % 256);
-                Array.Copy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
+                Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
-                Array.Copy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MembershipFee % 256);
                 bytes[i++] = (byte)((MembershipFee >> 8) % 256);
                 bytes[i++] = (byte)((MembershipFee >> 16) % 256);
@@ -54385,12 +54385,12 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Change % 256);
                 bytes[i++] = (byte)((Change >> 8) % 256);
                 bytes[i++] = (byte)((Change >> 16) % 256);
                 bytes[i++] = (byte)((Change >> 24) % 256);
-                Array.Copy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54438,9 +54438,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54555,8 +54555,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54599,7 +54599,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54699,7 +54699,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54744,7 +54744,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Success) ? 1 : 0);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54846,8 +54846,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54890,7 +54890,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(EjecteeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(EjecteeID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -54932,7 +54932,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55049,7 +55049,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55133,7 +55133,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55240,8 +55240,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55284,7 +55284,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55383,7 +55383,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55428,7 +55428,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Success) ? 1 : 0);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55530,8 +55530,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(InviteeID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(InviteeID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55576,8 +55576,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55620,7 +55620,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55739,8 +55739,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55783,7 +55783,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55882,7 +55882,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -55908,7 +55908,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _charter = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _charter = new byte[value.Length]; Array.Copy(value, _charter, value.Length); }
+                    else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
                 }
             }
             public int GroupMembershipCount;
@@ -55921,7 +55921,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _membertitle;
@@ -55932,7 +55932,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _membertitle = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _membertitle = new byte[value.Length]; Array.Copy(value, _membertitle, value.Length); }
+                    else { _membertitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _membertitle, 0, value.Length); }
                 }
             }
             public LLUUID InsigniaID;
@@ -55968,15 +55968,15 @@ namespace libsecondlife.Packets
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _charter = new byte[length];
-                    Array.Copy(bytes, i, _charter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _charter, 0, length); i += length;
                     GroupMembershipCount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ShowInList = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _membertitle = new byte[length];
-                    Array.Copy(bytes, i, _membertitle, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _membertitle, 0, length); i += length;
                     InsigniaID = new LLUUID(bytes, i); i += 16;
                     GroupRolesCount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -55995,12 +55995,12 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OwnerRole.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerRole.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
                 if(Charter == null) { Console.WriteLine("Warning: Charter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Charter.Length % 256);
                 bytes[i++] = (byte)((Charter.Length >> 8) % 256);
-                Array.Copy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
+                Buffer.BlockCopy(Charter, 0, bytes, i, Charter.Length); i += Charter.Length;
                 bytes[i++] = (byte)(GroupMembershipCount % 256);
                 bytes[i++] = (byte)((GroupMembershipCount >> 8) % 256);
                 bytes[i++] = (byte)((GroupMembershipCount >> 16) % 256);
@@ -56008,16 +56008,16 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ShowInList) ? 1 : 0);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(MemberTitle == null) { Console.WriteLine("Warning: MemberTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MemberTitle.Length;
-                Array.Copy(MemberTitle, 0, bytes, i, MemberTitle.Length); i += MemberTitle.Length;
-                Array.Copy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MemberTitle, 0, bytes, i, MemberTitle.Length); i += MemberTitle.Length;
+                Buffer.BlockCopy(InsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(GroupRolesCount % 256);
                 bytes[i++] = (byte)((GroupRolesCount >> 8) % 256);
                 bytes[i++] = (byte)((GroupRolesCount >> 16) % 256);
                 bytes[i++] = (byte)((GroupRolesCount >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MembershipFee % 256);
                 bytes[i++] = (byte)((MembershipFee >> 8) % 256);
                 bytes[i++] = (byte)((MembershipFee >> 16) % 256);
@@ -56035,7 +56035,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Money >> 8) % 256);
                 bytes[i++] = (byte)((Money >> 16) % 256);
                 bytes[i++] = (byte)((Money >> 24) % 256);
-                Array.Copy(FounderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FounderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
             }
 
@@ -56158,7 +56158,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
@@ -56214,9 +56214,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -56301,7 +56301,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _taxdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _taxdate = new byte[value.Length]; Array.Copy(value, _taxdate, value.Length); }
+                    else { _taxdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _taxdate, 0, value.Length); }
                 }
             }
             public int Balance;
@@ -56325,7 +56325,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lasttaxdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lasttaxdate = new byte[value.Length]; Array.Copy(value, _lasttaxdate, value.Length); }
+                    else { _lasttaxdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lasttaxdate, 0, value.Length); }
                 }
             }
             public int NonExemptMembers;
@@ -56337,7 +56337,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int TotalCredits;
@@ -56365,7 +56365,7 @@ namespace libsecondlife.Packets
                     ParcelDirFeeCurrent = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _taxdate = new byte[length];
-                    Array.Copy(bytes, i, _taxdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _taxdate, 0, length); i += length;
                     Balance = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelDirFeeEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RequestID = new LLUUID(bytes, i); i += 16;
@@ -56381,11 +56381,11 @@ namespace libsecondlife.Packets
                     GroupTaxEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _lasttaxdate = new byte[length];
-                    Array.Copy(bytes, i, _lasttaxdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lasttaxdate, 0, length); i += length;
                     NonExemptMembers = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     TotalCredits = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -56403,7 +56403,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ParcelDirFeeCurrent >> 24) % 256);
                 if(TaxDate == null) { Console.WriteLine("Warning: TaxDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TaxDate.Length;
-                Array.Copy(TaxDate, 0, bytes, i, TaxDate.Length); i += TaxDate.Length;
+                Buffer.BlockCopy(TaxDate, 0, bytes, i, TaxDate.Length); i += TaxDate.Length;
                 bytes[i++] = (byte)(Balance % 256);
                 bytes[i++] = (byte)((Balance >> 8) % 256);
                 bytes[i++] = (byte)((Balance >> 16) % 256);
@@ -56412,7 +56412,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ParcelDirFeeEstimate >> 8) % 256);
                 bytes[i++] = (byte)((ParcelDirFeeEstimate >> 16) % 256);
                 bytes[i++] = (byte)((ParcelDirFeeEstimate >> 24) % 256);
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(ObjectTaxCurrent % 256);
                 bytes[i++] = (byte)((ObjectTaxCurrent >> 8) % 256);
                 bytes[i++] = (byte)((ObjectTaxCurrent >> 16) % 256);
@@ -56455,14 +56455,14 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupTaxEstimate >> 24) % 256);
                 if(LastTaxDate == null) { Console.WriteLine("Warning: LastTaxDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastTaxDate.Length;
-                Array.Copy(LastTaxDate, 0, bytes, i, LastTaxDate.Length); i += LastTaxDate.Length;
+                Buffer.BlockCopy(LastTaxDate, 0, bytes, i, LastTaxDate.Length); i += LastTaxDate.Length;
                 bytes[i++] = (byte)(NonExemptMembers % 256);
                 bytes[i++] = (byte)((NonExemptMembers >> 8) % 256);
                 bytes[i++] = (byte)((NonExemptMembers >> 16) % 256);
                 bytes[i++] = (byte)((NonExemptMembers >> 24) % 256);
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(TotalCredits % 256);
                 bytes[i++] = (byte)((TotalCredits >> 8) % 256);
                 bytes[i++] = (byte)((TotalCredits >> 16) % 256);
@@ -56536,8 +56536,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -56642,7 +56642,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
@@ -56698,9 +56698,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -56786,7 +56786,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int CurrentInterval;
@@ -56812,7 +56812,7 @@ namespace libsecondlife.Packets
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -56823,14 +56823,14 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 24) % 256);
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(CurrentInterval % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
@@ -56863,7 +56863,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
 
@@ -56887,7 +56887,7 @@ namespace libsecondlife.Packets
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -56903,7 +56903,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Amount >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
             }
 
             public override string ToString()
@@ -56948,8 +56948,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57072,7 +57072,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
@@ -57128,9 +57128,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57216,7 +57216,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdate = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Array.Copy(value, _startdate, value.Length); }
+                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
                 }
             }
             public int CurrentInterval;
@@ -57242,7 +57242,7 @@ namespace libsecondlife.Packets
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _startdate = new byte[length];
-                    Array.Copy(bytes, i, _startdate, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -57253,14 +57253,14 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(IntervalDays % 256);
                 bytes[i++] = (byte)((IntervalDays >> 8) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 16) % 256);
                 bytes[i++] = (byte)((IntervalDays >> 24) % 256);
                 if(StartDate == null) { Console.WriteLine("Warning: StartDate is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDate.Length;
-                Array.Copy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
+                Buffer.BlockCopy(StartDate, 0, bytes, i, StartDate.Length); i += StartDate.Length;
                 bytes[i++] = (byte)(CurrentInterval % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 8) % 256);
                 bytes[i++] = (byte)((CurrentInterval >> 16) % 256);
@@ -57292,7 +57292,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _time = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _time = new byte[value.Length]; Array.Copy(value, _time, value.Length); }
+                    else { _time = new byte[value.Length]; Buffer.BlockCopy(value, 0, _time, 0, value.Length); }
                 }
             }
             private byte[] _item;
@@ -57303,7 +57303,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _item = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _item = new byte[value.Length]; Array.Copy(value, _item, value.Length); }
+                    else { _item = new byte[value.Length]; Buffer.BlockCopy(value, 0, _item, 0, value.Length); }
                 }
             }
             private byte[] _user;
@@ -57314,7 +57314,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _user = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _user = new byte[value.Length]; Array.Copy(value, _user, value.Length); }
+                    else { _user = new byte[value.Length]; Buffer.BlockCopy(value, 0, _user, 0, value.Length); }
                 }
             }
             public int Type;
@@ -57341,13 +57341,13 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _time = new byte[length];
-                    Array.Copy(bytes, i, _time, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _time, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _item = new byte[length];
-                    Array.Copy(bytes, i, _item, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _item, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _user = new byte[length];
-                    Array.Copy(bytes, i, _user, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _user, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -57361,13 +57361,13 @@ namespace libsecondlife.Packets
             {
                 if(Time == null) { Console.WriteLine("Warning: Time is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Time.Length;
-                Array.Copy(Time, 0, bytes, i, Time.Length); i += Time.Length;
+                Buffer.BlockCopy(Time, 0, bytes, i, Time.Length); i += Time.Length;
                 if(Item == null) { Console.WriteLine("Warning: Item is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Item.Length;
-                Array.Copy(Item, 0, bytes, i, Item.Length); i += Item.Length;
+                Buffer.BlockCopy(Item, 0, bytes, i, Item.Length); i += Item.Length;
                 if(User == null) { Console.WriteLine("Warning: User is null, in " + this.GetType()); }
                 bytes[i++] = (byte)User.Length;
-                Array.Copy(User, 0, bytes, i, User.Length); i += User.Length;
+                Buffer.BlockCopy(User, 0, bytes, i, User.Length); i += User.Length;
                 bytes[i++] = (byte)(Type % 256);
                 bytes[i++] = (byte)((Type >> 8) % 256);
                 bytes[i++] = (byte)((Type >> 16) % 256);
@@ -57426,8 +57426,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57548,8 +57548,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57592,7 +57592,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57634,7 +57634,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57721,7 +57721,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdatetime = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdatetime = new byte[value.Length]; Array.Copy(value, _startdatetime, value.Length); }
+                    else { _startdatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdatetime, 0, value.Length); }
                 }
             }
             private byte[] _proposaltext;
@@ -57732,7 +57732,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _proposaltext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _proposaltext = new byte[value.Length]; Array.Copy(value, _proposaltext, value.Length); }
+                    else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
                 }
             }
             public float Majority;
@@ -57744,7 +57744,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _tersedateid = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _tersedateid = new byte[value.Length]; Array.Copy(value, _tersedateid, value.Length); }
+                    else { _tersedateid = new byte[value.Length]; Buffer.BlockCopy(value, 0, _tersedateid, 0, value.Length); }
                 }
             }
             private byte[] _enddatetime;
@@ -57755,7 +57755,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _enddatetime = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _enddatetime = new byte[value.Length]; Array.Copy(value, _enddatetime, value.Length); }
+                    else { _enddatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _enddatetime, 0, value.Length); }
                 }
             }
             public LLUUID VoteID;
@@ -57768,7 +57768,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _votecast = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votecast = new byte[value.Length]; Array.Copy(value, _votecast, value.Length); }
+                    else { _votecast = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votecast, 0, value.Length); }
                 }
             }
             public int Quorum;
@@ -57797,23 +57797,23 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _startdatetime = new byte[length];
-                    Array.Copy(bytes, i, _startdatetime, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdatetime, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _proposaltext = new byte[length];
-                    Array.Copy(bytes, i, _proposaltext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _proposaltext, 0, length); i += length;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Majority = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _tersedateid = new byte[length];
-                    Array.Copy(bytes, i, _tersedateid, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _tersedateid, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _enddatetime = new byte[length];
-                    Array.Copy(bytes, i, _enddatetime, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _enddatetime, 0, length); i += length;
                     VoteID = new LLUUID(bytes, i); i += 16;
                     AlreadyVoted = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _votecast = new byte[length];
-                    Array.Copy(bytes, i, _votecast, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     VoteInitiator = new LLUUID(bytes, i); i += 16;
                 }
@@ -57828,29 +57828,29 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 if(StartDateTime == null) { Console.WriteLine("Warning: StartDateTime is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDateTime.Length;
-                Array.Copy(StartDateTime, 0, bytes, i, StartDateTime.Length); i += StartDateTime.Length;
+                Buffer.BlockCopy(StartDateTime, 0, bytes, i, StartDateTime.Length); i += StartDateTime.Length;
                 if(ProposalText == null) { Console.WriteLine("Warning: ProposalText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProposalText.Length;
-                Array.Copy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
+                Buffer.BlockCopy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
                 ba = BitConverter.GetBytes(Majority);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(TerseDateID == null) { Console.WriteLine("Warning: TerseDateID is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TerseDateID.Length;
-                Array.Copy(TerseDateID, 0, bytes, i, TerseDateID.Length); i += TerseDateID.Length;
+                Buffer.BlockCopy(TerseDateID, 0, bytes, i, TerseDateID.Length); i += TerseDateID.Length;
                 if(EndDateTime == null) { Console.WriteLine("Warning: EndDateTime is null, in " + this.GetType()); }
                 bytes[i++] = (byte)EndDateTime.Length;
-                Array.Copy(EndDateTime, 0, bytes, i, EndDateTime.Length); i += EndDateTime.Length;
-                Array.Copy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(EndDateTime, 0, bytes, i, EndDateTime.Length); i += EndDateTime.Length;
+                Buffer.BlockCopy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AlreadyVoted) ? 1 : 0);
                 if(VoteCast == null) { Console.WriteLine("Warning: VoteCast is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteCast.Length;
-                Array.Copy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
+                Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
                 bytes[i++] = (byte)(Quorum % 256);
                 bytes[i++] = (byte)((Quorum >> 8) % 256);
                 bytes[i++] = (byte)((Quorum >> 16) % 256);
                 bytes[i++] = (byte)((Quorum >> 24) % 256);
-                Array.Copy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57908,8 +57908,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -57958,7 +57958,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TotalNumItems >> 8) % 256);
                 bytes[i++] = (byte)((TotalNumItems >> 16) % 256);
                 bytes[i++] = (byte)((TotalNumItems >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58079,8 +58079,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58123,7 +58123,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58165,7 +58165,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58252,7 +58252,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _startdatetime = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdatetime = new byte[value.Length]; Array.Copy(value, _startdatetime, value.Length); }
+                    else { _startdatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdatetime, 0, value.Length); }
                 }
             }
             private byte[] _voteresult;
@@ -58263,7 +58263,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _voteresult = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _voteresult = new byte[value.Length]; Array.Copy(value, _voteresult, value.Length); }
+                    else { _voteresult = new byte[value.Length]; Buffer.BlockCopy(value, 0, _voteresult, 0, value.Length); }
                 }
             }
             private byte[] _proposaltext;
@@ -58274,7 +58274,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _proposaltext = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _proposaltext = new byte[value.Length]; Array.Copy(value, _proposaltext, value.Length); }
+                    else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
                 }
             }
             public float Majority;
@@ -58286,7 +58286,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _tersedateid = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _tersedateid = new byte[value.Length]; Array.Copy(value, _tersedateid, value.Length); }
+                    else { _tersedateid = new byte[value.Length]; Buffer.BlockCopy(value, 0, _tersedateid, 0, value.Length); }
                 }
             }
             private byte[] _enddatetime;
@@ -58297,7 +58297,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _enddatetime = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _enddatetime = new byte[value.Length]; Array.Copy(value, _enddatetime, value.Length); }
+                    else { _enddatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _enddatetime, 0, value.Length); }
                 }
             }
             public LLUUID VoteID;
@@ -58310,7 +58310,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _votetype = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votetype = new byte[value.Length]; Array.Copy(value, _votetype, value.Length); }
+                    else { _votetype = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votetype, 0, value.Length); }
                 }
             }
             public LLUUID VoteInitiator;
@@ -58339,26 +58339,26 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _startdatetime = new byte[length];
-                    Array.Copy(bytes, i, _startdatetime, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _startdatetime, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _voteresult = new byte[length];
-                    Array.Copy(bytes, i, _voteresult, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _voteresult, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _proposaltext = new byte[length];
-                    Array.Copy(bytes, i, _proposaltext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _proposaltext, 0, length); i += length;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Majority = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _tersedateid = new byte[length];
-                    Array.Copy(bytes, i, _tersedateid, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _tersedateid, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _enddatetime = new byte[length];
-                    Array.Copy(bytes, i, _enddatetime, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _enddatetime, 0, length); i += length;
                     VoteID = new LLUUID(bytes, i); i += 16;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _votetype = new byte[length];
-                    Array.Copy(bytes, i, _votetype, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _votetype, 0, length); i += length;
                     VoteInitiator = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -58372,32 +58372,32 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 if(StartDateTime == null) { Console.WriteLine("Warning: StartDateTime is null, in " + this.GetType()); }
                 bytes[i++] = (byte)StartDateTime.Length;
-                Array.Copy(StartDateTime, 0, bytes, i, StartDateTime.Length); i += StartDateTime.Length;
+                Buffer.BlockCopy(StartDateTime, 0, bytes, i, StartDateTime.Length); i += StartDateTime.Length;
                 if(VoteResult == null) { Console.WriteLine("Warning: VoteResult is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteResult.Length;
-                Array.Copy(VoteResult, 0, bytes, i, VoteResult.Length); i += VoteResult.Length;
+                Buffer.BlockCopy(VoteResult, 0, bytes, i, VoteResult.Length); i += VoteResult.Length;
                 if(ProposalText == null) { Console.WriteLine("Warning: ProposalText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(ProposalText.Length % 256);
                 bytes[i++] = (byte)((ProposalText.Length >> 8) % 256);
-                Array.Copy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
+                Buffer.BlockCopy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
                 ba = BitConverter.GetBytes(Majority);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(TerseDateID == null) { Console.WriteLine("Warning: TerseDateID is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TerseDateID.Length;
-                Array.Copy(TerseDateID, 0, bytes, i, TerseDateID.Length); i += TerseDateID.Length;
+                Buffer.BlockCopy(TerseDateID, 0, bytes, i, TerseDateID.Length); i += TerseDateID.Length;
                 if(EndDateTime == null) { Console.WriteLine("Warning: EndDateTime is null, in " + this.GetType()); }
                 bytes[i++] = (byte)EndDateTime.Length;
-                Array.Copy(EndDateTime, 0, bytes, i, EndDateTime.Length); i += EndDateTime.Length;
-                Array.Copy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(EndDateTime, 0, bytes, i, EndDateTime.Length); i += EndDateTime.Length;
+                Buffer.BlockCopy(VoteID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Quorum % 256);
                 bytes[i++] = (byte)((Quorum >> 8) % 256);
                 bytes[i++] = (byte)((Quorum >> 16) % 256);
                 bytes[i++] = (byte)((Quorum >> 24) % 256);
                 if(VoteType == null) { Console.WriteLine("Warning: VoteType is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteType.Length;
-                Array.Copy(VoteType, 0, bytes, i, VoteType.Length); i += VoteType.Length;
-                Array.Copy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(VoteType, 0, bytes, i, VoteType.Length); i += VoteType.Length;
+                Buffer.BlockCopy(VoteInitiator.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58437,7 +58437,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _votecast = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votecast = new byte[value.Length]; Array.Copy(value, _votecast, value.Length); }
+                    else { _votecast = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votecast, 0, value.Length); }
                 }
             }
             public int NumVotes;
@@ -58462,7 +58462,7 @@ namespace libsecondlife.Packets
                     CandidateID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _votecast = new byte[length];
-                    Array.Copy(bytes, i, _votecast, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
                     NumVotes = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -58473,10 +58473,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(CandidateID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CandidateID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(VoteCast == null) { Console.WriteLine("Warning: VoteCast is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteCast.Length;
-                Array.Copy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
+                Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
                 bytes[i++] = (byte)(NumVotes % 256);
                 bytes[i++] = (byte)((NumVotes >> 8) % 256);
                 bytes[i++] = (byte)((NumVotes >> 16) % 256);
@@ -58527,8 +58527,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58577,7 +58577,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((TotalNumItems >> 8) % 256);
                 bytes[i++] = (byte)((TotalNumItems >> 16) % 256);
                 bytes[i++] = (byte)((TotalNumItems >> 24) % 256);
-                Array.Copy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58685,7 +58685,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _proposaltext = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _proposaltext = new byte[value.Length]; Array.Copy(value, _proposaltext, value.Length); }
+                    else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
                 }
             }
             public float Majority;
@@ -58712,7 +58712,7 @@ namespace libsecondlife.Packets
                     Duration = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _proposaltext = new byte[length];
-                    Array.Copy(bytes, i, _proposaltext, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _proposaltext, 0, length); i += length;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Majority = BitConverter.ToSingle(bytes, i); i += 4;
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -58733,11 +58733,11 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Duration >> 24) % 256);
                 if(ProposalText == null) { Console.WriteLine("Warning: ProposalText is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ProposalText.Length;
-                Array.Copy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
+                Buffer.BlockCopy(ProposalText, 0, bytes, i, ProposalText.Length); i += ProposalText.Length;
                 ba = BitConverter.GetBytes(Majority);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Quorum % 256);
                 bytes[i++] = (byte)((Quorum >> 8) % 256);
                 bytes[i++] = (byte)((Quorum >> 16) % 256);
@@ -58790,8 +58790,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -58876,7 +58876,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _votecast = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votecast = new byte[value.Length]; Array.Copy(value, _votecast, value.Length); }
+                    else { _votecast = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votecast, 0, value.Length); }
                 }
             }
 
@@ -58901,7 +58901,7 @@ namespace libsecondlife.Packets
                     GroupID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _votecast = new byte[length];
-                    Array.Copy(bytes, i, _votecast, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -58911,11 +58911,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ProposalID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ProposalID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(VoteCast == null) { Console.WriteLine("Warning: VoteCast is null, in " + this.GetType()); }
                 bytes[i++] = (byte)VoteCast.Length;
-                Array.Copy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
+                Buffer.BlockCopy(VoteCast, 0, bytes, i, VoteCast.Length); i += VoteCast.Length;
             }
 
             public override string ToString()
@@ -58961,8 +58961,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59064,8 +59064,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59110,8 +59110,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59193,7 +59193,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _onlinestatus = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _onlinestatus = new byte[value.Length]; Array.Copy(value, _onlinestatus, value.Length); }
+                    else { _onlinestatus = new byte[value.Length]; Buffer.BlockCopy(value, 0, _onlinestatus, 0, value.Length); }
                 }
             }
             public LLUUID AgentID;
@@ -59207,7 +59207,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _title = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Array.Copy(value, _title, value.Length); }
+                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
                 }
             }
             public ulong AgentPowers;
@@ -59232,13 +59232,13 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _onlinestatus = new byte[length];
-                    Array.Copy(bytes, i, _onlinestatus, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _onlinestatus, 0, length); i += length;
                     AgentID = new LLUUID(bytes, i); i += 16;
                     Contribution = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     IsOwner = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _title = new byte[length];
-                    Array.Copy(bytes, i, _title, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
                     AgentPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                 }
                 catch (Exception)
@@ -59251,8 +59251,8 @@ namespace libsecondlife.Packets
             {
                 if(OnlineStatus == null) { Console.WriteLine("Warning: OnlineStatus is null, in " + this.GetType()); }
                 bytes[i++] = (byte)OnlineStatus.Length;
-                Array.Copy(OnlineStatus, 0, bytes, i, OnlineStatus.Length); i += OnlineStatus.Length;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OnlineStatus, 0, bytes, i, OnlineStatus.Length); i += OnlineStatus.Length;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Contribution % 256);
                 bytes[i++] = (byte)((Contribution >> 8) % 256);
                 bytes[i++] = (byte)((Contribution >> 16) % 256);
@@ -59260,7 +59260,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((IsOwner) ? 1 : 0);
                 if(Title == null) { Console.WriteLine("Warning: Title is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Title.Length;
-                Array.Copy(Title, 0, bytes, i, Title.Length); i += Title.Length;
+                Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
                 bytes[i++] = (byte)(AgentPowers % 256);
                 bytes[i++] = (byte)((AgentPowers >> 8) % 256);
                 bytes[i++] = (byte)((AgentPowers >> 16) % 256);
@@ -59317,7 +59317,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59363,12 +59363,12 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(MemberCount % 256);
                 bytes[i++] = (byte)((MemberCount >> 8) % 256);
                 bytes[i++] = (byte)((MemberCount >> 16) % 256);
                 bytes[i++] = (byte)((MemberCount >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59492,9 +59492,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59596,7 +59596,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Contribution >> 8) % 256);
                 bytes[i++] = (byte)((Contribution >> 16) % 256);
                 bytes[i++] = (byte)((Contribution >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59641,8 +59641,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59744,7 +59744,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
             }
 
@@ -59790,8 +59790,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59893,8 +59893,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -59939,8 +59939,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60023,7 +60023,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID RoleID;
@@ -60036,7 +60036,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             private byte[] _title;
@@ -60047,7 +60047,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _title = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Array.Copy(value, _title, value.Length); }
+                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
                 }
             }
 
@@ -60073,15 +60073,15 @@ namespace libsecondlife.Packets
                     Members = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     RoleID = new LLUUID(bytes, i); i += 16;
                     Powers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _title = new byte[length];
-                    Array.Copy(bytes, i, _title, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -60097,8 +60097,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Members >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Powers % 256);
                 bytes[i++] = (byte)((Powers >> 8) % 256);
                 bytes[i++] = (byte)((Powers >> 16) % 256);
@@ -60109,10 +60109,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Powers >> 56) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 if(Title == null) { Console.WriteLine("Warning: Title is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Title.Length;
-                Array.Copy(Title, 0, bytes, i, Title.Length); i += Title.Length;
+                Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
             }
 
             public override string ToString()
@@ -60161,7 +60161,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60211,8 +60211,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RoleCount >> 8) % 256);
                 bytes[i++] = (byte)((RoleCount >> 16) % 256);
                 bytes[i++] = (byte)((RoleCount >> 24) % 256);
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60333,8 +60333,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60379,8 +60379,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60482,8 +60482,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MemberID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60532,13 +60532,13 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(TotalPairs % 256);
                 bytes[i++] = (byte)((TotalPairs >> 8) % 256);
                 bytes[i++] = (byte)((TotalPairs >> 16) % 256);
                 bytes[i++] = (byte)((TotalPairs >> 24) % 256);
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60658,10 +60658,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60761,9 +60761,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -60791,7 +60791,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _title = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Array.Copy(value, _title, value.Length); }
+                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
                 }
             }
 
@@ -60816,7 +60816,7 @@ namespace libsecondlife.Packets
                     RoleID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _title = new byte[length];
-                    Array.Copy(bytes, i, _title, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -60827,10 +60827,10 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)((Selected) ? 1 : 0);
-                Array.Copy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Title == null) { Console.WriteLine("Warning: Title is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Title.Length;
-                Array.Copy(Title, 0, bytes, i, Title.Length); i += Title.Length;
+                Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
             }
 
             public override string ToString()
@@ -60950,10 +60950,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(TitleRoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TitleRoleID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61031,7 +61031,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public LLUUID RoleID;
@@ -61045,7 +61045,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             private byte[] _title;
@@ -61056,7 +61056,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _title = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Array.Copy(value, _title, value.Length); }
+                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
                 }
             }
 
@@ -61081,16 +61081,16 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     RoleID = new LLUUID(bytes, i); i += 16;
                     UpdateType = (byte)bytes[i++];
                     Powers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _title = new byte[length];
-                    Array.Copy(bytes, i, _title, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -61102,8 +61102,8 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
-                Array.Copy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(RoleID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = UpdateType;
                 bytes[i++] = (byte)(Powers % 256);
                 bytes[i++] = (byte)((Powers >> 8) % 256);
@@ -61115,10 +61115,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Powers >> 56) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 if(Title == null) { Console.WriteLine("Warning: Title is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Title.Length;
-                Array.Copy(Title, 0, bytes, i, Title.Length); i += Title.Length;
+                Buffer.BlockCopy(Title, 0, bytes, i, Title.Length); i += Title.Length;
             }
 
             public override string ToString()
@@ -61171,9 +61171,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61288,8 +61288,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61367,7 +61367,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _selection = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _selection = new byte[value.Length]; Array.Copy(value, _selection, value.Length); }
+                    else { _selection = new byte[value.Length]; Buffer.BlockCopy(value, 0, _selection, 0, value.Length); }
                 }
             }
 
@@ -61392,7 +61392,7 @@ namespace libsecondlife.Packets
                     GroupID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _selection = new byte[length];
-                    Array.Copy(bytes, i, _selection, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _selection, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -61402,11 +61402,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Selection == null) { Console.WriteLine("Warning: Selection is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Selection.Length;
-                Array.Copy(Selection, 0, bytes, i, Selection.Length); i += Selection.Length;
+                Buffer.BlockCopy(Selection, 0, bytes, i, Selection.Length); i += Selection.Length;
             }
 
             public override string ToString()
@@ -61503,8 +61503,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61603,8 +61603,8 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = WearableType;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61656,8 +61656,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SerialNum >> 8) % 256);
                 bytes[i++] = (byte)((SerialNum >> 16) % 256);
                 bytes[i++] = (byte)((SerialNum >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61774,7 +61774,7 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = WearableType;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61819,8 +61819,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -61935,7 +61935,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = TextureIndex;
             }
 
@@ -61987,8 +61987,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SerialNum >> 8) % 256);
                 bytes[i++] = (byte)((SerialNum >> 16) % 256);
                 bytes[i++] = (byte)((SerialNum >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -62085,7 +62085,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _hostname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _hostname = new byte[value.Length]; Array.Copy(value, _hostname, value.Length); }
+                    else { _hostname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _hostname, 0, value.Length); }
                 }
             }
 
@@ -62110,7 +62110,7 @@ namespace libsecondlife.Packets
                     TextureIndex = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _hostname = new byte[length];
-                    Array.Copy(bytes, i, _hostname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _hostname, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -62120,11 +62120,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TextureID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TextureID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = TextureIndex;
                 if(HostName == null) { Console.WriteLine("Warning: HostName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)HostName.Length;
-                Array.Copy(HostName, 0, bytes, i, HostName.Length); i += HostName.Length;
+                Buffer.BlockCopy(HostName, 0, bytes, i, HostName.Length); i += HostName.Length;
             }
 
             public override string ToString()
@@ -62176,8 +62176,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SerialNum >> 8) % 256);
                 bytes[i++] = (byte)((SerialNum >> 16) % 256);
                 bytes[i++] = (byte)((SerialNum >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -62292,8 +62292,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -62369,7 +62369,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _grouptitle = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _grouptitle = new byte[value.Length]; Array.Copy(value, _grouptitle, value.Length); }
+                    else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
             public ulong GroupPowers;
@@ -62382,7 +62382,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _lastname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Array.Copy(value, _lastname, value.Length); }
+                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
                 }
             }
             private byte[] _firstname;
@@ -62393,7 +62393,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _firstname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Array.Copy(value, _firstname, value.Length); }
+                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
                 }
             }
             private byte[] _groupname;
@@ -62404,7 +62404,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _groupname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Array.Copy(value, _groupname, value.Length); }
+                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
             public LLUUID ActiveGroupID;
@@ -62431,18 +62431,18 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _grouptitle = new byte[length];
-                    Array.Copy(bytes, i, _grouptitle, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _grouptitle, 0, length); i += length;
                     GroupPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     AgentID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _lastname = new byte[length];
-                    Array.Copy(bytes, i, _lastname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _firstname = new byte[length];
-                    Array.Copy(bytes, i, _firstname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _groupname = new byte[length];
-                    Array.Copy(bytes, i, _groupname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
                     ActiveGroupID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -62455,7 +62455,7 @@ namespace libsecondlife.Packets
             {
                 if(GroupTitle == null) { Console.WriteLine("Warning: GroupTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupTitle.Length;
-                Array.Copy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
+                Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
                 bytes[i++] = (byte)(GroupPowers % 256);
                 bytes[i++] = (byte)((GroupPowers >> 8) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 16) % 256);
@@ -62464,17 +62464,17 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupPowers >> 40) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 48) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 56) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(LastName == null) { Console.WriteLine("Warning: LastName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)LastName.Length;
-                Array.Copy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
+                Buffer.BlockCopy(LastName, 0, bytes, i, LastName.Length); i += LastName.Length;
                 if(FirstName == null) { Console.WriteLine("Warning: FirstName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)FirstName.Length;
-                Array.Copy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
+                Buffer.BlockCopy(FirstName, 0, bytes, i, FirstName.Length); i += FirstName.Length;
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
-                Array.Copy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
-                Array.Copy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
+                Buffer.BlockCopy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -62560,7 +62560,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _grouptitle = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _grouptitle = new byte[value.Length]; Array.Copy(value, _grouptitle, value.Length); }
+                    else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
                 }
             }
             public LLUUID AgentID;
@@ -62586,7 +62586,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _grouptitle = new byte[length];
-                    Array.Copy(bytes, i, _grouptitle, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _grouptitle, 0, length); i += length;
                     AgentID = new LLUUID(bytes, i); i += 16;
                     GroupID = new LLUUID(bytes, i); i += 16;
                     AgentPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
@@ -62601,9 +62601,9 @@ namespace libsecondlife.Packets
             {
                 if(GroupTitle == null) { Console.WriteLine("Warning: GroupTitle is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupTitle.Length;
-                Array.Copy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupTitle, 0, bytes, i, GroupTitle.Length); i += GroupTitle.Length;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(AgentPowers % 256);
                 bytes[i++] = (byte)((AgentPowers >> 8) % 256);
                 bytes[i++] = (byte)((AgentPowers >> 16) % 256);
@@ -62721,7 +62721,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -62750,7 +62750,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _groupname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Array.Copy(value, _groupname, value.Length); }
+                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
                 }
             }
 
@@ -62778,7 +62778,7 @@ namespace libsecondlife.Packets
                     AcceptNotices = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _groupname = new byte[length];
-                    Array.Copy(bytes, i, _groupname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -62800,12 +62800,12 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Contribution >> 8) % 256);
                 bytes[i++] = (byte)((Contribution >> 16) % 256);
                 bytes[i++] = (byte)((Contribution >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupInsigniaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
-                Array.Copy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
+                Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
             }
 
             public override string ToString()
@@ -62924,8 +62924,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63012,7 +63012,7 @@ namespace libsecondlife.Packets
                 try
                 {
                     Digest = new byte[32];
-                    Array.Copy(bytes, i, Digest, 0, 32); i += 32;
+                    Buffer.BlockCopy(bytes, i, Digest, 0, 32); i += 32;
                     EndPointID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -63023,8 +63023,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                                Array.Copy(Digest, 0, bytes, i, 32);i += 32;
-                Array.Copy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
+                                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
+                Buffer.BlockCopy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63119,7 +63119,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(EndPointID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63239,7 +63239,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public uint ItemFlags;
@@ -63254,7 +63254,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public byte AttachmentPt;
@@ -63281,14 +63281,14 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ItemFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     ItemID = new LLUUID(bytes, i); i += 16;
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     AttachmentPt = (byte)bytes[i++];
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -63303,20 +63303,20 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(ItemFlags % 256);
                 bytes[i++] = (byte)((ItemFlags >> 8) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 16) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = AttachmentPt;
                 bytes[i++] = (byte)(NextOwnerMask % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
@@ -63379,8 +63379,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63463,7 +63463,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public uint ItemFlags;
@@ -63478,7 +63478,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public byte AttachmentPt;
@@ -63505,14 +63505,14 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     ItemFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     ItemID = new LLUUID(bytes, i); i += 16;
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     AttachmentPt = (byte)bytes[i++];
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -63527,20 +63527,20 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(ItemFlags % 256);
                 bytes[i++] = (byte)((ItemFlags >> 8) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 16) % 256);
                 bytes[i++] = (byte)((ItemFlags >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
                 bytes[i++] = AttachmentPt;
                 bytes[i++] = (byte)(NextOwnerMask % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
@@ -63603,8 +63603,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63651,7 +63651,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(CompoundMsgID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CompoundMsgID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((FirstDetachAll) ? 1 : 0);
                 bytes[i++] = TotalObjects;
             }
@@ -63775,8 +63775,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63872,8 +63872,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(OldFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OldFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OldItemID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63918,8 +63918,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -63962,7 +63962,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(NewFolderID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64081,8 +64081,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64158,7 +64158,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _email = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _email = new byte[value.Length]; Array.Copy(value, _email, value.Length); }
+                    else { _email = new byte[value.Length]; Buffer.BlockCopy(value, 0, _email, 0, value.Length); }
                 }
             }
             private byte[] _directoryvisibility;
@@ -64169,7 +64169,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _directoryvisibility = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _directoryvisibility = new byte[value.Length]; Array.Copy(value, _directoryvisibility, value.Length); }
+                    else { _directoryvisibility = new byte[value.Length]; Buffer.BlockCopy(value, 0, _directoryvisibility, 0, value.Length); }
                 }
             }
             public bool IMViaEMail;
@@ -64194,10 +64194,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _email = new byte[length];
-                    Array.Copy(bytes, i, _email, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _email, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _directoryvisibility = new byte[length];
-                    Array.Copy(bytes, i, _directoryvisibility, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _directoryvisibility, 0, length); i += length;
                     IMViaEMail = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
                 catch (Exception)
@@ -64211,10 +64211,10 @@ namespace libsecondlife.Packets
                 if(EMail == null) { Console.WriteLine("Warning: EMail is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(EMail.Length % 256);
                 bytes[i++] = (byte)((EMail.Length >> 8) % 256);
-                Array.Copy(EMail, 0, bytes, i, EMail.Length); i += EMail.Length;
+                Buffer.BlockCopy(EMail, 0, bytes, i, EMail.Length); i += EMail.Length;
                 if(DirectoryVisibility == null) { Console.WriteLine("Warning: DirectoryVisibility is null, in " + this.GetType()); }
                 bytes[i++] = (byte)DirectoryVisibility.Length;
-                Array.Copy(DirectoryVisibility, 0, bytes, i, DirectoryVisibility.Length); i += DirectoryVisibility.Length;
+                Buffer.BlockCopy(DirectoryVisibility, 0, bytes, i, DirectoryVisibility.Length); i += DirectoryVisibility.Length;
                 bytes[i++] = (byte)((IMViaEMail) ? 1 : 0);
             }
 
@@ -64261,7 +64261,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64342,7 +64342,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _directoryvisibility = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _directoryvisibility = new byte[value.Length]; Array.Copy(value, _directoryvisibility, value.Length); }
+                    else { _directoryvisibility = new byte[value.Length]; Buffer.BlockCopy(value, 0, _directoryvisibility, 0, value.Length); }
                 }
             }
             public bool IMViaEMail;
@@ -64366,7 +64366,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _directoryvisibility = new byte[length];
-                    Array.Copy(bytes, i, _directoryvisibility, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _directoryvisibility, 0, length); i += length;
                     IMViaEMail = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
                 catch (Exception)
@@ -64379,7 +64379,7 @@ namespace libsecondlife.Packets
             {
                 if(DirectoryVisibility == null) { Console.WriteLine("Warning: DirectoryVisibility is null, in " + this.GetType()); }
                 bytes[i++] = (byte)DirectoryVisibility.Length;
-                Array.Copy(DirectoryVisibility, 0, bytes, i, DirectoryVisibility.Length); i += DirectoryVisibility.Length;
+                Buffer.BlockCopy(DirectoryVisibility, 0, bytes, i, DirectoryVisibility.Length); i += DirectoryVisibility.Length;
                 bytes[i++] = (byte)((IMViaEMail) ? 1 : 0);
             }
 
@@ -64426,8 +64426,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64527,7 +64527,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64571,8 +64571,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64712,7 +64712,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _simfilename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simfilename = new byte[value.Length]; Array.Copy(value, _simfilename, value.Length); }
+                    else { _simfilename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simfilename, 0, value.Length); }
                 }
             }
             private byte[] _viewerfilename;
@@ -64723,7 +64723,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _viewerfilename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _viewerfilename = new byte[value.Length]; Array.Copy(value, _viewerfilename, value.Length); }
+                    else { _viewerfilename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _viewerfilename, 0, value.Length); }
                 }
             }
 
@@ -64747,10 +64747,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _simfilename = new byte[length];
-                    Array.Copy(bytes, i, _simfilename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _simfilename, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _viewerfilename = new byte[length];
-                    Array.Copy(bytes, i, _viewerfilename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _viewerfilename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -64762,10 +64762,10 @@ namespace libsecondlife.Packets
             {
                 if(SimFilename == null) { Console.WriteLine("Warning: SimFilename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SimFilename.Length;
-                Array.Copy(SimFilename, 0, bytes, i, SimFilename.Length); i += SimFilename.Length;
+                Buffer.BlockCopy(SimFilename, 0, bytes, i, SimFilename.Length); i += SimFilename.Length;
                 if(ViewerFilename == null) { Console.WriteLine("Warning: ViewerFilename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ViewerFilename.Length;
-                Array.Copy(ViewerFilename, 0, bytes, i, ViewerFilename.Length); i += ViewerFilename.Length;
+                Buffer.BlockCopy(ViewerFilename, 0, bytes, i, ViewerFilename.Length); i += ViewerFilename.Length;
             }
 
             public override string ToString()
@@ -64809,7 +64809,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -64892,7 +64892,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _method = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Array.Copy(value, _method, value.Length); }
+                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
                 }
             }
 
@@ -64915,10 +64915,10 @@ namespace libsecondlife.Packets
                 {
                     Invoice = new LLUUID(bytes, i); i += 16;
                     Digest = new byte[32];
-                    Array.Copy(bytes, i, Digest, 0, 32); i += 32;
+                    Buffer.BlockCopy(bytes, i, Digest, 0, 32); i += 32;
                     length = (ushort)bytes[i++];
                     _method = new byte[length];
-                    Array.Copy(bytes, i, _method, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -64928,11 +64928,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
-                                Array.Copy(Digest, 0, bytes, i, 32);i += 32;
+                Buffer.BlockCopy(Invoice.GetBytes(), 0, bytes, i, 16); i += 16;
+                                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
                 if(Method == null) { Console.WriteLine("Warning: Method is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Method.Length;
-                Array.Copy(Method, 0, bytes, i, Method.Length); i += Method.Length;
+                Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
             }
 
             public override string ToString()
@@ -64959,7 +64959,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _parameter = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Array.Copy(value, _parameter, value.Length); }
+                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
                 }
             }
 
@@ -64982,7 +64982,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _parameter = new byte[length];
-                    Array.Copy(bytes, i, _parameter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -64994,7 +64994,7 @@ namespace libsecondlife.Packets
             {
                 if(Parameter == null) { Console.WriteLine("Warning: Parameter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Parameter.Length;
-                Array.Copy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
+                Buffer.BlockCopy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
             }
 
             public override string ToString()
@@ -65114,8 +65114,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
@@ -65223,7 +65223,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -65282,7 +65282,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Top >> 8) % 256);
                 bytes[i++] = (byte)((Top >> 16) % 256);
                 bytes[i++] = (byte)((Top >> 24) % 256);
-                Array.Copy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ImageID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Left % 256);
                 bytes[i++] = (byte)((Left >> 8) % 256);
                 bytes[i++] = (byte)((Left >> 16) % 256);
@@ -65475,8 +65475,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
@@ -65570,7 +65570,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
 
@@ -65593,7 +65593,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -65605,7 +65605,7 @@ namespace libsecondlife.Packets
             {
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
             }
 
             public override string ToString()
@@ -65655,8 +65655,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
@@ -65754,7 +65754,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public byte Access;
@@ -65784,7 +65784,7 @@ namespace libsecondlife.Packets
                     WaterHeight = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Access = (byte)bytes[i++];
                     MapImageID = new LLUUID(bytes, i); i += 16;
                     Agents = (byte)bytes[i++];
@@ -65808,9 +65808,9 @@ namespace libsecondlife.Packets
                 bytes[i++] = WaterHeight;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = Access;
-                Array.Copy(MapImageID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MapImageID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Agents;
             }
 
@@ -65863,7 +65863,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -66043,8 +66043,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Godlike) ? 1 : 0);
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
@@ -66186,7 +66186,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public int Extra2;
@@ -66214,7 +66214,7 @@ namespace libsecondlife.Packets
                     ID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Extra2 = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Extra = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -66234,10 +66234,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Y >> 8) % 256);
                 bytes[i++] = (byte)((Y >> 16) % 256);
                 bytes[i++] = (byte)((Y >> 24) % 256);
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Extra2 % 256);
                 bytes[i++] = (byte)((Extra2 >> 8) % 256);
                 bytes[i++] = (byte)((Extra2 >> 16) % 256);
@@ -66295,7 +66295,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -66399,7 +66399,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _to = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _to = new byte[value.Length]; Array.Copy(value, _to, value.Length); }
+                    else { _to = new byte[value.Length]; Buffer.BlockCopy(value, 0, _to, 0, value.Length); }
                 }
             }
             public LLUUID AgentID;
@@ -66411,7 +66411,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _msg = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _msg = new byte[value.Length]; Array.Copy(value, _msg, value.Length); }
+                    else { _msg = new byte[value.Length]; Buffer.BlockCopy(value, 0, _msg, 0, value.Length); }
                 }
             }
             public bool AllowPublish;
@@ -66425,7 +66425,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             private byte[] _subject;
@@ -66436,7 +66436,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _subject = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _subject = new byte[value.Length]; Array.Copy(value, _subject, value.Length); }
+                    else { _subject = new byte[value.Length]; Buffer.BlockCopy(value, 0, _subject, 0, value.Length); }
                 }
             }
             private byte[] _from;
@@ -66447,7 +66447,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _from = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _from = new byte[value.Length]; Array.Copy(value, _from, value.Length); }
+                    else { _from = new byte[value.Length]; Buffer.BlockCopy(value, 0, _from, 0, value.Length); }
                 }
             }
             public LLUUID AssetID;
@@ -66476,23 +66476,23 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _to = new byte[length];
-                    Array.Copy(bytes, i, _to, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _to, 0, length); i += length;
                     AgentID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _msg = new byte[length];
-                    Array.Copy(bytes, i, _msg, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _msg, 0, length); i += length;
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     PosGlobal = new LLVector3d(bytes, i); i += 24;
                     SessionID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _subject = new byte[length];
-                    Array.Copy(bytes, i, _subject, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _subject, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _from = new byte[length];
-                    Array.Copy(bytes, i, _from, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _from, 0, length); i += length;
                     AssetID = new LLUUID(bytes, i); i += 16;
                     MaturePublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
@@ -66506,25 +66506,25 @@ namespace libsecondlife.Packets
             {
                 if(To == null) { Console.WriteLine("Warning: To is null, in " + this.GetType()); }
                 bytes[i++] = (byte)To.Length;
-                Array.Copy(To, 0, bytes, i, To.Length); i += To.Length;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(To, 0, bytes, i, To.Length); i += To.Length;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Msg == null) { Console.WriteLine("Warning: Msg is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Msg.Length % 256);
                 bytes[i++] = (byte)((Msg.Length >> 8) % 256);
-                Array.Copy(Msg, 0, bytes, i, Msg.Length); i += Msg.Length;
+                Buffer.BlockCopy(Msg, 0, bytes, i, Msg.Length); i += Msg.Length;
                 bytes[i++] = (byte)((AllowPublish) ? 1 : 0);
-                Array.Copy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(PosGlobal.GetBytes(), 0, bytes, i, 24); i += 24;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 if(Subject == null) { Console.WriteLine("Warning: Subject is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Subject.Length;
-                Array.Copy(Subject, 0, bytes, i, Subject.Length); i += Subject.Length;
+                Buffer.BlockCopy(Subject, 0, bytes, i, Subject.Length); i += Subject.Length;
                 if(From == null) { Console.WriteLine("Warning: From is null, in " + this.GetType()); }
                 bytes[i++] = (byte)From.Length;
-                Array.Copy(From, 0, bytes, i, From.Length); i += From.Length;
-                Array.Copy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(From, 0, bytes, i, From.Length); i += From.Length;
+                Buffer.BlockCopy(AssetID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((MaturePublish) ? 1 : 0);
             }
 
@@ -66645,7 +66645,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Command >> 24) % 256);
                 ba = BitConverter.GetBytes(Time);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(Flags % 256);
                 bytes[i++] = (byte)((Flags >> 8) % 256);
                 bytes[i++] = (byte)((Flags >> 16) % 256);
@@ -66727,7 +66727,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mediaurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Array.Copy(value, _mediaurl, value.Length); }
+                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
             public byte MediaAutoScale;
@@ -66752,7 +66752,7 @@ namespace libsecondlife.Packets
                     MediaID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _mediaurl = new byte[length];
-                    Array.Copy(bytes, i, _mediaurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
                     MediaAutoScale = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -66763,10 +66763,10 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
-                Array.Copy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
+                Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
                 bytes[i++] = MediaAutoScale;
             }
 
@@ -66847,7 +66847,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _filter = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filter = new byte[value.Length]; Array.Copy(value, _filter, value.Length); }
+                    else { _filter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filter, 0, value.Length); }
                 }
             }
             public int ParcelLocalID;
@@ -66873,7 +66873,7 @@ namespace libsecondlife.Packets
                     ReportType = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _filter = new byte[length];
-                    Array.Copy(bytes, i, _filter, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _filter, 0, length); i += length;
                     ParcelLocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -66894,7 +66894,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ReportType >> 24) % 256);
                 if(Filter == null) { Console.WriteLine("Warning: Filter is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filter.Length;
-                Array.Copy(Filter, 0, bytes, i, Filter.Length); i += Filter.Length;
+                Buffer.BlockCopy(Filter, 0, bytes, i, Filter.Length); i += Filter.Length;
                 bytes[i++] = (byte)(ParcelLocalID % 256);
                 bytes[i++] = (byte)((ParcelLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ParcelLocalID >> 16) % 256);
@@ -66946,8 +66946,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -67091,7 +67091,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _taskname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _taskname = new byte[value.Length]; Array.Copy(value, _taskname, value.Length); }
+                    else { _taskname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _taskname, 0, value.Length); }
                 }
             }
             public LLUUID TaskID;
@@ -67105,7 +67105,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _ownername = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _ownername = new byte[value.Length]; Array.Copy(value, _ownername, value.Length); }
+                    else { _ownername = new byte[value.Length]; Buffer.BlockCopy(value, 0, _ownername, 0, value.Length); }
                 }
             }
 
@@ -67135,14 +67135,14 @@ namespace libsecondlife.Packets
                     LocationZ = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _taskname = new byte[length];
-                    Array.Copy(bytes, i, _taskname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _taskname, 0, length); i += length;
                     TaskID = new LLUUID(bytes, i); i += 16;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Score = BitConverter.ToSingle(bytes, i); i += 4;
                     TaskLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _ownername = new byte[length];
-                    Array.Copy(bytes, i, _ownername, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _ownername, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -67155,27 +67155,27 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(LocationX);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(LocationY);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(LocationZ);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(TaskName == null) { Console.WriteLine("Warning: TaskName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TaskName.Length;
-                Array.Copy(TaskName, 0, bytes, i, TaskName.Length); i += TaskName.Length;
-                Array.Copy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TaskName, 0, bytes, i, TaskName.Length); i += TaskName.Length;
+                Buffer.BlockCopy(TaskID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Score);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(TaskLocalID % 256);
                 bytes[i++] = (byte)((TaskLocalID >> 8) % 256);
                 bytes[i++] = (byte)((TaskLocalID >> 16) % 256);
                 bytes[i++] = (byte)((TaskLocalID >> 24) % 256);
                 if(OwnerName == null) { Console.WriteLine("Warning: OwnerName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)OwnerName.Length;
-                Array.Copy(OwnerName, 0, bytes, i, OwnerName.Length); i += OwnerName.Length;
+                Buffer.BlockCopy(OwnerName, 0, bytes, i, OwnerName.Length); i += OwnerName.Length;
             }
 
             public override string ToString()
@@ -67294,7 +67294,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -67754,7 +67754,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Token.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -67918,7 +67918,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = ProfileBegin;
                 bytes[i++] = (byte)PathRadiusOffset;
                 bytes[i++] = (byte)PathSkew;
-                Array.Copy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = ProfileCurve;
                 bytes[i++] = PathScaleX;
                 bytes[i++] = PathScaleY;
@@ -67928,19 +67928,19 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)PathTaperX;
                 bytes[i++] = (byte)PathTaperY;
                 bytes[i++] = RayEndIsIntersection;
-                Array.Copy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = ProfileEnd;
                 bytes[i++] = PathBegin;
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = PCode;
                 bytes[i++] = PathCurve;
-                Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = State;
                 bytes[i++] = (byte)PathTwist;
                 bytes[i++] = ProfileHollow;
                 bytes[i++] = PathRevolutions;
-                Array.Copy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -68014,9 +68014,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -68100,7 +68100,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
             public byte Type;
@@ -68125,7 +68125,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                     Type = (byte)bytes[i++];
                     ObjectLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -68139,7 +68139,7 @@ namespace libsecondlife.Packets
             {
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Data.Length;
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
                 bytes[i++] = Type;
                 bytes[i++] = (byte)(ObjectLocalID % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
@@ -68191,8 +68191,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -68356,8 +68356,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -68476,7 +68476,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ObjectLocalID >> 8) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 16) % 256);
                 bytes[i++] = (byte)((ObjectLocalID >> 24) % 256);
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -68521,8 +68521,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -68637,7 +68637,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(RequestFlags % 256);
                 bytes[i++] = (byte)((RequestFlags >> 8) % 256);
                 bytes[i++] = (byte)((RequestFlags >> 16) % 256);
@@ -68686,8 +68686,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -68957,8 +68957,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(LookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -68983,7 +68983,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _seedcapability = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _seedcapability = new byte[value.Length]; Array.Copy(value, _seedcapability, value.Length); }
+                    else { _seedcapability = new byte[value.Length]; Buffer.BlockCopy(value, 0, _seedcapability, 0, value.Length); }
                 }
             }
             public ushort SimPort;
@@ -69009,7 +69009,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _seedcapability = new byte[length];
-                    Array.Copy(bytes, i, _seedcapability, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _seedcapability, 0, length); i += length;
                     SimPort = (ushort)((bytes[i++] << 8) + bytes[i++]);
                     RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     SimIP = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -69025,7 +69025,7 @@ namespace libsecondlife.Packets
                 if(SeedCapability == null) { Console.WriteLine("Warning: SeedCapability is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(SeedCapability.Length % 256);
                 bytes[i++] = (byte)((SeedCapability.Length >> 8) % 256);
-                Array.Copy(SeedCapability, 0, bytes, i, SeedCapability.Length); i += SeedCapability.Length;
+                Buffer.BlockCopy(SeedCapability, 0, bytes, i, SeedCapability.Length); i += SeedCapability.Length;
                 bytes[i++] = (byte)((SimPort >> 8) % 256);
                 bytes[i++] = (byte)(SimPort % 256);
                 bytes[i++] = (byte)(RegionHandle % 256);
@@ -69087,8 +69087,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -69196,8 +69196,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -69276,7 +69276,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _sitname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sitname = new byte[value.Length]; Array.Copy(value, _sitname, value.Length); }
+                    else { _sitname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _sitname, 0, value.Length); }
                 }
             }
             public LLUUID ObjectID;
@@ -69290,7 +69290,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public uint Category;
@@ -69307,7 +69307,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureid = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _textureid = new byte[value.Length]; Array.Copy(value, _textureid, value.Length); }
+                    else { _textureid = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureid, 0, value.Length); }
                 }
             }
             private byte[] _touchname;
@@ -69318,7 +69318,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _touchname = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _touchname = new byte[value.Length]; Array.Copy(value, _touchname, value.Length); }
+                    else { _touchname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _touchname, 0, value.Length); }
                 }
             }
             public LLUUID ItemID;
@@ -69334,7 +69334,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public LLUUID LastOwnerID;
@@ -69369,13 +69369,13 @@ namespace libsecondlife.Packets
                     AggregatePermTexturesOwner = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _sitname = new byte[length];
-                    Array.Copy(bytes, i, _sitname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _sitname, 0, length); i += length;
                     ObjectID = new LLUUID(bytes, i); i += 16;
                     SaleType = (byte)bytes[i++];
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     FromTaskID = new LLUUID(bytes, i); i += 16;
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -69384,10 +69384,10 @@ namespace libsecondlife.Packets
                     CreatorID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _textureid = new byte[length];
-                    Array.Copy(bytes, i, _textureid, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureid, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _touchname = new byte[length];
-                    Array.Copy(bytes, i, _touchname, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _touchname, 0, length); i += length;
                     ItemID = new LLUUID(bytes, i); i += 16;
                     AggregatePermTextures = (byte)bytes[i++];
                     FolderID = new LLUUID(bytes, i); i += 16;
@@ -69395,7 +69395,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     LastOwnerID = new LLUUID(bytes, i); i += 16;
                     AggregatePerms = (byte)bytes[i++];
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -69425,8 +69425,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = AggregatePermTexturesOwner;
                 if(SitName == null) { Console.WriteLine("Warning: SitName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)SitName.Length;
-                Array.Copy(SitName, 0, bytes, i, SitName.Length); i += SitName.Length;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SitName, 0, bytes, i, SitName.Length); i += SitName.Length;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = SaleType;
                 bytes[i++] = (byte)(BaseMask % 256);
                 bytes[i++] = (byte)((BaseMask >> 8) % 256);
@@ -69434,28 +69434,28 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(Category % 256);
                 bytes[i++] = (byte)((Category >> 8) % 256);
                 bytes[i++] = (byte)((Category >> 16) % 256);
                 bytes[i++] = (byte)((Category >> 24) % 256);
-                Array.Copy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FromTaskID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CreatorID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(TextureID == null) { Console.WriteLine("Warning: TextureID is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TextureID.Length;
-                Array.Copy(TextureID, 0, bytes, i, TextureID.Length); i += TextureID.Length;
+                Buffer.BlockCopy(TextureID, 0, bytes, i, TextureID.Length); i += TextureID.Length;
                 if(TouchName == null) { Console.WriteLine("Warning: TouchName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TouchName.Length;
-                Array.Copy(TouchName, 0, bytes, i, TouchName.Length); i += TouchName.Length;
-                Array.Copy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TouchName, 0, bytes, i, TouchName.Length); i += TouchName.Length;
+                Buffer.BlockCopy(ItemID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = AggregatePermTextures;
-                Array.Copy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FolderID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(InventorySerial % 256);
                 bytes[i++] = (byte)((InventorySerial >> 8) % 256);
                 bytes[i++] = (byte)(EveryoneMask % 256);
@@ -69464,8 +69464,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                Array.Copy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = AggregatePerms;
                 bytes[i++] = (byte)(NextOwnerMask % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
@@ -69601,7 +69601,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public uint RequestFlags;
@@ -69618,7 +69618,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _description = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Array.Copy(value, _description, value.Length); }
+                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
                 }
             }
             public LLUUID LastOwnerID;
@@ -69650,7 +69650,7 @@ namespace libsecondlife.Packets
                     BaseMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     RequestFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupID = new LLUUID(bytes, i); i += 16;
@@ -69659,7 +69659,7 @@ namespace libsecondlife.Packets
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _description = new byte[length];
-                    Array.Copy(bytes, i, _description, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
                     LastOwnerID = new LLUUID(bytes, i); i += 16;
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -69677,7 +69677,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((OwnershipCost >> 8) % 256);
                 bytes[i++] = (byte)((OwnershipCost >> 16) % 256);
                 bytes[i++] = (byte)((OwnershipCost >> 24) % 256);
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = SaleType;
                 bytes[i++] = (byte)(BaseMask % 256);
                 bytes[i++] = (byte)((BaseMask >> 8) % 256);
@@ -69685,7 +69685,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((BaseMask >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(RequestFlags % 256);
                 bytes[i++] = (byte)((RequestFlags >> 8) % 256);
                 bytes[i++] = (byte)((RequestFlags >> 16) % 256);
@@ -69694,20 +69694,20 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Category >> 8) % 256);
                 bytes[i++] = (byte)((Category >> 16) % 256);
                 bytes[i++] = (byte)((Category >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(EveryoneMask % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 8) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 16) % 256);
                 bytes[i++] = (byte)((EveryoneMask >> 24) % 256);
                 if(Description == null) { Console.WriteLine("Warning: Description is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Description.Length;
-                Array.Copy(Description, 0, bytes, i, Description.Length); i += Description.Length;
-                Array.Copy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+                Buffer.BlockCopy(LastOwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(NextOwnerMask % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 8) % 256);
                 bytes[i++] = (byte)((NextOwnerMask >> 16) % 256);
@@ -69847,10 +69847,10 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(East);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(West);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(SequenceID % 256);
                 bytes[i++] = (byte)((SequenceID >> 8) % 256);
                 bytes[i++] = (byte)((SequenceID >> 16) % 256);
@@ -69858,10 +69858,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SnapSelection) ? 1 : 0);
                 ba = BitConverter.GetBytes(North);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 ba = BitConverter.GetBytes(South);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -69910,8 +69910,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -69996,7 +69996,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _filename = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Array.Copy(value, _filename, value.Length); }
+                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
                 }
             }
 
@@ -70021,7 +70021,7 @@ namespace libsecondlife.Packets
                     ToViewer = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _filename = new byte[length];
-                    Array.Copy(bytes, i, _filename, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -70031,11 +70031,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((ToViewer) ? 1 : 0);
                 if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Filename.Length;
-                Array.Copy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
+                Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
             }
 
             public override string ToString()
@@ -70140,12 +70140,12 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Gain);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Flags;
             }
 
@@ -70247,10 +70247,10 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Gain);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -70348,10 +70348,10 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Radius);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -70449,9 +70449,9 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -70545,7 +70545,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _typedata = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _typedata = new byte[value.Length]; Array.Copy(value, _typedata, value.Length); }
+                    else { _typedata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _typedata, 0, value.Length); }
                 }
             }
 
@@ -70572,10 +70572,10 @@ namespace libsecondlife.Packets
                     AgentID = new LLUUID(bytes, i); i += 16;
                     Type = (byte)bytes[i++];
                     Color = new byte[4];
-                    Array.Copy(bytes, i, Color, 0, 4); i += 4;
+                    Buffer.BlockCopy(bytes, i, Color, 0, 4); i += 4;
                     length = (ushort)bytes[i++];
                     _typedata = new byte[length];
-                    Array.Copy(bytes, i, _typedata, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _typedata, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -70588,14 +70588,14 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(Duration);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = Type;
-                                Array.Copy(Color, 0, bytes, i, 4);i += 4;
+                                Buffer.BlockCopy(Color, 0, bytes, i, 4);i += 4;
                 if(TypeData == null) { Console.WriteLine("Warning: TypeData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TypeData.Length;
-                Array.Copy(TypeData, 0, bytes, i, TypeData.Length); i += TypeData.Length;
+                Buffer.BlockCopy(TypeData, 0, bytes, i, TypeData.Length); i += TypeData.Length;
             }
 
             public override string ToString()
@@ -70645,8 +70645,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -70763,7 +70763,7 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(Phase);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
             }
 
             public override string ToString()
@@ -70807,8 +70807,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -71129,17 +71129,17 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ControlFlags >> 8) % 256);
                 bytes[i++] = (byte)((ControlFlags >> 16) % 256);
                 bytes[i++] = (byte)((ControlFlags >> 24) % 256);
-                Array.Copy(CameraAtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(CameraAtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(Far);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CameraCenter.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(CameraLeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(CameraUpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CameraCenter.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(CameraLeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(CameraUpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = Flags;
                 bytes[i++] = State;
             }
@@ -71248,7 +71248,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((StartAnim) ? 1 : 0);
             }
 
@@ -71294,8 +71294,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -71409,8 +71409,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(TargetID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Offset.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -71455,8 +71455,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -71559,8 +71559,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -71666,14 +71666,14 @@ namespace libsecondlife.Packets
                 byte[] ba;
                 ba = BitConverter.GetBytes(DownloadPriority);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)DiscardLevel;
                 bytes[i++] = Type;
                 bytes[i++] = (byte)(Packet % 256);
                 bytes[i++] = (byte)((Packet >> 8) % 256);
                 bytes[i++] = (byte)((Packet >> 16) % 256);
                 bytes[i++] = (byte)((Packet >> 24) % 256);
-                Array.Copy(Image.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Image.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -71721,8 +71721,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -71840,7 +71840,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Packets % 256);
                 bytes[i++] = (byte)((Packets >> 8) % 256);
                 bytes[i++] = (byte)(Size % 256);
@@ -71874,7 +71874,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
 
@@ -71897,7 +71897,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -71910,7 +71910,7 @@ namespace libsecondlife.Packets
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
             }
 
             public override string ToString()
@@ -72011,7 +72011,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Packet % 256);
                 bytes[i++] = (byte)((Packet >> 8) % 256);
             }
@@ -72038,7 +72038,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
 
@@ -72061,7 +72061,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -72074,7 +72074,7 @@ namespace libsecondlife.Packets
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
             }
 
             public override string ToString()
@@ -72197,7 +72197,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
 
@@ -72220,7 +72220,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -72233,7 +72233,7 @@ namespace libsecondlife.Packets
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
             }
 
             public override string ToString()
@@ -72316,7 +72316,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _objectdata = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectdata = new byte[value.Length]; Array.Copy(value, _objectdata, value.Length); }
+                    else { _objectdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectdata, 0, value.Length); }
                 }
             }
             public sbyte PathTwistBegin;
@@ -72331,7 +72331,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mediaurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Array.Copy(value, _mediaurl, value.Length); }
+                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
             public byte[] TextColor;
@@ -72348,7 +72348,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
             private byte[] _textureanim;
@@ -72359,7 +72359,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureanim = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _textureanim = new byte[value.Length]; Array.Copy(value, _textureanim, value.Length); }
+                    else { _textureanim = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureanim, 0, value.Length); }
                 }
             }
             public uint ParentID;
@@ -72371,7 +72371,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _text = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _text = new byte[value.Length]; Array.Copy(value, _text, value.Length); }
+                    else { _text = new byte[value.Length]; Buffer.BlockCopy(value, 0, _text, 0, value.Length); }
                 }
             }
             public byte ProfileCurve;
@@ -72387,7 +72387,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _extraparams = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _extraparams = new byte[value.Length]; Array.Copy(value, _extraparams, value.Length); }
+                    else { _extraparams = new byte[value.Length]; Buffer.BlockCopy(value, 0, _extraparams, 0, value.Length); }
                 }
             }
             private byte[] _namevalue;
@@ -72398,7 +72398,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _namevalue = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _namevalue = new byte[value.Length]; Array.Copy(value, _namevalue, value.Length); }
+                    else { _namevalue = new byte[value.Length]; Buffer.BlockCopy(value, 0, _namevalue, 0, value.Length); }
                 }
             }
             public byte PathShearX;
@@ -72417,7 +72417,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _psblock = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _psblock = new byte[value.Length]; Array.Copy(value, _psblock, value.Length); }
+                    else { _psblock = new byte[value.Length]; Buffer.BlockCopy(value, 0, _psblock, 0, value.Length); }
                 }
             }
             public byte PCode;
@@ -72437,7 +72437,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureentry = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
+                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
             public byte ProfileHollow;
@@ -72472,16 +72472,16 @@ namespace libsecondlife.Packets
                     UpdateFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _objectdata = new byte[length];
-                    Array.Copy(bytes, i, _objectdata, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _objectdata, 0, length); i += length;
                     PathTwistBegin = (sbyte)bytes[i++];
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     JointPivot = new LLVector3(bytes, i); i += 12;
                     PathEnd = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _mediaurl = new byte[length];
-                    Array.Copy(bytes, i, _mediaurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
                     TextColor = new byte[4];
-                    Array.Copy(bytes, i, TextColor, 0, 4); i += 4;
+                    Buffer.BlockCopy(bytes, i, TextColor, 0, 4); i += 4;
                     ClickAction = (byte)bytes[i++];
                     ProfileBegin = (byte)bytes[i++];
                     PathRadiusOffset = (sbyte)bytes[i++];
@@ -72490,14 +72490,14 @@ namespace libsecondlife.Packets
                     PathSkew = (sbyte)bytes[i++];
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                     length = (ushort)bytes[i++];
                     _textureanim = new byte[length];
-                    Array.Copy(bytes, i, _textureanim, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureanim, 0, length); i += length;
                     ParentID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _text = new byte[length];
-                    Array.Copy(bytes, i, _text, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _text, 0, length); i += length;
                     ProfileCurve = (byte)bytes[i++];
                     PathScaleX = (byte)bytes[i++];
                     PathScaleY = (byte)bytes[i++];
@@ -72505,10 +72505,10 @@ namespace libsecondlife.Packets
                     OwnerID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _extraparams = new byte[length];
-                    Array.Copy(bytes, i, _extraparams, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _extraparams, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _namevalue = new byte[length];
-                    Array.Copy(bytes, i, _namevalue, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _namevalue, 0, length); i += length;
                     PathShearX = (byte)bytes[i++];
                     PathShearY = (byte)bytes[i++];
                     PathTaperX = (sbyte)bytes[i++];
@@ -72520,7 +72520,7 @@ namespace libsecondlife.Packets
                     PathBegin = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _psblock = new byte[length];
-                    Array.Copy(bytes, i, _psblock, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _psblock, 0, length); i += length;
                     PCode = (byte)bytes[i++];
                     FullID = new LLUUID(bytes, i); i += 16;
                     PathCurve = (byte)bytes[i++];
@@ -72532,7 +72532,7 @@ namespace libsecondlife.Packets
                     Sound = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _textureentry = new byte[length];
-                    Array.Copy(bytes, i, _textureentry, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
                     ProfileHollow = (byte)bytes[i++];
                     PathRevolutions = (byte)bytes[i++];
                 }
@@ -72555,77 +72555,77 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((UpdateFlags >> 24) % 256);
                 if(ObjectData == null) { Console.WriteLine("Warning: ObjectData is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ObjectData.Length;
-                Array.Copy(ObjectData, 0, bytes, i, ObjectData.Length); i += ObjectData.Length;
+                Buffer.BlockCopy(ObjectData, 0, bytes, i, ObjectData.Length); i += ObjectData.Length;
                 bytes[i++] = (byte)PathTwistBegin;
                 bytes[i++] = (byte)(CRC % 256);
                 bytes[i++] = (byte)((CRC >> 8) % 256);
                 bytes[i++] = (byte)((CRC >> 16) % 256);
                 bytes[i++] = (byte)((CRC >> 24) % 256);
-                Array.Copy(JointPivot.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(JointPivot.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = PathEnd;
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
-                Array.Copy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
-                                Array.Copy(TextColor, 0, bytes, i, 4);i += 4;
+                Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
+                                Buffer.BlockCopy(TextColor, 0, bytes, i, 4);i += 4;
                 bytes[i++] = ClickAction;
                 bytes[i++] = ProfileBegin;
                 bytes[i++] = (byte)PathRadiusOffset;
                 ba = BitConverter.GetBytes(Gain);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)PathSkew;
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
                 if(TextureAnim == null) { Console.WriteLine("Warning: TextureAnim is null, in " + this.GetType()); }
                 bytes[i++] = (byte)TextureAnim.Length;
-                Array.Copy(TextureAnim, 0, bytes, i, TextureAnim.Length); i += TextureAnim.Length;
+                Buffer.BlockCopy(TextureAnim, 0, bytes, i, TextureAnim.Length); i += TextureAnim.Length;
                 bytes[i++] = (byte)(ParentID % 256);
                 bytes[i++] = (byte)((ParentID >> 8) % 256);
                 bytes[i++] = (byte)((ParentID >> 16) % 256);
                 bytes[i++] = (byte)((ParentID >> 24) % 256);
                 if(Text == null) { Console.WriteLine("Warning: Text is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Text.Length;
-                Array.Copy(Text, 0, bytes, i, Text.Length); i += Text.Length;
+                Buffer.BlockCopy(Text, 0, bytes, i, Text.Length); i += Text.Length;
                 bytes[i++] = ProfileCurve;
                 bytes[i++] = PathScaleX;
                 bytes[i++] = PathScaleY;
                 bytes[i++] = Material;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(ExtraParams == null) { Console.WriteLine("Warning: ExtraParams is null, in " + this.GetType()); }
                 bytes[i++] = (byte)ExtraParams.Length;
-                Array.Copy(ExtraParams, 0, bytes, i, ExtraParams.Length); i += ExtraParams.Length;
+                Buffer.BlockCopy(ExtraParams, 0, bytes, i, ExtraParams.Length); i += ExtraParams.Length;
                 if(NameValue == null) { Console.WriteLine("Warning: NameValue is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(NameValue.Length % 256);
                 bytes[i++] = (byte)((NameValue.Length >> 8) % 256);
-                Array.Copy(NameValue, 0, bytes, i, NameValue.Length); i += NameValue.Length;
+                Buffer.BlockCopy(NameValue, 0, bytes, i, NameValue.Length); i += NameValue.Length;
                 bytes[i++] = PathShearX;
                 bytes[i++] = PathShearY;
                 bytes[i++] = (byte)PathTaperX;
                 bytes[i++] = (byte)PathTaperY;
                 ba = BitConverter.GetBytes(Radius);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = ProfileEnd;
                 bytes[i++] = JointType;
                 bytes[i++] = PathBegin;
                 if(PSBlock == null) { Console.WriteLine("Warning: PSBlock is null, in " + this.GetType()); }
                 bytes[i++] = (byte)PSBlock.Length;
-                Array.Copy(PSBlock, 0, bytes, i, PSBlock.Length); i += PSBlock.Length;
+                Buffer.BlockCopy(PSBlock, 0, bytes, i, PSBlock.Length); i += PSBlock.Length;
                 bytes[i++] = PCode;
-                Array.Copy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(FullID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = PathCurve;
-                Array.Copy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(JointAxisOrAnchor.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(JointAxisOrAnchor.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = Flags;
                 bytes[i++] = State;
                 bytes[i++] = (byte)PathTwist;
-                Array.Copy(Sound.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Sound.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(TextureEntry == null) { Console.WriteLine("Warning: TextureEntry is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(TextureEntry.Length % 256);
                 bytes[i++] = (byte)((TextureEntry.Length >> 8) % 256);
-                Array.Copy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
+                Buffer.BlockCopy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
                 bytes[i++] = ProfileHollow;
                 bytes[i++] = PathRevolutions;
             }
@@ -72831,7 +72831,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
 
@@ -72855,7 +72855,7 @@ namespace libsecondlife.Packets
                     UpdateFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -72872,7 +72872,7 @@ namespace libsecondlife.Packets
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
             }
 
             public override string ToString()
@@ -73202,7 +73202,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
             private byte[] _textureentry;
@@ -73213,7 +73213,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _textureentry = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _textureentry = new byte[value.Length]; Array.Copy(value, _textureentry, value.Length); }
+                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
 
@@ -73237,10 +73237,10 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)bytes[i++];
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _textureentry = new byte[length];
-                    Array.Copy(bytes, i, _textureentry, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -73252,11 +73252,11 @@ namespace libsecondlife.Packets
             {
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Data.Length;
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
                 if(TextureEntry == null) { Console.WriteLine("Warning: TextureEntry is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(TextureEntry.Length % 256);
                 bytes[i++] = (byte)((TextureEntry.Length >> 8) % 256);
-                Array.Copy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
+                Buffer.BlockCopy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
             }
 
             public override string ToString()
@@ -73541,7 +73541,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((IP >> 8) % 256);
                 bytes[i++] = (byte)((IP >> 16) % 256);
                 bytes[i++] = (byte)((IP >> 24) % 256);
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((Port >> 8) % 256);
                 bytes[i++] = (byte)(Port % 256);
                 bytes[i++] = (byte)(Handle % 256);
@@ -73630,7 +73630,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
             public int Packet;
@@ -73657,7 +73657,7 @@ namespace libsecondlife.Packets
                     TransferID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                     Packet = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Status = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -73670,11 +73670,11 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransferID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
                 bytes[i++] = (byte)(Packet % 256);
                 bytes[i++] = (byte)((Packet >> 8) % 256);
                 bytes[i++] = (byte)((Packet >> 16) % 256);
@@ -73766,7 +73766,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _data = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _data = new byte[value.Length]; Array.Copy(value, _data, value.Length); }
+                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
                 }
             }
 
@@ -73789,7 +73789,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _data = new byte[length];
-                    Array.Copy(bytes, i, _data, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -73802,7 +73802,7 @@ namespace libsecondlife.Packets
                 if(Data == null) { Console.WriteLine("Warning: Data is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Data.Length % 256);
                 bytes[i++] = (byte)((Data.Length >> 8) % 256);
-                Array.Copy(Data, 0, bytes, i, Data.Length); i += Data.Length;
+                Buffer.BlockCopy(Data, 0, bytes, i, Data.Length); i += Data.Length;
             }
 
             public override string ToString()
@@ -74064,7 +74064,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -74106,7 +74106,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -74150,7 +74150,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AnimID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(AnimSequenceID % 256);
                 bytes[i++] = (byte)((AnimSequenceID >> 8) % 256);
                 bytes[i++] = (byte)((AnimSequenceID >> 16) % 256);
@@ -74296,10 +74296,10 @@ namespace libsecondlife.Packets
             {
                 bytes[i++] = (byte)((AutoPilot) ? 1 : 0);
                 bytes[i++] = (byte)((ForceMouselook) ? 1 : 0);
-                Array.Copy(CameraEyeOffset.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(CameraAtOffset.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(SitPosition.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(SitRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(CameraEyeOffset.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(CameraAtOffset.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SitPosition.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SitRotation.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -74346,7 +74346,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -74446,7 +74446,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(Plane.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Plane.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -74533,7 +74533,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _mediaurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Array.Copy(value, _mediaurl, value.Length); }
+                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
                 }
             }
             public int LocalID;
@@ -74551,7 +74551,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _name = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Array.Copy(value, _name, value.Length); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
                 }
             }
             public int OtherCleanTime;
@@ -74563,7 +74563,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _desc = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Array.Copy(value, _desc, value.Length); }
+                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
                 }
             }
             public int Area;
@@ -74585,7 +74585,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _bitmap = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _bitmap = new byte[value.Length]; Array.Copy(value, _bitmap, value.Length); }
+                    else { _bitmap = new byte[value.Length]; Buffer.BlockCopy(value, 0, _bitmap, 0, value.Length); }
                 }
             }
             public byte Status;
@@ -74608,7 +74608,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _musicurl = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _musicurl = new byte[value.Length]; Array.Copy(value, _musicurl, value.Length); }
+                    else { _musicurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _musicurl, 0, value.Length); }
                 }
             }
             public float ParcelPrimBonus;
@@ -74649,7 +74649,7 @@ namespace libsecondlife.Packets
                     RegionDenyAnonymous = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     length = (ushort)bytes[i++];
                     _mediaurl = new byte[length];
-                    Array.Copy(bytes, i, _mediaurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
                     LocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SimWideMaxPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TotalPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -74659,11 +74659,11 @@ namespace libsecondlife.Packets
                     MaxPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _name = new byte[length];
-                    Array.Copy(bytes, i, _name, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
                     OtherCleanTime = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)bytes[i++];
                     _desc = new byte[length];
-                    Array.Copy(bytes, i, _desc, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
                     Area = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     OtherPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RegionDenyIdentified = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -74677,7 +74677,7 @@ namespace libsecondlife.Packets
                     SelfCount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _bitmap = new byte[length];
-                    Array.Copy(bytes, i, _bitmap, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _bitmap, 0, length); i += length;
                     Status = (byte)bytes[i++];
                     SnapshotID = new LLUUID(bytes, i); i += 16;
                     SnapSelection = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -74693,7 +74693,7 @@ namespace libsecondlife.Packets
                     MediaAutoScale = (byte)bytes[i++];
                     length = (ushort)bytes[i++];
                     _musicurl = new byte[length];
-                    Array.Copy(bytes, i, _musicurl, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _musicurl, 0, length); i += length;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     ParcelPrimBonus = BitConverter.ToSingle(bytes, i); i += 4;
                     ClaimPrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -74717,10 +74717,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((SelectedPrims >> 8) % 256);
                 bytes[i++] = (byte)((SelectedPrims >> 16) % 256);
                 bytes[i++] = (byte)((SelectedPrims >> 24) % 256);
-                Array.Copy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(AABBMax.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(AABBMin.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(MediaID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(UserLookAt.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AABBMax.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AABBMin.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(RequestResult % 256);
                 bytes[i++] = (byte)((RequestResult >> 8) % 256);
                 bytes[i++] = (byte)((RequestResult >> 16) % 256);
@@ -74733,7 +74733,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionDenyAnonymous) ? 1 : 0);
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
-                Array.Copy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
+                Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
                 bytes[i++] = (byte)(LocalID % 256);
                 bytes[i++] = (byte)((LocalID >> 8) % 256);
                 bytes[i++] = (byte)((LocalID >> 16) % 256);
@@ -74751,21 +74751,21 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((OtherCount >> 16) % 256);
                 bytes[i++] = (byte)((OtherCount >> 24) % 256);
                 bytes[i++] = (byte)((IsGroupOwned) ? 1 : 0);
-                Array.Copy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(UserLocation.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(MaxPrims % 256);
                 bytes[i++] = (byte)((MaxPrims >> 8) % 256);
                 bytes[i++] = (byte)((MaxPrims >> 16) % 256);
                 bytes[i++] = (byte)((MaxPrims >> 24) % 256);
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Name.Length;
-                Array.Copy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
                 bytes[i++] = (byte)(OtherCleanTime % 256);
                 bytes[i++] = (byte)((OtherCleanTime >> 8) % 256);
                 bytes[i++] = (byte)((OtherCleanTime >> 16) % 256);
                 bytes[i++] = (byte)((OtherCleanTime >> 24) % 256);
                 if(Desc == null) { Console.WriteLine("Warning: Desc is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Desc.Length;
-                Array.Copy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
+                Buffer.BlockCopy(Desc, 0, bytes, i, Desc.Length); i += Desc.Length;
                 bytes[i++] = (byte)(Area % 256);
                 bytes[i++] = (byte)((Area >> 8) % 256);
                 bytes[i++] = (byte)((Area >> 16) % 256);
@@ -74780,12 +74780,12 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((PublicCount >> 8) % 256);
                 bytes[i++] = (byte)((PublicCount >> 16) % 256);
                 bytes[i++] = (byte)((PublicCount >> 24) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SalePrice % 256);
                 bytes[i++] = (byte)((SalePrice >> 8) % 256);
                 bytes[i++] = (byte)((SalePrice >> 16) % 256);
                 bytes[i++] = (byte)((SalePrice >> 24) % 256);
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(SequenceID % 256);
                 bytes[i++] = (byte)((SequenceID >> 8) % 256);
                 bytes[i++] = (byte)((SequenceID >> 16) % 256);
@@ -74798,9 +74798,9 @@ namespace libsecondlife.Packets
                 if(Bitmap == null) { Console.WriteLine("Warning: Bitmap is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(Bitmap.Length % 256);
                 bytes[i++] = (byte)((Bitmap.Length >> 8) % 256);
-                Array.Copy(Bitmap, 0, bytes, i, Bitmap.Length); i += Bitmap.Length;
+                Buffer.BlockCopy(Bitmap, 0, bytes, i, Bitmap.Length); i += Bitmap.Length;
                 bytes[i++] = Status;
-                Array.Copy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((SnapSelection) ? 1 : 0);
                 bytes[i++] = LandingType;
                 bytes[i++] = (byte)(SimWideTotalPrims % 256);
@@ -74811,10 +74811,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((AuctionID >> 8) % 256);
                 bytes[i++] = (byte)((AuctionID >> 16) % 256);
                 bytes[i++] = (byte)((AuctionID >> 24) % 256);
-                Array.Copy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AuthBuyerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(PassHours);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(ParcelFlags % 256);
                 bytes[i++] = (byte)((ParcelFlags >> 8) % 256);
                 bytes[i++] = (byte)((ParcelFlags >> 16) % 256);
@@ -74830,10 +74830,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = MediaAutoScale;
                 if(MusicURL == null) { Console.WriteLine("Warning: MusicURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MusicURL.Length;
-                Array.Copy(MusicURL, 0, bytes, i, MusicURL.Length); i += MusicURL.Length;
+                Buffer.BlockCopy(MusicURL, 0, bytes, i, MusicURL.Length); i += MusicURL.Length;
                 ba = BitConverter.GetBytes(ParcelPrimBonus);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(ClaimPrice % 256);
                 bytes[i++] = (byte)((ClaimPrice >> 8) % 256);
                 bytes[i++] = (byte)((ClaimPrice >> 16) % 256);
@@ -75031,7 +75031,7 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(GranterID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GranterID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -75075,8 +75075,8 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(Animation.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Animation.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -75116,7 +75116,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _throttles = null; return; }
                     if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _throttles = new byte[value.Length]; Array.Copy(value, _throttles, value.Length); }
+                    else { _throttles = new byte[value.Length]; Buffer.BlockCopy(value, 0, _throttles, 0, value.Length); }
                 }
             }
             public LLVector3 UpAxis;
@@ -75128,7 +75128,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _agenttextures = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _agenttextures = new byte[value.Length]; Array.Copy(value, _agenttextures, value.Length); }
+                    else { _agenttextures = new byte[value.Length]; Buffer.BlockCopy(value, 0, _agenttextures, 0, value.Length); }
                 }
             }
             public LLVector3 AtAxis;
@@ -75176,11 +75176,11 @@ namespace libsecondlife.Packets
                     PreyAgent = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
                     _throttles = new byte[length];
-                    Array.Copy(bytes, i, _throttles, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _throttles, 0, length); i += length;
                     UpAxis = new LLVector3(bytes, i); i += 12;
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _agenttextures = new byte[length];
-                    Array.Copy(bytes, i, _agenttextures, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _agenttextures, 0, length); i += length;
                     AtAxis = new LLVector3(bytes, i); i += 12;
                     Center = new LLVector3(bytes, i); i += 12;
                     BodyRotation = new LLQuaternion(bytes, i, true); i += 12;
@@ -75211,13 +75211,13 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ControlFlags >> 24) % 256);
                 ba = BitConverter.GetBytes(Far);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
-                Array.Copy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(HeadRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = GodLevel;
                 bytes[i++] = (byte)(RegionHandle % 256);
                 bytes[i++] = (byte)((RegionHandle >> 8) % 256);
@@ -75228,32 +75228,32 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
                 bytes[i++] = AgentAccess;
-                Array.Copy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(PreyAgent.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(PreyAgent.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Throttles == null) { Console.WriteLine("Warning: Throttles is null, in " + this.GetType()); }
                 bytes[i++] = (byte)Throttles.Length;
-                Array.Copy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
-                Array.Copy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Throttles, 0, bytes, i, Throttles.Length); i += Throttles.Length;
+                Buffer.BlockCopy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
                 if(AgentTextures == null) { Console.WriteLine("Warning: AgentTextures is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(AgentTextures.Length % 256);
                 bytes[i++] = (byte)((AgentTextures.Length >> 8) % 256);
-                Array.Copy(AgentTextures, 0, bytes, i, AgentTextures.Length); i += AgentTextures.Length;
-                Array.Copy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AgentTextures, 0, bytes, i, AgentTextures.Length); i += AgentTextures.Length;
+                Buffer.BlockCopy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(BodyRotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 ba = BitConverter.GetBytes(Aspect);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)((AlwaysRun) ? 1 : 0);
                 ba = BitConverter.GetBytes(EnergyLevel);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 bytes[i++] = (byte)(LocomotionState % 256);
                 bytes[i++] = (byte)((LocomotionState >> 8) % 256);
                 bytes[i++] = (byte)((LocomotionState >> 16) % 256);
                 bytes[i++] = (byte)((LocomotionState >> 24) % 256);
-                Array.Copy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ActiveGroupID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -75334,7 +75334,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((GroupPowers >> 40) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 48) % 256);
                 bytes[i++] = (byte)((GroupPowers >> 56) % 256);
-                Array.Copy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((AcceptNotices) ? 1 : 0);
             }
 
@@ -75361,7 +75361,7 @@ namespace libsecondlife.Packets
                 {
                     if (value == null) { _nvpairs = null; return; }
                     if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
-                    else { _nvpairs = new byte[value.Length]; Array.Copy(value, _nvpairs, value.Length); }
+                    else { _nvpairs = new byte[value.Length]; Buffer.BlockCopy(value, 0, _nvpairs, 0, value.Length); }
                 }
             }
 
@@ -75384,7 +75384,7 @@ namespace libsecondlife.Packets
                 {
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _nvpairs = new byte[length];
-                    Array.Copy(bytes, i, _nvpairs, 0, length); i += length;
+                    Buffer.BlockCopy(bytes, i, _nvpairs, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -75397,7 +75397,7 @@ namespace libsecondlife.Packets
                 if(NVPairs == null) { Console.WriteLine("Warning: NVPairs is null, in " + this.GetType()); }
                 bytes[i++] = (byte)(NVPairs.Length % 256);
                 bytes[i++] = (byte)((NVPairs.Length >> 8) % 256);
-                Array.Copy(NVPairs, 0, bytes, i, NVPairs.Length); i += NVPairs.Length;
+                Buffer.BlockCopy(NVPairs, 0, bytes, i, NVPairs.Length); i += NVPairs.Length;
             }
 
             public override string ToString()
@@ -75591,8 +75591,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ViewerCircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((ViewerCircuitCode >> 16) % 256);
                 bytes[i++] = (byte)((ViewerCircuitCode >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(RegionHandle % 256);
                 bytes[i++] = (byte)((RegionHandle >> 8) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 16) % 256);
@@ -75722,11 +75722,11 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((ViewerCircuitCode >> 8) % 256);
                 bytes[i++] = (byte)((ViewerCircuitCode >> 16) % 256);
                 bytes[i++] = (byte)((ViewerCircuitCode >> 24) % 256);
-                Array.Copy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((ChangedGrid) ? 1 : 0);
-                Array.Copy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(LeftAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Size.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = (byte)(RegionHandle % 256);
                 bytes[i++] = (byte)((RegionHandle >> 8) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 16) % 256);
@@ -75735,11 +75735,11 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((RegionHandle >> 40) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 48) % 256);
                 bytes[i++] = (byte)((RegionHandle >> 56) % 256);
-                Array.Copy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
-                Array.Copy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AgentVel.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AgentPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(UpAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(AtAxis.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Center.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()
@@ -75857,13 +75857,13 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                Array.Copy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Gain);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
-                Array.Copy(ba, 0, bytes, i, 4); i += 4;
-                Array.Copy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Array.Copy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(ParentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SoundID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)(Handle % 256);
                 bytes[i++] = (byte)((Handle >> 8) % 256);
                 bytes[i++] = (byte)((Handle >> 16) % 256);
@@ -75872,7 +75872,7 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((Handle >> 40) % 256);
                 bytes[i++] = (byte)((Handle >> 48) % 256);
                 bytes[i++] = (byte)((Handle >> 56) % 256);
-                Array.Copy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
             }
 
             public override string ToString()

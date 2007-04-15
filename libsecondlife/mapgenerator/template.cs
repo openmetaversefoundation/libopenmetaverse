@@ -241,7 +241,7 @@ namespace libsecondlife.Packets
         {
             if (bytes.Length < 8) { throw new MalformedDataException(); }
             Data = new byte[8];
-            Array.Copy(bytes, Data, 8);
+            Buffer.BlockCopy(bytes, 0, Data, 0, 8);
 
             if ((bytes[0] & Helpers.MSG_ZEROCODED) != 0 && bytes[6] == 0)
             {
@@ -266,7 +266,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Array.Copy(Data, 0, bytes, i, 8);
+            Buffer.BlockCopy(Data, 0, bytes, i, 8);
             i += 8;
         }
     }
@@ -305,7 +305,7 @@ namespace libsecondlife.Packets
         {
             if (bytes.Length < 6) { throw new MalformedDataException(); }
             Data = new byte[6];
-            Array.Copy(bytes, Data, 6);
+            Buffer.BlockCopy(bytes, 0, Data, 0, 6);
             pos = 6;
             CreateAckList(bytes, ref packetEnd);
         }
@@ -317,7 +317,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Array.Copy(Data, 0, bytes, i, 6);
+            Buffer.BlockCopy(Data, 0, bytes, i, 6);
             i += 6;
         }
     }
@@ -355,7 +355,7 @@ namespace libsecondlife.Packets
         {
             if (bytes.Length < 5) { throw new MalformedDataException(); }
             Data = new byte[5];
-            Array.Copy(bytes, Data, 5);
+            Buffer.BlockCopy(bytes, 0, Data, 0, 5);
             pos = 5;
             CreateAckList(bytes, ref packetEnd);
         }
@@ -367,7 +367,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Array.Copy(Data, 0, bytes, i, 5);
+            Buffer.BlockCopy(Data, 0, bytes, i, 5);
             i += 5;
         }
     }

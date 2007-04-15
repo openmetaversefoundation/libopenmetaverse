@@ -422,12 +422,6 @@ namespace libsecondlife
                                     LoginSuccess = true;
 
                                 break;
-                            case "next_url":
-                                nextURL = ReadStringValue(reader);
-                                break;
-                            case "next_method":
-                                nextMethod = ReadStringValue(reader);
-                                break;
                             case "reason":
                                 LoginErrorKey = ReadStringValue(reader);
                                 break;
@@ -798,6 +792,20 @@ namespace libsecondlife
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
+                                break;
+                            case "next_options":
+                                // FIXME: Parse the next_options and only use those for the next_url
+                                reader.Skip();
+                                break;
+                            case "next_duration":
+                                // FIXME: Use this value as the timeout for the next request
+                                reader.Skip();
+                                break;
+                            case "next_url":
+                                nextURL = ReadStringValue(reader);
+                                break;
+                            case "next_method":
+                                nextMethod = ReadStringValue(reader);
                                 break;
                             default:
                                 Client.Log("Unhandled element in login reply", Helpers.LogLevel.Error);

@@ -264,7 +264,7 @@ namespace libsecondlife.InventorySystem
 		{
 			byte[] BinaryBucket = new byte[17];
 			BinaryBucket[0] = (byte)Item.Type;
-			Array.Copy(Item.ItemID.Data, 0, BinaryBucket, 1, 16);
+            Buffer.BlockCopy(Item.ItemID.Data, 0, BinaryBucket, 1, 16);
 
             ImprovedInstantMessagePacket p = new ImprovedInstantMessagePacket();
             p.AgentData.AgentID   = AgentID;

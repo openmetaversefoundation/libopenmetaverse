@@ -112,7 +112,7 @@ namespace libsecondlife
                 output[5] = bytes[4];
                 output[6] = bytes[7];
                 output[7] = bytes[6];
-                Array.Copy(bytes, 8, output, 8, 8);
+                Buffer.BlockCopy(bytes, 8, output, 8, 8);
 
                 return output;
             }
@@ -149,8 +149,8 @@ namespace libsecondlife
         {
             // Build the buffer to MD5
             byte[] input = new byte[32];
-            Array.Copy(GetBytes(), input, 16);
-            Array.Copy(other.GetBytes(), 0, input, 16, 16);
+            Buffer.BlockCopy(GetBytes(), 0, input, 0, 16);
+            Buffer.BlockCopy(other.GetBytes(), 0, input, 16, 16);
 
             return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
         }
@@ -338,7 +338,7 @@ namespace libsecondlife
             if (!BitConverter.IsLittleEndian)
             {
                 byte[] newArray = new byte[12];
-                Array.Copy(byteArray, pos, newArray, 0, 12);
+                Buffer.BlockCopy(byteArray, pos, newArray, 0, 12);
 
                 Array.Reverse(newArray, 0, 4);
                 Array.Reverse(newArray, 4, 4);
@@ -377,9 +377,9 @@ namespace libsecondlife
 		{
 			byte[] byteArray = new byte[12];
 
-			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
 
 			if(!BitConverter.IsLittleEndian) {
 				Array.Reverse(byteArray, 0, 4);
@@ -605,7 +605,7 @@ namespace libsecondlife
             if (!BitConverter.IsLittleEndian)
             {
                 byte[] newArray = new byte[24];
-                Array.Copy(byteArray, pos, newArray, 0, 24);
+                Buffer.BlockCopy(byteArray, pos, newArray, 0, 24);
 
                 Array.Reverse(newArray, 0, 8);
                 Array.Reverse(newArray, 8, 8);
@@ -698,9 +698,9 @@ namespace libsecondlife
 		{
 			byte[] byteArray = new byte[24];
 
-			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 8);
-			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 8, 8);
-			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 16, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 8, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 16, 8);
 
 			if(!BitConverter.IsLittleEndian)
             {
@@ -752,7 +752,7 @@ namespace libsecondlife
             if (!BitConverter.IsLittleEndian)
             {
                 byte[] newArray = new byte[16];
-                Array.Copy(byteArray, pos, newArray, 0, 16);
+                Buffer.BlockCopy(byteArray, pos, newArray, 0, 16);
 
                 Array.Reverse(newArray, 0, 4);
                 Array.Reverse(newArray, 4, 4);
@@ -781,12 +781,13 @@ namespace libsecondlife
 		{
 			byte[] byteArray = new byte[16];
 
-			Array.Copy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
-			Array.Copy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
-			Array.Copy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
-			Array.Copy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(S), 0, byteArray, 12, 4);
 
-			if(!BitConverter.IsLittleEndian) {
+			if(!BitConverter.IsLittleEndian)
+            {
 				Array.Reverse(byteArray, 0, 4);
 				Array.Reverse(byteArray, 4, 4);
 				Array.Reverse(byteArray, 8, 4);
@@ -932,7 +933,7 @@ namespace libsecondlife
                 if (!BitConverter.IsLittleEndian)
                 {
                     byte[] newArray = new byte[16];
-                    Array.Copy(byteArray, pos, newArray, 0, 16);
+                    Buffer.BlockCopy(byteArray, pos, newArray, 0, 16);
 
                     Array.Reverse(newArray, 0, 4);
                     Array.Reverse(newArray, 4, 4);
@@ -957,7 +958,7 @@ namespace libsecondlife
                 if (!BitConverter.IsLittleEndian)
                 {
                     byte[] newArray = new byte[12];
-                    Array.Copy(byteArray, pos, newArray, 0, 12);
+                    Buffer.BlockCopy(byteArray, pos, newArray, 0, 12);
 
                     Array.Reverse(newArray, 0, 4);
                     Array.Reverse(newArray, 4, 4);
@@ -1026,9 +1027,9 @@ namespace libsecondlife
             {
                 norm = 1 / norm;
 
-                Array.Copy(BitConverter.GetBytes(norm * X), 0, bytes, 0, 4);
-                Array.Copy(BitConverter.GetBytes(norm * Y), 0, bytes, 4, 4);
-                Array.Copy(BitConverter.GetBytes(norm * Z), 0, bytes, 8, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * X), 0, bytes, 0, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * Y), 0, bytes, 4, 4);
+                Buffer.BlockCopy(BitConverter.GetBytes(norm * Z), 0, bytes, 8, 4);
 
                 if (!BitConverter.IsLittleEndian)
                 {

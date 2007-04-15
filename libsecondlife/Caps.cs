@@ -62,11 +62,13 @@ namespace libsecondlife
 
         /// <summary></summary>
         public string SeedCapsURI { get { return Seedcaps; } }
+        public bool IsEventQueueRunning { get { return EventQueueRunning; } }
 
         internal string Seedcaps;
         internal StringDictionary Capabilities = new StringDictionary();
 
         private bool Dead = false;
+        private bool EventQueueRunning = false;
         private Thread CapsThread;
         private string EventQueueCap = String.Empty;
         private HttpWebRequest CapsRequest = null;
@@ -110,6 +112,7 @@ namespace libsecondlife
             Client.DebugLog("Disconnecting CAPS for " + Simulator.ToString());
 
             Dead = true;
+            EventQueueRunning = false;
 
             if (immediate && EventQueueRequest != null)
                 EventQueueRequest.Abort();
@@ -287,6 +290,9 @@ namespace libsecondlife
 
             byte[] data = LLSD.LLSDSerialize(req);
 
+            // Mark that the event queue is alive
+            if (!Dead) EventQueueRunning = true;
+
             try
             {
                 EventQueueRequest = (HttpWebRequest)HttpWebRequest.Create(EventQueueCap);
@@ -299,15 +305,25 @@ namespace libsecondlife
                 reqStream.Close();
 
                 if (!Dead)
+                {
+                    // Wait for an event to fire (or the connection to time out)
+                    // and mark the queue as running
                     EventQueueRequest.BeginGetResponse(new AsyncCallback(EventQueueHandler), EventQueueRequest);
+                }
                 else
-                    EventQueueRequest.BeginGetResponse(null, EventQueueRequest);
+                {
+                    // CAPS connection is closed, send one last event request with done = true
+                    // A null callback is used to prevent an infinite loop
+                    EventQueueRequest.BeginGetResponse(null, null);
+                }
             }
             catch (WebException e)
             {
-                Client.DebugLog("EventQueue request exception for " + Simulator.ToString() + ": " + e.Message);
-                // If the CAPS system is shutting down don't bother trying too hard
-                if (!Dead) goto MakeRequest;
+                if (!Dead)
+                {
+                    Client.DebugLog("EventQueue request exception for " + Simulator.ToString() + ": " + e.Message);
+                    goto MakeRequest;
+                }
             }
         }
     }

@@ -190,7 +190,7 @@ namespace libsecondlife.AssetSystem
                 int curPos = 0;
                 foreach (KeyValuePair<int, byte[]> kvp in _AssetDataReceived)
                 {
-                    Array.Copy(kvp.Value, 0, _AssetData, curPos, kvp.Value.Length);
+                    Buffer.BlockCopy(kvp.Value, 0, _AssetData, curPos, kvp.Value.Length);
                     curPos += kvp.Value.Length;
                 }
 

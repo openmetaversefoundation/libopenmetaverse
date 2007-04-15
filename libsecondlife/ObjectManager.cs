@@ -1697,7 +1697,7 @@ namespace libsecondlife
                                 {
                                     int size = block.Data[i++];
                                     prim.GenericData = new byte[size];
-                                    Array.Copy(block.Data, i, prim.GenericData, 0, size);
+                                    Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
                                     i += size;
                                 }
                                 
