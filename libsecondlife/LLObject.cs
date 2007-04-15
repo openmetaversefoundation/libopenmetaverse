@@ -326,7 +326,7 @@ namespace libsecondlife
 
 
         internal ObjectData data;
-        internal DateTime lastInterpolation;
+        //internal DateTime lastInterpolation;
 
 
         /// <summary>

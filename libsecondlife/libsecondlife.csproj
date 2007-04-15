@@ -169,6 +169,7 @@
     <Compile Include="Textures.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ThreadUtil.cs" />
     <Compile Include="Types.cs">
       <SubType>Code</SubType>
     </Compile>

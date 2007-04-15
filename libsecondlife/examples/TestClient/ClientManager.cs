@@ -100,7 +100,7 @@ namespace libsecondlife.TestClient
                     this.startpos.z);
 				Console.WriteLine(startLoc);
 				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc, 
-                    contactPerson, false);
+                    contactPerson);
 			}
             else
             {

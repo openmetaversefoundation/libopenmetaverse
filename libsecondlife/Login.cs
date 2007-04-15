@@ -53,6 +53,8 @@ namespace libsecondlife
 
     public partial class NetworkManager
     {
+        public delegate void LoginCallback(LoginStatus login);
+
         /// <summary>
         /// 
         /// </summary>
@@ -90,6 +92,31 @@ namespace libsecondlife
             public List<string> Options;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum LoginStatus
+        {
+            /// <summary></summary>
+            Failed = -1,
+            /// <summary></summary>
+            None = 0,
+            /// <summary></summary>
+            ConnectingToLogin,
+            /// <summary></summary>
+            ReadingResponse,
+            /// <summary></summary>
+            ConnectingToSim,
+            /// <summary></summary>
+            Redirecting,
+            /// <summary></summary>
+            Success
+        }
+
+        /// <summary>Called any time the login status changes, will eventually
+        /// return Success or Failure</summary>
+        public event LoginCallback OnLogin;
+
         /// <summary>String holding the login message. Can be either a tip of
         /// the day style message or a description of the login error depending
         /// on whether the login was successful or not</summary>
@@ -109,41 +136,16 @@ namespace libsecondlife
 
 
         /// <summary>
-        /// Simplified login that takes the most common and required fields
+        /// 
         /// </summary>
         /// <param name="firstName">Account first name</param>
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password</param>
         /// <param name="userAgent">Client application name and version</param>
         /// <param name="author">Client application author</param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginErrorKey string will contain the error code and LoginMessage
-        /// will contain a description of the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string author)
-        {
-            return Login(firstName, lastName, password, userAgent, "last", author, false);
-        }
-
-        /// <summary>
-        /// Simplified login that takes the most common fields along with a
-        /// starting location URI, and can accept an MD5 string instead of a
-        /// plaintext password
-        /// </summary>
-        /// <param name="firstName">Account first name</param>
-        /// <param name="lastName">Account last name</param>
-        /// <param name="password">Account password or MD5 hash of the password
-        /// such as $1$1682a1e45e9f957dcdf0bb56eb43319c</param>
-        /// <param name="userAgent">Client application name and version</param>
-        /// <param name="start">Starting location URI that can be built with
-        /// StartLocation()</param>
-        /// <param name="author">Client application author</param>
-        /// <param name="md5pass">If true, the password field contains an MD5
-        /// hash of the password instead of the plaintext password</param>
-        /// <returns>Whether the login was successful or not. On failure the
-        /// LoginErrorKey string will contain the error code and LoginMessage
-        /// will contain a description of the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string start,
-            string author, bool md5pass)
+        /// <returns></returns>
+        public LoginParams DefaultLoginParams(string firstName, string lastName, string password,
+            string userAgent, string author)
         {
             List<string> options = new List<string>();
             options.Add("inventory-root");
@@ -168,7 +170,7 @@ namespace libsecondlife
             loginParams.FirstName = firstName;
             loginParams.LastName = lastName;
             loginParams.Password = password;
-            loginParams.Start = start;
+            loginParams.Start = "last";
             loginParams.Major = "1";
             loginParams.Minor = "50";
             loginParams.Patch = "50";
@@ -177,6 +179,47 @@ namespace libsecondlife
             loginParams.MAC = String.Empty;
             loginParams.ViewerDigest = String.Empty;
             loginParams.Options = options;
+
+            return loginParams;
+        }
+
+        /// <summary>
+        /// Simplified login that takes the most common and required fields
+        /// </summary>
+        /// <param name="firstName">Account first name</param>
+        /// <param name="lastName">Account last name</param>
+        /// <param name="password">Account password</param>
+        /// <param name="userAgent">Client application name and version</param>
+        /// <param name="author">Client application author</param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginErrorKey string will contain the error code and LoginMessage
+        /// will contain a description of the error</returns>
+        public bool Login(string firstName, string lastName, string password, string userAgent, string author)
+        {
+            return Login(firstName, lastName, password, userAgent, "last", author);
+        }
+
+        /// <summary>
+        /// Simplified login that takes the most common fields along with a
+        /// starting location URI, and can accept an MD5 string instead of a
+        /// plaintext password
+        /// </summary>
+        /// <param name="firstName">Account first name</param>
+        /// <param name="lastName">Account last name</param>
+        /// <param name="password">Account password or MD5 hash of the password
+        /// such as $1$1682a1e45e9f957dcdf0bb56eb43319c</param>
+        /// <param name="userAgent">Client application name and version</param>
+        /// <param name="start">Starting location URI that can be built with
+        /// StartLocation()</param>
+        /// <param name="author">Client application author</param>
+        /// <returns>Whether the login was successful or not. On failure the
+        /// LoginErrorKey string will contain the error code and LoginMessage
+        /// will contain a description of the error</returns>
+        public bool Login(string firstName, string lastName, string password, string userAgent, string start,
+            string author)
+        {
+            LoginParams loginParams = DefaultLoginParams(firstName, lastName, password, userAgent, author);
+            loginParams.Start = start;
 
             return Login(loginParams);
         }
@@ -209,6 +252,10 @@ namespace libsecondlife
             // Reset the login values
             LoginSuccess = false;
             CurrentLoginParams = loginParams;
+
+            // Convert the password to MD5 if it isn't already
+            if (loginParams.Password.Length != 35 && !loginParams.Password.StartsWith("$1$"))
+                loginParams.Password = Helpers.MD5(loginParams.Password);
 
             // Set the sim disconnect timer interval
             DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
@@ -261,6 +308,8 @@ namespace libsecondlife
             LoginRequest.ContentType = "text/xml";
             LoginRequest.ContentLength = bytes.Length;
 
+            UpdateLoginStatus(LoginStatus.ConnectingToLogin);
+
             try
             {
                 // Start the request
@@ -271,6 +320,8 @@ namespace libsecondlife
                 LoginErrorKey = "libsl";
                 LoginMessage = "Error opening the login server connection: " + e.Message;
                 LoginEvent.Set();
+
+                UpdateLoginStatus(LoginStatus.Failed);
             }
         }
 
@@ -288,6 +339,11 @@ namespace libsecondlife
             return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
         }
 
+        private void UpdateLoginStatus(LoginStatus status)
+        {
+            ThreadUtil.FireAndForget(OnLogin, new object[] { status });
+        }
+
         private void LoginRequestCallback(IAsyncResult result)
         {
             try
@@ -300,6 +356,8 @@ namespace libsecondlife
                 output.Write(bytes, 0, bytes.Length);
                 output.Close();
 
+                UpdateLoginStatus(LoginStatus.ReadingResponse);
+
                 LoginRequest.BeginGetResponse(new AsyncCallback(LoginResponseCallback), null);
             }
             catch (WebException e)
@@ -307,11 +365,15 @@ namespace libsecondlife
                 LoginErrorKey = "libsl";
                 LoginMessage = "Error connecting to the login server: " + e.Message;
                 LoginEvent.Set();
+
+                UpdateLoginStatus(LoginStatus.Failed);
             }
         }
 
         private void LoginResponseCallback(IAsyncResult result)
         {
+            LoginStatus status = LoginStatus.None;
+
             try
             {
                 HttpWebResponse response = (HttpWebResponse)LoginRequest.EndGetResponse(result);
@@ -754,6 +816,8 @@ namespace libsecondlife
 
                     if (redirect)
                     {
+                        UpdateLoginStatus(LoginStatus.Redirecting);
+
                         // Handle indeterminate logins
                         CurrentLoginParams.URI = nextURL;
                         CurrentLoginParams.MethodName = nextMethod;
@@ -762,11 +826,15 @@ namespace libsecondlife
                     }
                     else if (LoginSuccess)
                     {
+                        UpdateLoginStatus(LoginStatus.ConnectingToSim);
+
                         // Connect to the sim given in the login reply
                         if (Connect(simIP, simPort, true, LoginSeedCapability) != null)
                         {
                             // Request the economy data right after login
                             SendPacket(new EconomyDataRequestPacket());
+
+                            status = LoginStatus.Success;
 
                             // Fire an event for connecting to the grid
                             if (OnConnected != null)
@@ -780,7 +848,13 @@ namespace libsecondlife
                             LoginSuccess = false;
                             LoginErrorKey = "libsl";
                             LoginMessage = "Unable to connect to the simulator";
+                            status = LoginStatus.Failed;
                         }
+                    }
+                    else
+                    {
+                        LoginSuccess = false;
+                        status = LoginStatus.Failed;
                     }
                 }
                 else
@@ -801,14 +875,17 @@ namespace libsecondlife
             {
                 LoginErrorKey = "libsl";
                 LoginMessage = "Error reading response: " + e.Message;
+                status = LoginStatus.Failed;
             }
             catch (XmlException e)
             {
                 LoginErrorKey = "libsl";
                 LoginMessage = "Error parsing reply XML: " + e.Message + Environment.NewLine + e.StackTrace;
+                status = LoginStatus.Failed;
             }
 
             LoginEvent.Set();
+            UpdateLoginStatus(status);
         }
 
         private static string ReadStringValue(XmlReader reader)

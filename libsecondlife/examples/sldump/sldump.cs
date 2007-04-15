@@ -34,6 +34,9 @@ namespace sldump
 {
 	class sldump
 	{
+        static bool LoginSuccess = false;
+        static AutoResetEvent LoginEvent = new AutoResetEvent(false);
+
 		// Default packet handler, registered for all packet types
 		public static void DefaultHandler(Packet packet, Simulator simulator)
 		{
@@ -82,6 +85,13 @@ namespace sldump
 			}
 
             client = new SecondLife();
+            // Turn off some unnecessary things
+            client.Settings.DEBUG = false;
+            client.Settings.MULTIPLE_SIMS = false;
+            // Throttle packets that we don't want all the way down
+            client.Throttle.Land = 0;
+            client.Throttle.Wind = 0;
+            client.Throttle.Cloud = 0;
 
 			if (args[0] == "--printmap")
 			{
@@ -102,23 +112,23 @@ namespace sldump
 				return;
 			}
 
-            // Throttle packets that we don't want all the way down
-            client.Throttle.Land = 0;
-            client.Throttle.Wind = 0;
-            client.Throttle.Cloud = 0;
-
 			// Setup the packet callback and disconnect event handler
             client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
             client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
 
-			if (!client.Network.Login(args[0], args[1], args[2], "sldump", "contact@libsecondlife.org"))
-			{
-				// Login failed
-				Console.WriteLine("Error logging in: " + client.Network.LoginMessage);
-				return;
-			}
+            client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+            client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "sldump",
+                "contact@libsecondlife.org"));
 
-			// Login was successful
+            LoginEvent.WaitOne();
+
+            if (!LoginSuccess)
+            {
+                Console.WriteLine("Login failed ({0}): {1}", client.Network.LoginErrorKey, 
+                    client.Network.LoginMessage);
+                return;
+            }
+
 			Console.WriteLine("Message of the day: " + client.Network.LoginMessage);
 
             int start = Environment.TickCount;
@@ -137,5 +147,21 @@ namespace sldump
 
             client.Network.Logout();
 		}
+
+        static void Network_OnLogin(NetworkManager.LoginStatus login)
+        {
+            Console.WriteLine("Login: " + login.ToString());
+
+            switch (login)
+            {
+                case NetworkManager.LoginStatus.Failed:
+                    LoginEvent.Set();
+                    break;
+                case NetworkManager.LoginStatus.Success:
+                    LoginSuccess = true;
+                    LoginEvent.Set();
+                    break;
+            }
+        }
 	}
 }
