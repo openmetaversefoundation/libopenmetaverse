@@ -138,6 +138,28 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Given an X/Y location in absolute (grid-relative) terms, a region
+        /// handle is returned along with the local X/Y location in that region
+        /// </summary>
+        /// <param name="globalX">The absolute X location, a number such as 
+        /// 255360.35</param>
+        /// <param name="globalY">The absolute Y location, a number such as
+        /// 255360.35</param>
+        /// <param name="localX">The sim-local X position of the global X
+        /// position, a value from 0.0 to 256.0</param>
+        /// <param name="localY">The sim-local Y position of the global Y
+        /// position, a value from 0.0 to 256.0</param>
+        /// <returns>A 64-bit region handle that can be used to teleport to</returns>
+        public static ulong GlobalPosToRegionHandle(float globalX, float globalY, out float localX, out float localY)
+        {
+            uint x = (uint)globalX / 256;
+            uint y = (uint)globalY / 256;
+            localX = globalX - ((float)x * 256.0f);
+            localY = globalY - ((float)y * 256.0f);
+            return UIntsToLong(x, y);
+        }
+
+        /// <summary>
         /// Unpacks two 32-bit unsigned integers from a 64-bit unsigned integer
         /// </summary>
         /// <param name="a">The 64-bit input integer</param>
