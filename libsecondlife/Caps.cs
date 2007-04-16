@@ -161,6 +161,7 @@ namespace libsecondlife
                 if (e.Message.Contains("404"))
                 {
                     // This capability no longer exists, disable it
+                    Client.Log("Disabling CAPS due to 404", Helpers.LogLevel.Error);
                     Disconnect(true);
                     return;
                 }
@@ -173,7 +174,6 @@ namespace libsecondlife
                 {
                     Client.Log("CAPS initialization error for " + Simulator.ToString() + ": " + e.Message +
                         ", retrying", Helpers.LogLevel.Warning);
-                    // FIXME: No
                     goto MakeRequest;
                 }
             }
@@ -204,7 +204,17 @@ namespace libsecondlife
             {
                 Client.Log("CAPS error initializing the connection, retrying. " + e.Message,
                     Helpers.LogLevel.Warning);
-                Run();
+                if (e.Message.Contains("404"))
+                {
+                    // This capability no longer exists, disable it
+                    Client.Log("Disabling CAPS due to 404", Helpers.LogLevel.Error);
+                    Disconnect(true);
+                }
+                else
+                {
+                    Run();
+                }
+                
                 return;
             }
 
@@ -244,10 +254,9 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                if (e.Message.IndexOf("404") > 0)
+                if (e.Message.Contains("404"))
                 {
                     Client.DebugLog("Got a 404 from the CAPS system, disabling");
-                    // This capability no longer exists, disable it
                     Disconnect(true);
                 }
                 else if (e.Message.IndexOf("502") < 0)
