@@ -39,7 +39,7 @@ namespace libsecondlife.Utilities
             bool typing = true;
 
             // Start typing
-            client.Self.Chat("", 0, MainAvatar.ChatType.StartTyping);
+            client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StartTyping);
             client.Self.AnimationStart(TypingAnimation);
 
             while (characters < message.Length)
@@ -47,7 +47,7 @@ namespace libsecondlife.Utilities
                 if (!typing)
                 {
                     // Start typing again
-                    client.Self.Chat("", 0, MainAvatar.ChatType.StartTyping);
+                    client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StartTyping);
                     client.Self.AnimationStart(TypingAnimation);
                     typing = true;
                 }
@@ -56,7 +56,7 @@ namespace libsecondlife.Utilities
                     // Randomly pause typing
                     if (rand.Next(10) >= 9)
                     {
-                        client.Self.Chat("", 0, MainAvatar.ChatType.StopTyping);
+                        client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StopTyping);
                         client.Self.AnimationStop(TypingAnimation);
                         typing = false;
                     }
@@ -71,20 +71,19 @@ namespace libsecondlife.Utilities
             client.Self.Chat(message, 0, type);
 
             // Stop typing
-            client.Self.Chat("", 0, MainAvatar.ChatType.StopTyping);
+            client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StopTyping);
             client.Self.AnimationStop(TypingAnimation);
         }
     }
 
-    public class Connection
+    public class ConnectionManager
     {
         private SecondLife Client;
-        private ulong SimHandle = 0;
+        private ulong SimHandle;
         private LLVector3 Position = LLVector3.Zero;
-//        private LLUUID Seat = LLUUID.Zero;
         private System.Timers.Timer CheckTimer;
 
-        public Connection(SecondLife client, int timerFrequency)
+        public ConnectionManager(SecondLife client, int timerFrequency)
         {
             Client = client;
 
@@ -92,7 +91,81 @@ namespace libsecondlife.Utilities
             CheckTimer.Elapsed += new System.Timers.ElapsedEventHandler(CheckTimer_Elapsed);
         }
 
-        void CheckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        public static bool PersistentLogin(SecondLife client, string firstName, string lastName, string password, 
+            string userAgent, string author)
+        {
+            int unknownLogins = 0;
+
+        Start:
+
+            if (client.Network.Login(firstName, lastName, password, userAgent, author))
+            {
+                client.Log("Logged in to " + client.Network.CurrentSim, Helpers.LogLevel.Info);
+                return true;
+            }
+            else
+            {
+                if (client.Network.LoginErrorKey == "god")
+                {
+                    client.Log("Grid is down, waiting 10 minutes", Helpers.LogLevel.Warning);
+                    LoginWait(10);
+                    goto Start;
+                }
+                else if (client.Network.LoginErrorKey == "key")
+                {
+                    client.Log("Bad username or password, giving up on login", Helpers.LogLevel.Error);
+                    return false;
+                }
+                else if (client.Network.LoginErrorKey == "presence")
+                {
+                    client.Log("Server is still logging us out, waiting 1 minute", Helpers.LogLevel.Warning);
+                    LoginWait(1);
+                    goto Start;
+                }
+                else if (client.Network.LoginErrorKey == "disabled")
+                {
+                    client.Log("This account has been banned! Giving up on login", Helpers.LogLevel.Error);
+                    return false;
+                }
+                else if (client.Network.LoginErrorKey == "timed out")
+                {
+                    client.Log("Login request timed out, waiting 1 minute", Helpers.LogLevel.Warning);
+                    LoginWait(1);
+                    goto Start;
+                }
+                else
+                {
+                    ++unknownLogins;
+
+                    if (unknownLogins < 5)
+                    {
+                        client.Log("Unknown login error, waiting 2 minutes: " + client.Network.LoginErrorKey + ": " +
+                            client.Network.LoginMessage, Helpers.LogLevel.Warning);
+                        LoginWait(2);
+                        goto Start;
+                    }
+                    else
+                    {
+                        client.Log("Too many unknown login error codes, giving up", Helpers.LogLevel.Error);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        public void StayInSim(ulong handle, LLVector3 desiredPosition)
+        {
+            SimHandle = handle;
+            Position = desiredPosition;
+            CheckTimer.Start();
+        }
+
+        private static void LoginWait(int minutes)
+        {
+            Thread.Sleep(1000 * 60 * minutes);
+        }
+
+        private void CheckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (SimHandle != 0)
             {
@@ -103,13 +176,6 @@ namespace libsecondlife.Utilities
                     Client.Self.Teleport(SimHandle, Position);
                 }
             }
-        }
-
-        public void StayInSim(ulong handle, LLVector3 desiredPosition)
-        {
-            SimHandle = handle;
-            Position = desiredPosition;
-            CheckTimer.Start();
         }
     }
 
