@@ -321,6 +321,8 @@ namespace libsecondlife
         /// <summary></summary>
         public Simulator Simulator;
 
+	public List<ParcelManager.ParcelAccessEntry> AccessList;
+
         private int localid;
 
 
@@ -529,7 +531,6 @@ namespace libsecondlife
         public ParcelManager(SecondLife client)
         {
             Client = client;
-
             // Setup the callbacks
             Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new NetworkManager.PacketCallback(ParcelInfoReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelProperties, new NetworkManager.PacketCallback(ParcelPropertiesHandler));
@@ -568,6 +569,8 @@ namespace libsecondlife
 
             request.ParcelData.LocalID = localID;
             request.ParcelData.SequenceID = sequenceID;
+
+            Client.Network.SendPacket(request, simulator);
         }
 
         /// <summary>

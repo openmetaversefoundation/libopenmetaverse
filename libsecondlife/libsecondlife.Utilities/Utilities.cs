@@ -548,6 +548,7 @@ namespace libsecondlife.Utilities
         {
             Client = client;
             Client.Parcels.OnParcelProperties += new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
+            Client.Parcels.OnAccessListReply += new ParcelManager.ParcelAccessListReplyCallback(Parcels_OnParcelAccessList);
 
             active_sims = new ArrayList();
         }
@@ -574,8 +575,13 @@ namespace libsecondlife.Utilities
                 }
             }
 
-            Client.Parcels.PropertiesRequest(simulator, 0.0f, 0.0f, 0.0f, 0.0f, -10000, false);
+            Client.Parcels.PropertiesRequest(simulator, 0.0f, 0.0f, 0.0f, 0.0f, 0, false);
         }
+
+        private void Parcels_OnParcelAccessList(Simulator simulator, int sequenceID, int localID, uint flags, 
+												List<ParcelManager.ParcelAccessEntry> accessEntries) {
+		    Parcels[simulator][localID].AccessList = accessEntries;
+		}
 
         private void Parcels_OnParcelProperties(Parcel parcel, ParcelManager.ParcelResult result, int sequenceID, 
             bool snapSelection)
@@ -599,47 +605,41 @@ namespace libsecondlife.Utilities
                 return;
             }
 
-            int x, y, index, subindex;
-            byte val;
+			Client.Parcels.AccessListRequest(parcel.Simulator, parcel.LocalID, ParcelManager.AccessList.Ban, 0);
+
+            int x, y, index, bit;
             int[,] markers = ParcelMarked[parcel.Simulator];
             Dictionary<int, Parcel> simParcels = Parcels[parcel.Simulator];
 
             // Add this parcel to the dictionary of LocalID -> Parcel mappings
             lock (simParcels)
-            {
                 if (!simParcels.ContainsKey(parcel.LocalID))
                     simParcels[parcel.LocalID] = parcel;
-            }
 
             // Mark this area as downloaded
-            for (x = 0; x < 64; x++)
-                for (y = 0; y < 64; y++)
+            for (y = 0; y < 64; y++)
+                for (x = 0; x < 64; x++)
                     if (markers[y, x] == 0)
                     {
-                        index = ((x * 64) + y);
-                        subindex = index % 8;
-                        index /= 8;
+                        index = (y * 64) + x;
+                        bit = index % 8;
+                        index >>= 3;
 
-                        val = parcel.Bitmap[index];
-
-                        markers[y, x] = ((val >> subindex) & 1) == 1 ? parcel.LocalID : 0;
+						if ((parcel.Bitmap[index] & (1 << bit)) != 0) 
+						  markers[y, x] = parcel.LocalID;
                     }
 
             // Request parcel information for the next missing area
-            for (x = 0; x < 64; x++)
-            {
-                for (y = 0; y < 64; y++)
-                {
-                    if (markers[x, y] == 0)
+            for (y = 0; y < 64; y++)
+                for (x = 0; x < 64; x++)
+                    if (markers[y, x] == 0)
                     {
                         Client.Parcels.PropertiesRequest(parcel.Simulator,
-                                           (y * 4.0f) + 4.0f, (x * 4.0f) + 4.0f,
-                                           (y * 4.0f), (x * 4.0f), -10000, false);
+														 (y+1) * 4.0f, (x+1) * 4.0f,
+														 y * 4.0f, x * 4.0f, 0, false);
 
                         return;
                     }
-                }
-            }
 
             // If we get here, there are no more zeroes in the markers map
             lock (active_sims)
