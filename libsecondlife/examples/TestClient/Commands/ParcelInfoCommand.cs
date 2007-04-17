@@ -39,8 +39,8 @@ namespace libsecondlife.TestClient
         {
             foreach (KeyValuePair<int, Parcel> parcel in Parcels)
             {
-                Console.WriteLine("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\"", parcel.Key, parcel.Value.Name,
-                    parcel.Value.Desc);
+                Console.WriteLine("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}", parcel.Key, 
+                    parcel.Value.Name, parcel.Value.Desc, parcel.Value.AccessList.Count);
             }
 
             ParcelCount = Parcels.Count;

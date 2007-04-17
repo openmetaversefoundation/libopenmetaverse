@@ -300,7 +300,7 @@ namespace libsecondlife
         /// DirFindFlags.LimitByArea flag must be set</param>
         /// <param name="queryStart">Each request is limited to 100 parcels
         /// being returned. To get the first 100 parcels of a request use 0,
-        /// from 100-199 use 1, 200-299 use 2, etc.</param>
+        /// from 100-199 use 100, 200-299 use 200, etc.</param>
         /// <returns>A unique identifier that can identify packets associated
         /// with this query from other queries</returns>
         /// <remarks>The OnDirLandReply event handler must be registered before

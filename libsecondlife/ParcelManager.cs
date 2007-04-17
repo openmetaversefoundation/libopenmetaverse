@@ -320,8 +320,9 @@ namespace libsecondlife
         public bool RegionPushOverride;
         /// <summary></summary>
         public Simulator Simulator;
-
-	public List<ParcelManager.ParcelAccessEntry> AccessList;
+        /// <summary>Access list of who is whitelisted or blacklisted on this
+        /// parcel</summary>
+        public List<ParcelManager.ParcelAccessEntry> AccessList;
 
         private int localid;
 
@@ -843,7 +844,7 @@ namespace libsecondlife
                 // Fire the callback
                 try
                 {
-                    OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult, 
+                    OnParcelProperties(parcel, (ParcelResult)properties.ParcelData.RequestResult,
                         properties.ParcelData.SequenceID, properties.ParcelData.SnapSelection);
                 }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
@@ -867,7 +868,7 @@ namespace libsecondlife
                     accessList.Add(pae);
                 }
 
-                try { OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
+                try { OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags, 
                     accessList); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }

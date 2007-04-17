@@ -341,7 +341,7 @@ namespace libsecondlife
 
         private void UpdateLoginStatus(LoginStatus status)
         {
-            ThreadUtil.FireAndForget(OnLogin, new object[] { status });
+            ThreadUtil.FireAndForget(OnLogin, status);
         }
 
         private void LoginRequestCallback(IAsyncResult result)

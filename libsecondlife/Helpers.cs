@@ -152,10 +152,10 @@ namespace libsecondlife
         /// <returns>A 64-bit region handle that can be used to teleport to</returns>
         public static ulong GlobalPosToRegionHandle(float globalX, float globalY, out float localX, out float localY)
         {
-            uint x = (uint)globalX / 256;
-            uint y = (uint)globalY / 256;
-            localX = globalX - ((float)x * 256.0f);
-            localY = globalY - ((float)y * 256.0f);
+            uint x = ((uint)globalX / 256) * 256;
+            uint y = ((uint)globalY / 256) * 256;
+            localX = globalX - (float)x;
+            localY = globalY - (float)y;
             return UIntsToLong(x, y);
         }
 
