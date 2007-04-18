@@ -71,6 +71,7 @@
     <Compile Include="Commands\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Commands\RegionInfoCommand.cs" />
     <Compile Include="Commands\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>

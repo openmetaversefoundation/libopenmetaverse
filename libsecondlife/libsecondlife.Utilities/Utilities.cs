@@ -7,6 +7,21 @@ using libsecondlife.Packets;
 
 namespace libsecondlife.Utilities
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum WaterType
+    {
+        /// <summary></summary>
+        Unknown,
+        /// <summary></summary>
+        Dry,
+        /// <summary></summary>
+        Waterfront,
+        /// <summary></summary>
+        Underwater
+    }
+
     public static class Realism
     {
         public readonly static LLUUID TypingAnimation = new LLUUID("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
@@ -91,14 +106,14 @@ namespace libsecondlife.Utilities
             CheckTimer.Elapsed += new System.Timers.ElapsedEventHandler(CheckTimer_Elapsed);
         }
 
-        public static bool PersistentLogin(SecondLife client, string firstName, string lastName, string password, 
-            string userAgent, string author)
+        public static bool PersistentLogin(SecondLife client, string firstName, string lastName, string password,
+            string userAgent, string start, string author)
         {
             int unknownLogins = 0;
 
         Start:
 
-            if (client.Network.Login(firstName, lastName, password, userAgent, author))
+            if (client.Network.Login(firstName, lastName, password, userAgent, start, author))
             {
                 client.Log("Logged in to " + client.Network.CurrentSim, Helpers.LogLevel.Info);
                 return true;
@@ -535,10 +550,8 @@ namespace libsecondlife.Utilities
         /// <summary>Dictionary of 64x64 arrays of parcels which have been successfully downloaded 
         /// for each simulator (and their LocalID's, 0 = Null)</summary>
         private Dictionary<Simulator, int[,]> ParcelMarked = new Dictionary<Simulator, int[,]>();
-        /// <summary></summary>
         private Dictionary<Simulator, Dictionary<int, Parcel>> Parcels = new Dictionary<Simulator, Dictionary<int, Parcel>>();
-
-        private ArrayList active_sims;
+        private List<Simulator> active_sims = new List<Simulator>();
 
         /// <summary>
         /// Default constructor
@@ -549,8 +562,6 @@ namespace libsecondlife.Utilities
             Client = client;
             Client.Parcels.OnParcelProperties += new ParcelManager.ParcelPropertiesCallback(Parcels_OnParcelProperties);
             Client.Parcels.OnAccessListReply += new ParcelManager.ParcelAccessListReplyCallback(Parcels_OnParcelAccessList);
-
-            active_sims = new ArrayList();
         }
 
         public void DownloadSimParcels(Simulator simulator)
@@ -578,12 +589,104 @@ namespace libsecondlife.Utilities
             Client.Parcels.PropertiesRequest(simulator, 0.0f, 0.0f, 0.0f, 0.0f, 0, false);
         }
 
-        private void Parcels_OnParcelAccessList(Simulator simulator, int sequenceID, int localID, uint flags, 
-												List<ParcelManager.ParcelAccessEntry> accessEntries) {
-		    Parcels[simulator][localID].AccessList = accessEntries;
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="localid"></param>
+        /// <returns></returns>
+        public WaterType GetWaterType(int[,] map, int localid)
+        {
+            if (!Client.Settings.STORE_LAND_PATCHES)
+            {
+                Client.Log("GetWaterType() will not work without Settings.STORE_LAND_PATCHES set to true",
+                    Helpers.LogLevel.Error);
+                return WaterType.Unknown;
+            }
 
-        private void Parcels_OnParcelProperties(Parcel parcel, ParcelManager.ParcelResult result, int sequenceID, 
+            bool underwater = false;
+            bool abovewater = false;
+
+            for (int y = 0; y < 64; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
+                    if (map[y, x] == localid)
+                    {
+                        for (int y1 = 0; y1 < 4; y1++)
+                        {
+                            for (int x1 = 0; x1 < 4; x1++)
+                            {
+                                float height;
+                                int tries = 0;
+
+                            CheckHeight:
+                                tries++;
+
+                                if (Client.Terrain.TerrainHeightAtPoint(Client.Network.CurrentSim.Handle,
+                                    x * 4 + x1, y * 4 + y1, out height))
+                                {
+                                    if (height < Client.Network.CurrentSim.WaterHeight)
+                                    {
+                                        underwater = true;
+                                    }
+                                    else
+                                    {
+                                        abovewater = true;
+                                    }
+                                }
+                                else if (tries > 4)
+                                {
+                                    Console.WriteLine("Too many tries on this terrain block, skipping");
+                                    continue;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Terrain height is null at {0},{1} retrying",
+                                        x * 4 + x1, y * 4 + y1);
+
+                                    // Terrain at this point hasn't been downloaded, move the camera to this spot
+                                    // and try again
+                                    Client.Self.Status.Camera.CameraCenter.X = (float)(x * 4 + x1);
+                                    Client.Self.Status.Camera.CameraCenter.Y = (float)(y * 4 + y1);
+                                    Client.Self.Status.Camera.CameraCenter.Z = Client.Self.Position.Z;
+                                    Client.Self.Status.SendUpdate(true);
+
+                                    Thread.Sleep(1000);
+                                    goto CheckHeight;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (underwater && abovewater)
+            {
+                return WaterType.Waterfront;
+            }
+            else if (abovewater)
+            {
+                return WaterType.Dry;
+            }
+            else if (underwater)
+            {
+                return WaterType.Underwater;
+            }
+            else
+            {
+                Client.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error);
+                return WaterType.Unknown;
+            }
+        }
+
+        private void Parcels_OnParcelAccessList(Simulator simulator, int sequenceID, int localID, uint flags,
+                                                List<ParcelManager.ParcelAccessEntry> accessEntries)
+        {
+            Parcels[simulator][localID].AccessList = accessEntries;
+        }
+
+        private void Parcels_OnParcelProperties(Parcel parcel, ParcelManager.ParcelResult result, int sequenceID,
             bool snapSelection)
         {
             // Check if this is for a simulator we're concerned with
@@ -592,7 +695,7 @@ namespace libsecondlife.Utilities
             // Warn about parcel property request errors and bail out
             if (result == ParcelManager.ParcelResult.NoData)
             {
-                Client.Log("ParcelDownloader received a NoData response, sequenceID " + sequenceID, 
+                Client.Log("ParcelDownloader received a NoData response, sequenceID " + sequenceID,
                     Helpers.LogLevel.Warning);
                 return;
             }
@@ -600,46 +703,55 @@ namespace libsecondlife.Utilities
             // Warn about unexpected data and bail out
             if (!ParcelMarked.ContainsKey(parcel.Simulator))
             {
-                Client.Log("ParcelDownloader received unexpected parcel data for " + parcel.Simulator, 
-                    Helpers.LogLevel.Info);
+                Client.Log("ParcelDownloader received unexpected parcel data for " + parcel.Simulator,
+                    Helpers.LogLevel.Warning);
                 return;
             }
 
-			Client.Parcels.AccessListRequest(parcel.Simulator, parcel.LocalID, ParcelManager.AccessList.Ban, 0);
-
             int x, y, index, bit;
             int[,] markers = ParcelMarked[parcel.Simulator];
-            Dictionary<int, Parcel> simParcels = Parcels[parcel.Simulator];
 
             // Add this parcel to the dictionary of LocalID -> Parcel mappings
-            lock (simParcels)
-                if (!simParcels.ContainsKey(parcel.LocalID))
-                    simParcels[parcel.LocalID] = parcel;
+            lock (Parcels[parcel.Simulator])
+                if (!Parcels[parcel.Simulator].ContainsKey(parcel.LocalID))
+                    Parcels[parcel.Simulator][parcel.LocalID] = parcel;
+
+            // Request the access list for this parcel
+            Client.Parcels.AccessListRequest(parcel.Simulator, parcel.LocalID, 
+                ParcelManager.AccessList.Both, 0);
 
             // Mark this area as downloaded
             for (y = 0; y < 64; y++)
+            {
                 for (x = 0; x < 64; x++)
+                {
                     if (markers[y, x] == 0)
                     {
                         index = (y * 64) + x;
                         bit = index % 8;
                         index >>= 3;
 
-						if ((parcel.Bitmap[index] & (1 << bit)) != 0) 
-						  markers[y, x] = parcel.LocalID;
+                        if ((parcel.Bitmap[index] & (1 << bit)) != 0)
+                            markers[y, x] = parcel.LocalID;
                     }
+                }
+            }
 
             // Request parcel information for the next missing area
             for (y = 0; y < 64; y++)
+            {
                 for (x = 0; x < 64; x++)
+                {
                     if (markers[y, x] == 0)
                     {
                         Client.Parcels.PropertiesRequest(parcel.Simulator,
-														 (y+1) * 4.0f, (x+1) * 4.0f,
-														 y * 4.0f, x * 4.0f, 0, false);
+                                                         (y + 1) * 4.0f, (x + 1) * 4.0f,
+                                                         y * 4.0f, x * 4.0f, 0, false);
 
                         return;
                     }
+                }
+            }
 
             // If we get here, there are no more zeroes in the markers map
             lock (active_sims)
@@ -649,11 +761,10 @@ namespace libsecondlife.Utilities
                 if (OnParcelsDownloaded != null)
                 {
                     // This map is complete, fire callback
-                    try { OnParcelsDownloaded(parcel.Simulator, simParcels, markers); }
+                    try { OnParcelsDownloaded(parcel.Simulator, Parcels[parcel.Simulator], markers); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
         }
     }
 }
-

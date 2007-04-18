@@ -8,7 +8,7 @@ namespace libsecondlife.TestClient
 {
     public class ParcelInfoCommand : Command
     {
-        private ParcelDownloader Parcels;
+        private ParcelDownloader ParcelDownloader;
         private ManualResetEvent ParcelsDownloaded = new ManualResetEvent(false);
         private int ParcelCount = 0;
 
@@ -17,14 +17,14 @@ namespace libsecondlife.TestClient
 			Name = "parcelinfo";
 			Description = "Prints out info about all the parcels in this simulator";
 
-            Parcels = new ParcelDownloader(testClient);
-            Parcels.OnParcelsDownloaded += new ParcelDownloader.ParcelsDownloadedCallback(Parcels_OnParcelsDownloaded);
+            ParcelDownloader = new ParcelDownloader(testClient);
+            ParcelDownloader.OnParcelsDownloaded += new ParcelDownloader.ParcelsDownloadedCallback(Parcels_OnParcelsDownloaded);
             testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            Parcels.DownloadSimParcels(Client.Network.CurrentSim);
+            ParcelDownloader.DownloadSimParcels(Client.Network.CurrentSim);
 
             ParcelsDownloaded.Reset();
             ParcelsDownloaded.WaitOne(20000, false);
@@ -39,8 +39,10 @@ namespace libsecondlife.TestClient
         {
             foreach (KeyValuePair<int, Parcel> parcel in Parcels)
             {
-                Console.WriteLine("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}", parcel.Key, 
-                    parcel.Value.Name, parcel.Value.Desc, parcel.Value.AccessList.Count);
+                WaterType type = ParcelDownloader.GetWaterType(map, parcel.Value.LocalID);
+
+                Console.WriteLine("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}, Location: {4}", 
+                    parcel.Key, parcel.Value.Name, parcel.Value.Desc, parcel.Value.AccessList.Count, type.ToString());
             }
 
             ParcelCount = Parcels.Count;

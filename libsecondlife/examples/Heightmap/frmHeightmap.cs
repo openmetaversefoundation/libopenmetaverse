@@ -15,13 +15,10 @@ namespace Heightmap
     {
         private SecondLife Client = new SecondLife();
         private PictureBox[,] Boxes = new PictureBox[16, 16];
-        private System.Timers.Timer UpdateTimer = new System.Timers.Timer(500);
+        private System.Timers.Timer UpdateTimer = new System.Timers.Timer(1000);
         private string FirstName, LastName, Password;
 
-        LLVector3 center = new LLVector3(128, 128, 40);
-        LLVector3 up = new LLVector3(0, 0, 0.9999f);
-        LLVector3 forward = new LLVector3(0, 0.9999f, 0);
-        LLVector3 left = new LLVector3(0.9999f, 0, 0);
+        double heading = -Math.PI;
 
         public frmHeightmap(string firstName, string lastName, string password)
         {
@@ -107,16 +104,11 @@ namespace Heightmap
 
         void UpdateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            forward.Y += 0.2f;
-            left.X += 0.2f;
-
-            if (forward.Y >= 1.0f) forward.Y = 0.0f;
-            if (left.X >= 1.0f) left.X = 0.0f;
-
             // Spin our camera in circles at the center of the sim to load all the terrain
-            Client.Self.UpdateCamera(MainAvatar.ControlFlags.NONE, center, forward, left, up,
-                LLQuaternion.Identity, LLQuaternion.Identity, 384.0f, MainAvatar.AgentFlags.None, 
-                MainAvatar.AgentState.None, false);
+            heading += 0.5d;
+            if (heading > Math.PI) heading = -Math.PI;
+
+            Client.Self.Status.UpdateFromHeading(heading, false);
         }
 
         void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)

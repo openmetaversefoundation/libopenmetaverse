@@ -340,6 +340,27 @@ namespace libsecondlife
             }
 
             /// <summary>
+            /// Send an AgentUpdate with the camera set at the current agent
+            /// position and pointing towards the heading specified
+            /// </summary>
+            /// <param name="heading">Camera rotation in radians</param>
+            /// <param name="reliable">Whether to send the AgentUpdate reliable
+            /// or not</param>
+            public void UpdateFromHeading(double heading, bool reliable)
+            {
+                Client.Self.Status.Camera.CameraCenter = Client.Self.Position;
+                Client.Self.Status.Camera.CameraAtAxis.X = (float)Math.Cos(heading);
+                Client.Self.Status.Camera.CameraAtAxis.Y = (float)Math.Sin(heading);
+                Client.Self.Status.Camera.CameraLeftAxis.X = (float)-Math.Sin(heading);
+                Client.Self.Status.Camera.CameraLeftAxis.Y = (float)Math.Cos(heading);
+                Client.Self.Status.Camera.BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
+                Client.Self.Status.Camera.BodyRotation.W = (float)Math.Cos(heading / 2.0d);
+                Client.Self.Status.Camera.HeadRotation = Client.Self.Status.Camera.BodyRotation;
+
+                Client.Self.Status.SendUpdate(reliable);
+            }
+
+            /// <summary>
             /// Send new AgentUpdate packet to update our current camera 
             /// position and rotation
             /// </summary>

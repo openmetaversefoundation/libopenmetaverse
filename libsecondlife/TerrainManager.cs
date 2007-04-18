@@ -135,7 +135,7 @@ namespace libsecondlife
         /// <returns>True if the lookup was successful, otherwise false</returns>
         public bool TerrainHeightAtPoint(ulong regionHandle, int x, int y, out float height)
         {
-            if (x > 0 && x < 256 && y > 0 && y < 256)
+            if (x >= 0 && x < 256 && y >= 0 && y < 256)
             {
                 lock (SimPatches)
                 {

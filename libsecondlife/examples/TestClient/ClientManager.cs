@@ -84,10 +84,16 @@ namespace libsecondlife.TestClient
 
 			TestClient client = new TestClient(this);
 
+            // Optimize the throttle
+            client.Throttle.Wind = 0;
+            client.Throttle.Cloud = 0;
+            client.Throttle.Land = 1000000;
+            client.Throttle.Task = 1000000;
+
 			client.SimPrims = SimPrims;
 			client.Master = account.Master;
 
-			if (this.startpos.sim != null)
+			if (!String.IsNullOrEmpty(this.startpos.sim))
             {
 				if (this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0)
                 {
