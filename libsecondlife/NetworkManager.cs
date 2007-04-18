@@ -215,6 +215,10 @@ namespace libsecondlife
             // The proper timeout for this will get set again at Login
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
+
+            // Catch exceptions from threads in the managed threadpool
+            Toub.Threading.ManagedThreadPool.UnhandledException += 
+                new UnhandledExceptionEventHandler(ManagedThreadPool_UnhandledException);
         }
 
         /// <summary>
@@ -743,6 +747,12 @@ namespace libsecondlife
             }
 
             return null;
+        }
+
+        private void ManagedThreadPool_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            // An exception occurred in a packet callback, log it
+            Client.Log(e.ToString(), Helpers.LogLevel.Error);
         }
 
         #region Timers
