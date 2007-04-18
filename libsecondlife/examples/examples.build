@@ -63,13 +63,13 @@
 
   <target name="build" depends="init" description="Build all examples">
 	<foreach item="Folder" in="." property="example_path">
-	  <call target="example" unless="${string::contains(example_path,'svn') or string::contains(example_path,'IA_') or string::contains(example_path,'Heightmap')}"/>
+	  <call target="example" unless="${string::ends-with(example_path,'svn') or string::contains(example_path,'IA_') or string::contains(example_path,'Heightmap')}"/>
     </foreach>
   </target>
 
   <target name="clean" description="Clean all examples">
     <foreach item="Folder" in="." property="example_path">
-	<call target="clean-examples" unless="${string::contains(example_path,'svn')}"/>
+	<call target="clean-examples" unless="${string::ends-with(example_path,'svn')}"/>
     </foreach>
   </target>
 
