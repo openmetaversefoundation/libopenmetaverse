@@ -216,6 +216,9 @@ namespace libsecondlife
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
 
+            // Don't force Expect-100: Continue headers on HTTP POST calls
+            ServicePointManager.Expect100Continue = false;
+
             // Catch exceptions from threads in the managed threadpool
             Toub.Threading.ManagedThreadPool.UnhandledException += 
                 new UnhandledExceptionEventHandler(ManagedThreadPool_UnhandledException);

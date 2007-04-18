@@ -303,7 +303,8 @@ namespace libsecondlife
             byte[] bytes = Encoding.UTF8.GetBytes(output.ToString());
 
             LoginRequest = (HttpWebRequest)HttpWebRequest.Create(loginParams.URI);
-            LoginRequest.Timeout = loginParams.Timeout;
+            LoginRequest.Timeout = loginParams.Timeout; // TODO: This won't do anything with async calls
+            LoginRequest.KeepAlive = false;
             LoginRequest.Method = "POST";
             LoginRequest.ContentType = "text/xml";
             LoginRequest.ContentLength = bytes.Length;
