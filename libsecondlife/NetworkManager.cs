@@ -632,15 +632,18 @@ namespace libsecondlife
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
-                // Disable the current CAPS system
+                // Disable any current running CAPS system
                 if (CurrentCaps != null) CurrentCaps.Disconnect(false);
                 CurrentCaps = null;
 
-                // Connect to the new CAPS system
-                if (!String.IsNullOrEmpty(seedcaps))
-                    CurrentCaps = new Caps(Client, simulator, seedcaps);
-                else
-                    Client.Log("Setting the current sim without a capabilities server!", Helpers.LogLevel.Error);
+                if (Client.Settings.ENABLE_CAPS)
+                {
+                    // Connect to the new CAPS system
+                    if (!String.IsNullOrEmpty(seedcaps))
+                        CurrentCaps = new Caps(Client, simulator, seedcaps);
+                    else
+                        Client.Log("Setting the current sim without a capabilities server!", Helpers.LogLevel.Error);
+                }
 
                 // If the current simulator changed fire the callback
                 if (OnCurrentSimChanged != null && simulator != oldSim)

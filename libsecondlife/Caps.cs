@@ -62,17 +62,20 @@ namespace libsecondlife
 
         /// <summary></summary>
         public string SeedCapsURI { get { return Seedcaps; } }
-        public bool IsEventQueueRunning { get { return EventQueueRunning; } }
+        public bool IsEventQueueRunning { get { lock (SyncEventQueueRunning) return EventQueueRunning; } }
 
         internal string Seedcaps;
         internal StringDictionary Capabilities = new StringDictionary();
 
         private bool Dead = false;
         private bool EventQueueRunning = false;
+        private object SyncEventQueueRunning = new object();
         private Thread CapsThread;
         private string EventQueueCap = String.Empty;
         private HttpWebRequest CapsRequest = null;
         private HttpWebRequest EventQueueRequest = null;
+        private AsyncCallback EventQueueAsyncCallback;
+        private AutoResetEvent KillEvent = new AutoResetEvent(false);
 
         /// <summary>
         /// Default constructor
@@ -85,6 +88,8 @@ namespace libsecondlife
             Client = client;
             Simulator = simulator;
             Seedcaps = seedcaps;
+
+            EventQueueAsyncCallback = new AsyncCallback(EventQueueHandler);
 
             CapsThread = new Thread(new ThreadStart(Run));
             CapsThread.Start();
@@ -112,10 +117,12 @@ namespace libsecondlife
             Client.DebugLog("Disconnecting CAPS for " + Simulator.ToString());
 
             Dead = true;
-            EventQueueRunning = false;
+            lock (SyncEventQueueRunning) EventQueueRunning = false;
 
             if (immediate && EventQueueRequest != null)
                 EventQueueRequest.Abort();
+
+            KillEvent.Set();
         }
 
         private void Run()
@@ -157,32 +164,15 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                // Thank you .NET creators for giving us such a piss-poor way of checking for HTTP errors
-                if (e.Message.Contains("404"))
-                {
-                    // This capability no longer exists, disable it
-                    Client.Log("Disabling CAPS due to 404", Helpers.LogLevel.Error);
-                    Disconnect(true);
-                    return;
-                }
-                else if (Dead)
-                {
-                    // Someone else shut down CAPS while we were trying to connect
-                    return;
-                }
-                else
-                {
-                    Client.Log("CAPS initialization error for " + Simulator.ToString() + ": " + e.Message +
-                        ", retrying", Helpers.LogLevel.Warning);
-                    goto MakeRequest;
-                }
+                HandleException(e, true);
+                return;
             }
+
+            KillEvent.WaitOne();
         }
 
         private void CapsRequestCallback(IAsyncResult result)
         {
-            byte[] buffer = null;
-
             try
             {
                 Client.DebugLog("Writing to initial CAPS request stream");
@@ -195,26 +185,57 @@ namespace libsecondlife
 
                 Client.DebugLog("Requesting initial CAPS response stream");
 
-                WebResponse response = CapsRequest.GetResponse();
-                BinaryReader reader = new BinaryReader(response.GetResponseStream());
-                buffer = reader.ReadBytes((int)response.ContentLength);
-                response.Close();
+                CapsRequest.BeginGetResponse(new AsyncCallback(CapsResponseCallback), null);
             }
             catch (WebException e)
             {
+                HandleException(e, true);
+                return;
+            }
+        }
+
+        private void HandleException(WebException e, bool restartConnection)
+        {
+            if (Dead)
+            {
+                return;
+            }
+            else if (e.Message.Contains("404"))
+            {
+                // This capability no longer exists, disable it
+                Client.Log("Disabling CAPS due to 404", Helpers.LogLevel.Error);
+                Disconnect(true);
+            }
+            else if (restartConnection)
+            {
                 Client.Log("CAPS error initializing the connection, retrying. " + e.Message,
                     Helpers.LogLevel.Warning);
-                if (e.Message.Contains("404"))
-                {
-                    // This capability no longer exists, disable it
-                    Client.Log("Disabling CAPS due to 404", Helpers.LogLevel.Error);
-                    Disconnect(true);
-                }
-                else
-                {
-                    Run();
-                }
-                
+                Run();
+            }
+            else
+            {
+                Client.DebugLog("CAPS response exception for " + Simulator.ToString() + ": " + e.Message);
+            }
+        }
+
+        private void CapsResponseCallback(IAsyncResult result)
+        {
+            byte[] buffer = null;
+
+            try
+            {
+                Client.DebugLog("Receiving initial CAPS response stream");
+
+                WebResponse response = CapsRequest.EndGetResponse(result);
+                BinaryReader reader = new BinaryReader(response.GetResponseStream());
+                buffer = reader.ReadBytes((int)response.ContentLength);
+                response.Close();
+
+                Client.DebugLog("Received initial CAPS response stream");
+            }
+            catch (WebException e)
+            {
+                HandleException(e, true);
                 return;
             }
 
@@ -254,15 +275,7 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                if (e.Message.Contains("404"))
-                {
-                    Client.DebugLog("Got a 404 from the CAPS system, disabling");
-                    Disconnect(true);
-                }
-                else if (e.Message.IndexOf("502") < 0)
-                {
-                    Client.DebugLog("EventQueue response exception for " + Simulator.ToString() + ": " + e.Message);
-                }
+                HandleException(e, false);
             }
 
             if (buffer != null)
@@ -300,7 +313,7 @@ namespace libsecondlife
             byte[] data = LLSD.LLSDSerialize(req);
 
             // Mark that the event queue is alive
-            if (!Dead) EventQueueRunning = true;
+            if (!Dead) lock (SyncEventQueueRunning) EventQueueRunning = true;
 
             try
             {
@@ -317,7 +330,7 @@ namespace libsecondlife
                 {
                     // Wait for an event to fire (or the connection to time out)
                     // and mark the queue as running
-                    EventQueueRequest.BeginGetResponse(new AsyncCallback(EventQueueHandler), EventQueueRequest);
+                    EventQueueRequest.BeginGetResponse(EventQueueAsyncCallback, EventQueueRequest);
                 }
                 else
                 {

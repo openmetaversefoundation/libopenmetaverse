@@ -40,9 +40,13 @@ namespace libsecondlife.TestClient
             foreach (KeyValuePair<int, Parcel> parcel in Parcels)
             {
                 WaterType type = ParcelDownloader.GetWaterType(map, parcel.Value.LocalID);
+                float delta = ParcelDownloader.GetHeightRange(map, parcel.Value.LocalID);
+                int deviation = ParcelDownloader.GetRectangularDeviation(parcel.Value.AABBMin, parcel.Value.AABBMax, 
+                    parcel.Value.Area);
 
-                Console.WriteLine("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}, Location: {4}", 
-                    parcel.Key, parcel.Value.Name, parcel.Value.Desc, parcel.Value.AccessList.Count, type.ToString());
+                Console.WriteLine("Parcels[{0}]: Name: \"{1}\", Description: \"{2}\" ACL Count: {3}, " +
+                    "Location: {4}, Height Range: {5}, Shape Deviation: {6}", parcel.Key, parcel.Value.Name, 
+                    parcel.Value.Desc, parcel.Value.AccessList.Count, type.ToString(), delta, deviation);
             }
 
             ParcelCount = Parcels.Count;

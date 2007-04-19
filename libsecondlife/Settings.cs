@@ -132,6 +132,9 @@ namespace libsecondlife
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>
         public bool ALWAYS_REQUEST_OBJECTS = false;
+        /// <summary>Whether to establish connections to HTTP capabilities
+        /// servers for simulators</summary>
+        public bool ENABLE_CAPS = true;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

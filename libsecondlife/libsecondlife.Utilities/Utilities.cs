@@ -595,6 +595,78 @@ namespace libsecondlife.Utilities
         /// <param name="map"></param>
         /// <param name="localid"></param>
         /// <returns></returns>
+        public float GetHeightRange(int[,] map, int localid)
+        {
+            float min = Single.MaxValue;
+            float max = 0.0f;
+
+            for (int y = 0; y < 64; y++)
+            {
+                for (int x = 0; x < 64; x++)
+                {
+                    if (map[y, x] == localid)
+                    {
+                        for (int y1 = 0; y1 < 4; y1++)
+                        {
+                            for (int x1 = 0; x1 < 4; x1++)
+                            {
+                                float height;
+                                int tries = 0;
+
+                            CheckHeight:
+
+                                if (Client.Terrain.TerrainHeightAtPoint(Client.Network.CurrentSim.Handle,
+                                    x * 4 + x1, y * 4 + y1, out height))
+                                {
+                                    if (height < min)
+                                        min = height;
+                                    if (height > max)
+                                        max = height;
+                                }
+                                else if (tries > 4)
+                                {
+                                    Client.Log("Too many tries on this terrain block, skipping",
+                                        Helpers.LogLevel.Warning);
+                                    continue;
+                                }
+                                else
+                                {
+                                    Client.Log(String.Format("Terrain height is null at {0},{1} retrying",
+                                        x * 4 + x1, y * 4 + y1), Helpers.LogLevel.Info);
+
+                                    // Terrain at this point hasn't been downloaded, move the camera to this spot
+                                    // and try again
+                                    Client.Self.Status.Camera.CameraCenter.X = (float)(x * 4 + x1);
+                                    Client.Self.Status.Camera.CameraCenter.Y = (float)(y * 4 + y1);
+                                    Client.Self.Status.Camera.CameraCenter.Z = Client.Self.Position.Z;
+                                    Client.Self.Status.SendUpdate(true);
+
+                                    Thread.Sleep(1000);
+                                    goto CheckHeight;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (min != Single.MaxValue)
+            {
+                return max - min;
+            }
+            else
+            {
+                Client.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error);
+                return Single.NaN;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="localid"></param>
+        /// <returns></returns>
         public WaterType GetWaterType(int[,] map, int localid)
         {
             if (!Client.Settings.STORE_LAND_PATCHES)
@@ -637,13 +709,14 @@ namespace libsecondlife.Utilities
                                 }
                                 else if (tries > 4)
                                 {
-                                    Console.WriteLine("Too many tries on this terrain block, skipping");
+                                    Client.Log("Too many tries on this terrain block, skipping", 
+                                        Helpers.LogLevel.Warning);
                                     continue;
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Terrain height is null at {0},{1} retrying",
-                                        x * 4 + x1, y * 4 + y1);
+                                    Client.Log(String.Format("Terrain height is null at {0},{1} retrying",
+                                        x * 4 + x1, y * 4 + y1), Helpers.LogLevel.Info);
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
@@ -678,6 +751,14 @@ namespace libsecondlife.Utilities
                 Client.Log("Error decoding terrain for parcel " + localid, Helpers.LogLevel.Error);
                 return WaterType.Unknown;
             }
+        }
+
+        public int GetRectangularDeviation(LLVector3 aabbmin, LLVector3 aabbmax, int area)
+        {
+            int xlength = (int)(aabbmax.X - aabbmin.X);
+            int ylength = (int)(aabbmax.Y - aabbmin.Y);
+            int aabbarea = xlength * ylength;
+            return (aabbarea - area) / 16;
         }
 
         private void Parcels_OnParcelAccessList(Simulator simulator, int sequenceID, int localID, uint flags,
