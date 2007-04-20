@@ -942,7 +942,8 @@ namespace libsecondlife
         public static string MD5(string password)
         {
             StringBuilder digest = new StringBuilder();
-            byte[] hash = MD5Builder.ComputeHash(ASCIIEncoding.Default.GetBytes(password));
+            byte[] hash;
+            lock(MD5Builder) hash = MD5Builder.ComputeHash(ASCIIEncoding.Default.GetBytes(password));
 
             // Convert the hash to a hex string
             foreach (byte b in hash)
