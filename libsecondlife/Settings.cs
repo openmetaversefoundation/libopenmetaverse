@@ -126,8 +126,10 @@ namespace libsecondlife
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
         public int MAP_REQUEST_TIMEOUT = 5 * 1000;
-        /// <summary>Used to flag if Object updates should always be decoded, 
-        /// even if no object event listeners/callbacks are registered</summary>
+        /// <summary>If true, all object update packets will be decoded in to
+        /// native objects. If false, only updates for our own agent will be
+        /// decoded. Registering an event handler will force objects for that
+        /// type to always be decoded</summary>
         public bool ALWAYS_DECODE_OBJECTS = false;
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>

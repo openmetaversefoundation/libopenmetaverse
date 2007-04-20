@@ -194,26 +194,6 @@ namespace libsecondlife.Utilities
         }
     }
 
-    ///// <summary>
-    ///// Keeps an up to date inventory of the currently seen objects in each
-    ///// simulator
-    ///// </summary>
-    //public class ObjectTracker
-    //{
-    //    private SecondLife Client;
-    //    private Dictionary<ulong, Dictionary<uint, PrimObject>> SimPrims = new Dictionary<ulong, Dictionary<uint, PrimObject>>();
-
-    //    /// <summary>
-    //    /// Default constructor
-    //    /// </summary>
-    //    /// <param name="client">A reference to the SecondLife client to track
-    //    /// objects for</param>
-    //    public ObjectTracker(SecondLife client)
-    //    {
-    //        Client = client;
-    //    }
-    //}
-
     /// <summary>
     /// Maintains a cache of avatars and does blocking lookups for avatar data
     /// </summary>
@@ -237,8 +217,8 @@ namespace libsecondlife.Utilities
             Client.Avatars.OnAvatarStatistics += new AvatarManager.AvatarStatisticsCallback(Avatars_OnAvatarStatistics);
             Client.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
 
-            Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
+            //Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
+            //Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
         }
 
         /// <summary>
@@ -294,60 +274,6 @@ namespace libsecondlife.Utilities
             // Return
             return LocalAvatarNameLookup(id);
         }
-
-        //public void BeginGetAvatarName(LLUUID id)
-        //{
-        //    // TODO: BeginGetAvatarNames is pretty bulky, rewrite a simple version here
-
-        //    List<LLUUID> ids = new List<LLUUID>();
-        //    ids.Add(id);
-        //    BeginGetAvatarNames(ids);
-        //}
-
-        //public void BeginGetAvatarNames(List<LLUUID> ids)
-        //{
-        //    Dictionary<LLUUID, string> havenames = new Dictionary<LLUUID, string>();
-        //    List<LLUUID> neednames = new List<LLUUID>();
-
-        //    // Fire callbacks for the ones we already have cached
-        //    foreach (LLUUID id in ids)
-        //    {
-        //        if (Avatars.ContainsKey(id))
-        //        {
-        //            havenames[id] = Avatars[id].Name;
-        //            //Short circuit the lookup process
-        //            if (ManualResetEvents.ContainsKey(id))
-        //            {
-        //                ManualResetEvents[id].Set();
-        //                return;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            neednames.Add(id);
-        //        }
-        //    }
-
-        //    if (havenames.Count > 0 && OnAgentNames != null)
-        //    {
-        //        OnAgentNames(havenames);
-        //    }
-
-        //    if (neednames.Count > 0)
-        //    {
-        //        UUIDNameRequestPacket request = new UUIDNameRequestPacket();
-
-        //        request.UUIDNameBlock = new UUIDNameRequestPacket.UUIDNameBlockBlock[neednames.Count];
-
-        //        for (int i = 0; i < neednames.Count; i++)
-        //        {
-        //            request.UUIDNameBlock[i] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
-        //            request.UUIDNameBlock[i].ID = neednames[i];
-        //        }
-
-        //        Client.Network.SendPacket(request);
-        //    }
-        //}
 
         public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.AvatarProperties properties,
             out Avatar.Statistics statistics, out List<LLUUID> groups)
@@ -433,16 +359,6 @@ namespace libsecondlife.Utilities
                 else
                     return String.Empty;
             }
-        }
-
-        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
-        {
-            // TODO:
-        }
-
-        void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
-        {
-            // TODO:
         }
 
         private void Avatars_OnAvatarNames(Dictionary<LLUUID, string> names)

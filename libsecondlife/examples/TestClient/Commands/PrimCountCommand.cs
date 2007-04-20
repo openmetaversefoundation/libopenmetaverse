@@ -10,7 +10,7 @@ namespace libsecondlife.TestClient
     {
         public PrimCountCommand(TestClient testClient)
 		{
-			Name = "primCount";
+			Name = "primcount";
 			Description = "Shows the number of prims that have been received.";
 		}
 

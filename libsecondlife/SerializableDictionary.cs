@@ -44,6 +44,11 @@ namespace libsecondlife
         {
         }
 
+        public SerializableDictionary(int capacity)
+            : base(capacity)
+        {
+        }
+
         public SerializableDictionary(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

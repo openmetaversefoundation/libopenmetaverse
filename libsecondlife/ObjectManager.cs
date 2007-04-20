@@ -150,6 +150,8 @@ namespace libsecondlife
         public enum PCode : byte
         {
             /// <summary></summary>
+            None = 0,
+            /// <summary></summary>
             Prim = 9,
             /// <summary></summary>
             Avatar = 47,
@@ -1121,326 +1123,365 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void UpdateHandler(Packet packet, Simulator simulator)
         {
-            if (Client.Settings.ALWAYS_DECODE_OBJECTS || OnNewPrim != null || OnNewAttachment != null || 
-                OnNewAvatar != null || OnNewFoliage != null)
+            ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
+			UpdateDilation(simulator, update.RegionData.TimeDilation);
+
+            for (int b = 0; b < update.ObjectData.Length; b++)
             {
-                ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
-				UpdateDilation(simulator, update.RegionData.TimeDilation);
+                ObjectUpdatePacket.ObjectDataBlock block = update.ObjectData[b];
 
-                foreach (ObjectUpdatePacket.ObjectDataBlock block in update.ObjectData)
+                LLVector4 collisionPlane = LLVector4.Zero;
+                LLVector3 position;
+                LLVector3 velocity;
+                LLVector3 acceleration;
+                LLQuaternion rotation;
+                LLVector3 angularVelocity;
+                NameValue[] nameValues;
+                bool attachment = false;
+                PCode pcode = (PCode)block.PCode;
+
+                #region Relevance check
+
+                // Check if we are interested in this object
+                if (!Client.Settings.ALWAYS_DECODE_OBJECTS)
                 {
-                    LLVector4 collisionPlane = LLVector4.Zero;
-                    LLVector3 position;
-                    LLVector3 velocity;
-                    LLVector3 acceleration;
-                    LLQuaternion rotation;
-                    LLVector3 angularVelocity;
-                    SerializableDictionary<string, NameValue> nameValues = new SerializableDictionary<string, NameValue>();
-
-                    // Parse the name values
-                    string nameValue = Helpers.FieldToUTF8String(block.NameValue);
-                    if (nameValue.Length > 0)
-                    {
-                        string[] lines = nameValue.Split(new char[] { '\n' });
-                        for (int i = 0; i < lines.Length; i++)
-                        {
-                            if (lines[i].Length > 0)
-                            {
-                                NameValue nv = new NameValue(lines[i]);
-                                if (!nameValues.ContainsKey(nv.Name))
-                                    nameValues.Add(nv.Name, nv);
-                            }
-                        }
-                    }
-
-                    #region Decode Object (primitive) parameters
-                    LLObject.ObjectData data = new LLObject.ObjectData();
-                    data.State = block.State;
-                    data.Material = block.Material;
-                    data.PathCurve = block.PathCurve;
-                    data.ProfileCurve = block.ProfileCurve;
-                    data.PathBegin = LLObject.PathBeginFloat(block.PathBegin);
-                    data.PathEnd = LLObject.PathEndFloat(block.PathEnd);
-                    data.PathScaleX = LLObject.PathScaleFloat(block.PathScaleX);
-                    data.PathScaleY = LLObject.PathScaleFloat(block.PathScaleY);
-                    data.PathShearX = LLObject.PathShearFloat(block.PathShearX);
-                    data.PathShearY = LLObject.PathShearFloat(block.PathShearY);
-                    data.PathTwist = block.PathTwist;
-                    data.PathTwistBegin = block.PathTwistBegin;
-                    data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
-                    data.PathTaperX = LLObject.PathTaperFloat(block.PathTaperX);
-                    data.PathTaperY = LLObject.PathTaperFloat(block.PathTaperY);
-                    data.PathRevolutions = LLObject.PathRevolutionsFloat(block.PathRevolutions);
-                    data.PathSkew = LLObject.PathSkewFloat(block.PathSkew);
-                    data.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
-                    data.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
-                    data.ProfileHollow = block.ProfileHollow;
-                    #endregion
-
-                    #region Decode Additional packed parameters in ObjectData
-                    int pos = 0;
-                    switch (block.ObjectData.Length)
-                    {
-                        case 76:
-                            // Collision normal for avatar
-                            collisionPlane = new LLVector4(block.ObjectData, pos);
-                            pos += 16;
-
-                            goto case 60;
-                        case 60:
-                            // Position
-                            position = new LLVector3(block.ObjectData, pos);
-                            pos += 12;
-                            // Velocity
-                            velocity = new LLVector3(block.ObjectData, pos);
-                            pos += 12;
-                            // Acceleration
-                            acceleration = new LLVector3(block.ObjectData, pos);
-                            pos += 12;
-                            // Rotation (theta)
-                            rotation = new LLQuaternion(block.ObjectData, pos, true);
-                            pos += 12;
-                            // Angular velocity (omega)
-                            angularVelocity = new LLVector3(block.ObjectData, pos);
-                            pos += 12;
-
-                            break;
-                        case 48:
-                            // Collision normal for avatar
-                            collisionPlane = new LLVector4(block.ObjectData, pos);
-                            pos += 16;
-
-                            goto case 32;
-                        case 32:
-                            // The data is an array of unsigned shorts
-
-                            // Position
-                            position = new LLVector3(
-                                Helpers.UInt16ToFloat(block.ObjectData, pos, -0.5f * 256.0f, 1.5f * 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -0.5f * 256.0f, 1.5f * 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 3.0f * 256.0f));
-                            pos += 6;
-                            // Velocity
-                            velocity = new LLVector3(
-                                Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
-                            pos += 6;
-                            // Acceleration
-                            acceleration = new LLVector3(
-                                Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
-                            pos += 6;
-                            // Rotation (theta)
-                            rotation = new LLQuaternion(
-                                Helpers.UInt16ToFloat(block.ObjectData, pos, -1.0f, 1.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -1.0f, 1.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 6, -1.0f, 1.0f));
-                            pos += 8;
-                            // Angular velocity (omega)
-                            angularVelocity = new LLVector3(
-                                Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
-                                Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
-                            pos += 6;
-
-                            break;
-                        case 16:
-                            // The data is an array of single bytes (8-bit numbers)
-
-                            // Position
-                            position = new LLVector3(
-                                Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
-                            pos += 3;
-                            // Velocity
-                            velocity = new LLVector3(
-                                Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
-                            pos += 3;
-                            // Accleration
-                            acceleration = new LLVector3(
-                                Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
-                            pos += 3;
-                            // Rotation
-                            rotation = new LLQuaternion(
-                                Helpers.ByteToFloat(block.ObjectData, pos, -1.0f, 1.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 1, -1.0f, 1.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 3, -1.0f, 1.0f));
-                            pos += 4;
-                            // Angular Velocity
-                            angularVelocity = new LLVector3(
-                                Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
-                                Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
-                            pos += 3;
-
-                            break;
-                        default:
-                            Client.Log("Got an ObjectUpdate block with ObjectUpdate field length of " +
-                                block.ObjectData.Length, Helpers.LogLevel.Warning);
-
-                            continue;
-                    }
-                    #endregion
-
-                    // TODO: Figure out what this is used for and implement it
-                    //if (block.Data.Length != 0)
-                    //    Client.DebugLog("Got an ObjectUpdate block with generic data length " + block.Data.Length);
-
-                    // Determine the object type and create the appropriate class
-                    PCode pcode = (PCode)block.PCode;
                     switch (pcode)
                     {
                         case PCode.Grass:
                         case PCode.Tree:
                         case PCode.NewTree:
+                            if (OnNewFoliage == null) continue;
+                            break;
                         case PCode.Prim:
-                            Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
-
-                            #region Update Prim Info with decoded data                            
-                            prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
-
-                            if ((prim.Flags & LLObject.ObjectFlags.ZlibCompressed) != 0)
-                            {
-                                Client.Log("Got a ZlibCompressed ObjectUpdate, implement me!", Helpers.LogLevel.Warning);
-                                continue;
-                            }
-
-                            prim.NameValues = nameValues;
-                            prim.LocalID = block.ID;
-                            prim.ID = block.FullID;
-                            prim.ParentID = block.ParentID;
-							prim.RegionHandle = update.RegionData.RegionHandle;
-                            prim.Scale = block.Scale;
-                            prim.ClickAction = (ClickAction)block.ClickAction;
-                            prim.OwnerID = block.OwnerID;
-                            prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
-                            prim.Text = Helpers.FieldToUTF8String(block.Text);
-                            prim.TextColor = new LLColor(block.TextColor, 0);
-                            // Alpha is inversed to help zero encoding
-                            prim.TextColor.A = (byte)(255 - prim.TextColor.A);
-
-                            // Sound information
-                            prim.Sound = block.Sound;
-                            prim.SoundFlags = block.Flags;
-                            prim.SoundGain = block.Gain;
-                            prim.SoundRadius = block.Radius;
-
-                            // Joint information
-                            prim.Joint = (Primitive.JointType)block.JointType;
-                            prim.JointPivot = block.JointPivot;
-                            prim.JointAxisOrAnchor = block.JointAxisOrAnchor;
-                            
-                            // Object parameters
-                            prim.data = data;
-
-                            // Textures, texture animations, particle system, and extra params
-                            prim.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-                            prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
-                            prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
-                            prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
-
-                            // PCode-specific data
-                            prim.GenericData = block.Data;
-
-                            // Packed parameters
-                            prim.CollisionPlane = collisionPlane;
-                            prim.Position = position;
-                            prim.Velocity = velocity;
-                            prim.Acceleration = acceleration;
-                            prim.Rotation = rotation;
-                            prim.AngularVelocity = angularVelocity;
-                            #endregion
-
-                            // Used to notify subclasses that prim was updated.
-                            llObjectUpdated(simulator, prim);
-
-                            if (prim.NameValues.ContainsKey("AttachItemID"))
-                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            else if (pcode == PCode.Tree || pcode == PCode.Grass || pcode == PCode.NewTree)
-                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            else
-                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-
+                            if (OnNewPrim == null) continue;
                             break;
                         case PCode.Avatar:
-                            // Update some internals if this is our avatar
-                            if (block.FullID == Client.Network.AgentID)
-                            {
-                                #region Update Client.Self
-                                
-                                // Interesting to know
-                                Client.Self.LocalID = block.ID;
-                                
-                                // Packed parameters
-                                Client.Self.CollisionPlane = collisionPlane;
-                                Client.Self.Position = position;
-                                Client.Self.Velocity = velocity;
-                                Client.Self.Acceleration = acceleration;
-                                Client.Self.Rotation = rotation;
-                                Client.Self.AngularVelocity = angularVelocity;
-
-                                // Detect if we are sitting or standing
-                                uint oldSittingOn = Client.Self.SittingOn;
-
-                                // Fire the callback for our sitting orientation changing
-                                if (block.ParentID != oldSittingOn)
-                                {
-                                    SetAvatarSelfSittingOn(block.ParentID);
-                                    FireOnAvatarSitChanged(simulator, Client.Self.SittingOn);
-                                }
-
-                                #endregion
-                            }
-
-                            if (Client.Settings.ALWAYS_DECODE_OBJECTS || (OnNewAvatar != null))
-                            {
-                                Avatar avatar = GetAvatar(simulator, block.ID, block.FullID);
-
-                                #region Update Avatar with decoded data
-
-                                avatar.ID = block.FullID;
-                                avatar.LocalID = block.ID;
-                                avatar.CollisionPlane = collisionPlane;
-                                avatar.Position = position;
-                                avatar.Velocity = velocity;
-                                avatar.Acceleration = acceleration;
-                                avatar.Rotation = rotation;
-                                avatar.AngularVelocity = angularVelocity;
-                                avatar.NameValues = nameValues;
-                                avatar.data = data;
-                                avatar.GenericData = block.Data; // Unknown
-
-                                SetAvatarSittingOn(avatar, block.ParentID);
-
-                                // Set this avatar online and in a region
-                                avatar.Online = true;
-                                avatar.CurrentSim = simulator;
-
-                                // Textures
-                                avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, block.TextureEntry.Length);
-
-                                #endregion
-
-                                FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                            }
-
+                            // Make an exception for updates about our own agent
+                            if (block.FullID != Client.Network.AgentID && OnNewAvatar == null) continue;
                             break;
                         case PCode.ParticleSystem:
-                            DecodeParticleUpdate(block);
-                            break;
-                        default:
-                            Client.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + pcode.ToString());
-                            break;
+                            continue; // TODO: Do something with these
                     }
+                }
+
+                #endregion Relevance check
+
+                #region NameValue parsing
+
+                string nameValue = Helpers.FieldToUTF8String(block.NameValue);
+                if (nameValue.Length > 0)
+                {
+                    string[] lines = nameValue.Split(new char[] { '\n' });
+                    nameValues = new NameValue[lines.Length];
+
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        if (lines[i].Length > 0)
+                        {
+                            NameValue nv = new NameValue(lines[i]);
+                            if (nv.Name == "AttachItemID") attachment = true;
+                            nameValues[i] = nv;
+                        }
+                    }
+                }
+                else
+                {
+                    nameValues = new NameValue[0];
+                }
+
+                #endregion NameValue parsing
+
+                #region Decode Object (primitive) parameters
+                LLObject.ObjectData data = new LLObject.ObjectData();
+                data.State = block.State;
+                data.Material = block.Material;
+                data.PathCurve = block.PathCurve;
+                data.ProfileCurve = block.ProfileCurve;
+                data.PathBegin = LLObject.PathBeginFloat(block.PathBegin);
+                data.PathEnd = LLObject.PathEndFloat(block.PathEnd);
+                data.PathScaleX = LLObject.PathScaleFloat(block.PathScaleX);
+                data.PathScaleY = LLObject.PathScaleFloat(block.PathScaleY);
+                data.PathShearX = LLObject.PathShearFloat(block.PathShearX);
+                data.PathShearY = LLObject.PathShearFloat(block.PathShearY);
+                data.PathTwist = block.PathTwist;
+                data.PathTwistBegin = block.PathTwistBegin;
+                data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat(block.PathRadiusOffset);
+                data.PathTaperX = LLObject.PathTaperFloat(block.PathTaperX);
+                data.PathTaperY = LLObject.PathTaperFloat(block.PathTaperY);
+                data.PathRevolutions = LLObject.PathRevolutionsFloat(block.PathRevolutions);
+                data.PathSkew = LLObject.PathSkewFloat(block.PathSkew);
+                data.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
+                data.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
+                data.ProfileHollow = block.ProfileHollow;
+                #endregion
+
+                #region Decode Additional packed parameters in ObjectData
+                int pos = 0;
+                switch (block.ObjectData.Length)
+                {
+                    case 76:
+                        // Collision normal for avatar
+                        collisionPlane = new LLVector4(block.ObjectData, pos);
+                        pos += 16;
+
+                        goto case 60;
+                    case 60:
+                        // Position
+                        position = new LLVector3(block.ObjectData, pos);
+                        pos += 12;
+                        // Velocity
+                        velocity = new LLVector3(block.ObjectData, pos);
+                        pos += 12;
+                        // Acceleration
+                        acceleration = new LLVector3(block.ObjectData, pos);
+                        pos += 12;
+                        // Rotation (theta)
+                        rotation = new LLQuaternion(block.ObjectData, pos, true);
+                        pos += 12;
+                        // Angular velocity (omega)
+                        angularVelocity = new LLVector3(block.ObjectData, pos);
+                        pos += 12;
+
+                        break;
+                    case 48:
+                        // Collision normal for avatar
+                        collisionPlane = new LLVector4(block.ObjectData, pos);
+                        pos += 16;
+
+                        goto case 32;
+                    case 32:
+                        // The data is an array of unsigned shorts
+
+                        // Position
+                        position = new LLVector3(
+                            Helpers.UInt16ToFloat(block.ObjectData, pos, -0.5f * 256.0f, 1.5f * 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -0.5f * 256.0f, 1.5f * 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 3.0f * 256.0f));
+                        pos += 6;
+                        // Velocity
+                        velocity = new LLVector3(
+                            Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
+                        pos += 6;
+                        // Acceleration
+                        acceleration = new LLVector3(
+                            Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
+                        pos += 6;
+                        // Rotation (theta)
+                        rotation = new LLQuaternion(
+                            Helpers.UInt16ToFloat(block.ObjectData, pos, -1.0f, 1.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -1.0f, 1.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 6, -1.0f, 1.0f));
+                        pos += 8;
+                        // Angular velocity (omega)
+                        angularVelocity = new LLVector3(
+                            Helpers.UInt16ToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f),
+                            Helpers.UInt16ToFloat(block.ObjectData, pos + 4, -256.0f, 256.0f));
+                        pos += 6;
+
+                        break;
+                    case 16:
+                        // The data is an array of single bytes (8-bit numbers)
+
+                        // Position
+                        position = new LLVector3(
+                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                        pos += 3;
+                        // Velocity
+                        velocity = new LLVector3(
+                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                        pos += 3;
+                        // Accleration
+                        acceleration = new LLVector3(
+                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                        pos += 3;
+                        // Rotation
+                        rotation = new LLQuaternion(
+                            Helpers.ByteToFloat(block.ObjectData, pos, -1.0f, 1.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -1.0f, 1.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -1.0f, 1.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 3, -1.0f, 1.0f));
+                        pos += 4;
+                        // Angular Velocity
+                        angularVelocity = new LLVector3(
+                            Helpers.ByteToFloat(block.ObjectData, pos, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 1, -256.0f, 256.0f),
+                            Helpers.ByteToFloat(block.ObjectData, pos + 2, -256.0f, 256.0f));
+                        pos += 3;
+
+                        break;
+                    default:
+                        Client.Log("Got an ObjectUpdate block with ObjectUpdate field length of " +
+                            block.ObjectData.Length, Helpers.LogLevel.Warning);
+
+                        continue;
+                }
+                #endregion
+
+                // Determine the object type and create the appropriate class
+                switch (pcode)
+                {
+                    #region Prim and Foliage
+                    case PCode.Grass:
+                    case PCode.Tree:
+                    case PCode.NewTree:
+                    case PCode.Prim:
+                        Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
+
+                        #region Update Prim Info with decoded data                            
+                        prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
+
+                        if ((prim.Flags & LLObject.ObjectFlags.ZlibCompressed) != 0)
+                        {
+                            Client.Log("Got a ZlibCompressed ObjectUpdate, implement me!", 
+                                Helpers.LogLevel.Warning);
+                            continue;
+                        }
+
+                        prim.NameValues = nameValues;
+                        prim.LocalID = block.ID;
+                        prim.ID = block.FullID;
+                        prim.ParentID = block.ParentID;
+					    prim.RegionHandle = update.RegionData.RegionHandle;
+                        prim.Scale = block.Scale;
+                        prim.ClickAction = (ClickAction)block.ClickAction;
+                        prim.OwnerID = block.OwnerID;
+                        prim.MediaURL = Helpers.FieldToUTF8String(block.MediaURL);
+                        prim.Text = Helpers.FieldToUTF8String(block.Text);
+                        prim.TextColor = new LLColor(block.TextColor, 0);
+                        // Alpha is inversed to help zero encoding
+                        prim.TextColor.A = (byte)(255 - prim.TextColor.A);
+
+                        // Sound information
+                        prim.Sound = block.Sound;
+                        prim.SoundFlags = block.Flags;
+                        prim.SoundGain = block.Gain;
+                        prim.SoundRadius = block.Radius;
+
+                        // Joint information
+                        prim.Joint = (Primitive.JointType)block.JointType;
+                        prim.JointPivot = block.JointPivot;
+                        prim.JointAxisOrAnchor = block.JointAxisOrAnchor;
+                        
+                        // Object parameters
+                        prim.data = data;
+
+                        // Textures, texture animations, particle system, and extra params
+                        prim.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, 
+                            block.TextureEntry.Length);
+                        prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
+                        prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
+                        prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
+
+                        // PCode-specific data
+                        prim.GenericData = block.Data;
+
+                        // Packed parameters
+                        prim.CollisionPlane = collisionPlane;
+                        prim.Position = position;
+                        prim.Velocity = velocity;
+                        prim.Acceleration = acceleration;
+                        prim.Rotation = rotation;
+                        prim.AngularVelocity = angularVelocity;
+                        #endregion
+
+                        // Used to notify subclasses that a prim was updated
+                        llObjectUpdated(simulator, prim);
+
+                        if (attachment)
+                            FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
+                                update.RegionData.TimeDilation);
+                        else if (pcode == PCode.Prim)
+                            FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
+                                update.RegionData.TimeDilation);
+                        else
+                            FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, 
+                                update.RegionData.TimeDilation);
+
+                        break;
+                    #endregion Prim and Foliage
+                    #region Avatar
+                    case PCode.Avatar:
+                        // Update some internals if this is our avatar
+                        if (block.FullID == Client.Network.AgentID)
+                        {
+                            #region Update Client.Self
+                            
+                            // We need the local ID to recognize terse updates for our agent
+                            Client.Self.LocalID = block.ID;
+                            
+                            // Packed parameters
+                            Client.Self.CollisionPlane = collisionPlane;
+                            Client.Self.Position = position;
+                            Client.Self.Velocity = velocity;
+                            Client.Self.Acceleration = acceleration;
+                            Client.Self.Rotation = rotation;
+                            Client.Self.AngularVelocity = angularVelocity;
+
+                            // Detect if we are sitting or standing
+                            uint oldSittingOn = Client.Self.SittingOn;
+
+                            // Fire the callback for our sitting orientation changing
+                            if (block.ParentID != oldSittingOn)
+                            {
+                                SetAvatarSelfSittingOn(block.ParentID);
+                                FireOnAvatarSitChanged(simulator, Client.Self.SittingOn);
+                            }
+
+                            #endregion
+                        }
+
+                        #region Create an Avatar from the decoded data
+
+                        Avatar avatar = GetAvatar(simulator, block.ID, block.FullID);
+
+                        avatar.ID = block.FullID;
+                        avatar.LocalID = block.ID;
+                        avatar.CollisionPlane = collisionPlane;
+                        avatar.Position = position;
+                        avatar.Velocity = velocity;
+                        avatar.Acceleration = acceleration;
+                        avatar.Rotation = rotation;
+                        avatar.AngularVelocity = angularVelocity;
+                        avatar.NameValues = nameValues;
+                        avatar.data = data;
+                        avatar.GenericData = block.Data;
+
+                        SetAvatarSittingOn(avatar, block.ParentID);
+
+                        // Set this avatar online and in a region
+                        avatar.Online = true;
+                        avatar.CurrentSim = simulator;
+
+                        // Textures
+                        avatar.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, 
+                            block.TextureEntry.Length);
+
+                        #endregion Create an Avatar from the decoded data
+
+                        FireOnNewAvatar(simulator, avatar, update.RegionData.RegionHandle, 
+                            update.RegionData.TimeDilation);
+
+                        break;
+                    #endregion Avatar
+                    case PCode.ParticleSystem:
+                        DecodeParticleUpdate(block);
+                        // TODO: Create a callback for particle updates
+                        break;
+                    default:
+                        Client.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + pcode.ToString());
+                        break;
                 }
             }
         }
@@ -1503,14 +1544,19 @@ namespace libsecondlife
 
                 try
                 {
+                    int pos = 4;
+                    uint localid = Helpers.BytesToUIntBig(block.Data, 0);
+
+                    // Check if we are interested in this update
+                    if (!Client.Settings.ALWAYS_DECODE_OBJECTS && localid != Client.Self.LocalID && OnObjectUpdated == null)
+                        continue;
+
+                    #region Decode update data
+
                     ObjectUpdate update = new ObjectUpdate();
-                    int pos = 0;
 
-                    #region Decode Update Data
-
-                    // Local ID
-                    update.LocalID = Helpers.BytesToUIntBig(block.Data, pos);
-                    pos += 4;
+                    // LocalID
+                    update.LocalID = localid;
                     // State
                     update.State = block.Data[pos++];
                     // Avatar boolean
@@ -1554,50 +1600,33 @@ namespace libsecondlife
                     // FIXME: Why are we ignoring the first four bytes here?
                     update.Textures = new LLObject.TextureEntry(block.TextureEntry, 4, block.TextureEntry.Length - 4);
 
-                    #endregion
+                    #endregion Decode update data
 
-                    // TODO: this really only needs to be called when this class is an instance of a subclass of this class...
-                    // Get primitive from factory, so subclasses can have a chance to have cached data updated
-                    if (Client.Settings.ALWAYS_DECODE_OBJECTS)
+                    LLObject obj = (update.Avatar) ?
+                        (LLObject)GetAvatar(simulator, update.LocalID, null):
+                        (LLObject)GetPrimitive(simulator, update.LocalID, null);
+
+                    #region Update Client.Self
+                    if (update.LocalID == Client.Self.LocalID)
                     {
-                        LLObject obj;
-
-                        if (update.Avatar)
-                        {
-                            obj = GetAvatar(simulator, update.LocalID, null);
-                        }
-                        else
-                        {
-                            obj = GetPrimitive(simulator, update.LocalID, null);
-                        }
-
-                        if (update.LocalID == Client.Self.LocalID)
-                        {
-                            #region Update Client.Self
-
-                            Client.Self.CollisionPlane = update.CollisionPlane;
-                            Client.Self.Position = update.Position;
-                            Client.Self.Velocity = update.Velocity;
-                            Client.Self.Acceleration = update.Acceleration;
-                            Client.Self.Rotation = update.Rotation;
-                            Client.Self.AngularVelocity = update.AngularVelocity;
-
-                            // Detect if we are sitting or standing
-                            uint oldSittingOn = Client.Self.SittingOn;
-
-                            #endregion
-                        }
-
-                        obj.Acceleration = update.Acceleration;
-                        obj.AngularVelocity = update.AngularVelocity;
-                        obj.CollisionPlane = update.CollisionPlane;
-                        obj.Position = update.Position;
-                        obj.Rotation = update.Rotation;
-                        obj.Textures = update.Textures;
-                        obj.Velocity = update.Velocity;
-
-                        llObjectUpdated(simulator, obj);
+                        Client.Self.CollisionPlane = update.CollisionPlane;
+                        Client.Self.Position = update.Position;
+                        Client.Self.Velocity = update.Velocity;
+                        Client.Self.Acceleration = update.Acceleration;
+                        Client.Self.Rotation = update.Rotation;
+                        Client.Self.AngularVelocity = update.AngularVelocity;
                     }
+                    #endregion Update Client.Self
+
+                    obj.Acceleration = update.Acceleration;
+                    obj.AngularVelocity = update.AngularVelocity;
+                    obj.CollisionPlane = update.CollisionPlane;
+                    obj.Position = update.Position;
+                    obj.Rotation = update.Rotation;
+                    obj.Textures = update.Textures;
+                    obj.Velocity = update.Velocity;
+
+                    llObjectUpdated(simulator, obj);
                     
                     // Fire the callback
                     FireOnObjectUpdated(simulator, update, terse.RegionData.RegionHandle, terse.RegionData.TimeDilation);
@@ -1616,284 +1645,300 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         protected void CompressedUpdateHandler(Packet packet, Simulator simulator)
         {
-            if (Client.Settings.ALWAYS_DECODE_OBJECTS || OnNewPrim != null || OnNewAvatar != null || 
-                OnNewAttachment != null || OnNewFoliage != null)
+            ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
+
+            for (int b = 0; b < update.ObjectData.Length; b++)
             {
-                ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
-                Primitive prim;
+                ObjectUpdateCompressedPacket.ObjectDataBlock block = update.ObjectData[b];
+                int i = 0;
 
-                foreach (ObjectUpdateCompressedPacket.ObjectDataBlock block in update.ObjectData)
+                try
                 {
-                    int i = 0;
+                    // UUID
+                    LLUUID FullID = new LLUUID(block.Data, 0);
+                    i += 16;
+                    // Local ID
+                    uint LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                        (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                    // PCode
+                    PCode pcode = (PCode)block.Data[i++];
 
-                    try
+                    #region Relevance check
+                    if (!Client.Settings.ALWAYS_DECODE_OBJECTS)
                     {
-                        // UUID
-                        LLUUID FullID = new LLUUID(block.Data, 0);
-                        i += 16;
-                        // Local ID
-                        uint LocalID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                            (block.Data[i++] << 16) + (block.Data[i++] << 24));
-
-                        prim = GetPrimitive(simulator, LocalID, FullID);
-
-                        prim.LocalID = LocalID;
-                        prim.ID = FullID;
-                        prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
-
-                        // PCode
-                        PCode pcode = (PCode)block.Data[i++];
                         switch (pcode)
                         {
-                            case PCode.Prim:
-                                #region Decode block and update Prim
-                                // State
-                                prim.data.State = (uint)block.Data[i++];
-                                // CRC
-                                i += 4;
-                                // Material
-                                prim.data.Material = (uint)block.Data[i++];
-                                // Click action
-                                prim.ClickAction = (ClickAction)block.Data[i++];
-                                // Scale
-                                prim.Scale = new LLVector3(block.Data, i);
-                                i += 12;
-                                // Position
-                                prim.Position = new LLVector3(block.Data, i);
-                                i += 12;
-                                // Rotation
-                                prim.Rotation = new LLQuaternion(block.Data, i, true);
-                                i += 12;
-                                // Compressed flags
-                                CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
-                                i += 4;
-
-                                // Angular velocity
-                                if ((flags & CompressedFlags.HasAngularVelocity) != 0)
-                                {
-                                    prim.AngularVelocity = new LLVector3(block.Data, i);
-                                    i += 12;
-                                }
-
-                                // Parent ID
-                                if ((flags & CompressedFlags.HasParent) != 0)
-                                {
-                                    prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
-                                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                                }
-                                else
-                                {
-                                    prim.ParentID = 0;
-                                }
-
-                                // Tree data
-                                if ((flags & CompressedFlags.Tree) != 0)
-                                {
-                                    prim.GenericData = new byte[1];
-                                    prim.GenericData[0] = block.Data[i++];
-                                }
-                                // Scratch pad
-                                else if ((flags & CompressedFlags.ScratchPad) != 0)
-                                {
-                                    int size = block.Data[i++];
-                                    prim.GenericData = new byte[size];
-                                    Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
-                                    i += size;
-                                }
-                                
-                                // Floating text
-                                if ((flags & CompressedFlags.HasText) != 0)
-                                {
-                                    string text = String.Empty;
-                                    while (block.Data[i] != 0)
-                                    {
-                                        text += (char)block.Data[i];
-                                        i++;
-                                    }
-                                    i++;
-
-                                    // Floating text
-                                    prim.Text = text;
-
-                                    // Text color
-                                    prim.TextColor = new LLColor(block.Data, i);
-                                    i += 4;
-                                }
-                                else
-                                {
-                                    prim.Text = String.Empty;
-                                }
-
-                                // Media URL
-                                if ((flags & CompressedFlags.MediaURL) != 0)
-                                {
-                                    string text = String.Empty;
-                                    while (block.Data[i] != 0)
-                                    {
-                                        text += (char)block.Data[i];
-                                        i++;
-                                    }
-                                    i++;
-
-                                    prim.MediaURL = text;
-                                }
-
-                                // Particle system
-                                if ((flags & CompressedFlags.HasParticles) != 0)
-                                {
-                                    prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
-                                    i += 86;
-                                }
-
-                                // Extra parameters
-                                i += prim.SetExtraParamsFromBytes(block.Data, i);
-
-                                //Sound data
-                                if ((flags & CompressedFlags.HasSound) != 0)
-                                {
-                                    prim.Sound = new LLUUID(block.Data, i);
-                                    i += 16;
-                                    prim.OwnerID = new LLUUID(block.Data, i);
-                                    i += 16;
-
-                                    if (!BitConverter.IsLittleEndian)
-                                    {
-                                        Array.Reverse(block.Data, i, 4);
-                                        Array.Reverse(block.Data, i + 5, 4);
-                                    }
-
-                                    prim.SoundGain = BitConverter.ToSingle(block.Data, i);
-                                    i += 4;
-                                    prim.SoundFlags = block.Data[i++];
-                                    prim.SoundRadius = BitConverter.ToSingle(block.Data, i);
-                                    i += 4;
-                                }
-
-                                // Name values
-                                if ((flags & CompressedFlags.HasNameValues) != 0)
-                                {
-                                    string text = String.Empty;
-                                    while (block.Data[i] != 0)
-                                    {
-                                        text += (char)block.Data[i];
-                                        i++;
-                                    }
-                                    i++;
-
-                                    // Parse the name values
-                                    if (text.Length > 0)
-                                    {
-                                        string[] lines = text.Split(new char[] { '\n' });
-                                        for (int j = 0; j < lines.Length; j++)
-                                        {
-                                            if (lines[j].Length > 0)
-                                            {
-                                                NameValue nv = new NameValue(lines[j]);
-                                                if (!prim.NameValues.ContainsKey(nv.Name))
-                                                    prim.NameValues.Add(nv.Name, nv);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                prim.data.PathCurve = (uint)block.Data[i++];
-                                prim.data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
-                                prim.data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
-                                prim.data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
-                                prim.data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
-                                prim.data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
-                                prim.data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
-                                prim.data.PathTwist = (int)block.Data[i++];
-                                prim.data.PathTwistBegin = (int)block.Data[i++];
-                                prim.data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                                prim.data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                                prim.data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                                prim.data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
-                                prim.data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
-
-                                prim.data.ProfileCurve = (uint)block.Data[i++];
-                                prim.data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
-                                prim.data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
-                                prim.data.ProfileHollow = (uint)block.Data[i++];
-
-                                // TextureEntry
-                                int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                                    (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                                prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
-                                i += textureEntryLength;
-
-                                // Texture animation
-                                if ((flags & CompressedFlags.TextureAnimation) != 0)
-                                {
-                                    //int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
-                                    //    (block.Data[i++] << 16) + (block.Data[i++] << 24));
-                                    i += 4;
-                                    prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
-                                }
-
-                                #endregion
-
-                                #region Fire Events
-                                // Fire the appropriate callback
-                                if ((flags & CompressedFlags.HasNameValues) != 0)
-                                {
-                                    // TODO: We should use a better check to see if this is actually an attachment
-                                    FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
-                                else if ((flags & CompressedFlags.Tree) != 0)
-                                {
-                                    FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
-                                else if (OnNewPrim != null)
-                                {
-                                    FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-                                }
-                                #endregion
-                                break;
                             case PCode.Grass:
                             case PCode.Tree:
                             case PCode.NewTree:
-                                #region Foliage Decoding
-                                // State
-                                prim.data.State = (uint)block.Data[i++];
-                                // CRC
-                                i += 4;
-                                // Material
-                                prim.data.Material = (uint)block.Data[i++];
-                                // Click action
-                                prim.ClickAction = (ClickAction)block.Data[i++];
-                                // Scale
-                                prim.Scale = new LLVector3(block.Data, i);
-                                i += 12;
-                                // Position
-                                prim.Position = new LLVector3(block.Data, i);
-                                i += 12;
-                                // Rotation
-                                prim.Rotation = new LLQuaternion(block.Data, i, true);
-                                i += 12;
-                                #endregion Foliage Decoding
-
-                                // FIXME: We are leaving a lot of data left undecoded here, including the
-                                // tree species. Need to understand what is going on with these packets
-                                // and fix it soon!
-
-                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
-
+                                if (OnNewFoliage == null) continue;
                                 break;
-                            default:
-                                Client.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() + 
-                                    ", implement this!");
+                            case PCode.Prim:
+                                if (OnNewPrim == null) continue;
                                 break;
                         }
+                    }
+                    #endregion Relevance check
 
-                        llObjectUpdated(simulator, prim);
-                    }
-                    catch (System.IndexOutOfRangeException e)
+                    Primitive prim = GetPrimitive(simulator, LocalID, FullID);
+
+                    prim.LocalID = LocalID;
+                    prim.ID = FullID;
+                    prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
+
+                    switch (pcode)
                     {
-                        Client.Log("Had a problem decoding an ObjectUpdateCompressed packet: " +
-                            e.ToString(), Helpers.LogLevel.Warning);
-                        Client.Log(block.ToString(), Helpers.LogLevel.Warning);
+                        case PCode.Grass:
+                        case PCode.Tree:
+                        case PCode.NewTree:
+                            #region Foliage Decoding
+
+                            // State
+                            prim.data.State = (uint)block.Data[i++];
+                            // CRC
+                            i += 4;
+                            // Material
+                            prim.data.Material = (uint)block.Data[i++];
+                            // Click action
+                            prim.ClickAction = (ClickAction)block.Data[i++];
+                            // Scale
+                            prim.Scale = new LLVector3(block.Data, i);
+                            i += 12;
+                            // Position
+                            prim.Position = new LLVector3(block.Data, i);
+                            i += 12;
+                            // Rotation
+                            prim.Rotation = new LLQuaternion(block.Data, i, true);
+                            i += 12;
+
+                            #endregion Foliage Decoding
+
+                            // FIXME: We are leaving a lot of data left undecoded here, including the
+                            // tree species. Need to understand what is going on with these packets
+                            // and fix it soon!
+
+                            FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, update.RegionData.TimeDilation);
+
+                            break;
+                        case PCode.Prim:
+                            #region Decode block and update Prim
+                            // State
+                            prim.data.State = (uint)block.Data[i++];
+                            // CRC
+                            i += 4;
+                            // Material
+                            prim.data.Material = (uint)block.Data[i++];
+                            // Click action
+                            prim.ClickAction = (ClickAction)block.Data[i++];
+                            // Scale
+                            prim.Scale = new LLVector3(block.Data, i);
+                            i += 12;
+                            // Position
+                            prim.Position = new LLVector3(block.Data, i);
+                            i += 12;
+                            // Rotation
+                            prim.Rotation = new LLQuaternion(block.Data, i, true);
+                            i += 12;
+                            // Compressed flags
+                            CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
+                            i += 4;
+
+                            // Angular velocity
+                            if ((flags & CompressedFlags.HasAngularVelocity) != 0)
+                            {
+                                prim.AngularVelocity = new LLVector3(block.Data, i);
+                                i += 12;
+                            }
+
+                            // Parent ID
+                            if ((flags & CompressedFlags.HasParent) != 0)
+                            {
+                                prim.ParentID = (uint)(block.Data[i++] + (block.Data[i++] << 8) +
+                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                            }
+                            else
+                            {
+                                prim.ParentID = 0;
+                            }
+
+                            // Tree data
+                            if ((flags & CompressedFlags.Tree) != 0)
+                            {
+                                prim.GenericData = new byte[1];
+                                prim.GenericData[0] = block.Data[i++];
+                            }
+                            // Scratch pad
+                            else if ((flags & CompressedFlags.ScratchPad) != 0)
+                            {
+                                int size = block.Data[i++];
+                                prim.GenericData = new byte[size];
+                                Buffer.BlockCopy(block.Data, i, prim.GenericData, 0, size);
+                                i += size;
+                            }
+
+                            // Floating text
+                            if ((flags & CompressedFlags.HasText) != 0)
+                            {
+                                string text = String.Empty;
+                                while (block.Data[i] != 0)
+                                {
+                                    text += (char)block.Data[i];
+                                    i++;
+                                }
+                                i++;
+
+                                // Floating text
+                                prim.Text = text;
+
+                                // Text color
+                                prim.TextColor = new LLColor(block.Data, i);
+                                i += 4;
+                            }
+                            else
+                            {
+                                prim.Text = String.Empty;
+                            }
+
+                            // Media URL
+                            if ((flags & CompressedFlags.MediaURL) != 0)
+                            {
+                                string text = String.Empty;
+                                while (block.Data[i] != 0)
+                                {
+                                    text += (char)block.Data[i];
+                                    i++;
+                                }
+                                i++;
+
+                                prim.MediaURL = text;
+                            }
+
+                            // Particle system
+                            if ((flags & CompressedFlags.HasParticles) != 0)
+                            {
+                                prim.ParticleSys = new Primitive.ParticleSystem(block.Data, i);
+                                i += 86;
+                            }
+
+                            // Extra parameters
+                            i += prim.SetExtraParamsFromBytes(block.Data, i);
+
+                            //Sound data
+                            if ((flags & CompressedFlags.HasSound) != 0)
+                            {
+                                prim.Sound = new LLUUID(block.Data, i);
+                                i += 16;
+                                prim.OwnerID = new LLUUID(block.Data, i);
+                                i += 16;
+
+                                if (!BitConverter.IsLittleEndian)
+                                {
+                                    Array.Reverse(block.Data, i, 4);
+                                    Array.Reverse(block.Data, i + 5, 4);
+                                }
+
+                                prim.SoundGain = BitConverter.ToSingle(block.Data, i);
+                                i += 4;
+                                prim.SoundFlags = block.Data[i++];
+                                prim.SoundRadius = BitConverter.ToSingle(block.Data, i);
+                                i += 4;
+                            }
+
+                            // Name values
+                            if ((flags & CompressedFlags.HasNameValues) != 0)
+                            {
+                                string text = String.Empty;
+                                while (block.Data[i] != 0)
+                                {
+                                    text += (char)block.Data[i];
+                                    i++;
+                                }
+                                i++;
+
+                                // Parse the name values
+                                if (text.Length > 0)
+                                {
+                                    string[] lines = text.Split(new char[] { '\n' });
+                                    prim.NameValues = new NameValue[lines.Length];
+
+                                    for (int j = 0; j < lines.Length; j++)
+                                    {
+                                        if (lines[j].Length > 0)
+                                        {
+                                            NameValue nv = new NameValue(lines[j]);
+                                            prim.NameValues[j] = nv;
+                                        }
+                                    }
+                                }
+                            }
+
+                            prim.data.PathCurve = (uint)block.Data[i++];
+                            prim.data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
+                            prim.data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
+                            prim.data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
+                            prim.data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
+                            prim.data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
+                            prim.data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
+                            prim.data.PathTwist = (int)block.Data[i++];
+                            prim.data.PathTwistBegin = (int)block.Data[i++];
+                            prim.data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                            prim.data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                            prim.data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                            prim.data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
+                            prim.data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
+
+                            prim.data.ProfileCurve = (uint)block.Data[i++];
+                            prim.data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
+                            prim.data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
+                            prim.data.ProfileHollow = (uint)block.Data[i++];
+
+                            // TextureEntry
+                            int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                                (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                            prim.Textures = new LLObject.TextureEntry(block.Data, i, textureEntryLength);
+                            i += textureEntryLength;
+
+                            // Texture animation
+                            if ((flags & CompressedFlags.TextureAnimation) != 0)
+                            {
+                                //int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
+                                //    (block.Data[i++] << 16) + (block.Data[i++] << 24));
+                                i += 4;
+                                prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
+                            }
+
+                            #endregion
+
+                            #region Fire Events
+
+                            // Fire the appropriate callback
+                            // TODO: We should use a better check to see if this is actually an attachment
+                            if ((flags & CompressedFlags.HasNameValues) != 0)
+                                FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
+                                    update.RegionData.TimeDilation);
+                            else if ((flags & CompressedFlags.Tree) != 0)
+                                FireOnNewFoliage(simulator, prim, update.RegionData.RegionHandle, 
+                                    update.RegionData.TimeDilation);
+                            else
+                                FireOnNewPrim(simulator, prim, update.RegionData.RegionHandle, 
+                                    update.RegionData.TimeDilation);
+
+                            #endregion
+
+                            break;
+                        default:
+                            Client.DebugLog("Got an ObjectUpdateCompressed for PCode " + pcode.ToString() +
+                                ", implement this!");
+                            break;
                     }
+
+                    llObjectUpdated(simulator, prim);
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    Client.Log("Had a problem decoding an ObjectUpdateCompressed packet: " +
+                        e.ToString(), Helpers.LogLevel.Warning);
+                    Client.Log(block.ToString(), Helpers.LogLevel.Warning);
                 }
             }
         }
@@ -2074,6 +2119,10 @@ namespace libsecondlife
                 try { OnNewPrim(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
+            else
+            {
+                prim = null;
+            }
         }
 
         protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
@@ -2083,6 +2132,10 @@ namespace libsecondlife
                 try { OnNewFoliage(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
+            else
+            {
+                prim = null;
+            }
         }
 
         protected void FireOnNewAttachment(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
@@ -2091,6 +2144,10 @@ namespace libsecondlife
             {
                 try { OnNewAttachment(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+            else
+            {
+                prim = null;
             }
         }
 
@@ -2109,6 +2166,10 @@ namespace libsecondlife
             {
                 try { OnNewAvatar(simulator, avatar, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+            else
+            {
+                avatar = null;
             }
         }
 

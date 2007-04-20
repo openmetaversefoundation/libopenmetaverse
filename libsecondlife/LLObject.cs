@@ -278,9 +278,9 @@ namespace libsecondlife
         #region Public Members
 
         /// <summary></summary>
-        public LLUUID ID = LLUUID.Zero;
+        public LLUUID ID;
         /// <summary></summary>
-        public LLUUID GroupID = LLUUID.Zero;
+        public LLUUID GroupID;
         /// <summary></summary>
         public uint LocalID;
         /// <summary></summary>
@@ -296,7 +296,7 @@ namespace libsecondlife
         /// <summary></summary>
         public LLVector3 Scale;
         /// <summary></summary>
-        public LLQuaternion Rotation = LLQuaternion.Identity;
+        public LLQuaternion Rotation;
         /// <summary></summary>
         public LLVector3 Velocity;
         /// <summary></summary>
@@ -312,7 +312,7 @@ namespace libsecondlife
         /// <summary></summary>
         public ObjectPropertiesFamily PropertiesFamily;
         /// <summary></summary>
-        public SerializableDictionary<string, NameValue> NameValues = new SerializableDictionary<string, NameValue>();
+        public NameValue[] NameValues;
 
         #endregion Public Members
 

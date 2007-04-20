@@ -1435,7 +1435,7 @@ namespace libsecondlife
         /// <param name="lookAt">Target to look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            if (Client.Network.CurrentCaps.IsEventQueueRunning)
+            if (Client.Network.CurrentCaps != null && Client.Network.CurrentCaps.IsEventQueueRunning)
             {
                 TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
                 teleport.AgentData.AgentID = Client.Network.AgentID;

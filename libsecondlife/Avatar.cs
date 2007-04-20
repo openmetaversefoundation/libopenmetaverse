@@ -141,13 +141,34 @@ namespace libsecondlife
             get
             {
                 if (name.Length > 0)
+                {
                     return name;
-                else if (NameValues.ContainsKey("FirstName") && NameValues.ContainsKey("LastName"))
-                    return (string)NameValues["FirstName"].Value + " " + (string)NameValues["LastName"].Value;
+                }
                 else
-                    return String.Empty;
+                {
+                    string firstName = String.Empty;
+                    string lastName = String.Empty;
+
+                    for (int i = 0; i < NameValues.Length; i++)
+                    {
+                        if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
+                            firstName = (string)NameValues[i].Value;
+                        else if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
+                            lastName = (string)NameValues[i].Value;
+                    }
+
+                    if (firstName != String.Empty && lastName != String.Empty)
+                    {
+                        name = String.Format("{0} {1}", firstName, lastName);
+                        return name;
+                    }
+                    else
+                    {
+                        return String.Empty;
+                    }
+                }
             }
-            // FIXME: Get rid of this when an AvatarManager is built in to libsl
+            // FIXME: Get rid of this eventually
             set { name = value; }
         }
 
@@ -156,10 +177,16 @@ namespace libsecondlife
         {
             get
             {
-                if (NameValues.ContainsKey("Title"))
-                    return (string)NameValues["Title"].Value;
-                else
-                    return String.Empty;
+                for (int i = 0; i < NameValues.Length; i++)
+                {
+                    if (NameValues[i].Name == "Title" && NameValues[i].Type == NameValue.ValueType.String)
+                    {
+                        groupName = (string)NameValues[i].Value;
+                        break;
+                    }
+                }
+
+                return groupName;
             }
         }
 
@@ -169,6 +196,7 @@ namespace libsecondlife
 
 
         internal string name = String.Empty;
+        internal string groupName = String.Empty;
         internal uint sittingOn = 0;
 
 

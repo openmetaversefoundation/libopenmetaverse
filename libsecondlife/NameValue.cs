@@ -34,7 +34,7 @@ namespace libsecondlife
     /// primarily to transmit avatar names and active group in object packets
     /// </summary>
     [Serializable]
-    public class NameValue
+    public struct NameValue
     {
         /// <summary>Type of the value</summary>
         public enum ValueType
@@ -94,15 +94,15 @@ namespace libsecondlife
 
 
         /// <summary></summary>
-        public string Name = String.Empty;
+        public string Name;
         /// <summary></summary>
-        public ValueType Type = ValueType.Unknown;
+        public ValueType Type;
         /// <summary></summary>
-        public ClassType Class = ClassType.Unknown;
+        public ClassType Class;
         /// <summary></summary>
-        public SendtoType Sendto = SendtoType.Unknown;
+        public SendtoType Sendto;
         /// <summary></summary>
-        public object Value = null;
+        public object Value;
 
 
         private static readonly string[] TypeStrings = new string[]
@@ -130,14 +130,6 @@ namespace libsecondlife
             "DSV"   // Data Sim Viewer
         };
 
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public NameValue()
-        {
-        }
-
         /// <summary>
         /// Constructor that takes all the fields as parameters
         /// </summary>
@@ -149,7 +141,7 @@ namespace libsecondlife
         public NameValue(string name, ValueType valueType, ClassType classType, SendtoType sendtoType, object value)
         {
             Name = name;
-            Value = valueType;
+            Type = valueType;
             Class = classType;
             Sendto = sendtoType;
             Value = value;
@@ -167,7 +159,14 @@ namespace libsecondlife
             // Name
             i = data.IndexOfAny(seps);
             if (i < 1)
+            {
+                Name = String.Empty;
+                Type = ValueType.Unknown;
+                Class = ClassType.Unknown;
+                Sendto = SendtoType.Unknown;
+                Value = null;
                 return;
+            }
             Name = data.Substring(0, i);
             data = data.Substring(i + 1);
 
@@ -199,6 +198,7 @@ namespace libsecondlife
             Type = ValueType.String;
             Class = ClassType.ReadOnly;
             Sendto = SendtoType.Sim;
+            Value = null;
             SetValue(data);
         }
 
@@ -251,7 +251,7 @@ namespace libsecondlife
             }
         }
 
-        private ValueType GetValueType(string value)
+        private static ValueType GetValueType(string value)
         {
             ValueType type = ValueType.Unknown;
 
@@ -270,7 +270,7 @@ namespace libsecondlife
             return type;
         }
 
-        private ClassType GetClassType(string value)
+        private static ClassType GetClassType(string value)
         {
             ClassType type = ClassType.Unknown;
 
@@ -289,7 +289,7 @@ namespace libsecondlife
             return type;
         }
 
-        private SendtoType GetSendtoType(string value)
+        private static SendtoType GetSendtoType(string value)
         {
             SendtoType type = SendtoType.Unknown;
 
