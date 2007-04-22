@@ -39,6 +39,7 @@ namespace libsecondlife
     public struct LLUUID
 	{
         /// <summary>The System.Guid object this struct wraps around</summary>
+        [XmlAttribute]
         public Guid UUID;
 
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
@@ -310,10 +311,13 @@ namespace libsecondlife
 	public struct LLVector3
 	{
         /// <summary>X value</summary>
+        [XmlAttribute]
         public float X;
 		/// <summary>Y value</summary>
+        [XmlAttribute]
         public float Y;
         /// <summary>Z value</summary>
+        [XmlAttribute]
         public float Z;
 
         /// <summary>
@@ -565,11 +569,14 @@ namespace libsecondlife
 	public struct LLVector3d
 	{
         /// <summary>X value</summary>
-        [XmlAttribute("x"), DefaultValue(0)] public double X;
+        [XmlAttribute]
+        public double X;
         /// <summary>Y value</summary>
-        [XmlAttribute("y"), DefaultValue(0)] public double Y;
+        [XmlAttribute]
+        public double Y;
         /// <summary>Z value</summary>
-        [XmlAttribute("z"), DefaultValue(0)] public double Z;
+        [XmlAttribute]
+        public double Z;
 
         /// <summary>
         /// 
@@ -734,13 +741,17 @@ namespace libsecondlife
 	public struct LLVector4
 	{
         /// <summary></summary>
-        [XmlAttribute("x"), DefaultValue(0)] public float X;
+        [XmlAttribute]
+        public float X;
         /// <summary></summary>
-        [XmlAttribute("y"), DefaultValue(0)] public float Y;
+        [XmlAttribute]
+        public float Y;
         /// <summary></summary>
-        [XmlAttribute("z"), DefaultValue(0)] public float Z;
+        [XmlAttribute]
+        public float Z;
         /// <summary></summary>
-        [XmlAttribute("s"), DefaultValue(0)] public float S;
+        [XmlAttribute]
+        public float S;
 
         /// <summary>
         /// 
@@ -819,16 +830,16 @@ namespace libsecondlife
     public struct LLColor
     {
         /// <summary>Red</summary>
-        [XmlAttribute("r"), DefaultValue(0)]
+        [XmlAttribute]
         public float R;
         /// <summary>Green</summary>
-        [XmlAttribute("g"), DefaultValue(0)]
+        [XmlAttribute]
         public float G;
         /// <summary>Blue</summary>
-        [XmlAttribute("b"), DefaultValue(0)]
+        [XmlAttribute]
         public float B;
         /// <summary>Alpha</summary>
-        [XmlAttribute("a"), DefaultValue(0)]
+        [XmlAttribute]
         public float A;
 
         /// <summary>
@@ -910,13 +921,17 @@ namespace libsecondlife
 	public struct LLQuaternion
 	{
         /// <summary>X value</summary>
-        [XmlAttribute("x"), DefaultValue(0)] public float X;
+        [XmlAttribute]
+        public float X;
         /// <summary>Y value</summary>
-        [XmlAttribute("y"), DefaultValue(0)] public float Y;
+        [XmlAttribute]
+        public float Y;
         /// <summary>Z value</summary>
-        [XmlAttribute("z"), DefaultValue(0)] public float Z;
+        [XmlAttribute]
+        public float Z;
         /// <summary>W value</summary>
-        [XmlAttribute("w"), DefaultValue(0)] public float W;
+        [XmlAttribute]
+        public float W;
 
         /// <summary>
         /// Build a quaternion object from a byte array

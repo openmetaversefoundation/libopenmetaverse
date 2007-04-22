@@ -41,10 +41,8 @@ namespace libsecondlife
         public enum ExtraParamType : ushort
         {
             /// <summary>Whether this object has flexible parameters</summary>
-            [XmlEnum("Flexible")]
             Flexible = 0x10,
             /// <summary>Whether this object has light parameters</summary>
-            [XmlEnum("Light")]
             Light = 0x20
         }
 
@@ -77,19 +75,14 @@ namespace libsecondlife
         public class FlexibleData
         {
             /// <summary></summary>
-            [XmlAttribute("softness"), DefaultValue(0)]
             public int Softness;
             /// <summary></summary>
-            [XmlAttribute("gravity"), DefaultValue(0)]
             public float Gravity;
             /// <summary></summary>
-            [XmlAttribute("drag"), DefaultValue(0)]
             public float Drag;
             /// <summary></summary>
-            [XmlAttribute("wind"), DefaultValue(0)]
             public float Wind;
             /// <summary></summary>
-            [XmlAttribute("tension"), DefaultValue(0)]
             public float Tension;
             /// <summary></summary>
             public LLVector3 Force = LLVector3.Zero;
@@ -154,22 +147,16 @@ namespace libsecondlife
         public class LightData
         {
             /// <summary></summary>
-            [XmlAttribute("red"), DefaultValue(0)]
             public byte R;
             /// <summary></summary>
-            [XmlAttribute("green"), DefaultValue(0)]
             public byte G;
             /// <summary></summary>
-            [XmlAttribute("blue"), DefaultValue(0)]
             public byte B;
             /// <summary></summary>
-            [XmlAttribute("intensity"), DefaultValue(0)]
             public float Intensity;
             /// <summary></summary>
-            [XmlAttribute("radius"), DefaultValue(0)]
             public float Radius;
             /// <summary></summary>
-            [XmlAttribute("falloff"), DefaultValue(0)]
             public float Falloff;
 
             /// <summary>
@@ -285,16 +272,16 @@ namespace libsecondlife
 
         public override string ToString()
         {
-            string output = "";
+            string output = String.Empty;
 
             output += "ID: " + ID + ", ";
             output += "GroupID: " + GroupID + ", ";
             output += "ParentID: " + ParentID + ", ";
             output += "LocalID: " + LocalID + ", ";
             output += "Flags: " + Flags + ", ";
-            output += "State: " + data.State + ", ";
-            output += "PCode: " + data.PCode + ", ";
-            output += "Material: " + data.Material + ", ";
+            output += "State: " + Data.State + ", ";
+            output += "PCode: " + Data.PCode + ", ";
+            output += "Material: " + Data.Material + ", ";
 
             return output;
         }

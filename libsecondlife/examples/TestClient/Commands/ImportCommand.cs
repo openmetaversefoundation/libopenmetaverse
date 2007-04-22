@@ -48,7 +48,7 @@ namespace libsecondlife.TestClient
         public ImportCommand(TestClient testClient)
         {
             Name = "import";
-            Description = "Import prims from an exported xml file. Usage: import [filename.xml]";
+            Description = "Import prims from an exported xml file. Usage: import inputfile.xml";
             primDone = new AutoResetEvent(false);
             registeredCreateEvent = false;
         }
@@ -217,8 +217,13 @@ namespace libsecondlife.TestClient
                         currentClient.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
                         currentClient.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
                         currentClient.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
-                        currentClient.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
-                        currentClient.Objects.SetDescription(simulator, prim.LocalID, currentPrim.Properties.Description);
+
+                        if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
+                            currentClient.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
+                        if (!String.IsNullOrEmpty(currentPrim.Properties.Description))
+                            currentClient.Objects.SetDescription(simulator, prim.LocalID, 
+                                currentPrim.Properties.Description);
+
                         primsCreated.Add(prim);
                         primDone.Set();
                     }

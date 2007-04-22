@@ -72,12 +72,12 @@ namespace libsecondlife.TestClient
                 {
                     return "Couldn't fetch permissions for the requested object, try again";
                 }
-                else 
+                else
                 {
                     GotPermissions = false;
-                    if (Properties.OwnerID != Client.Network.AgentID)
+                    if (Properties.OwnerID != Client.Network.AgentID && Client.Network.AgentID != Client.Self.ID)
                     {
-                        // We need a MasterID field, those exports should be allowed as well
+                        // FIXME: We need a MasterID field, those exports should be allowed as well
                         return "That object is owned by " + Properties.OwnerID + ", we don't have permission " +
                             "to export it";
                     }
@@ -107,7 +107,7 @@ namespace libsecondlife.TestClient
 								}
 							}
 						}
-                        bool complete = RequestObjectProperties(prims, (int)TimeSpan.FromMinutes(1).TotalMilliseconds);
+                        bool complete = RequestObjectProperties(prims, 250);
 						
                         //Serialize it!
 						Helpers.PrimListToXml(prims, writer);
@@ -144,22 +144,23 @@ namespace libsecondlife.TestClient
 
         private bool RequestObjectProperties(List<Primitive> objects, int msPerRequest)
         {
+            // Create an array of the local IDs of all the prims we are requesting properties for
+            uint[] localids = new uint[objects.Count];
+            
             lock (PrimsWaiting)
             {
                 PrimsWaiting.Clear();
-                ObjectSelectPacket select = new ObjectSelectPacket();
-                select.ObjectData = new ObjectSelectPacket.ObjectDataBlock[objects.Count];
+
                 for (int i = 0; i < objects.Count; ++i)
                 {
-                    select.ObjectData[i] = new ObjectSelectPacket.ObjectDataBlock();
-                    select.ObjectData[i].ObjectLocalID = objects[i].LocalID;
+                    localids[i] = objects[i].LocalID;
                     PrimsWaiting.Add(objects[i].ID, objects[i]);
                 }
-                select.AgentData.AgentID = Client.Self.ID;
-                select.AgentData.SessionID = Client.Network.SessionID;
-                Client.Network.SendPacket(select); // this should cause the server to send us ObjectProperty packets
             }
-            return AllPropertiesReceived.WaitOne(msPerRequest * objects.Count, false);
+
+            Client.Objects.SelectObjects(Client.Network.CurrentSim, localids);
+
+            return AllPropertiesReceived.WaitOne(3000 + msPerRequest * objects.Count, false);
         }
 
         void Objects_OnObjectPropertiesFamily(Simulator simulator, LLObject.ObjectPropertiesFamily properties)

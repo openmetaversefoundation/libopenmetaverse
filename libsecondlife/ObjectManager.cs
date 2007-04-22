@@ -620,6 +620,30 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Select multiple objects. This will trigger the simulator to send us
+        /// back ObjectProperties for each object
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localIDs"></param>
+        public void SelectObjects(Simulator simulator, uint[] localIDs)
+        {
+            ObjectSelectPacket select = new ObjectSelectPacket();
+
+            select.AgentData.AgentID = Client.Network.AgentID;
+            select.AgentData.SessionID = Client.Network.SessionID;
+
+            select.ObjectData = new ObjectSelectPacket.ObjectDataBlock[localIDs.Length];
+
+            for (int i = 0; i < localIDs.Length; i++)
+            {
+                select.ObjectData[i] = new ObjectSelectPacket.ObjectDataBlock();
+                select.ObjectData[i].ObjectLocalID = localIDs[i];
+            }
+
+            Client.Network.SendPacket(select, simulator);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="simulator"></param>
@@ -1213,6 +1237,7 @@ namespace libsecondlife
                 data.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
                 data.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
                 data.ProfileHollow = block.ProfileHollow;
+                data.PCode = pcode;
                 #endregion
 
                 #region Decode Additional packed parameters in ObjectData
@@ -1375,7 +1400,7 @@ namespace libsecondlife
                         prim.JointAxisOrAnchor = block.JointAxisOrAnchor;
                         
                         // Object parameters
-                        prim.data = data;
+                        prim.Data = data;
 
                         // Textures, texture animations, particle system, and extra params
                         prim.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, 
@@ -1455,7 +1480,7 @@ namespace libsecondlife
                         avatar.Rotation = rotation;
                         avatar.AngularVelocity = angularVelocity;
                         avatar.NameValues = nameValues;
-                        avatar.data = data;
+                        avatar.Data = data;
                         avatar.GenericData = block.Data;
 
                         SetAvatarSittingOn(avatar, block.ParentID);
@@ -1685,6 +1710,7 @@ namespace libsecondlife
                     prim.LocalID = LocalID;
                     prim.ID = FullID;
                     prim.Flags = (LLObject.ObjectFlags)block.UpdateFlags;
+                    prim.Data.PCode = pcode;
 
                     switch (pcode)
                     {
@@ -1694,11 +1720,11 @@ namespace libsecondlife
                             #region Foliage Decoding
 
                             // State
-                            prim.data.State = (uint)block.Data[i++];
+                            prim.Data.State = (uint)block.Data[i++];
                             // CRC
                             i += 4;
                             // Material
-                            prim.data.Material = (uint)block.Data[i++];
+                            prim.Data.Material = (uint)block.Data[i++];
                             // Click action
                             prim.ClickAction = (ClickAction)block.Data[i++];
                             // Scale
@@ -1723,11 +1749,11 @@ namespace libsecondlife
                         case PCode.Prim:
                             #region Decode block and update Prim
                             // State
-                            prim.data.State = (uint)block.Data[i++];
+                            prim.Data.State = (uint)block.Data[i++];
                             // CRC
                             i += 4;
                             // Material
-                            prim.data.Material = (uint)block.Data[i++];
+                            prim.Data.Material = (uint)block.Data[i++];
                             // Click action
                             prim.ClickAction = (ClickAction)block.Data[i++];
                             // Scale
@@ -1872,25 +1898,25 @@ namespace libsecondlife
                                 }
                             }
 
-                            prim.data.PathCurve = (uint)block.Data[i++];
-                            prim.data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
-                            prim.data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
-                            prim.data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
-                            prim.data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
-                            prim.data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
-                            prim.data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
-                            prim.data.PathTwist = (int)block.Data[i++];
-                            prim.data.PathTwistBegin = (int)block.Data[i++];
-                            prim.data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
-                            prim.data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
-                            prim.data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
-                            prim.data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
+                            prim.Data.PathCurve = (uint)block.Data[i++];
+                            prim.Data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
+                            prim.Data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
+                            prim.Data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
+                            prim.Data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
+                            prim.Data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
+                            prim.Data.PathShearY = LLObject.PathShearFloat(block.Data[i++]);
+                            prim.Data.PathTwist = (int)block.Data[i++];
+                            prim.Data.PathTwistBegin = (int)block.Data[i++];
+                            prim.Data.PathRadiusOffset = LLObject.PathRadiusOffsetFloat((sbyte)block.Data[i++]);
+                            prim.Data.PathTaperX = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                            prim.Data.PathTaperY = LLObject.PathTaperFloat((sbyte)block.Data[i++]);
+                            prim.Data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
+                            prim.Data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
 
-                            prim.data.ProfileCurve = (uint)block.Data[i++];
-                            prim.data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
-                            prim.data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
-                            prim.data.ProfileHollow = (uint)block.Data[i++];
+                            prim.Data.ProfileCurve = (uint)block.Data[i++];
+                            prim.Data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
+                            prim.Data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
+                            prim.Data.ProfileHollow = (uint)block.Data[i++];
 
                             // TextureEntry
                             int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +

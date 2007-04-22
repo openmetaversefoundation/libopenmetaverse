@@ -233,6 +233,8 @@ namespace libsecondlife
             public enum RequestFlagsType
             {
                 /// <summary></summary>
+                None = 0,
+                /// <summary></summary>
                 BugReportRequest = 1,
                 /// <summary></summary>
                 ComplaintReportRequest = 2
@@ -310,22 +312,16 @@ namespace libsecondlife
         /// <summary></summary>
         public ObjectProperties Properties;
         /// <summary></summary>
+        [XmlIgnore]
         public ObjectPropertiesFamily PropertiesFamily;
         /// <summary></summary>
         public NameValue[] NameValues;
+        /// <summary></summary>
+        public ObjectData Data;
 
         #endregion Public Members
 
 
-        #region Public Properties
-
-        /// <summary></summary>
-        public ObjectData Data { get { return data; } }
-
-        #endregion Public Properties
-
-
-        internal ObjectData data;
         //internal DateTime lastInterpolation;
 
 
