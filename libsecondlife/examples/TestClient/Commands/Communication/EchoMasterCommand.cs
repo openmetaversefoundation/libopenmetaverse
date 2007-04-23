@@ -33,7 +33,7 @@ namespace libsecondlife.TestClient
 		void Self_OnChat(string message, MainAvatar.ChatAudibleLevel audible, MainAvatar.ChatType type, 
             MainAvatar.ChatSourceType sourcetype, string fromName, LLUUID id, LLUUID ownerid, LLVector3 position)
 		{
-			if (message.Length > 0 && Client.Master == fromName)
+			if (message.Length > 0 && Client.MasterKey == id)
 			{
 			    Client.Self.Chat(message, 0, MainAvatar.ChatType.Normal);
 			}

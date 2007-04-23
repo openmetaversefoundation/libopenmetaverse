@@ -503,6 +503,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCached, new NetworkManager.PacketCallback(CachedUpdateHandler));
             Client.Network.RegisterCallback(PacketType.KillObject, new NetworkManager.PacketCallback(KillObjectHandler));
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, new NetworkManager.PacketCallback(ObjectPropertiesFamilyHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectProperties, new NetworkManager.PacketCallback(ObjectPropertiesHandler));
 
             // If the callbacks aren't registered there's not point in doing client-side path prediction,
             // so we set it up here

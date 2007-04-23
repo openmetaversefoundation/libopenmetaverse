@@ -21,9 +21,6 @@ namespace libsecondlife.TestClient
 				target = target + args[ct] + " ";
 			target = target.TrimEnd();
 
-			if (target.Length == 0)
-				target = Client.Master;
-
             if (target.Length > 0)
             {
                 if (Follow(target))
@@ -33,7 +30,10 @@ namespace libsecondlife.TestClient
             }
             else
             {
-                return "No target specified and no master is set. usage: follow [FirstName LastName])";
+                if (Follow(Client.MasterKey))
+                    return "Following " + Client.MasterKey;
+                else
+                    return "No target specified and no master not found. usage: follow [FirstName LastName])";
             }
 		}
 
@@ -50,6 +50,20 @@ namespace libsecondlife.TestClient
 					Active = true;
 	                return true;
 				}
+            }
+            return false;
+        }
+
+        bool Follow(LLUUID id)
+        {
+            foreach (Avatar av in Client.AvatarList.Values)
+            {
+                if (av.ID == id)
+                {
+                    followAvatar = av;
+                    Active = true;
+                    return true;
+                }
             }
             return false;
         }

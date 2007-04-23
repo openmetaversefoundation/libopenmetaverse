@@ -178,6 +178,13 @@ namespace libsecondlife
             public bool ReservedNewbie;
         }
 
+        public struct AgentSearchData {
+            public bool Online;
+            public string FirstName;
+            public string LastName;
+            public LLUUID AgentID;
+        }
+
         /*/// <summary></summary>
         public LLUUID OwnerID;
         /// <summary></summary>
@@ -207,6 +214,11 @@ namespace libsecondlife
         /// <param name="dirParcels"></param>
         public delegate void DirLandReplyCallback(List<DirectoryParcel> dirParcels);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="matchedPeople"></param>
+        public delegate void DirPeopleReplyCallback(LLUUID queryID, List<AgentSearchData> matchedPeople);
 
         /// <summary>
         /// 
@@ -217,6 +229,7 @@ namespace libsecondlife
         /// </summary>
         public event DirLandReplyCallback OnDirLandReply;
 
+        public event DirPeopleReplyCallback OnDirPeopleReply;
 
         private SecondLife Client;
 
@@ -227,6 +240,8 @@ namespace libsecondlife
 
             Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
+
         }
 
         public LLUUID StartClassifiedSearch(string searchText, ClassifiedCategories categories, bool mature)
@@ -328,6 +343,20 @@ namespace libsecondlife
             return queryID;
         }
 
+        public LLUUID StartPeopleSearch(DirFindFlags findFlags, String searchText)
+        {
+            LLUUID queryID = LLUUID.Random();
+            DirFindQueryPacket find = new DirFindQueryPacket();
+            find.AgentData.AgentID = Client.Network.AgentID;
+            find.AgentData.SessionID = Client.Network.SessionID;
+            find.QueryData.QueryFlags = (uint)findFlags;
+            find.QueryData.QueryText = Helpers.StringToField(searchText);
+            find.QueryData.QueryID = queryID;
+            find.QueryData.QueryStart = 0;
+            Client.Network.SendPacket(find);
+            return queryID;
+        }
+
         private void DirClassifiedReplyHandler(Packet packet, Simulator simulator)
         {
             if (OnClassifiedReply != null)
@@ -377,6 +406,25 @@ namespace libsecondlife
                 }
 
                 try { OnDirLandReply(parcelsForSale); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        protected void DirPeopleReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnDirPeopleReply != null)
+            {
+                DirPeopleReplyPacket peopleReply = packet as DirPeopleReplyPacket;
+                List<AgentSearchData> matches = new List<AgentSearchData>(peopleReply.QueryReplies.Length);
+                foreach (DirPeopleReplyPacket.QueryRepliesBlock reply in peopleReply.QueryReplies) {
+                    AgentSearchData searchData = new AgentSearchData();
+                    searchData.Online = reply.Online;
+                    searchData.FirstName = Helpers.FieldToUTF8String(reply.FirstName);
+                    searchData.LastName = Helpers.FieldToUTF8String(reply.LastName);
+                    searchData.AgentID = reply.AgentID;
+                    matches.Add(searchData);
+                }
+                try { OnDirPeopleReply(peopleReply.QueryData.QueryID, matches); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }

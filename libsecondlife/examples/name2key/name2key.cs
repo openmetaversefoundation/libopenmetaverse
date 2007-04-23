@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -33,28 +34,30 @@ namespace name2key
 {
 	class name2key
 	{
-		static bool waiting = true;
+        private static AutoResetEvent queryEvent = new AutoResetEvent(false);
+        private static LLUUID queryID = LLUUID.Zero;
 
-		public static void QueryHandler(Packet packet, Simulator simulator)
-		{
-            DirPeopleReplyPacket reply = (DirPeopleReplyPacket)packet;
-
-            if (reply.QueryReplies.Length < 1)
+        public static void DirQueryHandler(LLUUID queryid, List<DirectoryManager.AgentSearchData> results)
+        {
+            if (queryID == queryid)
             {
-                Console.WriteLine("ERROR: Got an empty reply");
-            }
-            else
-            {
-                if (reply.QueryReplies.Length > 1)
+                if (results.Count < 1)
                 {
-                    Console.WriteLine("ERROR: Ambiguous name. Returning first match");
+                    Console.WriteLine("ERROR: Got an empty reply");
+                }
+                else
+                {
+                    if (results.Count > 1)
+                    {
+                        Console.WriteLine("ERROR: Ambiguous name. Returning first match");
+                    }
+
+                    Console.WriteLine("UUID: " + results[0].AgentID.ToString());
                 }
 
-                Console.WriteLine("UUID: " + reply.QueryReplies[0].AgentID.ToString());
+                queryEvent.Set();
             }
-
-			waiting = false;
-		}
+        }
 
 		/// <summary>
 		/// The main entry point for the application.
@@ -73,8 +76,7 @@ namespace name2key
 			client = new SecondLife();
 
 			// Setup the callback
-            // FIXME: Rewrite this code as soon as people searching is added to DirectoryManager
-            client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(QueryHandler));
+            client.Directory.OnDirPeopleReply += new DirectoryManager.DirPeopleReplyCallback(DirQueryHandler);
 
 			if (!client.Network.Login(args[0], args[1], args[2], "name2key", "jhurliman@wsu.edu"))
 			{
@@ -84,22 +86,10 @@ namespace name2key
 			}
 
 			// Send the Query
-            DirFindQueryPacket find = new DirFindQueryPacket();
-            find.AgentData.AgentID = client.Network.AgentID;
-            find.AgentData.SessionID = client.Network.SessionID;
-            find.QueryData.QueryFlags = 1;
-            find.QueryData.QueryText = Helpers.StringToField(args[3] + " " + args[4]);
-            find.QueryData.QueryID = LLUUID.Random();
-            find.QueryData.QueryStart = 0;
+            queryID = client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, args[3] + " " + args[4]);
             
-			client.Network.SendPacket((Packet)find);
-
-			while (waiting)
-			{
-                // FIXME: Sleeping while loops are a poor example, this is supposed to be
-                // model code. Replace this with a ManualResetEvent
-                System.Threading.Thread.Sleep(500);
-			}
+            // Wait for the event to trigger
+            queryEvent.WaitOne(8000, false);
 
 			client.Network.Logout();
 		}

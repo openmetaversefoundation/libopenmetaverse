@@ -107,6 +107,7 @@ namespace libsecondlife.TestClient
 								}
 							}
 						}
+
                         bool complete = RequestObjectProperties(prims, 250);
 						
                         //Serialize it!
@@ -160,7 +161,7 @@ namespace libsecondlife.TestClient
 
             Client.Objects.SelectObjects(Client.Network.CurrentSim, localids);
 
-            return AllPropertiesReceived.WaitOne(3000 + msPerRequest * objects.Count, false);
+            return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
         }
 
         void Objects_OnObjectPropertiesFamily(Simulator simulator, LLObject.ObjectPropertiesFamily properties)

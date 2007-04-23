@@ -21,7 +21,8 @@ namespace libsecondlife.TestClient
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
 		public bool Running = true;
-	    public string Master = String.Empty;
+        public string MasterName = String.Empty;
+        public LLUUID MasterKey = LLUUID.Zero;
 		public ClientManager ClientManager;
         public int regionX;
         public int regionY;
@@ -47,7 +48,7 @@ namespace libsecondlife.TestClient
 
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
-            Settings.DEBUG = false;
+            Settings.DEBUG = true;
             Settings.STORE_LAND_PATCHES = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
 
@@ -280,9 +281,9 @@ namespace libsecondlife.TestClient
             bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
             MainAvatar.InstantMessageOnline offline, byte[] binaryBucket)
         {
-            if (Master != null && Master.Length > 0)
+            if (MasterKey != LLUUID.Zero)
             {
-                if (fromAgentName.ToLower().Trim() != Master.ToLower().Trim())
+                if (fromAgentID != MasterKey)
                 {
                     // Received an IM from someone that is not the bot's master, ignore
                     Console.WriteLine("<IM>" + fromAgentName + " (not master): " + message + "@"  + regionID.ToString() + ":" + position.ToString() );

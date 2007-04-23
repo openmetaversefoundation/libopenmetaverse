@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
+using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
 using libsecondlife.AssetSystem;
@@ -13,24 +14,25 @@ namespace libsecondlife.TestClient
         public string FirstName;
         public string LastName;
         public string Password;
-		public string Master;
+        public string MasterName;
+        public LLUUID MasterKey;
     }
-	
-	public class StartPosition
-	{
-		public string sim;
-		public int x;
-		public int y;
-		public int z;
-		
-		public StartPosition()
-		{
-			this.sim = null;
-			this.x = 0;
-			this.y = 0;
-			this.z = 0;
-		}
-	}
+
+    public class StartPosition
+    {
+        public string sim;
+        public int x;
+        public int y;
+        public int z;
+
+        public StartPosition()
+        {
+            this.sim = null;
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+        }
+    }
 
     public class ClientManager
     {
@@ -38,9 +40,11 @@ namespace libsecondlife.TestClient
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
-		
-		string contactPerson = String.Empty;
-		StartPosition startpos = new StartPosition();
+
+        string contactPerson = String.Empty;
+        StartPosition startpos = new StartPosition();
+        private LLUUID resolvedMasterKey = LLUUID.Zero;
+        private ManualResetEvent keyResolution = new ManualResetEvent(false);
 
         /// <summary>
         /// 
@@ -48,23 +52,23 @@ namespace libsecondlife.TestClient
         /// <param name="accounts"></param>
         public ClientManager(List<LoginDetails> accounts, string c)
         {
-			this.contactPerson = c;
+            this.contactPerson = c;
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
-		public ClientManager(List<LoginDetails> accounts, string c, string s)
-		{
-			this.contactPerson = c;
-			char sep = '/';
-			string[] startbits = s.Split(sep);
-			this.startpos.sim = startbits[0];
-			this.startpos.x = int.Parse(startbits[1]);
-			this.startpos.y = int.Parse(startbits[2]);
-			this.startpos.z = int.Parse(startbits[3]);
-			foreach (LoginDetails account in accounts)
+        public ClientManager(List<LoginDetails> accounts, string c, string s)
+        {
+            this.contactPerson = c;
+            char sep = '/';
+            string[] startbits = s.Split(sep);
+            this.startpos.sim = startbits[0];
+            this.startpos.x = int.Parse(startbits[1]);
+            this.startpos.y = int.Parse(startbits[2]);
+            this.startpos.z = int.Parse(startbits[3]);
+            foreach (LoginDetails account in accounts)
                 Login(account);
-		}
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -77,12 +81,12 @@ namespace libsecondlife.TestClient
             {
                 if (c.Self.FirstName == account.FirstName && c.Self.LastName == account.LastName)
                 {
-					Logout(c);
+                    Logout(c);
                     break;
                 }
             }
 
-			TestClient client = new TestClient(this);
+            TestClient client = new TestClient(this);
 
             // Optimize the throttle
             client.Throttle.Wind = 0;
@@ -91,23 +95,24 @@ namespace libsecondlife.TestClient
             client.Throttle.Task = 1000000;
 
 			client.SimPrims = SimPrims;
-			client.Master = account.Master;
+			client.MasterName = account.MasterName;
+            client.MasterKey = account.MasterKey;
 
 			if (!String.IsNullOrEmpty(this.startpos.sim))
             {
-				if (this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0)
+                if (this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0)
                 {
-					this.startpos.x = 128;
-					this.startpos.y = 128;
-					this.startpos.z = 1;
-				}
+                    this.startpos.x = 128;
+                    this.startpos.y = 128;
+                    this.startpos.z = 1;
+                }
 
-				string startLoc = NetworkManager.StartLocation(this.startpos.sim, this.startpos.x, this.startpos.y, 
+                string startLoc = NetworkManager.StartLocation(this.startpos.sim, this.startpos.x, this.startpos.y,
                     this.startpos.z);
-				Console.WriteLine(startLoc);
-				client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc, 
+                Console.WriteLine(startLoc);
+                client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc,
                     contactPerson);
-			}
+            }
             else
             {
                 if (!client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient",
@@ -116,10 +121,32 @@ namespace libsecondlife.TestClient
                     Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
                         client.Network.LoginMessage);
                 }
-			}
+            }
 
             if (client.Network.Connected)
             {
+                if (account.MasterKey == LLUUID.Zero && !String.IsNullOrEmpty(account.MasterName))
+                {
+                    Console.WriteLine("Resolving {0}'s UUID", account.MasterName);
+                    // Find master's key from name
+                    DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
+                    client.Directory.OnDirPeopleReply += callback;
+                    client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, account.MasterName);
+                    if (keyResolution.WaitOne(TimeSpan.FromMinutes(1), false))
+                    {
+                        account.MasterKey = resolvedMasterKey;
+                        Console.WriteLine("\"{0}\" resolved to {1}", account.MasterName, account.MasterKey);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Unable to obtain UUID for \"{0}\". No master will be used. Try specifying a key with --masterkey.", account.MasterName);
+                    }
+                    client.Directory.OnDirPeopleReply -= callback;
+                    keyResolution.Reset();
+                }
+
+                client.MasterKey = account.MasterKey;
+
                 Clients[client.Network.AgentID] = client;
 
                 Console.WriteLine("Logged in " + client.ToString());
@@ -128,20 +155,52 @@ namespace libsecondlife.TestClient
             return client;
         }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="args"></param>
-		/// <returns></returns>
-		public TestClient Login(string[] args)
-		{
+        private void KeyResolvHandler(LLUUID queryid, List<DirectoryManager.AgentSearchData> matches)
+        {
+            LLUUID master = matches[0].AgentID;
+            if (matches.Count > 1)
+            {
+                Console.WriteLine("Possible masters:");
+                for (int i = 0; i < matches.Count; ++i)
+                {
+                    Console.WriteLine("{0}: {1}", i, matches[i].FirstName + " " + matches[i].LastName);
+                }
+                Console.Write("Ambiguous master, choose one:");
+                string read = Console.ReadLine();
+                while (read != null)
+                {
+                    int choice = 0;
+                    if (int.TryParse(read, out choice))
+                    {
+                        master = matches[choice].AgentID;
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Responce misunderstood.");
+                        Console.Write("Type the corresponding number:");
+                    }
+                    read = Console.ReadLine();
+                }
+            }
+            resolvedMasterKey = master;
+            keyResolution.Set();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public TestClient Login(string[] args)
+        {
             LoginDetails account = new LoginDetails();
             account.FirstName = args[0];
             account.LastName = args[1];
             account.Password = args[2];
-			
-			return Login(account);
-		}
+
+            return Login(account);
+        }
 
         /// <summary>
         /// 
@@ -164,8 +223,8 @@ namespace libsecondlife.TestClient
             }
         }
 
-		private void PrintPrompt()
-		{
+        private void PrintPrompt()
+        {
             int online = 0;
 
             foreach (SecondLife client in Clients.Values)
@@ -174,14 +233,14 @@ namespace libsecondlife.TestClient
             }
 
             Console.Write(online + " avatars online> ");
-		}
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="cmd"></param>
-		/// <param name="fromAgentID"></param>
-		/// <param name="imSessionID"></param>
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="fromAgentID"></param>
+        /// <param name="imSessionID"></param>
         public void DoCommandAll(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
         {
             string[] tokens = cmd.Trim().Split(new char[] { ' ', '\t' });
@@ -200,49 +259,49 @@ namespace libsecondlife.TestClient
             }
             else if (firstToken == "quit")
             {
-				Quit();
-				Console.WriteLine("All clients logged out and program finished running.");
+                Quit();
+                Console.WriteLine("All clients logged out and program finished running.");
             }
             else
             {
-				// make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-				Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
+                // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
+                Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
 
-				foreach (TestClient client in clientsCopy.Values)
-					client.DoCommand(cmd, fromAgentID, imSessionID);
-			}
+                foreach (TestClient client in clientsCopy.Values)
+                    client.DoCommand(cmd, fromAgentID, imSessionID);
+            }
         }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="client"></param>
-		public void Logout(TestClient client)
-		{
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
+        public void Logout(TestClient client)
+        {
             Clients.Remove(client.Network.AgentID);
             client.Network.Logout();
-		}
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public void LogoutAll()
-		{
-			// make a copy of the clients list so that it can be iterated without fear of being changed during iteration
-			Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
+        /// <summary>
+        /// 
+        /// </summary>
+        public void LogoutAll()
+        {
+            // make a copy of the clients list so that it can be iterated without fear of being changed during iteration
+            Dictionary<LLUUID, SecondLife> clientsCopy = new Dictionary<LLUUID, SecondLife>(Clients);
 
-			foreach (TestClient client in clientsCopy.Values)
-				Logout(client);
-		}
+            foreach (TestClient client in clientsCopy.Values)
+                Logout(client);
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public void Quit()
-		{
-			LogoutAll();
-			Running = false;
-			// TODO: It would be really nice if we could figure out a way to abort the ReadLine here in so that Run() will exit.
-		}
-	}
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Quit()
+        {
+            LogoutAll();
+            Running = false;
+            // TODO: It would be really nice if we could figure out a way to abort the ReadLine here in so that Run() will exit.
+        }
+    }
 }

@@ -10,8 +10,8 @@ namespace libsecondlife.TestClient
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe --first firstname --last lastname --pass password --contact \"youremail\" [--startpos \"sim/x/y/z\"] [--master \"master name\"]" + 
-                    Environment.NewLine + "TestClient.exe --file filename --contact \"youremail\" [--master \"master name\"]");
+                    "TestClient.exe --first firstname --last lastname --pass password --contact \"youremail\" [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"]" +
+                    Environment.NewLine + "TestClient.exe --file filename --contact \"youremail\" [--master \"master name\"] [--masterkey \"master uuid\"]");
         }
 
         static void Main(string[] args)
@@ -21,13 +21,18 @@ namespace libsecondlife.TestClient
             ClientManager manager;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
-            string master = String.Empty;
+            string masterName = String.Empty;
+            LLUUID masterKey = LLUUID.Zero;
             string file = String.Empty;
 			string contact = String.Empty;
 
+            if (arguments["masterkey"] != null)
+            {
+                masterKey = LLUUID.Parse(arguments["masterkey"]);
+            }
             if (arguments["master"] != null)
             {
-                master = arguments["master"];
+                masterName = arguments["master"];
             }
 
 			if (arguments["contact"] != null)
@@ -103,8 +108,11 @@ namespace libsecondlife.TestClient
                     return;
                 }
 
-			foreach (LoginDetails a in accounts)
-				a.Master = master;
+                foreach (LoginDetails a in accounts)
+                {
+                    a.MasterName = masterName;
+                    a.MasterKey = masterKey;
+                }
 
             // Login the accounts and run the input loop
 			if ( arguments["start"] != null ) {
