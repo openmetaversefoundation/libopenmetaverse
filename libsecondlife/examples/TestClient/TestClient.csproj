@@ -80,6 +80,7 @@
     <Compile Include="Commands\LoadCommand.cs" />
     <Compile Include="Commands\PrimCountCommand.cs" />
     <Compile Include="Commands\SetMasterKeyCommand.cs" />
+    <Compile Include="Commands\ShowEffectsCommand.cs" />
     <Compile Include="Commands\StatsCommand.cs" />
     <Compile Include="Commands\TouchCommand.cs" />
     <Compile Include="Commands\TreeCommand.cs" />

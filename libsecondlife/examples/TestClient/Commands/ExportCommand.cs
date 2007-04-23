@@ -14,6 +14,7 @@ namespace libsecondlife.TestClient
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
         LLObject.ObjectPropertiesFamily Properties;
         bool GotPermissions = false;
+        LLUUID SelectedObject = LLUUID.Zero;
 
         Dictionary<LLUUID, Primitive> PrimsWaiting = new Dictionary<LLUUID, Primitive>();
         AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
@@ -22,22 +23,33 @@ namespace libsecondlife.TestClient
         {
             testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectPropertiesFamily);
             testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
+            testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
+
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            if (args.Length != 2)
+            if (args.Length != 2 && !(args.Length == 1 && SelectedObject != LLUUID.Zero))
                 return "Usage: export uuid outputfile.xml";
 
             LLUUID id;
             uint localid = 0;
             int count = 0;
-            string file = args[1];
+            string file;
 
-            if (!LLUUID.TryParse(args[0], out id))
-                return "Usage: export uuid outputfile.xml";
+            if (args.Length == 2)
+            {
+                file = args[1];
+                if (!LLUUID.TryParse(args[0], out id))
+                    return "Usage: export uuid outputfile.xml";
+            }
+            else
+            {
+                file = args[0];
+                id = SelectedObject;
+            }
             
             lock (Client.SimPrims)
             {
@@ -48,13 +60,9 @@ namespace libsecondlife.TestClient
                         if (prim.ID == id)
                         {
                             if (prim.ParentID != 0)
-                            {
                                 localid = prim.ParentID;
-                            }
                             else
-                            {
                                 localid = prim.LocalID;
-                            }
 
                             break;
                         }
@@ -75,9 +83,10 @@ namespace libsecondlife.TestClient
                 else
                 {
                     GotPermissions = false;
-                    if (Properties.OwnerID != Client.Network.AgentID && Client.Network.AgentID != Client.Self.ID)
+                    if (Properties.OwnerID != Client.Network.AgentID && 
+                        Properties.OwnerID != Client.MasterKey && 
+                        Client.Network.AgentID != Client.Self.ID)
                     {
-                        // FIXME: We need a MasterID field, those exports should be allowed as well
                         return "That object is owned by " + Properties.OwnerID + ", we don't have permission " +
                             "to export it";
                     }
@@ -162,6 +171,16 @@ namespace libsecondlife.TestClient
             Client.Objects.SelectObjects(Client.Network.CurrentSim, localids);
 
             return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
+        }
+
+        void Avatars_OnPointAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
+            MainAvatar.PointAtType pointType, float duration, LLUUID id)
+        {
+            if (sourceID == Client.MasterKey)
+            {
+                //Client.DebugLog("Master is now selecting " + targetID.ToStringHyphenated());
+                SelectedObject = targetID;
+            }
         }
 
         void Objects_OnObjectPropertiesFamily(Simulator simulator, LLObject.ObjectPropertiesFamily properties)

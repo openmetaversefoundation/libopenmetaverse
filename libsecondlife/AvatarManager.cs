@@ -78,6 +78,39 @@ namespace libsecondlife
         /// <param name="queryID"></param>
         /// <param name="avatars"></param>
         public delegate void AvatarNameSearchCallback(LLUUID queryID, Dictionary<LLUUID, string> avatars);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sourceID"></param>
+        /// <param name="targetID"></param>
+        /// <param name="targetPos"></param>
+        /// <param name="pointType"></param>
+        /// <param name="duration"></param>
+        /// <param name="id"></param>
+        public delegate void PointAtCallback(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
+            MainAvatar.PointAtType pointType, float duration, LLUUID id);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sourceID"></param>
+        /// <param name="targetID"></param>
+        /// <param name="targetPos"></param>
+        /// <param name="lookType"></param>
+        /// <param name="duration"></param>
+        /// <param name="id"></param>
+        public delegate void LookAtCallback(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos,
+            MainAvatar.LookAtType lookType, float duration, LLUUID id);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="sourceID"></param>
+        /// <param name="targetID"></param>
+        /// <param name="targetPos"></param>
+        /// <param name="duration"></param>
+        /// <param name="id"></param>
+        public delegate void EffectCallback(MainAvatar.EffectType type, LLUUID sourceID, LLUUID targetID,
+            LLVector3d targetPos, float duration, LLUUID id);
 
 
         /// <summary>Triggered whenever a friend comes online or goes offline</summary>
@@ -94,6 +127,12 @@ namespace libsecondlife
         public event AvatarGroupsCallback OnAvatarGroups;
         /// <summary></summary>
         public event AvatarNameSearchCallback OnAvatarNameSearch;
+        /// <summary></summary>
+        public event PointAtCallback OnPointAt;
+        /// <summary></summary>
+        public event LookAtCallback OnLookAt;
+        /// <summary></summary>
+        public event EffectCallback OnEffect;
 
         private SecondLife Client;
 
@@ -189,6 +228,8 @@ namespace libsecondlife
 
             Client.Network.SendPacket(aprp);
         }
+
+        #region Packet Handlers
 
         /// <summary>
         /// Process an incoming UUIDNameReply Packet and insert Full Names into the Avatars Dictionary
@@ -368,18 +409,7 @@ namespace libsecondlife
 
             foreach (ViewerEffectPacket.EffectBlock block in effect.Effect)
             {
-                MainAvatar.EffectType type;
-
-                try
-                {
-                    type = (MainAvatar.EffectType)block.Type;
-                }
-                catch (Exception)
-                {
-                    Client.Log("Received a ViewerEffect block with an unknown type " + block.Type,
-                        Helpers.LogLevel.Warning);
-                    continue;
-                }
+                MainAvatar.EffectType type = (MainAvatar.EffectType)block.Type;
 
                 //LLColor color;
                 //if (block.Color.Length == 4)
@@ -388,87 +418,120 @@ namespace libsecondlife
                 //}
                 //else
                 //{
-                //    Client.Log("Received a ViewerEffect.EffectBlock.Color array with " + block.Color.Length + " bytes",
-                //        Helpers.LogLevel.Warning);
-                //    color = new LLColor();
+                //    Client.Log("Received a ViewerEffect.EffectBlock.Color array with " + block.Color.Length + 
+                //        " bytes", Helpers.LogLevel.Warning);
+                //    color = LLColor.Black;
                 //}
 
                 // Each ViewerEffect type uses it's own custom binary format for additional data. Fun eh?
                 switch (type)
                 {
                     case MainAvatar.EffectType.Text:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.Icon:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.Connector:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.FlexibleObject:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.AnimalControls:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.AnimationObject:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.Cloth:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
-                    case MainAvatar.EffectType.Beam:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case MainAvatar.EffectType.Glow:
                         Client.Log("Received a Glow ViewerEffect which is not implemented yet",
                             Helpers.LogLevel.Warning);
                         break;
+                    case MainAvatar.EffectType.Beam:
                     case MainAvatar.EffectType.Point:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
                     case MainAvatar.EffectType.Trail:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
                     case MainAvatar.EffectType.Sphere:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
                     case MainAvatar.EffectType.Spiral:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
-                        break;
                     case MainAvatar.EffectType.Edit:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        if (OnEffect != null)
+                        {
+                            if (block.TypeData.Length == 56)
+                            {
+                                LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
+                                LLUUID targetObject = new LLUUID(block.TypeData, 16);
+                                LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
+
+                                try { OnEffect(type, sourceAvatar, targetObject, targetPos, block.Duration, block.ID); }
+                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            }
+                            else
+                            {
+                                Client.Log("Received a " + type.ToString() + 
+                                    " ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                            }
+                        }
                         break;
                     case MainAvatar.EffectType.LookAt:
-                        //Client.DebugLog("Received a ViewerEffect of type " + type.ToString() + ", implement me!");
+                        if (OnLookAt != null)
+                        {
+                            if (block.TypeData.Length == 57)
+                            {
+                                LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
+                                LLUUID targetObject = new LLUUID(block.TypeData, 16);
+                                LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
+                                MainAvatar.LookAtType lookAt = (MainAvatar.LookAtType)block.TypeData[56];
+
+                                try { OnLookAt(sourceAvatar, targetObject, targetPos, lookAt, block.Duration,
+                                    block.ID); }
+                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            }
+                            else
+                            {
+                                Client.Log("Received a LookAt ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                            }
+                        }
                         break;
                     case MainAvatar.EffectType.PointAt:
-/*                      if (block.TypeData.Length == 57)
+                        if (OnPointAt != null)
                         {
-                            LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
-                            LLUUID targetObject = new LLUUID(block.TypeData, 16);
-                            LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
-                            MainAvatar.PointAtType pointAt;
-                            try
+                            if (block.TypeData.Length == 57)
                             {
-                                pointAt = (MainAvatar.PointAtType)block.TypeData[56];
-                            }
-                            catch (Exception)
-                            {
-                                Client.Log("Unrecognized PointAtType " + block.TypeData[56], Helpers.LogLevel.Warning);
-                                pointAt = MainAvatar.PointAtType.Clear;
-                            }
+                                LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
+                                LLUUID targetObject = new LLUUID(block.TypeData, 16);
+                                LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
+                                MainAvatar.PointAtType pointAt = (MainAvatar.PointAtType)block.TypeData[56];
 
-                            // TODO: Create a OnAvatarPointAt event and call it here
+                                try { OnPointAt(sourceAvatar, targetObject, targetPos, pointAt, block.Duration, 
+                                    block.ID); }
+                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                            }
+                            else
+                            {
+                                Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
+                            }
                         }
-                        else
-                        {
-                            Client.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
-                                block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
-                        } */
+                        break;
+                    default:
+                        Client.Log("Received a ViewerEffect with an unknown type " + type, Helpers.LogLevel.Warning);
                         break;
                 }
             }
         }
+
+        #endregion Packet Handlers
     }
 }

@@ -402,7 +402,7 @@ namespace libsecondlife
         /// The action an avatar is doing when looking at something, used in 
         /// ViewerEffect packets for the LookAt effect
         /// </summary>
-        public enum LookAtTarget : byte
+        public enum LookAtType : byte
         {
             /// <summary></summary>
 	        None,
@@ -979,7 +979,7 @@ namespace libsecondlife
         /// <param name="targetObject"></param>
         /// <param name="globalOffset"></param>
         /// <param name="type"></param>
-        public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtTarget type)
+        public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
 
@@ -990,27 +990,27 @@ namespace libsecondlife
 
             switch (type)
             {
-                case LookAtTarget.Clear:
+                case LookAtType.Clear:
                     duration = 0.0f;
                     break;
-                case LookAtTarget.Hover:
+                case LookAtType.Hover:
                     duration = 1.0f;
                     break;
-                case LookAtTarget.FreeLook:
+                case LookAtType.FreeLook:
                     duration = 2.0f;
                     break;
-                case LookAtTarget.Idle:
+                case LookAtType.Idle:
                     duration = 3.0f;
                     break;
-                case LookAtTarget.AutoListen:
-                case LookAtTarget.Respond:
+                case LookAtType.AutoListen:
+                case LookAtType.Respond:
                     duration = 4.0f;
                     break;
-                case LookAtTarget.None:
-                case LookAtTarget.Conversation:
-                case LookAtTarget.Select:
-                case LookAtTarget.Focus:
-                case LookAtTarget.Mouselook:
+                case LookAtType.None:
+                case LookAtType.Conversation:
+                case LookAtType.Select:
+                case LookAtType.Focus:
+                case LookAtType.Mouselook:
                     duration = Single.MaxValue / 2.0f;
                     break;
                 default:
