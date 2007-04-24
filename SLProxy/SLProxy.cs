@@ -351,7 +351,13 @@ namespace SLProxy
 
                     try
                     {
-                        Thread connThread = new Thread((ThreadStart)delegate { ProxyHTTP(client); });
+                        Thread connThread = new Thread((ThreadStart)delegate {
+				try {
+					ProxyHTTP(client);
+				} catch (Exception e) {
+					Console.WriteLine("ProxyHTTP: {0}", e.Message);
+				}
+			});
                         connThread.Start();
                     }
                     catch (Exception e)
