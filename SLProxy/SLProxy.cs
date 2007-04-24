@@ -32,6 +32,7 @@
 
 // #define DEBUG_SEQUENCE
 // #define DEBUG_CAPS
+// #define DEBUG_THREADS
 
 using Nwc.XmlRpc;
 using System;
@@ -225,7 +226,14 @@ namespace SLProxy
         // KeepAlive: blocks until the proxy is free to shut down
         public void KeepAlive()
         {
-            lock (keepAliveLock) { };
+#if DEBUG_THREADS
+		Console.WriteLine(">T> KeepAlive");
+#endif
+           lock (keepAliveLock) { };
+#if DEBUG_THREADS
+		Console.WriteLine("<T< KeepAlive");
+#endif
+
         }
 
         // SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
@@ -337,6 +345,9 @@ namespace SLProxy
         // RunLoginProxy: process login requests from clients
         private void RunLoginProxy()
         {
+#if DEBUG_THREADS
+		Console.WriteLine(">T> RunLoginProxy");
+#endif
             try
             {
                 for (; ; )
@@ -353,11 +364,18 @@ namespace SLProxy
                     {
                         Thread connThread = new Thread((ThreadStart)delegate {
 				try {
+#if DEBUG_THREADS
+					Console.WriteLine(">T> ProxyHTTP");
+#endif
 					ProxyHTTP(client);
+#if DEBUG_THREADS
+					Console.WriteLine("<T< ProxyHTTP");
 				} catch (Exception e) {
 					Console.WriteLine("ProxyHTTP: {0}", e.Message);
 				}
+#endif
 			});
+			connThread.IsBackground = true;
                         connThread.Start();
                     }
                     catch (Exception e)
@@ -381,6 +399,9 @@ namespace SLProxy
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
             }
+#if DEBUG_THREADS
+		Console.WriteLine("<T< RunLoginProxy");
+#endif
         }
 
         private class HandyNetReader
@@ -1074,6 +1095,9 @@ namespace SLProxy
         // RunSimProxy: start listening for packets from remote sims
         private void RunSimProxy()
         {
+#if DEBUG_THREADS
+		Console.WriteLine(">R> RunSimProxy");
+#endif
             simFacingSocket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref remoteEndPoint, new AsyncCallback(ReceiveFromSim), null);
         }
 
@@ -1335,6 +1359,9 @@ namespace SLProxy
             // BackgroundTasks: resend unacknowledged packets and keep data structures clean
             private void BackgroundTasks()
             {
+#if DEBUG_THREADS
+		    Console.WriteLine(">T> BackgroundTasks-{0}", LocalEndPoint().Port);
+#endif
                 try
                 {
                     int tick = 1;
@@ -1416,6 +1443,9 @@ namespace SLProxy
                     Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
                 }
+#if DEBUG_THREADS
+		Console.WriteLine("<T< BackgroundTasks");
+#endif
             }
 
             // LocalEndPoint: return the endpoint that the client should communicate with
@@ -1435,6 +1465,9 @@ namespace SLProxy
                 Thread backgroundTasks = new Thread(new ThreadStart(BackgroundTasks));
                 backgroundTasks.IsBackground = true;
                 backgroundTasks.Start();
+#if DEBUG_THREADS
+		Console.WriteLine(">R> Run-{0}", LocalEndPoint().Port);
+#endif
                 socket.BeginReceiveFrom(receiveBuffer, 0, receiveBuffer.Length, SocketFlags.None, ref clientEndPoint, new AsyncCallback(ReceiveFromClient), null);
             }
 
