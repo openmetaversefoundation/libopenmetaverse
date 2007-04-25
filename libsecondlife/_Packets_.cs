@@ -589,6 +589,8 @@ namespace libsecondlife.Packets
         ScriptRunningReply,
         SetScriptRunning,
         ScriptReset,
+        ScriptSensorRequest,
+        ScriptSensorReply,
         CompleteAgentMovement,
         AgentMovementComplete,
         ConnectAgentToUserserver,
@@ -1020,6 +1022,8 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(ScriptRunningReplyPacket))]
     [XmlInclude(typeof(SetScriptRunningPacket))]
     [XmlInclude(typeof(ScriptResetPacket))]
+    [XmlInclude(typeof(ScriptSensorRequestPacket))]
+    [XmlInclude(typeof(ScriptSensorReplyPacket))]
     [XmlInclude(typeof(CompleteAgentMovementPacket))]
     [XmlInclude(typeof(AgentMovementCompletePacket))]
     [XmlInclude(typeof(ConnectAgentToUserserverPacket))]
@@ -1469,6 +1473,8 @@ namespace libsecondlife.Packets
                         case 276: return PacketType.ScriptRunningReply;
                         case 277: return PacketType.SetScriptRunning;
                         case 278: return PacketType.ScriptReset;
+                        case 279: return PacketType.ScriptSensorRequest;
+                        case 280: return PacketType.ScriptSensorReply;
                         case 281: return PacketType.CompleteAgentMovement;
                         case 282: return PacketType.AgentMovementComplete;
                         case 284: return PacketType.ConnectAgentToUserserver;
@@ -1932,6 +1938,8 @@ namespace libsecondlife.Packets
                         case 276: return new ScriptRunningReplyPacket(header, bytes, ref i);
                         case 277: return new SetScriptRunningPacket(header, bytes, ref i);
                         case 278: return new ScriptResetPacket(header, bytes, ref i);
+                        case 279: return new ScriptSensorRequestPacket(header, bytes, ref i);
+                        case 280: return new ScriptSensorReplyPacket(header, bytes, ref i);
                         case 281: return new CompleteAgentMovementPacket(header, bytes, ref i);
                         case 282: return new AgentMovementCompletePacket(header, bytes, ref i);
                         case 284: return new ConnectAgentToUserserverPacket(header, bytes, ref i);
@@ -37569,6 +37577,386 @@ namespace libsecondlife.Packets
             string output = "--- ScriptReset ---" + Environment.NewLine;
                 output += Script.ToString() + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
+            return output;
+        }
+
+    }
+
+    /// <exclude/>
+    public class ScriptSensorRequestPacket : Packet
+    {
+        /// <exclude/>
+        [XmlType("scriptsensorrequest_requester")]
+        public class RequesterBlock
+        {
+            public float Arc;
+            public LLUUID RequestID;
+            public LLUUID SearchID;
+            private byte[] _searchname;
+            public byte[] SearchName
+            {
+                get { return _searchname; }
+                set
+                {
+                    if (value == null) { _searchname = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _searchname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _searchname, 0, value.Length); }
+                }
+            }
+            public int Type;
+            public ulong RegionHandle;
+            public LLQuaternion SearchDir;
+            public byte SearchRegions;
+            public LLVector3 SearchPos;
+            public float Range;
+            public LLUUID SourceID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    int length = 93;
+                    if (SearchName != null) { length += 1 + SearchName.Length; }
+                    return length;
+                }
+            }
+
+            public RequesterBlock() { }
+            public RequesterBlock(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
+                    Arc = BitConverter.ToSingle(bytes, i); i += 4;
+                    RequestID = new LLUUID(bytes, i); i += 16;
+                    SearchID = new LLUUID(bytes, i); i += 16;
+                    length = (ushort)bytes[i++];
+                    _searchname = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _searchname, 0, length); i += length;
+                    Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
+                    SearchDir = new LLQuaternion(bytes, i, true); i += 12;
+                    SearchRegions = (byte)bytes[i++];
+                    SearchPos = new LLVector3(bytes, i); i += 12;
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
+                    Range = BitConverter.ToSingle(bytes, i); i += 4;
+                    SourceID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                byte[] ba;
+                ba = BitConverter.GetBytes(Arc);
+                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(RequestID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SearchID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(SearchName == null) { Console.WriteLine("Warning: SearchName is null, in " + this.GetType()); }
+                bytes[i++] = (byte)SearchName.Length;
+                Buffer.BlockCopy(SearchName, 0, bytes, i, SearchName.Length); i += SearchName.Length;
+                bytes[i++] = (byte)(Type % 256);
+                bytes[i++] = (byte)((Type >> 8) % 256);
+                bytes[i++] = (byte)((Type >> 16) % 256);
+                bytes[i++] = (byte)((Type >> 24) % 256);
+                bytes[i++] = (byte)(RegionHandle % 256);
+                bytes[i++] = (byte)((RegionHandle >> 8) % 256);
+                bytes[i++] = (byte)((RegionHandle >> 16) % 256);
+                bytes[i++] = (byte)((RegionHandle >> 24) % 256);
+                bytes[i++] = (byte)((RegionHandle >> 32) % 256);
+                bytes[i++] = (byte)((RegionHandle >> 40) % 256);
+                bytes[i++] = (byte)((RegionHandle >> 48) % 256);
+                bytes[i++] = (byte)((RegionHandle >> 56) % 256);
+                Buffer.BlockCopy(SearchDir.GetBytes(), 0, bytes, i, 12); i += 12;
+                bytes[i++] = SearchRegions;
+                Buffer.BlockCopy(SearchPos.GetBytes(), 0, bytes, i, 12); i += 12;
+                ba = BitConverter.GetBytes(Range);
+                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- Requester --");
+                output.AppendLine(String.Format("Arc: {0}", Arc));
+                output.AppendLine(String.Format("RequestID: {0}", RequestID));
+                output.AppendLine(String.Format("SearchID: {0}", SearchID));
+                Helpers.FieldToString(output, SearchName, "SearchName");
+                output.Append(Environment.NewLine);
+                output.AppendLine(String.Format("Type: {0}", Type));
+                output.AppendLine(String.Format("RegionHandle: {0}", RegionHandle));
+                output.AppendLine(String.Format("SearchDir: {0}", SearchDir));
+                output.AppendLine(String.Format("SearchRegions: {0}", SearchRegions));
+                output.AppendLine(String.Format("SearchPos: {0}", SearchPos));
+                output.AppendLine(String.Format("Range: {0}", Range));
+                output.Append(String.Format("SourceID: {0}", SourceID));
+                return output.ToString();
+            }
+        }
+
+        private Header header;
+        public override Header Header { get { return header; } set { header = value; } }
+        public override PacketType Type { get { return PacketType.ScriptSensorRequest; } }
+        public RequesterBlock Requester;
+
+        public ScriptSensorRequestPacket()
+        {
+            Header = new LowHeader();
+            Header.ID = 279;
+            Header.Reliable = true;
+            Header.Zerocoded = true;
+            Requester = new RequesterBlock();
+        }
+
+        public ScriptSensorRequestPacket(byte[] bytes, ref int i)
+        {
+            int packetEnd = bytes.Length - 1;
+            Header = new LowHeader(bytes, ref i, ref packetEnd);
+            Requester = new RequesterBlock(bytes, ref i);
+        }
+
+        public ScriptSensorRequestPacket(Header head, byte[] bytes, ref int i)
+        {
+            Header = head;
+            Requester = new RequesterBlock(bytes, ref i);
+        }
+
+        public override byte[] ToBytes()
+        {
+            int length = 8;
+            length += Requester.Length;;
+            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
+            byte[] bytes = new byte[length];
+            int i = 0;
+            header.ToBytes(bytes, ref i);
+            Requester.ToBytes(bytes, ref i);
+            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
+            return bytes;
+        }
+
+        public override string ToString()
+        {
+            string output = "--- ScriptSensorRequest ---" + Environment.NewLine;
+                output += Requester.ToString() + Environment.NewLine;
+            return output;
+        }
+
+    }
+
+    /// <exclude/>
+    public class ScriptSensorReplyPacket : Packet
+    {
+        /// <exclude/>
+        [XmlType("scriptsensorreply_senseddata")]
+        public class SensedDataBlock
+        {
+            public LLUUID ObjectID;
+            private byte[] _name;
+            public byte[] Name
+            {
+                get { return _name; }
+                set
+                {
+                    if (value == null) { _name = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
+                }
+            }
+            public int Type;
+            public LLUUID GroupID;
+            public LLUUID OwnerID;
+            public LLVector3 Velocity;
+            public float Range;
+            public LLQuaternion Rotation;
+            public LLVector3 Position;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    int length = 92;
+                    if (Name != null) { length += 1 + Name.Length; }
+                    return length;
+                }
+            }
+
+            public SensedDataBlock() { }
+            public SensedDataBlock(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    ObjectID = new LLUUID(bytes, i); i += 16;
+                    length = (ushort)bytes[i++];
+                    _name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    GroupID = new LLUUID(bytes, i); i += 16;
+                    OwnerID = new LLUUID(bytes, i); i += 16;
+                    Velocity = new LLVector3(bytes, i); i += 12;
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
+                    Range = BitConverter.ToSingle(bytes, i); i += 4;
+                    Rotation = new LLQuaternion(bytes, i, true); i += 12;
+                    Position = new LLVector3(bytes, i); i += 12;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                byte[] ba;
+                Buffer.BlockCopy(ObjectID.GetBytes(), 0, bytes, i, 16); i += 16;
+                if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
+                bytes[i++] = (byte)Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                bytes[i++] = (byte)(Type % 256);
+                bytes[i++] = (byte)((Type >> 8) % 256);
+                bytes[i++] = (byte)((Type >> 16) % 256);
+                bytes[i++] = (byte)((Type >> 24) % 256);
+                Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(OwnerID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(Velocity.GetBytes(), 0, bytes, i, 12); i += 12;
+                ba = BitConverter.GetBytes(Range);
+                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
+                Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
+                Buffer.BlockCopy(Position.GetBytes(), 0, bytes, i, 12); i += 12;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- SensedData --");
+                output.AppendLine(String.Format("ObjectID: {0}", ObjectID));
+                Helpers.FieldToString(output, Name, "Name");
+                output.Append(Environment.NewLine);
+                output.AppendLine(String.Format("Type: {0}", Type));
+                output.AppendLine(String.Format("GroupID: {0}", GroupID));
+                output.AppendLine(String.Format("OwnerID: {0}", OwnerID));
+                output.AppendLine(String.Format("Velocity: {0}", Velocity));
+                output.AppendLine(String.Format("Range: {0}", Range));
+                output.AppendLine(String.Format("Rotation: {0}", Rotation));
+                output.Append(String.Format("Position: {0}", Position));
+                return output.ToString();
+            }
+        }
+
+        /// <exclude/>
+        [XmlType("scriptsensorreply_requester")]
+        public class RequesterBlock
+        {
+            public LLUUID SourceID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 16;
+                }
+            }
+
+            public RequesterBlock() { }
+            public RequesterBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    SourceID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(SourceID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- Requester --");
+                output.Append(String.Format("SourceID: {0}", SourceID));
+                return output.ToString();
+            }
+        }
+
+        private Header header;
+        public override Header Header { get { return header; } set { header = value; } }
+        public override PacketType Type { get { return PacketType.ScriptSensorReply; } }
+        public SensedDataBlock[] SensedData;
+        public RequesterBlock Requester;
+
+        public ScriptSensorReplyPacket()
+        {
+            Header = new LowHeader();
+            Header.ID = 280;
+            Header.Reliable = true;
+            Header.Zerocoded = true;
+            SensedData = new SensedDataBlock[0];
+            Requester = new RequesterBlock();
+        }
+
+        public ScriptSensorReplyPacket(byte[] bytes, ref int i)
+        {
+            int packetEnd = bytes.Length - 1;
+            Header = new LowHeader(bytes, ref i, ref packetEnd);
+            int count = (int)bytes[i++];
+            SensedData = new SensedDataBlock[count];
+            for (int j = 0; j < count; j++)
+            { SensedData[j] = new SensedDataBlock(bytes, ref i); }
+            Requester = new RequesterBlock(bytes, ref i);
+        }
+
+        public ScriptSensorReplyPacket(Header head, byte[] bytes, ref int i)
+        {
+            Header = head;
+            int count = (int)bytes[i++];
+            SensedData = new SensedDataBlock[count];
+            for (int j = 0; j < count; j++)
+            { SensedData[j] = new SensedDataBlock(bytes, ref i); }
+            Requester = new RequesterBlock(bytes, ref i);
+        }
+
+        public override byte[] ToBytes()
+        {
+            int length = 8;
+            length += Requester.Length;;
+            length++;
+            for (int j = 0; j < SensedData.Length; j++) { length += SensedData[j].Length; }
+            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
+            byte[] bytes = new byte[length];
+            int i = 0;
+            header.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)SensedData.Length;
+            for (int j = 0; j < SensedData.Length; j++) { SensedData[j].ToBytes(bytes, ref i); }
+            Requester.ToBytes(bytes, ref i);
+            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
+            return bytes;
+        }
+
+        public override string ToString()
+        {
+            string output = "--- ScriptSensorReply ---" + Environment.NewLine;
+            for (int j = 0; j < SensedData.Length; j++)
+            {
+                output += SensedData[j].ToString() + Environment.NewLine;
+            }
+                output += Requester.ToString() + Environment.NewLine;
             return output;
         }
 

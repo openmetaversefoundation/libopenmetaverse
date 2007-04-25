@@ -72,8 +72,6 @@ SimStatus
 PassObject
 AtomicPassObject
 KillChildAgents
-ScriptSensorRequest
-ScriptSensorReply
 LogLogin
 DataServerLogout
 TransferInventory
