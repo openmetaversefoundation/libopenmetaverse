@@ -43,23 +43,23 @@ namespace libsecondlife.TestClient
 
                                 lsl.Append("         PSYS_PART_FLAGS, 0");
 
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.InterpColor) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.InterpColor) != 0)
                                     lsl.Append(" | PSYS_PART_INTERP_COLOR_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.InterpScale) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.InterpScale) != 0)
                                     lsl.Append(" | PSYS_PART_INTERP_SCALE_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.Bounce) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Bounce) != 0)
                                     lsl.Append(" | PSYS_PART_BOUNCE_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.Wind) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Wind) != 0)
                                     lsl.Append(" | PSYS_PART_WIND_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.FollowSrc) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.FollowSrc) != 0)
                                     lsl.Append(" | PSYS_PART_FOLLOW_SRC_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.FollowVelocity) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.FollowVelocity) != 0)
                                     lsl.Append(" | PSYS_PART_FOLLOW_VELOCITY_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.TargetPos) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.TargetPos) != 0)
                                     lsl.Append(" | PSYS_PART_TARGET_POS_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.TargetLinear) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.TargetLinear) != 0)
                                     lsl.Append(" | PSYS_PART_TARGET_LINEAR_MASK");
-                                if ((prim.ParticleSys.PartFlags & Primitive.ParticleSystem.ParticleFlags.Emissive) != 0)
+                                if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Emissive) != 0)
                                     lsl.Append(" | PSYS_PART_EMISSIVE_MASK");
 
                                 lsl.Append(","); lsl.Append(Environment.NewLine);

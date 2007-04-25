@@ -174,8 +174,6 @@ namespace libsecondlife
             public bool Auction;
             /// <summary></summary>
             public bool ForSale;
-            /// <summary></summary>
-            public bool ReservedNewbie;
         }
 
         public struct AgentSearchData {
@@ -400,7 +398,6 @@ namespace libsecondlife
                     dirParcel.SalePrice = block.SalePrice;
                     dirParcel.Auction = block.Auction;
                     dirParcel.ForSale = block.ForSale;
-                    dirParcel.ReservedNewbie = block.ReservedNewbie;
 
                     parcelsForSale.Add(dirParcel);
                 }

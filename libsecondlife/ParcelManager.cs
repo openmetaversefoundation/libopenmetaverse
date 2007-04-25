@@ -227,8 +227,6 @@ namespace libsecondlife
         public bool IsGroupOwned;
         /// <summary></summary>
         public uint AuctionID;
-        /// <summary>Reserved for the now defunct First Land program</summary>
-        public bool ReservedNewbie;
         /// <summary>Date land was claimed</summary>
         public DateTime ClaimDate;
         /// <summary>Appears to always be zero</summary>
@@ -829,7 +827,6 @@ namespace libsecondlife
                 parcel.RegionDenyTransacted = properties.ParcelData.RegionDenyTransacted;
                 parcel.RegionPushOverride = properties.ParcelData.RegionPushOverride;
                 parcel.RentPrice = properties.ParcelData.RentPrice;
-                parcel.ReservedNewbie = properties.ParcelData.ReservedNewbie;
                 parcel.SalePrice = properties.ParcelData.SalePrice;
                 parcel.SelectedPrims = properties.ParcelData.SelectedPrims;
                 parcel.SelfCount = properties.ParcelData.SelfCount;

@@ -578,7 +578,6 @@ namespace libsecondlife.Packets
         ParcelDwellRequest,
         ParcelDwellReply,
         ParcelGodMarkAsContent,
-        ParcelGodReserveForNewbie,
         ViewerStartAuction,
         UUIDNameRequest,
         UUIDNameReply,
@@ -600,7 +599,6 @@ namespace libsecondlife.Packets
         LogoutDemand,
         ImprovedInstantMessage,
         RetrieveInstantMessages,
-        DequeueInstantMessages,
         FindAgent,
         RequestGodlikePowers,
         GrantGodlikePowers,
@@ -667,7 +665,6 @@ namespace libsecondlife.Packets
         MoneyDetailsReply,
         MoneyTransactionsRequest,
         MoneyTransactionsReply,
-        GestureRequest,
         ActivateGestures,
         DeactivateGestures,
         MuteListUpdate,
@@ -742,7 +739,6 @@ namespace libsecondlife.Packets
         UserInfoRequest,
         UserInfoReply,
         UpdateUserInfo,
-        GodExpungeUser,
         StartParcelRemoveAck,
         InitiateDownload,
         SystemMessage,
@@ -775,7 +771,6 @@ namespace libsecondlife.Packets
         ObjectProperties,
         ObjectPropertiesFamily,
         ParcelPropertiesRequest,
-        GestureUpdate,
         AttachedSound,
         AttachedSoundGainChange,
         AttachedSoundCutoffRadius,
@@ -1014,7 +1009,6 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(ParcelDwellRequestPacket))]
     [XmlInclude(typeof(ParcelDwellReplyPacket))]
     [XmlInclude(typeof(ParcelGodMarkAsContentPacket))]
-    [XmlInclude(typeof(ParcelGodReserveForNewbiePacket))]
     [XmlInclude(typeof(ViewerStartAuctionPacket))]
     [XmlInclude(typeof(UUIDNameRequestPacket))]
     [XmlInclude(typeof(UUIDNameReplyPacket))]
@@ -1036,7 +1030,6 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(LogoutDemandPacket))]
     [XmlInclude(typeof(ImprovedInstantMessagePacket))]
     [XmlInclude(typeof(RetrieveInstantMessagesPacket))]
-    [XmlInclude(typeof(DequeueInstantMessagesPacket))]
     [XmlInclude(typeof(FindAgentPacket))]
     [XmlInclude(typeof(RequestGodlikePowersPacket))]
     [XmlInclude(typeof(GrantGodlikePowersPacket))]
@@ -1103,7 +1096,6 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(MoneyDetailsReplyPacket))]
     [XmlInclude(typeof(MoneyTransactionsRequestPacket))]
     [XmlInclude(typeof(MoneyTransactionsReplyPacket))]
-    [XmlInclude(typeof(GestureRequestPacket))]
     [XmlInclude(typeof(ActivateGesturesPacket))]
     [XmlInclude(typeof(DeactivateGesturesPacket))]
     [XmlInclude(typeof(MuteListUpdatePacket))]
@@ -1178,7 +1170,6 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(UserInfoRequestPacket))]
     [XmlInclude(typeof(UserInfoReplyPacket))]
     [XmlInclude(typeof(UpdateUserInfoPacket))]
-    [XmlInclude(typeof(GodExpungeUserPacket))]
     [XmlInclude(typeof(StartParcelRemoveAckPacket))]
     [XmlInclude(typeof(InitiateDownloadPacket))]
     [XmlInclude(typeof(SystemMessagePacket))]
@@ -1211,7 +1202,6 @@ namespace libsecondlife.Packets
     [XmlInclude(typeof(ObjectPropertiesPacket))]
     [XmlInclude(typeof(ObjectPropertiesFamilyPacket))]
     [XmlInclude(typeof(ParcelPropertiesRequestPacket))]
-    [XmlInclude(typeof(GestureUpdatePacket))]
     [XmlInclude(typeof(AttachedSoundPacket))]
     [XmlInclude(typeof(AttachedSoundGainChangePacket))]
     [XmlInclude(typeof(AttachedSoundCutoffRadiusPacket))]
@@ -1468,186 +1458,182 @@ namespace libsecondlife.Packets
                         case 250: return PacketType.ParcelDwellRequest;
                         case 251: return PacketType.ParcelDwellReply;
                         case 259: return PacketType.ParcelGodMarkAsContent;
-                        case 260: return PacketType.ParcelGodReserveForNewbie;
-                        case 261: return PacketType.ViewerStartAuction;
-                        case 268: return PacketType.UUIDNameRequest;
-                        case 269: return PacketType.UUIDNameReply;
-                        case 270: return PacketType.UUIDGroupNameRequest;
-                        case 271: return PacketType.UUIDGroupNameReply;
-                        case 273: return PacketType.ChildAgentDying;
-                        case 274: return PacketType.ChildAgentUnknown;
-                        case 276: return PacketType.GetScriptRunning;
-                        case 277: return PacketType.ScriptRunningReply;
-                        case 278: return PacketType.SetScriptRunning;
-                        case 279: return PacketType.ScriptReset;
-                        case 282: return PacketType.CompleteAgentMovement;
-                        case 283: return PacketType.AgentMovementComplete;
-                        case 285: return PacketType.ConnectAgentToUserserver;
-                        case 286: return PacketType.ConnectToUserserver;
-                        case 288: return PacketType.LogoutRequest;
-                        case 289: return PacketType.FinalizeLogout;
-                        case 290: return PacketType.LogoutReply;
-                        case 291: return PacketType.LogoutDemand;
-                        case 292: return PacketType.ImprovedInstantMessage;
-                        case 293: return PacketType.RetrieveInstantMessages;
-                        case 294: return PacketType.DequeueInstantMessages;
-                        case 295: return PacketType.FindAgent;
-                        case 296: return PacketType.RequestGodlikePowers;
-                        case 297: return PacketType.GrantGodlikePowers;
-                        case 298: return PacketType.GodlikeMessage;
-                        case 299: return PacketType.EstateOwnerMessage;
-                        case 300: return PacketType.GenericMessage;
-                        case 301: return PacketType.MuteListRequest;
-                        case 302: return PacketType.UpdateMuteListEntry;
-                        case 303: return PacketType.RemoveMuteListEntry;
-                        case 304: return PacketType.CopyInventoryFromNotecard;
-                        case 305: return PacketType.UpdateInventoryItem;
-                        case 306: return PacketType.UpdateCreateInventoryItem;
-                        case 307: return PacketType.MoveInventoryItem;
-                        case 308: return PacketType.CopyInventoryItem;
-                        case 309: return PacketType.RemoveInventoryItem;
-                        case 310: return PacketType.ChangeInventoryItemFlags;
-                        case 311: return PacketType.SaveAssetIntoInventory;
-                        case 312: return PacketType.CreateInventoryFolder;
-                        case 313: return PacketType.UpdateInventoryFolder;
-                        case 314: return PacketType.MoveInventoryFolder;
-                        case 315: return PacketType.RemoveInventoryFolder;
-                        case 316: return PacketType.FetchInventoryDescendents;
-                        case 317: return PacketType.InventoryDescendents;
-                        case 318: return PacketType.FetchInventory;
-                        case 319: return PacketType.FetchInventoryReply;
-                        case 320: return PacketType.BulkUpdateInventory;
-                        case 321: return PacketType.RequestInventoryAsset;
-                        case 322: return PacketType.InventoryAssetResponse;
-                        case 323: return PacketType.RemoveInventoryObjects;
-                        case 324: return PacketType.PurgeInventoryDescendents;
-                        case 325: return PacketType.UpdateTaskInventory;
-                        case 326: return PacketType.RemoveTaskInventory;
-                        case 327: return PacketType.MoveTaskInventory;
-                        case 328: return PacketType.RequestTaskInventory;
-                        case 329: return PacketType.ReplyTaskInventory;
-                        case 330: return PacketType.DeRezObject;
-                        case 331: return PacketType.DeRezAck;
-                        case 332: return PacketType.RezObject;
-                        case 333: return PacketType.RezObjectFromNotecard;
-                        case 334: return PacketType.DeclineInventory;
-                        case 337: return PacketType.RequestFriendship;
-                        case 338: return PacketType.AcceptFriendship;
-                        case 339: return PacketType.DeclineFriendship;
-                        case 340: return PacketType.FormFriendship;
-                        case 341: return PacketType.TerminateFriendship;
-                        case 342: return PacketType.OfferCallingCard;
-                        case 343: return PacketType.AcceptCallingCard;
-                        case 344: return PacketType.DeclineCallingCard;
-                        case 345: return PacketType.RezScript;
-                        case 346: return PacketType.CreateInventoryItem;
-                        case 347: return PacketType.CreateLandmarkForEvent;
-                        case 350: return PacketType.RegionHandleRequest;
-                        case 351: return PacketType.RegionIDAndHandleReply;
-                        case 352: return PacketType.MoneyTransferRequest;
-                        case 355: return PacketType.AdjustBalance;
-                        case 356: return PacketType.MoneyBalanceRequest;
-                        case 357: return PacketType.MoneyBalanceReply;
-                        case 358: return PacketType.RoutedMoneyBalanceReply;
-                        case 359: return PacketType.MoneyHistoryRequest;
-                        case 360: return PacketType.MoneyHistoryReply;
-                        case 361: return PacketType.MoneySummaryRequest;
-                        case 362: return PacketType.MoneySummaryReply;
-                        case 363: return PacketType.MoneyDetailsRequest;
-                        case 364: return PacketType.MoneyDetailsReply;
-                        case 365: return PacketType.MoneyTransactionsRequest;
-                        case 366: return PacketType.MoneyTransactionsReply;
-                        case 367: return PacketType.GestureRequest;
-                        case 368: return PacketType.ActivateGestures;
-                        case 369: return PacketType.DeactivateGestures;
-                        case 370: return PacketType.MuteListUpdate;
-                        case 371: return PacketType.UseCachedMuteList;
-                        case 372: return PacketType.GrantUserRights;
-                        case 373: return PacketType.ChangeUserRights;
-                        case 374: return PacketType.OnlineNotification;
-                        case 375: return PacketType.OfflineNotification;
-                        case 376: return PacketType.SetStartLocationRequest;
-                        case 386: return PacketType.AssetUploadRequest;
-                        case 387: return PacketType.AssetUploadComplete;
-                        case 388: return PacketType.ReputationAgentAssign;
-                        case 389: return PacketType.ReputationIndividualRequest;
-                        case 390: return PacketType.ReputationIndividualReply;
-                        case 395: return PacketType.CreateGroupRequest;
-                        case 396: return PacketType.CreateGroupReply;
-                        case 397: return PacketType.UpdateGroupInfo;
-                        case 398: return PacketType.GroupRoleChanges;
-                        case 399: return PacketType.JoinGroupRequest;
-                        case 400: return PacketType.JoinGroupReply;
-                        case 401: return PacketType.EjectGroupMemberRequest;
-                        case 402: return PacketType.EjectGroupMemberReply;
-                        case 403: return PacketType.LeaveGroupRequest;
-                        case 404: return PacketType.LeaveGroupReply;
-                        case 405: return PacketType.InviteGroupRequest;
-                        case 407: return PacketType.GroupProfileRequest;
-                        case 408: return PacketType.GroupProfileReply;
-                        case 409: return PacketType.GroupAccountSummaryRequest;
-                        case 410: return PacketType.GroupAccountSummaryReply;
-                        case 411: return PacketType.GroupAccountDetailsRequest;
-                        case 412: return PacketType.GroupAccountDetailsReply;
-                        case 413: return PacketType.GroupAccountTransactionsRequest;
-                        case 414: return PacketType.GroupAccountTransactionsReply;
-                        case 415: return PacketType.GroupActiveProposalsRequest;
-                        case 416: return PacketType.GroupActiveProposalItemReply;
-                        case 417: return PacketType.GroupVoteHistoryRequest;
-                        case 418: return PacketType.GroupVoteHistoryItemReply;
-                        case 419: return PacketType.StartGroupProposal;
-                        case 420: return PacketType.GroupProposalBallot;
-                        case 422: return PacketType.GroupMembersRequest;
-                        case 423: return PacketType.GroupMembersReply;
-                        case 424: return PacketType.ActivateGroup;
-                        case 425: return PacketType.SetGroupContribution;
-                        case 426: return PacketType.SetGroupAcceptNotices;
-                        case 427: return PacketType.GroupRoleDataRequest;
-                        case 428: return PacketType.GroupRoleDataReply;
-                        case 429: return PacketType.GroupRoleMembersRequest;
-                        case 430: return PacketType.GroupRoleMembersReply;
-                        case 431: return PacketType.GroupTitlesRequest;
-                        case 432: return PacketType.GroupTitlesReply;
-                        case 433: return PacketType.GroupTitleUpdate;
-                        case 434: return PacketType.GroupRoleUpdate;
-                        case 435: return PacketType.LiveHelpGroupRequest;
-                        case 436: return PacketType.LiveHelpGroupReply;
-                        case 437: return PacketType.AgentWearablesRequest;
-                        case 438: return PacketType.AgentWearablesUpdate;
-                        case 439: return PacketType.AgentIsNowWearing;
-                        case 440: return PacketType.AgentCachedTexture;
-                        case 441: return PacketType.AgentCachedTextureResponse;
-                        case 442: return PacketType.AgentDataUpdateRequest;
-                        case 443: return PacketType.AgentDataUpdate;
-                        case 444: return PacketType.GroupDataUpdate;
-                        case 445: return PacketType.AgentGroupDataUpdate;
-                        case 446: return PacketType.AgentDropGroup;
-                        case 448: return PacketType.CreateTrustedCircuit;
-                        case 449: return PacketType.DenyTrustedCircuit;
-                        case 450: return PacketType.RequestTrustedCircuit;
-                        case 451: return PacketType.RezSingleAttachmentFromInv;
-                        case 452: return PacketType.RezMultipleAttachmentsFromInv;
-                        case 453: return PacketType.DetachAttachmentIntoInv;
-                        case 454: return PacketType.CreateNewOutfitAttachments;
-                        case 455: return PacketType.UserInfoRequest;
-                        case 456: return PacketType.UserInfoReply;
-                        case 457: return PacketType.UpdateUserInfo;
-                        case 458: return PacketType.GodExpungeUser;
-                        case 466: return PacketType.StartParcelRemoveAck;
-                        case 468: return PacketType.InitiateDownload;
-                        case 469: return PacketType.SystemMessage;
-                        case 470: return PacketType.MapLayerRequest;
-                        case 471: return PacketType.MapLayerReply;
-                        case 472: return PacketType.MapBlockRequest;
-                        case 473: return PacketType.MapNameRequest;
-                        case 474: return PacketType.MapBlockReply;
-                        case 475: return PacketType.MapItemRequest;
-                        case 476: return PacketType.MapItemReply;
-                        case 477: return PacketType.SendPostcard;
-                        case 486: return PacketType.ParcelMediaCommandMessage;
-                        case 487: return PacketType.ParcelMediaUpdate;
-                        case 488: return PacketType.LandStatRequest;
-                        case 489: return PacketType.LandStatReply;
+                        case 260: return PacketType.ViewerStartAuction;
+                        case 267: return PacketType.UUIDNameRequest;
+                        case 268: return PacketType.UUIDNameReply;
+                        case 269: return PacketType.UUIDGroupNameRequest;
+                        case 270: return PacketType.UUIDGroupNameReply;
+                        case 272: return PacketType.ChildAgentDying;
+                        case 273: return PacketType.ChildAgentUnknown;
+                        case 275: return PacketType.GetScriptRunning;
+                        case 276: return PacketType.ScriptRunningReply;
+                        case 277: return PacketType.SetScriptRunning;
+                        case 278: return PacketType.ScriptReset;
+                        case 281: return PacketType.CompleteAgentMovement;
+                        case 282: return PacketType.AgentMovementComplete;
+                        case 284: return PacketType.ConnectAgentToUserserver;
+                        case 285: return PacketType.ConnectToUserserver;
+                        case 287: return PacketType.LogoutRequest;
+                        case 288: return PacketType.FinalizeLogout;
+                        case 289: return PacketType.LogoutReply;
+                        case 290: return PacketType.LogoutDemand;
+                        case 291: return PacketType.ImprovedInstantMessage;
+                        case 292: return PacketType.RetrieveInstantMessages;
+                        case 293: return PacketType.FindAgent;
+                        case 294: return PacketType.RequestGodlikePowers;
+                        case 295: return PacketType.GrantGodlikePowers;
+                        case 296: return PacketType.GodlikeMessage;
+                        case 297: return PacketType.EstateOwnerMessage;
+                        case 298: return PacketType.GenericMessage;
+                        case 299: return PacketType.MuteListRequest;
+                        case 300: return PacketType.UpdateMuteListEntry;
+                        case 301: return PacketType.RemoveMuteListEntry;
+                        case 302: return PacketType.CopyInventoryFromNotecard;
+                        case 303: return PacketType.UpdateInventoryItem;
+                        case 304: return PacketType.UpdateCreateInventoryItem;
+                        case 305: return PacketType.MoveInventoryItem;
+                        case 306: return PacketType.CopyInventoryItem;
+                        case 307: return PacketType.RemoveInventoryItem;
+                        case 308: return PacketType.ChangeInventoryItemFlags;
+                        case 309: return PacketType.SaveAssetIntoInventory;
+                        case 310: return PacketType.CreateInventoryFolder;
+                        case 311: return PacketType.UpdateInventoryFolder;
+                        case 312: return PacketType.MoveInventoryFolder;
+                        case 313: return PacketType.RemoveInventoryFolder;
+                        case 314: return PacketType.FetchInventoryDescendents;
+                        case 315: return PacketType.InventoryDescendents;
+                        case 316: return PacketType.FetchInventory;
+                        case 317: return PacketType.FetchInventoryReply;
+                        case 318: return PacketType.BulkUpdateInventory;
+                        case 319: return PacketType.RequestInventoryAsset;
+                        case 320: return PacketType.InventoryAssetResponse;
+                        case 321: return PacketType.RemoveInventoryObjects;
+                        case 322: return PacketType.PurgeInventoryDescendents;
+                        case 323: return PacketType.UpdateTaskInventory;
+                        case 324: return PacketType.RemoveTaskInventory;
+                        case 325: return PacketType.MoveTaskInventory;
+                        case 326: return PacketType.RequestTaskInventory;
+                        case 327: return PacketType.ReplyTaskInventory;
+                        case 328: return PacketType.DeRezObject;
+                        case 329: return PacketType.DeRezAck;
+                        case 330: return PacketType.RezObject;
+                        case 331: return PacketType.RezObjectFromNotecard;
+                        case 332: return PacketType.DeclineInventory;
+                        case 335: return PacketType.RequestFriendship;
+                        case 336: return PacketType.AcceptFriendship;
+                        case 337: return PacketType.DeclineFriendship;
+                        case 338: return PacketType.FormFriendship;
+                        case 339: return PacketType.TerminateFriendship;
+                        case 340: return PacketType.OfferCallingCard;
+                        case 341: return PacketType.AcceptCallingCard;
+                        case 342: return PacketType.DeclineCallingCard;
+                        case 343: return PacketType.RezScript;
+                        case 344: return PacketType.CreateInventoryItem;
+                        case 345: return PacketType.CreateLandmarkForEvent;
+                        case 348: return PacketType.RegionHandleRequest;
+                        case 349: return PacketType.RegionIDAndHandleReply;
+                        case 350: return PacketType.MoneyTransferRequest;
+                        case 353: return PacketType.AdjustBalance;
+                        case 354: return PacketType.MoneyBalanceRequest;
+                        case 355: return PacketType.MoneyBalanceReply;
+                        case 356: return PacketType.RoutedMoneyBalanceReply;
+                        case 357: return PacketType.MoneyHistoryRequest;
+                        case 358: return PacketType.MoneyHistoryReply;
+                        case 359: return PacketType.MoneySummaryRequest;
+                        case 360: return PacketType.MoneySummaryReply;
+                        case 361: return PacketType.MoneyDetailsRequest;
+                        case 362: return PacketType.MoneyDetailsReply;
+                        case 363: return PacketType.MoneyTransactionsRequest;
+                        case 364: return PacketType.MoneyTransactionsReply;
+                        case 365: return PacketType.ActivateGestures;
+                        case 366: return PacketType.DeactivateGestures;
+                        case 367: return PacketType.MuteListUpdate;
+                        case 368: return PacketType.UseCachedMuteList;
+                        case 369: return PacketType.GrantUserRights;
+                        case 370: return PacketType.ChangeUserRights;
+                        case 371: return PacketType.OnlineNotification;
+                        case 372: return PacketType.OfflineNotification;
+                        case 373: return PacketType.SetStartLocationRequest;
+                        case 383: return PacketType.AssetUploadRequest;
+                        case 384: return PacketType.AssetUploadComplete;
+                        case 385: return PacketType.ReputationAgentAssign;
+                        case 386: return PacketType.ReputationIndividualRequest;
+                        case 387: return PacketType.ReputationIndividualReply;
+                        case 392: return PacketType.CreateGroupRequest;
+                        case 393: return PacketType.CreateGroupReply;
+                        case 394: return PacketType.UpdateGroupInfo;
+                        case 395: return PacketType.GroupRoleChanges;
+                        case 396: return PacketType.JoinGroupRequest;
+                        case 397: return PacketType.JoinGroupReply;
+                        case 398: return PacketType.EjectGroupMemberRequest;
+                        case 399: return PacketType.EjectGroupMemberReply;
+                        case 400: return PacketType.LeaveGroupRequest;
+                        case 401: return PacketType.LeaveGroupReply;
+                        case 402: return PacketType.InviteGroupRequest;
+                        case 404: return PacketType.GroupProfileRequest;
+                        case 405: return PacketType.GroupProfileReply;
+                        case 406: return PacketType.GroupAccountSummaryRequest;
+                        case 407: return PacketType.GroupAccountSummaryReply;
+                        case 408: return PacketType.GroupAccountDetailsRequest;
+                        case 409: return PacketType.GroupAccountDetailsReply;
+                        case 410: return PacketType.GroupAccountTransactionsRequest;
+                        case 411: return PacketType.GroupAccountTransactionsReply;
+                        case 412: return PacketType.GroupActiveProposalsRequest;
+                        case 413: return PacketType.GroupActiveProposalItemReply;
+                        case 414: return PacketType.GroupVoteHistoryRequest;
+                        case 415: return PacketType.GroupVoteHistoryItemReply;
+                        case 416: return PacketType.StartGroupProposal;
+                        case 417: return PacketType.GroupProposalBallot;
+                        case 419: return PacketType.GroupMembersRequest;
+                        case 420: return PacketType.GroupMembersReply;
+                        case 421: return PacketType.ActivateGroup;
+                        case 422: return PacketType.SetGroupContribution;
+                        case 423: return PacketType.SetGroupAcceptNotices;
+                        case 424: return PacketType.GroupRoleDataRequest;
+                        case 425: return PacketType.GroupRoleDataReply;
+                        case 426: return PacketType.GroupRoleMembersRequest;
+                        case 427: return PacketType.GroupRoleMembersReply;
+                        case 428: return PacketType.GroupTitlesRequest;
+                        case 429: return PacketType.GroupTitlesReply;
+                        case 430: return PacketType.GroupTitleUpdate;
+                        case 431: return PacketType.GroupRoleUpdate;
+                        case 432: return PacketType.LiveHelpGroupRequest;
+                        case 433: return PacketType.LiveHelpGroupReply;
+                        case 434: return PacketType.AgentWearablesRequest;
+                        case 435: return PacketType.AgentWearablesUpdate;
+                        case 436: return PacketType.AgentIsNowWearing;
+                        case 437: return PacketType.AgentCachedTexture;
+                        case 438: return PacketType.AgentCachedTextureResponse;
+                        case 439: return PacketType.AgentDataUpdateRequest;
+                        case 440: return PacketType.AgentDataUpdate;
+                        case 441: return PacketType.GroupDataUpdate;
+                        case 442: return PacketType.AgentGroupDataUpdate;
+                        case 443: return PacketType.AgentDropGroup;
+                        case 445: return PacketType.CreateTrustedCircuit;
+                        case 446: return PacketType.DenyTrustedCircuit;
+                        case 447: return PacketType.RequestTrustedCircuit;
+                        case 448: return PacketType.RezSingleAttachmentFromInv;
+                        case 449: return PacketType.RezMultipleAttachmentsFromInv;
+                        case 450: return PacketType.DetachAttachmentIntoInv;
+                        case 451: return PacketType.CreateNewOutfitAttachments;
+                        case 452: return PacketType.UserInfoRequest;
+                        case 453: return PacketType.UserInfoReply;
+                        case 454: return PacketType.UpdateUserInfo;
+                        case 460: return PacketType.StartParcelRemoveAck;
+                        case 462: return PacketType.InitiateDownload;
+                        case 463: return PacketType.SystemMessage;
+                        case 464: return PacketType.MapLayerRequest;
+                        case 465: return PacketType.MapLayerReply;
+                        case 466: return PacketType.MapBlockRequest;
+                        case 467: return PacketType.MapNameRequest;
+                        case 468: return PacketType.MapBlockReply;
+                        case 469: return PacketType.MapItemRequest;
+                        case 470: return PacketType.MapItemReply;
+                        case 471: return PacketType.SendPostcard;
+                        case 480: return PacketType.ParcelMediaCommandMessage;
+                        case 481: return PacketType.ParcelMediaUpdate;
+                        case 482: return PacketType.LandStatRequest;
+                        case 483: return PacketType.LandStatReply;
                         case 65530: return PacketType.SecuredTemplateChecksumRequest;
                         case 65531: return PacketType.PacketAck;
                         case 65532: return PacketType.OpenCircuit;
@@ -1670,13 +1656,12 @@ namespace libsecondlife.Packets
                         case 10: return PacketType.ObjectProperties;
                         case 11: return PacketType.ObjectPropertiesFamily;
                         case 12: return PacketType.ParcelPropertiesRequest;
-                        case 14: return PacketType.GestureUpdate;
-                        case 15: return PacketType.AttachedSound;
-                        case 16: return PacketType.AttachedSoundGainChange;
-                        case 17: return PacketType.AttachedSoundCutoffRadius;
-                        case 18: return PacketType.PreloadSound;
-                        case 20: return PacketType.ViewerEffect;
-                        case 21: return PacketType.SetSunPhase;
+                        case 14: return PacketType.AttachedSound;
+                        case 15: return PacketType.AttachedSoundGainChange;
+                        case 16: return PacketType.AttachedSoundCutoffRadius;
+                        case 17: return PacketType.PreloadSound;
+                        case 19: return PacketType.ViewerEffect;
+                        case 20: return PacketType.SetSunPhase;
                     }
                     break;
                 case PacketFrequency.High:
@@ -1936,186 +1921,182 @@ namespace libsecondlife.Packets
                         case 250: return new ParcelDwellRequestPacket(header, bytes, ref i);
                         case 251: return new ParcelDwellReplyPacket(header, bytes, ref i);
                         case 259: return new ParcelGodMarkAsContentPacket(header, bytes, ref i);
-                        case 260: return new ParcelGodReserveForNewbiePacket(header, bytes, ref i);
-                        case 261: return new ViewerStartAuctionPacket(header, bytes, ref i);
-                        case 268: return new UUIDNameRequestPacket(header, bytes, ref i);
-                        case 269: return new UUIDNameReplyPacket(header, bytes, ref i);
-                        case 270: return new UUIDGroupNameRequestPacket(header, bytes, ref i);
-                        case 271: return new UUIDGroupNameReplyPacket(header, bytes, ref i);
-                        case 273: return new ChildAgentDyingPacket(header, bytes, ref i);
-                        case 274: return new ChildAgentUnknownPacket(header, bytes, ref i);
-                        case 276: return new GetScriptRunningPacket(header, bytes, ref i);
-                        case 277: return new ScriptRunningReplyPacket(header, bytes, ref i);
-                        case 278: return new SetScriptRunningPacket(header, bytes, ref i);
-                        case 279: return new ScriptResetPacket(header, bytes, ref i);
-                        case 282: return new CompleteAgentMovementPacket(header, bytes, ref i);
-                        case 283: return new AgentMovementCompletePacket(header, bytes, ref i);
-                        case 285: return new ConnectAgentToUserserverPacket(header, bytes, ref i);
-                        case 286: return new ConnectToUserserverPacket(header, bytes, ref i);
-                        case 288: return new LogoutRequestPacket(header, bytes, ref i);
-                        case 289: return new FinalizeLogoutPacket(header, bytes, ref i);
-                        case 290: return new LogoutReplyPacket(header, bytes, ref i);
-                        case 291: return new LogoutDemandPacket(header, bytes, ref i);
-                        case 292: return new ImprovedInstantMessagePacket(header, bytes, ref i);
-                        case 293: return new RetrieveInstantMessagesPacket(header, bytes, ref i);
-                        case 294: return new DequeueInstantMessagesPacket(header, bytes, ref i);
-                        case 295: return new FindAgentPacket(header, bytes, ref i);
-                        case 296: return new RequestGodlikePowersPacket(header, bytes, ref i);
-                        case 297: return new GrantGodlikePowersPacket(header, bytes, ref i);
-                        case 298: return new GodlikeMessagePacket(header, bytes, ref i);
-                        case 299: return new EstateOwnerMessagePacket(header, bytes, ref i);
-                        case 300: return new GenericMessagePacket(header, bytes, ref i);
-                        case 301: return new MuteListRequestPacket(header, bytes, ref i);
-                        case 302: return new UpdateMuteListEntryPacket(header, bytes, ref i);
-                        case 303: return new RemoveMuteListEntryPacket(header, bytes, ref i);
-                        case 304: return new CopyInventoryFromNotecardPacket(header, bytes, ref i);
-                        case 305: return new UpdateInventoryItemPacket(header, bytes, ref i);
-                        case 306: return new UpdateCreateInventoryItemPacket(header, bytes, ref i);
-                        case 307: return new MoveInventoryItemPacket(header, bytes, ref i);
-                        case 308: return new CopyInventoryItemPacket(header, bytes, ref i);
-                        case 309: return new RemoveInventoryItemPacket(header, bytes, ref i);
-                        case 310: return new ChangeInventoryItemFlagsPacket(header, bytes, ref i);
-                        case 311: return new SaveAssetIntoInventoryPacket(header, bytes, ref i);
-                        case 312: return new CreateInventoryFolderPacket(header, bytes, ref i);
-                        case 313: return new UpdateInventoryFolderPacket(header, bytes, ref i);
-                        case 314: return new MoveInventoryFolderPacket(header, bytes, ref i);
-                        case 315: return new RemoveInventoryFolderPacket(header, bytes, ref i);
-                        case 316: return new FetchInventoryDescendentsPacket(header, bytes, ref i);
-                        case 317: return new InventoryDescendentsPacket(header, bytes, ref i);
-                        case 318: return new FetchInventoryPacket(header, bytes, ref i);
-                        case 319: return new FetchInventoryReplyPacket(header, bytes, ref i);
-                        case 320: return new BulkUpdateInventoryPacket(header, bytes, ref i);
-                        case 321: return new RequestInventoryAssetPacket(header, bytes, ref i);
-                        case 322: return new InventoryAssetResponsePacket(header, bytes, ref i);
-                        case 323: return new RemoveInventoryObjectsPacket(header, bytes, ref i);
-                        case 324: return new PurgeInventoryDescendentsPacket(header, bytes, ref i);
-                        case 325: return new UpdateTaskInventoryPacket(header, bytes, ref i);
-                        case 326: return new RemoveTaskInventoryPacket(header, bytes, ref i);
-                        case 327: return new MoveTaskInventoryPacket(header, bytes, ref i);
-                        case 328: return new RequestTaskInventoryPacket(header, bytes, ref i);
-                        case 329: return new ReplyTaskInventoryPacket(header, bytes, ref i);
-                        case 330: return new DeRezObjectPacket(header, bytes, ref i);
-                        case 331: return new DeRezAckPacket(header, bytes, ref i);
-                        case 332: return new RezObjectPacket(header, bytes, ref i);
-                        case 333: return new RezObjectFromNotecardPacket(header, bytes, ref i);
-                        case 334: return new DeclineInventoryPacket(header, bytes, ref i);
-                        case 337: return new RequestFriendshipPacket(header, bytes, ref i);
-                        case 338: return new AcceptFriendshipPacket(header, bytes, ref i);
-                        case 339: return new DeclineFriendshipPacket(header, bytes, ref i);
-                        case 340: return new FormFriendshipPacket(header, bytes, ref i);
-                        case 341: return new TerminateFriendshipPacket(header, bytes, ref i);
-                        case 342: return new OfferCallingCardPacket(header, bytes, ref i);
-                        case 343: return new AcceptCallingCardPacket(header, bytes, ref i);
-                        case 344: return new DeclineCallingCardPacket(header, bytes, ref i);
-                        case 345: return new RezScriptPacket(header, bytes, ref i);
-                        case 346: return new CreateInventoryItemPacket(header, bytes, ref i);
-                        case 347: return new CreateLandmarkForEventPacket(header, bytes, ref i);
-                        case 350: return new RegionHandleRequestPacket(header, bytes, ref i);
-                        case 351: return new RegionIDAndHandleReplyPacket(header, bytes, ref i);
-                        case 352: return new MoneyTransferRequestPacket(header, bytes, ref i);
-                        case 355: return new AdjustBalancePacket(header, bytes, ref i);
-                        case 356: return new MoneyBalanceRequestPacket(header, bytes, ref i);
-                        case 357: return new MoneyBalanceReplyPacket(header, bytes, ref i);
-                        case 358: return new RoutedMoneyBalanceReplyPacket(header, bytes, ref i);
-                        case 359: return new MoneyHistoryRequestPacket(header, bytes, ref i);
-                        case 360: return new MoneyHistoryReplyPacket(header, bytes, ref i);
-                        case 361: return new MoneySummaryRequestPacket(header, bytes, ref i);
-                        case 362: return new MoneySummaryReplyPacket(header, bytes, ref i);
-                        case 363: return new MoneyDetailsRequestPacket(header, bytes, ref i);
-                        case 364: return new MoneyDetailsReplyPacket(header, bytes, ref i);
-                        case 365: return new MoneyTransactionsRequestPacket(header, bytes, ref i);
-                        case 366: return new MoneyTransactionsReplyPacket(header, bytes, ref i);
-                        case 367: return new GestureRequestPacket(header, bytes, ref i);
-                        case 368: return new ActivateGesturesPacket(header, bytes, ref i);
-                        case 369: return new DeactivateGesturesPacket(header, bytes, ref i);
-                        case 370: return new MuteListUpdatePacket(header, bytes, ref i);
-                        case 371: return new UseCachedMuteListPacket(header, bytes, ref i);
-                        case 372: return new GrantUserRightsPacket(header, bytes, ref i);
-                        case 373: return new ChangeUserRightsPacket(header, bytes, ref i);
-                        case 374: return new OnlineNotificationPacket(header, bytes, ref i);
-                        case 375: return new OfflineNotificationPacket(header, bytes, ref i);
-                        case 376: return new SetStartLocationRequestPacket(header, bytes, ref i);
-                        case 386: return new AssetUploadRequestPacket(header, bytes, ref i);
-                        case 387: return new AssetUploadCompletePacket(header, bytes, ref i);
-                        case 388: return new ReputationAgentAssignPacket(header, bytes, ref i);
-                        case 389: return new ReputationIndividualRequestPacket(header, bytes, ref i);
-                        case 390: return new ReputationIndividualReplyPacket(header, bytes, ref i);
-                        case 395: return new CreateGroupRequestPacket(header, bytes, ref i);
-                        case 396: return new CreateGroupReplyPacket(header, bytes, ref i);
-                        case 397: return new UpdateGroupInfoPacket(header, bytes, ref i);
-                        case 398: return new GroupRoleChangesPacket(header, bytes, ref i);
-                        case 399: return new JoinGroupRequestPacket(header, bytes, ref i);
-                        case 400: return new JoinGroupReplyPacket(header, bytes, ref i);
-                        case 401: return new EjectGroupMemberRequestPacket(header, bytes, ref i);
-                        case 402: return new EjectGroupMemberReplyPacket(header, bytes, ref i);
-                        case 403: return new LeaveGroupRequestPacket(header, bytes, ref i);
-                        case 404: return new LeaveGroupReplyPacket(header, bytes, ref i);
-                        case 405: return new InviteGroupRequestPacket(header, bytes, ref i);
-                        case 407: return new GroupProfileRequestPacket(header, bytes, ref i);
-                        case 408: return new GroupProfileReplyPacket(header, bytes, ref i);
-                        case 409: return new GroupAccountSummaryRequestPacket(header, bytes, ref i);
-                        case 410: return new GroupAccountSummaryReplyPacket(header, bytes, ref i);
-                        case 411: return new GroupAccountDetailsRequestPacket(header, bytes, ref i);
-                        case 412: return new GroupAccountDetailsReplyPacket(header, bytes, ref i);
-                        case 413: return new GroupAccountTransactionsRequestPacket(header, bytes, ref i);
-                        case 414: return new GroupAccountTransactionsReplyPacket(header, bytes, ref i);
-                        case 415: return new GroupActiveProposalsRequestPacket(header, bytes, ref i);
-                        case 416: return new GroupActiveProposalItemReplyPacket(header, bytes, ref i);
-                        case 417: return new GroupVoteHistoryRequestPacket(header, bytes, ref i);
-                        case 418: return new GroupVoteHistoryItemReplyPacket(header, bytes, ref i);
-                        case 419: return new StartGroupProposalPacket(header, bytes, ref i);
-                        case 420: return new GroupProposalBallotPacket(header, bytes, ref i);
-                        case 422: return new GroupMembersRequestPacket(header, bytes, ref i);
-                        case 423: return new GroupMembersReplyPacket(header, bytes, ref i);
-                        case 424: return new ActivateGroupPacket(header, bytes, ref i);
-                        case 425: return new SetGroupContributionPacket(header, bytes, ref i);
-                        case 426: return new SetGroupAcceptNoticesPacket(header, bytes, ref i);
-                        case 427: return new GroupRoleDataRequestPacket(header, bytes, ref i);
-                        case 428: return new GroupRoleDataReplyPacket(header, bytes, ref i);
-                        case 429: return new GroupRoleMembersRequestPacket(header, bytes, ref i);
-                        case 430: return new GroupRoleMembersReplyPacket(header, bytes, ref i);
-                        case 431: return new GroupTitlesRequestPacket(header, bytes, ref i);
-                        case 432: return new GroupTitlesReplyPacket(header, bytes, ref i);
-                        case 433: return new GroupTitleUpdatePacket(header, bytes, ref i);
-                        case 434: return new GroupRoleUpdatePacket(header, bytes, ref i);
-                        case 435: return new LiveHelpGroupRequestPacket(header, bytes, ref i);
-                        case 436: return new LiveHelpGroupReplyPacket(header, bytes, ref i);
-                        case 437: return new AgentWearablesRequestPacket(header, bytes, ref i);
-                        case 438: return new AgentWearablesUpdatePacket(header, bytes, ref i);
-                        case 439: return new AgentIsNowWearingPacket(header, bytes, ref i);
-                        case 440: return new AgentCachedTexturePacket(header, bytes, ref i);
-                        case 441: return new AgentCachedTextureResponsePacket(header, bytes, ref i);
-                        case 442: return new AgentDataUpdateRequestPacket(header, bytes, ref i);
-                        case 443: return new AgentDataUpdatePacket(header, bytes, ref i);
-                        case 444: return new GroupDataUpdatePacket(header, bytes, ref i);
-                        case 445: return new AgentGroupDataUpdatePacket(header, bytes, ref i);
-                        case 446: return new AgentDropGroupPacket(header, bytes, ref i);
-                        case 448: return new CreateTrustedCircuitPacket(header, bytes, ref i);
-                        case 449: return new DenyTrustedCircuitPacket(header, bytes, ref i);
-                        case 450: return new RequestTrustedCircuitPacket(header, bytes, ref i);
-                        case 451: return new RezSingleAttachmentFromInvPacket(header, bytes, ref i);
-                        case 452: return new RezMultipleAttachmentsFromInvPacket(header, bytes, ref i);
-                        case 453: return new DetachAttachmentIntoInvPacket(header, bytes, ref i);
-                        case 454: return new CreateNewOutfitAttachmentsPacket(header, bytes, ref i);
-                        case 455: return new UserInfoRequestPacket(header, bytes, ref i);
-                        case 456: return new UserInfoReplyPacket(header, bytes, ref i);
-                        case 457: return new UpdateUserInfoPacket(header, bytes, ref i);
-                        case 458: return new GodExpungeUserPacket(header, bytes, ref i);
-                        case 466: return new StartParcelRemoveAckPacket(header, bytes, ref i);
-                        case 468: return new InitiateDownloadPacket(header, bytes, ref i);
-                        case 469: return new SystemMessagePacket(header, bytes, ref i);
-                        case 470: return new MapLayerRequestPacket(header, bytes, ref i);
-                        case 471: return new MapLayerReplyPacket(header, bytes, ref i);
-                        case 472: return new MapBlockRequestPacket(header, bytes, ref i);
-                        case 473: return new MapNameRequestPacket(header, bytes, ref i);
-                        case 474: return new MapBlockReplyPacket(header, bytes, ref i);
-                        case 475: return new MapItemRequestPacket(header, bytes, ref i);
-                        case 476: return new MapItemReplyPacket(header, bytes, ref i);
-                        case 477: return new SendPostcardPacket(header, bytes, ref i);
-                        case 486: return new ParcelMediaCommandMessagePacket(header, bytes, ref i);
-                        case 487: return new ParcelMediaUpdatePacket(header, bytes, ref i);
-                        case 488: return new LandStatRequestPacket(header, bytes, ref i);
-                        case 489: return new LandStatReplyPacket(header, bytes, ref i);
+                        case 260: return new ViewerStartAuctionPacket(header, bytes, ref i);
+                        case 267: return new UUIDNameRequestPacket(header, bytes, ref i);
+                        case 268: return new UUIDNameReplyPacket(header, bytes, ref i);
+                        case 269: return new UUIDGroupNameRequestPacket(header, bytes, ref i);
+                        case 270: return new UUIDGroupNameReplyPacket(header, bytes, ref i);
+                        case 272: return new ChildAgentDyingPacket(header, bytes, ref i);
+                        case 273: return new ChildAgentUnknownPacket(header, bytes, ref i);
+                        case 275: return new GetScriptRunningPacket(header, bytes, ref i);
+                        case 276: return new ScriptRunningReplyPacket(header, bytes, ref i);
+                        case 277: return new SetScriptRunningPacket(header, bytes, ref i);
+                        case 278: return new ScriptResetPacket(header, bytes, ref i);
+                        case 281: return new CompleteAgentMovementPacket(header, bytes, ref i);
+                        case 282: return new AgentMovementCompletePacket(header, bytes, ref i);
+                        case 284: return new ConnectAgentToUserserverPacket(header, bytes, ref i);
+                        case 285: return new ConnectToUserserverPacket(header, bytes, ref i);
+                        case 287: return new LogoutRequestPacket(header, bytes, ref i);
+                        case 288: return new FinalizeLogoutPacket(header, bytes, ref i);
+                        case 289: return new LogoutReplyPacket(header, bytes, ref i);
+                        case 290: return new LogoutDemandPacket(header, bytes, ref i);
+                        case 291: return new ImprovedInstantMessagePacket(header, bytes, ref i);
+                        case 292: return new RetrieveInstantMessagesPacket(header, bytes, ref i);
+                        case 293: return new FindAgentPacket(header, bytes, ref i);
+                        case 294: return new RequestGodlikePowersPacket(header, bytes, ref i);
+                        case 295: return new GrantGodlikePowersPacket(header, bytes, ref i);
+                        case 296: return new GodlikeMessagePacket(header, bytes, ref i);
+                        case 297: return new EstateOwnerMessagePacket(header, bytes, ref i);
+                        case 298: return new GenericMessagePacket(header, bytes, ref i);
+                        case 299: return new MuteListRequestPacket(header, bytes, ref i);
+                        case 300: return new UpdateMuteListEntryPacket(header, bytes, ref i);
+                        case 301: return new RemoveMuteListEntryPacket(header, bytes, ref i);
+                        case 302: return new CopyInventoryFromNotecardPacket(header, bytes, ref i);
+                        case 303: return new UpdateInventoryItemPacket(header, bytes, ref i);
+                        case 304: return new UpdateCreateInventoryItemPacket(header, bytes, ref i);
+                        case 305: return new MoveInventoryItemPacket(header, bytes, ref i);
+                        case 306: return new CopyInventoryItemPacket(header, bytes, ref i);
+                        case 307: return new RemoveInventoryItemPacket(header, bytes, ref i);
+                        case 308: return new ChangeInventoryItemFlagsPacket(header, bytes, ref i);
+                        case 309: return new SaveAssetIntoInventoryPacket(header, bytes, ref i);
+                        case 310: return new CreateInventoryFolderPacket(header, bytes, ref i);
+                        case 311: return new UpdateInventoryFolderPacket(header, bytes, ref i);
+                        case 312: return new MoveInventoryFolderPacket(header, bytes, ref i);
+                        case 313: return new RemoveInventoryFolderPacket(header, bytes, ref i);
+                        case 314: return new FetchInventoryDescendentsPacket(header, bytes, ref i);
+                        case 315: return new InventoryDescendentsPacket(header, bytes, ref i);
+                        case 316: return new FetchInventoryPacket(header, bytes, ref i);
+                        case 317: return new FetchInventoryReplyPacket(header, bytes, ref i);
+                        case 318: return new BulkUpdateInventoryPacket(header, bytes, ref i);
+                        case 319: return new RequestInventoryAssetPacket(header, bytes, ref i);
+                        case 320: return new InventoryAssetResponsePacket(header, bytes, ref i);
+                        case 321: return new RemoveInventoryObjectsPacket(header, bytes, ref i);
+                        case 322: return new PurgeInventoryDescendentsPacket(header, bytes, ref i);
+                        case 323: return new UpdateTaskInventoryPacket(header, bytes, ref i);
+                        case 324: return new RemoveTaskInventoryPacket(header, bytes, ref i);
+                        case 325: return new MoveTaskInventoryPacket(header, bytes, ref i);
+                        case 326: return new RequestTaskInventoryPacket(header, bytes, ref i);
+                        case 327: return new ReplyTaskInventoryPacket(header, bytes, ref i);
+                        case 328: return new DeRezObjectPacket(header, bytes, ref i);
+                        case 329: return new DeRezAckPacket(header, bytes, ref i);
+                        case 330: return new RezObjectPacket(header, bytes, ref i);
+                        case 331: return new RezObjectFromNotecardPacket(header, bytes, ref i);
+                        case 332: return new DeclineInventoryPacket(header, bytes, ref i);
+                        case 335: return new RequestFriendshipPacket(header, bytes, ref i);
+                        case 336: return new AcceptFriendshipPacket(header, bytes, ref i);
+                        case 337: return new DeclineFriendshipPacket(header, bytes, ref i);
+                        case 338: return new FormFriendshipPacket(header, bytes, ref i);
+                        case 339: return new TerminateFriendshipPacket(header, bytes, ref i);
+                        case 340: return new OfferCallingCardPacket(header, bytes, ref i);
+                        case 341: return new AcceptCallingCardPacket(header, bytes, ref i);
+                        case 342: return new DeclineCallingCardPacket(header, bytes, ref i);
+                        case 343: return new RezScriptPacket(header, bytes, ref i);
+                        case 344: return new CreateInventoryItemPacket(header, bytes, ref i);
+                        case 345: return new CreateLandmarkForEventPacket(header, bytes, ref i);
+                        case 348: return new RegionHandleRequestPacket(header, bytes, ref i);
+                        case 349: return new RegionIDAndHandleReplyPacket(header, bytes, ref i);
+                        case 350: return new MoneyTransferRequestPacket(header, bytes, ref i);
+                        case 353: return new AdjustBalancePacket(header, bytes, ref i);
+                        case 354: return new MoneyBalanceRequestPacket(header, bytes, ref i);
+                        case 355: return new MoneyBalanceReplyPacket(header, bytes, ref i);
+                        case 356: return new RoutedMoneyBalanceReplyPacket(header, bytes, ref i);
+                        case 357: return new MoneyHistoryRequestPacket(header, bytes, ref i);
+                        case 358: return new MoneyHistoryReplyPacket(header, bytes, ref i);
+                        case 359: return new MoneySummaryRequestPacket(header, bytes, ref i);
+                        case 360: return new MoneySummaryReplyPacket(header, bytes, ref i);
+                        case 361: return new MoneyDetailsRequestPacket(header, bytes, ref i);
+                        case 362: return new MoneyDetailsReplyPacket(header, bytes, ref i);
+                        case 363: return new MoneyTransactionsRequestPacket(header, bytes, ref i);
+                        case 364: return new MoneyTransactionsReplyPacket(header, bytes, ref i);
+                        case 365: return new ActivateGesturesPacket(header, bytes, ref i);
+                        case 366: return new DeactivateGesturesPacket(header, bytes, ref i);
+                        case 367: return new MuteListUpdatePacket(header, bytes, ref i);
+                        case 368: return new UseCachedMuteListPacket(header, bytes, ref i);
+                        case 369: return new GrantUserRightsPacket(header, bytes, ref i);
+                        case 370: return new ChangeUserRightsPacket(header, bytes, ref i);
+                        case 371: return new OnlineNotificationPacket(header, bytes, ref i);
+                        case 372: return new OfflineNotificationPacket(header, bytes, ref i);
+                        case 373: return new SetStartLocationRequestPacket(header, bytes, ref i);
+                        case 383: return new AssetUploadRequestPacket(header, bytes, ref i);
+                        case 384: return new AssetUploadCompletePacket(header, bytes, ref i);
+                        case 385: return new ReputationAgentAssignPacket(header, bytes, ref i);
+                        case 386: return new ReputationIndividualRequestPacket(header, bytes, ref i);
+                        case 387: return new ReputationIndividualReplyPacket(header, bytes, ref i);
+                        case 392: return new CreateGroupRequestPacket(header, bytes, ref i);
+                        case 393: return new CreateGroupReplyPacket(header, bytes, ref i);
+                        case 394: return new UpdateGroupInfoPacket(header, bytes, ref i);
+                        case 395: return new GroupRoleChangesPacket(header, bytes, ref i);
+                        case 396: return new JoinGroupRequestPacket(header, bytes, ref i);
+                        case 397: return new JoinGroupReplyPacket(header, bytes, ref i);
+                        case 398: return new EjectGroupMemberRequestPacket(header, bytes, ref i);
+                        case 399: return new EjectGroupMemberReplyPacket(header, bytes, ref i);
+                        case 400: return new LeaveGroupRequestPacket(header, bytes, ref i);
+                        case 401: return new LeaveGroupReplyPacket(header, bytes, ref i);
+                        case 402: return new InviteGroupRequestPacket(header, bytes, ref i);
+                        case 404: return new GroupProfileRequestPacket(header, bytes, ref i);
+                        case 405: return new GroupProfileReplyPacket(header, bytes, ref i);
+                        case 406: return new GroupAccountSummaryRequestPacket(header, bytes, ref i);
+                        case 407: return new GroupAccountSummaryReplyPacket(header, bytes, ref i);
+                        case 408: return new GroupAccountDetailsRequestPacket(header, bytes, ref i);
+                        case 409: return new GroupAccountDetailsReplyPacket(header, bytes, ref i);
+                        case 410: return new GroupAccountTransactionsRequestPacket(header, bytes, ref i);
+                        case 411: return new GroupAccountTransactionsReplyPacket(header, bytes, ref i);
+                        case 412: return new GroupActiveProposalsRequestPacket(header, bytes, ref i);
+                        case 413: return new GroupActiveProposalItemReplyPacket(header, bytes, ref i);
+                        case 414: return new GroupVoteHistoryRequestPacket(header, bytes, ref i);
+                        case 415: return new GroupVoteHistoryItemReplyPacket(header, bytes, ref i);
+                        case 416: return new StartGroupProposalPacket(header, bytes, ref i);
+                        case 417: return new GroupProposalBallotPacket(header, bytes, ref i);
+                        case 419: return new GroupMembersRequestPacket(header, bytes, ref i);
+                        case 420: return new GroupMembersReplyPacket(header, bytes, ref i);
+                        case 421: return new ActivateGroupPacket(header, bytes, ref i);
+                        case 422: return new SetGroupContributionPacket(header, bytes, ref i);
+                        case 423: return new SetGroupAcceptNoticesPacket(header, bytes, ref i);
+                        case 424: return new GroupRoleDataRequestPacket(header, bytes, ref i);
+                        case 425: return new GroupRoleDataReplyPacket(header, bytes, ref i);
+                        case 426: return new GroupRoleMembersRequestPacket(header, bytes, ref i);
+                        case 427: return new GroupRoleMembersReplyPacket(header, bytes, ref i);
+                        case 428: return new GroupTitlesRequestPacket(header, bytes, ref i);
+                        case 429: return new GroupTitlesReplyPacket(header, bytes, ref i);
+                        case 430: return new GroupTitleUpdatePacket(header, bytes, ref i);
+                        case 431: return new GroupRoleUpdatePacket(header, bytes, ref i);
+                        case 432: return new LiveHelpGroupRequestPacket(header, bytes, ref i);
+                        case 433: return new LiveHelpGroupReplyPacket(header, bytes, ref i);
+                        case 434: return new AgentWearablesRequestPacket(header, bytes, ref i);
+                        case 435: return new AgentWearablesUpdatePacket(header, bytes, ref i);
+                        case 436: return new AgentIsNowWearingPacket(header, bytes, ref i);
+                        case 437: return new AgentCachedTexturePacket(header, bytes, ref i);
+                        case 438: return new AgentCachedTextureResponsePacket(header, bytes, ref i);
+                        case 439: return new AgentDataUpdateRequestPacket(header, bytes, ref i);
+                        case 440: return new AgentDataUpdatePacket(header, bytes, ref i);
+                        case 441: return new GroupDataUpdatePacket(header, bytes, ref i);
+                        case 442: return new AgentGroupDataUpdatePacket(header, bytes, ref i);
+                        case 443: return new AgentDropGroupPacket(header, bytes, ref i);
+                        case 445: return new CreateTrustedCircuitPacket(header, bytes, ref i);
+                        case 446: return new DenyTrustedCircuitPacket(header, bytes, ref i);
+                        case 447: return new RequestTrustedCircuitPacket(header, bytes, ref i);
+                        case 448: return new RezSingleAttachmentFromInvPacket(header, bytes, ref i);
+                        case 449: return new RezMultipleAttachmentsFromInvPacket(header, bytes, ref i);
+                        case 450: return new DetachAttachmentIntoInvPacket(header, bytes, ref i);
+                        case 451: return new CreateNewOutfitAttachmentsPacket(header, bytes, ref i);
+                        case 452: return new UserInfoRequestPacket(header, bytes, ref i);
+                        case 453: return new UserInfoReplyPacket(header, bytes, ref i);
+                        case 454: return new UpdateUserInfoPacket(header, bytes, ref i);
+                        case 460: return new StartParcelRemoveAckPacket(header, bytes, ref i);
+                        case 462: return new InitiateDownloadPacket(header, bytes, ref i);
+                        case 463: return new SystemMessagePacket(header, bytes, ref i);
+                        case 464: return new MapLayerRequestPacket(header, bytes, ref i);
+                        case 465: return new MapLayerReplyPacket(header, bytes, ref i);
+                        case 466: return new MapBlockRequestPacket(header, bytes, ref i);
+                        case 467: return new MapNameRequestPacket(header, bytes, ref i);
+                        case 468: return new MapBlockReplyPacket(header, bytes, ref i);
+                        case 469: return new MapItemRequestPacket(header, bytes, ref i);
+                        case 470: return new MapItemReplyPacket(header, bytes, ref i);
+                        case 471: return new SendPostcardPacket(header, bytes, ref i);
+                        case 480: return new ParcelMediaCommandMessagePacket(header, bytes, ref i);
+                        case 481: return new ParcelMediaUpdatePacket(header, bytes, ref i);
+                        case 482: return new LandStatRequestPacket(header, bytes, ref i);
+                        case 483: return new LandStatReplyPacket(header, bytes, ref i);
                         case 65530: return new SecuredTemplateChecksumRequestPacket(header, bytes, ref i);
                         case 65531: return new PacketAckPacket(header, bytes, ref i);
                         case 65532: return new OpenCircuitPacket(header, bytes, ref i);
@@ -2140,13 +2121,12 @@ namespace libsecondlife.Packets
                         case 10: return new ObjectPropertiesPacket(header, bytes, ref i);
                         case 11: return new ObjectPropertiesFamilyPacket(header, bytes, ref i);
                         case 12: return new ParcelPropertiesRequestPacket(header, bytes, ref i);
-                        case 14: return new GestureUpdatePacket(header, bytes, ref i);
-                        case 15: return new AttachedSoundPacket(header, bytes, ref i);
-                        case 16: return new AttachedSoundGainChangePacket(header, bytes, ref i);
-                        case 17: return new AttachedSoundCutoffRadiusPacket(header, bytes, ref i);
-                        case 18: return new PreloadSoundPacket(header, bytes, ref i);
-                        case 20: return new ViewerEffectPacket(header, bytes, ref i);
-                        case 21: return new SetSunPhasePacket(header, bytes, ref i);
+                        case 14: return new AttachedSoundPacket(header, bytes, ref i);
+                        case 15: return new AttachedSoundGainChangePacket(header, bytes, ref i);
+                        case 16: return new AttachedSoundCutoffRadiusPacket(header, bytes, ref i);
+                        case 17: return new PreloadSoundPacket(header, bytes, ref i);
+                        case 19: return new ViewerEffectPacket(header, bytes, ref i);
+                        case 20: return new SetSunPhasePacket(header, bytes, ref i);
                     }
                 }
             }
@@ -4436,7 +4416,6 @@ namespace libsecondlife.Packets
         [XmlType("dirplacesreply_queryreplies")]
         public class QueryRepliesBlock
         {
-            public bool ReservedNewbie;
             public bool ForSale;
             public LLUUID ParcelID;
             private byte[] _name;
@@ -4458,7 +4437,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 23;
+                    int length = 22;
                     if (Name != null) { length += 1 + Name.Length; }
                     return length;
                 }
@@ -4470,7 +4449,6 @@ namespace libsecondlife.Packets
                 int length;
                 try
                 {
-                    ReservedNewbie = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ForSale = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ParcelID = new LLUUID(bytes, i); i += 16;
                     length = (ushort)bytes[i++];
@@ -4489,7 +4467,6 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                bytes[i++] = (byte)((ReservedNewbie) ? 1 : 0);
                 bytes[i++] = (byte)((ForSale) ? 1 : 0);
                 Buffer.BlockCopy(ParcelID.GetBytes(), 0, bytes, i, 16); i += 16;
                 if(Name == null) { Console.WriteLine("Warning: Name is null, in " + this.GetType()); }
@@ -4505,7 +4482,6 @@ namespace libsecondlife.Packets
             {
                 StringBuilder output = new StringBuilder();
                 output.AppendLine("-- QueryReplies --");
-                output.AppendLine(String.Format("ReservedNewbie: {0}", ReservedNewbie));
                 output.AppendLine(String.Format("ForSale: {0}", ForSale));
                 output.AppendLine(String.Format("ParcelID: {0}", ParcelID));
                 Helpers.FieldToString(output, Name, "Name");
@@ -5233,8 +5209,7 @@ namespace libsecondlife.Packets
         {
             public int Members;
             public LLUUID GroupID;
-            public int MembershipFee;
-            public bool OpenEnrollment;
+            public float SearchOrder;
             private byte[] _groupname;
             public byte[] GroupName
             {
@@ -5252,7 +5227,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 25;
+                    int length = 24;
                     if (GroupName != null) { length += 1 + GroupName.Length; }
                     return length;
                 }
@@ -5266,8 +5241,8 @@ namespace libsecondlife.Packets
                 {
                     Members = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     GroupID = new LLUUID(bytes, i); i += 16;
-                    MembershipFee = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    OpenEnrollment = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
+                    SearchOrder = BitConverter.ToSingle(bytes, i); i += 4;
                     length = (ushort)bytes[i++];
                     _groupname = new byte[length];
                     Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
@@ -5280,16 +5255,15 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
+                byte[] ba;
                 bytes[i++] = (byte)(Members % 256);
                 bytes[i++] = (byte)((Members >> 8) % 256);
                 bytes[i++] = (byte)((Members >> 16) % 256);
                 bytes[i++] = (byte)((Members >> 24) % 256);
                 Buffer.BlockCopy(GroupID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)(MembershipFee % 256);
-                bytes[i++] = (byte)((MembershipFee >> 8) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 16) % 256);
-                bytes[i++] = (byte)((MembershipFee >> 24) % 256);
-                bytes[i++] = (byte)((OpenEnrollment) ? 1 : 0);
+                ba = BitConverter.GetBytes(SearchOrder);
+                if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
+                Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
                 if(GroupName == null) { Console.WriteLine("Warning: GroupName is null, in " + this.GetType()); }
                 bytes[i++] = (byte)GroupName.Length;
                 Buffer.BlockCopy(GroupName, 0, bytes, i, GroupName.Length); i += GroupName.Length;
@@ -5301,8 +5275,7 @@ namespace libsecondlife.Packets
                 output.AppendLine("-- QueryReplies --");
                 output.AppendLine(String.Format("Members: {0}", Members));
                 output.AppendLine(String.Format("GroupID: {0}", GroupID));
-                output.AppendLine(String.Format("MembershipFee: {0}", MembershipFee));
-                output.AppendLine(String.Format("OpenEnrollment: {0}", OpenEnrollment));
+                output.AppendLine(String.Format("SearchOrder: {0}", SearchOrder));
                 Helpers.FieldToString(output, GroupName, "GroupName");
                 return output.ToString();
             }
@@ -7593,7 +7566,6 @@ namespace libsecondlife.Packets
         [XmlType("dirlandreply_queryreplies")]
         public class QueryRepliesBlock
         {
-            public bool ReservedNewbie;
             public int ActualArea;
             public bool ForSale;
             public LLUUID ParcelID;
@@ -7616,7 +7588,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 27;
+                    int length = 26;
                     if (Name != null) { length += 1 + Name.Length; }
                     return length;
                 }
@@ -7628,7 +7600,6 @@ namespace libsecondlife.Packets
                 int length;
                 try
                 {
-                    ReservedNewbie = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ForSale = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ParcelID = new LLUUID(bytes, i); i += 16;
@@ -7646,7 +7617,6 @@ namespace libsecondlife.Packets
 
             public void ToBytes(byte[] bytes, ref int i)
             {
-                bytes[i++] = (byte)((ReservedNewbie) ? 1 : 0);
                 bytes[i++] = (byte)(ActualArea % 256);
                 bytes[i++] = (byte)((ActualArea >> 8) % 256);
                 bytes[i++] = (byte)((ActualArea >> 16) % 256);
@@ -7667,7 +7637,6 @@ namespace libsecondlife.Packets
             {
                 StringBuilder output = new StringBuilder();
                 output.AppendLine("-- QueryReplies --");
-                output.AppendLine(String.Format("ReservedNewbie: {0}", ReservedNewbie));
                 output.AppendLine(String.Format("ActualArea: {0}", ActualArea));
                 output.AppendLine(String.Format("ForSale: {0}", ForSale));
                 output.AppendLine(String.Format("ParcelID: {0}", ParcelID));
@@ -15243,8 +15212,8 @@ namespace libsecondlife.Packets
         public class ObjectDataBlock
         {
             public sbyte PathTwistBegin;
-            public byte PathEnd;
-            public byte ProfileBegin;
+            public ushort PathEnd;
+            public ushort ProfileBegin;
             public sbyte PathRadiusOffset;
             public sbyte PathSkew;
             public byte ProfileCurve;
@@ -15255,11 +15224,11 @@ namespace libsecondlife.Packets
             public byte PathShearY;
             public sbyte PathTaperX;
             public sbyte PathTaperY;
-            public byte ProfileEnd;
-            public byte PathBegin;
+            public ushort ProfileEnd;
+            public ushort PathBegin;
             public byte PathCurve;
             public sbyte PathTwist;
-            public byte ProfileHollow;
+            public ushort ProfileHollow;
             public byte PathRevolutions;
 
             [XmlIgnore]
@@ -15267,7 +15236,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    return 22;
+                    return 27;
                 }
             }
 
@@ -15277,8 +15246,8 @@ namespace libsecondlife.Packets
                 try
                 {
                     PathTwistBegin = (sbyte)bytes[i++];
-                    PathEnd = (byte)bytes[i++];
-                    ProfileBegin = (byte)bytes[i++];
+                    PathEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
+                    ProfileBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathRadiusOffset = (sbyte)bytes[i++];
                     PathSkew = (sbyte)bytes[i++];
                     ProfileCurve = (byte)bytes[i++];
@@ -15289,11 +15258,11 @@ namespace libsecondlife.Packets
                     PathShearY = (byte)bytes[i++];
                     PathTaperX = (sbyte)bytes[i++];
                     PathTaperY = (sbyte)bytes[i++];
-                    ProfileEnd = (byte)bytes[i++];
-                    PathBegin = (byte)bytes[i++];
+                    ProfileEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
+                    PathBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathCurve = (byte)bytes[i++];
                     PathTwist = (sbyte)bytes[i++];
-                    ProfileHollow = (byte)bytes[i++];
+                    ProfileHollow = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathRevolutions = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -15305,8 +15274,10 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 bytes[i++] = (byte)PathTwistBegin;
-                bytes[i++] = PathEnd;
-                bytes[i++] = ProfileBegin;
+                bytes[i++] = (byte)(PathEnd % 256);
+                bytes[i++] = (byte)((PathEnd >> 8) % 256);
+                bytes[i++] = (byte)(ProfileBegin % 256);
+                bytes[i++] = (byte)((ProfileBegin >> 8) % 256);
                 bytes[i++] = (byte)PathRadiusOffset;
                 bytes[i++] = (byte)PathSkew;
                 bytes[i++] = ProfileCurve;
@@ -15320,11 +15291,14 @@ namespace libsecondlife.Packets
                 bytes[i++] = PathShearY;
                 bytes[i++] = (byte)PathTaperX;
                 bytes[i++] = (byte)PathTaperY;
-                bytes[i++] = ProfileEnd;
-                bytes[i++] = PathBegin;
+                bytes[i++] = (byte)(ProfileEnd % 256);
+                bytes[i++] = (byte)((ProfileEnd >> 8) % 256);
+                bytes[i++] = (byte)(PathBegin % 256);
+                bytes[i++] = (byte)((PathBegin >> 8) % 256);
                 bytes[i++] = PathCurve;
                 bytes[i++] = (byte)PathTwist;
-                bytes[i++] = ProfileHollow;
+                bytes[i++] = (byte)(ProfileHollow % 256);
+                bytes[i++] = (byte)((ProfileHollow >> 8) % 256);
                 bytes[i++] = PathRevolutions;
             }
 
@@ -36272,158 +36246,6 @@ namespace libsecondlife.Packets
     }
 
     /// <exclude/>
-    public class ParcelGodReserveForNewbiePacket : Packet
-    {
-        /// <exclude/>
-        [XmlType("parcelgodreservefornewbie_parceldata")]
-        public class ParcelDataBlock
-        {
-            public int LocalID;
-            public LLUUID SnapshotID;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 20;
-                }
-            }
-
-            public ParcelDataBlock() { }
-            public ParcelDataBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    LocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    SnapshotID = new LLUUID(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                bytes[i++] = (byte)(LocalID % 256);
-                bytes[i++] = (byte)((LocalID >> 8) % 256);
-                bytes[i++] = (byte)((LocalID >> 16) % 256);
-                bytes[i++] = (byte)((LocalID >> 24) % 256);
-                Buffer.BlockCopy(SnapshotID.GetBytes(), 0, bytes, i, 16); i += 16;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder output = new StringBuilder();
-                output.AppendLine("-- ParcelData --");
-                output.AppendLine(String.Format("LocalID: {0}", LocalID));
-                output.Append(String.Format("SnapshotID: {0}", SnapshotID));
-                return output.ToString();
-            }
-        }
-
-        /// <exclude/>
-        [XmlType("parcelgodreservefornewbie_agentdata")]
-        public class AgentDataBlock
-        {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 32;
-                }
-            }
-
-            public AgentDataBlock() { }
-            public AgentDataBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    AgentID = new LLUUID(bytes, i); i += 16;
-                    SessionID = new LLUUID(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder output = new StringBuilder();
-                output.AppendLine("-- AgentData --");
-                output.AppendLine(String.Format("AgentID: {0}", AgentID));
-                output.Append(String.Format("SessionID: {0}", SessionID));
-                return output.ToString();
-            }
-        }
-
-        private Header header;
-        public override Header Header { get { return header; } set { header = value; } }
-        public override PacketType Type { get { return PacketType.ParcelGodReserveForNewbie; } }
-        public ParcelDataBlock ParcelData;
-        public AgentDataBlock AgentData;
-
-        public ParcelGodReserveForNewbiePacket()
-        {
-            Header = new LowHeader();
-            Header.ID = 260;
-            Header.Reliable = true;
-            ParcelData = new ParcelDataBlock();
-            AgentData = new AgentDataBlock();
-        }
-
-        public ParcelGodReserveForNewbiePacket(byte[] bytes, ref int i)
-        {
-            int packetEnd = bytes.Length - 1;
-            Header = new LowHeader(bytes, ref i, ref packetEnd);
-            ParcelData = new ParcelDataBlock(bytes, ref i);
-            AgentData = new AgentDataBlock(bytes, ref i);
-        }
-
-        public ParcelGodReserveForNewbiePacket(Header head, byte[] bytes, ref int i)
-        {
-            Header = head;
-            ParcelData = new ParcelDataBlock(bytes, ref i);
-            AgentData = new AgentDataBlock(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 8;
-            length += ParcelData.Length;            length += AgentData.Length;;
-            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            header.ToBytes(bytes, ref i);
-            ParcelData.ToBytes(bytes, ref i);
-            AgentData.ToBytes(bytes, ref i);
-            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override string ToString()
-        {
-            string output = "--- ParcelGodReserveForNewbie ---" + Environment.NewLine;
-                output += ParcelData.ToString() + Environment.NewLine;
-                output += AgentData.ToString() + Environment.NewLine;
-            return output;
-        }
-
-    }
-
-    /// <exclude/>
     public class ViewerStartAuctionPacket : Packet
     {
         /// <exclude/>
@@ -36530,7 +36352,7 @@ namespace libsecondlife.Packets
         public ViewerStartAuctionPacket()
         {
             Header = new LowHeader();
-            Header.ID = 261;
+            Header.ID = 260;
             Header.Reliable = true;
             ParcelData = new ParcelDataBlock();
             AgentData = new AgentDataBlock();
@@ -36628,7 +36450,7 @@ namespace libsecondlife.Packets
         public UUIDNameRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 268;
+            Header.ID = 267;
             Header.Reliable = true;
             UUIDNameBlock = new UUIDNameBlockBlock[0];
         }
@@ -36774,7 +36596,7 @@ namespace libsecondlife.Packets
         public UUIDNameReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 269;
+            Header.ID = 268;
             Header.Reliable = true;
             UUIDNameBlock = new UUIDNameBlockBlock[0];
         }
@@ -36879,7 +36701,7 @@ namespace libsecondlife.Packets
         public UUIDGroupNameRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 270;
+            Header.ID = 269;
             Header.Reliable = true;
             UUIDNameBlock = new UUIDNameBlockBlock[0];
         }
@@ -37005,7 +36827,7 @@ namespace libsecondlife.Packets
         public UUIDGroupNameReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 271;
+            Header.ID = 270;
             Header.Reliable = true;
             UUIDNameBlock = new UUIDNameBlockBlock[0];
         }
@@ -37114,7 +36936,7 @@ namespace libsecondlife.Packets
         public ChildAgentDyingPacket()
         {
             Header = new LowHeader();
-            Header.ID = 273;
+            Header.ID = 272;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -37212,7 +37034,7 @@ namespace libsecondlife.Packets
         public ChildAgentUnknownPacket()
         {
             Header = new LowHeader();
-            Header.ID = 274;
+            Header.ID = 273;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -37309,7 +37131,7 @@ namespace libsecondlife.Packets
         public GetScriptRunningPacket()
         {
             Header = new LowHeader();
-            Header.ID = 276;
+            Header.ID = 275;
             Header.Reliable = true;
             Script = new ScriptBlock();
         }
@@ -37410,7 +37232,7 @@ namespace libsecondlife.Packets
         public ScriptRunningReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 277;
+            Header.ID = 276;
             Header.Reliable = true;
             Script = new ScriptBlock();
         }
@@ -37558,7 +37380,7 @@ namespace libsecondlife.Packets
         public SetScriptRunningPacket()
         {
             Header = new LowHeader();
-            Header.ID = 278;
+            Header.ID = 277;
             Header.Reliable = true;
             Script = new ScriptBlock();
             AgentData = new AgentDataBlock();
@@ -37707,7 +37529,7 @@ namespace libsecondlife.Packets
         public ScriptResetPacket()
         {
             Header = new LowHeader();
-            Header.ID = 279;
+            Header.ID = 278;
             Header.Reliable = true;
             Script = new ScriptBlock();
             AgentData = new AgentDataBlock();
@@ -37816,7 +37638,7 @@ namespace libsecondlife.Packets
         public CompleteAgentMovementPacket()
         {
             Header = new LowHeader();
-            Header.ID = 282;
+            Header.ID = 281;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -37978,7 +37800,7 @@ namespace libsecondlife.Packets
         public AgentMovementCompletePacket()
         {
             Header = new LowHeader();
-            Header.ID = 283;
+            Header.ID = 282;
             Header.Reliable = true;
             Data = new DataBlock();
             AgentData = new AgentDataBlock();
@@ -38080,7 +37902,7 @@ namespace libsecondlife.Packets
         public ConnectAgentToUserserverPacket()
         {
             Header = new LowHeader();
-            Header.ID = 285;
+            Header.ID = 284;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -38130,7 +37952,7 @@ namespace libsecondlife.Packets
         public ConnectToUserserverPacket()
         {
             Header = new LowHeader();
-            Header.ID = 286;
+            Header.ID = 285;
             Header.Reliable = true;
         }
 
@@ -38222,7 +38044,7 @@ namespace libsecondlife.Packets
         public LogoutRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 288;
+            Header.ID = 287;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -38319,7 +38141,7 @@ namespace libsecondlife.Packets
         public FinalizeLogoutPacket()
         {
             Header = new LowHeader();
-            Header.ID = 289;
+            Header.ID = 288;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -38459,7 +38281,7 @@ namespace libsecondlife.Packets
         public LogoutReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 290;
+            Header.ID = 289;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -38570,7 +38392,7 @@ namespace libsecondlife.Packets
         public LogoutDemandPacket()
         {
             Header = new LowHeader();
-            Header.ID = 291;
+            Header.ID = 290;
             Header.Reliable = true;
             LogoutBlock = new LogoutBlockBlock();
         }
@@ -38812,7 +38634,7 @@ namespace libsecondlife.Packets
         public ImprovedInstantMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 292;
+            Header.ID = 291;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MessageBlock = new MessageBlockBlock();
@@ -38915,7 +38737,7 @@ namespace libsecondlife.Packets
         public RetrieveInstantMessagesPacket()
         {
             Header = new LowHeader();
-            Header.ID = 293;
+            Header.ID = 292;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -38950,51 +38772,6 @@ namespace libsecondlife.Packets
         {
             string output = "--- RetrieveInstantMessages ---" + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
-            return output;
-        }
-
-    }
-
-    /// <exclude/>
-    public class DequeueInstantMessagesPacket : Packet
-    {
-        private Header header;
-        public override Header Header { get { return header; } set { header = value; } }
-        public override PacketType Type { get { return PacketType.DequeueInstantMessages; } }
-
-        public DequeueInstantMessagesPacket()
-        {
-            Header = new LowHeader();
-            Header.ID = 294;
-            Header.Reliable = true;
-        }
-
-        public DequeueInstantMessagesPacket(byte[] bytes, ref int i)
-        {
-            int packetEnd = bytes.Length - 1;
-            Header = new LowHeader(bytes, ref i, ref packetEnd);
-        }
-
-        public DequeueInstantMessagesPacket(Header head, byte[] bytes, ref int i)
-        {
-            Header = head;
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 8;
-;
-            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            header.ToBytes(bytes, ref i);
-            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override string ToString()
-        {
-            string output = "--- DequeueInstantMessages ---" + Environment.NewLine;
             return output;
         }
 
@@ -39118,7 +38895,7 @@ namespace libsecondlife.Packets
         public FindAgentPacket()
         {
             Header = new LowHeader();
-            Header.ID = 295;
+            Header.ID = 293;
             Header.Reliable = true;
             LocationBlock = new LocationBlockBlock[0];
             AgentBlock = new AgentBlockBlock();
@@ -39279,7 +39056,7 @@ namespace libsecondlife.Packets
         public RequestGodlikePowersPacket()
         {
             Header = new LowHeader();
-            Header.ID = 296;
+            Header.ID = 294;
             Header.Reliable = true;
             RequestBlock = new RequestBlockBlock();
             AgentData = new AgentDataBlock();
@@ -39428,7 +39205,7 @@ namespace libsecondlife.Packets
         public GrantGodlikePowersPacket()
         {
             Header = new LowHeader();
-            Header.ID = 297;
+            Header.ID = 295;
             Header.Reliable = true;
             GrantData = new GrantDataBlock();
             AgentData = new AgentDataBlock();
@@ -39658,7 +39435,7 @@ namespace libsecondlife.Packets
         public GodlikeMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 298;
+            Header.ID = 296;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
@@ -39906,7 +39683,7 @@ namespace libsecondlife.Packets
         public EstateOwnerMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 299;
+            Header.ID = 297;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
@@ -40154,7 +39931,7 @@ namespace libsecondlife.Packets
         public GenericMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 300;
+            Header.ID = 298;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
@@ -40320,7 +40097,7 @@ namespace libsecondlife.Packets
         public MuteListRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 301;
+            Header.ID = 299;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             MuteData = new MuteDataBlock();
@@ -40501,7 +40278,7 @@ namespace libsecondlife.Packets
         public UpdateMuteListEntryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 302;
+            Header.ID = 300;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             MuteData = new MuteDataBlock();
@@ -40667,7 +40444,7 @@ namespace libsecondlife.Packets
         public RemoveMuteListEntryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 303;
+            Header.ID = 301;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             MuteData = new MuteDataBlock();
@@ -40863,7 +40640,7 @@ namespace libsecondlife.Packets
         public CopyInventoryFromNotecardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 304;
+            Header.ID = 302;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -41174,7 +40951,7 @@ namespace libsecondlife.Packets
         public UpdateInventoryItemPacket()
         {
             Header = new LowHeader();
-            Header.ID = 305;
+            Header.ID = 303;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -41480,7 +41257,7 @@ namespace libsecondlife.Packets
         public UpdateCreateInventoryItemPacket()
         {
             Header = new LowHeader();
-            Header.ID = 306;
+            Header.ID = 304;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -41668,7 +41445,7 @@ namespace libsecondlife.Packets
         public MoveInventoryItemPacket()
         {
             Header = new LowHeader();
-            Header.ID = 307;
+            Header.ID = 305;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -41863,7 +41640,7 @@ namespace libsecondlife.Packets
         public CopyInventoryItemPacket()
         {
             Header = new LowHeader();
-            Header.ID = 308;
+            Header.ID = 306;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -42021,7 +41798,7 @@ namespace libsecondlife.Packets
         public RemoveInventoryItemPacket()
         {
             Header = new LowHeader();
-            Header.ID = 309;
+            Header.ID = 307;
             Header.Reliable = true;
             InventoryData = new InventoryDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -42185,7 +41962,7 @@ namespace libsecondlife.Packets
         public ChangeInventoryItemFlagsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 310;
+            Header.ID = 308;
             Header.Reliable = true;
             InventoryData = new InventoryDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -42342,7 +42119,7 @@ namespace libsecondlife.Packets
         public SaveAssetIntoInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 311;
+            Header.ID = 309;
             Header.Reliable = true;
             InventoryData = new InventoryDataBlock();
             AgentData = new AgentDataBlock();
@@ -42517,7 +42294,7 @@ namespace libsecondlife.Packets
         public CreateInventoryFolderPacket()
         {
             Header = new LowHeader();
-            Header.ID = 312;
+            Header.ID = 310;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             FolderData = new FolderDataBlock();
@@ -42692,7 +42469,7 @@ namespace libsecondlife.Packets
         public UpdateInventoryFolderPacket()
         {
             Header = new LowHeader();
-            Header.ID = 313;
+            Header.ID = 311;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             FolderData = new FolderDataBlock[0];
@@ -42857,7 +42634,7 @@ namespace libsecondlife.Packets
         public MoveInventoryFolderPacket()
         {
             Header = new LowHeader();
-            Header.ID = 314;
+            Header.ID = 312;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -43015,7 +42792,7 @@ namespace libsecondlife.Packets
         public RemoveInventoryFolderPacket()
         {
             Header = new LowHeader();
-            Header.ID = 315;
+            Header.ID = 313;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             FolderData = new FolderDataBlock[0];
@@ -43191,7 +42968,7 @@ namespace libsecondlife.Packets
         public FetchInventoryDescendentsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 316;
+            Header.ID = 314;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
@@ -43569,7 +43346,7 @@ namespace libsecondlife.Packets
         public InventoryDescendentsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 317;
+            Header.ID = 315;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ItemData = new ItemDataBlock[0];
@@ -43748,7 +43525,7 @@ namespace libsecondlife.Packets
         public FetchInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 318;
+            Header.ID = 316;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -44043,7 +43820,7 @@ namespace libsecondlife.Packets
         public FetchInventoryReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 319;
+            Header.ID = 317;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -44422,7 +44199,7 @@ namespace libsecondlife.Packets
         public BulkUpdateInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 320;
+            Header.ID = 318;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ItemData = new ItemDataBlock[0];
@@ -44562,7 +44339,7 @@ namespace libsecondlife.Packets
         public RequestInventoryAssetPacket()
         {
             Header = new LowHeader();
-            Header.ID = 321;
+            Header.ID = 319;
             Header.Reliable = true;
             QueryData = new QueryDataBlock();
         }
@@ -44663,7 +44440,7 @@ namespace libsecondlife.Packets
         public InventoryAssetResponsePacket()
         {
             Header = new LowHeader();
-            Header.ID = 322;
+            Header.ID = 320;
             Header.Reliable = true;
             QueryData = new QueryDataBlock();
         }
@@ -44846,7 +44623,7 @@ namespace libsecondlife.Packets
         public RemoveInventoryObjectsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 323;
+            Header.ID = 321;
             Header.Reliable = true;
             ItemData = new ItemDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -45020,7 +44797,7 @@ namespace libsecondlife.Packets
         public PurgeInventoryDescendentsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 324;
+            Header.ID = 322;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
@@ -45357,7 +45134,7 @@ namespace libsecondlife.Packets
         public UpdateTaskInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 325;
+            Header.ID = 323;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
@@ -45515,7 +45292,7 @@ namespace libsecondlife.Packets
         public RemoveTaskInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 326;
+            Header.ID = 324;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
@@ -45672,7 +45449,7 @@ namespace libsecondlife.Packets
         public MoveTaskInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 327;
+            Header.ID = 325;
             Header.Reliable = true;
             InventoryData = new InventoryDataBlock();
             AgentData = new AgentDataBlock();
@@ -45820,7 +45597,7 @@ namespace libsecondlife.Packets
         public RequestTaskInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 328;
+            Header.ID = 326;
             Header.Reliable = true;
             InventoryData = new InventoryDataBlock();
             AgentData = new AgentDataBlock();
@@ -45945,7 +45722,7 @@ namespace libsecondlife.Packets
         public ReplyTaskInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 329;
+            Header.ID = 327;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
@@ -46152,7 +45929,7 @@ namespace libsecondlife.Packets
         public DeRezObjectPacket()
         {
             Header = new LowHeader();
-            Header.ID = 330;
+            Header.ID = 328;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ObjectData = new ObjectDataBlock[0];
@@ -46225,7 +46002,7 @@ namespace libsecondlife.Packets
         public DeRezAckPacket()
         {
             Header = new LowHeader();
-            Header.ID = 331;
+            Header.ID = 329;
             Header.Reliable = true;
         }
 
@@ -46604,7 +46381,7 @@ namespace libsecondlife.Packets
         public RezObjectPacket()
         {
             Header = new LowHeader();
-            Header.ID = 332;
+            Header.ID = 330;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock();
@@ -46905,7 +46682,7 @@ namespace libsecondlife.Packets
         public RezObjectFromNotecardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 333;
+            Header.ID = 331;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryData = new InventoryDataBlock[0];
@@ -47026,7 +46803,7 @@ namespace libsecondlife.Packets
         public DeclineInventoryPacket()
         {
             Header = new LowHeader();
-            Header.ID = 334;
+            Header.ID = 332;
             Header.Reliable = true;
             InfoBlock = new InfoBlockBlock();
         }
@@ -47174,7 +46951,7 @@ namespace libsecondlife.Packets
         public RequestFriendshipPacket()
         {
             Header = new LowHeader();
-            Header.ID = 337;
+            Header.ID = 335;
             Header.Reliable = true;
             AgentBlock = new AgentBlockBlock();
             AgentData = new AgentDataBlock();
@@ -47362,7 +47139,7 @@ namespace libsecondlife.Packets
         public AcceptFriendshipPacket()
         {
             Header = new LowHeader();
-            Header.ID = 338;
+            Header.ID = 336;
             Header.Reliable = true;
             TransactionBlock = new TransactionBlockBlock();
             AgentData = new AgentDataBlock();
@@ -47524,7 +47301,7 @@ namespace libsecondlife.Packets
         public DeclineFriendshipPacket()
         {
             Header = new LowHeader();
-            Header.ID = 339;
+            Header.ID = 337;
             Header.Reliable = true;
             TransactionBlock = new TransactionBlockBlock();
             AgentData = new AgentDataBlock();
@@ -47626,7 +47403,7 @@ namespace libsecondlife.Packets
         public FormFriendshipPacket()
         {
             Header = new LowHeader();
-            Header.ID = 340;
+            Header.ID = 338;
             Header.Reliable = true;
             AgentBlock = new AgentBlockBlock();
         }
@@ -47766,7 +47543,7 @@ namespace libsecondlife.Packets
         public TerminateFriendshipPacket()
         {
             Header = new LowHeader();
-            Header.ID = 341;
+            Header.ID = 339;
             Header.Reliable = true;
             ExBlock = new ExBlockBlock();
             AgentData = new AgentDataBlock();
@@ -47915,7 +47692,7 @@ namespace libsecondlife.Packets
         public OfferCallingCardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 342;
+            Header.ID = 340;
             Header.Reliable = true;
             AgentBlock = new AgentBlockBlock();
             AgentData = new AgentDataBlock();
@@ -48103,7 +47880,7 @@ namespace libsecondlife.Packets
         public AcceptCallingCardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 343;
+            Header.ID = 341;
             Header.Reliable = true;
             TransactionBlock = new TransactionBlockBlock();
             AgentData = new AgentDataBlock();
@@ -48265,7 +48042,7 @@ namespace libsecondlife.Packets
         public DeclineCallingCardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 344;
+            Header.ID = 342;
             Header.Reliable = true;
             TransactionBlock = new TransactionBlockBlock();
             AgentData = new AgentDataBlock();
@@ -48605,7 +48382,7 @@ namespace libsecondlife.Packets
         public RezScriptPacket()
         {
             Header = new LowHeader();
-            Header.ID = 345;
+            Header.ID = 343;
             Header.Reliable = true;
             Header.Zerocoded = true;
             UpdateBlock = new UpdateBlockBlock();
@@ -48828,7 +48605,7 @@ namespace libsecondlife.Packets
         public CreateInventoryItemPacket()
         {
             Header = new LowHeader();
-            Header.ID = 346;
+            Header.ID = 344;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryBlock = new InventoryBlockBlock();
@@ -49042,7 +48819,7 @@ namespace libsecondlife.Packets
         public CreateLandmarkForEventPacket()
         {
             Header = new LowHeader();
-            Header.ID = 347;
+            Header.ID = 345;
             Header.Reliable = true;
             Header.Zerocoded = true;
             InventoryBlock = new InventoryBlockBlock();
@@ -49146,7 +48923,7 @@ namespace libsecondlife.Packets
         public RegionHandleRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 350;
+            Header.ID = 348;
             Header.Reliable = true;
             RequestBlock = new RequestBlockBlock();
         }
@@ -49250,7 +49027,7 @@ namespace libsecondlife.Packets
         public RegionIDAndHandleReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 351;
+            Header.ID = 349;
             Header.Reliable = true;
             ReplyBlock = new ReplyBlockBlock();
         }
@@ -49442,7 +49219,7 @@ namespace libsecondlife.Packets
         public MoneyTransferRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 352;
+            Header.ID = 350;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -49548,7 +49325,7 @@ namespace libsecondlife.Packets
         public AdjustBalancePacket()
         {
             Header = new LowHeader();
-            Header.ID = 355;
+            Header.ID = 353;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -49689,7 +49466,7 @@ namespace libsecondlife.Packets
         public MoneyBalanceRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 356;
+            Header.ID = 354;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -49839,7 +49616,7 @@ namespace libsecondlife.Packets
         public MoneyBalanceReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 357;
+            Header.ID = 355;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -50035,7 +49812,7 @@ namespace libsecondlife.Packets
         public RoutedMoneyBalanceReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 358;
+            Header.ID = 356;
             Header.Reliable = true;
             Header.Zerocoded = true;
             TargetBlock = new TargetBlockBlock();
@@ -50148,7 +49925,7 @@ namespace libsecondlife.Packets
         public MoneyHistoryRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 359;
+            Header.ID = 357;
             Header.Reliable = true;
             MoneyData = new MoneyDataBlock();
         }
@@ -50411,7 +50188,7 @@ namespace libsecondlife.Packets
         public MoneyHistoryReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 360;
+            Header.ID = 358;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -50588,7 +50365,7 @@ namespace libsecondlife.Packets
         public MoneySummaryRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 361;
+            Header.ID = 359;
             Header.Reliable = true;
             MoneyData = new MoneyDataBlock();
             AgentData = new AgentDataBlock();
@@ -50910,7 +50687,7 @@ namespace libsecondlife.Packets
         public MoneySummaryReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 362;
+            Header.ID = 360;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -51070,7 +50847,7 @@ namespace libsecondlife.Packets
         public MoneyDetailsRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 363;
+            Header.ID = 361;
             Header.Reliable = true;
             MoneyData = new MoneyDataBlock();
             AgentData = new AgentDataBlock();
@@ -51314,7 +51091,7 @@ namespace libsecondlife.Packets
         public MoneyDetailsReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 364;
+            Header.ID = 362;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -51491,7 +51268,7 @@ namespace libsecondlife.Packets
         public MoneyTransactionsRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 365;
+            Header.ID = 363;
             Header.Reliable = true;
             MoneyData = new MoneyDataBlock();
             AgentData = new AgentDataBlock();
@@ -51783,7 +51560,7 @@ namespace libsecondlife.Packets
         public MoneyTransactionsReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 366;
+            Header.ID = 364;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -51841,103 +51618,6 @@ namespace libsecondlife.Packets
                 output += HistoryData[j].ToString() + Environment.NewLine;
             }
                 output += AgentData.ToString() + Environment.NewLine;
-            return output;
-        }
-
-    }
-
-    /// <exclude/>
-    public class GestureRequestPacket : Packet
-    {
-        /// <exclude/>
-        [XmlType("gesturerequest_agentblock")]
-        public class AgentBlockBlock
-        {
-            public LLUUID AgentID;
-            public bool Reset;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 17;
-                }
-            }
-
-            public AgentBlockBlock() { }
-            public AgentBlockBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    AgentID = new LLUUID(bytes, i); i += 16;
-                    Reset = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)((Reset) ? 1 : 0);
-            }
-
-            public override string ToString()
-            {
-                StringBuilder output = new StringBuilder();
-                output.AppendLine("-- AgentBlock --");
-                output.AppendLine(String.Format("AgentID: {0}", AgentID));
-                output.Append(String.Format("Reset: {0}", Reset));
-                return output.ToString();
-            }
-        }
-
-        private Header header;
-        public override Header Header { get { return header; } set { header = value; } }
-        public override PacketType Type { get { return PacketType.GestureRequest; } }
-        public AgentBlockBlock AgentBlock;
-
-        public GestureRequestPacket()
-        {
-            Header = new LowHeader();
-            Header.ID = 367;
-            Header.Reliable = true;
-            AgentBlock = new AgentBlockBlock();
-        }
-
-        public GestureRequestPacket(byte[] bytes, ref int i)
-        {
-            int packetEnd = bytes.Length - 1;
-            Header = new LowHeader(bytes, ref i, ref packetEnd);
-            AgentBlock = new AgentBlockBlock(bytes, ref i);
-        }
-
-        public GestureRequestPacket(Header head, byte[] bytes, ref int i)
-        {
-            Header = head;
-            AgentBlock = new AgentBlockBlock(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 8;
-            length += AgentBlock.Length;;
-            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            header.ToBytes(bytes, ref i);
-            AgentBlock.ToBytes(bytes, ref i);
-            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override string ToString()
-        {
-            string output = "--- GestureRequest ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -52061,7 +51741,7 @@ namespace libsecondlife.Packets
         public ActivateGesturesPacket()
         {
             Header = new LowHeader();
-            Header.ID = 368;
+            Header.ID = 365;
             Header.Reliable = true;
             Data = new DataBlock[0];
             AgentData = new AgentDataBlock();
@@ -52232,7 +51912,7 @@ namespace libsecondlife.Packets
         public DeactivateGesturesPacket()
         {
             Header = new LowHeader();
-            Header.ID = 369;
+            Header.ID = 366;
             Header.Reliable = true;
             Data = new DataBlock[0];
             AgentData = new AgentDataBlock();
@@ -52363,7 +52043,7 @@ namespace libsecondlife.Packets
         public MuteListUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 370;
+            Header.ID = 367;
             Header.Reliable = true;
             MuteData = new MuteDataBlock();
         }
@@ -52456,7 +52136,7 @@ namespace libsecondlife.Packets
         public UseCachedMuteListPacket()
         {
             Header = new LowHeader();
-            Header.ID = 371;
+            Header.ID = 368;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -52603,7 +52283,7 @@ namespace libsecondlife.Packets
         public GrantUserRightsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 372;
+            Header.ID = 369;
             Header.Reliable = true;
             Rights = new RightsBlock[0];
             AgentData = new AgentDataBlock();
@@ -52763,7 +52443,7 @@ namespace libsecondlife.Packets
         public ChangeUserRightsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 373;
+            Header.ID = 370;
             Header.Reliable = true;
             Rights = new RightsBlock[0];
             AgentData = new AgentDataBlock();
@@ -52873,7 +52553,7 @@ namespace libsecondlife.Packets
         public OnlineNotificationPacket()
         {
             Header = new LowHeader();
-            Header.ID = 374;
+            Header.ID = 371;
             Header.Reliable = true;
             AgentBlock = new AgentBlockBlock[0];
         }
@@ -52978,7 +52658,7 @@ namespace libsecondlife.Packets
         public OfflineNotificationPacket()
         {
             Header = new LowHeader();
-            Header.ID = 375;
+            Header.ID = 372;
             Header.Reliable = true;
             AgentBlock = new AgentBlockBlock[0];
         }
@@ -53163,7 +52843,7 @@ namespace libsecondlife.Packets
         public SetStartLocationRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 376;
+            Header.ID = 373;
             Header.Reliable = true;
             Header.Zerocoded = true;
             StartLocationData = new StartLocationDataBlock();
@@ -53297,7 +52977,7 @@ namespace libsecondlife.Packets
         public AssetUploadRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 386;
+            Header.ID = 383;
             Header.Reliable = true;
             AssetBlock = new AssetBlockBlock();
         }
@@ -53398,7 +53078,7 @@ namespace libsecondlife.Packets
         public AssetUploadCompletePacket()
         {
             Header = new LowHeader();
-            Header.ID = 387;
+            Header.ID = 384;
             Header.Reliable = true;
             AssetBlock = new AssetBlockBlock();
         }
@@ -53517,7 +53197,7 @@ namespace libsecondlife.Packets
         public ReputationAgentAssignPacket()
         {
             Header = new LowHeader();
-            Header.ID = 388;
+            Header.ID = 385;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -53565,14 +53245,13 @@ namespace libsecondlife.Packets
         public class ReputationDataBlock
         {
             public LLUUID ToID;
-            public LLUUID FromID;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 32;
+                    return 16;
                 }
             }
 
@@ -53582,7 +53261,6 @@ namespace libsecondlife.Packets
                 try
                 {
                     ToID = new LLUUID(bytes, i); i += 16;
-                    FromID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
                 {
@@ -53593,15 +53271,59 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 Buffer.BlockCopy(ToID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(FromID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
             {
                 StringBuilder output = new StringBuilder();
                 output.AppendLine("-- ReputationData --");
-                output.AppendLine(String.Format("ToID: {0}", ToID));
-                output.Append(String.Format("FromID: {0}", FromID));
+                output.Append(String.Format("ToID: {0}", ToID));
+                return output.ToString();
+            }
+        }
+
+        /// <exclude/>
+        [XmlType("reputationindividualrequest_agentdata")]
+        public class AgentDataBlock
+        {
+            public LLUUID AgentID;
+            public LLUUID SessionID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 32;
+                }
+            }
+
+            public AgentDataBlock() { }
+            public AgentDataBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentID = new LLUUID(bytes, i); i += 16;
+                    SessionID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- AgentData --");
+                output.AppendLine(String.Format("AgentID: {0}", AgentID));
+                output.Append(String.Format("SessionID: {0}", SessionID));
                 return output.ToString();
             }
         }
@@ -53610,13 +53332,15 @@ namespace libsecondlife.Packets
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ReputationIndividualRequest; } }
         public ReputationDataBlock ReputationData;
+        public AgentDataBlock AgentData;
 
         public ReputationIndividualRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 389;
+            Header.ID = 386;
             Header.Reliable = true;
             ReputationData = new ReputationDataBlock();
+            AgentData = new AgentDataBlock();
         }
 
         public ReputationIndividualRequestPacket(byte[] bytes, ref int i)
@@ -53624,23 +53348,26 @@ namespace libsecondlife.Packets
             int packetEnd = bytes.Length - 1;
             Header = new LowHeader(bytes, ref i, ref packetEnd);
             ReputationData = new ReputationDataBlock(bytes, ref i);
+            AgentData = new AgentDataBlock(bytes, ref i);
         }
 
         public ReputationIndividualRequestPacket(Header head, byte[] bytes, ref int i)
         {
             Header = head;
             ReputationData = new ReputationDataBlock(bytes, ref i);
+            AgentData = new AgentDataBlock(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 8;
-            length += ReputationData.Length;;
+            length += ReputationData.Length;            length += AgentData.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             ReputationData.ToBytes(bytes, ref i);
+            AgentData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -53649,6 +53376,7 @@ namespace libsecondlife.Packets
         {
             string output = "--- ReputationIndividualRequest ---" + Environment.NewLine;
                 output += ReputationData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53664,7 +53392,6 @@ namespace libsecondlife.Packets
             public float Appearance;
             public LLUUID ToID;
             public float Behavior;
-            public LLUUID FromID;
             public float Building;
 
             [XmlIgnore]
@@ -53672,7 +53399,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    return 44;
+                    return 28;
                 }
             }
 
@@ -53686,7 +53413,6 @@ namespace libsecondlife.Packets
                     ToID = new LLUUID(bytes, i); i += 16;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Behavior = BitConverter.ToSingle(bytes, i); i += 4;
-                    FromID = new LLUUID(bytes, i); i += 16;
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Building = BitConverter.ToSingle(bytes, i); i += 4;
                 }
@@ -53706,7 +53432,6 @@ namespace libsecondlife.Packets
                 ba = BitConverter.GetBytes(Behavior);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                Buffer.BlockCopy(FromID.GetBytes(), 0, bytes, i, 16); i += 16;
                 ba = BitConverter.GetBytes(Building);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
@@ -53719,8 +53444,49 @@ namespace libsecondlife.Packets
                 output.AppendLine(String.Format("Appearance: {0}", Appearance));
                 output.AppendLine(String.Format("ToID: {0}", ToID));
                 output.AppendLine(String.Format("Behavior: {0}", Behavior));
-                output.AppendLine(String.Format("FromID: {0}", FromID));
                 output.Append(String.Format("Building: {0}", Building));
+                return output.ToString();
+            }
+        }
+
+        /// <exclude/>
+        [XmlType("reputationindividualreply_agentdata")]
+        public class AgentDataBlock
+        {
+            public LLUUID AgentID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 16;
+                }
+            }
+
+            public AgentDataBlock() { }
+            public AgentDataBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- AgentData --");
+                output.Append(String.Format("AgentID: {0}", AgentID));
                 return output.ToString();
             }
         }
@@ -53729,13 +53495,15 @@ namespace libsecondlife.Packets
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.ReputationIndividualReply; } }
         public ReputationDataBlock ReputationData;
+        public AgentDataBlock AgentData;
 
         public ReputationIndividualReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 390;
+            Header.ID = 387;
             Header.Reliable = true;
             ReputationData = new ReputationDataBlock();
+            AgentData = new AgentDataBlock();
         }
 
         public ReputationIndividualReplyPacket(byte[] bytes, ref int i)
@@ -53743,23 +53511,26 @@ namespace libsecondlife.Packets
             int packetEnd = bytes.Length - 1;
             Header = new LowHeader(bytes, ref i, ref packetEnd);
             ReputationData = new ReputationDataBlock(bytes, ref i);
+            AgentData = new AgentDataBlock(bytes, ref i);
         }
 
         public ReputationIndividualReplyPacket(Header head, byte[] bytes, ref int i)
         {
             Header = head;
             ReputationData = new ReputationDataBlock(bytes, ref i);
+            AgentData = new AgentDataBlock(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 8;
-            length += ReputationData.Length;;
+            length += ReputationData.Length;            length += AgentData.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             ReputationData.ToBytes(bytes, ref i);
+            AgentData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -53768,6 +53539,7 @@ namespace libsecondlife.Packets
         {
             string output = "--- ReputationIndividualReply ---" + Environment.NewLine;
                 output += ReputationData.ToString() + Environment.NewLine;
+                output += AgentData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -53939,7 +53711,7 @@ namespace libsecondlife.Packets
         public CreateGroupRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 395;
+            Header.ID = 392;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -54107,7 +53879,7 @@ namespace libsecondlife.Packets
         public CreateGroupReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 396;
+            Header.ID = 393;
             Header.Reliable = true;
             ReplyData = new ReplyDataBlock();
             AgentData = new AgentDataBlock();
@@ -54302,7 +54074,7 @@ namespace libsecondlife.Packets
         public UpdateGroupInfoPacket()
         {
             Header = new LowHeader();
-            Header.ID = 397;
+            Header.ID = 394;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -54463,7 +54235,7 @@ namespace libsecondlife.Packets
         public GroupRoleChangesPacket()
         {
             Header = new LowHeader();
-            Header.ID = 398;
+            Header.ID = 395;
             Header.Reliable = true;
             RoleChange = new RoleChangeBlock[0];
             AgentData = new AgentDataBlock();
@@ -54620,7 +54392,7 @@ namespace libsecondlife.Packets
         public JoinGroupRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 399;
+            Header.ID = 396;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -54766,7 +54538,7 @@ namespace libsecondlife.Packets
         public JoinGroupReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 400;
+            Header.ID = 397;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -54954,7 +54726,7 @@ namespace libsecondlife.Packets
         public EjectGroupMemberRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 401;
+            Header.ID = 398;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             EjectData = new EjectDataBlock[0];
@@ -55155,7 +54927,7 @@ namespace libsecondlife.Packets
         public EjectGroupMemberReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 402;
+            Header.ID = 399;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             EjectData = new EjectDataBlock();
@@ -55305,7 +55077,7 @@ namespace libsecondlife.Packets
         public LeaveGroupRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 403;
+            Header.ID = 400;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -55450,7 +55222,7 @@ namespace libsecondlife.Packets
         public LeaveGroupReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 404;
+            Header.ID = 401;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -55642,7 +55414,7 @@ namespace libsecondlife.Packets
         public InviteGroupRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 405;
+            Header.ID = 402;
             Header.Reliable = true;
             InviteData = new InviteDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -55804,7 +55576,7 @@ namespace libsecondlife.Packets
         public GroupProfileRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 407;
+            Header.ID = 404;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -56075,7 +55847,7 @@ namespace libsecondlife.Packets
         public GroupProfileReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 408;
+            Header.ID = 405;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -56239,7 +56011,7 @@ namespace libsecondlife.Packets
         public GroupAccountSummaryRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 409;
+            Header.ID = 406;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -56559,7 +56331,7 @@ namespace libsecondlife.Packets
         public GroupAccountSummaryReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 410;
+            Header.ID = 407;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -56723,7 +56495,7 @@ namespace libsecondlife.Packets
         public GroupAccountDetailsRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 411;
+            Header.ID = 408;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -56972,7 +56744,7 @@ namespace libsecondlife.Packets
         public GroupAccountDetailsReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 412;
+            Header.ID = 409;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -57153,7 +56925,7 @@ namespace libsecondlife.Packets
         public GroupAccountTransactionsRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 413;
+            Header.ID = 410;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -57450,7 +57222,7 @@ namespace libsecondlife.Packets
         public GroupAccountTransactionsReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 414;
+            Header.ID = 411;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MoneyData = new MoneyDataBlock();
@@ -57656,7 +57428,7 @@ namespace libsecondlife.Packets
         public GroupActiveProposalsRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 415;
+            Header.ID = 412;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
@@ -57981,7 +57753,7 @@ namespace libsecondlife.Packets
         public GroupActiveProposalItemReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 416;
+            Header.ID = 413;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ProposalData = new ProposalDataBlock[0];
@@ -58187,7 +57959,7 @@ namespace libsecondlife.Packets
         public GroupVoteHistoryRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 417;
+            Header.ID = 414;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
@@ -58601,7 +58373,7 @@ namespace libsecondlife.Packets
         public GroupVoteHistoryItemReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 418;
+            Header.ID = 415;
             Header.Reliable = true;
             Header.Zerocoded = true;
             HistoryItemData = new HistoryItemDataBlock();
@@ -58813,7 +58585,7 @@ namespace libsecondlife.Packets
         public StartGroupProposalPacket()
         {
             Header = new LowHeader();
-            Header.ID = 419;
+            Header.ID = 416;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ProposalData = new ProposalDataBlock();
@@ -58984,7 +58756,7 @@ namespace libsecondlife.Packets
         public GroupProposalBallotPacket()
         {
             Header = new LowHeader();
-            Header.ID = 420;
+            Header.ID = 417;
             Header.Reliable = true;
             ProposalData = new ProposalDataBlock();
             AgentData = new AgentDataBlock();
@@ -59133,7 +58905,7 @@ namespace libsecondlife.Packets
         public GroupMembersRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 422;
+            Header.ID = 419;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -59392,7 +59164,7 @@ namespace libsecondlife.Packets
         public GroupMembersReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 423;
+            Header.ID = 420;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MemberData = new MemberDataBlock[0];
@@ -59516,7 +59288,7 @@ namespace libsecondlife.Packets
         public ActivateGroupPacket()
         {
             Header = new LowHeader();
-            Header.ID = 424;
+            Header.ID = 421;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -59664,7 +59436,7 @@ namespace libsecondlife.Packets
         public SetGroupContributionPacket()
         {
             Header = new LowHeader();
-            Header.ID = 425;
+            Header.ID = 422;
             Header.Reliable = true;
             Data = new DataBlock();
             AgentData = new AgentDataBlock();
@@ -59813,7 +59585,7 @@ namespace libsecondlife.Packets
         public SetGroupAcceptNoticesPacket()
         {
             Header = new LowHeader();
-            Header.ID = 426;
+            Header.ID = 423;
             Header.Reliable = true;
             Data = new DataBlock();
             AgentData = new AgentDataBlock();
@@ -59962,7 +59734,7 @@ namespace libsecondlife.Packets
         public GroupRoleDataRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 427;
+            Header.ID = 424;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -60236,7 +60008,7 @@ namespace libsecondlife.Packets
         public GroupRoleDataReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 428;
+            Header.ID = 425;
             Header.Reliable = true;
             RoleData = new RoleDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -60402,7 +60174,7 @@ namespace libsecondlife.Packets
         public GroupRoleMembersRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 429;
+            Header.ID = 426;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
@@ -60562,7 +60334,7 @@ namespace libsecondlife.Packets
         public GroupRoleMembersReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 430;
+            Header.ID = 427;
             Header.Reliable = true;
             MemberData = new MemberDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -60684,7 +60456,7 @@ namespace libsecondlife.Packets
         public GroupTitlesRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 431;
+            Header.ID = 428;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -60853,7 +60625,7 @@ namespace libsecondlife.Packets
         public GroupTitlesReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 432;
+            Header.ID = 429;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -60976,7 +60748,7 @@ namespace libsecondlife.Packets
         public GroupTitleUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 433;
+            Header.ID = 430;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -61196,7 +60968,7 @@ namespace libsecondlife.Packets
         public GroupRoleUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 434;
+            Header.ID = 431;
             Header.Reliable = true;
             RoleData = new RoleDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -61310,7 +61082,7 @@ namespace libsecondlife.Packets
         public LiveHelpGroupRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 435;
+            Header.ID = 432;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
         }
@@ -61428,7 +61200,7 @@ namespace libsecondlife.Packets
         public LiveHelpGroupReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 436;
+            Header.ID = 433;
             Header.Reliable = true;
             ReplyData = new ReplyDataBlock();
         }
@@ -61525,7 +61297,7 @@ namespace libsecondlife.Packets
         public AgentWearablesRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 437;
+            Header.ID = 434;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -61680,7 +61452,7 @@ namespace libsecondlife.Packets
         public AgentWearablesUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 438;
+            Header.ID = 435;
             Header.Reliable = true;
             Header.Zerocoded = true;
             WearableData = new WearableDataBlock[0];
@@ -61842,7 +61614,7 @@ namespace libsecondlife.Packets
         public AgentIsNowWearingPacket()
         {
             Header = new LowHeader();
-            Header.ID = 439;
+            Header.ID = 436;
             Header.Reliable = true;
             Header.Zerocoded = true;
             WearableData = new WearableDataBlock[0];
@@ -62011,7 +61783,7 @@ namespace libsecondlife.Packets
         public AgentCachedTexturePacket()
         {
             Header = new LowHeader();
-            Header.ID = 440;
+            Header.ID = 437;
             Header.Reliable = true;
             WearableData = new WearableDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -62200,7 +61972,7 @@ namespace libsecondlife.Packets
         public AgentCachedTextureResponsePacket()
         {
             Header = new LowHeader();
-            Header.ID = 441;
+            Header.ID = 438;
             Header.Reliable = true;
             WearableData = new WearableDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -62314,7 +62086,7 @@ namespace libsecondlife.Packets
         public AgentDataUpdateRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 442;
+            Header.ID = 439;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -62504,7 +62276,7 @@ namespace libsecondlife.Packets
         public AgentDataUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 443;
+            Header.ID = 440;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -62635,7 +62407,7 @@ namespace libsecondlife.Packets
         public GroupDataUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 444;
+            Header.ID = 441;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentGroupData = new AgentGroupDataBlock[0];
@@ -62831,7 +62603,7 @@ namespace libsecondlife.Packets
         public AgentGroupDataUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 445;
+            Header.ID = 442;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -62946,7 +62718,7 @@ namespace libsecondlife.Packets
         public AgentDropGroupPacket()
         {
             Header = new LowHeader();
-            Header.ID = 446;
+            Header.ID = 443;
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
@@ -63046,7 +62818,7 @@ namespace libsecondlife.Packets
         public CreateTrustedCircuitPacket()
         {
             Header = new LowHeader();
-            Header.ID = 448;
+            Header.ID = 445;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -63139,7 +62911,7 @@ namespace libsecondlife.Packets
         public DenyTrustedCircuitPacket()
         {
             Header = new LowHeader();
-            Header.ID = 449;
+            Header.ID = 446;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -63189,7 +62961,7 @@ namespace libsecondlife.Packets
         public RequestTrustedCircuitPacket()
         {
             Header = new LowHeader();
-            Header.ID = 450;
+            Header.ID = 447;
             Header.Reliable = true;
         }
 
@@ -63402,7 +63174,7 @@ namespace libsecondlife.Packets
         public RezSingleAttachmentFromInvPacket()
         {
             Header = new LowHeader();
-            Header.ID = 451;
+            Header.ID = 448;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ObjectData = new ObjectDataBlock();
@@ -63677,7 +63449,7 @@ namespace libsecondlife.Packets
         public RezMultipleAttachmentsFromInvPacket()
         {
             Header = new LowHeader();
-            Header.ID = 452;
+            Header.ID = 449;
             Header.Reliable = true;
             Header.Zerocoded = true;
             ObjectData = new ObjectDataBlock[0];
@@ -63797,7 +63569,7 @@ namespace libsecondlife.Packets
         public DetachAttachmentIntoInvPacket()
         {
             Header = new LowHeader();
-            Header.ID = 453;
+            Header.ID = 450;
             Header.Reliable = true;
             ObjectData = new ObjectDataBlock();
         }
@@ -63984,7 +63756,7 @@ namespace libsecondlife.Packets
         public CreateNewOutfitAttachmentsPacket()
         {
             Header = new LowHeader();
-            Header.ID = 454;
+            Header.ID = 451;
             Header.Reliable = true;
             ObjectData = new ObjectDataBlock[0];
             AgentData = new AgentDataBlock();
@@ -64103,7 +63875,7 @@ namespace libsecondlife.Packets
         public UserInfoRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 455;
+            Header.ID = 452;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -64282,7 +64054,7 @@ namespace libsecondlife.Packets
         public UserInfoReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 456;
+            Header.ID = 453;
             Header.Reliable = true;
             UserData = new UserDataBlock();
             AgentData = new AgentDataBlock();
@@ -64449,7 +64221,7 @@ namespace libsecondlife.Packets
         public UpdateUserInfoPacket()
         {
             Header = new LowHeader();
-            Header.ID = 457;
+            Header.ID = 454;
             Header.Reliable = true;
             UserData = new UserDataBlock();
             AgentData = new AgentDataBlock();
@@ -64495,164 +64267,6 @@ namespace libsecondlife.Packets
     }
 
     /// <exclude/>
-    public class GodExpungeUserPacket : Packet
-    {
-        /// <exclude/>
-        [XmlType("godexpungeuser_expungedata")]
-        public class ExpungeDataBlock
-        {
-            public LLUUID AgentID;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 16;
-                }
-            }
-
-            public ExpungeDataBlock() { }
-            public ExpungeDataBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    AgentID = new LLUUID(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder output = new StringBuilder();
-                output.AppendLine("-- ExpungeData --");
-                output.Append(String.Format("AgentID: {0}", AgentID));
-                return output.ToString();
-            }
-        }
-
-        /// <exclude/>
-        [XmlType("godexpungeuser_agentdata")]
-        public class AgentDataBlock
-        {
-            public LLUUID AgentID;
-            public LLUUID SessionID;
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    return 32;
-                }
-            }
-
-            public AgentDataBlock() { }
-            public AgentDataBlock(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    AgentID = new LLUUID(bytes, i); i += 16;
-                    SessionID = new LLUUID(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder output = new StringBuilder();
-                output.AppendLine("-- AgentData --");
-                output.AppendLine(String.Format("AgentID: {0}", AgentID));
-                output.Append(String.Format("SessionID: {0}", SessionID));
-                return output.ToString();
-            }
-        }
-
-        private Header header;
-        public override Header Header { get { return header; } set { header = value; } }
-        public override PacketType Type { get { return PacketType.GodExpungeUser; } }
-        public ExpungeDataBlock[] ExpungeData;
-        public AgentDataBlock AgentData;
-
-        public GodExpungeUserPacket()
-        {
-            Header = new LowHeader();
-            Header.ID = 458;
-            Header.Reliable = true;
-            Header.Zerocoded = true;
-            ExpungeData = new ExpungeDataBlock[0];
-            AgentData = new AgentDataBlock();
-        }
-
-        public GodExpungeUserPacket(byte[] bytes, ref int i)
-        {
-            int packetEnd = bytes.Length - 1;
-            Header = new LowHeader(bytes, ref i, ref packetEnd);
-            int count = (int)bytes[i++];
-            ExpungeData = new ExpungeDataBlock[count];
-            for (int j = 0; j < count; j++)
-            { ExpungeData[j] = new ExpungeDataBlock(bytes, ref i); }
-            AgentData = new AgentDataBlock(bytes, ref i);
-        }
-
-        public GodExpungeUserPacket(Header head, byte[] bytes, ref int i)
-        {
-            Header = head;
-            int count = (int)bytes[i++];
-            ExpungeData = new ExpungeDataBlock[count];
-            for (int j = 0; j < count; j++)
-            { ExpungeData[j] = new ExpungeDataBlock(bytes, ref i); }
-            AgentData = new AgentDataBlock(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 8;
-            length += AgentData.Length;;
-            length++;
-            for (int j = 0; j < ExpungeData.Length; j++) { length += ExpungeData[j].Length; }
-            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            header.ToBytes(bytes, ref i);
-            bytes[i++] = (byte)ExpungeData.Length;
-            for (int j = 0; j < ExpungeData.Length; j++) { ExpungeData[j].ToBytes(bytes, ref i); }
-            AgentData.ToBytes(bytes, ref i);
-            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override string ToString()
-        {
-            string output = "--- GodExpungeUser ---" + Environment.NewLine;
-            for (int j = 0; j < ExpungeData.Length; j++)
-            {
-                output += ExpungeData[j].ToString() + Environment.NewLine;
-            }
-                output += AgentData.ToString() + Environment.NewLine;
-            return output;
-        }
-
-    }
-
-    /// <exclude/>
     public class StartParcelRemoveAckPacket : Packet
     {
         private Header header;
@@ -64662,7 +64276,7 @@ namespace libsecondlife.Packets
         public StartParcelRemoveAckPacket()
         {
             Header = new LowHeader();
-            Header.ID = 466;
+            Header.ID = 460;
             Header.Reliable = true;
         }
 
@@ -64830,7 +64444,7 @@ namespace libsecondlife.Packets
         public InitiateDownloadPacket()
         {
             Header = new LowHeader();
-            Header.ID = 468;
+            Header.ID = 462;
             Header.Reliable = true;
             FileData = new FileDataBlock();
             AgentData = new AgentDataBlock();
@@ -65015,7 +64629,7 @@ namespace libsecondlife.Packets
         public SystemMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 469;
+            Header.ID = 463;
             Header.Reliable = true;
             Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
@@ -65148,7 +64762,7 @@ namespace libsecondlife.Packets
         public MapLayerRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 470;
+            Header.ID = 464;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -65319,7 +64933,7 @@ namespace libsecondlife.Packets
         public MapLayerReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 471;
+            Header.ID = 465;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             LayerData = new LayerDataBlock[0];
@@ -65510,7 +65124,7 @@ namespace libsecondlife.Packets
         public MapBlockRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 472;
+            Header.ID = 466;
             Header.Reliable = true;
             PositionData = new PositionDataBlock();
             AgentData = new AgentDataBlock();
@@ -65690,7 +65304,7 @@ namespace libsecondlife.Packets
         public MapNameRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 473;
+            Header.ID = 467;
             Header.Reliable = true;
             NameData = new NameDataBlock();
             AgentData = new AgentDataBlock();
@@ -65889,7 +65503,7 @@ namespace libsecondlife.Packets
         public MapBlockReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 474;
+            Header.ID = 468;
             Header.Reliable = true;
             Data = new DataBlock[0];
             AgentData = new AgentDataBlock();
@@ -66078,7 +65692,7 @@ namespace libsecondlife.Packets
         public MapItemRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 475;
+            Header.ID = 469;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             AgentData = new AgentDataBlock();
@@ -66322,7 +65936,7 @@ namespace libsecondlife.Packets
         public MapItemReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 476;
+            Header.ID = 470;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             Data = new DataBlock[0];
@@ -66560,7 +66174,7 @@ namespace libsecondlife.Packets
         public SendPostcardPacket()
         {
             Header = new LowHeader();
-            Header.ID = 477;
+            Header.ID = 471;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
         }
@@ -66671,7 +66285,7 @@ namespace libsecondlife.Packets
         public ParcelMediaCommandMessagePacket()
         {
             Header = new LowHeader();
-            Header.ID = 486;
+            Header.ID = 480;
             Header.Reliable = true;
             CommandBlock = new CommandBlockBlock();
         }
@@ -66790,7 +66404,7 @@ namespace libsecondlife.Packets
         public ParcelMediaUpdatePacket()
         {
             Header = new LowHeader();
-            Header.ID = 487;
+            Header.ID = 481;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -66969,7 +66583,7 @@ namespace libsecondlife.Packets
         public LandStatRequestPacket()
         {
             Header = new LowHeader();
-            Header.ID = 488;
+            Header.ID = 482;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             AgentData = new AgentDataBlock();
@@ -67204,7 +66818,7 @@ namespace libsecondlife.Packets
         public LandStatReplyPacket()
         {
             Header = new LowHeader();
-            Header.ID = 489;
+            Header.ID = 483;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
             ReportData = new ReportDataBlock[0];
@@ -67829,8 +67443,8 @@ namespace libsecondlife.Packets
         {
             public uint AddFlags;
             public sbyte PathTwistBegin;
-            public byte PathEnd;
-            public byte ProfileBegin;
+            public ushort PathEnd;
+            public ushort ProfileBegin;
             public sbyte PathRadiusOffset;
             public sbyte PathSkew;
             public LLVector3 RayStart;
@@ -67844,15 +67458,15 @@ namespace libsecondlife.Packets
             public sbyte PathTaperY;
             public byte RayEndIsIntersection;
             public LLVector3 RayEnd;
-            public byte ProfileEnd;
-            public byte PathBegin;
+            public ushort ProfileEnd;
+            public ushort PathBegin;
             public byte BypassRaycast;
             public byte PCode;
             public byte PathCurve;
             public LLVector3 Scale;
             public byte State;
             public sbyte PathTwist;
-            public byte ProfileHollow;
+            public ushort ProfileHollow;
             public byte PathRevolutions;
             public LLQuaternion Rotation;
             public LLUUID RayTargetID;
@@ -67862,7 +67476,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    return 91;
+                    return 96;
                 }
             }
 
@@ -67873,8 +67487,8 @@ namespace libsecondlife.Packets
                 {
                     AddFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     PathTwistBegin = (sbyte)bytes[i++];
-                    PathEnd = (byte)bytes[i++];
-                    ProfileBegin = (byte)bytes[i++];
+                    PathEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
+                    ProfileBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathRadiusOffset = (sbyte)bytes[i++];
                     PathSkew = (sbyte)bytes[i++];
                     RayStart = new LLVector3(bytes, i); i += 12;
@@ -67888,15 +67502,15 @@ namespace libsecondlife.Packets
                     PathTaperY = (sbyte)bytes[i++];
                     RayEndIsIntersection = (byte)bytes[i++];
                     RayEnd = new LLVector3(bytes, i); i += 12;
-                    ProfileEnd = (byte)bytes[i++];
-                    PathBegin = (byte)bytes[i++];
+                    ProfileEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
+                    PathBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     BypassRaycast = (byte)bytes[i++];
                     PCode = (byte)bytes[i++];
                     PathCurve = (byte)bytes[i++];
                     Scale = new LLVector3(bytes, i); i += 12;
                     State = (byte)bytes[i++];
                     PathTwist = (sbyte)bytes[i++];
-                    ProfileHollow = (byte)bytes[i++];
+                    ProfileHollow = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathRevolutions = (byte)bytes[i++];
                     Rotation = new LLQuaternion(bytes, i, true); i += 12;
                     RayTargetID = new LLUUID(bytes, i); i += 16;
@@ -67914,8 +67528,10 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((AddFlags >> 16) % 256);
                 bytes[i++] = (byte)((AddFlags >> 24) % 256);
                 bytes[i++] = (byte)PathTwistBegin;
-                bytes[i++] = PathEnd;
-                bytes[i++] = ProfileBegin;
+                bytes[i++] = (byte)(PathEnd % 256);
+                bytes[i++] = (byte)((PathEnd >> 8) % 256);
+                bytes[i++] = (byte)(ProfileBegin % 256);
+                bytes[i++] = (byte)((ProfileBegin >> 8) % 256);
                 bytes[i++] = (byte)PathRadiusOffset;
                 bytes[i++] = (byte)PathSkew;
                 Buffer.BlockCopy(RayStart.GetBytes(), 0, bytes, i, 12); i += 12;
@@ -67929,15 +67545,18 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)PathTaperY;
                 bytes[i++] = RayEndIsIntersection;
                 Buffer.BlockCopy(RayEnd.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = ProfileEnd;
-                bytes[i++] = PathBegin;
+                bytes[i++] = (byte)(ProfileEnd % 256);
+                bytes[i++] = (byte)((ProfileEnd >> 8) % 256);
+                bytes[i++] = (byte)(PathBegin % 256);
+                bytes[i++] = (byte)((PathBegin >> 8) % 256);
                 bytes[i++] = BypassRaycast;
                 bytes[i++] = PCode;
                 bytes[i++] = PathCurve;
                 Buffer.BlockCopy(Scale.GetBytes(), 0, bytes, i, 12); i += 12;
                 bytes[i++] = State;
                 bytes[i++] = (byte)PathTwist;
-                bytes[i++] = ProfileHollow;
+                bytes[i++] = (byte)(ProfileHollow % 256);
+                bytes[i++] = (byte)((ProfileHollow >> 8) % 256);
                 bytes[i++] = PathRevolutions;
                 Buffer.BlockCopy(Rotation.GetBytes(), 0, bytes, i, 12); i += 12;
                 Buffer.BlockCopy(RayTargetID.GetBytes(), 0, bytes, i, 16); i += 16;
@@ -69980,124 +69599,6 @@ namespace libsecondlife.Packets
     }
 
     /// <exclude/>
-    public class GestureUpdatePacket : Packet
-    {
-        /// <exclude/>
-        [XmlType("gestureupdate_agentblock")]
-        public class AgentBlockBlock
-        {
-            public LLUUID AgentID;
-            public bool ToViewer;
-            private byte[] _filename;
-            public byte[] Filename
-            {
-                get { return _filename; }
-                set
-                {
-                    if (value == null) { _filename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
-                }
-            }
-
-            [XmlIgnore]
-            public int Length
-            {
-                get
-                {
-                    int length = 17;
-                    if (Filename != null) { length += 1 + Filename.Length; }
-                    return length;
-                }
-            }
-
-            public AgentBlockBlock() { }
-            public AgentBlockBlock(byte[] bytes, ref int i)
-            {
-                int length;
-                try
-                {
-                    AgentID = new LLUUID(bytes, i); i += 16;
-                    ToViewer = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _filename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public void ToBytes(byte[] bytes, ref int i)
-            {
-                Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
-                bytes[i++] = (byte)((ToViewer) ? 1 : 0);
-                if(Filename == null) { Console.WriteLine("Warning: Filename is null, in " + this.GetType()); }
-                bytes[i++] = (byte)Filename.Length;
-                Buffer.BlockCopy(Filename, 0, bytes, i, Filename.Length); i += Filename.Length;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder output = new StringBuilder();
-                output.AppendLine("-- AgentBlock --");
-                output.AppendLine(String.Format("AgentID: {0}", AgentID));
-                output.AppendLine(String.Format("ToViewer: {0}", ToViewer));
-                Helpers.FieldToString(output, Filename, "Filename");
-                return output.ToString();
-            }
-        }
-
-        private Header header;
-        public override Header Header { get { return header; } set { header = value; } }
-        public override PacketType Type { get { return PacketType.GestureUpdate; } }
-        public AgentBlockBlock AgentBlock;
-
-        public GestureUpdatePacket()
-        {
-            Header = new MediumHeader();
-            Header.ID = 14;
-            Header.Reliable = true;
-            AgentBlock = new AgentBlockBlock();
-        }
-
-        public GestureUpdatePacket(byte[] bytes, ref int i)
-        {
-            int packetEnd = bytes.Length - 1;
-            Header = new MediumHeader(bytes, ref i, ref packetEnd);
-            AgentBlock = new AgentBlockBlock(bytes, ref i);
-        }
-
-        public GestureUpdatePacket(Header head, byte[] bytes, ref int i)
-        {
-            Header = head;
-            AgentBlock = new AgentBlockBlock(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 6;
-            length += AgentBlock.Length;;
-            if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            header.ToBytes(bytes, ref i);
-            AgentBlock.ToBytes(bytes, ref i);
-            if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override string ToString()
-        {
-            string output = "--- GestureUpdate ---" + Environment.NewLine;
-                output += AgentBlock.ToString() + Environment.NewLine;
-            return output;
-        }
-
-    }
-
-    /// <exclude/>
     public class AttachedSoundPacket : Packet
     {
         /// <exclude/>
@@ -70170,7 +69671,7 @@ namespace libsecondlife.Packets
         public AttachedSoundPacket()
         {
             Header = new MediumHeader();
-            Header.ID = 15;
+            Header.ID = 14;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -70271,7 +69772,7 @@ namespace libsecondlife.Packets
         public AttachedSoundGainChangePacket()
         {
             Header = new MediumHeader();
-            Header.ID = 16;
+            Header.ID = 15;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -70372,7 +69873,7 @@ namespace libsecondlife.Packets
         public AttachedSoundCutoffRadiusPacket()
         {
             Header = new MediumHeader();
-            Header.ID = 17;
+            Header.ID = 16;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock();
         }
@@ -70473,7 +69974,7 @@ namespace libsecondlife.Packets
         public PreloadSoundPacket()
         {
             Header = new MediumHeader();
-            Header.ID = 18;
+            Header.ID = 17;
             Header.Reliable = true;
             DataBlock = new DataBlockBlock[0];
         }
@@ -70668,7 +70169,7 @@ namespace libsecondlife.Packets
         public ViewerEffectPacket()
         {
             Header = new MediumHeader();
-            Header.ID = 20;
+            Header.ID = 19;
             Header.Reliable = true;
             Header.Zerocoded = true;
             Effect = new EffectBlock[0];
@@ -70830,7 +70331,7 @@ namespace libsecondlife.Packets
         public SetSunPhasePacket()
         {
             Header = new MediumHeader();
-            Header.ID = 21;
+            Header.ID = 20;
             Header.Reliable = true;
             Data = new DataBlock();
             AgentData = new AgentDataBlock();
@@ -72322,7 +71823,7 @@ namespace libsecondlife.Packets
             public sbyte PathTwistBegin;
             public uint CRC;
             public LLVector3 JointPivot;
-            public byte PathEnd;
+            public ushort PathEnd;
             private byte[] _mediaurl;
             public byte[] MediaURL
             {
@@ -72336,7 +71837,7 @@ namespace libsecondlife.Packets
             }
             public byte[] TextColor;
             public byte ClickAction;
-            public byte ProfileBegin;
+            public ushort ProfileBegin;
             public sbyte PathRadiusOffset;
             public float Gain;
             public sbyte PathSkew;
@@ -72406,9 +71907,9 @@ namespace libsecondlife.Packets
             public sbyte PathTaperX;
             public sbyte PathTaperY;
             public float Radius;
-            public byte ProfileEnd;
+            public ushort ProfileEnd;
             public byte JointType;
-            public byte PathBegin;
+            public ushort PathBegin;
             private byte[] _psblock;
             public byte[] PSBlock
             {
@@ -72440,7 +71941,7 @@ namespace libsecondlife.Packets
                     else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
                 }
             }
-            public byte ProfileHollow;
+            public ushort ProfileHollow;
             public byte PathRevolutions;
 
             [XmlIgnore]
@@ -72448,7 +71949,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 136;
+                    int length = 141;
                     if (ObjectData != null) { length += 1 + ObjectData.Length; }
                     if (MediaURL != null) { length += 1 + MediaURL.Length; }
                     if (Data != null) { length += 2 + Data.Length; }
@@ -72476,14 +71977,14 @@ namespace libsecondlife.Packets
                     PathTwistBegin = (sbyte)bytes[i++];
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     JointPivot = new LLVector3(bytes, i); i += 12;
-                    PathEnd = (byte)bytes[i++];
+                    PathEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     length = (ushort)bytes[i++];
                     _mediaurl = new byte[length];
                     Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
                     TextColor = new byte[4];
                     Buffer.BlockCopy(bytes, i, TextColor, 0, 4); i += 4;
                     ClickAction = (byte)bytes[i++];
-                    ProfileBegin = (byte)bytes[i++];
+                    ProfileBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathRadiusOffset = (sbyte)bytes[i++];
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Gain = BitConverter.ToSingle(bytes, i); i += 4;
@@ -72515,9 +72016,9 @@ namespace libsecondlife.Packets
                     PathTaperY = (sbyte)bytes[i++];
                     if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, i, 4);
                     Radius = BitConverter.ToSingle(bytes, i); i += 4;
-                    ProfileEnd = (byte)bytes[i++];
+                    ProfileEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     JointType = (byte)bytes[i++];
-                    PathBegin = (byte)bytes[i++];
+                    PathBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     length = (ushort)bytes[i++];
                     _psblock = new byte[length];
                     Buffer.BlockCopy(bytes, i, _psblock, 0, length); i += length;
@@ -72533,7 +72034,7 @@ namespace libsecondlife.Packets
                     length = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     _textureentry = new byte[length];
                     Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
-                    ProfileHollow = (byte)bytes[i++];
+                    ProfileHollow = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     PathRevolutions = (byte)bytes[i++];
                 }
                 catch (Exception)
@@ -72562,13 +72063,15 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)((CRC >> 16) % 256);
                 bytes[i++] = (byte)((CRC >> 24) % 256);
                 Buffer.BlockCopy(JointPivot.GetBytes(), 0, bytes, i, 12); i += 12;
-                bytes[i++] = PathEnd;
+                bytes[i++] = (byte)(PathEnd % 256);
+                bytes[i++] = (byte)((PathEnd >> 8) % 256);
                 if(MediaURL == null) { Console.WriteLine("Warning: MediaURL is null, in " + this.GetType()); }
                 bytes[i++] = (byte)MediaURL.Length;
                 Buffer.BlockCopy(MediaURL, 0, bytes, i, MediaURL.Length); i += MediaURL.Length;
                                 Buffer.BlockCopy(TextColor, 0, bytes, i, 4);i += 4;
                 bytes[i++] = ClickAction;
-                bytes[i++] = ProfileBegin;
+                bytes[i++] = (byte)(ProfileBegin % 256);
+                bytes[i++] = (byte)((ProfileBegin >> 8) % 256);
                 bytes[i++] = (byte)PathRadiusOffset;
                 ba = BitConverter.GetBytes(Gain);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
@@ -72607,9 +72110,11 @@ namespace libsecondlife.Packets
                 ba = BitConverter.GetBytes(Radius);
                 if(!BitConverter.IsLittleEndian) { Array.Reverse(ba, 0, 4); }
                 Buffer.BlockCopy(ba, 0, bytes, i, 4); i += 4;
-                bytes[i++] = ProfileEnd;
+                bytes[i++] = (byte)(ProfileEnd % 256);
+                bytes[i++] = (byte)((ProfileEnd >> 8) % 256);
                 bytes[i++] = JointType;
-                bytes[i++] = PathBegin;
+                bytes[i++] = (byte)(PathBegin % 256);
+                bytes[i++] = (byte)((PathBegin >> 8) % 256);
                 if(PSBlock == null) { Console.WriteLine("Warning: PSBlock is null, in " + this.GetType()); }
                 bytes[i++] = (byte)PSBlock.Length;
                 Buffer.BlockCopy(PSBlock, 0, bytes, i, PSBlock.Length); i += PSBlock.Length;
@@ -72626,7 +72131,8 @@ namespace libsecondlife.Packets
                 bytes[i++] = (byte)(TextureEntry.Length % 256);
                 bytes[i++] = (byte)((TextureEntry.Length >> 8) % 256);
                 Buffer.BlockCopy(TextureEntry, 0, bytes, i, TextureEntry.Length); i += TextureEntry.Length;
-                bytes[i++] = ProfileHollow;
+                bytes[i++] = (byte)(ProfileHollow % 256);
+                bytes[i++] = (byte)((ProfileHollow >> 8) % 256);
                 bytes[i++] = PathRevolutions;
             }
 
@@ -74514,7 +74020,6 @@ namespace libsecondlife.Packets
         [XmlType("parcelproperties_parceldata")]
         public class ParcelDataBlock
         {
-            public bool ReservedNewbie;
             public int GroupPrims;
             public int SelectedPrims;
             public LLUUID MediaID;
@@ -74620,7 +74125,7 @@ namespace libsecondlife.Packets
             {
                 get
                 {
-                    int length = 239;
+                    int length = 238;
                     if (MediaURL != null) { length += 1 + MediaURL.Length; }
                     if (Name != null) { length += 1 + Name.Length; }
                     if (Desc != null) { length += 1 + Desc.Length; }
@@ -74636,7 +74141,6 @@ namespace libsecondlife.Packets
                 int length;
                 try
                 {
-                    ReservedNewbie = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     GroupPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SelectedPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     MediaID = new LLUUID(bytes, i); i += 16;
@@ -74708,7 +74212,6 @@ namespace libsecondlife.Packets
             public void ToBytes(byte[] bytes, ref int i)
             {
                 byte[] ba;
-                bytes[i++] = (byte)((ReservedNewbie) ? 1 : 0);
                 bytes[i++] = (byte)(GroupPrims % 256);
                 bytes[i++] = (byte)((GroupPrims >> 8) % 256);
                 bytes[i++] = (byte)((GroupPrims >> 16) % 256);
@@ -74848,7 +74351,6 @@ namespace libsecondlife.Packets
             {
                 StringBuilder output = new StringBuilder();
                 output.AppendLine("-- ParcelData --");
-                output.AppendLine(String.Format("ReservedNewbie: {0}", ReservedNewbie));
                 output.AppendLine(String.Format("GroupPrims: {0}", GroupPrims));
                 output.AppendLine(String.Format("SelectedPrims: {0}", SelectedPrims));
                 output.AppendLine(String.Format("MediaID: {0}", MediaID));

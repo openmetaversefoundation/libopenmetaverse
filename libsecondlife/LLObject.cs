@@ -422,7 +422,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="profileBegin"></param>
         /// <returns></returns>
-        public static float ProfileBeginFloat(byte profileBegin)
+        public static float ProfileBeginFloat(ushort profileBegin)
         {
             // Y = 0.005X
             return (float)Math.Round((double)profileBegin * 0.005d, 6);
@@ -445,7 +445,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="profileEnd"></param>
         /// <returns></returns>
-        public static float ProfileEndFloat(byte profileEnd)
+        public static float ProfileEndFloat(ushort profileEnd)
         {
             // Y = 1 - 0.005X
             return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d), 6);
@@ -467,7 +467,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathBegin"></param>
         /// <returns></returns>
-        public static float PathBeginFloat(byte pathBegin)
+        public static float PathBeginFloat(ushort pathBegin)
         {
             // Y = X / 100
             return (float)pathBegin / 100.0f;
@@ -490,7 +490,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathEnd"></param>
         /// <returns></returns>
-        public static float PathEndFloat(byte pathEnd)
+        public static float PathEndFloat(ushort pathEnd)
         {
             // Y = 1 - X / 100
             return 1.0f - (float)pathEnd / 100.0f;

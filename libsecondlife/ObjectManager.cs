@@ -682,7 +682,9 @@ namespace libsecondlife
         /// <remarks>Due to the way client prim rezzing is done on the server,
         /// the requested position for an object is only close to where the prim
         /// actually ends up. If you desire exact placement you'll need to 
-        /// follow up by moving the object after it has been created.</remarks>
+        /// follow up by moving the object after it has been created. This
+        /// function will not set textures, light and flexible data, or other 
+        /// extended primitive properties</remarks>
         public void AddPrim(Simulator simulator, LLObject.ObjectData prim, LLUUID groupID, LLVector3 position, 
             LLVector3 scale, LLQuaternion rotation)
         {
@@ -725,8 +727,6 @@ namespace libsecondlife
             packet.ObjectData.RayEndIsIntersection = 0;
             packet.ObjectData.RayTargetID = LLUUID.Zero;
             packet.ObjectData.BypassRaycast = 1;
-
-            // TODO: Automatically send another packet to set the TextureEntry?
 
             Client.Network.SendPacket(packet, simulator);
         }

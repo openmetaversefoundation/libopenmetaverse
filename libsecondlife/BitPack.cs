@@ -94,6 +94,81 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Pack part or all of an unsigned integer in to the data
+        /// </summary>
+        /// <param name="data">Unsigned integer containing the data to pack</param>
+        /// <param name="totalCount">Number of bits of the integer to pack</param>
+        public void PackBits(uint data, int totalCount)
+        {
+            byte[] input = BitConverter.GetBytes(data);
+            PackBitArray(input, totalCount);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="isSigned"></param>
+        /// <param name="intBits"></param>
+        /// <param name="fracBits"></param>
+        public void PackFixed(float data, bool isSigned, int intBits, int fracBits)
+        {
+            int unsignedBits = intBits + fracBits;
+            int totalBits = unsignedBits;
+            int min, max;
+
+            if (isSigned)
+            {
+                totalBits++;
+                min = 1 << intBits;
+                min *= -1;
+            }
+            else
+            {
+                min = 0;
+            }
+
+            max = 1 << intBits;
+
+            float fixedVal = Helpers.Clamp(data, (float)min, (float)max);
+            if (isSigned) fixedVal += max;
+            fixedVal *= 1 << fracBits;
+
+            if (totalBits <= 8)
+                PackBits((uint)fixedVal, 8);
+            else if (totalBits <= 16)
+                PackBits((uint)fixedVal, 16);
+            else if (totalBits <= 31)
+                PackBits((uint)fixedVal, 32);
+            else
+                throw new Exception("Can't use fixed point packing for " + totalBits);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        public void PackUUID(LLUUID data)
+        {
+            byte[] bytes = data.GetBytes();
+
+            // Not sure if our PackBitArray function can handle 128-bit byte
+            //arrays, so using this for now
+            for (int i = 0; i < 16; i++)
+                PackBits(bytes[i], 8);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        public void PackColor(LLColor data)
+        {
+            byte[] bytes = data.GetBytes();
+            PackBitArray(bytes, 32);
+        }
+
+        /// <summary>
         /// Unpacking a floating point value from the data
         /// </summary>
         /// <returns>Unpacked floating point value</returns>
