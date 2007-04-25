@@ -75,13 +75,9 @@ namespace libsecondlife
             /// <summary></summary>
             public string Start;
             /// <summary></summary>
-            public string Major;
+            public string Channel;
             /// <summary></summary>
-            public string Minor;
-            /// <summary></summary>
-            public string Patch;
-            /// <summary></summary>
-            public string Build;
+            public string Version;
             /// <summary></summary>
             public string Platform;
             /// <summary></summary>
@@ -171,10 +167,8 @@ namespace libsecondlife
             loginParams.LastName = lastName;
             loginParams.Password = password;
             loginParams.Start = "last";
-            loginParams.Major = "1";
-            loginParams.Minor = "50";
-            loginParams.Patch = "50";
-            loginParams.Build = "50";
+            loginParams.Channel = "libsecondlife";
+            loginParams.Version = Client.Settings.VERSION;
             loginParams.Platform = "Win";
             loginParams.MAC = String.Empty;
             loginParams.ViewerDigest = String.Empty;
@@ -280,10 +274,8 @@ namespace libsecondlife
             WriteStringMember(login, "last", loginParams.LastName);
             WriteStringMember(login, "passwd", loginParams.Password);
             WriteStringMember(login, "start", loginParams.Start);
-            WriteStringMember(login, "major", loginParams.Major);
-            WriteStringMember(login, "minor", loginParams.Minor);
-            WriteStringMember(login, "patch", loginParams.Patch);
-            WriteStringMember(login, "build", loginParams.Build);
+            WriteStringMember(login, "channel", loginParams.Channel);
+            WriteStringMember(login, "version", loginParams.Version);
             WriteStringMember(login, "platform", loginParams.Platform);
             WriteStringMember(login, "mac", loginParams.MAC);
             WriteStringMember(login, "agree_to_tos", "true");

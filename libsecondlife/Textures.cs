@@ -275,8 +275,8 @@ namespace libsecondlife
 
                 Dictionary<LLUUID, uint> TextureIDs = new Dictionary<LLUUID, uint>();
                 Dictionary<uint, uint> RGBAs = new Dictionary<uint, uint>();
-                Dictionary<short, uint> RepeatUs = new Dictionary<short, uint>();
-                Dictionary<short, uint> RepeatVs = new Dictionary<short, uint>();
+                Dictionary<float, uint> RepeatUs = new Dictionary<float, uint>();
+                Dictionary<float, uint> RepeatVs = new Dictionary<float, uint>();
                 Dictionary<short, uint> OffsetUs = new Dictionary<short, uint>();
                 Dictionary<short, uint> OffsetVs = new Dictionary<short, uint>();
                 Dictionary<short, uint> Rotations = new Dictionary<short, uint>();
@@ -300,31 +300,31 @@ namespace libsecondlife
                             RGBAs[face.Value.RGBA] = (uint)(1 << (int)face.Key);
                     }
 
-                    short value;
-                    short defaultValue;
+                    float fvalue = face.Value.RepeatU;
+                    float fdefaultValue = DefaultTexture.RepeatU;
 
-                    value = RepeatShort(face.Value.RepeatU);
-                    defaultValue = RepeatShort(DefaultTexture.RepeatU);
-                    if (value != defaultValue)
+                    if (fvalue != fdefaultValue)
                     {
-                        if (RepeatUs.ContainsKey(value))
-                            RepeatUs[value] |= (uint)(1 << (int)face.Key);
+                        if (RepeatUs.ContainsKey(fvalue))
+                            RepeatUs[fvalue] |= (uint)(1 << (int)face.Key);
                         else
-                            RepeatUs[value] = (uint)(1 << (int)face.Key);
+                            RepeatUs[fvalue] = (uint)(1 << (int)face.Key);
                     }
 
-                    value = RepeatShort(face.Value.RepeatV);
-                    defaultValue = RepeatShort(DefaultTexture.RepeatV);
-                    if (value != defaultValue)
+                    fvalue = face.Value.RepeatV;
+                    fdefaultValue = DefaultTexture.RepeatV;
+
+                    if (fvalue != fdefaultValue)
                     {
-                        if (RepeatVs.ContainsKey(value))
-                            RepeatVs[value] |= (uint)(1 << (int)face.Key);
+                        if (RepeatVs.ContainsKey(fvalue))
+                            RepeatVs[fvalue] |= (uint)(1 << (int)face.Key);
                         else
-                            RepeatVs[value] = (uint)(1 << (int)face.Key);
+                            RepeatVs[fvalue] = (uint)(1 << (int)face.Key);
                     }
 
-                    value = OffsetShort(face.Value.OffsetU);
-                    defaultValue = OffsetShort(DefaultTexture.OffsetU);
+                    short value = OffsetShort(face.Value.OffsetU);
+                    short defaultValue = OffsetShort(DefaultTexture.OffsetU);
+
                     if (value != defaultValue)
                     {
                         if (OffsetUs.ContainsKey(value))
@@ -389,16 +389,16 @@ namespace libsecondlife
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(RepeatShort(DefaultTexture.RepeatU));
-                foreach (KeyValuePair<short, uint> kv in RepeatUs)
+                binWriter.Write(DefaultTexture.RepeatU);
+                foreach (KeyValuePair<float, uint> kv in RepeatUs)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                     binWriter.Write(kv.Key);
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(RepeatShort(DefaultTexture.RepeatV));
-                foreach (KeyValuePair<short, uint> kv in RepeatVs)
+                binWriter.Write(DefaultTexture.RepeatV);
+                foreach (KeyValuePair<float, uint> kv in RepeatVs)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
                     binWriter.Write(kv.Key);
@@ -504,11 +504,6 @@ namespace libsecondlife
                 return (short)(f * QF);
             }
 
-            private short RepeatShort(float value)
-            {
-                return QuantizeSigned(value - 1.0f, 101.0f);
-            }
-
             private short OffsetShort(float value)
             {
                 return QuantizeSigned(value, 1.0f);
@@ -517,11 +512,6 @@ namespace libsecondlife
             private short RotationShort(float value)
             {
                 return QuantizeSigned(value, 359.995f);
-            }
-
-            private float RepeatFloat(byte[] data, int pos)
-            {
-                return DequantizeSigned(data, pos, 101.0f) + 1.0f;
             }
 
             private float OffsetFloat(byte[] data, int pos)
@@ -573,26 +563,26 @@ namespace libsecondlife
                             CreateFace(face).RGBA = tmpUint;
                 }
                 //Read RepeatU -----------------------------------------
-                DefaultTexture.RepeatU = RepeatFloat(data, i);
-                i += 2;
+                DefaultTexture.RepeatU = Helpers.BytesToFloat(data, i);
+                i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
                 {
-                    float tmpFloat = RepeatFloat(data, i);
-                    i += 2;
+                    float tmpFloat = Helpers.BytesToFloat(data, i);
+                    i += 4;
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                         if ((faceBits & bit) != 0)
                             CreateFace(face).RepeatU = tmpFloat;
                 }
                 //Read RepeatV -----------------------------------------
-                DefaultTexture.RepeatV = RepeatFloat(data, i);
-                i += 2;
+                DefaultTexture.RepeatV = Helpers.BytesToFloat(data, i);
+                i += 4;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
                 {
-                    float tmpFloat = RepeatFloat(data, i);
-                    i += 2;
+                    float tmpFloat = Helpers.BytesToFloat(data, i);
+                    i += 4;
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
                         if ((faceBits & bit) != 0)

@@ -278,6 +278,20 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        public static float BytesToFloat(byte[] bytes, int pos)
+        {
+            // FIXME: This is bad, just like the conversions done in _Packets_.cs
+            // We need Mono.DataConverter badly!
+            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, pos, 4);
+            return BitConverter.ToSingle(bytes, pos);
+        }
+
+        /// <summary>
         /// Converts a floating point number to a terse string format used for
         /// transmitting numbers in wearable asset files
         /// </summary>

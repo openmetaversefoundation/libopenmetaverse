@@ -1900,8 +1900,10 @@ namespace libsecondlife
                             }
 
                             prim.Data.PathCurve = (uint)block.Data[i++];
-                            prim.Data.PathBegin = LLObject.PathBeginFloat(block.Data[i++]);
-                            prim.Data.PathEnd = LLObject.PathEndFloat(block.Data[i++]);
+                            ushort pathBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            prim.Data.PathBegin = LLObject.PathBeginFloat(pathBegin);
+                            ushort pathEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            prim.Data.PathEnd = LLObject.PathEndFloat(pathEnd);
                             prim.Data.PathScaleX = LLObject.PathScaleFloat(block.Data[i++]);
                             prim.Data.PathScaleY = LLObject.PathScaleFloat(block.Data[i++]);
                             prim.Data.PathShearX = LLObject.PathShearFloat(block.Data[i++]);
@@ -1915,9 +1917,11 @@ namespace libsecondlife
                             prim.Data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
 
                             prim.Data.ProfileCurve = (uint)block.Data[i++];
-                            prim.Data.ProfileBegin = Primitive.ProfileBeginFloat(block.Data[i++]);
-                            prim.Data.ProfileEnd = Primitive.ProfileEndFloat(block.Data[i++]);
-                            prim.Data.ProfileHollow = (uint)block.Data[i++];
+                            ushort profileBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            prim.Data.ProfileBegin = Primitive.ProfileBeginFloat(profileBegin);
+                            ushort profileEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            prim.Data.ProfileEnd = Primitive.ProfileEndFloat(profileEnd);
+                            prim.Data.ProfileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
 
                             // TextureEntry
                             int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
