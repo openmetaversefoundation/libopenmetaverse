@@ -1891,11 +1891,12 @@ namespace libsecondlife
 
 	    private void EventQueueHandler(string message, Hashtable body, Caps caps)
         {
-            if (message == "TeleportFinish")
+            if (message == "TeleportFinish" && body.ContainsKey("Info"))
             {
-                Hashtable info = (Hashtable)body["Info"];
+                ArrayList infoList = (ArrayList)body["Info"];
+                Hashtable info = (Hashtable)infoList[0];
 
-                // Backwards compatibility hack
+                // Backwards compatibility hack 
                 TeleportFinishPacket packet = new TeleportFinishPacket();
 
                 packet.Info.SimIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
