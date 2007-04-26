@@ -152,7 +152,7 @@ namespace libsecondlife
             /// <summary></summary>
             public int PathTwist;
             /// <summary></summary>
-            public uint ProfileHollow;
+            public float ProfileHollow;
             /// <summary></summary>
             public float PathRevolutions;
             /// <summary></summary>
@@ -411,10 +411,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="profileBegin"></param>
         /// <returns></returns>
-        public static byte ProfileBeginByte(float profileBegin)
+        public static ushort ProfileBeginUInt16(float profileBegin)
         {
-            // Y = ceil (200X)
-            return (byte)Math.Round(200.0f * profileBegin);
+            return Convert.ToUInt16(profileBegin / 0.00002f);
         }
 
         /// <summary>
@@ -424,8 +423,7 @@ namespace libsecondlife
         /// <returns></returns>
         public static float ProfileBeginFloat(ushort profileBegin)
         {
-            // Y = 0.005X
-            return (float)Math.Round((double)profileBegin * 0.005d, 6);
+            return (float)Math.Round((double)profileBegin * 0.00002d, 6);
         }
 
         /// <summary>
@@ -433,11 +431,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="profileEnd"></param>
         /// <returns></returns>
-        public static byte ProfileEndByte(float profileEnd)
+        public static ushort ProfileEndUInt16(float profileEnd)
         {
-            // Y = 200 - 200X
-            int end = (int)Math.Round(200.0d * (double)profileEnd);
-            return (byte)(200 - end);
+            return (ushort)(50000 - Convert.ToInt32(profileEnd / 0.00002f));
         }
 
         /// <summary>
@@ -447,8 +443,31 @@ namespace libsecondlife
         /// <returns></returns>
         public static float ProfileEndFloat(ushort profileEnd)
         {
-            // Y = 1 - 0.005X
-            return (float)Math.Round(1.0d - ((double)profileEnd * 0.005d), 6);
+            float temp = (float)Math.Round(profileEnd * 0.00002f, 6);
+            if (temp > 1.0f) temp = 1.0f;
+            return 1.0f - temp;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="profileHollow"></param>
+        /// <returns></returns>
+        public static ushort ProfileHollowUInt16(float profileHollow)
+        {
+            return Convert.ToUInt16(profileHollow / 0.002f);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="profileHollow"></param>
+        /// <returns></returns>
+        public static float ProfileHollowFloat(ushort profileHollow)
+        {
+            float temp = profileHollow * 0.002f;
+            if (temp > 100.0f) temp = 0.0f;
+            return temp;
         }
 
         /// <summary>
@@ -456,10 +475,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathBegin"></param>
         /// <returns></returns>
-        public static byte PathBeginByte(float pathBegin)
+        public static ushort PathBeginUInt16(float pathBegin)
         {
-            // Y = 100X
-            return (byte)Convert.ToInt16(100.0f * pathBegin);
+            return Convert.ToUInt16(pathBegin / 0.00002f);
         }
 
         /// <summary>
@@ -469,8 +487,7 @@ namespace libsecondlife
         /// <returns></returns>
         public static float PathBeginFloat(ushort pathBegin)
         {
-            // Y = X / 100
-            return (float)pathBegin / 100.0f;
+            return (float)pathBegin * 0.00002f;
         }
 
         /// <summary>
@@ -478,11 +495,9 @@ namespace libsecondlife
         /// </summary>
         /// <param name="pathEnd"></param>
         /// <returns></returns>
-        public static byte PathEndByte(float pathEnd)
+        public static ushort PathEndUInt16(float pathEnd)
         {
-            // Y = 100 - 100X
-            int end = (int)Math.Round(100.0f * pathEnd);
-            return (byte)(100 - end);
+            return (ushort)(50000 - Convert.ToInt32(pathEnd / 0.00002f));
         }
 
         /// <summary>
@@ -492,8 +507,7 @@ namespace libsecondlife
         /// <returns></returns>
         public static float PathEndFloat(ushort pathEnd)
         {
-            // Y = 1 - X / 100
-            return 1.0f - (float)pathEnd / 100.0f;
+            return (float)(50000 - pathEnd) * 0.00002f;
         }
 
         /// <summary>

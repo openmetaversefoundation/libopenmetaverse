@@ -702,9 +702,9 @@ namespace libsecondlife
             packet.ObjectData.Scale = scale;
             packet.ObjectData.Rotation = rotation;
 
-            packet.ObjectData.PathBegin = LLObject.PathBeginByte(prim.PathBegin);
             packet.ObjectData.PathCurve = (byte)prim.PathCurve;
-            packet.ObjectData.PathEnd = LLObject.PathEndByte(prim.PathEnd);
+            packet.ObjectData.PathBegin = LLObject.PathBeginUInt16(prim.PathBegin);
+            packet.ObjectData.PathEnd = LLObject.PathEndUInt16(prim.PathEnd);
             packet.ObjectData.PathRadiusOffset = LLObject.PathRadiusOffsetByte(prim.PathRadiusOffset);
             packet.ObjectData.PathRevolutions = LLObject.PathRevolutionsByte(prim.PathRevolutions);
             packet.ObjectData.PathScaleX = LLObject.PathScaleByte(prim.PathScaleX);
@@ -718,9 +718,9 @@ namespace libsecondlife
             packet.ObjectData.PathTwistBegin = (sbyte)prim.PathTwistBegin;
 
             packet.ObjectData.ProfileCurve = (byte)prim.ProfileCurve;
-            packet.ObjectData.ProfileBegin = LLObject.ProfileBeginByte(prim.ProfileBegin);
-            packet.ObjectData.ProfileEnd = LLObject.ProfileEndByte(prim.ProfileEnd);
-            packet.ObjectData.ProfileHollow = (byte)prim.ProfileHollow;
+            packet.ObjectData.ProfileBegin = LLObject.ProfileBeginUInt16(prim.ProfileBegin);
+            packet.ObjectData.ProfileEnd = LLObject.ProfileEndUInt16(prim.ProfileEnd);
+            packet.ObjectData.ProfileHollow = LLObject.ProfileHollowUInt16(prim.ProfileHollow);
 
             packet.ObjectData.RayStart = position;
             packet.ObjectData.RayEnd = position;
@@ -1237,7 +1237,7 @@ namespace libsecondlife
                 data.PathSkew = LLObject.PathSkewFloat(block.PathSkew);
                 data.ProfileBegin = LLObject.ProfileBeginFloat(block.ProfileBegin);
                 data.ProfileEnd = LLObject.ProfileEndFloat(block.ProfileEnd);
-                data.ProfileHollow = block.ProfileHollow;
+                data.ProfileHollow = LLObject.ProfileHollowFloat(block.ProfileHollow);
                 data.PCode = pcode;
                 #endregion
 
@@ -1918,10 +1918,11 @@ namespace libsecondlife
 
                             prim.Data.ProfileCurve = (uint)block.Data[i++];
                             ushort profileBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileBegin = Primitive.ProfileBeginFloat(profileBegin);
+                            prim.Data.ProfileBegin = LLObject.ProfileBeginFloat(profileBegin);
                             ushort profileEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
-                            prim.Data.ProfileEnd = Primitive.ProfileEndFloat(profileEnd);
-                            prim.Data.ProfileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            prim.Data.ProfileEnd = LLObject.ProfileEndFloat(profileEnd);
+                            ushort profileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
+                            prim.Data.ProfileHollow = LLObject.ProfileHollowFloat(profileHollow);
 
                             // TextureEntry
                             int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
