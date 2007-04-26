@@ -2101,11 +2101,18 @@ namespace libsecondlife
                 // no acceleration
                 if (Client.Self.Velocity != LLVector3.Zero || Client.Self.Acceleration != LLVector3.Zero)
                 {
-                    TimeSpan interval = DateTime.Now - Client.Self.lastInterpolation;
-                    float adjSeconds = (float)interval.TotalSeconds * Client.Network.CurrentSim.Dilation;
+                    try
+                    {
+                        TimeSpan interval = DateTime.Now - Client.Self.lastInterpolation;
+                        float adjSeconds = (float)interval.TotalSeconds * Client.Network.CurrentSim.Dilation;
 
-                    Client.Self.Position += (Client.Self.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
-                        Client.Self.Acceleration) * adjSeconds;
+                        Client.Self.Position += (Client.Self.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
+                            Client.Self.Acceleration) * adjSeconds;
+                    }
+                    catch (Exception except)
+                    {
+                        Client.Log(except.ToString(), Helpers.LogLevel.Warning);
+                    }
                 }
             }
 
