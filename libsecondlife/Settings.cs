@@ -68,8 +68,10 @@ namespace libsecondlife
         /// <summary>Whether or not to process packet callbacks async. This is
         /// better off being true, but the option exists to set it to false and
         /// use the old behavior. Please fix your packet callback to return to
-        /// the pump rather than just setting this back to false, if you can.</summary>
-        public const bool SYNC_PACKETCALLBACKS = true;
+        /// the pump rather than just setting this back to false, if you can</summary>
+        /// <remarks>This is an experimental feature and is not completely
+        /// reliable yet</remarks>
+        public const bool SYNC_PACKETCALLBACKS = false;
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
