@@ -604,6 +604,12 @@ namespace libsecondlife
         /// <param name="groupID">The group we are no longer a member of</param>
         public delegate void GroupDroppedCallback(LLUUID groupID);
 
+        /// <summary>
+        /// Informs the avatar that the active group has changed
+        /// </summary>
+        /// <param name="groupID">The group that is now the active group</param>
+        public delegate void ActiveGroupChangedCallback(LLUUID groupID);
+
 
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -625,6 +631,8 @@ namespace libsecondlife
         public event LeaveGroupCallback OnLeaveGroup;
         /// <summary>Callback for informing the avatar that it is no longer a member of a group</summary>
         public event GroupDroppedCallback OnGroupDropped;
+        /// <summary>Callback reply for the current group changing</summary>
+        public event ActiveGroupChangedCallback OnActiveGroupChanged;
 
         #endregion
 
@@ -1840,7 +1848,11 @@ namespace libsecondlife
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
             if (p.AgentData.AgentID == simulator.Client.Network.AgentID) {
-                activeGroup = p.AgentData.ActiveGroupID;
+                if (activeGroup != p.AgentData.ActiveGroupID)
+                {
+                    activeGroup = p.AgentData.ActiveGroupID;
+                    OnActiveGroupChanged(activeGroup);
+                }
             }
         }
 		

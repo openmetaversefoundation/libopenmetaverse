@@ -584,7 +584,7 @@ namespace libsecondlife
                             {
                                 if (callbackArray[i] != null)
                                 {
-                                    bool sync = Settings.SYNC_PACKETCALLBACKS;
+                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
                                     if (sync)
                                     {
                                         callbackArray[i](packet, simulator);
@@ -610,7 +610,7 @@ namespace libsecondlife
                             {
                                 if (callbackArray[i] != null)
                                 {
-                                    bool sync = Settings.SYNC_PACKETCALLBACKS;
+                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
                                     if (sync)
                                     {
                                         callbackArray[i](packet, simulator);
