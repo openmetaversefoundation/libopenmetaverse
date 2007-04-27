@@ -171,7 +171,7 @@ namespace SLProxy
     public class Proxy
     {
         private ProxyConfig proxyConfig;
-	private string loginURI;
+        private string loginURI;
 
         /*
          * Proxy Management
@@ -229,7 +229,7 @@ namespace SLProxy
 #if DEBUG_THREADS
 		Console.WriteLine(">T> KeepAlive");
 #endif
-           lock (keepAliveLock) { };
+            lock (keepAliveLock) { };
 #if DEBUG_THREADS
 		Console.WriteLine("<T< KeepAlive");
 #endif
@@ -362,20 +362,20 @@ namespace SLProxy
 
                     try
                     {
-                        Thread connThread = new Thread((ThreadStart)delegate {
-				try {
+                        Thread connThread = new Thread((ThreadStart)delegate
+                        {
 #if DEBUG_THREADS
 					Console.WriteLine(">T> ProxyHTTP");
 #endif
-					ProxyHTTP(client);
+                            ProxyHTTP(client);
 #if DEBUG_THREADS
 					Console.WriteLine("<T< ProxyHTTP");
 				} catch (Exception e) {
 					Console.WriteLine("ProxyHTTP: {0}", e.Message);
 				}
 #endif
-			});
-			connThread.IsBackground = true;
+                        });
+                        connThread.IsBackground = true;
                         connThread.Start();
                     }
                     catch (Exception e)
@@ -995,7 +995,7 @@ namespace SLProxy
                 try
                 {
                     // forward the XML-RPC request to the server
-                    response = (XmlRpcResponse)request.Send(proxyConfig.remoteLoginUri.ToString(), 
+                    response = (XmlRpcResponse)request.Send(proxyConfig.remoteLoginUri.ToString(),
                         60000); //added 60 second timeout -- Andrew
                 }
                 catch (Exception e)
