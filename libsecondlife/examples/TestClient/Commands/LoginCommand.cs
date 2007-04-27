@@ -16,8 +16,8 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            if (args.Length != 3)
-                return "usage: login firstname lastname password";
+            if (args.Length != 3 && args.Length != 4)
+                return "usage: login firstname lastname password [simname]";
 
             SecondLife newClient = Client.ClientManager.Login(args);
 

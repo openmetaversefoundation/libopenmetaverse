@@ -14,6 +14,7 @@ namespace libsecondlife.TestClient
         public string FirstName;
         public string LastName;
         public string Password;
+        public string StartLocation;
         public string MasterName;
         public LLUUID MasterKey;
     }
@@ -42,7 +43,6 @@ namespace libsecondlife.TestClient
         public bool Running = true;
 
         string contactPerson = String.Empty;
-        StartPosition startpos = new StartPosition();
         private LLUUID resolvedMasterKey = LLUUID.Zero;
         private ManualResetEvent keyResolution = new ManualResetEvent(false);
 
@@ -62,12 +62,13 @@ namespace libsecondlife.TestClient
             this.contactPerson = c;
             char sep = '/';
             string[] startbits = s.Split(sep);
-            this.startpos.sim = startbits[0];
-            this.startpos.x = int.Parse(startbits[1]);
-            this.startpos.y = int.Parse(startbits[2]);
-            this.startpos.z = int.Parse(startbits[3]);
+
             foreach (LoginDetails account in accounts)
+            {
+                account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
+                    Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
                 Login(account);
+            }
         }
         /// <summary>
         /// 
@@ -98,20 +99,14 @@ namespace libsecondlife.TestClient
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
 
-			if (!String.IsNullOrEmpty(this.startpos.sim))
+			if (!String.IsNullOrEmpty(account.StartLocation))
             {
-                if (this.startpos.x == 0 || this.startpos.y == 0 || this.startpos.z == 0)
+                if (!client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient",
+                    account.StartLocation, contactPerson))
                 {
-                    this.startpos.x = 128;
-                    this.startpos.y = 128;
-                    this.startpos.z = 1;
+                    Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                        client.Network.LoginMessage);
                 }
-
-                string startLoc = NetworkManager.StartLocation(this.startpos.sim, this.startpos.x, this.startpos.y,
-                    this.startpos.z);
-                Console.WriteLine(startLoc);
-                client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient", startLoc,
-                    contactPerson);
             }
             else
             {
@@ -198,6 +193,11 @@ namespace libsecondlife.TestClient
             account.FirstName = args[0];
             account.LastName = args[1];
             account.Password = args[2];
+
+            if (args.Length == 4)
+            {
+                account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+            }
 
             return Login(account);
         }

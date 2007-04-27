@@ -425,11 +425,17 @@ namespace libsecondlife
                 try
                 {
                     HttpWebResponse response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
-                    //StreamReader sr = new StreamReader(response.GetResponseStream());
-                    //string str;
-                    //StreamWriter wr = new StreamWriter("C:\\doh.txt");
-                    //while ((str = sr.ReadLine()) != null)
-                    //    wr.WriteLine(str);
+
+                    if (Client.Settings.DEBUG)
+                    {
+                        StreamReader sr = new StreamReader(response.GetResponseStream());
+                        string str;
+                        StreamWriter wr = new StreamWriter("loginreply.xml");
+                        while ((str = sr.ReadLine()) != null)
+                            wr.WriteLine(str);
+                        wr.Close();
+                    }
+
                     XmlReader reader = XmlReader.Create(response.GetResponseStream());
 
                     // Parse the incoming xml
@@ -446,6 +452,8 @@ namespace libsecondlife
 
                     if (!reader.IsStartElement("fault"))
                     {
+                        #region XML Parsing
+
                         reader.ReadStartElement("params");
                         reader.ReadStartElement("param");
                         reader.ReadStartElement("value");
@@ -870,6 +878,7 @@ namespace libsecondlife
                         reader.ReadEndElement();
                         reader.ReadEndElement();
 
+                        #endregion XML Parsing
 
                         if (redirect)
                         {
