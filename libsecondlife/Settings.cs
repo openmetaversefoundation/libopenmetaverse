@@ -65,6 +65,11 @@ namespace libsecondlife
         /// <summary>Number of milliseconds between updating the current
         /// positions of moving, non-accelerating and non-colliding objects</summary>
         public const int INTERPOLATION_UPDATE = 250;
+        /// <summary>Whether or not to process packet callbacks async. This is
+        /// better off being true, but the option exists to set it to false and
+        /// use the old behavior. Please fix your packet callback to return to
+        /// the pump rather than just setting this back to false, if you can.</summary>
+        public const bool SYNC_PACKETCALLBACKS = true;
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>

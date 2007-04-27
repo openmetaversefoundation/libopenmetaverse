@@ -584,11 +584,19 @@ namespace libsecondlife
                             {
                                 if (callbackArray[i] != null)
                                 {
-                                    PacketCallbackWrapper wrapper;
-                                    wrapper.Callback = callbackArray[i];
-                                    wrapper.Packet = packet;
-                                    wrapper.Simulator = simulator;
-                                    Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    bool sync = Settings.SYNC_PACKETCALLBACKS;
+                                    if (sync)
+                                    {
+                                        callbackArray[i](packet, simulator);
+                                    }
+                                    else
+                                    {
+                                        PacketCallbackWrapper wrapper;
+                                        wrapper.Callback = callbackArray[i];
+                                        wrapper.Packet = packet;
+                                        wrapper.Simulator = simulator;
+                                        Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    }
                                 }
                             }
                         }
@@ -602,11 +610,19 @@ namespace libsecondlife
                             {
                                 if (callbackArray[i] != null)
                                 {
-                                    PacketCallbackWrapper wrapper;
-                                    wrapper.Callback = callbackArray[i];
-                                    wrapper.Packet = packet;
-                                    wrapper.Simulator = simulator;
-                                    Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    bool sync = Settings.SYNC_PACKETCALLBACKS;
+                                    if (sync)
+                                    {
+                                        callbackArray[i](packet, simulator);
+                                    }
+                                    else
+                                    {
+                                        PacketCallbackWrapper wrapper;
+                                        wrapper.Callback = callbackArray[i];
+                                        wrapper.Packet = packet;
+                                        wrapper.Simulator = simulator;
+                                        Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    }
                                 }
                             }
                         }
