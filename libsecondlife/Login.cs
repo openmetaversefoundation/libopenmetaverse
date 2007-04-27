@@ -560,20 +560,23 @@ namespace libsecondlife
                                     break;
                                 case "inventory-lib-root":
                                     reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
+                                    
+                                    // Fix this later
+                                    reader.Skip();
+
+                                    //reader.ReadStartElement("array");
+                                    //reader.ReadStartElement("data");
                                     //reader.ReadStartElement("value");
                                     //reader.ReadStartElement("struct");
 
-                                    value = ReadStringValue(reader);
                                     //ReadStringMember(reader, out name, out value);
                                     // FIXME:
                                     //LLUUID.TryParse(value, out Client.Self.InventoryLibRootFolderUUID);
 
                                     //reader.ReadEndElement();
                                     //reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
+                                    //reader.ReadEndElement();
+                                    //reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
                                 case "inventory-lib-owner":
