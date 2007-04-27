@@ -21,7 +21,7 @@ namespace Key2Name
             if (!client.Network.Login(args[0], args[1], args[2], "key2name", "jessemalthus@gmail.com"))
             {
                 // Login failed
-                Console.WriteLine("Error logging in: " + client.Network.LoginMessage);
+                Console.WriteLine("Error logging in: " + client.Network.LoginStatusMessage);
                 return;
             }
 

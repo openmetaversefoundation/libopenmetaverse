@@ -589,7 +589,7 @@ namespace primexport
                 }
                 else
                 {
-                    MessageBox.Show(this, "Error logging in: " + client.Network.LoginMessage);
+                    MessageBox.Show(this, "Error logging in: " + client.Network.LoginStatusMessage);
                     cmdConnect.Text = "Connect";
                     txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
                 }

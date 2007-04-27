@@ -81,7 +81,7 @@ namespace name2key
 			if (!client.Network.Login(args[0], args[1], args[2], "name2key", "jhurliman@wsu.edu"))
 			{
 				// Login failed
-				Console.WriteLine("ERROR: " + client.Network.LoginMessage);
+				Console.WriteLine("ERROR: " + client.Network.LoginStatusMessage);
 				return;
 			}
 

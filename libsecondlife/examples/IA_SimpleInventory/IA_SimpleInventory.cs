@@ -93,7 +93,7 @@ namespace IA_SimpleInventory
             if (!client.Network.Login(FirstName, LastName, Password, "IA_SimpleInventory", "static.sprocket@gmail.com"))
             {
                 // Login failed
-                Console.WriteLine("Error logging in: " + client.Network.LoginMessage);
+                Console.WriteLine("Error logging in: " + client.Network.LoginStatusMessage);
                 return false;
             }
 

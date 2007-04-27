@@ -124,12 +124,11 @@ namespace sldump
 
             if (!LoginSuccess)
             {
-                Console.WriteLine("Login failed ({0}): {1}", client.Network.LoginErrorKey, 
-                    client.Network.LoginMessage);
+                Console.WriteLine("Login failed: {0}", client.Network.LoginStatusMessage);
                 return;
             }
 
-			Console.WriteLine("Message of the day: " + client.Network.LoginMessage);
+			Console.WriteLine("Message of the day: " + client.Network.MOTD);
 
             int start = Environment.TickCount;
             int milliseconds = Int32.Parse(args[3]) * 1000;
@@ -148,9 +147,9 @@ namespace sldump
             client.Network.Logout();
 		}
 
-        static void Network_OnLogin(NetworkManager.LoginStatus login)
+        static void Network_OnLogin(NetworkManager.LoginStatus login, string message)
         {
-            Console.WriteLine("Login: " + login.ToString());
+            Console.WriteLine("Login: " + login.ToString() + " (" + message + ")");
 
             switch (login)
             {

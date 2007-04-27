@@ -27,7 +27,7 @@ namespace libsecondlife.TestClient
             }
             else
             {
-                return "Failed to login: " + newClient.Network.LoginMessage;
+                return "Failed to login: " + newClient.Network.LoginStatusMessage;
             }
         }
     }
