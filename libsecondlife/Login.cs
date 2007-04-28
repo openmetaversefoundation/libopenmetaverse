@@ -426,6 +426,7 @@ namespace libsecondlife
                 {
                     HttpWebResponse response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
 
+					/* FIXME: Hokay, so this stream .CanSeek -> false; how can we write to file and parse :P
                     if (Client.Settings.DEBUG)
                     {
                         StreamReader sr = new StreamReader(response.GetResponseStream());
@@ -436,6 +437,7 @@ namespace libsecondlife
                         wr.Close();
 						response.GetResponseStream().Seek(0, SeekOrigin.Begin);
                     }
+					*/
 
                     XmlReader reader = XmlReader.Create(response.GetResponseStream());
 
