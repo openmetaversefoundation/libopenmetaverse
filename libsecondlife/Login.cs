@@ -425,21 +425,18 @@ namespace libsecondlife
                 try
                 {
                     HttpWebResponse response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
-
-					/* FIXME: Hokay, so this stream .CanSeek -> false; how can we write to file and parse :P
+					StreamReader sr = new StreamReader(response.GetResponseStream());
                     if (Client.Settings.DEBUG)
                     {
-                        StreamReader sr = new StreamReader(response.GetResponseStream());
-                        string str;
                         StreamWriter wr = new StreamWriter("loginreply.xml");
-                        while ((str = sr.ReadLine()) != null)
-                            wr.WriteLine(str);
+						string str = null;
+						while ((str = sr.ReadLine()) != null)
+						  wr.Write( str );
                         wr.Close();
-						response.GetResponseStream().Seek(0, SeekOrigin.Begin);
+						sr = new StreamReader("loginreply.xml");
                     }
-					*/
 
-                    XmlReader reader = XmlReader.Create(response.GetResponseStream());
+                    XmlReader reader = XmlReader.Create(sr);
 
                     // Parse the incoming xml
                     bool redirect = false;
