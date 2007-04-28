@@ -426,16 +426,16 @@ namespace libsecondlife
                 {
                     HttpWebResponse response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
 
-                    // FIXME: How can we dump the output to the hard drive *and* parse it?
-                    //if (Client.Settings.DEBUG)
-                    //{
-                    //    StreamReader sr = new StreamReader(response.GetResponseStream());
-                    //    string str;
-                    //    StreamWriter wr = new StreamWriter("loginreply.xml");
-                    //    while ((str = sr.ReadLine()) != null)
-                    //        wr.WriteLine(str);
-                    //    wr.Close();
-                    //}
+                    if (Client.Settings.DEBUG)
+                    {
+                        StreamReader sr = new StreamReader(response.GetResponseStream());
+                        string str;
+                        StreamWriter wr = new StreamWriter("loginreply.xml");
+                        while ((str = sr.ReadLine()) != null)
+                            wr.WriteLine(str);
+                        wr.Close();
+						response.GetResponseStream().Seek(0, SeekOrigin.Begin);
+                    }
 
                     XmlReader reader = XmlReader.Create(response.GetResponseStream());
 
