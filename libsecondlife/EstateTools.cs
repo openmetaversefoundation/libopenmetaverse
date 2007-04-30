@@ -25,6 +25,7 @@
  */
 using System;
 using libsecondlife.Packets;
+using System.Collections.Generic;
 
 namespace libsecondlife
 {
@@ -36,13 +37,83 @@ namespace libsecondlife
 		private SecondLife Client;
 
         /// <summary>
+        /// Triggered on incoming LandStatReply
+        /// </summary>
+        /// <param name="reportType"></param>
+        /// <param name="requestFlags"></param>
+        /// <param name="objectCount"></param>
+        /// <param name="task"></param>
+        public delegate void LandStatReply(uint reportType, uint requestFlags, uint objectCount, List<EstateTask> Tasks);
+
+        /// <summary>Callback for incoming LandStatReply packets</summary>
+        public event LandStatReply OnLandStatReply;
+
+        /// <summary>
         /// Constructor for EstateTools class
         /// </summary>
         /// <param name="client"></param>
 		public EstateTools(SecondLife client)
 		{
 			Client = client;
+            Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
 		}
+
+        /// <summary>Describes tasks returned in LandStatReply</summary>
+        public class EstateTask
+        {
+            public LLVector3 Position;
+            public float Score;
+            public LLUUID TaskID;
+            public uint TaskLocalID;
+            public string TaskName;
+            public string OwnerName;
+        }
+
+        /// <summary>
+        /// Requests estate information such as top scripts and colliders
+        /// </summary>
+        /// <param name="parcelLocalID"></param>
+        /// <param name="ReportType"></param>
+        /// <param name="RequestFlags"></param>
+        /// <param name="Filter"></param>
+        public void LandStatRequest(int parcelLocalID, uint ReportType, uint RequestFlags, string Filter)
+        {
+            LandStatRequestPacket p = new LandStatRequestPacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            p.RequestData.Filter = Helpers.StringToField(Filter);
+            p.RequestData.ParcelLocalID = parcelLocalID;
+            p.RequestData.ReportType = ReportType;
+            p.RequestData.RequestFlags = RequestFlags;            
+            Client.Network.SendPacket(p);
+        }
+
+        /// <summary></summary>
+        private void LandStatReplyHandler(Packet packet, Simulator simulator)
+        {
+            LandStatReplyPacket p = (LandStatReplyPacket)packet;
+            List<EstateTask> Tasks = new List<EstateTask>();
+            
+            foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
+            {
+                EstateTask task = new EstateTask();                
+                task.Position = new LLVector3(rep.LocationX, rep.LocationY, rep.LocationZ);
+                task.Score = rep.Score;
+                task.TaskID = rep.TaskID;
+                task.TaskLocalID = rep.TaskLocalID;
+                task.TaskName = Helpers.FieldToUTF8String(rep.TaskName);
+                task.OwnerName = Helpers.FieldToUTF8String(rep.OwnerName);
+                Tasks.Add(task);
+            }
+
+            OnLandStatReply(
+                p.RequestData.ReportType,
+                p.RequestData.RequestFlags,
+                p.RequestData.TotalObjectCount,
+                Tasks
+            );
+        }
+                
 
         /// <summary>
         /// Kick an Avatar from an estate
