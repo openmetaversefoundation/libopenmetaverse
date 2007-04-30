@@ -44,9 +44,25 @@ namespace libsecondlife
         /// <param name="objectCount"></param>
         /// <param name="task"></param>
         public delegate void LandStatReply(uint reportType, uint requestFlags, uint objectCount, List<EstateTask> Tasks);
+        /// <summary>
+        /// Triggered on incoming LandStatReply when the report type is for "top colliders"
+        /// </summary>
+        /// <param name="objectCount"></param>
+        /// <param name="Tasks"></param>
+        public delegate void GetTopCollidersReply(uint objectCount, List<EstateTask> Tasks);
+        /// <summary>
+        /// Triggered on incoming LandStatReply when the report type is for "top scripts"
+        /// </summary>
+        /// <param name="objectCount"></param>
+        /// <param name="Tasks"></param>
+        public delegate void GetTopScriptsReply(uint objectCount, List<EstateTask> Tasks);
 
         /// <summary>Callback for incoming LandStatReply packets</summary>
         public event LandStatReply OnLandStatReply;
+        /// <summary>Triggered upon a successful .GetTopColliders()</summary>
+        public event GetTopCollidersReply OnGetTopColliders;
+        /// <summary>Triggered upon a successful .GetTopScripts()</summary>
+        public event GetTopScriptsReply OnGetTopScripts;
 
         /// <summary>
         /// Constructor for EstateTools class
@@ -69,6 +85,13 @@ namespace libsecondlife
             public string OwnerName;
         }
 
+        /// <summary>Used in the ReportType field of a LandStatRequest</summary>
+        public enum LandStatReportType
+        {
+            TopScripts = 0,
+            TopColliders = 1
+        }
+
         /// <summary>
         /// Requests estate information such as top scripts and colliders
         /// </summary>
@@ -76,42 +99,72 @@ namespace libsecondlife
         /// <param name="ReportType"></param>
         /// <param name="RequestFlags"></param>
         /// <param name="Filter"></param>
-        public void LandStatRequest(int parcelLocalID, uint ReportType, uint RequestFlags, string Filter)
+        public void LandStatRequest(int parcelLocalID, LandStatReportType reportType, uint requestFlags, string filter)
         {
             LandStatRequestPacket p = new LandStatRequestPacket();
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
-            p.RequestData.Filter = Helpers.StringToField(Filter);
+            p.RequestData.Filter = Helpers.StringToField(filter);
             p.RequestData.ParcelLocalID = parcelLocalID;
-            p.RequestData.ReportType = ReportType;
-            p.RequestData.RequestFlags = RequestFlags;            
+            p.RequestData.ReportType = (uint)reportType;
+            p.RequestData.RequestFlags = requestFlags;            
             Client.Network.SendPacket(p);
         }
 
-        /// <summary></summary>
+        /// <summary>Requests the "Top Scripts" list for the current region</summary>
+        public void GetTopScripts()
+        {
+            LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
+        }
+
+        /// <summary>Requests the "Top Colliders" list for the current region</summary>
+        public void GetTopColliders()
+        {
+            LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void LandStatReplyHandler(Packet packet, Simulator simulator)
         {
-            LandStatReplyPacket p = (LandStatReplyPacket)packet;
-            List<EstateTask> Tasks = new List<EstateTask>();
-            
-            foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
+            if (OnLandStatReply != null)
             {
-                EstateTask task = new EstateTask();                
-                task.Position = new LLVector3(rep.LocationX, rep.LocationY, rep.LocationZ);
-                task.Score = rep.Score;
-                task.TaskID = rep.TaskID;
-                task.TaskLocalID = rep.TaskLocalID;
-                task.TaskName = Helpers.FieldToUTF8String(rep.TaskName);
-                task.OwnerName = Helpers.FieldToUTF8String(rep.OwnerName);
-                Tasks.Add(task);
-            }
 
-            OnLandStatReply(
-                p.RequestData.ReportType,
-                p.RequestData.RequestFlags,
-                p.RequestData.TotalObjectCount,
-                Tasks
-            );
+                LandStatReplyPacket p = (LandStatReplyPacket)packet;
+                List<EstateTask> Tasks = new List<EstateTask>();
+
+                foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
+                {
+                    EstateTask task = new EstateTask();
+                    task.Position = new LLVector3(rep.LocationX, rep.LocationY, rep.LocationZ);
+                    task.Score = rep.Score;
+                    task.TaskID = rep.TaskID;
+                    task.TaskLocalID = rep.TaskLocalID;
+                    task.TaskName = Helpers.FieldToUTF8String(rep.TaskName);
+                    task.OwnerName = Helpers.FieldToUTF8String(rep.OwnerName);
+                    Tasks.Add(task);
+                }
+
+                OnLandStatReply(
+                    p.RequestData.ReportType,
+                    p.RequestData.RequestFlags,
+                    p.RequestData.TotalObjectCount,
+                    Tasks
+                );
+
+                switch ((LandStatReportType)p.RequestData.ReportType)
+                {
+                    case LandStatReportType.TopColliders:
+                        OnGetTopColliders(p.RequestData.TotalObjectCount, Tasks);
+                        break;
+                    case LandStatReportType.TopScripts:
+                        OnGetTopScripts(p.RequestData.TotalObjectCount, Tasks);
+                        break;
+                }
+
+            }
         }
                 
 
