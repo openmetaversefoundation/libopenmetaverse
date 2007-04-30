@@ -43,19 +43,19 @@ namespace libsecondlife
         /// <param name="requestFlags"></param>
         /// <param name="objectCount"></param>
         /// <param name="task"></param>
-        public delegate void LandStatReply(uint reportType, uint requestFlags, uint objectCount, List<EstateTask> Tasks);
+        public delegate void LandStatReply(LandStatReportType reportType, uint requestFlags, int objectCount, List<EstateTask> Tasks);
         /// <summary>
         /// Triggered on incoming LandStatReply when the report type is for "top colliders"
         /// </summary>
         /// <param name="objectCount"></param>
         /// <param name="Tasks"></param>
-        public delegate void GetTopCollidersReply(uint objectCount, List<EstateTask> Tasks);
+        public delegate void GetTopCollidersReply(int objectCount, List<EstateTask> Tasks);
         /// <summary>
         /// Triggered on incoming LandStatReply when the report type is for "top scripts"
         /// </summary>
         /// <param name="objectCount"></param>
         /// <param name="Tasks"></param>
-        public delegate void GetTopScriptsReply(uint objectCount, List<EstateTask> Tasks);
+        public delegate void GetTopScriptsReply(int objectCount, List<EstateTask> Tasks);
 
         /// <summary>Callback for incoming LandStatReply packets</summary>
         public event LandStatReply OnLandStatReply;
@@ -129,9 +129,8 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         private void LandStatReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnLandStatReply != null)
+            if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
             {
-
                 LandStatReplyPacket p = (LandStatReplyPacket)packet;
                 List<EstateTask> Tasks = new List<EstateTask>();
 
@@ -147,22 +146,22 @@ namespace libsecondlife
                     Tasks.Add(task);
                 }
 
-                OnLandStatReply(
-                    p.RequestData.ReportType,
-                    p.RequestData.RequestFlags,
-                    p.RequestData.TotalObjectCount,
-                    Tasks
-                );
-
                 switch ((LandStatReportType)p.RequestData.ReportType)
                 {
                     case LandStatReportType.TopColliders:
-                        OnGetTopColliders(p.RequestData.TotalObjectCount, Tasks);
+                        OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks);
                         break;
                     case LandStatReportType.TopScripts:
-                        OnGetTopScripts(p.RequestData.TotalObjectCount, Tasks);
+                        OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks);
                         break;
                 }
+
+                OnLandStatReply(
+                    (LandStatReportType)p.RequestData.ReportType,
+                    p.RequestData.RequestFlags,
+                    (int)p.RequestData.TotalObjectCount,
+                    Tasks
+                );
 
             }
         }
