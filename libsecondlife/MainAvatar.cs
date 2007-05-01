@@ -1851,7 +1851,8 @@ namespace libsecondlife
                 if (activeGroup != p.AgentData.ActiveGroupID)
                 {
                     activeGroup = p.AgentData.ActiveGroupID;
-                    OnActiveGroupChanged(activeGroup);
+                    if (OnActiveGroupChanged != null)
+                        OnActiveGroupChanged(activeGroup);
                 }
             }
         }

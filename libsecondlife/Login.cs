@@ -32,25 +32,12 @@ using System.Xml;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using libsecondlife.Packets;
 
 namespace libsecondlife
 {
-    internal class AcceptAllCertificatePolicy : ICertificatePolicy
-    {
-        public AcceptAllCertificatePolicy()
-        {
-        }
-
-        public bool CheckValidationResult(ServicePoint sPoint,
-            System.Security.Cryptography.X509Certificates.X509Certificate cert,
-            WebRequest wRequest, int certProb)
-        {
-            // Always accept
-            return true;
-        }
-    }
-
     public partial class NetworkManager
     {
         public delegate void LoginCallback(LoginStatus login, string message);
@@ -257,6 +244,8 @@ namespace libsecondlife
             {
                 if (CurrentContext != null)
                 {
+                    if (CurrentContext.Request != null)
+                        CurrentContext.Request.Abort();
                     CurrentContext = null; // Will force any pending callbacks to bail out early
                     InternalStatusCode = LoginStatus.Failed;
                     InternalStatusMessage = "Timed out";
@@ -279,7 +268,11 @@ namespace libsecondlife
             DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
 
             // Override SSL authentication mechanisms
-            ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+            ServicePointManager.ServerCertificateValidationCallback = delegate(
+                object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors errors)
+                {
+                    return true; // TODO: At some point, maybe we should check the cert?
+                };
 
             // Build the request data
             StringBuilder output = new StringBuilder(2048);
@@ -391,7 +384,14 @@ namespace libsecondlife
             lock (LockObject)
             {
                 if (myContext != CurrentContext)
+                {
+                    if (myContext.Request != null)
+                    {
+                        myContext.Request.Abort();
+                        myContext.Request = null;
+                    }
                     return;
+                }
 
                 byte[] bytes = myContext.XMLRPC;
 
@@ -422,21 +422,60 @@ namespace libsecondlife
 
             lock (LockObject)
             {
+                HttpWebResponse response = null;
+                Stream xmlStream = null;
+                XmlReader reader = null;
+
                 try
                 {
-                    HttpWebResponse response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
-					StreamReader sr = new StreamReader(response.GetResponseStream());
-                    if (Client.Settings.DEBUG)
+                    if (myContext != CurrentContext)
                     {
-                        StreamWriter wr = new StreamWriter("loginreply.xml");
-						string str = null;
-						while ((str = sr.ReadLine()) != null)
-						  wr.Write( str );
-                        wr.Close();
-						sr = new StreamReader("loginreply.xml");
+                        if (myContext.Request != null)
+                        {
+                            myContext.Request.Abort();
+                            myContext.Request = null;
+                        }
+                        return;
                     }
 
-                    XmlReader reader = XmlReader.Create(sr);
+                    response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
+
+                    xmlStream = response.GetResponseStream();
+
+                    if (Client.Settings.DEBUG)
+                    {
+                        try
+                        {
+                            MemoryStream memStream = new MemoryStream();
+                            BinaryReader streamReader = new BinaryReader(xmlStream);
+                            BinaryWriter streamWriter = new BinaryWriter(memStream);
+
+                            byte[] buffer;
+                            while ((buffer = streamReader.ReadBytes(1024)) != null)
+                            {
+                                if (buffer.Length == 0)
+                                    break;
+                                streamWriter.Write(buffer);
+                            }
+                            streamWriter.Flush();
+                            xmlStream.Close();
+                            xmlStream = memStream;
+
+                            memStream.Seek(0, SeekOrigin.Begin);
+                            FileStream fileStream = File.Open("loginreply.xml", FileMode.Create, FileAccess.Write, FileShare.Read);
+                            memStream.WriteTo(fileStream);
+                            memStream.Seek(0, SeekOrigin.Begin);
+                            fileStream.Close();
+                            memStream.Seek(0, SeekOrigin.Begin);
+                        }
+                        catch (Exception)
+                        {
+                            // This is debug code, we don't care if we fail for whatever reason, like another SL instance is already
+                            // writing the file
+                        }
+                    }
+
+                    reader = XmlReader.Create(xmlStream);
 
                     // Parse the incoming xml
                     bool redirect = false;
@@ -568,7 +607,7 @@ namespace libsecondlife
                                     break;
                                 case "inventory-lib-root":
                                     reader.ReadStartElement("value");
-                                    
+
                                     // Fix this later
                                     reader.Skip();
 
@@ -890,7 +929,6 @@ namespace libsecondlife
                             CurrentContext.Params.URI = nextURL;
                             CurrentContext.Params.MethodName = nextMethod;
                             BeginLogin();
-                            return;
                         }
                         else if (loginSuccess)
                         {
@@ -935,8 +973,6 @@ namespace libsecondlife
                         UpdateLoginStatus(LoginStatus.Failed, value);
                     }
 
-                    reader.Close();
-                    response.Close();
                 }
                 catch (WebException e)
                 {
@@ -945,6 +981,15 @@ namespace libsecondlife
                 catch (XmlException e)
                 {
                     UpdateLoginStatus(LoginStatus.Failed, "Error parsing reply XML: " + e.Message + Environment.NewLine + e.StackTrace);
+                }
+                finally
+                {
+                    if (reader != null)
+                        reader.Close();
+                    if (xmlStream != null)
+                        xmlStream.Close();
+                    if (response != null)
+                        response.Close();
                 }
             }
         }
