@@ -38,6 +38,22 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    // TODO: Remove me when MONO can handle ServerCertificateValidationCallback
+    internal class AcceptAllCertificatePolicy : ICertificatePolicy
+    {
+        public AcceptAllCertificatePolicy()
+        {
+        }
+
+        public bool CheckValidationResult(ServicePoint sPoint,
+            System.Security.Cryptography.X509Certificates.X509Certificate cert,
+            WebRequest wRequest, int certProb)
+        {
+            // Always accept
+            return true;
+        }
+    }
+
     public partial class NetworkManager
     {
         public delegate void LoginCallback(LoginStatus login, string message);
@@ -268,11 +284,14 @@ namespace libsecondlife
             DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
 
             // Override SSL authentication mechanisms
-            ServicePointManager.ServerCertificateValidationCallback = delegate(
-                object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors errors)
-                {
-                    return true; // TODO: At some point, maybe we should check the cert?
-                };
+            ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+            // TODO: use this code and remove the AcceptAllCertificatePolicy class when
+            //       mono catches up. :( Or, don't use mono, ya dweebs.
+            //ServicePointManager.ServerCertificateValidationCallback = delegate(
+            //    object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors errors)
+            //    {
+            //        return true; // TODO: At some point, maybe we should check the cert?
+            //    };
 
             // Build the request data
             StringBuilder output = new StringBuilder(2048);
