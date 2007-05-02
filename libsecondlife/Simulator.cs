@@ -800,9 +800,13 @@ namespace libsecondlife
             NetworkManager.IncomingPacket incomingPacket;
             incomingPacket.Simulator = this;
             incomingPacket.Packet = packet;
+            incomingPacket.Client = Client;
 
             // TODO: Prioritize the queue
-            Network.PacketInbox.Enqueue(incomingPacket);
+            if (Network.Universe != null)
+                Network.Universe.Enqueue(incomingPacket);
+            else
+                Network.PacketInbox.Enqueue(incomingPacket);
 
             #endregion Inbox Insertion
         }

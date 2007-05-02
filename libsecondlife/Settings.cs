@@ -47,6 +47,9 @@ namespace libsecondlife
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
         public const int PACKET_INBOX_SIZE = 100;
+        /// <summary>The initial size of the universe packet inbox, where packets
+        /// are stored before processing</summary>
+        public const int UNIVERSE_PACKET_INBOX_SIZE = 1000;
         /// <summary>Maximum size of packet that we want to send over the wire</summary>
         public const int MAX_PACKET_SIZE = 1200;
         /// <summary>Millisecond interval between ticks, where all ACKs are 
