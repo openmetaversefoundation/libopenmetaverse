@@ -43,7 +43,7 @@ namespace libsecondlife
         /// <param name="requestFlags"></param>
         /// <param name="objectCount"></param>
         /// <param name="task"></param>
-        public delegate void LandStatReply(LandStatReportType reportType, uint requestFlags, int objectCount, List<EstateTask> Tasks);
+        //public delegate void LandStatReply(LandStatReportType reportType, uint requestFlags, int objectCount, List<EstateTask> Tasks);
         /// <summary>
         /// Triggered on incoming LandStatReply when the report type is for "top colliders"
         /// </summary>
@@ -58,7 +58,7 @@ namespace libsecondlife
         public delegate void GetTopScriptsReply(int objectCount, List<EstateTask> Tasks);
 
         /// <summary>Callback for incoming LandStatReply packets</summary>
-        public event LandStatReply OnLandStatReply;
+        //public event LandStatReply OnLandStatReply;
         /// <summary>Triggered upon a successful .GetTopColliders()</summary>
         public event GetTopCollidersReply OnGetTopColliders;
         /// <summary>Triggered upon a successful .GetTopScripts()</summary>
@@ -129,7 +129,8 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         private void LandStatReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
+            //if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
+            if (OnGetTopScripts != null || OnGetTopColliders != null)
             {
                 LandStatReplyPacket p = (LandStatReplyPacket)packet;
                 List<EstateTask> Tasks = new List<EstateTask>();
@@ -146,22 +147,29 @@ namespace libsecondlife
                     Tasks.Add(task);
                 }
 
-                switch ((LandStatReportType)p.RequestData.ReportType)
+                LandStatReportType type = (LandStatReportType)p.RequestData.ReportType;
+
+                if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
                 {
-                    case LandStatReportType.TopColliders:
-                        OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks);
-                        break;
-                    case LandStatReportType.TopScripts:
-                        OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks);
-                        break;
+                    OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks);
+                }
+                else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
+                {
+                    OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks);
                 }
 
-                OnLandStatReply(
-                    (LandStatReportType)p.RequestData.ReportType,
-                    p.RequestData.RequestFlags,
-                    (int)p.RequestData.TotalObjectCount,
-                    Tasks
-                );
+                /*
+                if (OnGetTopColliders != null)
+                {
+                    //FIXME - System.UnhandledExceptionEventArgs
+                    OnLandStatReply(
+                        type,
+                        p.RequestData.RequestFlags,
+                        (int)p.RequestData.TotalObjectCount,
+                        Tasks
+                    );
+                }
+                */
 
             }
         }
