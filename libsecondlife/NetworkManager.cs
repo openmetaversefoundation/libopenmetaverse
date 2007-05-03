@@ -774,7 +774,7 @@ namespace libsecondlife
         private void ManagedThreadPool_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             // An exception occurred in a packet callback, log it
-            Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            Client.Log(((Exception)e.ExceptionObject).ToString(), Helpers.LogLevel.Error);
         }
 
         #region Timers
