@@ -157,7 +157,6 @@
     <Compile Include="SecondLife.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SecondUniverse.cs" />
     <Compile Include="SerializableDictionary.cs">
       <SubType>Code</SubType>
     </Compile>

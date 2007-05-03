@@ -88,23 +88,10 @@ namespace libsecondlife
         /// <summary>
         /// Default constructor
         /// </summary>
-        public SecondLife() : this(null)
-        {
-        }
-
-        /// <summary>
-        /// Constructs a client
-        /// </summary>
-        /// <param name="universe">If null, a standalone client, otherwise, pass
-        /// off some of the processing and resources to be owned by the universe
-        /// </param>
-        internal SecondLife(SecondUniverse universe)
+        public SecondLife()
         {
             // These are order-dependant
-            if (universe != null)
-                Network = new NetworkManager(this, universe);
-            else
-                Network = new NetworkManager(this);
+            Network = new NetworkManager(this);
             Settings = new Settings(this);
             Parcels = new ParcelManager(this);
             Self = new MainAvatar(this);

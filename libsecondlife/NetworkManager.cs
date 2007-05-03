@@ -61,8 +61,6 @@ namespace libsecondlife
             public Simulator Simulator;
             /// <summary>The packet that needs to be processed</summary>
             public Packet Packet;
-            /// <summary>The SecondLife Client this packet came from</summary>
-            public SecondLife Client;
         }
 
         /// <summary>
@@ -182,22 +180,13 @@ namespace libsecondlife
         /// Shows whether the network layer is logged in to the grid or not
         /// </summary>
         public bool Connected { get { return connected; } }
-        public int InboxCount
-        {
-            get
-            {
-                if (Universe != null)
-                    return Universe.GetInboxCount(this.Client);
-                return PacketInbox.Count;
-            }
-        }
+        public int InboxCount { get { return PacketInbox.Count; } }
 
         /// <summary></summary>
         internal List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
         /// <summary>Incoming packets that are awaiting handling</summary>
-        internal BlockingQueue PacketInbox = null;
+        internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
-        internal SecondUniverse Universe = null;
         private SecondLife Client;
         private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         private System.Timers.Timer DisconnectTimer, LogoutTimer;
@@ -209,24 +198,11 @@ namespace libsecondlife
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        public NetworkManager(SecondLife client) : this(client, null)
-        {
-        }
-
-        /// <summary>
-        /// NetworkManager constructor
-        /// </summary>
-        /// <param name="client">Refernce to the SecondLife client</param>
-        /// <param name="universe">If not null, the universe that will manage the PacketInbox</param>
-        public NetworkManager(SecondLife client, SecondUniverse universe)
+        public NetworkManager(SecondLife client)
         {
             Client = client;
             CurrentSim = null;
-            Universe = universe;
-
-            if (Universe == null)
-                PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
-
+            
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
             RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
@@ -244,7 +220,7 @@ namespace libsecondlife
             ServicePointManager.Expect100Continue = false;
 
             // Catch exceptions from threads in the managed threadpool
-            Toub.Threading.ManagedThreadPool.UnhandledException +=
+            Toub.Threading.ManagedThreadPool.UnhandledException += 
                 new UnhandledExceptionEventHandler(ManagedThreadPool_UnhandledException);
         }
 
@@ -385,12 +361,9 @@ namespace libsecondlife
                     // is true, so we have to be "connected" before we start connecting
                     connected = true;
 
-                    if (Universe == null)
-                    {
-                        // Start the packet decoding thread
-                        Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
-                        decodeThread.Start();
-                    }
+                    // Start the packet decoding thread
+                    Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
+                    decodeThread.Start();
                 }
 
                 // We're not connected to this simulator, attempt to establish a connection
@@ -518,154 +491,146 @@ namespace libsecondlife
             }
         }
 
-        /// <summary>
-        /// Handles a single packet. Called from either the networkManager itself,
-        /// if doing it's own PacketInbox processing, or from the SecondUniverse.
-        /// </summary>
-        /// <param name="incomingPacket">Packet</param>
-        internal void HandlePacket(IncomingPacket incomingPacket)
-        {
-            if (connected == false)
-                return;
-
-            Packet packet = incomingPacket.Packet;
-            Simulator simulator = incomingPacket.Simulator;
-            WaitCallback callback = new WaitCallback(CallPacketDelegate);
-
-            if (packet != null)
-            {
-                #region Archive Duplicate Search
-
-                // TODO: Replace PacketArchive Queue<> with something more efficient
-
-                // Check the archives to see whether we already received this packet
-                lock (simulator.PacketArchive)
-                {
-                    if (simulator.PacketArchive.Contains(packet.Header.Sequence))
-                    {
-                        if (packet.Header.Resent)
-                        {
-                            Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
-                        }
-                        else
-                        {
-                            Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
-                                Helpers.LogLevel.Error);
-                        }
-
-                        // Avoid firing a callback twice for the same packet
-                        goto End;
-                    }
-                    else
-                    {
-                        // Keep the Inbox size within a certain capacity
-                        while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
-                        {
-                            simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                            simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                        }
-
-                        simulator.PacketArchive.Enqueue(packet.Header.Sequence);
-                    }
-                }
-
-                #endregion Archive Duplicate Search
-
-                #region ACK handling
-
-                // Handle appended ACKs
-                if (packet.Header.AppendedAcks)
-                {
-                    lock (simulator.NeedAck)
-                    {
-                        for (int i = 0; i < packet.Header.AckList.Length; i++)
-                            simulator.NeedAck.Remove(packet.Header.AckList[i]);
-                    }
-                }
-
-                // Handle PacketAck packets
-                if (packet.Type == PacketType.PacketAck)
-                {
-                    PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                    lock (simulator.NeedAck)
-                    {
-                        for (int i = 0; i < ackPacket.Packets.Length; i++)
-                            simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
-                    }
-                }
-
-                #endregion ACK handling
-
-                #region FireCallbacks
-
-                if (Callbacks.ContainsKey(packet.Type))
-                {
-                    List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
-
-                    // Fire any registered callbacks
-                    for (int i = 0; i < callbackArray.Count; i++)
-                    {
-                        if (callbackArray[i] != null)
-                        {
-                            bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
-                            if (sync)
-                            {
-                                callbackArray[i](packet, simulator);
-                            }
-                            else
-                            {
-                                PacketCallbackWrapper wrapper;
-                                wrapper.Callback = callbackArray[i];
-                                wrapper.Packet = packet;
-                                wrapper.Simulator = simulator;
-                                Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
-                            }
-                        }
-                    }
-                }
-
-                if (Callbacks.ContainsKey(PacketType.Default))
-                {
-                    List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
-
-                    // Fire any registered callbacks
-                    for (int i = 0; i < callbackArray.Count; i++)
-                    {
-                        if (callbackArray[i] != null)
-                        {
-                            bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
-                            if (sync)
-                            {
-                                callbackArray[i](packet, simulator);
-                            }
-                            else
-                            {
-                                PacketCallbackWrapper wrapper;
-                                wrapper.Callback = callbackArray[i];
-                                wrapper.Packet = packet;
-                                wrapper.Simulator = simulator;
-                                Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
-                            }
-                        }
-                    }
-                }
-
-                #endregion FireCallbacks
-
-            End: ;
-            }
-        }
-
         private void PacketHandler()
         {
             IncomingPacket incomingPacket = new IncomingPacket();
+            Packet packet = null;
+            Simulator simulator = null;
+            WaitCallback callback = new WaitCallback(CallPacketDelegate);
 
             while (connected)
             {
+                // Reset packet to null for the check below
+                packet = null;
+
                 if (PacketInbox.Dequeue(500, ref incomingPacket))
                 {
-                    HandlePacket(incomingPacket);
+                    packet = incomingPacket.Packet;
+                    simulator = incomingPacket.Simulator;
+
+                    if (packet != null)
+                    {
+                        #region Archive Duplicate Search
+
+                        // TODO: Replace PacketArchive Queue<> with something more efficient
+
+                        // Check the archives to see whether we already received this packet
+                        lock (simulator.PacketArchive)
+                        {
+                            if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                            {
+                                if (packet.Header.Resent)
+                                {
+                                    Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                }
+                                else
+                                {
+                                    Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
+                                        Helpers.LogLevel.Error);
+                                }
+
+                                // Avoid firing a callback twice for the same packet
+                                goto End;
+                            }
+                            else
+                            {
+                                // Keep the Inbox size within a certain capacity
+                                while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
+                                {
+                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                }
+
+                                simulator.PacketArchive.Enqueue(packet.Header.Sequence);
+                            }
+                        }
+
+                        #endregion Archive Duplicate Search
+
+                        #region ACK handling
+
+                        // Handle appended ACKs
+                        if (packet.Header.AppendedAcks)
+                        {
+                            lock (simulator.NeedAck)
+                            {
+                                for (int i = 0; i < packet.Header.AckList.Length; i++)
+                                    simulator.NeedAck.Remove(packet.Header.AckList[i]);
+                            }
+                        }
+
+                        // Handle PacketAck packets
+                        if (packet.Type == PacketType.PacketAck)
+                        {
+                            PacketAckPacket ackPacket = (PacketAckPacket)packet;
+
+                            lock (simulator.NeedAck)
+                            {
+                                for (int i = 0; i < ackPacket.Packets.Length; i++)
+                                    simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
+                            }
+                        }
+
+                        #endregion ACK handling
+
+                        #region FireCallbacks
+
+                        if (Callbacks.ContainsKey(packet.Type))
+                        {
+                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
+
+                            // Fire any registered callbacks
+                            for (int i = 0; i < callbackArray.Count; i++)
+                            {
+                                if (callbackArray[i] != null)
+                                {
+                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
+                                    if (sync)
+                                    {
+                                        callbackArray[i](packet, simulator);
+                                    }
+                                    else
+                                    {
+                                        PacketCallbackWrapper wrapper;
+                                        wrapper.Callback = callbackArray[i];
+                                        wrapper.Packet = packet;
+                                        wrapper.Simulator = simulator;
+                                        Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (Callbacks.ContainsKey(PacketType.Default))
+                        {
+                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
+
+                            // Fire any registered callbacks
+                            for (int i = 0; i < callbackArray.Count; i++)
+                            {
+                                if (callbackArray[i] != null)
+                                {
+                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
+                                    if (sync)
+                                    {
+                                        callbackArray[i](packet, simulator);
+                                    }
+                                    else
+                                    {
+                                        PacketCallbackWrapper wrapper;
+                                        wrapper.Callback = callbackArray[i];
+                                        wrapper.Packet = packet;
+                                        wrapper.Simulator = simulator;
+                                        Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    }
+                                }
+                            }
+                        }
+
+                        #endregion FireCallbacks
+
+                    End: ;
+                    }
                 }
             }
         }
@@ -787,13 +752,7 @@ namespace libsecondlife
             }
 
             // Clear out all of the packets that never had time to process
-            // If we are SecondUniverse based, we can't clear for just this
-            // NetworkManager, but, connected will be false so we will ignore
-            // any leftover messages in the queue
-            if (PacketInbox != null)
-            {
-                lock (PacketInbox) PacketInbox.Clear();
-            }
+            lock (PacketInbox) PacketInbox.Clear();
 
             connected = false;
         }
