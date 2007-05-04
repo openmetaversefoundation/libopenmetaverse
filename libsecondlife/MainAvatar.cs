@@ -1464,6 +1464,23 @@ namespace libsecondlife
             }
         }
 
+        public void SendTeleportLure(LLUUID targetID)
+        {
+            SendTeleportLure(targetID, "Join me in " + Client.Network.CurrentSim.Name + "!");
+        }
+
+        public void SendTeleportLure(LLUUID targetID, string message)
+        {
+            StartLurePacket p = new StartLurePacket();
+            p.AgentData.AgentID = Client.Self.ID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            p.Info.LureType = 0;
+            p.Info.Message = Helpers.StringToField(message);
+            p.TargetData = new StartLurePacket.TargetDataBlock[] { new StartLurePacket.TargetDataBlock() };
+            p.TargetData[0].TargetID = targetID;
+            Client.Network.SendPacket(p);
+        }
+
         /// <summary>
         /// Respond to a teleport lure by either accepting it and initiating 
         /// the teleport, or denying it
