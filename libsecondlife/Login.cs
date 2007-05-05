@@ -412,18 +412,16 @@ namespace libsecondlife
                     return;
                 }
 
-                byte[] bytes = myContext.XMLRPC;
-
-                Stream output = myContext.Request.EndGetRequestStream(result);
-
-                // Build the request
-                output.Write(bytes, 0, bytes.Length);
-                output.Close();
-
-                UpdateLoginStatus(LoginStatus.ReadingResponse, "Reading XMLRPC response...");
-
                 try
                 {
+                    byte[] bytes = myContext.XMLRPC;
+                    Stream output = myContext.Request.EndGetRequestStream(result);
+
+                    // Build the request
+                    output.Write(bytes, 0, bytes.Length);
+                    output.Close();
+
+                    UpdateLoginStatus(LoginStatus.ReadingResponse, "Reading XMLRPC response...");
                     myContext.Request.BeginGetResponse(new AsyncCallback(LoginResponseCallback), myContext);
                 }
                 catch (WebException e)
