@@ -170,7 +170,10 @@ namespace libsecondlife.InventorySystem
         {
             return iManager.NewNotecard(name, description, body, this.FolderID);
         }
-
+		public InventoryLandmark NewLandmark(string name, string description)
+        {
+            return iManager.NewLandmark(name, description, this.FolderID);
+        }
         public InventoryImage NewImage(string name, string description, byte[] j2cdata)
         {
             return iManager.NewImage(name, description, j2cdata, this.FolderID);

@@ -112,7 +112,7 @@ namespace libsecondlife.AssetSystem
         /// <param name="item"></param>
         public static Packet TransferRequest(LLUUID SessionID, LLUUID AgentID, LLUUID TransferID, InventoryItem item)
 		{
-            if (item.Type != 7 && item.Type != 10)
+            if (item.Type != 7 && item.Type != 10 && item.Type != 3)
             {
                 Console.WriteLine("Warning: TransferRequest may not work for items other then notecards of type 7 and scripts of type 10");
             }

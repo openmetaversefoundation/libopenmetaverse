@@ -189,7 +189,6 @@ namespace libsecondlife.InventorySystem
             {
                 FolderRequests.Clear();
             }
-
             if (slClient.Self.InventoryRootFolderUUID != null)
             {
                 // Init folder structure with root
@@ -385,6 +384,15 @@ namespace libsecondlife.InventorySystem
             return iNotecard;
         }
 
+		internal InventoryLandmark NewLandmark(string Name, string Description, LLUUID FolderID)
+        {
+            InventoryLandmark iLandmark = new InventoryLandmark(this, Name, Description, FolderID, slClient.Network.AgentID);
+
+            // Create this notecard on the server.
+            ItemCreate(iLandmark);
+
+            return iLandmark;
+        }
         /// <summary>
         /// Create a new image
         /// </summary>
@@ -1143,6 +1151,11 @@ namespace libsecondlife.InventorySystem
                             if ((TempInvItem.InvType == 7) && (TempInvItem.Type == (sbyte)Asset.AssetType.Notecard))
                             {
                                 InventoryItem temp = new InventoryNotecard(this, TempInvItem);
+                                TempInvItem = temp;
+                            }
+                            if ((TempInvItem.InvType == 3) && (TempInvItem.Type == (sbyte)Asset.AssetType.Landmark))
+                            {
+                                InventoryItem temp = new InventoryLandmark(this, TempInvItem);
                                 TempInvItem = temp;
                             }
 
