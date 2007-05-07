@@ -46,29 +46,26 @@ namespace libsecondlife.AssetSystem
 		public LLVector3 Pos
 		{
 			get { return _Pos; }
+			set {
+				_Pos = value;
+				setAsset();
+			}
 		}
 		
 		internal LLUUID _Region = LLUUID.Zero;
 		public LLUUID Region
 		{
 			get { return _Region; }
+			set {
+				_Region = value;
+				setAsset();
+			}
 		}
 		
 		private string _Body = "";
 		public string Body
 		{
 			get { return _Body; }
-		}
-
-        /// <summary>
-        /// </summary>
-        /// <param name="assetID"></param>
-        /// <param name="body"></param>
-        public AssetLandmark(LLUUID assetID, string body)
-            : base(assetID, (sbyte)Asset.AssetType.Landmark, false, null)
-		{
-			_Body = body;
-			setAsset( body );
 		}
 
         /// <summary>
@@ -87,6 +84,7 @@ namespace libsecondlife.AssetSystem
 		
 		private void processLandmark(string temp)
 		{
+			Console.Write(temp + "\n");
 			string[] parts = temp.Split('\n');
 			int.TryParse(parts[0].Substring(17, 1), out _Version);
 			LLUUID.TryParse(parts[1].Substring(10, 36), out _Region);
@@ -96,14 +94,17 @@ namespace libsecondlife.AssetSystem
         /// <summary>
         /// </summary>
         /// <param name="body"></param>
-        private void setAsset(string body)
+        private void setAsset()
 		{
+			string body = "Landmark version " + _Version.ToString() + "\n";
+			body += "region_id " + _Region.ToStringHyphenated() + "\n";
+			body += "local_pos " + _Pos.X.ToString() + " " + _Pos.Y.ToString() + " " + _Pos.Z.ToString();
 			// Assume this is a string, add 1 for the null terminator
 			byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)body);
 			byte[] assetData = new byte[stringBytes.Length + 1];
             Buffer.BlockCopy(stringBytes, 0, assetData, 0, stringBytes.Length);
 
-			//SetAssetData( assetData );
+			SetAssetData( assetData );
 		}
 	}
 }

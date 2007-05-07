@@ -94,6 +94,28 @@ namespace IA_NotecardTool
 					}
 				}
 			}
+			Console.WriteLine("Trying to mod position to 128,128,128");
+			foreach ( InventoryBase i in Landmarks) {
+				if ( i is InventoryItem ) {
+					InventoryItem ii = (InventoryItem)i;
+					Console.WriteLine( ii.Name + " - " + ii.ItemID + " is a " + i.GetType());
+					if ( ii is InventoryLandmark ) {
+						InventoryLandmark l = (InventoryLandmark)ii;
+						l.Pos = new LLVector3(128.0f, 128.0f, 128.0f);
+					}
+				}
+			}
+			Console.WriteLine("After mod");
+			foreach ( InventoryBase i in Landmarks) {
+				if ( i is InventoryItem ) {
+					InventoryItem ii = (InventoryItem)i;
+					Console.WriteLine( ii.Name + " - " + ii.ItemID + " is a " + i.GetType());
+					if ( ii is InventoryLandmark ) {
+						InventoryLandmark l = (InventoryLandmark)ii;
+						Console.WriteLine( "Version is " + l.Version.ToString() + " RegionID is " + l.Region.ToString() + " and pos is " + l.Pos.ToString());
+					}
+				}
+			}
         }
 
         public LandmarkTool()

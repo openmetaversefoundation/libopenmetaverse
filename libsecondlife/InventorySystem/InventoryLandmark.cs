@@ -27,12 +27,6 @@ namespace libsecondlife.InventorySystem
 				return null;
 			}
 
-			set
-			{
-				base._Asset          = new AssetLandmark( LLUUID.Random(), value );
-				LLUUID TransactionID = base.iManager.AssetManager.UploadAsset( Asset );
-                base.SetAssetTransactionIDs(Asset.AssetID, TransactionID);
-			}
 		}
 		
 		public int Version
@@ -69,6 +63,11 @@ namespace libsecondlife.InventorySystem
 					return LLVector3.Zero;
 				}
 			}
+			set {
+				((AssetLandmark)Asset).Pos = value;
+				LLUUID TransactionID = base.iManager.AssetManager.UploadAsset( Asset );
+				base.SetAssetTransactionIDs(Asset.AssetID, TransactionID);
+			}
 		}
 		
 		public LLUUID Region
@@ -86,6 +85,11 @@ namespace libsecondlife.InventorySystem
 					}
 					return LLUUID.Zero;
 				}
+			}
+			set {
+				((AssetLandmark)Asset).Region = value;
+				LLUUID TransactionID = base.iManager.AssetManager.UploadAsset( Asset );
+				base.SetAssetTransactionIDs(Asset.AssetID, TransactionID);
 			}
 		}
 		private string grabAsset( LLUUID AssetID )
