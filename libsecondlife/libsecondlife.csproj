@@ -93,6 +93,7 @@
     <Compile Include="AssetSystem\AppearanceManager.cs" />
     <Compile Include="AssetSystem\Asset.cs" />
     <Compile Include="AssetSystem\AssetImage.cs" />
+    <Compile Include="AssetSystem\AssetLandmark.cs" />
     <Compile Include="AssetSystem\AssetManager.cs" />
     <Compile Include="AssetSystem\AssetNotecard.cs" />
     <Compile Include="AssetSystem\AssetPacketHelpers.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="Caps.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
+    <Compile Include="InventorySystem\InventoryLandmark.cs" />
     <Compile Include="InventorySystem\InventoryScript.cs" />
     <Compile Include="InventorySystem\InventoryWearable.cs" />
     <Compile Include="LLObject.cs" />
