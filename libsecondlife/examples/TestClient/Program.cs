@@ -115,8 +115,8 @@ namespace libsecondlife.TestClient
                 }
 
             // Login the accounts and run the input loop
-			if ( arguments["start"] != null ) {
-				manager = new ClientManager(accounts, contact, arguments["start"]);
+			if ( arguments["startpos"] != null ) {
+				manager = new ClientManager(accounts, contact, arguments["startpos"]);
 			} else { 
 				manager = new ClientManager(accounts, contact);
 			}
