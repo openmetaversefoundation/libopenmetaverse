@@ -64,6 +64,8 @@ namespace libsecondlife
         public GroupManager Groups;
         /// <summary>Asset Subsystem</summary>
         public AssetManager Assets;
+        /// <summary>Appearance Subsystem</summary>
+        public AppearanceManager Appearance;
         /// <summary>Inventory Subsystem</summary>
         public InventoryManager Inventory;
         /// <summary>Image Subsystem</summary>
@@ -100,6 +102,7 @@ namespace libsecondlife
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
             Assets = new AssetManager(this);
+            Appearance = new AppearanceManager(this);
             Images = new ImageManager(this);
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);

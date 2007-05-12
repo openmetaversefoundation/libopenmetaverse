@@ -116,6 +116,54 @@ namespace libsecondlife
             new System.Globalization.CultureInfo("en-us");
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        public static short TEOffsetShort(float offset)
+        {
+            offset = Clamp(offset, -1.0f, 1.0f);
+            offset *= 32767.0f;
+            return (short)Math.Round(offset);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        public static float TEOffsetFloat(byte[] bytes, int pos)
+        {
+            float offset = (float)BitConverter.ToInt16(bytes, 0);
+            return offset / 32767.0f;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rotation"></param>
+        /// <returns></returns>
+        public static short TERotationShort(float rotation)
+        {
+            const double TWO_PI = Math.PI * 2.0d;
+            double remainder = Math.IEEERemainder(rotation, TWO_PI);
+            return (short)Math.Round((remainder / TWO_PI) * 32767.0d);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        public static float TERotationFloat(byte[] bytes, int pos)
+        {
+            const float TWO_PI = (float)(Math.PI * 2.0d);
+            return (float)((bytes[pos] | (bytes[pos + 1] << 8)) / 32767.0f) * TWO_PI;
+        }
+
+        /// <summary>
         /// Converts an unsigned integer to a hexadecimal string
         /// </summary>
         /// <param name="i">An unsigned integer to convert to a string</param>

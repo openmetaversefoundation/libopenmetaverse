@@ -535,8 +535,8 @@ namespace libsecondlife.Utilities.Assets
                     asset.TransferData.Data.Length);
                 transfer.Transferred += asset.TransferData.Data.Length;
 
-                Client.DebugLog("Received " + asset.TransferData.Data.Length + "/" + transfer.Transferred +
-                    "/" + transfer.Size + " bytes for asset " + transfer.ID.ToStringHyphenated());
+                //Client.DebugLog("Received " + asset.TransferData.Data.Length + "/" + transfer.Transferred +
+                //    "/" + transfer.Size + " bytes for asset " + transfer.ID.ToStringHyphenated());
 
                 // Check if we downloaded the full asset
                 if (transfer.Transferred >= transfer.Size)
@@ -727,8 +727,8 @@ namespace libsecondlife.Utilities.Assets
                         (1000 * (image.ImageID.Packet - 1)), image.ImageData.Data.Length);
                     transfer.Transferred += image.ImageData.Data.Length;
 
-                    Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
-                        "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToStringHyphenated());
+                    //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
+                    //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToStringHyphenated());
 
                     // Check if we downloaded the full image
                     if (transfer.Transferred >= transfer.Size)

@@ -62,6 +62,15 @@ namespace libsecondlife
     /// </summary>
     public static class VisualParams
     {
+        public static VisualParam Find(string name, string wearable)
+        {
+          foreach (VisualParam param in Params)
+            if (param.Name == name && param.Wearable == wearable)
+              return param;
+
+          return new VisualParam();
+        }
+      
         public static VisualParam[] Params = new VisualParam[]
         {
             new VisualParam(1, "Big_Brow", 0, "shape", "Brow Size", "Small", "Large", -0.3f, -0.3f, 2f),

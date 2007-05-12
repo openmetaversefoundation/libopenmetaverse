@@ -162,7 +162,6 @@ namespace libsecondlife.AssetSystem
                         Client.Log("Adding skin/clothing layer for " + AppearanceLayer, Helpers.LogLevel.Info);
                         AgentWearablesData[(byte)AppearanceLayer].ItemID = iw.ItemID;
                         AgentWearablesData[(byte)AppearanceLayer].AssetID = iw.AssetID;
-
                     }
                     catch (Exception e)
                     {

@@ -14,113 +14,114 @@ namespace OpenJPEGNet
         public const int MAX_PATH = 260;
         public const int J2K_MAXRLVLS = 33;
         public const int J2K_MAXBANDS = 3 * J2K_MAXRLVLS - 2;
+        public const int TGA_HEADER_SIZE = 32;
 
         public enum OPJ_PROG_ORDER
         {
-	        PROG_UNKNOWN = -1,
-	        LRCP = 0,
-	        RLCP = 1,
-	        RPCL = 2,
-	        PCRL = 3,
-	        CPRL = 4
+            PROG_UNKNOWN = -1,
+            LRCP = 0,
+            RLCP = 1,
+            RPCL = 2,
+            PCRL = 3,
+            CPRL = 4
         };
 
         public enum OPJ_COLOR_SPACE
         {
-	        CLRSPC_UNKNOWN = -1,
-	        CLRSPC_SRGB = 1,
-	        CLRSPC_GRAY = 2,
-	        CLRSPC_SYCC = 3
+            CLRSPC_UNKNOWN = -1,
+            CLRSPC_SRGB = 1,
+            CLRSPC_GRAY = 2,
+            CLRSPC_SYCC = 3
         };
 
         public enum OPJ_CODEC_FORMAT
         {
-	        CODEC_UNKNOWN = -1,
-	        CODEC_J2K = 0,
-	        CODEC_JPT = 1,
-	        CODEC_JP2 = 2
+            CODEC_UNKNOWN = -1,
+            CODEC_J2K = 0,
+            CODEC_JPT = 1,
+            CODEC_JP2 = 2
         };
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate void opj_msg_callback(string msg, IntPtr client_data);
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_event_mgr_t
         {
-	        public opj_msg_callback error_handler;
-	        public opj_msg_callback warning_handler;
-	        public opj_msg_callback info_handler;
+            public opj_msg_callback error_handler;
+            public opj_msg_callback warning_handler;
+            public opj_msg_callback info_handler;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_poc_t
         {
-	        public int resno0;
+            public int resno0;
             public int compno0;
-	        public int layno1;
+            public int layno1;
             public int resno1;
             public int compno1;
-	        public OPJ_PROG_ORDER prg;
-	        public int tile;
-	        public fixed char progorder[4];
+            public OPJ_PROG_ORDER prg;
+            public int tile;
+            public fixed char progorder[4];
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_cparameters_t
         {
-	        public bool tile_size_on;
-	        public int cp_tx0;
-	        public int cp_ty0;
-	        public int cp_tdx;
-	        public int cp_tdy;
-	        public int cp_disto_alloc;
-	        public int cp_fixed_alloc;
-	        public int cp_fixed_quality;
-	        public int* cp_matrice;
-	        public string cp_comment;
-	        public int csty;
-	        public OPJ_PROG_ORDER prog_order;
+            public bool tile_size_on;
+            public int cp_tx0;
+            public int cp_ty0;
+            public int cp_tdx;
+            public int cp_tdy;
+            public int cp_disto_alloc;
+            public int cp_fixed_alloc;
+            public int cp_fixed_quality;
+            public int* cp_matrice;
+            public string cp_comment;
+            public int csty;
+            public OPJ_PROG_ORDER prog_order;
             //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-	        //public opj_poc_t[] POC;
+            //public opj_poc_t[] POC;
             public fixed int POC[256];
-	        public int numpocs;
-	        public int tcp_numlayers;
-	        public fixed int tcp_rates[100];
+            public int numpocs;
+            public int tcp_numlayers;
+            public fixed int tcp_rates[100];
             public fixed float tcp_distoratio[100];
-	        public int numresolution;
-	        public int cblockw_init;
-	        public int cblockh_init;
-	        public int mode;
-	        public int irreversible;
-	        public int roi_compno;
-	        public int roi_shift;
-	        public int res_spec;
-	        public fixed int prcw_init[J2K_MAXRLVLS];
-	        public fixed int prch_init[J2K_MAXRLVLS];
-	        public fixed char infile[MAX_PATH];
-	        public fixed char outfile[MAX_PATH];
-	        public int index_on;
-	        public fixed char index[MAX_PATH];
-	        public int image_offset_x0;
-	        public int image_offset_y0;
-	        public int subsampling_dx;
-	        public int subsampling_dy;
-	        public int decod_format;
-	        public int cod_format;
+            public int numresolution;
+            public int cblockw_init;
+            public int cblockh_init;
+            public int mode;
+            public int irreversible;
+            public int roi_compno;
+            public int roi_shift;
+            public int res_spec;
+            public fixed int prcw_init[J2K_MAXRLVLS];
+            public fixed int prch_init[J2K_MAXRLVLS];
+            public fixed char infile[MAX_PATH];
+            public fixed char outfile[MAX_PATH];
+            public int index_on;
+            public fixed char index[MAX_PATH];
+            public int image_offset_x0;
+            public int image_offset_y0;
+            public int subsampling_dx;
+            public int subsampling_dy;
+            public int decod_format;
+            public int cod_format;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_dparameters_t
         {
-	        public int cp_reduce;
-	        public int cp_layer;
-	        public fixed char infile[MAX_PATH];
+            public int cp_reduce;
+            public int cp_layer;
+            public fixed char infile[MAX_PATH];
             public fixed char outfile[MAX_PATH];
-	        public int decod_format;
-	        public int cod_format;
+            public int decod_format;
+            public int cod_format;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_common_struct_t
         {
             void* event_mgr; //opj_event_mgr_t*
@@ -131,7 +132,7 @@ namespace OpenJPEGNet
             void* jp2_handle;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_cinfo_t
         {
             void* event_mgr; //opj_event_mgr_t*
@@ -142,7 +143,7 @@ namespace OpenJPEGNet
             void* jp2_handle;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_dinfo_t
         {
             void* event_mgr; //opj_event_mgr_t*
@@ -156,62 +157,62 @@ namespace OpenJPEGNet
         public const int OPJ_STREAM_READ = 0x0001;
         public const int OPJ_STREAM_WRITE = 0x0002;
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_cio_t
         {
-	        public IntPtr cinfo;
-	        public int openmode;
-	        public byte* buffer;
-	        public int length;
-	        public byte* start;
-	        public byte* end;
-	        public byte* bp;
+            public IntPtr cinfo;
+            public int openmode;
+            public byte* buffer;
+            public int length;
+            public byte* start;
+            public byte* end;
+            public byte* bp;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_image_comp_t
         {
-	        public int dx;
-	        public int dy;
-	        public int w;
-	        public int h;
-	        public int x0;
-	        public int y0;
-	        public int prec;
-	        public int bpp;
-	        public int sgnd;
-	        public int resno_decoded;
-	        public int factor;
-	        public int* data;
+            public int dx;
+            public int dy;
+            public int w;
+            public int h;
+            public int x0;
+            public int y0;
+            public int prec;
+            public int bpp;
+            public int sgnd;
+            public int resno_decoded;
+            public int factor;
+            public int* data;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public unsafe struct opj_image_t
         {
-	        public int x0;
-	        public int y0;
-	        public int x1;
-	        public int y1;
-	        public int numcomps;
-	        public OPJ_COLOR_SPACE color_space;
-	        public opj_image_comp_t* comps;
+            public int x0;
+            public int y0;
+            public int x1;
+            public int y1;
+            public int numcomps;
+            public OPJ_COLOR_SPACE color_space;
+            public opj_image_comp_t* comps;
         };
 
-        [StructLayout(LayoutKind.Sequential,Pack=4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct opj_image_cmptparm_t
         {
-	        public int dx;
-	        public int dy;
-	        public int w;
-	        public int h;
-	        public int x0;
-	        public int y0;
-	        public int prec;
-	        public int bpp;
-	        public int sgnd;
+            public int dx;
+            public int dy;
+            public int w;
+            public int h;
+            public int x0;
+            public int y0;
+            public int prec;
+            public int bpp;
+            public int sgnd;
         }
 
-        [DllImport("openjpeg.dll", CharSet=CharSet.Ansi)]
+        [DllImport("openjpeg.dll", CharSet = CharSet.Ansi)]
         public static extern string opj_version();
 
         [DllImport("openjpeg.dll")]
@@ -237,7 +238,7 @@ namespace OpenJPEGNet
         // opj_event_mgr_t*
         //public unsafe static extern opj_event_mgr_t* opj_set_event_mgr(opj_common_struct_t* cinfo, opj_event_mgr_t* event_mgr, void* context);
 
-        [DllImport("openjpeg.dll", EntryPoint="opj_create_decompress")]
+        [DllImport("openjpeg.dll", EntryPoint = "opj_create_decompress")]
         // opj_dinfo_t*
         public static extern IntPtr opj_create_decompress(OPJ_CODEC_FORMAT format);
 
@@ -286,7 +287,6 @@ namespace OpenJPEGNet
 
             try
             {
-                const int TGA_HEADER_SIZE = 32;
 
                 opj_dparameters_t parameters = new opj_dparameters_t();
                 opj_image_t image;
@@ -346,7 +346,7 @@ namespace OpenJPEGNet
                 switch (image.numcomps)
                 {
                     case 5:
-                        // We can't represent the fifth 
+                    // We can't represent the fifth 
                     case 4:
                         for (int i = 0; i < (width * height); i++)
                         {
@@ -523,6 +523,108 @@ namespace OpenJPEGNet
                 }
 
                 bitmap.UnlockBits(data);
+
+                // get a J2K compressor handle
+                opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
+
+                // TODO: setup the callbacks
+
+                // setup the encoder parameters
+                Marshal.StructureToPtr(parameters, parameters_ptr, true);
+                opj_setup_encoder(cinfo_ptr, parameters_ptr, image_ptr);
+
+                // open a byte stream for writing
+                opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
+
+                // encode the image
+                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, null);
+                if (!success)
+                {
+                    opj_cio_close(cio_ptr);
+                    return null;
+                }
+
+                int codestream_length = cio_tell(cio_ptr);
+
+                output = new byte[codestream_length];
+                Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
+
+                opj_cio_close(cio_ptr);
+                opj_destroy_compress(cinfo_ptr);
+                opj_image_destroy(image_ptr);
+                Marshal.FreeHGlobal(parameters_ptr);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return null;
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        /// Convert a raw 32bit RGBA image to a 5 component j2c stream
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public unsafe static byte[] EncodeSecondLifeBaked(int width, int height, byte[] data)
+        {
+            byte[] output = null;
+
+            try
+            {
+                // setup the parameters
+                IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
+                opj_set_default_encoder_parameters(parameters_ptr);
+
+                opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
+
+                parameters.tcp_rates[0] = 0;
+                parameters.tcp_numlayers++;
+                parameters.cp_disto_alloc = 1;
+                parameters.cod_format = 0;
+                parameters.subsampling_dx = 1;
+                parameters.subsampling_dy = 1;
+                parameters.cp_comment = "";
+
+                OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
+                opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[5];
+
+                for (int c = 0; c < 5; c++)
+                {
+                    cmptparm[c] = new opj_image_cmptparm_t();
+
+                    cmptparm[c].prec = 8;
+                    cmptparm[c].bpp = 8;
+                    cmptparm[c].sgnd = 0;
+                    cmptparm[c].dx = parameters.subsampling_dx;
+                    cmptparm[c].dy = parameters.subsampling_dy;
+                    cmptparm[c].w = width;
+                    cmptparm[c].h = height;
+                }
+
+                // create the image
+                opj_image_t* image_ptr = opj_image_create(5, cmptparm, color_space);
+                image_ptr->x1 = width;
+                image_ptr->y1 = height;
+
+                int i = 0;
+
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        (*image_ptr).comps[0].data[i] = data[i + 0]; // red
+                        (*image_ptr).comps[1].data[i] = data[i + 1]; // green
+                        (*image_ptr).comps[2].data[i] = data[i + 2]; // blue
+                        (*image_ptr).comps[3].data[i] = data[i + 3]; // alpha
+                        (*image_ptr).comps[4].data[i] = 0;         // bump
+                        i++;
+                    }
+                }
 
                 // get a J2K compressor handle
                 opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);

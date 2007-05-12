@@ -1404,9 +1404,20 @@ namespace libsecondlife
                         prim.Data = data;
 
                         // Textures, texture animations, particle system, and extra params
-                        prim.Textures = new Primitive.TextureEntry(block.TextureEntry, 0, 
+                        prim.Textures = new LLObject.TextureEntry(block.TextureEntry, 0, 
                             block.TextureEntry.Length);
-                        prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
+
+                        //DEBUG
+                        //LLObject.TextureEntry2 te2 = new LLObject.TextureEntry2(block.TextureEntry, 0,
+                        //    block.TextureEntry.Length);
+                        //byte[] te1b = prim.Textures.ToBytes();
+                        //byte[] te2b = te2.ToBytes();
+                        //if (te1b != te2b)
+                        //    Console.WriteLine("OHNOES!");
+                        //if (te1b.Length != te2b.Length)
+                        //    Console.WriteLine("RUINED!");
+
+                        prim.TextureAnim = new LLObject.TextureAnimation(block.TextureAnim, 0);
                         prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
                         prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
 

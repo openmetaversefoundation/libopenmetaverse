@@ -148,8 +148,6 @@ namespace libsecondlife
 
             byte[] data = LLSD.LLSDSerialize(req);
 
-        MakeRequest:
-
             try
             {
                 CapsRequest = (HttpWebRequest)HttpWebRequest.Create(Seedcaps);

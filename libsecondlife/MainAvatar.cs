@@ -555,7 +555,7 @@ namespace libsecondlife
         public delegate void MoneyBalanceReplyCallback(LLUUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description);
 
         /// <summary>
-        /// Tiggered on incoming instant messages
+        /// Triggered on incoming instant messages
         /// </summary>
         /// <param name="fromAgentID">Key of sender</param>
         /// <param name="fromAgentName">Name of sender</param>

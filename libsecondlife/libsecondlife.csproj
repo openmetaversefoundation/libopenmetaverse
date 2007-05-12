@@ -165,6 +165,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Simulator.cs" />
     <Compile Include="TerrainManager.cs" />
+    <Compile Include="TextureEntry.cs" />
     <Compile Include="Textures.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -194,6 +195,12 @@
     <EmbeddedResource Include="Resources\skirt_slit_front_alpha.tga" />
     <EmbeddedResource Include="Resources\skirt_slit_left_alpha.tga" />
     <EmbeddedResource Include="Resources\skirt_slit_right_alpha.tga" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\openjpegnet\openjpegnet.csproj">
+      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
+      <Name>openjpegnet</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

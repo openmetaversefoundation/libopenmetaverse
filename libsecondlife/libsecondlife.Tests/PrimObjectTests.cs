@@ -16,7 +16,7 @@ namespace libsecondlife.Tests
             for (byte i = 0; i < byte.MaxValue; i++)
             {
                 float floatValue = LLObject.PathBeginFloat(i);
-                byte result = LLObject.PathBeginByte(floatValue);
+                ushort result = LLObject.PathBeginUInt16(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -29,7 +29,7 @@ namespace libsecondlife.Tests
             for (byte i = 0; i < byte.MaxValue; i++)
             {
                 float floatValue = LLObject.PathEndFloat(i);
-                byte result = LLObject.PathEndByte(floatValue);
+                ushort result = LLObject.PathEndUInt16(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -120,7 +120,7 @@ namespace libsecondlife.Tests
             for (byte i = 0; i < byte.MaxValue; i++)
             {
                 float floatValue = LLObject.ProfileBeginFloat(i);
-                byte result = LLObject.ProfileBeginByte(floatValue);
+                ushort result = LLObject.ProfileBeginUInt16(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
@@ -133,10 +133,63 @@ namespace libsecondlife.Tests
             for (byte i = 0; i < byte.MaxValue; i++)
             {
                 float floatValue = LLObject.ProfileEndFloat(i);
-                byte result = LLObject.ProfileEndByte(floatValue);
+                ushort result = LLObject.ProfileEndUInt16(floatValue);
 
                 Assert.IsTrue(result == i, "Started with " + i + ", float value was " + floatValue +
                 ", and ended up with " + result);
+            }
+        }
+
+        [Test]
+        public void TextureEntryOffsets()
+        {
+            for (float i = -1.0f; i <= 1.0f; i += 0.001f)
+            {
+                i = (float)Math.Round(i, 3);
+
+                short offset = Helpers.TEOffsetShort(i);
+                float foffset = Helpers.TEOffsetFloat(BitConverter.GetBytes(offset), 0);
+                foffset = (float)Math.Round(foffset, 3);
+
+                Assert.IsTrue(foffset - i < Single.Epsilon, foffset + " is not equal to " + i);
+            }
+        }
+
+        [Test]
+        public void TextureEntryRotations()
+        {
+            ;
+        }
+
+        [Test]
+        public void TextureEntry()
+        {
+            LLObject.TextureEntry2 te = new LLObject.TextureEntry2(LLUUID.Random());
+            LLObject.TextureEntryFace face = te.CreateFace(0);
+            face.Bump = LLObject.Bumpiness.Concrete;
+            face.Fullbright = true;
+            face.MediaFlags = true;
+            face.OffsetU = 1.0f;
+            face.OffsetV = 2.0f;
+            face.RepeatU = 3.0f;
+            face.RepeatV = 4.0f;
+            face.RGBA = 1234;
+            face.Rotation = 5.0f;
+            face.Shiny = LLObject.Shininess.Medium;
+            face.TexMapType = LLObject.Mapping.Planar;
+            face.TextureID = LLUUID.Random();
+
+            byte[] teBytes = te.ToBytes();
+
+            LLObject.TextureEntry2 te2 = new LLObject.TextureEntry2(teBytes, 0, teBytes.Length);
+
+            byte[] teBytes2 = te2.ToBytes();
+
+            Assert.IsTrue(teBytes.Length == teBytes2.Length);
+
+            for (int i = 0; i < teBytes.Length; i++)
+            {
+                Assert.IsTrue(teBytes[i] == teBytes2[i], "Byte " + i + " is not equal");
             }
         }
     }

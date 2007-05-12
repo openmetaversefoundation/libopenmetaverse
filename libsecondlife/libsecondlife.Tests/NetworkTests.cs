@@ -32,7 +32,7 @@ namespace libsecondlife.Tests
             // Connect to the grid
             string startLoc = NetworkManager.StartLocation("Ahern", 128, 128, 32);
             Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", startLoc,
-                "contact@libsecondlife.org", false);
+                "contact@libsecondlife.org");
         }
 
         ~NetworkTests()
@@ -43,7 +43,7 @@ namespace libsecondlife.Tests
         [SetUp]
         public void Init()
         {
-            Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid: " + Client.Network.LoginMessage);
+            Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid");
 
             int start = Environment.TickCount;
 

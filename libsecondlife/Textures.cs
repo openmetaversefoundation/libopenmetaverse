@@ -35,135 +35,6 @@ namespace libsecondlife
 {
     public abstract partial class LLObject
     {
-        #region Enumerations
-
-        /// <summary>
-        /// The type of bump-mapping applied to a face
-        /// </summary>
-        public enum Bumpiness
-        {
-            /// <summary></summary>
-            [XmlEnum("None")]
-            None = 0,
-            /// <summary></summary>
-            [XmlEnum("Brightness")]
-            Brightness = 1,
-            /// <summary></summary>
-            [XmlEnum("Darkness")]
-            Darkness = 2,
-            /// <summary></summary>
-            [XmlEnum("Woodgrain")]
-            Woodgrain = 3,
-            /// <summary></summary>
-            [XmlEnum("Bark")]
-            Bark = 4,
-            /// <summary></summary>
-            [XmlEnum("Bricks")]
-            Bricks = 5,
-            /// <summary></summary>
-            [XmlEnum("Checker")]
-            Checker = 6,
-            /// <summary></summary>
-            [XmlEnum("Concrete")]
-            Concrete = 7,
-            /// <summary></summary>
-            [XmlEnum("Crustytile")]
-            Crustytile = 8,
-            /// <summary></summary>
-            [XmlEnum("Cutstone")]
-            Cutstone = 9,
-            /// <summary></summary>
-            [XmlEnum("Discs")]
-            Discs = 10,
-            /// <summary></summary>
-            [XmlEnum("Gravel")]
-            Gravel = 11,
-            /// <summary></summary>
-            [XmlEnum("Petridish")]
-            Petridish = 12,
-            /// <summary></summary>
-            [XmlEnum("Siding")]
-            Siding = 13,
-            /// <summary></summary>
-            [XmlEnum("Stonetile")]
-            Stonetile = 14,
-            /// <summary></summary>
-            [XmlEnum("Stucco")]
-            Stucco = 15,
-            /// <summary></summary>
-            [XmlEnum("Suction")]
-            Suction = 16,
-            /// <summary></summary>
-            [XmlEnum("Weave")]
-            Weave = 17
-        }
-
-        /// <summary>
-        /// The level of shininess applied to a face
-        /// </summary>
-        public enum Shininess
-        {
-            /// <summary></summary>
-            [XmlEnum("None")]
-            None = 0,
-            /// <summary></summary>
-            [XmlEnum("Low")]
-            Low = 0x40,
-            /// <summary></summary>
-            [XmlEnum("Medium")]
-            Medium = 0x80,
-            /// <summary></summary>
-            [XmlEnum("High")]
-            High = 0xC0
-        }
-
-        /// <summary>
-        /// The texture mapping style used for a face
-        /// </summary>
-        public enum Mapping
-        {
-            /// <summary></summary>
-            [XmlEnum("Default")]
-            Default = 0,
-            /// <summary></summary>
-            [XmlEnum("Planar")]
-            Planar = 2
-        }
-
-        /// <summary>
-        /// Flags in the TextureEntry block that describe which properties are 
-        /// set
-        /// </summary>
-        [Flags]
-        public enum TextureAttributes : uint
-        {
-            /// <summary></summary>
-            None = 0,
-            /// <summary></summary>
-            TextureID = 1 << 0,
-            /// <summary></summary>
-            RGBA = 1 << 1,
-            /// <summary></summary>
-            RepeatU = 1 << 2,
-            /// <summary></summary>
-            RepeatV = 1 << 3,
-            /// <summary></summary>
-            OffsetU = 1 << 4,
-            /// <summary></summary>
-            OffsetV = 1 << 5,
-            /// <summary></summary>
-            Rotation = 1 << 6,
-            /// <summary></summary>
-            Material = 1 << 7,
-            /// <summary></summary>
-            Media = 1 << 8,
-            /// <summary></summary>
-            All = 0xFFFFFFFF
-        }
-
-        #endregion Enumerations
-
-
         /// <summary>
         /// Represents all of the texturable faces for an object
         /// </summary>
@@ -177,17 +48,17 @@ namespace libsecondlife
         public class TextureEntry
         {
             /// <summary></summary>
-            [XmlElement("default")]
-            public TextureEntryFace DefaultTexture = null;
+            public TextureEntryFace DefaultTexture;
             /// <summary></summary>
-            [XmlElement("faces")]
-            public SerializableDictionary<uint, TextureEntryFace> FaceTextures = new SerializableDictionary<uint, TextureEntryFace>();
+            public SerializableDictionary<uint, TextureEntryFace> FaceTextures;
 
             /// <summary>
-            /// Default constructor, DefaultTexture will remain null
+            /// Default constructor, DefaultTexture will be null
             /// </summary>
             public TextureEntry()
             {
+                DefaultTexture = null;
+                FaceTextures = new SerializableDictionary<uint, TextureEntryFace>();
             }
 
             /// <summary>
@@ -198,6 +69,7 @@ namespace libsecondlife
             {
                 DefaultTexture = new TextureEntryFace(null);
                 DefaultTexture.TextureID = defaultTextureID;
+                FaceTextures = new SerializableDictionary<uint, TextureEntryFace>();
             }
 
             /// <summary>
@@ -214,10 +86,11 @@ namespace libsecondlife
 
             /// <summary>
             /// Returns the TextureEntryFace that is applied to the specified 
-            /// index. If a custom texture is not set for this face that would be
-            /// the default texture for this TextureEntry. Do not modify the 
-            /// returned TextureEntryFace, it will have undefined results. Use 
-            /// CreateFace() to get a TextureEntryFace that is safe for writing
+            /// index. If custom attributes are not set for this face that 
+            /// would be the default texture for this TextureEntry. Do not 
+            /// modify the returned TextureEntryFace, it will have undefined 
+            /// results. Use CreateFace() to get a TextureEntryFace that is 
+            /// safe for writing
             /// </summary>
             /// <param name="index">The index number of the face to retrieve</param>
             /// <returns>A TextureEntryFace containing all the properties for that
@@ -322,8 +195,8 @@ namespace libsecondlife
                             RepeatVs[fvalue] = (uint)(1 << (int)face.Key);
                     }
 
-                    short value = OffsetShort(face.Value.OffsetU);
-                    short defaultValue = OffsetShort(DefaultTexture.OffsetU);
+                    short value = Helpers.TEOffsetShort(face.Value.OffsetU);
+                    short defaultValue = Helpers.TEOffsetShort(DefaultTexture.OffsetU);
 
                     if (value != defaultValue)
                     {
@@ -333,8 +206,8 @@ namespace libsecondlife
                             OffsetUs[value] = (uint)(1 << (int)face.Key);
                     }
 
-                    value = OffsetShort(face.Value.OffsetV);
-                    defaultValue = OffsetShort(DefaultTexture.OffsetV);
+                    value = Helpers.TEOffsetShort(face.Value.OffsetV);
+                    defaultValue = Helpers.TEOffsetShort(DefaultTexture.OffsetV);
                     if (value != defaultValue)
                     {
                         if (OffsetVs.ContainsKey(value))
@@ -343,8 +216,8 @@ namespace libsecondlife
                             OffsetVs[value] = (uint)(1 << (int)face.Key);
                     }
 
-                    value = RotationShort(face.Value.Rotation);
-                    defaultValue = RotationShort(DefaultTexture.Rotation);
+                    value = Helpers.TERotationShort(face.Value.Rotation);
+                    defaultValue = Helpers.TERotationShort(DefaultTexture.Rotation);
                     if (value != defaultValue)
                     {
                         if (Rotations.ContainsKey(value))
@@ -370,10 +243,7 @@ namespace libsecondlife
                     }
                 }
 
-                if (DefaultTexture.TextureID != null)
-                    binWriter.Write(DefaultTexture.TextureID.Data);
-                else
-                    binWriter.Write(LLUUID.Zero.Data);
+                binWriter.Write(DefaultTexture.TextureID.Data);
                 foreach (KeyValuePair<LLUUID, uint> kv in TextureIDs)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
@@ -405,7 +275,7 @@ namespace libsecondlife
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(OffsetShort(DefaultTexture.OffsetU));
+                binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetU));
                 foreach (KeyValuePair<short, uint> kv in OffsetUs)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
@@ -413,7 +283,7 @@ namespace libsecondlife
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(OffsetShort(DefaultTexture.OffsetV));
+                binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetV));
                 foreach (KeyValuePair<short, uint> kv in OffsetVs)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
@@ -421,7 +291,7 @@ namespace libsecondlife
                 }
 
                 binWriter.Write((byte)0);
-                binWriter.Write(RotationShort(DefaultTexture.Rotation));
+                binWriter.Write(Helpers.TERotationShort(DefaultTexture.Rotation));
                 foreach (KeyValuePair<short, uint> kv in Rotations)
                 {
                     binWriter.Write(GetFaceBitfieldBytes(kv.Value));
@@ -446,6 +316,20 @@ namespace libsecondlife
 
                 return memStream.ToArray();
             }
+
+            public override string ToString()
+            {
+                string output = String.Empty;
+
+                output += "Default Face: " + DefaultTexture.ToString() + Environment.NewLine;
+
+                foreach (KeyValuePair<uint, TextureEntryFace> face in FaceTextures)
+                {
+                    output += "Face " + face.Key + ": " + face.Value.ToString() + Environment.NewLine;
+                }
+
+                return output;
+            } 
 
             private byte[] GetFaceBitfieldBytes(uint bitfield)
             {
@@ -489,39 +373,6 @@ namespace libsecondlife
                 while ((b & 0x80) != 0);
 
                 return (faceBits != 0);
-            }
-
-            private float DequantizeSigned(byte[] byteArray, int pos, float upper)
-            {
-                float QV = (float)(byteArray[pos] | (byteArray[pos + 1] << 8));
-                float QF = upper / 32767.0f;
-                return QV * QF;
-            }
-
-            private short QuantizeSigned(float f, float upper)
-            {
-                float QF = 32767.0F / upper;
-                return (short)(f * QF);
-            }
-
-            private short OffsetShort(float value)
-            {
-                return QuantizeSigned(value, 1.0f);
-            }
-
-            private short RotationShort(float value)
-            {
-                return QuantizeSigned(value, 359.995f);
-            }
-
-            private float OffsetFloat(byte[] data, int pos)
-            {
-                return DequantizeSigned(data, pos, 1.0f);
-            }
-
-            private float RotationFloat(byte[] data, int pos)
-            {
-                return DequantizeSigned(data, pos, 359.995f);
             }
 
             private void FromBytes(byte[] data, int pos, int length)
@@ -589,12 +440,12 @@ namespace libsecondlife
                             CreateFace(face).RepeatV = tmpFloat;
                 }
                 //Read OffsetU -----------------------------------------
-                DefaultTexture.OffsetU = OffsetFloat(data, i);
+                DefaultTexture.OffsetU = Helpers.TEOffsetFloat(data, i);
                 i += 2;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
                 {
-                    float tmpFloat = OffsetFloat(data, i);
+                    float tmpFloat = Helpers.TEOffsetFloat(data, i);
                     i += 2;
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -602,12 +453,12 @@ namespace libsecondlife
                             CreateFace(face).OffsetU = tmpFloat;
                 }
                 //Read OffsetV -----------------------------------------
-                DefaultTexture.OffsetV = OffsetFloat(data, i);
+                DefaultTexture.OffsetV = Helpers.TEOffsetFloat(data, i);
                 i += 2;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
                 {
-                    float tmpFloat = OffsetFloat(data, i);
+                    float tmpFloat = Helpers.TEOffsetFloat(data, i);
                     i += 2;
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -615,12 +466,12 @@ namespace libsecondlife
                             CreateFace(face).OffsetV = tmpFloat;
                 }
                 //Read Rotation ----------------------------------------
-                DefaultTexture.Rotation = RotationFloat(data, i);
+                DefaultTexture.Rotation = Helpers.TERotationFloat(data, i);
                 i += 2;
 
                 while (ReadFaceBitfield(data, ref i, ref faceBits, ref BitfieldSize))
                 {
-                    float tmpFloat = RotationFloat(data, i);
+                    float tmpFloat = Helpers.TERotationFloat(data, i);
                     i += 2;
 
                     for (uint face = 0, bit = 1; face < BitfieldSize; face++, bit <<= 1)
@@ -663,78 +514,19 @@ namespace libsecondlife
         [Serializable]
         public class TextureEntryFace
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            public enum Bumpmap : byte
-            {
-                /// <summary></summary>
-                None = 0,
-                /// <summary></summary>
-                Brightness,
-                /// <summary></summary>
-                Darkness,
-                /// <summary></summary>
-                Woodgrain,
-                /// <summary></summary>
-                Bark,
-                /// <summary></summary>
-                Bricks,
-                /// <summary></summary>
-                Checher,
-                /// <summary></summary>
-                Concrete,
-                /// <summary></summary>
-                Crustytile,
-                /// <summary></summary>
-                Cutstone,
-                /// <summary></summary>
-                Discs,
-                /// <summary></summary>
-                Gravel,
-                /// <summary></summary>
-                Petridish,
-                /// <summary></summary>
-                Siding,
-                /// <summary></summary>
-                Stonetile,
-                /// <summary></summary>
-                Stucco,
-                /// <summary></summary>
-                Suction,
-                /// <summary></summary>
-                Weave
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public enum TextureMapping : byte
-            {
-                /// <summary></summary>
-                Default = 0,
-                /// <summary></summary>
-                Planar = 2,
-                /// <summary></summary>
-                Spherical = 4,
-                /// <summary></summary>
-                Cylindrical = 6
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public enum ShinyLevel : byte
-            {
-                /// <summary></summary>
-                None = 0,
-                /// <summary></summary>
-                Quarter = 0x40,
-                /// <summary></summary>
-                Half = 0x80,
-                /// <summary></summary>
-                ThreeQuarters = 0xC0
-            }
+            // +----------+ S = Shiny
+            // | SSFBBBBB | F = Fullbright
+            // | 76543210 | B = Bumpmap
+            // +----------+
+            private const byte BUMP_MASK = 0x1F;
+            private const byte FULLBRIGHT_MASK = 0x20;
+            private const byte SHINY_MASK = 0xC0;
+            // +----------+ M = Media Flags (web page)
+            // | .....TTM | T = Texture Mapping
+            // | 76543210 | . = Unused
+            // +----------+
+            private const byte MEDIA_MASK = 0x01;
+            private const byte TEX_MAP_MASK = 0x06;
 
             private uint rgba;
             private float repeatU = 1.0f;
@@ -746,27 +538,10 @@ namespace libsecondlife
             private LLUUID textureID;
             private TextureEntryFace DefaultTexture = null;
 
-            // +----------+ S = Shiny
-            // | SSFBBBBB | F = Fullbright
-            // | 76543210 | B = Bumpmap
-            // +----------+
-            private const byte BUMP_MASK = 0x1F;
-            private const byte FULLBRIGHT_MASK = 0x20;
-            private const byte SHINY_MASK = 0xC0;
-
-            // +----------+ M = Media Flags (web page)
-            // | .....TTM | T = Texture Mapping
-            // | 76543210 | . = Unused
-            // +----------+
-            private const byte MEDIA_MASK = 0x01;
-            private const byte TEX_MAP_MASK = 0x06;
-
             internal byte material;
             internal byte media;
 
-            //////////////////////
-            ///// Properties /////
-            //////////////////////
+            #region Properties
 
             /// <summary></summary>
             public uint RGBA
@@ -871,12 +646,12 @@ namespace libsecondlife
             }
 
             /// <summary></summary>
-            public Bumpmap Bump
+            public Bumpiness Bump
             {
                 get
                 {
                     if ((hasAttribute & TextureAttributes.Material) != 0)
-                        return (Bumpmap)(material & BUMP_MASK);
+                        return (Bumpiness)(material & BUMP_MASK);
                     else
                         return DefaultTexture.Bump;
                 }
@@ -890,12 +665,12 @@ namespace libsecondlife
                 }
             }
 
-            public ShinyLevel Shiny
+            public Shininess Shiny
             {
                 get
                 {
                     if ((hasAttribute & TextureAttributes.Material) != 0)
-                        return (ShinyLevel)(material & SHINY_MASK);
+                        return (Shininess)(material & SHINY_MASK);
                     else
                         return DefaultTexture.Shiny;
                 }
@@ -953,12 +728,12 @@ namespace libsecondlife
                 }
             }
 
-            public TextureMapping TexMapType
+            public Mapping TexMapType
             {
                 get
                 {
                     if ((hasAttribute & TextureAttributes.Media) != 0)
-                        return (TextureMapping)(media & TEX_MAP_MASK);
+                        return (Mapping)(media & TEX_MAP_MASK);
                     else
                         return DefaultTexture.TexMapType;
                 }
@@ -989,16 +764,7 @@ namespace libsecondlife
                 }
             }
 
-            /////////////////////////////
-            ///// End of properties /////
-            /////////////////////////////
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public TextureEntryFace()
-            {
-            }
+            #endregion Properties
 
             /// <summary>
             /// Contains the definition for individual faces
@@ -1013,14 +779,16 @@ namespace libsecondlife
                     hasAttribute = TextureAttributes.None;
             }
 
-            public void ToXml(XmlWriter xmlWriter)
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
             {
-                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ns.Add("", "");
-                XmlSerializer serializer = new XmlSerializer(typeof(TextureEntryFace));
-                serializer.Serialize(xmlWriter, this, ns);
+                return String.Format("RGBA: {0} RepeatU: {1} RepeatV: {2} OffsetU: {3} OffsetV: {4} Rotation: {5} " +
+                    "TextureAttributes: {6} Material: {7} Media: {8} ID: {9}", rgba, repeatU, repeatV, offsetU, 
+                    offsetV, rotation, hasAttribute.ToString(), material, media, textureID.ToStringHyphenated());
             }
-
         }
 
         /// <summary>
@@ -1030,25 +798,18 @@ namespace libsecondlife
         public class TextureAnimation
         {
             /// <summary></summary>
-            [XmlAttribute("flags"), DefaultValue(0)]
             public uint Flags;
             /// <summary></summary>
-            [XmlAttribute("face"), DefaultValue(0)]
             public uint Face;
             /// <summary></summary>
-            [XmlAttribute("sizex"), DefaultValue(0)]
             public uint SizeX;
             /// <summary></summary>
-            [XmlAttribute("sizey"), DefaultValue(0)]
             public uint SizeY;
             /// <summary></summary>
-            [XmlAttribute("start"), DefaultValue(0)]
             public float Start;
             /// <summary></summary>
-            [XmlAttribute("length"), DefaultValue(0)]
             public float Length;
             /// <summary></summary>
-            [XmlAttribute("rate"), DefaultValue(0)]
             public float Rate;
 
             /// <summary>

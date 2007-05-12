@@ -472,8 +472,8 @@ namespace libsecondlife.Utilities.Appearance
         private bool DownloadWearables = false;
         private int CacheCheckSerialNum = 0;
         private uint SetAppearanceSerialNum = 0;
-        private ManualResetEvent WearablesDownloadedEvent = new ManualResetEvent(false);
-        private ManualResetEvent CachedResponseEvent = new ManualResetEvent(false);
+        private AutoResetEvent WearablesDownloadedEvent = new AutoResetEvent(false);
+        private AutoResetEvent CachedResponseEvent = new AutoResetEvent(false);
         // FIXME: Create a class-level appearance thread so multiple threads can't be launched
 
         /// <summary>
@@ -513,7 +513,7 @@ namespace libsecondlife.Utilities.Appearance
             if (Wearables.ContainsKey(type))
                 return Wearables[type].AssetID;
             else
-                return null;
+                return LLUUID.Zero;
         }
 
         /// <summary>
@@ -615,8 +615,6 @@ namespace libsecondlife.Utilities.Appearance
 
         private void StartSetPreviousAppearance()
         {
-            WearablesDownloadedEvent.Reset();
-            CachedResponseEvent.Reset();
             DownloadWearables = true;
 
             // Register an asset download callback to get wearable data
@@ -729,7 +727,8 @@ namespace libsecondlife.Utilities.Appearance
                 set.ObjectData.TextureEntry = te.ToBytes();
             }
 
-            // This is a bit hackish, but a whole lot better than implementing the actual algorithm
+            // FIXME: Our hackish algorithm is making squished avatars. See
+            // http://www.libsecondlife.org/wiki/Agent_Size for discussion of the correct algorithm
             float height = Helpers.ByteToFloat(set.VisualParam[25].ParamValue, VisualParams.Params[25].MinValue,
                 VisualParams.Params[25].MaxValue);
             set.AgentData.Size = new LLVector3(0.45f, 0.6f, 1.50856f + ((height / 255.0f) * (2.025506f - 1.50856f)));
@@ -748,7 +747,7 @@ namespace libsecondlife.Utilities.Appearance
                     LLUUID assetID = GetWearableAsset(type);
 
                     // Build a hash of all the texture asset IDs in this baking layer
-                    if (assetID != null) hash ^= assetID;
+                    if (assetID != LLUUID.Zero) hash ^= assetID;
                 }
 
                 if (hash != LLUUID.Zero)
@@ -922,11 +921,11 @@ namespace libsecondlife.Utilities.Appearance
                     }
                     else
                     {
-                        BakeType bakeType = BakeType.Unknown;
+                        BakeType bakeType = (BakeType)block.TextureIndex;
                         int imageCount = 0;
 
                         // Download all of the images in this layer
-                        switch ((BakeType)block.TextureIndex)
+                        switch (bakeType)
                         {
                             case BakeType.Head:
                                 lock (ImageDownloads)
@@ -942,7 +941,7 @@ namespace libsecondlife.Utilities.Appearance
                                     imageCount += AddImageDownload(TextureIndex.UpperUndershirt);
                                     imageCount += AddImageDownload(TextureIndex.UpperShirt);
                                     imageCount += AddImageDownload(TextureIndex.UpperJacket);
-                                    // TODO: Where are the gloves?
+                                    // FIXME: Where are the gloves?
                                 }
                                 break;
                             case BakeType.LowerBody:
@@ -978,10 +977,12 @@ namespace libsecondlife.Utilities.Appearance
 
                         if (imageCount > 0 && !PendingBakes.ContainsKey(bakeType))
                         {
+                            Client.DebugLog("Initializing bake for " + bakeType.ToString());
+
                             lock (PendingBakes)
                                 PendingBakes.Add(bakeType, new BakeLayer(Client, imageCount, paramValues));
                         }
-                        else
+                        else if (!PendingBakes.ContainsKey(bakeType))
                         {
                             Client.Log("No cached bake for " + bakeType.ToString() + " and no textures for that " +
                                 "layer, this is an unhandled case", Helpers.LogLevel.Error);
@@ -1013,7 +1014,9 @@ namespace libsecondlife.Utilities.Appearance
             LLUUID image = AgentTextures[(int)index];
             if (image != LLUUID.Zero)
             {
-                if (!ImageDownloads.ContainsKey(image)) ImageDownloads.Add(image, index);
+                if (!ImageDownloads.ContainsKey(image))
+                    ImageDownloads.Add(image, index);
+
                 return 1;
             }
             else
@@ -1089,6 +1092,8 @@ namespace libsecondlife.Utilities.Appearance
                     BakeType type = BakeType.Head;
                     BakeLayer.BakeOrder order = BakeLayer.BakeOrder.HeadBodypaint;
 
+                    Client.DebugLog("Finished downloading texture for " + index.ToString());
+
                     if (image.Success)
                     {
                         // Add this image to a baking layer
@@ -1156,21 +1161,35 @@ namespace libsecondlife.Utilities.Appearance
                                 break;
                         }
 
-                        if (PendingBakes.ContainsKey(type) && PendingBakes[type].AddImage(order, image.AssetData))
+                        if (PendingBakes.ContainsKey(type))
                         {
-                            // Create a transactionID and assetID for this upload
-                            LLUUID transactionID = LLUUID.Random();
-                            LLUUID assetID = transactionID.Combine(Client.Network.SecureSessionID);
+                            Client.DebugLog("Adding image to bake " + type.ToString());
 
-                            // Upload the completed bake data
-                            Assets.RequestUpload(transactionID, AssetType.Texture, PendingBakes[type].FinalData, 
-                                true, true, false);
+                            if (PendingBakes[type].AddImage(order, image.AssetData))
+                            {
+                                Client.DebugLog("Bake " + type.ToString() + " completed");
 
-                            // Add it to a pending uploads list
-                            lock (PendingUploads) PendingUploads.Add(assetID, index);
+                                // Create a transactionID and assetID for this upload
+                                LLUUID transactionID = LLUUID.Random();
+                                LLUUID assetID = transactionID.Combine(Client.Network.SecureSessionID);
 
-                            // Remove this bake from the pending list
-                            PendingBakes.Remove(type);
+                                Client.DebugLog("Beginning bake upload with transactionID: " +
+                                    transactionID.ToStringHyphenated() + " and assetID: " + assetID.ToStringHyphenated());
+
+                                // Upload the completed bake data
+                                Assets.RequestUpload(transactionID, AssetType.Texture, PendingBakes[type].FinalData,
+                                    true, true, false);
+
+                                // Add it to a pending uploads list
+                                lock (PendingUploads) PendingUploads.Add(assetID, index);
+
+                                // Remove this bake from the pending list
+                                PendingBakes.Remove(type);
+
+                                // FIXME: Probably don't need to do this here
+                                // Add this assetID to AgentTextures in the correct position
+                                //AgentTextures[index] = assetID;
+                            }
                         }
                     }
                     else
@@ -1199,7 +1218,12 @@ namespace libsecondlife.Utilities.Appearance
                 {
                     if (upload.Success)
                     {
-                        // FIXME: Setup the TextureEntry with the new baked upload
+                        // Setup the TextureEntry with the new baked upload
+                        TextureIndex index = PendingUploads[upload.AssetID];
+                        AgentTextures[(int)index] = upload.AssetID;
+
+                        Client.DebugLog("Upload complete, AgentTextures " + index.ToString() + " set to " + 
+                            upload.AssetID.ToStringHyphenated());
                     }
                     else
                     {
@@ -1209,8 +1233,13 @@ namespace libsecondlife.Utilities.Appearance
 
                     PendingUploads.Remove(upload.AssetID);
 
+                    Client.DebugLog("Pending uploads: " + PendingUploads.Count + ", pending downloads: " +
+                        ImageDownloads.Count);
+
                     if (PendingUploads.Count == 0 && ImageDownloads.Count == 0)
                     {
+                        Client.DebugLog("All pending image downloads and uploads complete");
+
                         CachedResponseEvent.Set();
                     }
                 }
