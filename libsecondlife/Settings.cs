@@ -144,6 +144,8 @@ namespace libsecondlife
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
         public bool ENABLE_CAPS = true;
+		/// <summary>Whether to decode sim stats</sumamry>
+		public bool ENABLE_SIMSTATS = true;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

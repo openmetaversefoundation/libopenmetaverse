@@ -184,8 +184,6 @@ namespace libsecondlife
         public bool IsEstateManager;
         /// <summary></summary>
         public EstateTools Estate;
-        /// <summary>Current time dilation of this simulator</summary>
-        public float Dilation;
         /// <summary></summary>
         public RegionFlags Flags;
         /// <summary></summary>
@@ -230,6 +228,31 @@ namespace libsecondlife
         public int LastLag = 0;
         /// <summary></summary>
         public int MissedPings = 0;
+        /// <summary>Current time dilation of this simulator</summary>
+        public float Dilation = 0;
+		public int FPS = 0;
+		public float PhysicsFPS = 0;
+		public float AgentUpdates = 0;
+		public float FrameTime = 0;
+		public float NetTime = 0;
+		public float PhysicsTime = 0;
+		public float ImageTime = 0;
+		public float ScriptTime = 0;
+		public float OtherTime = 0;
+		public int Objects = 0;
+		public int ScriptedObjects = 0;
+		public int Agents = 0;
+		public int ChildAgents = 0;
+		public int ActiveScripts = 0;
+		public int LSLIPS = 0;
+		public int INPPS = 0;
+		public int OUTPPS = 0;
+		public int PendingDownloads = 0;
+		public int PendingUploads = 0;
+		public int VirtualSize = 0;
+		public int ResidentSize = 0;
+		public int PendingLocalUploads = 0;
+		public int UnackedBytes = 0;
 
         #endregion Public Members
 

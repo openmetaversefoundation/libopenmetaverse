@@ -211,7 +211,8 @@ namespace libsecondlife
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
             RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
-
+			RegisterCallback(PacketType.SimStats, new PacketCallback(SimStatsHandler));
+			
             // The proper timeout for this will get set again at Login
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
@@ -932,6 +933,92 @@ namespace libsecondlife
             simulator.ReceivedPongs++;
             //			Client.Log(retval, Helpers.LogLevel.Info);
         }
+		
+		private void SimStatsHandler(Packet packet, Simulator simulator)
+		{
+			if ( ! Client.Settings.ENABLE_SIMSTATS ) {
+				return;
+			}
+			SimStatsPacket stats = (SimStatsPacket)packet;
+			for ( int i = 0 ; i < stats.Stat.Length ; i++ ) {
+				SimStatsPacket.StatBlock s = stats.Stat[i];
+				switch (s.StatID )
+				{
+					case 0:
+						simulator.Dilation = s.StatValue;
+						break;
+					case 1:
+						simulator.FPS = Convert.ToInt32(s.StatValue);
+						break;
+					case 2:
+						simulator.PhysicsFPS = s.StatValue;
+						break;
+					case 3:
+						simulator.AgentUpdates = s.StatValue;
+						break;
+					case 4:
+						simulator.FrameTime = s.StatValue;
+						break;
+					case 5:
+						simulator.NetTime = s.StatValue;
+						break;
+					case 7:
+						simulator.PhysicsTime = s.StatValue;
+						break;
+					case 8:
+						simulator.ImageTime = s.StatValue;
+						break;
+					case 9:
+						simulator.ScriptTime = s.StatValue;
+						break;
+					case 10:
+						simulator.OtherTime = s.StatValue;
+						break;
+					case 11:
+						simulator.Objects = Convert.ToInt32(s.StatValue);
+						break;
+					case 12:
+						simulator.ScriptedObjects = Convert.ToInt32(s.StatValue);
+						break;
+					case 13:
+						simulator.Agents = Convert.ToInt32(s.StatValue);
+						break;
+					case 14:
+						simulator.ChildAgents = Convert.ToInt32(s.StatValue);
+						break;
+					case 15:
+						simulator.ActiveScripts = Convert.ToInt32(s.StatValue);
+						break;
+					case 16:
+						simulator.LSLIPS = Convert.ToInt32(s.StatValue);
+						break;
+					case 17:
+						simulator.INPPS = Convert.ToInt32(s.StatValue);
+						break;
+					case 18:
+						simulator.OUTPPS = Convert.ToInt32(s.StatValue);
+						break;
+					case 19:
+						simulator.PendingDownloads = Convert.ToInt32(s.StatValue);
+						break;
+					case 20:
+						simulator.PendingUploads = Convert.ToInt32(s.StatValue);
+						break;
+					case 21:
+						simulator.VirtualSize = Convert.ToInt32(s.StatValue);
+						break;
+					case 22:
+						simulator.ResidentSize = Convert.ToInt32(s.StatValue);
+						break;
+					case 23:
+						simulator.PendingLocalUploads = Convert.ToInt32(s.StatValue);
+						break;
+					case 24:
+						simulator.UnackedBytes = Convert.ToInt32(s.StatValue);
+						break;
+				}
+			}
+		}
 
         private void RegionHandshakeHandler(Packet packet, Simulator simulator)
         {
