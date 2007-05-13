@@ -286,7 +286,10 @@ namespace libsecondlife.AssetSystem
                 slClient.Log(packet.ToString(), Helpers.LogLevel.Info);
             #endif
 
+            if (curUploadRequest == null) return;
+
             Packets.AssetUploadCompletePacket reply = (AssetUploadCompletePacket)packet;
+
             if (reply.AssetBlock.Success)
             {
                 curUploadRequest.UploadComplete(reply.AssetBlock.UUID, AssetRequest.RequestStatus.Success);
@@ -311,10 +314,10 @@ namespace libsecondlife.AssetSystem
 
             RequestXferPacket reply = (RequestXferPacket)packet;
 
-            ulong XferID   = reply.XferID.ID;
+            ulong XferID = reply.XferID.ID;
 			// LLUUID AssetID = reply.XferID.VFileID; //Not used...
 
-            curUploadRequest.RequestXfer(XferID);
+            if (curUploadRequest != null) curUploadRequest.RequestXfer(XferID);
         }
 
         private void ConfirmXferPacketCallbackHandler(Packet packet, Simulator simulator)
@@ -325,7 +328,7 @@ namespace libsecondlife.AssetSystem
 
             ConfirmXferPacketPacket reply = (ConfirmXferPacketPacket)packet;
 
-            curUploadRequest.ConfirmXferPacket(reply.XferID.ID, reply.XferID.Packet);
+            if (curUploadRequest != null) curUploadRequest.ConfirmXferPacket(reply.XferID.ID, reply.XferID.Packet);
         }
 
         #endregion
