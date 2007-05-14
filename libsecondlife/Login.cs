@@ -126,6 +126,10 @@ namespace libsecondlife
         /// type of login error that occurred</summary>
         public string LoginErrorKey { get { return InternalErrorKey; } }
 
+        /// <summary>The raw XML-RPC reply from the login server, exactly as it
+        /// was received (minus the HTTP header)</summary>
+        public string RawLoginReply { get { return InternalRawLoginReply; } }
+
         /// <summary>During login this contains a descriptive version of 
         /// LoginStatusCode. After a successful login this will contain the 
         /// message of the day, and after a failed login a descriptive error 
@@ -145,6 +149,7 @@ namespace libsecondlife
         private LoginStatus InternalStatusCode = LoginStatus.None;
         private string InternalErrorKey = String.Empty;
         private string InternalLoginMessage = String.Empty;
+        private string InternalRawLoginReply = String.Empty;
 
         /// <summary>
         /// 
@@ -453,38 +458,31 @@ namespace libsecondlife
 
                     xmlStream = response.GetResponseStream();
 
-                    if (Client.Settings.DEBUG)
+                    MemoryStream memStream = new MemoryStream();
+                    BinaryReader streamReader = new BinaryReader(xmlStream);
+                    BinaryWriter streamWriter = new BinaryWriter(memStream);
+
+                    // Put the entire response in to a byte array
+                    byte[] buffer;
+                    while ((buffer = streamReader.ReadBytes(1024)) != null)
                     {
-                        try
-                        {
-                            MemoryStream memStream = new MemoryStream();
-                            BinaryReader streamReader = new BinaryReader(xmlStream);
-                            BinaryWriter streamWriter = new BinaryWriter(memStream);
-
-                            byte[] buffer;
-                            while ((buffer = streamReader.ReadBytes(1024)) != null)
-                            {
-                                if (buffer.Length == 0)
-                                    break;
-                                streamWriter.Write(buffer);
-                            }
-                            streamWriter.Flush();
-                            xmlStream.Close();
-                            xmlStream = memStream;
-
-                            memStream.Seek(0, SeekOrigin.Begin);
-                            FileStream fileStream = File.Open("loginreply.xml", FileMode.Create, FileAccess.Write, FileShare.Read);
-                            memStream.WriteTo(fileStream);
-                            memStream.Seek(0, SeekOrigin.Begin);
-                            fileStream.Close();
-                            memStream.Seek(0, SeekOrigin.Begin);
-                        }
-                        catch (Exception)
-                        {
-                            // This is debug code, we don't care if we fail for whatever reason, like another SL instance is already
-                            // writing the file
-                        }
+                        if (buffer.Length == 0)
+                            break;
+                        streamWriter.Write(buffer);
                     }
+                    streamWriter.Flush();
+                    xmlStream.Close();
+
+                    // Write the entire memory stream out to a byte array
+                    buffer = memStream.ToArray();
+
+                    // Reset the position in the stream to the beginning
+                    memStream.Seek(0, SeekOrigin.Begin);
+
+                    // The memory stream will become an XML stream shortly
+                    xmlStream = memStream;
+
+                    InternalRawLoginReply = Encoding.UTF8.GetString(buffer);
 
                     reader = XmlReader.Create(xmlStream);
 

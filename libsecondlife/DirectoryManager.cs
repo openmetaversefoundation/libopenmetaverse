@@ -341,7 +341,7 @@ namespace libsecondlife
             return queryID;
         }
 
-        public LLUUID StartPeopleSearch(DirFindFlags findFlags, String searchText)
+        public LLUUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
         {
             LLUUID queryID = LLUUID.Random();
             DirFindQueryPacket find = new DirFindQueryPacket();
@@ -350,7 +350,7 @@ namespace libsecondlife
             find.QueryData.QueryFlags = (uint)findFlags;
             find.QueryData.QueryText = Helpers.StringToField(searchText);
             find.QueryData.QueryID = queryID;
-            find.QueryData.QueryStart = 0;
+            find.QueryData.QueryStart = queryStart;
             Client.Network.SendPacket(find);
             return queryID;
         }

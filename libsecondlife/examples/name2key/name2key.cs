@@ -86,7 +86,7 @@ namespace name2key
 			}
 
 			// Send the Query
-            queryID = client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, args[3] + " " + args[4]);
+            queryID = client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, args[3] + " " + args[4], 0);
             
             // Wait for the event to trigger
             queryEvent.WaitOne(8000, false);

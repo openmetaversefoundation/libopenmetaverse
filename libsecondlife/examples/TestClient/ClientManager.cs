@@ -126,7 +126,7 @@ namespace libsecondlife.TestClient
                     // Find master's key from name
                     DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
                     client.Directory.OnDirPeopleReply += callback;
-                    client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, account.MasterName);
+                    client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, account.MasterName, 0);
                     if (keyResolution.WaitOne(TimeSpan.FromMinutes(1), false))
                     {
                         account.MasterKey = resolvedMasterKey;

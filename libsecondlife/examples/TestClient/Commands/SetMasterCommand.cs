@@ -33,7 +33,7 @@ namespace libsecondlife.TestClient
 
             DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
             Client.Directory.OnDirPeopleReply += callback;
-            query = Client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, masterName);
+            query = Client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, masterName, 0);
             if (keyResolution.WaitOne(TimeSpan.FromMinutes(1), false))
             {
                 Client.MasterKey = resolvedMasterKey;
