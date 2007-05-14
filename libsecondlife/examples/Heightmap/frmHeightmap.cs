@@ -66,7 +66,7 @@ namespace Heightmap
 
             if (!Client.Network.Login(FirstName, LastName, Password, "Heightmap", "jhurliman@wsu.edu"))
             {
-                Console.WriteLine("Login failed: " + Client.Network.LoginStatusMessage);
+                Console.WriteLine("Login failed: " + Client.Network.LoginMessage);
                 Console.ReadKey();
                 this.Close();
                 return;

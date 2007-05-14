@@ -120,29 +120,29 @@ namespace libsecondlife.Utilities
             }
             else
             {
-                if (client.Network.LoginStatusMessage == "god")
+                if (client.Network.LoginErrorKey == "god")
                 {
                     client.Log("Grid is down, waiting 10 minutes", Helpers.LogLevel.Warning);
                     LoginWait(10);
                     goto Start;
                 }
-                else if (client.Network.LoginStatusMessage == "key")
+                else if (client.Network.LoginErrorKey == "key")
                 {
                     client.Log("Bad username or password, giving up on login", Helpers.LogLevel.Error);
                     return false;
                 }
-                else if (client.Network.LoginStatusMessage == "presence")
+                else if (client.Network.LoginErrorKey == "presence")
                 {
                     client.Log("Server is still logging us out, waiting 1 minute", Helpers.LogLevel.Warning);
                     LoginWait(1);
                     goto Start;
                 }
-                else if (client.Network.LoginStatusMessage == "disabled")
+                else if (client.Network.LoginErrorKey == "disabled")
                 {
                     client.Log("This account has been banned! Giving up on login", Helpers.LogLevel.Error);
                     return false;
                 }
-                else if (client.Network.LoginStatusMessage == "timed out")
+                else if (client.Network.LoginErrorKey == "timed out")
                 {
                     client.Log("Login request timed out, waiting 1 minute", Helpers.LogLevel.Warning);
                     LoginWait(1);
@@ -154,7 +154,7 @@ namespace libsecondlife.Utilities
 
                     if (unknownLogins < 5)
                     {
-                        client.Log("Unknown login error, waiting 2 minutes: " + client.Network.LoginStatusMessage,
+                        client.Log("Unknown login error, waiting 2 minutes: " + client.Network.LoginErrorKey,
                             Helpers.LogLevel.Warning);
                         LoginWait(2);
                         goto Start;

@@ -124,11 +124,11 @@ namespace sldump
 
             if (!LoginSuccess)
             {
-                Console.WriteLine("Login failed: {0}", client.Network.LoginStatusMessage);
+                Console.WriteLine("Login failed: {0}", client.Network.LoginMessage);
                 return;
             }
 
-			Console.WriteLine("Message of the day: " + client.Network.MOTD);
+			Console.WriteLine("Message of the day: " + client.Network.LoginMessage);
 
             int start = Environment.TickCount;
             int milliseconds = Int32.Parse(args[3]) * 1000;

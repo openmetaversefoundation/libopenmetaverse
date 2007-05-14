@@ -119,27 +119,18 @@ namespace libsecondlife
         /// <summary>Seed CAPS URL returned from the login server</summary>
         public string LoginSeedCapability = String.Empty;
 
-        /// <summary>String holding the login message. Can be either a tip of
-        /// the day style message or a description of the login error depending
-        /// on whether the login was successful or not</summary>
-        public string MOTD { get { return InternalMOTD; } }
-
         /// <summary>Current state of logging in</summary>
         public LoginStatus LoginStatusCode { get { return InternalStatusCode; } }
-        /// <summary>Current state of logging in, in text form</summary>
-        public string LoginStatusMessage { get { return InternalStatusMessage; } }
 
-        #region BackwardsCompat
-        /// <summary>Maintained for backwards compatibility</summary>
-        [Obsolete("This is no longer used. If you want error messages, use the callback. If you want the MOTD, see MOTD.", false)]
-        public string LoginMessage = String.Empty;
-        /// <summary>Maintained for backwards compatibility</summary>
-        [Obsolete("This is no longer used. If you want error messages, use the callback. If you want the MOTD, see MOTD.", false)]
-        public string LoginErrorKey = String.Empty;
-        /// <summary>Maintained for backwards compatibility</summary>
-        [Obsolete("This has been broken up in to LoginErrorKey and LoginMessage", false)]
-        public string LoginError { get { return String.Format("{0}: {1}", LoginErrorKey, LoginMessage); } }
-        #endregion
+        /// <summary>Upon login failure, contains a short string key for the
+        /// type of login error that occurred</summary>
+        public string LoginErrorKey { get { return InternalErrorKey; } }
+
+        /// <summary>During login this contains a descriptive version of 
+        /// LoginStatusCode. After a successful login this will contain the 
+        /// message of the day, and after a failed login a descriptive error 
+        /// message will be returned</summary>
+        public string LoginMessage { get { return InternalLoginMessage; } }
 
         private class LoginContext
         {
@@ -151,9 +142,9 @@ namespace libsecondlife
         private object LockObject = new object();
         private LoginContext CurrentContext = null;
         private ManualResetEvent LoginEvent = new ManualResetEvent(false);
-        private string InternalMOTD = String.Empty;
         private LoginStatus InternalStatusCode = LoginStatus.None;
-        private string InternalStatusMessage = String.Empty;
+        private string InternalErrorKey = String.Empty;
+        private string InternalLoginMessage = String.Empty;
 
         /// <summary>
         /// 
@@ -264,7 +255,7 @@ namespace libsecondlife
                         CurrentContext.Request.Abort();
                     CurrentContext = null; // Will force any pending callbacks to bail out early
                     InternalStatusCode = LoginStatus.Failed;
-                    InternalStatusMessage = "Timed out";
+                    InternalLoginMessage = "Timed out";
                     return false;
                 }
 
@@ -343,7 +334,7 @@ namespace libsecondlife
             }
             catch (WebException e)
             {
-                UpdateLoginStatus(LoginStatus.Failed, "Error opening thelogin server connection: " + e.Message);
+                UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e.Message);
             }
         }
 
@@ -380,10 +371,13 @@ namespace libsecondlife
         private void UpdateLoginStatus(LoginStatus status, string message)
         {
             InternalStatusCode = status;
-            InternalStatusMessage = message;
+            InternalLoginMessage = message;
 
             if (OnLogin != null)
-                OnLogin(status, message);
+            {
+                try { OnLogin(status, message); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
 
             if (status == LoginStatus.Success || status == LoginStatus.Failed)
             {
@@ -502,7 +496,8 @@ namespace libsecondlife
                     IPAddress simIP = IPAddress.Loopback;
                     ushort simPort = 0;
                     bool loginSuccess = false;
-                    string reason = null;
+                    string reason = String.Empty;
+                    string message = String.Empty;
 
                     reader.ReadStartElement("methodResponse");
 
@@ -533,6 +528,7 @@ namespace libsecondlife
                                     break;
                                 case "reason":
                                     reason = ReadStringValue(reader);
+                                    InternalErrorKey = reason;
                                     break;
                                 case "agent_id":
                                     LLUUID.TryParse(ReadStringValue(reader), out Client.Network.AgentID);
@@ -582,7 +578,7 @@ namespace libsecondlife
                                     Client.Self.AgentAccess = ReadStringValue(reader);
                                     break;
                                 case "message":
-                                    InternalMOTD = ReadStringValue(reader);
+                                    message = ReadStringValue(reader);
                                     break;
                                 case "region_x":
                                     //FIXME:
@@ -957,7 +953,8 @@ namespace libsecondlife
                                 // Request the economy data right after login
                                 SendPacket(new EconomyDataRequestPacket());
 
-                                UpdateLoginStatus(LoginStatus.Success, "Connected to simulator");
+                                // Update the login message with the MOTD returned from the server
+                                UpdateLoginStatus(LoginStatus.Success, message);
 
                                 // Fire an event for connecting to the grid
                                 if (OnConnected != null)
@@ -973,10 +970,13 @@ namespace libsecondlife
                         }
                         else
                         {
-                            if (reason != null)
-                                UpdateLoginStatus(LoginStatus.Failed, reason);
+                            // Make sure a usable error key is set
+                            if (!String.IsNullOrEmpty(reason))
+                                InternalErrorKey = reason;
                             else
-                                UpdateLoginStatus(LoginStatus.Failed, "Unspecified reason and/or bad response from login server");
+                                InternalErrorKey = "unknown";
+
+                            UpdateLoginStatus(LoginStatus.Failed, message);
                         }
                     }
                     else
