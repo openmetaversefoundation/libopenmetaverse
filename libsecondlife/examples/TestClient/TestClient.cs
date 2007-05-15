@@ -29,10 +29,6 @@ namespace libsecondlife.TestClient
 
         //internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
 
-        private LLQuaternion bodyRotation = LLQuaternion.Identity;
-        private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
-        private LLVector3 left = new LLVector3(0.9999f, 0, 0);
-        private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
         
 
@@ -143,7 +139,7 @@ namespace libsecondlife.TestClient
             {
                 string[] args = new string[tokens.Length - 1];
                 Array.Copy(tokens, 1, args, 0, args.Length);
-                string response = response = Commands[firstToken].Execute(args, fromAgentID);
+                string response = Commands[firstToken].Execute(args, fromAgentID);
 
                 if (response.Length > 0)
                 {

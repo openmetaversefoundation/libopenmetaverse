@@ -154,7 +154,6 @@ namespace libsecondlife
         private LLVector3 sunDirection = LLVector3.Zero;
         private LLVector3 sunAngVelocity = LLVector3.Zero;
         private Dictionary<string, ManualResetEvent> RequestingRegions = new Dictionary<string, ManualResetEvent>();
-        private ManualResetEvent RegionRequestEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Constructor
@@ -172,14 +171,14 @@ namespace libsecondlife
         public void RequestMapLayer(MapLayerType layer)
         {
             //if (Client.Network.CurrentCaps.Capabilities.ContainsKey("MapLayer"))
-            if (false)
-            {
+            //if (false)
+            //{
                 //string url = Client.Network.CurrentCaps.Capabilities["MapLayer"];
 
                 // FIXME: CAPS is currently disabled until the message pumps are implemented
-            }
-            else
-            {
+            //}
+            //else
+            //{
                 MapLayerRequestPacket request = new MapLayerRequestPacket();
 
                 request.AgentData.AgentID = Client.Network.AgentID;
@@ -189,7 +188,7 @@ namespace libsecondlife
                 request.AgentData.EstateID = 0; // Filled in at the simulator
 
                 Client.Network.SendPacket(request);
-            }
+            //}
         }
 
         public void RequestMapRegion(string regionName)

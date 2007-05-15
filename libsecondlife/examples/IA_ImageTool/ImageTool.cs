@@ -125,9 +125,6 @@ namespace IA_ImageTool
         {
             Console.WriteLine("Attempting to connect and login to SecondLife.");
 
-            // Setup Login to Second Life
-            Dictionary<string, object> loginReply = new Dictionary<string, object>();
-
             // Login
             if (!_Client.Network.Login(FirstName, LastName, Password, "ImageTool", "static.sprocket@gmail.com"))
             {
