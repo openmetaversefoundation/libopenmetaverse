@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		40147FF70B59A1620070ABA4 /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
+		40147FF70B59A1620070ABA4 /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		4041F33A0BED7D8E0084F948 /* Analyst.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30F0BED7D550084F948 /* Analyst.cs */; };
 		4041F33B0BED7D8E0084F948 /* Logger.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2F90BED7D550084F948 /* Logger.cs */; };
 		4041F33C0BED7D8E0084F948 /* SimpleHttpRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FA0BED7D550084F948 /* SimpleHttpRequest.cs */; };
@@ -31,16 +31,16 @@
 		4041F34E0BED7D8E0084F948 /* XmlRpcServer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3090BED7D550084F948 /* XmlRpcServer.cs */; };
 		4041F34F0BED7D8E0084F948 /* XmlRpcSystemObject.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30A0BED7D550084F948 /* XmlRpcSystemObject.cs */; };
 		4041F3500BED7D8E0084F948 /* XmlRpcXmlTokens.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30B0BED7D550084F948 /* XmlRpcXmlTokens.cs */; };
-		4041F3560BED7DB50084F948 /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
+		4041F3560BED7DB50084F948 /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		4041F3BC0BED89470084F948 /* InventoryLandmark.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3BB0BED89470084F948 /* InventoryLandmark.cs */; };
 		4041F3BE0BED89610084F948 /* AssetLandmark.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3BD0BED89610084F948 /* AssetLandmark.cs */; };
 		4041F40E0BED8EE00084F948 /* LandmarkTool.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F3E10BED8C000084F948 /* LandmarkTool.cs */; };
-		4041F40F0BED8EE40084F948 /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
-		4054E3740B5737BA00B0667D /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
-		4054E38D0B57399200B0667D /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
-		4054E3A00B573A3700B0667D /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
+		4041F40F0BED8EE40084F948 /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E3740B5737BA00B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E38D0B57399200B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
+		4054E3A00B573A3700B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		4054E3A10B573A3700B0667D /* libsecondlife.Utilities.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */; };
-		4054E4060B573A9F00B0667D /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
+		4054E4060B573A9F00B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		4070DFB10BF5570C00AD17A3 /* openjpeg.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E06B1C0B79331A00A4AE9E /* openjpeg.dll */; };
 		4082AF1B0BE5CF73005601E2 /* Types.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF20BE5CF73005601E2 /* Types.cs */; };
 		4082AF1C0BE5CF73005601E2 /* ThreadUtil.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */; };
@@ -174,10 +174,11 @@
 		4082B0130BE5D12F005601E2 /* openjpeg.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E06B1C0B79331A00A4AE9E /* openjpeg.dll */; };
 		4082B01B0BE5D194005601E2 /* openjpeg.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E06B1C0B79331A00A4AE9E /* openjpeg.dll */; };
 		408D586B0BFA25DB0076F241 /* TextureEntry.cs in Sources */ = {isa = PBXBuildFile; fileRef = 408D586A0BFA25DB0076F241 /* TextureEntry.cs */; };
-		40C88D750B59DECE0002929B /* libsecondlife-cs.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */; };
+		40C88D750B59DECE0002929B /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		40E06B1E0B79332300A4AE9E /* OpenJPEG.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40E06B170B79330C00A4AE9E /* OpenJPEG.cs */; };
 		40E06B1F0B79332300A4AE9E /* TGALoader.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40E06B180B79330C00A4AE9E /* TGALoader.cs */; };
 		40E06B440B79395A00A4AE9E /* openjpeg.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E06B1C0B79331A00A4AE9E /* openjpeg.dll */; };
+		40FBA5DC0C0153AC00073A37 /* SetHome.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40FBA5DB0C0153AC00073A37 /* SetHome.cs */; };
 		40FBC01A0B6F0BD6002FCB38 /* libsecondlife.Utilities.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */; };
 /* End PBXBuildFile section */
 
@@ -312,7 +313,7 @@
 		4041F3BD0BED89610084F948 /* AssetLandmark.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssetLandmark.cs; sourceTree = "<group>"; };
 		4041F3E10BED8C000084F948 /* LandmarkTool.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = LandmarkTool.cs; sourceTree = "<group>"; };
 		4041F3E50BED8C0C0084F948 /* IA_LandmarkTool.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = IA_LandmarkTool.exe; sourceTree = BUILT_PRODUCTS_DIR; };
-		4054E3050B57345B00B0667D /* libsecondlife-cs.dll */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = compiled.mono.library; path = "libsecondlife-cs.dll"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3050B57345B00B0667D /* libsecondlife.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = libsecondlife.dll; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = libsecondlife.Utilities.dll; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3830B57394E00B0667D /* name2key.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = name2key.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3980B573A0900B0667D /* Key2Name.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = Key2Name.exe; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -458,6 +459,7 @@
 		40E06B170B79330C00A4AE9E /* OpenJPEG.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = OpenJPEG.cs; path = openjpegnet/OpenJPEG.cs; sourceTree = "<group>"; };
 		40E06B180B79330C00A4AE9E /* TGALoader.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TGALoader.cs; path = openjpegnet/TGALoader.cs; sourceTree = "<group>"; };
 		40E06B1C0B79331A00A4AE9E /* openjpeg.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = openjpeg.dll; sourceTree = BUILT_PRODUCTS_DIR; };
+		40FBA5DB0C0153AC00073A37 /* SetHome.cs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.csharp; path = SetHome.cs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -466,7 +468,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4082B01B0BE5D194005601E2 /* openjpeg.dll in Frameworks */,
-				40147FF70B59A1620070ABA4 /* libsecondlife-cs.dll in Frameworks */,
+				40147FF70B59A1620070ABA4 /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,7 +476,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4041F3560BED7DB50084F948 /* libsecondlife-cs.dll in Frameworks */,
+				4041F3560BED7DB50084F948 /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,7 +484,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4041F40F0BED8EE40084F948 /* libsecondlife-cs.dll in Frameworks */,
+				4041F40F0BED8EE40084F948 /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -499,7 +501,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				40E06B440B79395A00A4AE9E /* openjpeg.dll in Frameworks */,
-				4054E3740B5737BA00B0667D /* libsecondlife-cs.dll in Frameworks */,
+				4054E3740B5737BA00B0667D /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,7 +509,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4054E38D0B57399200B0667D /* libsecondlife-cs.dll in Frameworks */,
+				4054E38D0B57399200B0667D /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -515,7 +517,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4054E3A00B573A3700B0667D /* libsecondlife-cs.dll in Frameworks */,
+				4054E3A00B573A3700B0667D /* libsecondlife.dll in Frameworks */,
 				4054E3A10B573A3700B0667D /* libsecondlife.Utilities.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -526,7 +528,7 @@
 			files = (
 				4082B0130BE5D12F005601E2 /* openjpeg.dll in Frameworks */,
 				40FBC01A0B6F0BD6002FCB38 /* libsecondlife.Utilities.dll in Frameworks */,
-				4054E4060B573A9F00B0667D /* libsecondlife-cs.dll in Frameworks */,
+				4054E4060B573A9F00B0667D /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -541,7 +543,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40C88D750B59DECE0002929B /* libsecondlife-cs.dll in Frameworks */,
+				40C88D750B59DECE0002929B /* libsecondlife.dll in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -679,7 +681,7 @@
 		4054E3060B57345B00B0667D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4054E3050B57345B00B0667D /* libsecondlife-cs.dll */,
+				4054E3050B57345B00B0667D /* libsecondlife.dll */,
 				4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */,
 				4054E3830B57394E00B0667D /* name2key.exe */,
 				4054E3980B573A0900B0667D /* Key2Name.exe */,
@@ -821,6 +823,7 @@
 				4082AF860BE5D032005601E2 /* TreeCommand.cs */,
 				4082AF870BE5D032005601E2 /* UptimeCommand.cs */,
 				4082AF880BE5D032005601E2 /* WhoCommand.cs */,
+				40FBA5DB0C0153AC00073A37 /* SetHome.cs */,
 			);
 			name = Commands;
 			path = libsecondlife/examples/TestClient/Commands;
@@ -1015,7 +1018,7 @@
 			);
 			name = libsecondlife;
 			productName = "libsecondlife-cs";
-			productReference = 4054E3050B57345B00B0667D /* libsecondlife-cs.dll */;
+			productReference = 4054E3050B57345B00B0667D /* libsecondlife.dll */;
 			productType = "com.mono.product-type.library";
 		};
 		4054E36E0B57375B00B0667D /* libsecondlife.Utilities */ = {
@@ -1370,6 +1373,7 @@
 				4082AFC00BE5D032005601E2 /* Command.cs in Sources */,
 				4082AFC10BE5D032005601E2 /* ClientManager.cs in Sources */,
 				4082AFC20BE5D032005601E2 /* Arguments.cs in Sources */,
+				40FBA5DC0C0153AC00073A37 /* SetHome.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

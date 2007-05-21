@@ -1192,8 +1192,24 @@ namespace libsecondlife
 
             Client.Network.SendPacket(money);
         }
-
-        /// <summary>
+		/// <summary>
+		/// Sets home location
+		/// </summary>
+		
+		public void SetHome()
+		{
+			SetStartLocationRequestPacket s = new SetStartLocationRequestPacket();
+			s.AgentData = new SetStartLocationRequestPacket.AgentDataBlock();
+			s.AgentData.AgentID = Client.Network.AgentID;
+			s.AgentData.SessionID = Client.Network.SessionID;
+			s.StartLocationData = new SetStartLocationRequestPacket.StartLocationDataBlock();
+			s.StartLocationData.LocationPos = Client.Self.Position;
+			s.StartLocationData.LocationID = 1;
+			s.StartLocationData.SimName = Helpers.StringToField("");
+			s.StartLocationData.LocationLookAt = Client.Self.LookAt;
+			Client.Network.SendPacket(s);
+		}
+		/// <summary>
         /// Follows a call to RequestSit() to actually sit on the object
         /// </summary>
         public void Sit()
