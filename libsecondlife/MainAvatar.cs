@@ -1608,6 +1608,26 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Rotates body toward target position
+        /// </summary>
+        /// <param name="target">Region coordinates to turn toward</param>
+        public bool TurnToward(LLVector3 target)
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                LLQuaternion newRot = Helpers.RotBetween(new LLVector3(1, 0, 0), Helpers.VecNorm(target - Client.Self.Position));
+                Client.Self.Status.Camera.BodyRotation = newRot;
+                Client.Self.Status.SendUpdate();
+                return true;
+            }
+            else
+            {
+                Client.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Request to join a group. If there is an enrollment fee it will 
         /// automatically be deducted from your balance
         /// </summary>
