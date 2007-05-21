@@ -1209,6 +1209,14 @@ namespace libsecondlife
 			s.StartLocationData.LocationLookAt = Client.Self.LookAt;
 			Client.Network.SendPacket(s);
 		}
+		
+		/// <summary>
+		/// Teleports the avatar home
+		/// </summary>
+		public bool GoHome()
+		{
+			return Teleport(new LLUUID());
+		}
 		/// <summary>
         /// Follows a call to RequestSit() to actually sit on the object
         /// </summary>
@@ -1353,6 +1361,31 @@ namespace libsecondlife
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
+		/// <summary>
+		/// Attempt teleport to specified LLUUID
+		public bool Teleport(LLUUID landmark)
+		{
+			TeleportStat = TeleportStatus.None;
+            TeleportEvent.Reset();
+			TeleportLandmarkRequestPacket p = new TeleportLandmarkRequestPacket();
+			p.Info = new TeleportLandmarkRequestPacket.InfoBlock();
+			p.Info.AgentID = Client.Network.AgentID;
+			p.Info.SessionID = Client.Network.SessionID;
+			p.Info.LandmarkID = landmark;
+			Client.Network.SendPacket(p);
+
+            TeleportEvent.WaitOne(Client.Settings.TELEPORT_TIMEOUT, false);
+
+            if (TeleportStat == TeleportStatus.None ||
+                TeleportStat == TeleportStatus.Start ||
+                TeleportStat == TeleportStatus.Progress)
+            {
+                teleportMessage = "Teleport timed out.";
+                TeleportStat = TeleportStatus.Failed;
+            }
+
+            return (TeleportStat == TeleportStatus.Finished);
+		}
         /// <summary>
         /// Attempt to look up a simulator name and teleport to the discovered
         /// destination
