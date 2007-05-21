@@ -88,6 +88,10 @@ namespace libsecondlife
             /// <summary></summary>
             public string ViewerDigest;
             /// <summary></summary>
+            public string UserAgent;
+            /// <summary></summary>
+            public string Author;
+            /// <summary></summary>
             public List<string> Options;
         }
 
@@ -192,6 +196,8 @@ namespace libsecondlife
             loginParams.Platform = "Win";
             loginParams.MAC = String.Empty;
             loginParams.ViewerDigest = String.Empty;
+            loginParams.UserAgent = userAgent;
+            loginParams.Author = author;
             loginParams.Options = options;
 
             return loginParams;
@@ -281,13 +287,9 @@ namespace libsecondlife
 
             // Override SSL authentication mechanisms
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-            // TODO: use this code and remove the AcceptAllCertificatePolicy class when
-            //       mono catches up. :( Or, don't use mono, ya dweebs.
             //ServicePointManager.ServerCertificateValidationCallback = delegate(
             //    object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors errors)
-            //    {
-            //        return true; // TODO: At some point, maybe we should check the cert?
-            //    };
+            //    { return true; // TODO: At some point, maybe we should check the cert? };
 
             // Build the request data
             StringBuilder output = new StringBuilder(2048);
@@ -310,6 +312,8 @@ namespace libsecondlife
             WriteStringMember(login, "version", CurrentContext.Params.Version);
             WriteStringMember(login, "platform", CurrentContext.Params.Platform);
             WriteStringMember(login, "mac", CurrentContext.Params.MAC);
+            WriteStringMember(login, "user-agent", CurrentContext.Params.UserAgent);
+            WriteStringMember(login, "author", CurrentContext.Params.Author);
             WriteStringMember(login, "agree_to_tos", "true");
             WriteStringMember(login, "read_critical", "true");
             WriteStringMember(login, "viewer_digest", CurrentContext.Params.ViewerDigest);
