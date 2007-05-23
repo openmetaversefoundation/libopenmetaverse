@@ -1236,11 +1236,14 @@ namespace libsecondlife
             writer.WriteStartElement("array");
             writer.WriteStartElement("data");
 
-            for (int i = 0; i < options.Count; i++)
+            if (options != null)
             {
-                writer.WriteStartElement("value");
-                writer.WriteElementString("string", options[i]);
-                writer.WriteEndElement();
+                for (int i = 0; i < options.Count; i++)
+                {
+                    writer.WriteStartElement("value");
+                    writer.WriteElementString("string", options[i]);
+                    writer.WriteEndElement();
+                }
             }
 
             writer.WriteEndElement();
