@@ -41290,13 +41290,14 @@ namespace libsecondlife.Packets
         {
             public LLUUID AgentID;
             public LLUUID SessionID;
+            public LLUUID TransactionID;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 32;
+                    return 48;
                 }
             }
 
@@ -41307,6 +41308,7 @@ namespace libsecondlife.Packets
                 {
                     AgentID = new LLUUID(bytes, i); i += 16;
                     SessionID = new LLUUID(bytes, i); i += 16;
+                    TransactionID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
                 {
@@ -41318,6 +41320,7 @@ namespace libsecondlife.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 Buffer.BlockCopy(SessionID.GetBytes(), 0, bytes, i, 16); i += 16;
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41325,7 +41328,8 @@ namespace libsecondlife.Packets
                 StringBuilder output = new StringBuilder();
                 output.AppendLine("-- AgentData --");
                 output.AppendLine(String.Format("AgentID: {0}", AgentID));
-                output.Append(String.Format("SessionID: {0}", SessionID));
+                output.AppendLine(String.Format("SessionID: {0}", SessionID));
+                output.Append(String.Format("TransactionID: {0}", TransactionID));
                 return output.ToString();
             }
         }
@@ -41596,13 +41600,14 @@ namespace libsecondlife.Packets
         {
             public LLUUID AgentID;
             public bool SimApproved;
+            public LLUUID TransactionID;
 
             [XmlIgnore]
             public int Length
             {
                 get
                 {
-                    return 17;
+                    return 33;
                 }
             }
 
@@ -41613,6 +41618,7 @@ namespace libsecondlife.Packets
                 {
                     AgentID = new LLUUID(bytes, i); i += 16;
                     SimApproved = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                    TransactionID = new LLUUID(bytes, i); i += 16;
                 }
                 catch (Exception)
                 {
@@ -41624,6 +41630,7 @@ namespace libsecondlife.Packets
             {
                 Buffer.BlockCopy(AgentID.GetBytes(), 0, bytes, i, 16); i += 16;
                 bytes[i++] = (byte)((SimApproved) ? 1 : 0);
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
             }
 
             public override string ToString()
@@ -41631,7 +41638,8 @@ namespace libsecondlife.Packets
                 StringBuilder output = new StringBuilder();
                 output.AppendLine("-- AgentData --");
                 output.AppendLine(String.Format("AgentID: {0}", AgentID));
-                output.Append(String.Format("SimApproved: {0}", SimApproved));
+                output.AppendLine(String.Format("SimApproved: {0}", SimApproved));
+                output.Append(String.Format("TransactionID: {0}", TransactionID));
                 return output.ToString();
             }
         }
@@ -46383,36 +46391,87 @@ namespace libsecondlife.Packets
     /// <exclude/>
     public class DeRezAckPacket : Packet
     {
+        /// <exclude/>
+        [XmlType("derezack_transactiondata")]
+        public class TransactionDataBlock
+        {
+            public bool Success;
+            public LLUUID TransactionID;
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    return 17;
+                }
+            }
+
+            public TransactionDataBlock() { }
+            public TransactionDataBlock(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    Success = (bytes[i++] != 0) ? (bool)true : (bool)false;
+                    TransactionID = new LLUUID(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = (byte)((Success) ? 1 : 0);
+                Buffer.BlockCopy(TransactionID.GetBytes(), 0, bytes, i, 16); i += 16;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- TransactionData --");
+                output.AppendLine(String.Format("Success: {0}", Success));
+                output.Append(String.Format("TransactionID: {0}", TransactionID));
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.DeRezAck; } }
+        public TransactionDataBlock TransactionData;
 
         public DeRezAckPacket()
         {
             Header = new LowHeader();
             Header.ID = 329;
             Header.Reliable = true;
+            TransactionData = new TransactionDataBlock();
         }
 
         public DeRezAckPacket(byte[] bytes, ref int i)
         {
             int packetEnd = bytes.Length - 1;
             Header = new LowHeader(bytes, ref i, ref packetEnd);
+            TransactionData = new TransactionDataBlock(bytes, ref i);
         }
 
         public DeRezAckPacket(Header head, byte[] bytes, ref int i)
         {
             Header = head;
+            TransactionData = new TransactionDataBlock(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 8;
-;
+            length += TransactionData.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
+            TransactionData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -46420,6 +46479,7 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- DeRezAck ---" + Environment.NewLine;
+                output += TransactionData.ToString() + Environment.NewLine;
             return output;
         }
 
@@ -71106,6 +71166,65 @@ namespace libsecondlife.Packets
     public class AgentAnimationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("agentanimation_physicalavatareventlist")]
+        public class PhysicalAvatarEventListBlock
+        {
+            private byte[] _typedata;
+            public byte[] TypeData
+            {
+                get { return _typedata; }
+                set
+                {
+                    if (value == null) { _typedata = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _typedata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _typedata, 0, value.Length); }
+                }
+            }
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    int length = 0;
+                    if (TypeData != null) { length += 1 + TypeData.Length; }
+                    return length;
+                }
+            }
+
+            public PhysicalAvatarEventListBlock() { }
+            public PhysicalAvatarEventListBlock(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    length = (ushort)bytes[i++];
+                    _typedata = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _typedata, 0, length); i += length;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                if(TypeData == null) { Console.WriteLine("Warning: TypeData is null, in " + this.GetType()); }
+                bytes[i++] = (byte)TypeData.Length;
+                Buffer.BlockCopy(TypeData, 0, bytes, i, TypeData.Length); i += TypeData.Length;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- PhysicalAvatarEventList --");
+                Helpers.FieldToString(output, TypeData, "TypeData");
+                return output.ToString();
+            }
+        }
+
+        /// <exclude/>
         [XmlType("agentanimation_animationlist")]
         public class AnimationListBlock
         {
@@ -71200,6 +71319,7 @@ namespace libsecondlife.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentAnimation; } }
+        public PhysicalAvatarEventListBlock[] PhysicalAvatarEventList;
         public AnimationListBlock[] AnimationList;
         public AgentDataBlock AgentData;
 
@@ -71208,6 +71328,7 @@ namespace libsecondlife.Packets
             Header = new HighHeader();
             Header.ID = 5;
             Header.Reliable = true;
+            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[0];
             AnimationList = new AnimationListBlock[0];
             AgentData = new AgentDataBlock();
         }
@@ -71217,6 +71338,10 @@ namespace libsecondlife.Packets
             int packetEnd = bytes.Length - 1;
             Header = new HighHeader(bytes, ref i, ref packetEnd);
             int count = (int)bytes[i++];
+            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
+            for (int j = 0; j < count; j++)
+            { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(bytes, ref i); }
+            count = (int)bytes[i++];
             AnimationList = new AnimationListBlock[count];
             for (int j = 0; j < count; j++)
             { AnimationList[j] = new AnimationListBlock(bytes, ref i); }
@@ -71227,6 +71352,10 @@ namespace libsecondlife.Packets
         {
             Header = head;
             int count = (int)bytes[i++];
+            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
+            for (int j = 0; j < count; j++)
+            { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(bytes, ref i); }
+            count = (int)bytes[i++];
             AnimationList = new AnimationListBlock[count];
             for (int j = 0; j < count; j++)
             { AnimationList[j] = new AnimationListBlock(bytes, ref i); }
@@ -71238,11 +71367,15 @@ namespace libsecondlife.Packets
             int length = 5;
             length += AgentData.Length;;
             length++;
+            for (int j = 0; j < PhysicalAvatarEventList.Length; j++) { length += PhysicalAvatarEventList[j].Length; }
+            length++;
             for (int j = 0; j < AnimationList.Length; j++) { length += AnimationList[j].Length; }
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)PhysicalAvatarEventList.Length;
+            for (int j = 0; j < PhysicalAvatarEventList.Length; j++) { PhysicalAvatarEventList[j].ToBytes(bytes, ref i); }
             bytes[i++] = (byte)AnimationList.Length;
             for (int j = 0; j < AnimationList.Length; j++) { AnimationList[j].ToBytes(bytes, ref i); }
             AgentData.ToBytes(bytes, ref i);
@@ -71253,6 +71386,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AgentAnimation ---" + Environment.NewLine;
+            for (int j = 0; j < PhysicalAvatarEventList.Length; j++)
+            {
+                output += PhysicalAvatarEventList[j].ToString() + Environment.NewLine;
+            }
             for (int j = 0; j < AnimationList.Length; j++)
             {
                 output += AnimationList[j].ToString() + Environment.NewLine;
@@ -73929,6 +74066,65 @@ namespace libsecondlife.Packets
     public class AvatarAnimationPacket : Packet
     {
         /// <exclude/>
+        [XmlType("avataranimation_physicalavatareventlist")]
+        public class PhysicalAvatarEventListBlock
+        {
+            private byte[] _typedata;
+            public byte[] TypeData
+            {
+                get { return _typedata; }
+                set
+                {
+                    if (value == null) { _typedata = null; return; }
+                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
+                    else { _typedata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _typedata, 0, value.Length); }
+                }
+            }
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    int length = 0;
+                    if (TypeData != null) { length += 1 + TypeData.Length; }
+                    return length;
+                }
+            }
+
+            public PhysicalAvatarEventListBlock() { }
+            public PhysicalAvatarEventListBlock(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    length = (ushort)bytes[i++];
+                    _typedata = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _typedata, 0, length); i += length;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                if(TypeData == null) { Console.WriteLine("Warning: TypeData is null, in " + this.GetType()); }
+                bytes[i++] = (byte)TypeData.Length;
+                Buffer.BlockCopy(TypeData, 0, bytes, i, TypeData.Length); i += TypeData.Length;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- PhysicalAvatarEventList --");
+                Helpers.FieldToString(output, TypeData, "TypeData");
+                return output.ToString();
+            }
+        }
+
+        /// <exclude/>
         [XmlType("avataranimation_animationsourcelist")]
         public class AnimationSourceListBlock
         {
@@ -74064,6 +74260,7 @@ namespace libsecondlife.Packets
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AvatarAnimation; } }
+        public PhysicalAvatarEventListBlock[] PhysicalAvatarEventList;
         public AnimationSourceListBlock[] AnimationSourceList;
         public SenderBlock Sender;
         public AnimationListBlock[] AnimationList;
@@ -74073,6 +74270,7 @@ namespace libsecondlife.Packets
             Header = new HighHeader();
             Header.ID = 21;
             Header.Reliable = true;
+            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[0];
             AnimationSourceList = new AnimationSourceListBlock[0];
             Sender = new SenderBlock();
             AnimationList = new AnimationListBlock[0];
@@ -74083,6 +74281,10 @@ namespace libsecondlife.Packets
             int packetEnd = bytes.Length - 1;
             Header = new HighHeader(bytes, ref i, ref packetEnd);
             int count = (int)bytes[i++];
+            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
+            for (int j = 0; j < count; j++)
+            { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(bytes, ref i); }
+            count = (int)bytes[i++];
             AnimationSourceList = new AnimationSourceListBlock[count];
             for (int j = 0; j < count; j++)
             { AnimationSourceList[j] = new AnimationSourceListBlock(bytes, ref i); }
@@ -74097,6 +74299,10 @@ namespace libsecondlife.Packets
         {
             Header = head;
             int count = (int)bytes[i++];
+            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
+            for (int j = 0; j < count; j++)
+            { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(bytes, ref i); }
+            count = (int)bytes[i++];
             AnimationSourceList = new AnimationSourceListBlock[count];
             for (int j = 0; j < count; j++)
             { AnimationSourceList[j] = new AnimationSourceListBlock(bytes, ref i); }
@@ -74112,6 +74318,8 @@ namespace libsecondlife.Packets
             int length = 5;
             length += Sender.Length;;
             length++;
+            for (int j = 0; j < PhysicalAvatarEventList.Length; j++) { length += PhysicalAvatarEventList[j].Length; }
+            length++;
             for (int j = 0; j < AnimationSourceList.Length; j++) { length += AnimationSourceList[j].Length; }
             length++;
             for (int j = 0; j < AnimationList.Length; j++) { length += AnimationList[j].Length; }
@@ -74119,6 +74327,8 @@ namespace libsecondlife.Packets
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)PhysicalAvatarEventList.Length;
+            for (int j = 0; j < PhysicalAvatarEventList.Length; j++) { PhysicalAvatarEventList[j].ToBytes(bytes, ref i); }
             bytes[i++] = (byte)AnimationSourceList.Length;
             for (int j = 0; j < AnimationSourceList.Length; j++) { AnimationSourceList[j].ToBytes(bytes, ref i); }
             Sender.ToBytes(bytes, ref i);
@@ -74131,6 +74341,10 @@ namespace libsecondlife.Packets
         public override string ToString()
         {
             string output = "--- AvatarAnimation ---" + Environment.NewLine;
+            for (int j = 0; j < PhysicalAvatarEventList.Length; j++)
+            {
+                output += PhysicalAvatarEventList[j].ToString() + Environment.NewLine;
+            }
             for (int j = 0; j < AnimationSourceList.Length; j++)
             {
                 output += AnimationSourceList[j].ToString() + Environment.NewLine;
