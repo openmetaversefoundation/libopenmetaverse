@@ -1781,6 +1781,10 @@ namespace libsecondlife
                             CompressedFlags flags = (CompressedFlags)Helpers.BytesToUIntBig(block.Data, i);
                             i += 4;
 
+                            prim.OwnerID = new LLUUID(block.Data, i);
+                            i += 16;
+			    
+
                             // Angular velocity
                             if ((flags & CompressedFlags.HasAngularVelocity) != 0)
                             {
@@ -1865,8 +1869,6 @@ namespace libsecondlife
                             if ((flags & CompressedFlags.HasSound) != 0)
                             {
                                 prim.Sound = new LLUUID(block.Data, i);
-                                i += 16;
-                                prim.OwnerID = new LLUUID(block.Data, i);
                                 i += 16;
 
                                 if (!BitConverter.IsLittleEndian)
