@@ -30,7 +30,7 @@ using System.Net;
 using System.Collections.Generic;
 using libsecondlife.Packets;
 
-namespacesz libsecondlife
+namespace libsecondlife
 {
     /// <summary>
     /// Represents an avatar in Second Life (other than your own)
