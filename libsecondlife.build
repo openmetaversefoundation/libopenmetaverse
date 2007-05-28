@@ -5,6 +5,7 @@
   <sysinfo />
 
   <!-- global framework settings -->
+  <property name="nant.settings.currentframework" value="mono-2.0" />
   <property name="target.framework" value="${framework::get-target-framework()}" />
   <property name="assembly.dir" value="${framework::get-assembly-directory(target.framework)}" />
 
