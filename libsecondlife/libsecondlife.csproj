@@ -114,6 +114,7 @@
     <Compile Include="BlockingQueue.cs" />
     <Compile Include="Caps.cs" />
     <Compile Include="DirectoryManager.cs" />
+    <Compile Include="FriendManager.cs" />
     <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
     <Compile Include="InventorySystem\InventoryLandmark.cs" />
     <Compile Include="InventorySystem\InventoryScript.cs" />

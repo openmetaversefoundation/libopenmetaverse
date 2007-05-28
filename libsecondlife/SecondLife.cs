@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -56,6 +56,8 @@ namespace libsecondlife
         public MainAvatar Self;
         /// <summary>Other Avatars Subsystem</summary>
         public AvatarManager Avatars;
+        /// <summary>Friends List Subsystem</summary>
+        public FriendManager Friends;
         /// <summary>Grid (aka simulator group) Subsystem</summary>
         public GridManager Grid;
         /// <summary>Object Subsystem</summary>
@@ -98,6 +100,7 @@ namespace libsecondlife
             Parcels = new ParcelManager(this);
             Self = new MainAvatar(this);
             Avatars = new AvatarManager(this);
+            Friends = new FriendManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);

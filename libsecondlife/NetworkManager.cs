@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Second Life Reverse Engineering Team
+ * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
