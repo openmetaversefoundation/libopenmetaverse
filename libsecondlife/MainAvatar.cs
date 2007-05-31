@@ -1361,8 +1361,7 @@ namespace libsecondlife
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
-		/// <summary>
-		/// Attempt teleport to specified LLUUID
+		/// <summary>Attempt teleport to specified LLUUID</summary>
 		public bool Teleport(LLUUID landmark)
 		{
 			TeleportStat = TeleportStatus.None;

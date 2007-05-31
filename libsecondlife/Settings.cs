@@ -44,6 +44,31 @@ namespace libsecondlife
         /// <summary>XML-RPC login server to connect to</summary>
         public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
 
+	/// Timeouts:
+        /// <summary>Number of milliseconds before a teleport attempt will time
+        /// out</summary>
+        public int TELEPORT_TIMEOUT = 40 * 1000;
+        /// <summary>Number of milliseconds before NetworkManager.Logout() will
+        /// time out</summary>
+        public int LOGOUT_TIMEOUT = 5 * 1000;
+        /// <summary>Number of milliseconds before a CAPS call will time out 
+        /// and try again</summary>
+        /// <remarks>Setting this too low will cause web requests to repeatedly
+        /// time out and retry</remarks>
+        public int CAPS_TIMEOUT = 60 * 1000;
+        /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
+        public int LOGIN_TIMEOUT = 60 * 1000;
+        /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
+        public int RESEND_TIMEOUT = 4000;
+        /// <summary>Milliseconds without receiving a packet before the 
+        /// connection to a simulator is assumed lost</summary>
+        public int SIMULATOR_TIMEOUT = 15 * 1000;
+        /// <summary>Milliseconds to wait for a simulator info request through
+        /// the grid interface</summary>
+        public int MAP_REQUEST_TIMEOUT = 5 * 1000;
+
+	/// Sizes
+
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
         public const int PACKET_INBOX_SIZE = 100;
@@ -65,7 +90,15 @@ namespace libsecondlife
         /// <summary>Number of milliseconds between updating the current
         /// positions of moving, non-accelerating and non-colliding objects</summary>
         public const int INTERPOLATION_UPDATE = 250;
+        /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
+        /// is forced</summary>
+        public int MAX_PENDING_ACKS = 10;
+        /// <summary>Maximum number of ACKs to append to a packet</summary>
+        public int MAX_APPENDED_ACKS = 10;
+        /// <summary>Network stats queue length (seconds)</summary>
+        public int STATS_QUEUE_SIZE = 5;
 
+	/// Configuration options (mostly booleans)
         /// <summary>Whether or not to process packet callbacks async. This is
         /// better off being true, but the option exists to set it to false and
         /// use the old behavior. Please fix your packet callback to return to
@@ -73,33 +106,12 @@ namespace libsecondlife
         /// <remarks>This is an experimental feature and is not completely
         /// reliable yet</remarks>
         public bool SYNC_PACKETCALLBACKS = false;
-        /// <summary>Number of milliseconds before a teleport attempt will time
-        /// out</summary>
-        public int TELEPORT_TIMEOUT = 40 * 1000;
-        /// <summary>Number of milliseconds before NetworkManager.Logout() will
-        /// time out</summary>
-        public int LOGOUT_TIMEOUT = 5 * 1000;
-        /// <summary>Number of milliseconds before a CAPS call will time out 
-        /// and try again</summary>
-        /// <remarks>Setting this too low will cause web requests to repeatedly
-        /// time out and retry</remarks>
-        public int CAPS_TIMEOUT = 60 * 1000;
-        /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-        public int LOGIN_TIMEOUT = 60 * 1000;
-        /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
-        public int RESEND_TIMEOUT = 4000;
-        /// <summary>Milliseconds without receiving a packet before the 
-        /// connection to a simulator is assumed lost</summary>
-        public int SIMULATOR_TIMEOUT = 15 * 1000;
-        /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
-        /// is forced</summary>
-        public int MAX_PENDING_ACKS = 10;
-        /// <summary>Maximum number of ACKs to append to a packet</summary>
-        public int MAX_APPENDED_ACKS = 10;
         /// <summary>Enable/disable debugging log messages</summary>
         public bool DEBUG = true;
         /// <summary>Attach avatar names to log messages</summary>
         public bool LOG_NAMES = true;
+	/// <summary>Log packet retransmission info</summary>
+	public bool LOG_RESENDS = true;
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
@@ -116,23 +128,13 @@ namespace libsecondlife
         public bool OUTBOUND_THROTTLE = false;
         /// <summary>Maximum outgoing bytes/sec, per sim</summary>
         public int OUTBOUND_THROTTLE_RATE = 1500;
-        /// <summary>Network stats queue length (seconds)</summary>
-        public int STATS_QUEUE_SIZE = 5;
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
         public bool SEND_PINGS = false;
-        /// <summary>If this is true, connection will be killed if we stop 
-        /// receiving pongs</summary>
-        //public bool USE_WATCHDOG = false;
-        /// <summary>Number of seconds to wait for pong before killing</summary>
-        //public int WATCHDOG_SECONDS = 10;
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings
         /// (Experimental)</summary>
         public bool MULTIPLE_SIMS = true;
-        /// <summary>Milliseconds to wait for a simulator info request through
-        /// the grid interface</summary>
-        public int MAP_REQUEST_TIMEOUT = 5 * 1000;
         /// <summary>If true, all object update packets will be decoded in to
         /// native objects. If false, only updates for our own agent will be
         /// decoded. Registering an event handler will force objects for that
@@ -144,8 +146,8 @@ namespace libsecondlife
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
         public bool ENABLE_CAPS = true;
-		/// <summary>Whether to decode sim stats</sumamry>
-		public bool ENABLE_SIMSTATS = true;
+	/// <summary>Whether to decode sim stats</summary>
+	public bool ENABLE_SIMSTATS = true;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>
@@ -154,9 +156,7 @@ namespace libsecondlife
         private SecondLife Client;
         private int priceUpload = 0;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
+        /// <summary>Constructor</summary>
         /// <param name="client">Client connection Object to use</param>
         public Settings(SecondLife client)
         {

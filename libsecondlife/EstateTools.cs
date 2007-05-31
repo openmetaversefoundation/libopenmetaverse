@@ -96,9 +96,9 @@ namespace libsecondlife
         /// Requests estate information such as top scripts and colliders
         /// </summary>
         /// <param name="parcelLocalID"></param>
-        /// <param name="ReportType"></param>
-        /// <param name="RequestFlags"></param>
-        /// <param name="Filter"></param>
+        /// <param name="reportType"></param>
+        /// <param name="requestFlags"></param>
+        /// <param name="filter"></param>
         public void LandStatRequest(int parcelLocalID, LandStatReportType reportType, uint requestFlags, string filter)
         {
             LandStatRequestPacket p = new LandStatRequestPacket();

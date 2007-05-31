@@ -735,6 +735,7 @@ namespace libsecondlife
                     {
                         try
                         {
+                            if (Client.Settings.LOG_RESENDS) 
                             Client.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed", 
                                 packet.Header.Sequence, now - packet.TickCount));
 

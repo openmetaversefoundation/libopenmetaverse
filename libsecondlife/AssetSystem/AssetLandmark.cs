@@ -91,10 +91,7 @@ namespace libsecondlife.AssetSystem
 			LLVector3.TryParse(parts[2].Substring(11, parts[2].Length - 11), out _Pos);
 		}
 
-        /// <summary>
-        /// </summary>
-        /// <param name="body"></param>
-        private void setAsset()
+	        private void setAsset()
 		{
 			string body = "Landmark version " + _Version.ToString() + "\n";
 			body += "region_id " + _Region.ToStringHyphenated() + "\n";
@@ -102,7 +99,7 @@ namespace libsecondlife.AssetSystem
 			// Assume this is a string, add 1 for the null terminator
 			byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes((string)body);
 			byte[] assetData = new byte[stringBytes.Length + 1];
-            Buffer.BlockCopy(stringBytes, 0, assetData, 0, stringBytes.Length);
+	                Buffer.BlockCopy(stringBytes, 0, assetData, 0, stringBytes.Length);
 
 			SetAssetData( assetData );
 		}
