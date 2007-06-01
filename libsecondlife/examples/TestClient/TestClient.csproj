@@ -35,23 +35,23 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
-    <Compile Include="Commands\AppearanceCommand.cs" />
+    <Compile Include="Commands\Inventory\AppearanceCommand.cs" />
     <Compile Include="Commands\CloneProfileCommand.cs" />
-    <Compile Include="Commands\DebugCommand.cs" />
-    <Compile Include="Commands\DumpOutfitCommand.cs" />
-    <Compile Include="Commands\ExportParticlesCommand.cs" />
+    <Compile Include="Commands\System\DebugCommand.cs" />
+    <Compile Include="Commands\Inventory\DumpOutfitCommand.cs" />
+    <Compile Include="Commands\Prims\ExportParticlesCommand.cs" />
     <Compile Include="Commands\Inventory\BalanceCommand.cs" />
     <Compile Include="Commands\Inventory\DeleteFolderCommand.cs" />
     <Compile Include="Commands\Inventory\GiveAllCommand.cs" />
     <Compile Include="Commands\Inventory\WearCommand.cs" />
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
-    <Compile Include="Commands\ExportOutfitCommand.cs" />
-    <Compile Include="Commands\FindSimCommand.cs" />
-    <Compile Include="Commands\ImportOutfitCommand.cs" />
-    <Compile Include="Commands\LoginCommand.cs">
+    <Compile Include="Commands\Inventory\ExportOutfitCommand.cs" />
+    <Compile Include="Commands\Land\FindSimCommand.cs" />
+    <Compile Include="Commands\Inventory\ImportOutfitCommand.cs" />
+    <Compile Include="Commands\System\LoginCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\LogoutCommand.cs">
+    <Compile Include="Commands\System\LogoutCommand.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\Communication\EchoMasterCommand.cs" />
@@ -59,32 +59,32 @@
     <Compile Include="Commands\Communication\SayCommand.cs" />
     <Compile Include="Commands\Communication\ShoutCommand.cs" />
     <Compile Include="Commands\Communication\WhisperCommand.cs" />
-    <Compile Include="Commands\MD5Command.cs" />
+    <Compile Include="Commands\System\MD5Command.cs" />
     <Compile Include="Commands\Movement\FollowCommand.cs" />
     <Compile Include="Commands\Movement\GotoCommand.cs" />
     <Compile Include="Commands\Movement\JumpCommand.cs" />
     <Compile Include="Commands\Movement\LocationCommand.cs" />
     <Compile Include="Commands\Movement\SitCommand.cs" />
-    <Compile Include="Commands\PacketLogCommand.cs" />
-    <Compile Include="Commands\ParcelInfoCommand.cs" />
-    <Compile Include="Commands\QuitCommand.cs">
+    <Compile Include="Commands\System\PacketLogCommand.cs" />
+    <Compile Include="Commands\Land\ParcelInfoCommand.cs" />
+    <Compile Include="Commands\System\QuitCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\RegionInfoCommand.cs" />
-    <Compile Include="Commands\SetMasterCommand.cs">
+    <Compile Include="Commands\Stats\RegionInfoCommand.cs" />
+    <Compile Include="Commands\System\SetMasterCommand.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Commands\ExportCommand.cs" />
-    <Compile Include="Commands\ImportCommand.cs" />
-    <Compile Include="Commands\LoadCommand.cs" />
-    <Compile Include="Commands\PrimCountCommand.cs" />
-    <Compile Include="Commands\SetMasterKeyCommand.cs" />
-    <Compile Include="Commands\ShowEffectsCommand.cs" />
-    <Compile Include="Commands\StatsCommand.cs" />
+    <Compile Include="Commands\Prims\ExportCommand.cs" />
+    <Compile Include="Commands\Prims\ImportCommand.cs" />
+    <Compile Include="Commands\System\LoadCommand.cs" />
+    <Compile Include="Commands\Prims\PrimCountCommand.cs" />
+    <Compile Include="Commands\System\SetMasterKeyCommand.cs" />
+    <Compile Include="Commands\System\ShowEffectsCommand.cs" />
+    <Compile Include="Commands\Stats\StatsCommand.cs" />
     <Compile Include="Commands\TouchCommand.cs" />
     <Compile Include="Commands\TreeCommand.cs" />
-    <Compile Include="Commands\UptimeCommand.cs" />
-    <Compile Include="Commands\HelpCommand.cs" />
+    <Compile Include="Commands\Stats\UptimeCommand.cs" />
+    <Compile Include="Commands\System\HelpCommand.cs" />
     <Compile Include="ClientManager.cs" />
     <Compile Include="Commands\WhoCommand.cs">
       <SubType>Code</SubType>
