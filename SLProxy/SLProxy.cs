@@ -579,6 +579,7 @@ namespace SLProxy
                 return;
             }
 
+            //DEBUG: Console.WriteLine("[" + reqNo + "] : " + meth);
             CapInfo cap = null;
             lock (this)
             {
@@ -592,6 +593,7 @@ namespace SLProxy
             if (cap != null)
             {
                 capReq = new CapsRequest(cap);
+                
                 if (cap.ReqFmt == CapsDataFormat.LLSD)
                 {
                     capReq.Request = LLSD.LLSDDeserialize(content);
@@ -625,7 +627,8 @@ namespace SLProxy
             }
             else
             {
-                WebRequest req = WebRequest.Create(uri);
+                HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(uri);
+                req.KeepAlive = false;
                 foreach (string header in headers.Keys)
                 {
                     if (header == "accept" || header == "connection" ||
@@ -655,7 +658,6 @@ namespace SLProxy
                     Stream reqStream = req.GetRequestStream();
                     reqStream.Write(content, 0, content.Length);
                     reqStream.Close();
-
                     resp = (HttpWebResponse)req.GetResponse();
                 }
                 catch (WebException e)
@@ -742,7 +744,11 @@ namespace SLProxy
             {
                 foreach (CapsDelegate d in cap.GetDelegates())
                 {
+		  try {
                     if (d(capReq, CapsStage.Response)) { break; }
+		  } catch (Exception e) {
+		    Console.WriteLine(e.ToString()); break;
+		  }
                 }
 
                 if (cap.RespFmt == CapsDataFormat.LLSD)
@@ -884,9 +890,9 @@ namespace SLProxy
                 {
                     Hashtable info = null;
                     if (message == "TeleportFinish")
-                        info = (Hashtable)body["Info"];
+		      info = (Hashtable)(((ArrayList)body["Info"])[0]);
                     else
-                        info = (Hashtable)body["RegionData"];
+		      info = (Hashtable)(((ArrayList)body["RegionData"])[0]);
                     byte[] bytes = (byte[])info["SimIP"];
                     uint simIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
                     ushort simPort = (ushort)(int)info["SimPort"];
@@ -2061,4 +2067,5 @@ namespace SLProxy
         Response
     }
 }
+
 
