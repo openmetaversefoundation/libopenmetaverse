@@ -42,6 +42,7 @@
 		4054E3A10B573A3700B0667D /* libsecondlife.Utilities.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */; };
 		4054E4060B573A9F00B0667D /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		4070DFB10BF5570C00AD17A3 /* openjpeg.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E06B1C0B79331A00A4AE9E /* openjpeg.dll */; };
+		407CC4A30C14DA140013F07F /* FriendManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 407CC4A20C14DA140013F07F /* FriendManager.cs */; };
 		4082AF1B0BE5CF73005601E2 /* Types.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF20BE5CF73005601E2 /* Types.cs */; };
 		4082AF1C0BE5CF73005601E2 /* ThreadUtil.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */; };
 		4082AF1D0BE5CF73005601E2 /* Textures.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AEF40BE5CF73005601E2 /* Textures.cs */; };
@@ -320,6 +321,7 @@
 		4054E3830B57394E00B0667D /* name2key.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = name2key.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3980B573A0900B0667D /* Key2Name.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = Key2Name.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3AB0B573A6500B0667D /* TestClient.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = TestClient.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		407CC4A20C14DA140013F07F /* FriendManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = FriendManager.cs; path = libsecondlife/FriendManager.cs; sourceTree = "<group>"; };
 		4082AEF20BE5CF73005601E2 /* Types.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Types.cs; path = libsecondlife/Types.cs; sourceTree = "<group>"; };
 		4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ThreadUtil.cs; path = libsecondlife/ThreadUtil.cs; sourceTree = "<group>"; };
 		4082AEF40BE5CF73005601E2 /* Textures.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Textures.cs; path = libsecondlife/Textures.cs; sourceTree = "<group>"; };
@@ -634,6 +636,7 @@
 		4054E2B50B5733D200B0667D /* libsecondlife */ = {
 			isa = PBXGroup;
 			children = (
+				407CC4A20C14DA140013F07F /* FriendManager.cs */,
 				408D586A0BFA25DB0076F241 /* TextureEntry.cs */,
 				4082AFD70BE5D0D5005601E2 /* InventorySystem */,
 				4082AFE20BE5D0D5005601E2 /* AssetSystem */,
@@ -1322,6 +1325,7 @@
 				4041F3BC0BED89470084F948 /* InventoryLandmark.cs in Sources */,
 				4041F3BE0BED89610084F948 /* AssetLandmark.cs in Sources */,
 				408D586B0BFA25DB0076F241 /* TextureEntry.cs in Sources */,
+				407CC4A30C14DA140013F07F /* FriendManager.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
