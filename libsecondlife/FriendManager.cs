@@ -32,17 +32,29 @@ using System.Text;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FriendManager
     {
-
         private SecondLife Client;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
         public enum UserRights
         {
-            ViewOnlineStatus = 1,
-            ViewMapLocation = 2,
-            ModifyObjects = 4,
-            AllUserRights = 7
+            /// <summary></summary>
+            None = 0x00,
+            /// <summary></summary>
+            ViewOnlineStatus = 0x01,
+            /// <summary></summary>
+            ViewMapLocation = 0x02,
+            /// <summary></summary>
+            ModifyObjects = 0x04,
+            /// <summary></summary>
+            AllUserRights = 0x07
         }
 
         /// <summary>Constructor for FriendManager</summary>
@@ -60,16 +72,16 @@ namespace libsecondlife
         /// <param name="modifyObjects">User can modify your objects</param>
         public void GrantUserRights(LLUUID targetID, bool viewOnlineStatus, bool viewMapLocation, bool modifyObjects)
         {
-            int rights = 0;
-            if (viewOnlineStatus) rights |= (int)UserRights.ViewOnlineStatus;
-            if (viewMapLocation) rights |= (int)UserRights.ViewMapLocation;
-            if (modifyObjects) rights |= (int)UserRights.ModifyObjects;
+            UserRights rights = UserRights.None;
+            if (viewOnlineStatus) rights |= UserRights.ViewOnlineStatus;
+            if (viewMapLocation) rights |= UserRights.ViewMapLocation;
+            if (modifyObjects) rights |= UserRights.ModifyObjects;
             GrantUserRightsPacket p = new GrantUserRightsPacket();
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
             p.Rights = new GrantUserRightsPacket.RightsBlock[1];
             p.Rights[1].AgentRelated = targetID;
-            p.Rights[1].RelatedRights = rights;
+            p.Rights[1].RelatedRights = (int)rights;
         }
 
         /// <summary>
@@ -77,7 +89,9 @@ namespace libsecondlife
         /// </summary>
         public void RequestFriendship(LLUUID targetID)
         {
-            Client.Self.InstantMessage("", targetID, "", LLUUID.Zero, MainAvatar.InstantMessageDialog.FriendshipOffered, MainAvatar.InstantMessageOnline.Online, Client.Self.Position, Client.Network.CurrentSim.ID, new byte[0]);
+            Client.Self.InstantMessage(String.Empty, targetID, String.Empty, LLUUID.Zero, 
+                MainAvatar.InstantMessageDialog.FriendshipOffered, MainAvatar.InstantMessageOnline.Online, 
+                Client.Self.Position, Client.Network.CurrentSim.ID, new byte[0]);
         }
 
         /// <summary>
@@ -91,7 +105,5 @@ namespace libsecondlife
             p.ExBlock.OtherID = targetID;
             Client.Network.SendPacket(p);
         }
-
-
     }
 }
