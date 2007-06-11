@@ -1,136 +1,50 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C# Express 2005
+# Visual Studio 2005
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife", "libsecondlife.csproj", "{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sldump", "examples\sldump\sldump.csproj", "{F6258A68-C624-46A0-BA73-B55D21BB0A3B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "slaccountant", "examples\slaccountant\slaccountant.csproj", "{FC19D5F6-076E-4923-8456-9B0E00E22896}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "name2key", "examples\name2key\name2key.csproj", "{66FFD34E-652C-4EF5-81FE-06AD011169D2}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "primexport", "examples\primexport\primexport.csproj", "{77E5330D-8A8C-41B4-A2D1-6F06FE45ED6D}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapgenerator", "mapgenerator\mapgenerator.csproj", "{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_SimpleInventory", "examples\IA_SimpleInventory\IA_SimpleInventory.csproj", "{E464B963-46E3-4E1A-A36F-9C640C880E68}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_NotecardTool", "examples\IA_NotecardTool\IA_NotecardTool.csproj", "{E185E4E1-62D2-430C-A94C-E8E38190805B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_ImageTool", "examples\IA_ImageTool\IA_ImageTool.csproj", "{8D2E5240-2247-42F5-AAAC-CF0CCCEE349A}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "groupmanager", "examples\groupmanager\groupmanager.csproj", "{F460FAB3-0D12-4873-89EB-2696818764B8}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "examples\TestClient\TestClient.csproj", "{B87682F6-B2D7-4C4D-A529-400C24FD4880}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Utilities", "libsecondlife.Utilities\libsecondlife.Utilities.csproj", "{CE5E06C2-2428-416B-ADC1-F1FE16A0FB27}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Tests", "libsecondlife.Tests\libsecondlife.Tests.csproj", "{E0BCBBAE-A620-431A-9EB7-30173EAF195B}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualParamGenerator", "VisualParamGenerator\VisualParamGenerator.csproj", "{D2A514C5-5590-4789-9032-6E5B4C297B80}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openjpegnet", "..\openjpegnet\openjpegnet.csproj", "{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heightmap", "examples\Heightmap\Heightmap.csproj", "{D9669D08-AC81-4F45-AD23-82787C6EFBBA}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "key2name", "examples\Key2Name\key2name.csproj", "{4FF68142-9C61-42D1-87DC-5D37CB671C29}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Baker", "examples\Baker\Baker.csproj", "{4A32A4E5-717C-4B60-B3D7-704518684893}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decoder", "..\Decoder\Decoder.csproj", "{7AE16AC1-E64C-4FDC-9B85-4BB6145D511C}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecondGlance", "..\SecondGlance\SecondGlance.csproj", "{D72C92D1-559A-48A7-93F5-99F4E99F3F98}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLProxy", "..\SLProxy\SLProxy.csproj", "{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsole", "..\SLProxy\ChatConsole.csproj", "{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUITestClient", "examples\GUITestClient\GUITestClient.csproj", "{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -225,6 +139,10 @@ Global
 		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
