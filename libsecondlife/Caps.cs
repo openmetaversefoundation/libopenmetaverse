@@ -24,6 +24,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+//HACK: Removes the 502 error messages 
+//uncomment this line to reenable the 502 CAP Error Spam 
+//#define CAPS_502_DEBUG 
+
 using System;
 using System.Threading;
 using System.Collections;
@@ -31,6 +35,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.IO;
+
 
 namespace libsecondlife
 {
@@ -212,7 +217,14 @@ namespace libsecondlife
             }
             else
             {
-                Client.DebugLog("CAPS response exception for " + Simulator.ToString() + ": " + e.Message);
+                #if !CAPS_502_DEBUG
+                if (!e.Message.Contains("502"))
+                {
+                #endif
+                    Client.DebugLog("CAPS response exception for " + Simulator.ToString() + ": " + e.Message);
+                #if !CAPS_502_DEBUG
+                }
+                #endif
             }
         }
 
