@@ -573,6 +573,7 @@ namespace OpenJPEGNet
         public unsafe static byte[] EncodeSecondLifeBaked(int width, int height, byte[] data)
         {
             byte[] output = null;
+            const int NUM_COMPS = 4;
 
             try
             {
@@ -591,12 +592,12 @@ namespace OpenJPEGNet
                 parameters.cp_comment = "";
 
                 OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
-                opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[5];
+                opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[NUM_COMPS];
 
-                for (int c = 0; c < 5; c++)
+                for (int c = 0; c < NUM_COMPS; c++)
                 {
-                    cmptparm[c] = new opj_image_cmptparm_t();
-
+                    cmptparm[c].x0 = 0;
+                    cmptparm[c].y0 = 0;
                     cmptparm[c].prec = 8;
                     cmptparm[c].bpp = 8;
                     cmptparm[c].sgnd = 0;
@@ -607,21 +608,24 @@ namespace OpenJPEGNet
                 }
 
                 // create the image
-                opj_image_t* image_ptr = opj_image_create(5, cmptparm, color_space);
+                opj_image_t* image_ptr = opj_image_create(NUM_COMPS, cmptparm, color_space);
                 image_ptr->x1 = width;
                 image_ptr->y1 = height;
 
                 int i = 0;
 
-                for (int y = 0; y < height; y++)
+                for (int y = height - 1; y >= 0; y--)
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        (*image_ptr).comps[0].data[i] = data[i + 0]; // red
-                        (*image_ptr).comps[1].data[i] = data[i + 1]; // green
-                        (*image_ptr).comps[2].data[i] = data[i + 2]; // blue
-                        (*image_ptr).comps[3].data[i] = data[i + 3]; // alpha
-                        (*image_ptr).comps[4].data[i] = 0;         // bump
+                        int dataindex = (y * width + x) * NUM_COMPS;
+
+                        // Order of the pixels in baked images is: red, green, blue, alpha, bump
+                        for (int c = 0; c < NUM_COMPS; c++)
+                        {
+                            (*image_ptr).comps[c].data[i] = data[dataindex + c];
+                        }
+
                         i++;
                     }
                 }
@@ -639,7 +643,12 @@ namespace OpenJPEGNet
                 opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
 
                 // encode the image
-                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, null);
+                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, parameters.index);
+
+                // Free the parameters pointer (no longer needed)
+                Marshal.FreeHGlobal(parameters_ptr);
+
+                // Check if the encoding was successful
                 if (!success)
                 {
                     opj_cio_close(cio_ptr);
@@ -651,10 +660,14 @@ namespace OpenJPEGNet
                 output = new byte[codestream_length];
                 Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
 
+                // Close and free the byte stream
                 opj_cio_close(cio_ptr);
+
+                // Destroy the compression structures
                 opj_destroy_compress(cinfo_ptr);
+
+                // Destroy the image data
                 opj_image_destroy(image_ptr);
-                Marshal.FreeHGlobal(parameters_ptr);
             }
             catch (Exception e)
             {
