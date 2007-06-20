@@ -643,7 +643,10 @@ namespace OpenJPEGNet
                 opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
 
                 // encode the image
-                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, parameters.index);
+                bool success;
+                fixed(char* index = parameters.index) {
+                        success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, index);
+                }
 
                 // Free the parameters pointer (no longer needed)
                 Marshal.FreeHGlobal(parameters_ptr);
