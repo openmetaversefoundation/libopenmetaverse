@@ -114,13 +114,15 @@ namespace libsecondlife
         /// <summary>Requests the "Top Scripts" list for the current region</summary>
         public void GetTopScripts()
         {
-            LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
+            //LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
+            EstateOwnerMessage("scripts", "");
         }
 
         /// <summary>Requests the "Top Colliders" list for the current region</summary>
         public void GetTopColliders()
         {
-            LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
+            //LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
+            EstateOwnerMessage("colliders", "");
         }
 
         /// <summary>
@@ -198,12 +200,12 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Send a message dialog to the entire simulator
+        /// Restarts a region
         /// </summary>
         /// <param name="prey"></param>
-        public void SimulatorMessage(string message)
+        public void RestartRegion()
         {
-            EstateOwnerMessage("simulatormessage", message);
+            EstateOwnerMessage("restart", "");
         }
 
         /// <summary>
