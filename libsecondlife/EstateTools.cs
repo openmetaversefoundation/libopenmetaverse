@@ -173,25 +173,38 @@ namespace libsecondlife
 
             }
         }
-                
 
-        /// <summary>
-        /// Kick an Avatar from an estate
-        /// </summary>
-        /// <param name="prey">Key of Avatar to kick</param>
-		public void KickUser(LLUUID prey) 
-		{
+        public void EstateOwnerMessage(string method, string param)
+        {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
             estate.AgentData.AgentID = Client.Network.AgentID;
             estate.AgentData.SessionID = Client.Network.SessionID;
             estate.MethodData.Invoice = LLUUID.Random();
-            estate.MethodData.Method = Helpers.StringToField("kick");
-            estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[2];
-            estate.ParamList[0].Parameter = Helpers.StringToField(Client.Network.AgentID.ToStringHyphenated());
-            estate.ParamList[1].Parameter = Helpers.StringToField(prey.ToStringHyphenated());
+            estate.MethodData.Method = Helpers.StringToField(method);
+            estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[1];
+            estate.ParamList[0] = new EstateOwnerMessagePacket.ParamListBlock();
+            estate.ParamList[0].Parameter = Helpers.StringToField(param);
 
             Client.Network.SendPacket((Packet)estate);
+        }
+
+        /// <summary>
+        /// Kick an avatar from an estate
+        /// </summary>
+        /// <param name="prey">Key of Avatar to kick</param>
+		public void KickUser(LLUUID prey) 
+		{
+            EstateOwnerMessage("kickestate", prey.ToStringHyphenated());
 		}
+
+        /// <summary>
+        /// Send a message dialog to the entire simulator
+        /// </summary>
+        /// <param name="prey"></param>
+        public void SimulatorMessage(string message)
+        {
+            EstateOwnerMessage("simulatormessage", message);
+        }
 
         /// <summary>
         /// Ban an Avatar from an estate
@@ -213,14 +226,5 @@ namespace libsecondlife
 			//Client.Network.SendPacket(Packets.Estate.EstateUnBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
 		}
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="prey"></param>
-		public void TeleportHomeUser(LLUUID prey) 
-		{
-            // FIXME:
-			//Client.Network.SendPacket(Packets.Estate.EstateTeleportUser(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
-		}
 	}
 }
