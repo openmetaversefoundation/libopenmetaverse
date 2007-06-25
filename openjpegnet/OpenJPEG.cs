@@ -63,7 +63,7 @@ namespace OpenJPEGNet
             public int compno1;
             public OPJ_PROG_ORDER prg;
             public int tile;
-            public fixed char progorder[4];
+            public fixed byte progorder[4];
         };
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -78,15 +78,15 @@ namespace OpenJPEGNet
             public int cp_fixed_alloc;
             public int cp_fixed_quality;
             public int* cp_matrice;
-            public string cp_comment;
+            public IntPtr cp_comment;
             public int csty;
             public OPJ_PROG_ORDER prog_order;
             //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
             //public opj_poc_t[] POC;
-            public fixed int POC[256];
+            public fixed int POC[256]; // 32 * sizeof(obj_poc_t) == 1024 == 256 * sizeof(int)
             public int numpocs;
             public int tcp_numlayers;
-            public fixed int tcp_rates[100];
+            public fixed float tcp_rates[100];
             public fixed float tcp_distoratio[100];
             public int numresolution;
             public int cblockw_init;
@@ -98,10 +98,10 @@ namespace OpenJPEGNet
             public int res_spec;
             public fixed int prcw_init[J2K_MAXRLVLS];
             public fixed int prch_init[J2K_MAXRLVLS];
-            public fixed char infile[MAX_PATH];
-            public fixed char outfile[MAX_PATH];
+            public fixed byte infile[MAX_PATH];
+            public fixed byte outfile[MAX_PATH];
             public int index_on;
-            public fixed char index[MAX_PATH];
+            public fixed byte index[MAX_PATH];
             public int image_offset_x0;
             public int image_offset_y0;
             public int subsampling_dx;
@@ -318,7 +318,6 @@ namespace OpenJPEGNet
 
                 int width = image.x1 - image.x0;
                 int height = image.y1 - image.y0;
-                int components = image.numcomps;
 
                 // create the targa file in memory
                 output = new byte[width * height * 4 + TGA_HEADER_SIZE];
@@ -370,8 +369,6 @@ namespace OpenJPEGNet
                         return null;
                 }
 
-                File.WriteAllBytes("out.tga", output);
-
                 opj_cio_close((opj_cio_t*)cio_ptr);
                 opj_destroy_decompress(dinfo_ptr);
             }
@@ -384,6 +381,124 @@ namespace OpenJPEGNet
             return output;
         }
 
+        // Decodes to a raw RGBA 8bpp byte array
+        // Result dimensions stored in width and height
+        public unsafe static byte[] Decode(byte[] j2kdata, out int width, out int height)
+        {
+            byte[] output;
+            opj_image_t image;
+            opj_dinfo_t dinfo;
+            opj_cio_t cio;
+            IntPtr dinfo_ptr = IntPtr.Zero, cio_ptr = IntPtr.Zero, image_ptr = IntPtr.Zero;
+
+            try
+            {
+                opj_dparameters_t parameters = new opj_dparameters_t();
+
+                // TODO: configure the event callbacks
+
+                // setup the decoding parameters
+                opj_set_default_decoder_parameters(ref parameters);
+
+                // get a decoder handle
+                dinfo_ptr = opj_create_decompress(OPJ_CODEC_FORMAT.CODEC_J2K);
+                dinfo = (opj_dinfo_t)Marshal.PtrToStructure(dinfo_ptr, typeof(opj_dinfo_t));
+
+                // TODO: setup the callbacks
+
+                // setup the decoder
+                opj_setup_decoder(ref dinfo, ref parameters);
+
+                // open a byte stream
+                cio_ptr = (IntPtr)opj_cio_open((opj_common_struct_t*)dinfo_ptr, j2kdata, j2kdata.Length);
+                cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
+
+                // decode
+                image_ptr = opj_decode(ref dinfo, ref cio);
+                image = (opj_image_t)Marshal.PtrToStructure(image_ptr, typeof(opj_image_t));
+
+                width = image.x1 - image.x0;
+                height = image.y1 - image.y0;
+
+                // create the targa file in memory
+                output = new byte[width * height * 4];
+
+                int dataIndex = 0, compIndex = 0, x, y;
+
+                switch (image.numcomps)
+                {
+                    case 5:
+                        for (y = 0; y < height; y++)
+                        {
+                            for (x = 0; x < width; x++)
+                            {
+                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
+                                output[dataIndex++] = (byte)image.comps[1].data[compIndex]; // green
+                                output[dataIndex++] = (byte)image.comps[2].data[compIndex]; // blue
+                                output[dataIndex++] = (byte)image.comps[4].data[compIndex]; // alpha (yes, in comp 4)
+                                ++compIndex;
+                            }
+                        }
+                        break;
+
+                    case 4:
+                        for (y = 0; y < height; y++)
+                        {
+                            for (x = 0; x < width; x++)
+                            {
+                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
+                                output[dataIndex++] = (byte)image.comps[1].data[compIndex]; // green
+                                output[dataIndex++] = (byte)image.comps[2].data[compIndex]; // blue
+                                output[dataIndex++] = (byte)image.comps[3].data[compIndex]; // alpha
+                                ++compIndex;
+                            }
+                        }
+                        break;
+
+                    case 3:
+                        for (y = 0; y < height; y++)
+                        {
+                            for (x = 0; x < width; x++)
+                            {
+                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
+                                output[dataIndex++] = (byte)image.comps[1].data[compIndex]; // green
+                                output[dataIndex++] = (byte)image.comps[2].data[compIndex]; // blue
+                                output[dataIndex++] = 255; // alpha
+                                ++compIndex;
+                            }
+                        }
+                        break;
+
+                    case 1:
+                        for (y = 0; y < height; y++)
+                        {
+                            for (x = 0; x < width; x++)
+                            {
+                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
+                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // green
+                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // blue
+                                output[dataIndex++] = 255; // alpha
+                                ++compIndex;
+                            }
+                        }
+                        break;
+
+                    default:
+                        throw new Exception("Unhandled number of components");
+                }
+
+            }
+
+            finally
+            {
+                if (image_ptr != IntPtr.Zero) opj_image_destroy((opj_image_t*)image_ptr);
+                if (cio_ptr != IntPtr.Zero) opj_cio_close((opj_cio_t*)cio_ptr);
+                if (dinfo_ptr != IntPtr.Zero) opj_destroy_decompress(dinfo_ptr);
+            }
+
+            return output;
+        }
+        
         /// <summary>
         /// Decodes a byte array containing JPEG2000 data using the J2K codec
         /// in to a GDI+ Image object
@@ -415,7 +530,7 @@ namespace OpenJPEGNet
                 parameters.cod_format = 0;
                 parameters.subsampling_dx = 1;
                 parameters.subsampling_dy = 1;
-                parameters.cp_comment = comment;
+                parameters.cp_comment = Marshal.StringToHGlobalAnsi(comment);
 
                 OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
                 opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[MAX_COMPS];
@@ -552,6 +667,7 @@ namespace OpenJPEGNet
                 opj_cio_close(cio_ptr);
                 opj_destroy_compress(cinfo_ptr);
                 opj_image_destroy(image_ptr);
+                Marshal.FreeHGlobal(parameters.cp_comment);
                 Marshal.FreeHGlobal(parameters_ptr);
             }
             catch (Exception e)
@@ -573,31 +689,47 @@ namespace OpenJPEGNet
         public unsafe static byte[] EncodeSecondLifeBaked(int width, int height, byte[] data)
         {
             byte[] output = null;
-            const int NUM_COMPS = 4;
+            const int NUM_COMPS = 5;
 
             try
             {
                 // setup the parameters
                 IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
+                /*
                 opj_set_default_encoder_parameters(parameters_ptr);
 
                 opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
+                */
 
-                parameters.tcp_rates[0] = 0;
-                parameters.tcp_numlayers++;
-                parameters.cp_disto_alloc = 1;
-                parameters.cod_format = 0;
+                opj_cparameters_t parameters = new opj_cparameters_t();
+
+                parameters.numresolution = 6;
+                parameters.cblockw_init = 64;
+                parameters.cblockh_init = 64;
+                parameters.prog_order = 0;
+                parameters.roi_compno = -1;		/* no ROI */
                 parameters.subsampling_dx = 1;
                 parameters.subsampling_dy = 1;
-                parameters.cp_comment = "";
+                parameters.irreversible = 0;
+                parameters.numpocs = 0;
+
+                parameters.tcp_rates[0] = 40;
+                parameters.tcp_rates[1] = 100;
+                parameters.tcp_rates[2] = 200;
+                parameters.tcp_distoratio[0] = 0;
+                parameters.tcp_numlayers = 1;
+                parameters.cp_disto_alloc = 1;
+                parameters.cod_format = 0;
+                parameters.cp_comment = Marshal.StringToHGlobalAnsi("LL_RGBHM");
+                
 
                 OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
                 opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[NUM_COMPS];
 
                 for (int c = 0; c < NUM_COMPS; c++)
                 {
-                    cmptparm[c].x0 = 0;
-                    cmptparm[c].y0 = 0;
+                    cmptparm[c] = new opj_image_cmptparm_t();
+
                     cmptparm[c].prec = 8;
                     cmptparm[c].bpp = 8;
                     cmptparm[c].sgnd = 0;
@@ -605,6 +737,8 @@ namespace OpenJPEGNet
                     cmptparm[c].dy = parameters.subsampling_dy;
                     cmptparm[c].w = width;
                     cmptparm[c].h = height;
+                    cmptparm[c].x0 = 0;
+                    cmptparm[c].y0 = 0;
                 }
 
                 // create the image
@@ -614,23 +748,22 @@ namespace OpenJPEGNet
 
                 int i = 0;
 
-                for (int y = height - 1; y >= 0; y--)
+                for (int y = 0; y < height; y++)
                 {
                     for (int x = 0; x < width; x++)
                     {
-                        int dataindex = (y * width + x) * NUM_COMPS;
-
-                        // Order of the pixels in baked images is: red, green, blue, alpha, bump
-                        for (int c = 0; c < NUM_COMPS; c++)
-                        {
-                            (*image_ptr).comps[c].data[i] = data[dataindex + c];
-                        }
-
+                        int dataIndex = i * 4;
+                        
+                        (*image_ptr).comps[0].data[i] = data[dataIndex + 0]; // red
+                        (*image_ptr).comps[1].data[i] = data[dataIndex + 1]; // green
+                        (*image_ptr).comps[2].data[i] = data[dataIndex + 2]; // blue
+                        (*image_ptr).comps[3].data[i] = 0;           // bump
+                        (*image_ptr).comps[4].data[i] = data[dataIndex + 3]; // alpha
                         i++;
                     }
                 }
 
-                // get a J2K compressor handle
+               // get a J2K compressor handle
                 opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
 
                 // TODO: setup the callbacks
@@ -643,12 +776,10 @@ namespace OpenJPEGNet
                 opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
 
                 // encode the image
-                bool success;
-                fixed(char* index = parameters.index) {
-                        success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, index);
-                }
+                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, (char*)0);
 
                 // Free the parameters pointer (no longer needed)
+                Marshal.FreeHGlobal(parameters.cp_comment);
                 Marshal.FreeHGlobal(parameters_ptr);
 
                 // Check if the encoding was successful
@@ -662,6 +793,7 @@ namespace OpenJPEGNet
 
                 output = new byte[codestream_length];
                 Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
+                output[113] = 1; // WHAT
 
                 // Close and free the byte stream
                 opj_cio_close(cio_ptr);
