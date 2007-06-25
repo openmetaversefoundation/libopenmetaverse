@@ -114,15 +114,15 @@ namespace libsecondlife
         /// <summary>Requests the "Top Scripts" list for the current region</summary>
         public void GetTopScripts()
         {
-            //LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
-            EstateOwnerMessage("scripts", "");
+            //EstateOwnerMessage("scripts", "");
+            LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
         }
 
         /// <summary>Requests the "Top Colliders" list for the current region</summary>
         public void GetTopColliders()
         {
-            //LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
-            EstateOwnerMessage("colliders", "");
+            //EstateOwnerMessage("colliders", "");
+            LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
         }
 
         /// <summary>
@@ -178,15 +178,24 @@ namespace libsecondlife
 
         public void EstateOwnerMessage(string method, string param)
         {
+            List<string> listParams = new List<string>();
+            listParams.Add(param);
+            EstateOwnerMessage(method, listParams);
+        }
+
+        public void EstateOwnerMessage(string method, List<string>listParams)
+        {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
             estate.AgentData.AgentID = Client.Network.AgentID;
             estate.AgentData.SessionID = Client.Network.SessionID;
             estate.MethodData.Invoice = LLUUID.Random();
             estate.MethodData.Method = Helpers.StringToField(method);
-            estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[1];
-            estate.ParamList[0] = new EstateOwnerMessagePacket.ParamListBlock();
-            estate.ParamList[0].Parameter = Helpers.StringToField(param);
-
+            estate.ParamList = new EstateOwnerMessagePacket.ParamListBlock[listParams.Count];
+            for (int i = 0; i < listParams.Count; i++)
+            {
+                estate.ParamList[i] = new EstateOwnerMessagePacket.ParamListBlock();
+                estate.ParamList[i].Parameter = Helpers.StringToField(listParams[i]);
+            }
             Client.Network.SendPacket((Packet)estate);
         }
 
@@ -200,12 +209,48 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Restarts a region
+        /// Send a message dialog to everyone in the simulator
+        /// </summary>
+        /// <param name="message">Message to send all users</param>
+        public void SimulatorMessage(string message)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add("-1");
+            listParams.Add("-1");
+            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(Client.Self.FirstName + " " + Client.Self.LastName);
+            listParams.Add(message);
+            EstateOwnerMessage("simulatormessage", listParams);
+        }
+
+        /// <summary>
+        /// Send an avatar back to their home location
+        /// </summary>
+        /// <param name="pest">Key of avatar to send home</param>
+        public void TeleportHomeUser(LLUUID pest)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(pest.ToStringHyphenated());
+            EstateOwnerMessage("teleporthomeuser", listParams);
+        }
+
+        /// <summary>
+        /// Begin the region restart process
         /// </summary>
         /// <param name="prey"></param>
         public void RestartRegion()
         {
-            EstateOwnerMessage("restart", "");
+            EstateOwnerMessage("restart", "120");
+        }
+
+        /// <summary>
+        /// Cancels a region restart
+        /// </summary>
+        /// <param name="prey"></param>
+        public void CancelRestart()
+        {
+            EstateOwnerMessage("restart", "-1");
         }
 
         /// <summary>
