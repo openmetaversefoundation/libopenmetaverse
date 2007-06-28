@@ -65,7 +65,6 @@
     </csc>
     <copy todir="${bin_dir}" overwrite="true">
 	  <fileset>
-        <include name="openjpeg.*" />
         <include name="openjpegnet.dll.config" />
       </fileset>
     </copy>
