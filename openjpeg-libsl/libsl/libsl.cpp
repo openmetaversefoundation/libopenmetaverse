@@ -1,7 +1,6 @@
 // This is the main DLL file.
 
 #include "libsl.h"
-
 extern "C" {
 #include "../libopenjpeg/openjpeg.h"
 }
@@ -97,7 +96,7 @@ struct cio_wrapper
 	}
 };
 
-bool _stdcall LibslAllocEncoded(LibslImage* image)
+bool _STDCALL LibslAllocEncoded(LibslImage* image)
 {
 	try
 	{
@@ -113,7 +112,7 @@ bool _stdcall LibslAllocEncoded(LibslImage* image)
 	return true;
 }
 
-bool _stdcall LibslAllocDecoded(LibslImage* image)
+bool _STDCALL LibslAllocDecoded(LibslImage* image)
 {
 	try
 	{
@@ -129,14 +128,14 @@ bool _stdcall LibslAllocDecoded(LibslImage* image)
 	return true;
 }
 
-void _stdcall LibslFree(LibslImage* image)
+void _STDCALL LibslFree(LibslImage* image)
 {
 	if (image->encoded != 0) delete image->encoded;
 	if (image->decoded != 0) delete image->decoded;
 }
 
 
-bool _stdcall LibslEncode(LibslImage* image)
+bool _STDCALL LibslEncode(LibslImage* image)
 {
 	try
 	{
@@ -211,7 +210,7 @@ bool _stdcall LibslEncode(LibslImage* image)
 	}
 }
 
-bool _stdcall LibslDecode(LibslImage* image)
+bool _STDCALL LibslDecode(LibslImage* image)
 {
 	opj_dparameters dparameters;
 	
