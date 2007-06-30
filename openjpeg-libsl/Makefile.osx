@@ -16,7 +16,7 @@ LIBTOOLSTAT = libtool
 LIBTOOLDYN = gcc
 
 COMPILERFLAGS = -O3 -fPIC
-
+LIBRARIES = -lstdc++
 
 MODULES = $(SRCS:.c=.o)
 CPPMODULES = $(CPPSRCS:.cpp=.o)
@@ -44,10 +44,10 @@ OpenJPEG: $(SHAREDLIB)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .cpp.o:
-  $(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(SHAREDLIB): $(MODULES) $(CPPMODULES)
-	$(LIBTOOLDYN) -dynamiclib -o $@ $(MODULES) $(CPPMODULES)
+	$(LIBTOOLDYN) -dynamiclib -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
 
 install:
 	install -d ../bin
