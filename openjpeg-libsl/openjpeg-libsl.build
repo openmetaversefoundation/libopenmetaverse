@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+
+<project name="libsecondlife" default="build">
+
+  <!-- global framework settings -->
+  <property name="target.framework" value="${framework::get-target-framework()}" />
+  <property name="assembly.dir" value="${framework::get-assembly-directory(target.framework)}" />
+  
+  <!-- global project settings -->
+  <property name="version"
+     value="1.2.0" />
+  <property name="assembly" value="openjpeg-libsl"/>
+  <property name="bin_dir"  value="../bin" />
+  
+  <!-- build tasks -->
+  <target name="build" depends="build-openjpeg-libsl"
+     description="build openjpeg-libsl">
+  </target>
+  
+  <target name="build-openjpeg-libsl" depends="init"
+    description="Builds the binaries for the current configuration">
+    <echo message="Build Directory is ${bin_dir}/" />
+    <mkdir dir="${bin_dir}" failonerror="false" />
+    
+    <foreach item="File" in="libopenjpeg" property="source_file">
+      <regex pattern="^(?'filename'.*)\.(?'extension'\w+)$" input="${source_file}" />
+      
+      <exec program="gcc" if="${string::ends-with(source_file, '.c') or string::ends-with(source_file, '.cpp')}" />
+        <arg value="-O3" />
+        <arg value="-fPIC" />
+        <arg value="-Ilibopenjpeg" />
+        <arg value="-c" />
+        <arg value="${source_file}" />
+        <arg value="-o" />
+        <arg value="${filename}.o" />
+      </exec>
+    </foreach>
+    
+    <!-- FIXME: Linking -->
+    
+    <copy todir="${bin_dir}" overwrite="true">
+	    <fileset>
+        <include name="openjpeg-libsl-${version}.*" />
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean" depends="init"
+    description="Deletes the current configuration">
+    <delete failonerror="false">
+      <fileset basedir="${bin_dir}/">
+        <include name="openjpeg-libsl-${version}.*" />
+      </fileset>
+    </delete>
+  </target>
+  
+  <target
+    name="*"
+    description="Handles unknown targets">
+    <echo message="skipping unknown target" />
+  </target>
+</project>

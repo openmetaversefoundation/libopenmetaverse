@@ -75,8 +75,6 @@
     <delete failonerror="false">
       <fileset basedir="${bin_dir}/">
         <include name="openjpegnet.dll" />
-        <include name="openjpegnet.dll.config" />
-        <include name="openjpeg.*" />
       </fileset>
     </delete>
   </target>
