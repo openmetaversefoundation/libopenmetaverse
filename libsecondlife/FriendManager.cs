@@ -80,8 +80,10 @@ namespace libsecondlife
             p.AgentData.AgentID = Client.Network.AgentID;
             p.AgentData.SessionID = Client.Network.SessionID;
             p.Rights = new GrantUserRightsPacket.RightsBlock[1];
-            p.Rights[1].AgentRelated = targetID;
-            p.Rights[1].RelatedRights = (int)rights;
+            p.Rights[0] = new GrantUserRightsPacket.RightsBlock();
+            p.Rights[0].AgentRelated = targetID;
+            p.Rights[0].RelatedRights = (int)rights;
+            Client.Network.SendPacket(p);
         }
 
         /// <summary>
