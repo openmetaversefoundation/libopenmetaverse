@@ -73,11 +73,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Release/OpenJPEG.dll"
+				OutputFile="Release/openjpeg-libsl.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/OpenJPEG.pdb"
-				ImportLibrary=".\Release/OpenJPEG.lib"
+				ProgramDatabaseFile=".\Release/openjpeg-libsl.pdb"
+				ImportLibrary=".\Release/openjpeg-libsl.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -105,7 +105,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy Release\OpenJPEG.dll ..\bin&#x0D;&#x0A;"
+				CommandLine="copy Release\openjpeg-libsl.dll ..\bin&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -167,12 +167,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Debug/OpenJPEG.dll"
+				OutputFile="Debug/openjpeg-libsl.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/OpenJPEGd.pdb"
-				ImportLibrary=".\Debug/OpenJPEGd.lib"
+				ProgramDatabaseFile=".\Debug/openjpeg-libsld.pdb"
+				ImportLibrary=".\Debug/openjpeg-libsld.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -200,7 +200,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy Debug\OpenJPEG.dll ..\bin&#x0D;&#x0A;"
+				CommandLine="copy Debug\openjpeg-libsl.dll ..\bin&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

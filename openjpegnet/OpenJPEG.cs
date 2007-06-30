@@ -22,23 +22,23 @@ namespace OpenJPEGNet
         }
 
         // allocate encoded buffer based on length field
-        [DllImport("OpenJPEG.dll")]
+        [DllImport("openjpeg-libsl.dll")]
         private static extern bool LibslAllocEncoded(ref LibslImage image);
 
         // allocate decoded buffer based on width and height fields
-        [DllImport("OpenJPEG.dll")]
+        [DllImport("openjpeg-libsl.dll")]
         private static extern bool LibslAllocDecoded(ref LibslImage image);
         
         // free buffers
-        [DllImport("OpenJPEG.dll")]
+        [DllImport("openjpeg-libsl.dll")]
         private static extern bool LibslFree(ref LibslImage image);
         
         // encode raw to jpeg2000
-        [DllImport("OpenJPEG.dll")]
+        [DllImport("openjpeg-libsl.dll")]
         private static extern bool LibslEncode(ref LibslImage image);
 
         // decode jpeg2000 to raw
-        [DllImport("OpenJPEG.dll")]
+        [DllImport("openjpeg-libsl.dll")]
         private static extern bool LibslDecode(ref LibslImage image);
 
         // encode 
