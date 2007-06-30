@@ -8,809 +8,348 @@ namespace OpenJPEGNet
 {
     public class OpenJPEG
     {
-        public const string OPENJPEG_VERSION = "1.0.0";
-        public const int TRUE = 1;
-        public const int FALSE = 0;
-        public const int MAX_PATH = 260;
-        public const int J2K_MAXRLVLS = 33;
-        public const int J2K_MAXBANDS = 3 * J2K_MAXRLVLS - 2;
-        public const int TGA_HEADER_SIZE = 32;
-
-        public enum OPJ_PROG_ORDER
-        {
-            PROG_UNKNOWN = -1,
-            LRCP = 0,
-            RLCP = 1,
-            RPCL = 2,
-            PCRL = 3,
-            CPRL = 4
-        };
-
-        public enum OPJ_COLOR_SPACE
-        {
-            CLRSPC_UNKNOWN = -1,
-            CLRSPC_SRGB = 1,
-            CLRSPC_GRAY = 2,
-            CLRSPC_SYCC = 3
-        };
-
-        public enum OPJ_CODEC_FORMAT
-        {
-            CODEC_UNKNOWN = -1,
-            CODEC_J2K = 0,
-            CODEC_JPT = 1,
-            CODEC_JP2 = 2
-        };
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void opj_msg_callback(string msg, IntPtr client_data);
-
+        // This structure is used to pass images back and forth for both encoding and decoding
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_event_mgr_t
+        private struct LibslImage
         {
-            public opj_msg_callback error_handler;
-            public opj_msg_callback warning_handler;
-            public opj_msg_callback info_handler;
-        };
+            public IntPtr encoded;     // encoded image data
+            public int length;         // encoded image length
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_poc_t
-        {
-            public int resno0;
-            public int compno0;
-            public int layno1;
-            public int resno1;
-            public int compno1;
-            public OPJ_PROG_ORDER prg;
-            public int tile;
-            public fixed byte progorder[4];
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_cparameters_t
-        {
-            public bool tile_size_on;
-            public int cp_tx0;
-            public int cp_ty0;
-            public int cp_tdx;
-            public int cp_tdy;
-            public int cp_disto_alloc;
-            public int cp_fixed_alloc;
-            public int cp_fixed_quality;
-            public int* cp_matrice;
-            public IntPtr cp_comment;
-            public int csty;
-            public OPJ_PROG_ORDER prog_order;
-            //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-            //public opj_poc_t[] POC;
-            public fixed int POC[256]; // 32 * sizeof(obj_poc_t) == 1024 == 256 * sizeof(int)
-            public int numpocs;
-            public int tcp_numlayers;
-            public fixed float tcp_rates[100];
-            public fixed float tcp_distoratio[100];
-            public int numresolution;
-            public int cblockw_init;
-            public int cblockh_init;
-            public int mode;
-            public int irreversible;
-            public int roi_compno;
-            public int roi_shift;
-            public int res_spec;
-            public fixed int prcw_init[J2K_MAXRLVLS];
-            public fixed int prch_init[J2K_MAXRLVLS];
-            public fixed byte infile[MAX_PATH];
-            public fixed byte outfile[MAX_PATH];
-            public int index_on;
-            public fixed byte index[MAX_PATH];
-            public int image_offset_x0;
-            public int image_offset_y0;
-            public int subsampling_dx;
-            public int subsampling_dy;
-            public int decod_format;
-            public int cod_format;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_dparameters_t
-        {
-            public int cp_reduce;
-            public int cp_layer;
-            public fixed char infile[MAX_PATH];
-            public fixed char outfile[MAX_PATH];
-            public int decod_format;
-            public int cod_format;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_common_struct_t
-        {
-            void* event_mgr; //opj_event_mgr_t*
-            void* client_data;
-            bool is_decompressor;
-            OPJ_CODEC_FORMAT codec_format;
-            void* j2k_handle;
-            void* jp2_handle;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_cinfo_t
-        {
-            void* event_mgr; //opj_event_mgr_t*
-            void* client_data;
-            int is_decompressor;
-            int codec_format;
-            void* j2k_handle;
-            void* jp2_handle;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_dinfo_t
-        {
-            void* event_mgr; //opj_event_mgr_t*
-            void* client_data;
-            bool is_decompressor;
-            OPJ_CODEC_FORMAT codec_format;
-            void* j2k_handle;
-            void* jp2_handle;
-        };
-
-        public const int OPJ_STREAM_READ = 0x0001;
-        public const int OPJ_STREAM_WRITE = 0x0002;
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_cio_t
-        {
-            public IntPtr cinfo;
-            public int openmode;
-            public byte* buffer;
-            public int length;
-            public byte* start;
-            public byte* end;
-            public byte* bp;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_image_comp_t
-        {
-            public int dx;
-            public int dy;
-            public int w;
-            public int h;
-            public int x0;
-            public int y0;
-            public int prec;
-            public int bpp;
-            public int sgnd;
-            public int resno_decoded;
-            public int factor;
-            public int* data;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public unsafe struct opj_image_t
-        {
-            public int x0;
-            public int y0;
-            public int x1;
-            public int y1;
-            public int numcomps;
-            public OPJ_COLOR_SPACE color_space;
-            public opj_image_comp_t* comps;
-        };
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct opj_image_cmptparm_t
-        {
-            public int dx;
-            public int dy;
-            public int w;
-            public int h;
-            public int x0;
-            public int y0;
-            public int prec;
-            public int bpp;
-            public int sgnd;
+            public IntPtr decoded;     // decoded image data (8 bits per component, RGBA order)
+            public int width;          // width of decoded image
+            public int height;         // height of decoded image
+            public int components;     // number of decoded components
         }
 
-        [DllImport("openjpeg.dll", CharSet = CharSet.Ansi)]
-        public static extern string opj_version();
+        // allocate encoded buffer based on length field
+        [DllImport("OpenJPEG.dll")]
+        private static extern bool LibslAllocEncoded(ref LibslImage image);
 
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern opj_image_t* opj_image_create(int numcmpts, opj_image_cmptparm_t[] cmptparms, OPJ_COLOR_SPACE clrspc);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern void opj_image_destroy(opj_image_t* image);
-
-        [DllImport("openjpeg.dll")]
-        // TODO: Can we get rid of this MarshalAs?
-        public unsafe static extern opj_cio_t* opj_cio_open(void* cio, [MarshalAs(UnmanagedType.LPArray)]byte[] buffer, int length);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern void opj_cio_close(opj_cio_t* cio);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern int cio_tell(opj_cio_t* cio);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern void cio_seek(opj_cio_t* cio, int pos);
-
-        //[DllImport("openjpeg.dll")]
-        // opj_event_mgr_t*
-        //public unsafe static extern opj_event_mgr_t* opj_set_event_mgr(opj_common_struct_t* cinfo, opj_event_mgr_t* event_mgr, void* context);
-
-        [DllImport("openjpeg.dll", EntryPoint = "opj_create_decompress")]
-        // opj_dinfo_t*
-        public static extern IntPtr opj_create_decompress(OPJ_CODEC_FORMAT format);
-
-        [DllImport("openjpeg.dll")]
-        public static extern void opj_destroy_decompress(IntPtr dinfo);
-
-        [DllImport("openjpeg.dll")]
-        public static extern void opj_set_default_decoder_parameters(ref opj_dparameters_t parameters);
-
-        [DllImport("openjpeg.dll")]
-        public static extern void opj_setup_decoder(ref opj_dinfo_t dinfo, ref opj_dparameters_t parameters);
-
-        [DllImport("openjpeg.dll")]
-        // opj_image_t*
-        public static extern IntPtr opj_decode(ref opj_dinfo_t dinfo, ref opj_cio_t cio);
-
-        [DllImport("openjpeg.dll")]
-        // opj_cinfo_t*
-        public unsafe static extern opj_cinfo_t* opj_create_compress(OPJ_CODEC_FORMAT format);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern void opj_destroy_compress(opj_cinfo_t* cinfo);
-
-        [DllImport("openjpeg.dll")]
-        public static extern void opj_set_default_encoder_parameters(IntPtr parameters);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern void opj_setup_encoder(opj_cinfo_t* cinfo, IntPtr parameters, opj_image_t* image);
-
-        [DllImport("openjpeg.dll")]
-        public unsafe static extern bool opj_encode(opj_cinfo_t* cinfo, opj_cio_t* cio, opj_image_t* image, char* index);
-
-
-        ///////////////////////////////////
-
-        /// <summary>
-        /// Decodes a byte array containing JPEG2000 data using the J2K codec
-        /// in to a byte array containing a Targa file
-        /// </summary>
-        /// <param name="j2cdata">Byte array containing JPEG2000 data using the
-        /// J2K codec</param>
-        /// <returns>Byte array containing a Targa file</returns>
-        public unsafe static byte[] DecodeToTGA(byte[] j2kdata)
-        {
-            byte[] output;
-
-            try
-            {
-
-                opj_dparameters_t parameters = new opj_dparameters_t();
-                opj_image_t image;
-
-                opj_dinfo_t dinfo;
-                opj_cio_t cio;
-
-                // TODO: configure the event callbacks
-
-                // setup the decoding parameters
-                opj_set_default_decoder_parameters(ref parameters);
-
-                // get a decoder handle
-                IntPtr dinfo_ptr = opj_create_decompress(OPJ_CODEC_FORMAT.CODEC_J2K);
-                dinfo = (opj_dinfo_t)Marshal.PtrToStructure(dinfo_ptr, typeof(opj_dinfo_t));
-
-                // TODO: setup the callbacks
-
-                // setup the decoder
-                opj_setup_decoder(ref dinfo, ref parameters);
-
-                // open a byte stream
-                IntPtr cio_ptr = (IntPtr)opj_cio_open((opj_common_struct_t*)dinfo_ptr, j2kdata, j2kdata.Length);
-                cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
-
-                // decode
-                IntPtr image_ptr = opj_decode(ref dinfo, ref cio);
-                image = (opj_image_t)Marshal.PtrToStructure(image_ptr, typeof(opj_image_t));
-
-                int width = image.x1 - image.x0;
-                int height = image.y1 - image.y0;
-
-                // create the targa file in memory
-                output = new byte[width * height * 4 + TGA_HEADER_SIZE];
-
-                int offset = 0;
-                output[offset++] = 0; // idlength
-                output[offset++] = 0; // colormaptype = 0: no colormap
-                output[offset++] = 2; // image type = 2: uncompressed RGB
-                output[offset++] = 0; // color map spec is five zeroes for no color map
-                output[offset++] = 0; // color map spec is five zeroes for no color map
-                output[offset++] = 0; // color map spec is five zeroes for no color map
-                output[offset++] = 0; // color map spec is five zeroes for no color map
-                output[offset++] = 0; // color map spec is five zeroes for no color map
-                output[offset++] = 0; // x origin = two bytes
-                output[offset++] = 0; // x origin = two bytes
-                output[offset++] = 0; // y origin = two bytes
-                output[offset++] = 0; // y origin = two bytes
-                output[offset++] = (byte)(width & 0xFF); // width - low byte
-                output[offset++] = (byte)(width >> 8); // width - hi byte
-                output[offset++] = (byte)(height & 0xFF); // height - low byte
-                output[offset++] = (byte)(height >> 8); // height - hi byte
-                output[offset++] = 32; // 32 bits per pixel
-                output[offset++] = 40; // image descriptor byte
-
-                switch (image.numcomps)
-                {
-                    case 5:
-                    // We can't represent the fifth 
-                    case 4:
-                        for (int i = 0; i < (width * height); i++)
-                        {
-                            output[offset++] = (byte)image.comps[2].data[i]; // red
-                            output[offset++] = (byte)image.comps[1].data[i]; // green
-                            output[offset++] = (byte)image.comps[0].data[i]; // blue
-                            output[offset++] = (byte)image.comps[3].data[i]; // alpha
-                        }
-                        break;
-                    case 3:
-                        for (int i = 0; i < (width * height); i++)
-                        {
-                            output[offset++] = (byte)image.comps[2].data[i]; // red
-                            output[offset++] = (byte)image.comps[1].data[i]; // green
-                            output[offset++] = (byte)image.comps[0].data[i]; // blue
-                            output[offset++] = 0xFF; // alpha
-                        }
-                        break;
-                    default:
-                        Console.WriteLine("Unhandled numcomps: " + image.numcomps);
-                        return null;
-                }
-
-                opj_cio_close((opj_cio_t*)cio_ptr);
-                opj_destroy_decompress(dinfo_ptr);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                return null;
-            }
-
-            return output;
-        }
-
-        // Decodes to a raw RGBA 8bpp byte array
-        // Result dimensions stored in width and height
-        public unsafe static byte[] Decode(byte[] j2kdata, out int width, out int height)
-        {
-            byte[] output;
-            opj_image_t image;
-            opj_dinfo_t dinfo;
-            opj_cio_t cio;
-            IntPtr dinfo_ptr = IntPtr.Zero, cio_ptr = IntPtr.Zero, image_ptr = IntPtr.Zero;
-
-            try
-            {
-                opj_dparameters_t parameters = new opj_dparameters_t();
-
-                // TODO: configure the event callbacks
-
-                // setup the decoding parameters
-                opj_set_default_decoder_parameters(ref parameters);
-
-                // get a decoder handle
-                dinfo_ptr = opj_create_decompress(OPJ_CODEC_FORMAT.CODEC_J2K);
-                dinfo = (opj_dinfo_t)Marshal.PtrToStructure(dinfo_ptr, typeof(opj_dinfo_t));
-
-                // TODO: setup the callbacks
-
-                // setup the decoder
-                opj_setup_decoder(ref dinfo, ref parameters);
-
-                // open a byte stream
-                cio_ptr = (IntPtr)opj_cio_open((opj_common_struct_t*)dinfo_ptr, j2kdata, j2kdata.Length);
-                cio = (opj_cio_t)Marshal.PtrToStructure(cio_ptr, typeof(opj_cio_t));
-
-                // decode
-                image_ptr = opj_decode(ref dinfo, ref cio);
-                image = (opj_image_t)Marshal.PtrToStructure(image_ptr, typeof(opj_image_t));
-
-                width = image.x1 - image.x0;
-                height = image.y1 - image.y0;
-
-                // create the targa file in memory
-                output = new byte[width * height * 4];
-
-                int dataIndex = 0, compIndex = 0, x, y;
-
-                switch (image.numcomps)
-                {
-                    case 5:
-                        for (y = 0; y < height; y++)
-                        {
-                            for (x = 0; x < width; x++)
-                            {
-                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
-                                output[dataIndex++] = (byte)image.comps[1].data[compIndex]; // green
-                                output[dataIndex++] = (byte)image.comps[2].data[compIndex]; // blue
-                                output[dataIndex++] = (byte)image.comps[4].data[compIndex]; // alpha (yes, in comp 4)
-                                ++compIndex;
-                            }
-                        }
-                        break;
-
-                    case 4:
-                        for (y = 0; y < height; y++)
-                        {
-                            for (x = 0; x < width; x++)
-                            {
-                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
-                                output[dataIndex++] = (byte)image.comps[1].data[compIndex]; // green
-                                output[dataIndex++] = (byte)image.comps[2].data[compIndex]; // blue
-                                output[dataIndex++] = (byte)image.comps[3].data[compIndex]; // alpha
-                                ++compIndex;
-                            }
-                        }
-                        break;
-
-                    case 3:
-                        for (y = 0; y < height; y++)
-                        {
-                            for (x = 0; x < width; x++)
-                            {
-                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
-                                output[dataIndex++] = (byte)image.comps[1].data[compIndex]; // green
-                                output[dataIndex++] = (byte)image.comps[2].data[compIndex]; // blue
-                                output[dataIndex++] = 255; // alpha
-                                ++compIndex;
-                            }
-                        }
-                        break;
-
-                    case 1:
-                        for (y = 0; y < height; y++)
-                        {
-                            for (x = 0; x < width; x++)
-                            {
-                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // red
-                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // green
-                                output[dataIndex++] = (byte)image.comps[0].data[compIndex]; // blue
-                                output[dataIndex++] = 255; // alpha
-                                ++compIndex;
-                            }
-                        }
-                        break;
-
-                    default:
-                        throw new Exception("Unhandled number of components");
-                }
-
-            }
-
-            finally
-            {
-                if (image_ptr != IntPtr.Zero) opj_image_destroy((opj_image_t*)image_ptr);
-                if (cio_ptr != IntPtr.Zero) opj_cio_close((opj_cio_t*)cio_ptr);
-                if (dinfo_ptr != IntPtr.Zero) opj_destroy_decompress(dinfo_ptr);
-            }
-
-            return output;
-        }
+        // allocate decoded buffer based on width and height fields
+        [DllImport("OpenJPEG.dll")]
+        private static extern bool LibslAllocDecoded(ref LibslImage image);
         
-        /// <summary>
-        /// Decodes a byte array containing JPEG2000 data using the J2K codec
-        /// in to a GDI+ Image object
-        /// </summary>
-        /// <param name="j2cdata"></param>
-        /// <returns></returns>
-        public static Image DecodeToImage(byte[] j2kdata)
+        // free buffers
+        [DllImport("OpenJPEG.dll")]
+        private static extern bool LibslFree(ref LibslImage image);
+        
+        // encode raw to jpeg2000
+        [DllImport("OpenJPEG.dll")]
+        private static extern bool LibslEncode(ref LibslImage image);
+
+        // decode jpeg2000 to raw
+        [DllImport("OpenJPEG.dll")]
+        private static extern bool LibslDecode(ref LibslImage image);
+
+        // encode 
+        public static byte[] Encode(byte[] decoded, int width, int height, int components)
         {
-            return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(j2kdata)));
+            if (decoded.Length != width * height * components)
+                throw new ArgumentException("Length of decoded buffer does not match parameters");
+            
+            LibslImage image = new LibslImage();
+
+            // allocate and copy to input buffer
+            image.width = width;
+            image.height = height;
+            image.components = components;
+            LibslAllocDecoded(ref image);
+            Marshal.Copy(decoded, 0, image.decoded, width * height * components);
+
+            // codec will allocate output buffer
+            LibslEncode(ref image);
+
+            // copy output buffer
+            byte[] encoded = new byte[image.length];
+            Marshal.Copy(image.encoded, encoded, 0, image.length);
+
+            // free buffers
+            LibslFree(ref image);
+
+            return encoded;
+        }
+
+        public static byte[] Decode(byte[] encoded, out int width, out int height, out int components)
+        {
+            LibslImage image = new LibslImage();
+
+            // allocate and copy to input buffer
+            image.length = encoded.Length;
+            LibslAllocEncoded(ref image);
+            Marshal.Copy(encoded, 0, image.encoded, encoded.Length);
+
+            // codec will allocate output buffer
+            LibslDecode(ref image);
+
+            // copy output buffer
+            byte[] decoded = new byte[image.width * image.height * image.components];
+            Marshal.Copy(image.decoded, decoded, 0, image.width * image.height * image.components);
+
+            // copy image dimensions
+            width = image.width;
+            height = image.height;
+            components = image.components;
+
+            // free buffers
+            LibslFree(ref image);
+
+            return decoded;
+        }
+
+        public const int TGA_HEADER_SIZE = 32;
+        
+        public static byte[] DecodeToTGA(byte[] encoded)
+        {
+            int width, height, components;
+            byte[] decoded = Decode(encoded, out width, out height, out components);
+
+            byte[] tga = new byte[decoded.Length + TGA_HEADER_SIZE];
+            int di = 0;
+            tga[di++] = 0; // idlength
+            tga[di++] = 0; // colormaptype = 0: no colormap
+            tga[di++] = 2; // image type = 2: uncompressed RGB
+            tga[di++] = 0; // color map spec is five zeroes for no color map
+            tga[di++] = 0; // color map spec is five zeroes for no color map
+            tga[di++] = 0; // color map spec is five zeroes for no color map
+            tga[di++] = 0; // color map spec is five zeroes for no color map
+            tga[di++] = 0; // color map spec is five zeroes for no color map
+            tga[di++] = 0; // x origin = two bytes
+            tga[di++] = 0; // x origin = two bytes
+            tga[di++] = 0; // y origin = two bytes
+            tga[di++] = 0; // y origin = two bytes
+            tga[di++] = (byte)(width & 0xFF); // width - low byte
+            tga[di++] = (byte)(width >> 8); // width - hi byte
+            tga[di++] = (byte)(height & 0xFF); // height - low byte
+            tga[di++] = (byte)(height >> 8); // height - hi byte
+            tga[di++] = 32; // 32 bits per pixel
+            tga[di++] = 40; // image descriptor byte
+
+            int si = 0;
+            
+            switch (components)
+            {
+                case 5:
+                    for (int i = 0; i < (width * height); i++)
+                    {
+                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 1]; // green
+                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 4]; // alpha
+                        si += 5;
+                    }
+                    break;
+                case 4:
+                    for (int i = 0; i < (width * height); i++)
+                    {
+                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 1]; // green
+                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 3]; // alpha
+                        si += 4;
+                    }
+                    break;
+                case 3:
+                    for (int i = 0; i < (width * height); i++)
+                    {
+                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 1]; // green
+                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = 0xFF; // alpha
+                        si += 3;
+                    }
+                    break;
+
+                case 1:
+                    for (int i = 0; i < (width * height); i++)
+                    {
+                        tga[di++] = decoded[si]; // red
+                        tga[di++] = decoded[si]; // green
+                        tga[di++] = decoded[si]; // blue
+                        tga[di++] = 0xFF; // alpha
+                        si++;
+                    }
+                    break;
+
+                default:
+                    throw new Exception("Invalid number of components: " + components);
+            }
+
+            return tga;
+        }
+
+        public static Image DecodeToImage(byte[] encoded)
+        {
+            return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded)));
         }
 
         public unsafe static byte[] EncodeFromImage(Bitmap bitmap, string comment)
         {
-            byte[] output = null;
+            int numcomps;
+            BitmapData bd;
+            byte[] decoded;
+            int i = 0;
 
-            try
+            if ((bitmap.PixelFormat & PixelFormat.Alpha) != 0 || (bitmap.PixelFormat & PixelFormat.PAlpha) != 0)
             {
-                const int MAX_COMPS = 4;
+                // four layers, RGBA
+                numcomps = 4;
+                decoded = new byte[bitmap.Width * bitmap.Height * numcomps];
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly,
+                    PixelFormat.Format32bppArgb);
 
-                // setup the parameters
-                IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
-                opj_set_default_encoder_parameters(parameters_ptr);
-
-                opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
-
-                parameters.tcp_rates[0] = 0;
-                parameters.tcp_numlayers++;
-                parameters.cp_disto_alloc = 1;
-                parameters.cod_format = 0;
-                parameters.subsampling_dx = 1;
-                parameters.subsampling_dy = 1;
-                parameters.cp_comment = Marshal.StringToHGlobalAnsi(comment);
-
-                OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
-                opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[MAX_COMPS];
-                int width = bitmap.Width;
-                int height = bitmap.Height;
-
-                for (int c = 0; c < MAX_COMPS; c++)
+                for (int y = 0; y < bitmap.Height; y++)
                 {
-                    cmptparm[c] = new opj_image_cmptparm_t();
-
-                    cmptparm[c].prec = 8;
-                    cmptparm[c].bpp = 8;
-                    cmptparm[c].sgnd = 0;
-                    cmptparm[c].dx = parameters.subsampling_dx;
-                    cmptparm[c].dy = parameters.subsampling_dy;
-                    cmptparm[c].w = width;
-                    cmptparm[c].h = height;
-                }
-
-                // create the image
-                int i = 0;
-                int numcomps;
-                PixelFormat format = bitmap.PixelFormat;
-
-                if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
-                    numcomps = 4;
-                else if (format == PixelFormat.Format16bppGrayScale)
-                    numcomps = 1;
-                else
-                    numcomps = 3;
-
-                opj_image_t* image_ptr = opj_image_create(numcomps, cmptparm, color_space);
-                image_ptr->x1 = width;
-                image_ptr->y1 = height;
-
-                BitmapData data;
-
-                // Build the raw image buffer for openjpeg to read
-                if ((format & PixelFormat.Alpha) != 0 || (format & PixelFormat.PAlpha) != 0)
-                {
-                    // four layers, RGBA
-                    data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
-                        PixelFormat.Format32bppArgb);
-
-                    for (int y = 0; y < height; y++)
+                    for (int x = 0; x < bitmap.Width; x++)
                     {
-                        for (int x = 0; x < width; x++)
-                        {
-                            byte* pixel = (byte*)data.Scan0;
-                            pixel += (y * width + x) * numcomps;
+                        byte* pixel = (byte*)bd.Scan0;
+                        pixel += (y * bitmap.Width + x) * numcomps;
 
-                            // GDI+ gives us BGRA and we need to turn that in to RGBA
-                            (*image_ptr).comps[0].data[i] = *(pixel + 2);
-                            (*image_ptr).comps[1].data[i] = *(pixel + 1);
-                            (*image_ptr).comps[2].data[i] = *(pixel);
-                            (*image_ptr).comps[3].data[i] = *(pixel + 3);
-
-                            pixel += 4;
-                            i++;
-                        }
+                        // GDI+ gives us BGRA and we need to turn that in to RGBA
+                        decoded[i++] = *(pixel + 2);
+                        decoded[i++] = *(pixel + 1);
+                        decoded[i++] = *(pixel);
+                        decoded[i++] = *(pixel + 3);
+                        pixel += 4;
                     }
                 }
-                else if (format == PixelFormat.Format16bppGrayScale)
-                {
-                    // one layer
-                    data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
-                        PixelFormat.Format16bppGrayScale);
-
-                    for (int y = 0; y < height; y++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            byte* pixel = (byte*)data.Scan0;
-                            pixel += (y * width + x) * numcomps;
-
-                            // turn 16 bit data in to 8 bit data (TODO: Does this work?)
-                            (*image_ptr).comps[0].data[i] = *(pixel);
-
-                            pixel += 2;
-                            i++;
-                        }
-                    }
-                }
-                else
-                {
-                    // three layers, RGB
-                    data = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
-                        PixelFormat.Format24bppRgb);
-
-                    for (int y = 0; y < height; y++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            byte* pixel = (byte*)data.Scan0;
-                            pixel += (y * width + x) * numcomps;
-
-                            for (int c = numcomps - 1; c >= 0; c--)
-                            {
-                                (*image_ptr).comps[c].data[i] = *pixel;
-                                pixel++;
-                            }
-                            i++;
-                        }
-                    }
-                }
-
-                bitmap.UnlockBits(data);
-
-                // get a J2K compressor handle
-                opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
-
-                // TODO: setup the callbacks
-
-                // setup the encoder parameters
-                Marshal.StructureToPtr(parameters, parameters_ptr, true);
-                opj_setup_encoder(cinfo_ptr, parameters_ptr, image_ptr);
-
-                // open a byte stream for writing
-                opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
-
-                // encode the image
-                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, null);
-                if (!success)
-                {
-                    opj_cio_close(cio_ptr);
-                    return null;
-                }
-
-                int codestream_length = cio_tell(cio_ptr);
-
-                output = new byte[codestream_length];
-                Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
-
-                opj_cio_close(cio_ptr);
-                opj_destroy_compress(cinfo_ptr);
-                opj_image_destroy(image_ptr);
-                Marshal.FreeHGlobal(parameters.cp_comment);
-                Marshal.FreeHGlobal(parameters_ptr);
             }
-            catch (Exception e)
+            else if (bitmap.PixelFormat == PixelFormat.Format16bppGrayScale)
             {
-                Console.WriteLine(e.ToString());
-                return null;
+                // one layer
+                numcomps = 1;
+                decoded = new byte[bitmap.Width * bitmap.Height * numcomps];
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly,
+                    PixelFormat.Format16bppGrayScale);
+
+                for (int y = 0; y < bitmap.Height; y++)
+                {
+                    for (int x = 0; x < bitmap.Width; x++)
+                    {
+                        byte* pixel = (byte*)bd.Scan0;
+                        pixel += (y * bitmap.Width + x) * numcomps;
+
+                        // turn 16 bit data in to 8 bit data (TODO: Does this work?)
+                        decoded[i++] = *(pixel);
+                        pixel += 2;
+                    }
+                }
+            }
+            else
+            {
+                // three layers, RGB
+                numcomps = 3;
+                decoded = new byte[bitmap.Width * bitmap.Height * numcomps];
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly,
+                    PixelFormat.Format24bppRgb);
+
+                for (int y = 0; y < bitmap.Height; y++)
+                {
+                    for (int x = 0; x < bitmap.Width; x++)
+                    {
+                        byte* pixel = (byte*)bd.Scan0;
+                        pixel += (y * bitmap.Width + x) * numcomps;
+
+                        decoded[i++] = *(pixel + 2);
+                        decoded[i++] = *(pixel + 1);
+                        decoded[i++] = *(pixel + 0);
+                        pixel += 3;
+                    }
+                }
             }
 
-            return output;
+            bitmap.UnlockBits(bd);
+            byte[] encoded = Encode(decoded, bitmap.Width, bitmap.Height, numcomps);
+            return encoded;
         }
 
-        /// <summary>
-        /// Convert a raw 32bit RGBA image to a 5 component j2c stream
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public unsafe static byte[] EncodeSecondLifeBaked(int width, int height, byte[] data)
+        public static byte[] ConvertComponents(byte[] source, int width, int height, int sourceComponents, int destComponents)
         {
-            byte[] output = null;
-            const int NUM_COMPS = 5;
+            if (sourceComponents == destComponents)
+                return source;
+            
+            int x, y, si = 0, di = 0;
+            byte r, g, b, alpha, bump;
+            byte[] dest = new byte[width*height*destComponents];
 
-            try
+            for (y = 0; y < height; y++)
             {
-                // setup the parameters
-                IntPtr parameters_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(opj_cparameters_t)));
-                /*
-                opj_set_default_encoder_parameters(parameters_ptr);
-
-                opj_cparameters_t parameters = (opj_cparameters_t)Marshal.PtrToStructure(parameters_ptr, typeof(opj_cparameters_t));
-                */
-
-                opj_cparameters_t parameters = new opj_cparameters_t();
-
-                parameters.numresolution = 6;
-                parameters.cblockw_init = 64;
-                parameters.cblockh_init = 64;
-                parameters.prog_order = 0;
-                parameters.roi_compno = -1;		/* no ROI */
-                parameters.subsampling_dx = 1;
-                parameters.subsampling_dy = 1;
-                parameters.irreversible = 0;
-                parameters.numpocs = 0;
-
-                parameters.tcp_rates[0] = 40;
-                parameters.tcp_rates[1] = 100;
-                parameters.tcp_rates[2] = 200;
-                parameters.tcp_distoratio[0] = 0;
-                parameters.tcp_numlayers = 1;
-                parameters.cp_disto_alloc = 1;
-                parameters.cod_format = 0;
-                parameters.cp_comment = Marshal.StringToHGlobalAnsi("LL_RGBHM");
-                
-
-                OPJ_COLOR_SPACE color_space = OPJ_COLOR_SPACE.CLRSPC_SRGB;
-                opj_image_cmptparm_t[] cmptparm = new opj_image_cmptparm_t[NUM_COMPS];
-
-                for (int c = 0; c < NUM_COMPS; c++)
+                for (x = 0; x < width; x++)
                 {
-                    cmptparm[c] = new opj_image_cmptparm_t();
+                    si = x * y * sourceComponents;
+                    di = x * y * destComponents;
 
-                    cmptparm[c].prec = 8;
-                    cmptparm[c].bpp = 8;
-                    cmptparm[c].sgnd = 0;
-                    cmptparm[c].dx = parameters.subsampling_dx;
-                    cmptparm[c].dy = parameters.subsampling_dy;
-                    cmptparm[c].w = width;
-                    cmptparm[c].h = height;
-                    cmptparm[c].x0 = 0;
-                    cmptparm[c].y0 = 0;
-                }
-
-                // create the image
-                opj_image_t* image_ptr = opj_image_create(NUM_COMPS, cmptparm, color_space);
-                image_ptr->x1 = width;
-                image_ptr->y1 = height;
-
-                int i = 0;
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
+                    switch (sourceComponents)
                     {
-                        int dataIndex = i * 4;
-                        
-                        (*image_ptr).comps[0].data[i] = data[dataIndex + 0]; // red
-                        (*image_ptr).comps[1].data[i] = data[dataIndex + 1]; // green
-                        (*image_ptr).comps[2].data[i] = data[dataIndex + 2]; // blue
-                        (*image_ptr).comps[3].data[i] = 0;           // bump
-                        (*image_ptr).comps[4].data[i] = data[dataIndex + 3]; // alpha
-                        i++;
+                        case 1:
+                            r = source[si];
+                            g = source[si];
+                            b = source[si];
+                            bump = 0;
+                            alpha = 255;
+                            break;
+
+                        case 3:
+                            r = source[si];
+                            g = source[si + 1];
+                            b = source[si + 2];
+                            bump = 0;
+                            alpha = 255;
+                            break;
+
+                        case 4:
+                            r = source[si];
+                            g = source[si + 1];
+                            b = source[si + 2];
+                            bump = 0;
+                            alpha = source[si + 3];
+                            break;
+
+                        case 5:
+                            r = source[si];
+                            g = source[si + 1];
+                            b = source[si + 2];
+                            bump = source[si + 3];
+                            alpha = source[si + 4];
+                            break;
+
+                        default:
+                            throw new ArgumentException("Invalid number of source components " + sourceComponents);
+                    }
+
+                    switch (destComponents)
+                    {
+                        case 1:
+                            dest[di] = (byte)(((int)r + g + b) / 3);
+                            break;
+
+                        case 3:
+                            dest[di] = r;
+                            dest[di + 1] = g;
+                            dest[di + 2] = b;
+                            break;
+
+                        case 4:
+                            dest[di] = r;
+                            dest[di + 1] = g;
+                            dest[di + 2] = b;
+                            dest[di + 3] = alpha;
+                            break;
+
+                        case 5:
+                            dest[di] = r;
+                            dest[di + 1] = g;
+                            dest[di + 2] = b;
+                            dest[di + 3] = bump;
+                            dest[di + 4] = alpha;
+                            break;
+
+                        default:
+                            throw new ArgumentException("Invalid number of dest components " + destComponents);
                     }
                 }
-
-               // get a J2K compressor handle
-                opj_cinfo_t* cinfo_ptr = opj_create_compress(OPJ_CODEC_FORMAT.CODEC_J2K);
-
-                // TODO: setup the callbacks
-
-                // setup the encoder parameters
-                Marshal.StructureToPtr(parameters, parameters_ptr, true);
-                opj_setup_encoder(cinfo_ptr, parameters_ptr, image_ptr);
-
-                // open a byte stream for writing
-                opj_cio_t* cio_ptr = opj_cio_open((void*)cinfo_ptr, null, 0);
-
-                // encode the image
-                bool success = opj_encode(cinfo_ptr, cio_ptr, image_ptr, (char*)0);
-
-                // Free the parameters pointer (no longer needed)
-                Marshal.FreeHGlobal(parameters.cp_comment);
-                Marshal.FreeHGlobal(parameters_ptr);
-
-                // Check if the encoding was successful
-                if (!success)
-                {
-                    opj_cio_close(cio_ptr);
-                    return null;
-                }
-
-                int codestream_length = cio_tell(cio_ptr);
-
-                output = new byte[codestream_length];
-                Marshal.Copy((IntPtr)(*cio_ptr).buffer, output, 0, codestream_length);
-                output[113] = 1; // WHAT
-
-                // Close and free the byte stream
-                opj_cio_close(cio_ptr);
-
-                // Destroy the compression structures
-                opj_destroy_compress(cinfo_ptr);
-
-                // Destroy the image data
-                opj_image_destroy(image_ptr);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                return null;
             }
 
-            return output;
+            return dest;
         }
     }
 }
