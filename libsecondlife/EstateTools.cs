@@ -35,6 +35,7 @@ namespace libsecondlife
 	public class EstateTools
 	{
 		private SecondLife Client;
+        public TerrainTextureSettings TerrainTextures;
 
         /// <summary>
         /// Triggered on incoming LandStatReply
@@ -72,6 +73,7 @@ namespace libsecondlife
 		{
 			Client = client;
             Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
+            //Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
 		}
 
         /// <summary>Describes tasks returned in LandStatReply</summary>
@@ -90,6 +92,36 @@ namespace libsecondlife
         {
             TopScripts = 0,
             TopColliders = 1
+        }
+
+        /// <summary>Used by EstateOwnerMessage packets</summary>
+        public enum EstateAccessDelta
+        {
+            BanUser = 64,
+            UnbanUser = 128
+        }
+
+        /// <summary>Used by TerrainTextureSettings</summary>
+        public class TerrainTextureRegion
+        {
+            public LLUUID TextureID;
+            public float Low;
+            public float High;
+            TerrainTextureRegion()
+            {
+                TextureID = LLUUID.Zero;
+                Low = 0f;
+                High = 0f;
+            }
+        }
+
+        /// <summary>Texture settings for each corner of the region</summary>
+        public class TerrainTextureSettings
+        {
+            public TerrainTextureRegion Southwest;
+            public TerrainTextureRegion Northwest;
+            public TerrainTextureRegion Southeast;
+            public TerrainTextureRegion Northeast;
         }
 
         /// <summary>
@@ -125,8 +157,25 @@ namespace libsecondlife
             LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
         }
 
-        /// <summary>
-        /// </summary>
+        /// <summary></summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void EstateOwnerMessageHandler(Packet packet, Simulator simulator)
+        {
+            EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)packet;
+            string method = Helpers.FieldToUTF8String(message.MethodData.Method);
+            
+            //FIXME - remove debug output
+            Console.WriteLine("--- " + method + " ---");
+            foreach (EstateOwnerMessagePacket.ParamListBlock block in message.ParamList)
+            {
+                Console.WriteLine(Helpers.FieldToUTF8String(block.Parameter));
+            }
+            Console.WriteLine("------");
+            
+        }
+
+        /// <summary></summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
         private void LandStatReplyHandler(Packet packet, Simulator simulator)
@@ -183,6 +232,12 @@ namespace libsecondlife
             EstateOwnerMessage(method, listParams);
         }
 
+        /// <summary>
+        /// Used for setting and retrieving various estate panel settings
+        /// </summary>
+        /// <param name="method">EstateOwnerMessage Method field</param>
+        /// <param name="listParams">List of parameters to include</param>
+        /// <param name="createInvoice">Use LLUUID.Random() for Invoice field instead of LLUUID.Zero</param>
         public void EstateOwnerMessage(string method, List<string>listParams)
         {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
@@ -203,15 +258,47 @@ namespace libsecondlife
         /// Kick an avatar from an estate
         /// </summary>
         /// <param name="prey">Key of Avatar to kick</param>
-		public void KickUser(LLUUID prey) 
+		public void KickUser(LLUUID userID) 
 		{
-            EstateOwnerMessage("kickestate", prey.ToStringHyphenated());
+            EstateOwnerMessage("kickestate", userID.ToStringHyphenated());
 		}
 
+        /// <summary>Ban an avatar from an estate</summary>
+        public void BanUser(LLUUID userID)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(EstateAccessDelta.BanUser.ToString());
+            listParams.Add(userID.ToStringHyphenated());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+
+        /// <summary>Unban an avatar from an estate</summary>
+        public void UnbanUser(LLUUID userID)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add(Client.Network.AgentID.ToStringHyphenated());
+            listParams.Add(EstateAccessDelta.UnbanUser.ToString());
+            listParams.Add(userID.ToStringHyphenated());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+
         /// <summary>
-        /// Send a message dialog to everyone in the simulator
+        /// Send a message dialog to everyone in an entire estate
         /// </summary>
-        /// <param name="message">Message to send all users</param>
+        /// <param name="message">Message to send all users in the estate</param>
+        public void EstateMessage(string message)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add(Client.Self.FirstName + " " + Client.Self.LastName);
+            listParams.Add(message);
+            EstateOwnerMessage("instantmessage", listParams);
+        }
+
+        /// <summary>
+        /// Send a message dialog to everyone in a simulator
+        /// </summary>
+        /// <param name="message">Message to send all users in the simulator</param>
         public void SimulatorMessage(string message)
         {
             List<string> listParams = new List<string>();
@@ -253,25 +340,32 @@ namespace libsecondlife
             EstateOwnerMessage("restart", "-1");
         }
 
-        /// <summary>
-        /// Ban an Avatar from an estate
-        /// </summary>
-        /// <param name="prey">Key of Avatar to ban</param>
-		public void BanUser(LLUUID prey) 
-		{
-            // FIXME:
-			//Client.Network.SendPacket(Packets.Estate.EstateBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
-		}
+        /// <summary>Estate panel "Region" tab settings</summary>
+        public void SetRegionInfo(bool blockTerraform, bool blockFly, bool allowDamage, bool allowLandResell, bool restrictPushing, bool allowParcelJoinDivide, float agentLimit, float objectBonus, bool mature)
+        {
+            List<string> listParams = new List<string>();
+            if (blockTerraform) listParams.Add("Y"); else listParams.Add("N");
+            if (blockFly) listParams.Add("Y"); else listParams.Add("N");
+            if (allowDamage) listParams.Add("Y"); else listParams.Add("N");
+            if (allowLandResell) listParams.Add("Y"); else listParams.Add("N");
+            listParams.Add(agentLimit.ToString());
+            listParams.Add(objectBonus.ToString());
+            if (mature) listParams.Add("21"); else listParams.Add("13"); //FIXME - enumerate these settings
+            if (restrictPushing) listParams.Add("Y"); else listParams.Add("N");
+            if (allowParcelJoinDivide) listParams.Add("Y"); else listParams.Add("N");
+            EstateOwnerMessage("setregioninfo", listParams);
+        }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="prey"></param>
-		public void UnBanUser(LLUUID prey) 
-		{
-            // FIXME:
-			//Client.Network.SendPacket(Packets.Estate.EstateUnBan(Client.Protocol,Client.Avatar.ID,Client.Network.SessionID,prey));
-		}
+        /// <summary>Estate panel "Debug" tab settings</summary>
+        public void SetRegionDebug(bool disableScripts, bool disableCollisions, bool disablePhysics)
+        {
+            List<string> listParams = new List<string>();
+            if (disableScripts) listParams.Add("Y"); else listParams.Add("N");
+            if (disableCollisions) listParams.Add("Y"); else listParams.Add("N");
+            if (disablePhysics) listParams.Add("Y"); else listParams.Add("N");
+            EstateOwnerMessage("setregiondebug", listParams);
+        }
 
 	}
+
 }
