@@ -131,9 +131,9 @@ namespace OpenJPEGNet
                 case 5:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 2]; // blue
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = decoded[si + 4]; // alpha
                         si += 5;
                     }
@@ -141,9 +141,9 @@ namespace OpenJPEGNet
                 case 4:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 2]; // blue
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = decoded[si + 3]; // alpha
                         si += 4;
                     }
@@ -151,23 +151,14 @@ namespace OpenJPEGNet
                 case 3:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 2]; // blue
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = 0xFF; // alpha
                         si += 3;
                     }
                     break;
-                case 2:
-                    for (int i = 0; i < (width * height); i++)
-                    {
-                        tga[di++] = decoded[si + 0]; // red
-                        tga[di++] = decoded[si + 0]; // green
-                        tga[di++] = decoded[si + 0]; // blue
-                        tga[di++] = decoded[si + 1]; // alpha
-                        si += 2;
-                    }
-                    break;
+
                 case 1:
                     for (int i = 0; i < (width * height); i++)
                     {
