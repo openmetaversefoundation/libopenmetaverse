@@ -47,7 +47,7 @@
      description="build analyst and chatconsole"
        FIXME: Analyst's build is broken and Analyst and SLProxyLoader have
               circular dependencies.  Skipping Analyst for now.  -axial -->
-  <target name="build" depends="build-slproxy build-chatconsole"
+  <target name="build" depends="build-slproxy build-chatconsole build-main"
      description="build SLProxy and chatconsole">
   </target>
 
@@ -98,7 +98,7 @@
     <csc
       target="exe"
       debug="${build.debug}"
-      output="${bin_dir}/Proxy.exe">
+      output="${bin_dir}/SLProxy.exe">
       <sources failonempty="true">
         <include name="SLProxyMain.cs" />
       </sources>
