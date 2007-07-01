@@ -103,7 +103,7 @@ namespace OpenJPEGNet
             int width, height, components;
             byte[] decoded = Decode(encoded, out width, out height, out components);
 
-            byte[] tga = new byte[decoded.Length + TGA_HEADER_SIZE];
+            byte[] tga = new byte[width * height * 4 + TGA_HEADER_SIZE];
             int di = 0;
             tga[di++] = 0; // idlength
             tga[di++] = 0; // colormaptype = 0: no colormap
@@ -158,7 +158,16 @@ namespace OpenJPEGNet
                         si += 3;
                     }
                     break;
-
+                case 2:
+                    for (int i = 0; i < (width * height); i++)
+                    {
+                        tga[di++] = decoded[si + 0]; // red
+                        tga[di++] = decoded[si + 0]; // green
+                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 1]; // alpha
+                        si += 2;
+                    }
+                    break;
                 case 1:
                     for (int i = 0; i < (width * height); i++)
                     {

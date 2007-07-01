@@ -48,13 +48,13 @@ BEGIN
             VALUE "CompanyName", "OpenJPEG\0"
             VALUE "FileDescription", "OpenJPEG\0"
             VALUE "FileVersion", "1, 1, 0, 0\0"
-            VALUE "InternalName", "OpenJPEG\0"
+            VALUE "InternalName", "openjpeg-libsl\0"
             VALUE "LegalCopyright", "Copyright © 2002-2006, Communications and remote sensing Laboratory, Universite catholique de Louvain, Belgium\0"
             VALUE "LegalTrademarks", "See http://www.openjpeg.org for details\0"
-            VALUE "OriginalFilename", "OpenJPEG.dll\0"
+            VALUE "OriginalFilename", "openjpeg-libsl.dll\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "OpenJPEG\0"
-            VALUE "ProductVersion", "1, 1, 0, 0\0"
+            VALUE "ProductName", "openjpeg-libsl\0"
+            VALUE "ProductVersion", "2, 1, 2, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
