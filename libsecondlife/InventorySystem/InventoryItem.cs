@@ -131,7 +131,7 @@ namespace libsecondlife.InventorySystem
                     if ((AssetID != null))
                     {
                         AssetRequestDownload request = base.iManager.AssetManager.RequestInventoryAsset(this);
-                        if (request.Wait(AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
+                        if (request.Wait(libsecondlife.AssetSystem.AssetManager.DefaultTimeout) != AssetRequestDownload.RequestStatus.Success)
                         {
                             throw new Exception("Asset (" + AssetID.ToStringHyphenated() + ") unavailable (" + request.StatusMsg + ") for " + this.Name);
                         }

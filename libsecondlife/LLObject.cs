@@ -106,6 +106,29 @@ namespace libsecondlife
             ZlibCompressed = 0x80000000
         }
 
+        /// <summary>
+        /// Material type for a primitive
+        /// </summary>
+        public enum MaterialType : byte
+        {
+            /// <summary></summary>
+            Stone = 0,
+            /// <summary></summary>
+            Metal,
+            /// <summary></summary>
+            Glass,
+            /// <summary></summary>
+            Wood,
+            /// <summary></summary>
+            Flesh,
+            /// <summary></summary>
+            Plastic,
+            /// <summary></summary>
+            Rubber,
+            /// <summary></summary>
+            Light
+        }
+
         #endregion Enumerations
 
 
@@ -134,7 +157,7 @@ namespace libsecondlife
             /// <summary></summary>
             public float PathScaleY;
             /// <summary></summary>
-            public uint Material;
+            public MaterialType Material;
             /// <summary></summary>
             public float PathShearX;
             /// <summary></summary>

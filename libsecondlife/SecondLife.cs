@@ -65,11 +65,11 @@ namespace libsecondlife
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
         /// <summary>Asset Subsystem</summary>
-        public AssetManager Assets;
+        public libsecondlife.AssetSystem.AssetManager Assets;
         /// <summary>Appearance Subsystem</summary>
-        public AppearanceManager Appearance;
+        public libsecondlife.AssetSystem.AppearanceManager Appearance;
         /// <summary>Inventory Subsystem</summary>
-        public InventoryManager Inventory;
+        public libsecondlife.InventorySystem.InventoryManager Inventory;
         /// <summary>Image Subsystem</summary>
         public ImageManager Images;
         /// <summary>Directory searches including classifieds, people, land 
@@ -104,8 +104,8 @@ namespace libsecondlife
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
-            Assets = new AssetManager(this);
-            Appearance = new AppearanceManager(this);
+            Assets = new libsecondlife.AssetSystem.AssetManager(this);
+            Appearance = new libsecondlife.AssetSystem.AppearanceManager(this);
             Images = new ImageManager(this);
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);

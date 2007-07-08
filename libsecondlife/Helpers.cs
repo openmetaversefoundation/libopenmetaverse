@@ -74,36 +74,6 @@ namespace libsecondlife
             Debug
         };
 
-        /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum PermissionWho
-        {
-            /// <summary></summary>
-            Group = 4,
-            /// <summary></summary>
-            Everyone = 8,
-            /// <summary></summary>
-            NextOwner = 16
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum PermissionType
-        {
-            /// <summary></summary>
-            Copy = 0x00008000,
-            /// <summary></summary>
-            Modify = 0x00004000,
-            /// <summary></summary>
-            Move = 0x00080000,
-            /// <summary></summary>
-            Transfer = 0x00002000
-        }
-
         /// <summary>Provide a single instance of the MD5 class to avoid making
         /// duplicate copies</summary>
         public static System.Security.Cryptography.MD5 MD5Builder = 
@@ -333,10 +303,23 @@ namespace libsecondlife
         /// <returns></returns>
         public static float BytesToFloat(byte[] bytes, int pos)
         {
-            // FIXME: This is bad, just like the conversions done in _Packets_.cs
-            // We need Mono.DataConverter badly!
             if (!BitConverter.IsLittleEndian) Array.Reverse(bytes, pos, 4);
             return BitConverter.ToSingle(bytes, pos);
+        }
+
+        /// <summary>
+        /// Convert a floating point value to four bytes in little endian
+        /// ordering
+        /// </summary>
+        /// <param name="value">A floating point value</param>
+        /// <returns>A four byte array containing the value in little endian
+        /// ordering</returns>
+        public static byte[] FloatToBytes(float value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            return bytes;
         }
 
         /// <summary>

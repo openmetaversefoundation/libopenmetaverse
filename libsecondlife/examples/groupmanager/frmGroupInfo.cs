@@ -7,8 +7,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using libsecondlife;
-using libsecondlife.AssetSystem;
-using libsecondlife.Utilities.Assets;
 
 namespace groupmanager
 {
@@ -25,7 +23,7 @@ namespace groupmanager
         GroupManager.GroupMembersCallback GroupMembersCallback;
         GroupManager.GroupTitlesCallback GroupTitlesCallback;
         AvatarManager.AvatarNamesCallback AvatarNamesCallback;
-        libsecondlife.Utilities.Assets.AssetManager Assets;
+        AssetManager Assets;
         
         public frmGroupInfo(Group group, SecondLife client)
         {
@@ -44,8 +42,8 @@ namespace groupmanager
 
             Group = group;
             Client = client;
-            Assets = new libsecondlife.Utilities.Assets.AssetManager(Client);
-            Assets.OnImageReceived += new libsecondlife.Utilities.Assets.AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            Assets = new AssetManager(Client);
+            Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
 
             // Register the callbacks for this form
             Client.Groups.OnGroupProfile += GroupProfileCallback;

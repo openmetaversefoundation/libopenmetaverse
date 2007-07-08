@@ -12,12 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "primexport", "examples\prim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapgenerator", "mapgenerator\mapgenerator.csproj", "{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_SimpleInventory", "examples\IA_SimpleInventory\IA_SimpleInventory.csproj", "{E464B963-46E3-4E1A-A36F-9C640C880E68}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_NotecardTool", "examples\IA_NotecardTool\IA_NotecardTool.csproj", "{E185E4E1-62D2-430C-A94C-E8E38190805B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IA_ImageTool", "examples\IA_ImageTool\IA_ImageTool.csproj", "{8D2E5240-2247-42F5-AAAC-CF0CCCEE349A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "groupmanager", "examples\groupmanager\groupmanager.csproj", "{F460FAB3-0D12-4873-89EB-2696818764B8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "examples\TestClient\TestClient.csproj", "{B87682F6-B2D7-4C4D-A529-400C24FD4880}"
@@ -45,6 +39,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatConsole", "..\SLProxy\ChatConsole.csproj", "{D8ECCBE1-AC71-4054-AAA6-2D50E5629504}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUITestClient", "examples\GUITestClient\GUITestClient.csproj", "{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "importprimscript", "..\importprimscript\importprimscript.csproj", "{32A7AA59-5129-4446-A6DC-2F581ED1A25C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,18 +72,6 @@ Global
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C59B1312-57EF-4146-B6B2-1C7B6DC4638B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E464B963-46E3-4E1A-A36F-9C640C880E68}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E185E4E1-62D2-430C-A94C-E8E38190805B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D2E5240-2247-42F5-AAAC-CF0CCCEE349A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D2E5240-2247-42F5-AAAC-CF0CCCEE349A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D2E5240-2247-42F5-AAAC-CF0CCCEE349A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D2E5240-2247-42F5-AAAC-CF0CCCEE349A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F460FAB3-0D12-4873-89EB-2696818764B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F460FAB3-0D12-4873-89EB-2696818764B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F460FAB3-0D12-4873-89EB-2696818764B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -143,6 +127,10 @@ Global
 		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E0EE72D-AAA7-42EC-8E59-2C3EA5ED6D98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32A7AA59-5129-4446-A6DC-2F581ED1A25C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32A7AA59-5129-4446-A6DC-2F581ED1A25C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32A7AA59-5129-4446-A6DC-2F581ED1A25C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32A7AA59-5129-4446-A6DC-2F581ED1A25C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

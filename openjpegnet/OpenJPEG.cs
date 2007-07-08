@@ -35,14 +35,18 @@ namespace OpenJPEGNet
         
         // encode raw to jpeg2000
         [DllImport("openjpeg-libsl.dll")]
-        private static extern bool LibslEncode(ref LibslImage image);
+        private static extern bool LibslEncode(ref LibslImage image, bool lossless);
+
+        // encode raw to compressed five component jpeg2000 with LL_RGBHM comment
+        [DllImport("openjpeg-libsl.dll")]
+        private static extern bool LibslEncodeBake(ref LibslImage image);
 
         // decode jpeg2000 to raw
         [DllImport("openjpeg-libsl.dll")]
         private static extern bool LibslDecode(ref LibslImage image);
 
         // encode 
-        public static byte[] Encode(byte[] decoded, int width, int height, int components)
+        public static byte[] Encode(byte[] decoded, int width, int height, int components, bool lossless)
         {
             if (decoded.Length != width * height * components)
                 throw new ArgumentException("Length of decoded buffer does not match parameters");
@@ -57,7 +61,10 @@ namespace OpenJPEGNet
             Marshal.Copy(decoded, 0, image.decoded, width * height * components);
 
             // codec will allocate output buffer
-            LibslEncode(ref image);
+            if (components == 5)
+                LibslEncodeBake(ref image);
+            else
+                LibslEncode(ref image, lossless);
 
             // copy output buffer
             byte[] encoded = new byte[image.length];
@@ -131,9 +138,9 @@ namespace OpenJPEGNet
                 case 5:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // blue
+                        tga[di++] = decoded[si + 2]; // red
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // red
+                        tga[di++] = decoded[si + 0]; // blue
                         tga[di++] = decoded[si + 4]; // alpha
                         si += 5;
                     }
@@ -141,9 +148,9 @@ namespace OpenJPEGNet
                 case 4:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // blue
+                        tga[di++] = decoded[si + 2]; // red
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // red
+                        tga[di++] = decoded[si + 0]; // blue
                         tga[di++] = decoded[si + 3]; // alpha
                         si += 4;
                     }
@@ -151,14 +158,23 @@ namespace OpenJPEGNet
                 case 3:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // blue
+                        tga[di++] = decoded[si + 2]; // red
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // red
+                        tga[di++] = decoded[si + 0]; // blue
                         tga[di++] = 0xFF; // alpha
                         si += 3;
                     }
                     break;
-
+                case 2:
+                    for (int i = 0; i < (width * height); i++)
+                    {
+                        tga[di++] = decoded[si + 0]; // red
+                        tga[di++] = decoded[si + 0]; // green
+                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 1]; // alpha
+                        si += 2;
+                    }
+                    break;
                 case 1:
                     for (int i = 0; i < (width * height); i++)
                     {
@@ -182,7 +198,7 @@ namespace OpenJPEGNet
             return LoadTGAClass.LoadTGA(new MemoryStream(DecodeToTGA(encoded)));
         }
 
-        public unsafe static byte[] EncodeFromImage(Bitmap bitmap, string comment)
+        public unsafe static byte[] EncodeFromImage(Bitmap bitmap, bool lossless)
         {
             int numcomps;
             BitmapData bd;
@@ -258,7 +274,7 @@ namespace OpenJPEGNet
             }
 
             bitmap.UnlockBits(bd);
-            byte[] encoded = Encode(decoded, bitmap.Width, bitmap.Height, numcomps);
+            byte[] encoded = Encode(decoded, bitmap.Width, bitmap.Height, numcomps, lossless);
             return encoded;
         }
 

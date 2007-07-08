@@ -8,32 +8,32 @@ using libsecondlife;
 
 namespace libsecondlife.TestClient
 {
-    enum ImporterState
-    {
-        RezzingParent,
-        RezzingChildren,
-        Linking,
-        Idle
-    }
-
-    public class Linkset
-    {
-        public Primitive RootPrim;
-        public List<Primitive> Children = new List<Primitive>();
-
-        public Linkset()
-        {
-            RootPrim = new Primitive();
-        }
-
-        public Linkset(Primitive rootPrim)
-        {
-            RootPrim = rootPrim;
-        }
-    }
-
     public class ImportCommand : Command
     {
+        private enum ImporterState
+        {
+            RezzingParent,
+            RezzingChildren,
+            Linking,
+            Idle
+        }
+
+        private class Linkset
+        {
+            public Primitive RootPrim;
+            public List<Primitive> Children = new List<Primitive>();
+
+            public Linkset()
+            {
+                RootPrim = new Primitive();
+            }
+
+            public Linkset(Primitive rootPrim)
+            {
+                RootPrim = rootPrim;
+            }
+        }
+
         Primitive currentPrim;
         LLVector3 currentPosition;
         SecondLife currentClient;
@@ -168,9 +168,8 @@ namespace libsecondlife.TestClient
                         if (primDone.WaitOne(100000 * linkset.Children.Count, false))
                         {
                             Client.Objects.SetPermissions(Client.Network.CurrentSim, primIDs,
-                                Helpers.PermissionWho.Everyone | Helpers.PermissionWho.Group | Helpers.PermissionWho.NextOwner,
-                                Helpers.PermissionType.Copy | Helpers.PermissionType.Modify | Helpers.PermissionType.Move |
-                                Helpers.PermissionType.Transfer, true);
+                                PermissionWho.Everyone | PermissionWho.Group | PermissionWho.NextOwner,
+                                PermissionMask.All, true);
 
                             Client.Objects.SetRotation(Client.Network.CurrentSim, rootLocalID, rootRotation);
                         }

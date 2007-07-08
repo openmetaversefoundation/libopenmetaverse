@@ -33,6 +33,21 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
+    /// 
+    /// </summary>
+    public enum SaleType : byte
+    {
+        /// <summary></summary>
+        Not = 0,
+        /// <summary></summary>
+        Original = 1,
+        /// <summary></summary>
+        Copy = 2,
+        /// <summary></summary>
+        Contents = 3
+    }
+
+    /// <summary>
     /// Contains the variables sent in an object update packet for objects. 
     /// Used to track position and movement of prims and avatars
     /// </summary>
@@ -350,21 +365,6 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum SaleType : byte
-        {
-            /// <summary></summary>
-            Not = 0,
-            /// <summary></summary>
-            Original = 1,
-            /// <summary></summary>
-            Copy = 2,
-            /// <summary></summary>
-            Contents = 3
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public enum ClickAction : byte
         {
             /// <summary></summary>
@@ -644,6 +644,20 @@ namespace libsecondlife
             Client.Network.SendPacket(select, simulator);
         }
 
+        public void DeselectObject(Simulator simulator, uint localID)
+        {
+            ObjectDeselectPacket deselect = new ObjectDeselectPacket();
+
+            deselect.AgentData.AgentID = Client.Network.AgentID;
+            deselect.AgentData.SessionID = Client.Network.SessionID;
+
+            deselect.ObjectData = new ObjectDeselectPacket.ObjectDataBlock[1];
+            deselect.ObjectData[0] = new ObjectDeselectPacket.ObjectDataBlock();
+            deselect.ObjectData[0].ObjectLocalID = localID;
+
+            Client.Network.SendPacket(deselect, simulator);
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -843,16 +857,8 @@ namespace libsecondlife
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
             extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Light;
-            if (light == null)
-            {
-                extra.ObjectData[0].ParamInUse = false;
-                extra.ObjectData[0].ParamData = new byte[0];
-            }
-            else
-            {
-                extra.ObjectData[0].ParamInUse = true;
-                extra.ObjectData[0].ParamData = light.GetBytes();
-            }
+            extra.ObjectData[0].ParamInUse = true;
+            extra.ObjectData[0].ParamData = light.GetBytes();
             extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
 
             Client.Network.SendPacket(extra, simulator);
@@ -874,17 +880,59 @@ namespace libsecondlife
             extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
             extra.ObjectData[0].ObjectLocalID = localID;
             extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Flexible;
-            if (flexible == null)
-            {
-                extra.ObjectData[0].ParamInUse = false;
-                extra.ObjectData[0].ParamData = new byte[0];
-            }
-            else
-            {
-                extra.ObjectData[0].ParamInUse = true;
-                extra.ObjectData[0].ParamData = flexible.GetBytes();
-            }
+            extra.ObjectData[0].ParamInUse = true;
+            extra.ObjectData[0].ParamData = flexible.GetBytes();
             extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
+
+            Client.Network.SendPacket(extra, simulator);
+        }
+
+        public void SetSculpt(Simulator simulator, uint localID, Primitive.SculptData sculpt)
+        {
+            ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
+
+            extra.AgentData.AgentID = Client.Network.AgentID;
+            extra.AgentData.SessionID = Client.Network.SessionID;
+
+            extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
+            extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
+            extra.ObjectData[0].ObjectLocalID = localID;
+            extra.ObjectData[0].ParamType = (byte)Primitive.ExtraParamType.Sculpt;
+            extra.ObjectData[0].ParamInUse = true;
+            extra.ObjectData[0].ParamData = sculpt.GetBytes();
+            extra.ObjectData[0].ParamSize = (uint)extra.ObjectData[0].ParamData.Length;
+
+            Client.Network.SendPacket(extra, simulator);
+
+            // Not sure why, but if you don't send this the sculpted prim disappears
+            ObjectShapePacket shape = new ObjectShapePacket();
+
+            shape.AgentData.AgentID = Client.Network.AgentID;
+            shape.AgentData.SessionID = Client.Network.SessionID;
+
+            shape.ObjectData = new libsecondlife.Packets.ObjectShapePacket.ObjectDataBlock[1];
+            shape.ObjectData[0] = new libsecondlife.Packets.ObjectShapePacket.ObjectDataBlock();
+            shape.ObjectData[0].ObjectLocalID = localID;
+            shape.ObjectData[0].PathScaleX = 100;
+            shape.ObjectData[0].PathScaleY = 150;
+            shape.ObjectData[0].PathCurve = 32;
+
+            Client.Network.SendPacket(shape, simulator);
+        }
+
+        public void SetExtraParamOff(Simulator simulator, uint localID, Primitive.ExtraParamType type)
+        {
+            ObjectExtraParamsPacket extra = new ObjectExtraParamsPacket();
+
+            extra.AgentData.AgentID = Client.Network.AgentID;
+            extra.AgentData.SessionID = Client.Network.SessionID;
+            extra.ObjectData = new ObjectExtraParamsPacket.ObjectDataBlock[1];
+            extra.ObjectData[0] = new ObjectExtraParamsPacket.ObjectDataBlock();
+            extra.ObjectData[0].ObjectLocalID = localID;
+            extra.ObjectData[0].ParamType = (byte)type;
+            extra.ObjectData[0].ParamInUse = false;
+            extra.ObjectData[0].ParamData = new byte[0];
+            extra.ObjectData[0].ParamSize = 0;
 
             Client.Network.SendPacket(extra, simulator);
         }
@@ -1079,28 +1127,27 @@ namespace libsecondlife
         /// <param name="who"></param>
         /// <param name="permissions"></param>
         /// <param name="set"></param>
-        public void SetPermissions(Simulator simulator, List<uint> localIDs, Helpers.PermissionWho who, 
-            Helpers.PermissionType permissions, bool set)
+        public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who, 
+            PermissionMask permissions, bool set)
         {
             ObjectPermissionsPacket packet = new ObjectPermissionsPacket();
 
             packet.AgentData.AgentID = Client.Network.AgentID;
             packet.AgentData.SessionID = Client.Network.SessionID;
 
+            // Override can only be used by gods
             packet.HeaderData.Override = false;
 
             packet.ObjectData = new ObjectPermissionsPacket.ObjectDataBlock[localIDs.Count];
 
-            int i = 0;
-            foreach (uint localID in localIDs)
+            for (int i = 0; i < localIDs.Count; i++)
             {
                 packet.ObjectData[i] = new ObjectPermissionsPacket.ObjectDataBlock();
-                packet.ObjectData[i].ObjectLocalID = localID;
+
+                packet.ObjectData[i].ObjectLocalID = localIDs[i];
                 packet.ObjectData[i].Field = (byte)who;
                 packet.ObjectData[i].Mask = (uint)permissions;
                 packet.ObjectData[i].Set = Convert.ToByte(set);
-
-                i++;
             }
 
             Client.Network.SendPacket(packet, simulator);
@@ -1219,7 +1266,7 @@ namespace libsecondlife
                 #region Decode Object (primitive) parameters
                 LLObject.ObjectData data = new LLObject.ObjectData();
                 data.State = block.State;
-                data.Material = block.Material;
+                data.Material = (LLObject.MaterialType)block.Material;
                 data.PathCurve = block.PathCurve;
                 data.ProfileCurve = block.ProfileCurve;
                 data.PathBegin = LLObject.PathBeginFloat(block.PathBegin);
@@ -1407,17 +1454,7 @@ namespace libsecondlife
                         prim.Textures = new LLObject.TextureEntry(block.TextureEntry, 0, 
                             block.TextureEntry.Length);
 
-                        //DEBUG
-                        //LLObject.TextureEntry2 te2 = new LLObject.TextureEntry2(block.TextureEntry, 0,
-                        //    block.TextureEntry.Length);
-                        //byte[] te1b = prim.Textures.ToBytes();
-                        //byte[] te2b = te2.ToBytes();
-                        //if (te1b != te2b)
-                        //    Console.WriteLine("OHNOES!");
-                        //if (te1b.Length != te2b.Length)
-                        //    Console.WriteLine("RUINED!");
-
-                        prim.TextureAnim = new LLObject.TextureAnimation(block.TextureAnim, 0);
+                        prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
                         prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
                         prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
 
@@ -1736,7 +1773,7 @@ namespace libsecondlife
                             // CRC
                             i += 4;
                             // Material
-                            prim.Data.Material = (uint)block.Data[i++];
+                            prim.Data.Material = (LLObject.MaterialType)block.Data[i++];
                             // Click action
                             prim.ClickAction = (ClickAction)block.Data[i++];
                             // Scale
@@ -1765,7 +1802,7 @@ namespace libsecondlife
                             // CRC
                             i += 4;
                             // Material
-                            prim.Data.Material = (uint)block.Data[i++];
+                            prim.Data.Material = (LLObject.MaterialType)block.Data[i++];
                             // Click action
                             prim.ClickAction = (ClickAction)block.Data[i++];
                             // Scale
@@ -1949,7 +1986,7 @@ namespace libsecondlife
                                 //int textureAnimLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
                                 //    (block.Data[i++] << 16) + (block.Data[i++] << 24));
                                 i += 4;
-                                prim.TextureAnim = new LLObject.TextureAnimation(block.Data, i);
+                                prim.TextureAnim = new Primitive.TextureAnimation(block.Data, i);
                             }
 
                             #endregion
@@ -2087,6 +2124,25 @@ namespace libsecondlife
         #endregion
 
         #region Utility Functions
+
+        /// <summary>
+        /// Setup the ObjectData parameters for a basic wooden cube prim
+        /// </summary>
+        /// <returns>ObjectData struct representing a basic wooden cube prim</returns>
+        public static LLObject.ObjectData BuildCube()
+        {
+            LLObject.ObjectData prim = new LLObject.ObjectData();
+
+            prim.PCode = ObjectManager.PCode.Prim;
+            prim.Material = LLObject.MaterialType.Wood;
+            prim.ProfileCurve = 0x01;
+            prim.PathCurve = 0x10;
+            prim.ProfileEnd = 1.0f;
+            prim.PathEnd = 1.0f;
+            prim.PathRevolutions = 1.0f;
+
+            return prim;
+        }
 
         protected void SetAvatarSelfSittingOn(uint localid)
         {

@@ -33,17 +33,22 @@ namespace libsecondlife
 {
     public partial class Primitive : LLObject
     {
+        #region Enums
+
         /// <summary>
         /// Extra parameters for primitives, these flags are for features that have
         /// been added after the original ObjectFlags that has all eight bits 
         /// reserved already
         /// </summary>
+        [Flags]
         public enum ExtraParamType : ushort
         {
             /// <summary>Whether this object has flexible parameters</summary>
             Flexible = 0x10,
             /// <summary>Whether this object has light parameters</summary>
-            Light = 0x20
+            Light = 0x20,
+            /// <summary>Whether this object is a sculpted prim</summary>
+            Sculpt = 0x30
         }
 
         /// <summary>
@@ -65,14 +70,107 @@ namespace libsecondlife
             Wheel = 4
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum SculptType : byte
+        {
+            /// <summary></summary>
+            None = 0,
+            /// <summary></summary>
+            Sphere = 1,
+            /// <summary></summary>
+            Torus = 2,
+            /// <summary></summary>
+            Plane = 3,
+            /// <summary></summary>
+            Cylinder = 4
+        }
+
+        #endregion Enums
+
 
         #region Subclasses
+
+        /// <summary>
+        /// Controls the texture animation of a particular prim
+        /// </summary>
+        [Serializable]
+        public struct TextureAnimation
+        {
+            /// <summary></summary>
+            public uint Flags;
+            /// <summary></summary>
+            public uint Face;
+            /// <summary></summary>
+            public uint SizeX;
+            /// <summary></summary>
+            public uint SizeY;
+            /// <summary></summary>
+            public float Start;
+            /// <summary></summary>
+            public float Length;
+            /// <summary></summary>
+            public float Rate;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="data"></param>
+            /// <param name="pos"></param>
+            public TextureAnimation(byte[] data, int pos)
+            {
+                if (data.Length >= 16)
+                {
+                    Flags = (uint)data[pos++];
+                    Face = (uint)data[pos++];
+                    SizeX = (uint)data[pos++];
+                    SizeY = (uint)data[pos++];
+
+                    Start = Helpers.BytesToFloat(data, pos);
+                    Length = Helpers.BytesToFloat(data, pos + 4);
+                    Rate = Helpers.BytesToFloat(data, pos + 8);
+                }
+                else
+                {
+                    Flags = 0;
+                    Face = 0;
+                    SizeX = 0;
+                    SizeY = 0;
+
+                    Start = 0.0f;
+                    Length = 0.0f;
+                    Rate = 0.0f;
+                }
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public byte[] GetBytes()
+            {
+                byte[] data = new byte[16];
+                int pos = 0;
+
+                data[pos++] = (byte)Flags;
+                data[pos++] = (byte)Face;
+                data[pos++] = (byte)SizeX;
+                data[pos++] = (byte)SizeY;
+
+                Helpers.FloatToBytes(Start).CopyTo(data, pos);
+                Helpers.FloatToBytes(Length).CopyTo(data, pos + 4);
+                Helpers.FloatToBytes(Rate).CopyTo(data, pos + 4);
+
+                return data;
+            }
+        }
 
         /// <summary>
         /// Information on the flexible properties of a primitive
         /// </summary>
         [Serializable]
-        public class FlexibleData
+        public struct FlexibleData
         {
             /// <summary></summary>
             public int Softness;
@@ -85,14 +183,7 @@ namespace libsecondlife
             /// <summary></summary>
             public float Tension;
             /// <summary></summary>
-            public LLVector3 Force = LLVector3.Zero;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public FlexibleData()
-            {
-            }
+            public LLVector3 Force;
 
             /// <summary>
             /// 
@@ -101,7 +192,26 @@ namespace libsecondlife
             /// <param name="pos"></param>
             public FlexibleData(byte[] data, int pos)
             {
-                FromBytes(data, pos);
+                if (data.Length >= 5)
+                {
+                    Softness = ((data[pos] & 0x80) >> 6) | ((data[pos + 1] & 0x80) >> 7);
+
+                    Tension = (float)(data[pos++] & 0x7F) / 10.0f;
+                    Drag = (float)(data[pos++] & 0x7F) / 10.0f;
+                    Gravity = (float)(data[pos++] / 10.0f) - 10.0f;
+                    Wind = (float)data[pos++] / 10.0f;
+                    Force = new LLVector3(data, pos);
+                }
+                else
+                {
+                    Softness = 0;
+
+                    Tension = 0.0f;
+                    Drag = 0.0f;
+                    Gravity = 0.0f;
+                    Wind = 0.0f;
+                    Force = LLVector3.Zero;
+                }
             }
 
             /// <summary>
@@ -113,30 +223,18 @@ namespace libsecondlife
                 byte[] data = new byte[16];
                 int i = 0;
 
+                // Softness is packed in the upper bits of tension and drag
                 data[i] = (byte)((Softness & 2) << 6);
                 data[i + 1] = (byte)((Softness & 1) << 7);
 
-                data[i++] |= (byte)((byte)(Tension * 10.0f) & 0x7F);
-                data[i++] |= (byte)((byte)(Drag * 10.0f) & 0x7F);
-                data[i++] = (byte)((Gravity + 10.0f) * 10.0f);
-                data[i++] = (byte)(Wind * 10.0f);
+                data[i++] |= (byte)((byte)(Tension * 10.01f) & 0x7F);
+                data[i++] |= (byte)((byte)(Drag * 10.01f) & 0x7F);
+                data[i++] = (byte)((Gravity + 10.0f) * 10.01f);
+                data[i++] = (byte)(Wind * 10.01f);
 
                 Force.GetBytes().CopyTo(data, i);
 
                 return data;
-            }
-
-            private void FromBytes(byte[] data, int pos)
-            {
-                int i = pos;
-
-                Softness = ((data[i] & 0x80) >> 6) | ((data[i + 1] & 0x80) >> 7);
-
-                Tension = (data[i++] & 0x7F) / 10.0f;
-                Drag = (data[i++] & 0x7F) / 10.0f;
-                Gravity = (data[i++] / 10.0f) - 10.0f;
-                Wind = data[i++] / 10.0f;
-                Force = new LLVector3(data, i);
             }
         }
 
@@ -144,27 +242,16 @@ namespace libsecondlife
         /// Information on the light properties of a primitive
         /// </summary>
         [Serializable]
-        public class LightData
+        public struct LightData
         {
             /// <summary></summary>
-            public byte R;
-            /// <summary></summary>
-            public byte G;
-            /// <summary></summary>
-            public byte B;
-            /// <summary></summary>
-            public float Intensity;
+            public LLColor Color;
             /// <summary></summary>
             public float Radius;
             /// <summary></summary>
+            public float Cutoff;
+            /// <summary></summary>
             public float Falloff;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public LightData()
-            {
-            }
 
             /// <summary>
             /// 
@@ -173,7 +260,20 @@ namespace libsecondlife
             /// <param name="pos"></param>
             public LightData(byte[] data, int pos)
             {
-                FromBytes(data, pos);
+                if (data.Length >= 16)
+                {
+                    Color = new LLColor(data, 0);
+                    Radius = Helpers.BytesToFloat(data, 4);
+                    Cutoff = Helpers.BytesToFloat(data, 8);
+                    Falloff = Helpers.BytesToFloat(data, 12);
+                }
+                else
+                {
+                    Color = LLColor.Black;
+                    Radius = 0.0f;
+                    Cutoff = 0.0f;
+                    Falloff = 0.0f;
+                }
             }
 
             /// <summary>
@@ -183,42 +283,47 @@ namespace libsecondlife
             public byte[] GetBytes()
             {
                 byte[] data = new byte[16];
-                int i = 0;
 
-                data[i++] = R;
-                data[i++] = G;
-                data[i++] = B;
-                data[i++] = (byte)(Intensity * 255.0f);
-
-                BitConverter.GetBytes(Radius).CopyTo(data, i);
-                BitConverter.GetBytes(Falloff).CopyTo(data, i + 8);
-
-                if (!BitConverter.IsLittleEndian)
-                {
-                    Array.Reverse(data, i, 4);
-                    Array.Reverse(data, i + 8, 4);
-                }
+                Color.GetBytes().CopyTo(data, 0);
+                Helpers.FloatToBytes(Radius).CopyTo(data, 4);
+                Helpers.FloatToBytes(Cutoff).CopyTo(data, 8);
+                Helpers.FloatToBytes(Falloff).CopyTo(data, 12);
 
                 return data;
             }
+        }
 
-            private void FromBytes(byte[] data, int pos)
+        /// <summary>
+        /// Information on the sculpt properties of a sculpted primitive
+        /// </summary>
+        [Serializable]
+        public struct SculptData
+        {
+            public LLUUID SculptTexture;
+            public SculptType Type;
+
+            public SculptData(byte[] data, int pos)
             {
-                int i = pos;
-
-                R = data[i++];
-                G = data[i++];
-                B = data[i++];
-                Intensity = data[i++] / 255.0f;
-
-                if (!BitConverter.IsLittleEndian)
+                if (data.Length >= 17)
                 {
-                    Array.Reverse(data, i, 4);
-                    Array.Reverse(data, i + 8, 4);
+                    SculptTexture = new LLUUID(data, pos);
+                    Type = (SculptType)data[pos + 16];
                 }
+                else
+                {
+                    SculptTexture = LLUUID.Zero;
+                    Type = SculptType.None;
+                }
+            }
 
-                Radius = BitConverter.ToSingle(data, i);
-                Falloff = BitConverter.ToSingle(data, i + 8);
+            public byte[] GetBytes()
+            {
+                byte[] data = new byte[17];
+
+                SculptTexture.GetBytes().CopyTo(data, 0);
+                data[16] = (byte)Type;
+
+                return data;
             }
         }
 
@@ -228,19 +333,21 @@ namespace libsecondlife
         #region Public Members
 
         /// <summary></summary>
-        public TextureAnimation TextureAnim = new TextureAnimation();
+        public TextureAnimation TextureAnim;
         /// <summary></summary>
-        public FlexibleData Flexible = new FlexibleData();
+        public FlexibleData Flexible;
         /// <summary></summary>
-        public LightData Light = new LightData();
+        public LightData Light;
         /// <summary></summary>
-        public ParticleSystem ParticleSys = new ParticleSystem();
+        public SculptData Sculpt;
+        /// <summary></summary>
+        public ParticleSystem ParticleSys;
         /// <summary></summary>
         public ObjectManager.ClickAction ClickAction;
         /// <summary></summary>
-        public LLUUID Sound = LLUUID.Zero;
+        public LLUUID Sound;
         /// <summary>Identifies the owner of the audio or particle system</summary>
-        public LLUUID OwnerID = LLUUID.Zero;
+        public LLUUID OwnerID;
         /// <summary></summary>
         public byte SoundFlags;
         /// <summary></summary>
@@ -272,18 +379,9 @@ namespace libsecondlife
 
         public override string ToString()
         {
-            string output = String.Empty;
-
-            output += "ID: " + ID + ", ";
-            output += "GroupID: " + GroupID + ", ";
-            output += "ParentID: " + ParentID + ", ";
-            output += "LocalID: " + LocalID + ", ";
-            output += "Flags: " + Flags + ", ";
-            output += "State: " + Data.State + ", ";
-            output += "PCode: " + Data.PCode + ", ";
-            output += "Material: " + Data.Material + ", ";
-
-            return output;
+            return String.Format("ID: {0}, GroupID: {1}, ParentID: {2}, LocalID: {3}, Flags: {4}, " +
+                "State: {5}, PCode: {6}, Material: {7}", ID, GroupID, ParentID, LocalID, Flags, Data.State,
+                Data.PCode, Data.Material);
         }
 
         public void ToXml(XmlWriter xmlWriter)
@@ -322,6 +420,8 @@ namespace libsecondlife
                         Flexible = new FlexibleData(data, i);
                     else if (type == ExtraParamType.Light)
                         Light = new LightData(data, i);
+                    else if (type == ExtraParamType.Sculpt)
+                        Sculpt = new SculptData(data, i);
 
                     i += (int)paramLength;
                     totalLength += (int)paramLength + 6;

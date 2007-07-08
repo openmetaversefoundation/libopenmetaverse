@@ -11,7 +11,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         [Serializable]
-        public class ParticleSystem
+        public struct ParticleSystem
         {
             /// <summary>
             /// 
@@ -99,7 +99,6 @@ namespace libsecondlife
             public LLVector3 PartAcceleration;
             public LLUUID Texture;
             public LLUUID Target;
-            //
             public ParticleDataFlags PartDataFlags;
             public float PartMaxAge;
             public LLColor PartStartColor;
@@ -109,14 +108,6 @@ namespace libsecondlife
             public float PartEndScaleX;
             public float PartEndScaleY;
 
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public ParticleSystem()
-            {
-            }
-
             /// <summary>
             /// 
             /// </summary>
@@ -124,7 +115,66 @@ namespace libsecondlife
             /// <param name="pos"></param>
             public ParticleSystem(byte[] data, int pos)
             {
-                FromBytes(data, pos);
+                // TODO: Not sure exactly how many bytes we need here, so partial 
+                // (but truncated) data will cause an exception to be thrown
+                if (data.Length > 0)
+                {
+                    BitPack pack = new BitPack(data, pos);
+
+                    CRC = pack.UnpackUBits(32);
+                    PartFlags = pack.UnpackUBits(32);
+                    Pattern = (SourcePattern)pack.UnpackByte();
+                    MaxAge = pack.UnpackFixed(false, 8, 8);
+                    StartAge = pack.UnpackFixed(false, 8, 8);
+                    InnerAngle = pack.UnpackFixed(false, 3, 5);
+                    OuterAngle = pack.UnpackFixed(false, 3, 5);
+                    BurstRate = pack.UnpackFixed(false, 8, 8);
+                    BurstRadius = pack.UnpackFixed(false, 8, 8);
+                    BurstSpeedMin = pack.UnpackFixed(false, 8, 8);
+                    BurstSpeedMax = pack.UnpackFixed(false, 8, 8);
+                    BurstPartCount = pack.UnpackByte();
+                    float x = pack.UnpackFixed(true, 8, 7);
+                    float y = pack.UnpackFixed(true, 8, 7);
+                    float z = pack.UnpackFixed(true, 8, 7);
+                    AngularVelocity = new LLVector3(x, y, z);
+                    x = pack.UnpackFixed(true, 8, 7);
+                    y = pack.UnpackFixed(true, 8, 7);
+                    z = pack.UnpackFixed(true, 8, 7);
+                    PartAcceleration = new LLVector3(x, y, z);
+                    Texture = pack.UnpackUUID();
+                    Target = pack.UnpackUUID();
+
+                    PartDataFlags = (ParticleDataFlags)pack.UnpackUBits(32);
+                    PartMaxAge = pack.UnpackFixed(false, 8, 8);
+                    byte r = pack.UnpackByte();
+                    byte g = pack.UnpackByte();
+                    byte b = pack.UnpackByte();
+                    byte a = pack.UnpackByte();
+                    PartStartColor = new LLColor(r, g, b, a);
+                    r = pack.UnpackByte();
+                    g = pack.UnpackByte();
+                    b = pack.UnpackByte();
+                    a = pack.UnpackByte();
+                    PartEndColor = new LLColor(r, g, b, a);
+                    PartStartScaleX = pack.UnpackFixed(false, 3, 5);
+                    PartStartScaleY = pack.UnpackFixed(false, 3, 5);
+                    PartEndScaleX = pack.UnpackFixed(false, 3, 5);
+                    PartEndScaleY = pack.UnpackFixed(false, 3, 5);
+                }
+                else
+                {
+                    CRC = PartFlags = 0;
+                    Pattern = SourcePattern.None;
+                    MaxAge = StartAge = InnerAngle = OuterAngle = BurstRate = BurstRadius = BurstSpeedMin =
+                        BurstSpeedMax = 0.0f;
+                    BurstPartCount = 0;
+                    AngularVelocity = PartAcceleration = LLVector3.Zero;
+                    Texture = Target = LLUUID.Zero;
+                    PartDataFlags = ParticleDataFlags.None;
+                    PartMaxAge = 0.0f;
+                    PartStartColor = PartEndColor = LLColor.Black;
+                    PartStartScaleX = PartStartScaleY = PartEndScaleX = PartEndScaleY = 0.0f;
+                }
             }
 
             /// <summary>
@@ -167,59 +217,6 @@ namespace libsecondlife
                 pack.PackFixed(PartEndScaleY, false, 3, 5);
 
                 return bytes;
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="data"></param>
-            /// <param name="pos"></param>
-            private void FromBytes(byte[] data, int pos)
-            {
-                if (data.Length == 0)
-                    return;
-
-                BitPack pack = new BitPack(data, pos);
-
-                CRC = pack.UnpackUBits(32);
-                PartFlags = pack.UnpackUBits(32);
-                Pattern = (SourcePattern)pack.UnpackByte();
-                MaxAge = pack.UnpackFixed(false, 8, 8);
-                StartAge = pack.UnpackFixed(false, 8, 8);
-                InnerAngle = pack.UnpackFixed(false, 3, 5);
-                OuterAngle = pack.UnpackFixed(false, 3, 5);
-                BurstRate = pack.UnpackFixed(false, 8, 8);
-                BurstRadius = pack.UnpackFixed(false, 8, 8);
-                BurstSpeedMin = pack.UnpackFixed(false, 8, 8);
-                BurstSpeedMax = pack.UnpackFixed(false, 8, 8);
-                BurstPartCount = pack.UnpackByte();
-                float x = pack.UnpackFixed(true, 8, 7);
-                float y = pack.UnpackFixed(true, 8, 7);
-                float z = pack.UnpackFixed(true, 8, 7);
-                AngularVelocity = new LLVector3(x, y, z);
-                x = pack.UnpackFixed(true, 8, 7);
-                y = pack.UnpackFixed(true, 8, 7);
-                z = pack.UnpackFixed(true, 8, 7);
-                PartAcceleration = new LLVector3(x, y, z);
-                Texture = pack.UnpackUUID();
-                Target = pack.UnpackUUID();
-
-                PartDataFlags = (ParticleDataFlags)pack.UnpackUBits(32);
-                PartMaxAge = pack.UnpackFixed(false, 8, 8);
-                byte r = pack.UnpackByte();
-                byte g = pack.UnpackByte();
-                byte b = pack.UnpackByte();
-                byte a = pack.UnpackByte();
-                PartStartColor = new LLColor(r, g, b, a);
-                r = pack.UnpackByte();
-                g = pack.UnpackByte();
-                b = pack.UnpackByte();
-                a = pack.UnpackByte();
-                PartEndColor = new LLColor(r, g, b, a);
-                PartStartScaleX = pack.UnpackFixed(false, 3, 5);
-                PartStartScaleY = pack.UnpackFixed(false, 3, 5);
-                PartEndScaleX = pack.UnpackFixed(false, 3, 5);
-                PartEndScaleY = pack.UnpackFixed(false, 3, 5);
             }
         }
     }

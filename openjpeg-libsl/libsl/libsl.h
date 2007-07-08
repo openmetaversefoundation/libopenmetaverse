@@ -15,20 +15,15 @@ struct LibslImage
 	int components;
 };
 
-#ifdef WIN32
 #define DLLEXPORT extern "C" __declspec(dllexport)
-#define _STDCALL 
-#else
-#define DLLEXPORT
-#define _STDCALL
-#endif
 
 // uncompresed images are raw RGBA 8bit/channel
-DLLEXPORT bool _STDCALL LibslEncode(LibslImage* image);
-DLLEXPORT bool _STDCALL LibslDecode(LibslImage* image);
-DLLEXPORT bool _STDCALL LibslAllocEncoded(LibslImage* image);
-DLLEXPORT bool _STDCALL LibslAllocDecoded(LibslImage* image);
-DLLEXPORT void _STDCALL LibslFree(LibslImage* image);
+DLLEXPORT bool _stdcall LibslEncode(LibslImage* image, bool lossless);
+DLLEXPORT bool _stdcall LibslEncodeBake(LibslImage* image);
+DLLEXPORT bool _stdcall LibslDecode(LibslImage* image);
+DLLEXPORT bool _stdcall LibslAllocEncoded(LibslImage* image);
+DLLEXPORT bool _stdcall LibslAllocDecoded(LibslImage* image);
+DLLEXPORT void _stdcall LibslFree(LibslImage* image);
 
 
 #endif

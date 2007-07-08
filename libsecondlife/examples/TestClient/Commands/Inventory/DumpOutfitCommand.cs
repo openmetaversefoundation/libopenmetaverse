@@ -3,14 +3,12 @@ using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using libsecondlife;
-using libsecondlife.Utilities.Assets;
-using libsecondlife.Utilities.Appearance;
 
 namespace libsecondlife.TestClient
 {
     public class DumpOutfitCommand : Command
     {
-        libsecondlife.Utilities.Assets.AssetManager Assets;
+        AssetManager Assets;
         List<LLUUID> OutfitAssets = new List<LLUUID>();
 
         public DumpOutfitCommand(TestClient testClient)

@@ -87,9 +87,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgentThrottle.cs" />
+    <Compile Include="AppearanceManager.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AssetManager.cs" />
     <Compile Include="AssetSystem\AppearanceManager.cs" />
     <Compile Include="AssetSystem\Asset.cs" />
     <Compile Include="AssetSystem\AssetImage.cs" />
@@ -151,6 +153,7 @@
     <Compile Include="ParticleSystem.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Permissions.cs" />
     <Compile Include="Prims.cs">
       <SubType>Code</SubType>
     </Compile>
