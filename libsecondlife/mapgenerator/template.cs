@@ -109,8 +109,11 @@ namespace libsecondlife.Packets
         [XmlIgnore]
         public uint Sequence
         {
-            get { return (uint)((Data[1] << 16) + (Data[2] << 8) + Data[3]); }
-            set { Data[1] = (byte)(value >> 16); Data[2] = (byte)(value >> 8); Data[3] = (byte)(value % 256); }
+            get { return (uint)((Data[1] << 24) + (Data[2] << 16) + (Data[3] << 8) + Data[4]); }
+            set {
+			Data[1] = (byte)(value >> 24); Data[2] = (byte)(value >> 16); 
+			Data[3] = (byte)(value >> 8);  Data[4] = (byte)(value % 256); 
+		}
         }
         /// <summary>Numeric ID number of this packet</summary>
         [XmlIgnore]
@@ -152,9 +155,9 @@ namespace libsecondlife.Packets
         /// <returns></returns>
         public static Header BuildHeader(byte[] bytes, ref int pos, ref int packetEnd)
         {
-            if (bytes[4] == 0xFF)
+            if (bytes[6] == 0xFF)
             {
-                if (bytes[5] == 0xFF)
+                if (bytes[7] == 0xFF)
                 {
                     return new LowHeader(bytes, ref pos, ref packetEnd);
                 }
@@ -215,8 +218,8 @@ namespace libsecondlife.Packets
         /// <summary></summary>
         public override ushort ID
         {
-            get { return (ushort)((Data[6] << 8) + Data[7]); }
-            set { Data[6] = (byte)(value >> 8); Data[7] = (byte)(value % 256); }
+            get { return (ushort)((Data[8] << 8) + Data[9]); }
+            set { Data[8] = (byte)(value >> 8); Data[9] = (byte)(value % 256); }
         }
         /// <summary></summary>
         public override PacketFrequency Frequency { get { return PacketFrequency.Low; } }
@@ -226,8 +229,8 @@ namespace libsecondlife.Packets
         /// </summary>
         public LowHeader()
         {
-            Data = new byte[8];
-            Data[4] = Data[5] = 0xFF;
+            Data = new byte[10];
+            Data[6] = Data[7] = 0xFF;
             AckList = new uint[0];
         }
 
@@ -239,15 +242,15 @@ namespace libsecondlife.Packets
         /// <param name="packetEnd"></param>
         public LowHeader(byte[] bytes, ref int pos, ref int packetEnd)
         {
-            if (bytes.Length < 8) { throw new MalformedDataException(); }
-            Data = new byte[8];
-            Buffer.BlockCopy(bytes, 0, Data, 0, 8);
+            if (bytes.Length < 10) { throw new MalformedDataException(); }
+            Data = new byte[10];
+            Buffer.BlockCopy(bytes, 0, Data, 0, 10);
 
-            if ((bytes[0] & Helpers.MSG_ZEROCODED) != 0 && bytes[6] == 0)
+            if ((bytes[0] & Helpers.MSG_ZEROCODED) != 0 && bytes[8] == 0)
             {
-                if (bytes[7] == 1)
+                if (bytes[9] == 1)
                 {
-                    Data[7] = bytes[8];
+                    Data[9] = bytes[10];
                 }
                 else
                 {
@@ -255,6 +258,57 @@ namespace libsecondlife.Packets
                 }
             }
 
+            pos = 10;
+            CreateAckList(bytes, ref packetEnd);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="i"></param>
+        public override void ToBytes(byte[] bytes, ref int i)
+        {
+            Buffer.BlockCopy(Data, 0, bytes, i, 10);
+            i += 10;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MediumHeader : Header
+    {
+        /// <summary></summary>
+        public override ushort ID
+        {
+            get { return (ushort)Data[7]; }
+            set { Data[7] = (byte)value; }
+        }
+        /// <summary></summary>
+        public override PacketFrequency Frequency { get { return PacketFrequency.Medium; } }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public MediumHeader()
+        {
+            Data = new byte[8];
+            Data[6] = 0xFF;
+            AckList = new uint[0];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="pos"></param>
+        /// <param name="packetEnd"></param>
+        public MediumHeader(byte[] bytes, ref int pos, ref int packetEnd)
+        {
+            if (bytes.Length < 8) { throw new MalformedDataException(); }
+            Data = new byte[8];
+            Buffer.BlockCopy(bytes, 0, Data, 0, 8);
             pos = 8;
             CreateAckList(bytes, ref packetEnd);
         }
@@ -274,64 +328,13 @@ namespace libsecondlife.Packets
     /// <summary>
     /// 
     /// </summary>
-    public class MediumHeader : Header
-    {
-        /// <summary></summary>
-        public override ushort ID
-        {
-            get { return (ushort)Data[5]; }
-            set { Data[5] = (byte)value; }
-        }
-        /// <summary></summary>
-        public override PacketFrequency Frequency { get { return PacketFrequency.Medium; } }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public MediumHeader()
-        {
-            Data = new byte[6];
-            Data[4] = 0xFF;
-            AckList = new uint[0];
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="pos"></param>
-        /// <param name="packetEnd"></param>
-        public MediumHeader(byte[] bytes, ref int pos, ref int packetEnd)
-        {
-            if (bytes.Length < 6) { throw new MalformedDataException(); }
-            Data = new byte[6];
-            Buffer.BlockCopy(bytes, 0, Data, 0, 6);
-            pos = 6;
-            CreateAckList(bytes, ref packetEnd);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <param name="i"></param>
-        public override void ToBytes(byte[] bytes, ref int i)
-        {
-            Buffer.BlockCopy(Data, 0, bytes, i, 6);
-            i += 6;
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     public class HighHeader : Header
     {
         /// <summary></summary>
         public override ushort ID
         {
-            get { return (ushort)Data[4]; }
-            set { Data[4] = (byte)value; }
+            get { return (ushort)Data[6]; }
+            set { Data[6] = (byte)value; }
         }
         /// <summary></summary>
         public override PacketFrequency Frequency { get { return PacketFrequency.High; } }
@@ -341,7 +344,7 @@ namespace libsecondlife.Packets
         /// </summary>
         public HighHeader()
         {
-            Data = new byte[5];
+            Data = new byte[7];
             AckList = new uint[0];
         }
 
@@ -353,10 +356,10 @@ namespace libsecondlife.Packets
         /// <param name="packetEnd"></param>
         public HighHeader(byte[] bytes, ref int pos, ref int packetEnd)
         {
-            if (bytes.Length < 5) { throw new MalformedDataException(); }
-            Data = new byte[5];
-            Buffer.BlockCopy(bytes, 0, Data, 0, 5);
-            pos = 5;
+            if (bytes.Length < 7) { throw new MalformedDataException(); }
+            Data = new byte[7];
+            Buffer.BlockCopy(bytes, 0, Data, 0, 7);
+            pos = 7;
             CreateAckList(bytes, ref packetEnd);
         }
 
@@ -367,7 +370,7 @@ namespace libsecondlife.Packets
         /// <param name="i"></param>
         public override void ToBytes(byte[] bytes, ref int i)
         {
-            Buffer.BlockCopy(Data, 0, bytes, i, 5);
-            i += 5;
+            Buffer.BlockCopy(Data, 0, bytes, i, 7);
+            i += 7;
         }
     }

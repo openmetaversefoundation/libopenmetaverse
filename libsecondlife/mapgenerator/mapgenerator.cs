@@ -608,9 +608,9 @@ namespace mapgenerator
             writer.WriteLine("        public override byte[] ToBytes()" + Environment.NewLine + "        {");
 
             writer.Write("            int length = ");
-            if (packet.Frequency == PacketFrequency.Low) { writer.WriteLine("8;"); }
-            else if (packet.Frequency == PacketFrequency.Medium) { writer.WriteLine("6;"); }
-            else { writer.WriteLine("5;"); }
+            if (packet.Frequency == PacketFrequency.Low) { writer.WriteLine("10;"); }
+            else if (packet.Frequency == PacketFrequency.Medium) { writer.WriteLine("8;"); }
+            else { writer.WriteLine("7;"); }
 
             foreach (MapBlock block in packet.Blocks)
             {
@@ -780,13 +780,13 @@ namespace mapgenerator
                 "        Default,");
             foreach (MapPacket packet in protocol.LowMaps)
                 if (packet != null)
-                    writer.WriteLine("        " + packet.Name + ",");
+                    writer.WriteLine("        " + packet.Name + " = " + (0x10000 | packet.ID)  + ",");
             foreach (MapPacket packet in protocol.MediumMaps)
                 if (packet != null)
-                    writer.WriteLine("        " + packet.Name + ",");
+                    writer.WriteLine("        " + packet.Name + " = " + (0x20000 | packet.ID) + ",");
             foreach (MapPacket packet in protocol.HighMaps)
                 if (packet != null)
-                    writer.WriteLine("        " + packet.Name + ",");
+                    writer.WriteLine("        " + packet.Name + " = " + (0x30000 | packet.ID) + ",");
             writer.WriteLine("    }" + Environment.NewLine);
 
 
@@ -851,35 +851,35 @@ namespace mapgenerator
             // Write the Packet.BuildPacket() function
             writer.WriteLine(
                 "        public static Packet BuildPacket(byte[] bytes, ref int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
-                "        {" + Environment.NewLine + "            ushort id;" + Environment.NewLine + 
+                "        {" + Environment.NewLine + "            ushort id; PacketFrequency freq;" + Environment.NewLine + 
                 "            int i = 0;" + Environment.NewLine +
                 "            Header header = Header.BuildHeader(bytes, ref i, ref packetEnd);" + Environment.NewLine +
                 "            if (header.Zerocoded)" + Environment.NewLine + "            {" + Environment.NewLine +
                 "                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;" + Environment.NewLine +
                 "                bytes = zeroBuffer;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
-                "            if (bytes[4] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                if (bytes[5] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
-                "                    id = (ushort)((bytes[6] << 8) + bytes[7]);" + Environment.NewLine +
+                "            if (bytes[6] == 0xFF)" + Environment.NewLine + "            {" + Environment.NewLine +
+                "                if (bytes[7] == 0xFF)" + Environment.NewLine + "                {" + Environment.NewLine +
+                "                    id = (ushort)((bytes[8] << 8) + bytes[9]); freq = PacketFrequency.Low;" + Environment.NewLine +
                 "                    switch (id)" + Environment.NewLine + "                    {");
             foreach (MapPacket packet in protocol.LowMaps)
                 if (packet != null)
                     writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");
             writer.WriteLine("                    }" + Environment.NewLine + "                }" + Environment.NewLine + 
                 "                else" + Environment.NewLine +
-                "                {" + Environment.NewLine + "                    id = (ushort)bytes[5];" + Environment.NewLine +
+                "                {" + Environment.NewLine + "                    id = (ushort)bytes[7];  freq = PacketFrequency.Medium;" + Environment.NewLine +
                 "                    switch (id)" + Environment.NewLine + "                    {");
             foreach (MapPacket packet in protocol.MediumMaps)
                 if (packet != null)
                     writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");
             writer.WriteLine("                    }" + Environment.NewLine + "                }" + Environment.NewLine + "            }" + Environment.NewLine +
                 "            else" + Environment.NewLine + "            {" + Environment.NewLine +
-                "                id = (ushort)bytes[4];" + Environment.NewLine +
+                "                id = (ushort)bytes[6];  freq = PacketFrequency.High;" + Environment.NewLine +
                 "                switch (id)" + Environment.NewLine + "                    {");
             foreach (MapPacket packet in protocol.HighMaps)
                 if (packet != null)
                     writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");
             writer.WriteLine("                }" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
-                "            throw new MalformedDataException(\"Unknown packet ID\");" + Environment.NewLine +
+                "            throw new MalformedDataException(\"Unknown packet ID \"+freq+\" \"+id);" + Environment.NewLine +
                 "        }" + Environment.NewLine + "    }" + Environment.NewLine);
 
 

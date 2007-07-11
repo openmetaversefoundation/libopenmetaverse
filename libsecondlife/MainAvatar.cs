@@ -792,11 +792,8 @@ namespace libsecondlife
             // Health callback
             Client.Network.RegisterCallback(PacketType.HealthMessage, new NetworkManager.PacketCallback(HealthHandler));
 
-            // Money callbacks
-            callback = new NetworkManager.PacketCallback(BalanceHandler);
-            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, callback);
-            Client.Network.RegisterCallback(PacketType.MoneySummaryReply, callback);
-            Client.Network.RegisterCallback(PacketType.AdjustBalance, callback);
+            // Money callback
+            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
 
             // Group callbacks
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
@@ -1491,7 +1488,7 @@ namespace libsecondlife
         /// <param name="lookAt">Target to look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            if (Client.Network.CurrentCaps != null && Client.Network.CurrentCaps.IsEventQueueRunning)
+            if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.SimCaps != null && Client.Network.CurrentSim.SimCaps.IsEventQueueRunning)
             {
                 TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
                 teleport.AgentData.AgentID = Client.Network.AgentID;
@@ -1957,27 +1954,16 @@ namespace libsecondlife
         /// <param name="simulator">Unused</param>
         private void BalanceHandler(Packet packet, Simulator simulator)
         {
-            if (packet.Type == PacketType.MoneySummaryReply)
-            {
-                balance = ((MoneySummaryReplyPacket)packet).MoneyData.Balance;
-            }
-            else if (packet.Type == PacketType.AdjustBalance)
-            {
-                balance += ((AdjustBalancePacket)packet).AgentData.Delta;
-            }
-            else if (packet.Type == PacketType.MoneyBalanceReply)
-            {
-                MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
-                balance = mbrp.MoneyData.MoneyBalance;
+            MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
+            balance = mbrp.MoneyData.MoneyBalance;
 
-                if (OnMoneyBalanceReplyReceived != null)
-                {
-                    try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
-                        mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
-                        mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
-                        Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
-                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                }
+            if (OnMoneyBalanceReplyReceived != null)
+            {
+                try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
+                    mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
+                    mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
+                    Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
 
             if (OnBalanceUpdated != null)
@@ -2011,6 +1997,23 @@ namespace libsecondlife
                     caps.Simulator.ToString(), packet.Info.SimIP, packet.Info.LocationID, packet.Info.RegionHandle));
 
                 TeleportHandler(packet, Client.Network.CurrentSim);
+	    }
+	    else if(message == "EstablishAgentCommunication" && Client.Settings.MULTIPLE_SIMS)
+	    {
+		string ipAndPort = (string)body["sim-ip-and-port"];
+		string[] pieces = ipAndPort.Split(':');
+		IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(pieces[0]), Convert.ToInt32(pieces[1]));
+		Simulator sim = Client.Network.FindSimulator(endPoint);
+		if(sim == null) {
+			Client.Log("Got EstablishAgentCommunication for unknown sim "
+				+ ipAndPort,  Helpers.LogLevel.Error);
+		}
+		else
+		{
+			Client.Log("Got EstablishAgentCommunication for sim "
+				+ ipAndPort + ", seed cap " + (string)body["seed-capability"],  Helpers.LogLevel.Info);
+			sim.setSeedCaps((string)body["seed-capability"]);
+		}
             }
             else
             {
@@ -2092,7 +2095,7 @@ namespace libsecondlife
                     // Attempt to reconnect to the previous simulator
                     // TODO: This hasn't been tested at all
                     Client.Network.Connect(simulator.IPEndPoint.Address, (ushort)simulator.IPEndPoint.Port,
-                        true, Client.Network.CurrentCaps.Seedcaps);
+                        true, simulator.SimCaps.Seedcaps);
 
                     Client.Log(teleportMessage, Helpers.LogLevel.Warning);
                 }

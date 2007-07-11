@@ -355,11 +355,6 @@ namespace SLProxy
                     Socket client = loginServer.Accept();
                     IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
 
-#if DEBUG_CAPS
-                    Log("handling HTTP request from " + clientEndPoint, false);
-#endif
-
-
                     try
                     {
                         Thread connThread = new Thread((ThreadStart)delegate
@@ -529,10 +524,6 @@ namespace SLProxy
             {
                 contentLength = Convert.ToInt32(headers["content-length"]);
             }
-
-#if DEBUG_CAPS
-            Console.WriteLine("[" + reqNo + "] request length = " + contentLength);
-#endif
 
             // read the HTTP body into a buffer
             byte[] content = new byte[contentLength];
@@ -905,70 +896,23 @@ namespace SLProxy
                     bytes[3] = (byte)((simIP >> 24) % 256);
                     info["SimIP"] = bytes;
                     info["SimPort"] = (int)simPort;
-                }
+                } else if(message == "EstablishAgentCommunication") {
+			string ipAndPort = (string)body["sim-ip-and-port"];
+			string[] pieces = ipAndPort.Split(':');
+			byte[] bytes = IPAddress.Parse(pieces[0]).GetAddressBytes();
+		        uint simIP = (uint)(bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
+        	        ushort simPort = (ushort)Convert.ToInt32(pieces[1]);
+			
+			string capsURL = (string)body["seed-capability"];
+			Console.WriteLine("DEBUG: Got EstablishAgentCommunication for " + ipAndPort +" with seed cap " +capsURL);
+			GenericCheck(ref simIP, ref simPort, ref capsURL, false);
+			body["seed-capability"] = capsURL;
+			body["sim-ip-and-port"] = new IPAddress((uint)simIP).ToString()+":"+simPort;
+			Console.WriteLine("DEBUG: Modified EstablishAgentCommunication to " + (string)body["sim-ip-and-port"] +" with seed cap " +capsURL);
+		}
             }
             return false;
         }
-
-        /* private byte[] CapsFixup(string uri, byte[] data) {
-            CapInfo cap;
-            lock(this) {
-                if(!KnownCaps.ContainsKey(uri)) {
-                    Console.WriteLine("Unknown caps URI: "+uri);
-                    return data;
-                }
-                cap = KnownCaps[uri];
-            }
-            lock(cap) {
-				
-            }
-            object resp = LLSD.LLSDDeserialize(data);
-            if(cap.CapType == "SeedCapability") {
-                Hashtable m = (Hashtable)resp;
-                Hashtable nm = new Hashtable();
-                foreach(string key in m.Keys) {
-                    string val = (string)m[key];
-                    if(val != null && val != "") {
-                        if(!KnownCaps.ContainsKey(val))
-                            KnownCaps[val] = new CapInfo(val, cap.Sim, key);
-                        nm[key] = "http://127.0.0.1:8080/"+val;
-                    } else {
-                        nm[key] = val;
-                    }
-                }
-                resp = nm;
-            } else if(cap.CapType == "NewAgentInventory") {
-                Hashtable m = (Hashtable)resp;
-                if(m.ContainsKey("uploader") && m["uploader"] != null && (string)m["uploader"] != "") 
-                    m["uploader"] = "http://127.0.0.1:8080/"+(string)m["uploader"];
-            } else if(cap.CapType == "EventQueueGet") {
-                Console.WriteLine(LLSD.LLSDDump(resp,0));
-                foreach(Hashtable evt in (ArrayList)((Hashtable)resp)["events"]) {
-                    string message = (string)evt["message"];
-                    Hashtable body = (Hashtable)evt["body"];
-                    if(message == "TeleportFinish" || message == "CrossedRegion") {
-                        Hashtable info = null;
-                        if(message == "TeleportFinish")
-                            info = (Hashtable) body["Info"];
-                        else
-                            info = (Hashtable) body["RegionData"];
-                        byte[] bytes = (byte[]) info["SimIP"];
-                        uint simIP = Helpers.BytesToUIntBig((byte[]) info["SimIP"]);
-                        ushort simPort = (ushort)(int)info["SimPort"];
-                        string capsURL = (string)info["SeedCapability"];
-                        GenericCheck(ref simIP, ref simPort, ref capsURL, cap.Sim == activeCircuit);
-                        info["SeedCapability"] = capsURL;
-                        bytes[0] = (byte)(simIP % 256);
-                                bytes[1] = (byte)((simIP >> 8) % 256);
-                                bytes[2] = (byte)((simIP >> 16) % 256);
-                                bytes[3] = (byte)((simIP >> 24) % 256);
-                        info["SimIP"] = bytes;
-                        info["SimPort"] = (int)simPort;
-                    }
-                }
-            }
-            return LLSD.LLSDSerialize(resp);
-        } */
 
         private void ProxyLogin(NetworkStream netStream, byte[] content)
         {
@@ -1834,7 +1778,6 @@ namespace SLProxy
             //AddMystery(PacketType.AgentPresenceResponse);
 
             incomingCheckers.Add(PacketType.TeleportFinish, new AddressChecker(CheckTeleportFinish));
-            incomingCheckers.Add(PacketType.AgentToNewRegion, new AddressChecker(CheckAgentToNewRegion));
             incomingCheckers.Add(PacketType.CrossedRegion, new AddressChecker(CheckCrossedRegion));
             incomingCheckers.Add(PacketType.EnableSimulator, new AddressChecker(CheckEnableSimulator));
             //incomingCheckers.Add("UserLoginLocationReply", new AddressChecker(CheckUserLoginLocationReply));
@@ -1882,24 +1825,6 @@ namespace SLProxy
             GenericCheck(ref tfp.Info.SimIP, ref tfp.Info.SimPort, ref simCaps, true);
             tfp.Info.SeedCapability = Helpers.StringToField(simCaps);
             return (Packet)tfp;
-        }
-
-        // CheckAgentToNewRegion: check AgentToNewRegion packets
-        private Packet CheckAgentToNewRegion(Packet packet)
-        {
-            if (packet.Type != PacketType.AgentToNewRegion) return packet;
-
-            try
-            {
-                AgentToNewRegionPacket atnwp = (AgentToNewRegionPacket)packet;
-                string simCaps = null; // FIXME: why doesn't this have a SeedCapability field?
-                GenericCheck(ref atnwp.RegionData.IP, ref atnwp.RegionData.Port, ref simCaps, true);
-                return (Packet)atnwp;
-            }
-            catch (Exception)
-            {
-                return packet;
-            }
         }
 
         // CheckEnableSimulator: check EnableSimulator packets

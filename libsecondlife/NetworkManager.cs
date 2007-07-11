@@ -171,8 +171,6 @@ namespace libsecondlife
         /// <summary>The simulator that the logged in avatar is currently 
         /// occupying</summary>
         public Simulator CurrentSim = null;
-        /// <summary>The capabilities for the current simulator</summary>
-        public Caps CurrentCaps = null;
         /// <summary>All of the simulators we are currently connected to</summary>
         public List<Simulator> Simulators = new List<Simulator>();
 
@@ -451,9 +449,9 @@ namespace libsecondlife
             DisconnectTimer.Stop();
 
             // Insist on shutdown
-            LogoutDemandPacket logoutDemand = new LogoutDemandPacket();
-            logoutDemand.LogoutBlock.SessionID = SessionID;
-            CurrentSim.SendPacket(logoutDemand, true);
+            // LogoutDemandPacket logoutDemand = new LogoutDemandPacket(); // FIXME: packet is no more
+            // logoutDemand.LogoutBlock.SessionID = SessionID;
+            // CurrentSim.SendPacket(logoutDemand, true);
 
             FinalizeLogout();
         }
@@ -649,18 +647,7 @@ namespace libsecondlife
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
-                // Disable any current running CAPS system
-                if (CurrentCaps != null) CurrentCaps.Disconnect(false);
-                CurrentCaps = null;
-
-                if (Client.Settings.ENABLE_CAPS)
-                {
-                    // Connect to the new CAPS system
-                    if (!String.IsNullOrEmpty(seedcaps))
-                        CurrentCaps = new Caps(Client, simulator, seedcaps);
-                    else
-                        Client.Log("Setting the current sim without a capabilities server!", Helpers.LogLevel.Error);
-                }
+		simulator.setSeedCaps(seedcaps);
 
                 // If the current simulator changed fire the callback
                 if (OnCurrentSimChanged != null && simulator != oldSim)
@@ -745,12 +732,6 @@ namespace libsecondlife
                 lock (Simulators) CurrentSim = null;
             }
 
-            // Kill the current CAPS system
-            if (CurrentCaps != null)
-            {
-                CurrentCaps.Disconnect(true);
-                CurrentCaps = null;
-            }
 
             // Clear out all of the packets that never had time to process
             lock (PacketInbox) PacketInbox.Clear();
@@ -758,7 +739,7 @@ namespace libsecondlife
             connected = false;
         }
 
-        private Simulator FindSimulator(IPEndPoint endPoint)
+        public Simulator FindSimulator(IPEndPoint endPoint)
         {
             lock (Simulators)
             {

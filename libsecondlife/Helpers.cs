@@ -787,8 +787,8 @@ namespace libsecondlife
 
             try
             {
-                Buffer.BlockCopy(src, 0, dest, 0, 4);
-                zerolen = 4;
+                Buffer.BlockCopy(src, 0, dest, 0, 6);
+                zerolen = 6;
                 bodylen = srclen;
 
                 for (i = zerolen; i < bodylen; i++)
@@ -835,7 +835,7 @@ namespace libsecondlife
         /// <param name="dest">The output byte array to encode to</param>
         public static void ZeroDecodeCommand(byte[] src, byte[] dest)
         {
-            for (int srcPos = 4, destPos = 4; destPos < 8; ++srcPos)
+            for (int srcPos = 6, destPos = 6; destPos < 10; ++srcPos)
             {
                 if (src[srcPos] == 0x00)
                 {
@@ -870,8 +870,8 @@ namespace libsecondlife
             uint zerolen = 0;
             byte zerocount = 0;
 
-            Buffer.BlockCopy(src, 0, dest, 0, 4);
-            zerolen += 4;
+            Buffer.BlockCopy(src, 0, dest, 0, 6);
+            zerolen += 6;
 
             int bodylen;
             if ((src[0] & MSG_APPENDED_ACKS) == 0)

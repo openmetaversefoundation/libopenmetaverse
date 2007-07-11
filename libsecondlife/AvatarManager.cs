@@ -53,7 +53,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="avatarID"></param>
         /// <param name="statistics"></param>
-        public delegate void AvatarStatisticsCallback(LLUUID avatarID, Avatar.Statistics statistics);
+        // public delegate void AvatarStatisticsCallback(LLUUID avatarID, Avatar.Statistics statistics);
         /// <summary>
         /// Triggered when a response for avatar interests is returned
         /// </summary>
@@ -118,7 +118,7 @@ namespace libsecondlife
         /// <summary></summary>
         public event AvatarNamesCallback OnAvatarNames;
         /// <summary></summary>
-        public event AvatarStatisticsCallback OnAvatarStatistics;
+        // public event AvatarStatisticsCallback OnAvatarStatistics;
         /// <summary></summary>
         public event AvatarInterestsCallback OnAvatarInterests;
         /// <summary></summary>
@@ -151,7 +151,7 @@ namespace libsecondlife
 
             // Avatar profile callbacks
             Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
+            // Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
             Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new NetworkManager.PacketCallback(AvatarInterestsHandler));
 
             // Avatar group callback
@@ -282,7 +282,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
-        private void AvatarStatisticsHandler(Packet packet, Simulator simulator)
+/*        private void AvatarStatisticsHandler(Packet packet, Simulator simulator)
         {
             if (OnAvatarStatistics != null)
             {
@@ -319,7 +319,7 @@ namespace libsecondlife
 
                 OnAvatarStatistics(asr.AvatarData.AvatarID, stats);
             }
-        }
+        } */
 
         /// <summary>
         /// Process incoming avatar properties (profile data)

@@ -423,9 +423,6 @@ namespace libsecondlife
 		private void LoadMapFile(string mapFile)
 		{
 			FileStream map;
-			ushort low = 1;
-			ushort medium = 1;
-			ushort high = 1;
 
 			// Load the protocol map file
 			try
@@ -482,7 +479,7 @@ namespace libsecondlife
 							else if (trimmedline == "}")
 							{
 								// Reached the end of the packet
-								currentPacket.Blocks.Sort();
+								// currentPacket.Blocks.Sort();
 								inPacket = false;
 							}
 							else 
@@ -498,68 +495,71 @@ namespace libsecondlife
                                     //Hash packet name to insure correct keyword ordering
                                     KeywordPosition(tokens[0]);
 
+									uint packetID;										
+
+									// Remove the leading "0x"
+									if (tokens[2].Length > 2 && tokens[2].Substring(0, 2) == "0x")
+									{
+										tokens[2] = tokens[2].Substring(2, tokens[2].Length - 2);
+										packetID = UInt32.Parse(tokens[2], System.Globalization.NumberStyles.HexNumber);
+									} else {
+										packetID = UInt32.Parse(tokens[2]);	
+									}
+										
+
 									if (tokens[1] == "Fixed")
 									{
-										// Remove the leading "0x"
-										if (tokens[2].Substring(0, 2) == "0x")
-										{
-											tokens[2] = tokens[2].Substring(2, tokens[2].Length - 2);
-										}
-
-										uint fixedID = UInt32.Parse(tokens[2], System.Globalization.NumberStyles.HexNumber);
+										
 										// Truncate the id to a short
-										fixedID ^= 0xFFFF0000;
-										LowMaps[fixedID] = new MapPacket();
-										LowMaps[fixedID].ID = (ushort)fixedID;
-										LowMaps[fixedID].Frequency = PacketFrequency.Low;
-										LowMaps[fixedID].Name = tokens[0];
-										LowMaps[fixedID].Trusted = (tokens[3] == "Trusted");
-										LowMaps[fixedID].Encoded = (tokens[4] == "Zerocoded");
-										LowMaps[fixedID].Blocks = new List<MapBlock>();
+										packetID &= 0xFFFF;
+										LowMaps[packetID] = new MapPacket();
+										LowMaps[packetID].ID = (ushort)packetID;
+										LowMaps[packetID].Frequency = PacketFrequency.Low;
+										LowMaps[packetID].Name = tokens[0];
+										LowMaps[packetID].Trusted = (tokens[3] == "Trusted");
+										LowMaps[packetID].Encoded = (tokens[4] == "Zerocoded");
+										LowMaps[packetID].Blocks = new List<MapBlock>();
 
-										currentPacket = LowMaps[fixedID];
+										currentPacket = LowMaps[packetID];
 									}
 									else if (tokens[1] == "Low")
 									{
-										LowMaps[low] = new MapPacket();
-										LowMaps[low].ID = low;
-										LowMaps[low].Frequency = PacketFrequency.Low;
-										LowMaps[low].Name = tokens[0];
-										LowMaps[low].Trusted = (tokens[2] == "Trusted");
-										LowMaps[low].Encoded = (tokens[3] == "Zerocoded");
-										LowMaps[low].Blocks = new List<MapBlock>();
+										LowMaps[packetID] = new MapPacket();
+										LowMaps[packetID].ID = (ushort)packetID;
+										LowMaps[packetID].Frequency = PacketFrequency.Low;
+										LowMaps[packetID].Name = tokens[0];
+										LowMaps[packetID].Trusted = (tokens[2] == "Trusted");
+										LowMaps[packetID].Encoded = (tokens[3] == "Zerocoded");
+										LowMaps[packetID].Blocks = new List<MapBlock>();
 
-										currentPacket = LowMaps[low];
+										currentPacket = LowMaps[packetID];
 
-										low++;
 									}
 									else if (tokens[1] == "Medium")
 									{
-										MediumMaps[medium] = new MapPacket();
-										MediumMaps[medium].ID = medium;
-										MediumMaps[medium].Frequency = PacketFrequency.Medium;
-										MediumMaps[medium].Name = tokens[0];
-										MediumMaps[medium].Trusted = (tokens[2] == "Trusted");
-										MediumMaps[medium].Encoded = (tokens[3] == "Zerocoded");
-										MediumMaps[medium].Blocks = new List<MapBlock>();
+										MediumMaps[packetID] = new MapPacket();
+										MediumMaps[packetID].ID = (ushort)packetID;
+										MediumMaps[packetID].Frequency = PacketFrequency.Medium;
+										MediumMaps[packetID].Name = tokens[0];
+										MediumMaps[packetID].Trusted = (tokens[2] == "Trusted");
+										MediumMaps[packetID].Encoded = (tokens[3] == "Zerocoded");
+										MediumMaps[packetID].Blocks = new List<MapBlock>();
 
-										currentPacket = MediumMaps[medium];
+										currentPacket = MediumMaps[packetID];
 
-										medium++;
 									}
 									else if (tokens[1] == "High")
 									{
-										HighMaps[high] = new MapPacket();
-										HighMaps[high].ID = high;
-										HighMaps[high].Frequency = PacketFrequency.High;
-										HighMaps[high].Name = tokens[0];
-										HighMaps[high].Trusted = (tokens[2] == "Trusted");
-										HighMaps[high].Encoded = (tokens[3] == "Zerocoded");
-										HighMaps[high].Blocks = new List<MapBlock>();
+										HighMaps[packetID] = new MapPacket();
+										HighMaps[packetID].ID = (ushort)packetID;
+										HighMaps[packetID].Frequency = PacketFrequency.High;
+										HighMaps[packetID].Name = tokens[0];
+										HighMaps[packetID].Trusted = (tokens[2] == "Trusted");
+										HighMaps[packetID].Encoded = (tokens[3] == "Zerocoded");
+										HighMaps[packetID].Blocks = new List<MapBlock>();
 
-										currentPacket = HighMaps[high];
+										currentPacket = HighMaps[packetID];
 
-										high++;
 									}
 									else
 									{
@@ -603,7 +603,7 @@ namespace libsecondlife
 							}
 							else if (trimmedline == "}")
 							{
-								currentBlock.Fields.Sort();
+								// currentBlock.Fields.Sort();
 								inBlock = false;
 							}
 							else if (trimmedline.Length != 0 && trimmedline.Substring(0, 2) != "//")

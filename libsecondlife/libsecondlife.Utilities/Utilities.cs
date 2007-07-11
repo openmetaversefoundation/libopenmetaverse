@@ -202,7 +202,6 @@ namespace libsecondlife.Utilities
         protected SecondLife Client;
         protected Dictionary<LLUUID, Avatar> avatars = new Dictionary<LLUUID, Avatar>();
         protected Dictionary<LLUUID, ManualResetEvent> NameLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
-        protected Dictionary<LLUUID, ManualResetEvent> StatisticsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
         protected Dictionary<LLUUID, ManualResetEvent> PropertiesLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
         protected Dictionary<LLUUID, ManualResetEvent> InterestsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
         protected Dictionary<LLUUID, ManualResetEvent> GroupsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
@@ -214,7 +213,6 @@ namespace libsecondlife.Utilities
             Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
             Client.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
             Client.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
-            Client.Avatars.OnAvatarStatistics += new AvatarManager.AvatarStatisticsCallback(Avatars_OnAvatarStatistics);
             Client.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
 
             //Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
@@ -276,7 +274,7 @@ namespace libsecondlife.Utilities
         }
 
         public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.AvatarProperties properties,
-            out Avatar.Statistics statistics, out List<LLUUID> groups)
+            out List<LLUUID> groups)
         {
             // Do a local lookup first
             if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null &&
@@ -284,7 +282,6 @@ namespace libsecondlife.Utilities
             {
                 interests = avatars[id].ProfileInterests;
                 properties = avatars[id].ProfileProperties;
-                statistics = avatars[id].ProfileStatistics;
                 groups = avatars[id].Groups;
 
                 return true;
@@ -297,9 +294,6 @@ namespace libsecondlife.Utilities
             lock (InterestsLookupEvents)
                 if (!InterestsLookupEvents.ContainsKey(id))
                     InterestsLookupEvents[id] = new ManualResetEvent(false);
-            lock (StatisticsLookupEvents)
-                if (!StatisticsLookupEvents.ContainsKey(id))
-                    StatisticsLookupEvents[id] = new ManualResetEvent(false);
             lock (GroupsLookupEvents)
                 if (!GroupsLookupEvents.ContainsKey(id))
                     GroupsLookupEvents[id] = new ManualResetEvent(false);
@@ -310,7 +304,6 @@ namespace libsecondlife.Utilities
             // Wait for all of the events to complete
             PropertiesLookupEvents[id].WaitOne(5000, false);
             InterestsLookupEvents[id].WaitOne(5000, false);
-            StatisticsLookupEvents[id].WaitOne(5000, false);
             GroupsLookupEvents[id].WaitOne(5000, false);
 
             // Destroy the ManualResetEvents
@@ -318,8 +311,6 @@ namespace libsecondlife.Utilities
                 PropertiesLookupEvents.Remove(id);
             lock (InterestsLookupEvents)
                 InterestsLookupEvents.Remove(id);
-            lock (StatisticsLookupEvents)
-                StatisticsLookupEvents.Remove(id);
             lock (GroupsLookupEvents)
                 GroupsLookupEvents.Remove(id);
 
@@ -329,7 +320,6 @@ namespace libsecondlife.Utilities
             {
                 interests = avatars[id].ProfileInterests;
                 properties = avatars[id].ProfileProperties;
-                statistics = avatars[id].ProfileStatistics;
                 groups = avatars[id].Groups;
 
                 return true;
@@ -338,7 +328,6 @@ namespace libsecondlife.Utilities
             {
                 interests = new Avatar.Interests();
                 properties = new Avatar.AvatarProperties();
-                statistics = new Avatar.Statistics();
                 groups = null;
 
                 return false;
@@ -377,20 +366,6 @@ namespace libsecondlife.Utilities
                         NameLookupEvents[kvp.Key].Set();
                 }
             }
-        }
-
-        void Avatars_OnAvatarStatistics(LLUUID avatarID, Avatar.Statistics statistics)
-        {
-            lock (avatars)
-            {
-                if (!avatars.ContainsKey(avatarID))
-                    avatars[avatarID] = new Avatar();
-
-                avatars[avatarID].ProfileStatistics = statistics;
-            }
-
-            if (StatisticsLookupEvents.ContainsKey(avatarID))
-                StatisticsLookupEvents[avatarID].Set();
         }
 
         void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.AvatarProperties properties)
