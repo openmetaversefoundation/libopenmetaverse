@@ -206,6 +206,49 @@
       <Name>openjpegnet</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\blush_alpha.tga" />
+    <EmbeddedResource Include="Resources\bodyfreckles_alpha.tga" />
+    <EmbeddedResource Include="Resources\body_skingrain.tga" />
+    <EmbeddedResource Include="Resources\bump_face_wrinkles.tga" />
+    <EmbeddedResource Include="Resources\bump_head_base.tga" />
+    <EmbeddedResource Include="Resources\bump_lowerbody_base.tga" />
+    <EmbeddedResource Include="Resources\bump_pants_wrinkles.tga" />
+    <EmbeddedResource Include="Resources\bump_shirt_wrinkles.tga" />
+    <EmbeddedResource Include="Resources\bump_upperbody_base.tga" />
+    <EmbeddedResource Include="Resources\eyebrows_alpha.tga" />
+    <EmbeddedResource Include="Resources\eyeliner_alpha.tga" />
+    <EmbeddedResource Include="Resources\eyeshadow_inner_alpha.tga" />
+    <EmbeddedResource Include="Resources\eyeshadow_outer_alpha.tga" />
+    <EmbeddedResource Include="Resources\eyewhite.tga" />
+    <EmbeddedResource Include="Resources\facehair_chincurtains_alpha.tga" />
+    <EmbeddedResource Include="Resources\facehair_moustache_alpha.tga" />
+    <EmbeddedResource Include="Resources\facehair_sideburns_alpha.tga" />
+    <EmbeddedResource Include="Resources\facehair_soulpatch_alpha.tga" />
+    <EmbeddedResource Include="Resources\freckles_alpha.tga" />
+    <EmbeddedResource Include="Resources\head_alpha.tga" />
+    <EmbeddedResource Include="Resources\head_color.tga" />
+    <EmbeddedResource Include="Resources\head_hair.tga" />
+    <EmbeddedResource Include="Resources\head_highlights_alpha.tga" />
+    <EmbeddedResource Include="Resources\head_shading_alpha.tga" />
+    <EmbeddedResource Include="Resources\head_skingrain.tga" />
+    <EmbeddedResource Include="Resources\lipgloss_alpha.tga" />
+    <EmbeddedResource Include="Resources\lipstick_alpha.tga" />
+    <EmbeddedResource Include="Resources\lips_mask.tga" />
+    <EmbeddedResource Include="Resources\lowerbody_color.tga" />
+    <EmbeddedResource Include="Resources\lowerbody_highlights_alpha.tga" />
+    <EmbeddedResource Include="Resources\lowerbody_shading_alpha.tga" />
+    <EmbeddedResource Include="Resources\nailpolish_alpha.tga" />
+    <EmbeddedResource Include="Resources\rosyface_alpha.tga" />
+    <EmbeddedResource Include="Resources\rouge_alpha.tga" />
+    <EmbeddedResource Include="Resources\underpants_trial_female.tga" />
+    <EmbeddedResource Include="Resources\underpants_trial_male.tga" />
+    <EmbeddedResource Include="Resources\undershirt_trial_female.tga" />
+    <EmbeddedResource Include="Resources\upperbodyfreckles_alpha.tga" />
+    <EmbeddedResource Include="Resources\upperbody_color.tga" />
+    <EmbeddedResource Include="Resources\upperbody_highlights_alpha.tga" />
+    <EmbeddedResource Include="Resources\upperbody_shading_alpha.tga" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

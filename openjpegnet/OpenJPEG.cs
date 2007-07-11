@@ -22,29 +22,25 @@ namespace OpenJPEGNet
         }
 
         // allocate encoded buffer based on length field
-        [DllImport("openjpeg-libsl.dll")]
+        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslAllocEncoded(ref LibslImage image);
 
         // allocate decoded buffer based on width and height fields
-        [DllImport("openjpeg-libsl.dll")]
+        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslAllocDecoded(ref LibslImage image);
         
         // free buffers
-        [DllImport("openjpeg-libsl.dll")]
+        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslFree(ref LibslImage image);
         
         // encode raw to jpeg2000
-        [DllImport("openjpeg-libsl.dll")]
+        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslEncode(ref LibslImage image, bool lossless);
 
-        // encode raw to compressed five component jpeg2000 with LL_RGBHM comment
-        [DllImport("openjpeg-libsl.dll")]
-        private static extern bool LibslEncodeBake(ref LibslImage image);
-
         // decode jpeg2000 to raw
-        [DllImport("openjpeg-libsl.dll")]
+        [DllImport("openjpeg-libsl.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool LibslDecode(ref LibslImage image);
-
+        
         // encode 
         public static byte[] Encode(byte[] decoded, int width, int height, int components, bool lossless)
         {
@@ -61,10 +57,7 @@ namespace OpenJPEGNet
             Marshal.Copy(decoded, 0, image.decoded, width * height * components);
 
             // codec will allocate output buffer
-            if (components == 5)
-                LibslEncodeBake(ref image);
-            else
-                LibslEncode(ref image, lossless);
+            LibslEncode(ref image, lossless);
 
             // copy output buffer
             byte[] encoded = new byte[image.length];
@@ -74,6 +67,11 @@ namespace OpenJPEGNet
             LibslFree(ref image);
 
             return encoded;
+        }
+
+        public static byte[] Encode(byte[] decoded, int width, int height, int components)
+        {
+            return Encode(decoded, width, height, components, false);
         }
 
         public static byte[] Decode(byte[] encoded, out int width, out int height, out int components)
@@ -138,9 +136,9 @@ namespace OpenJPEGNet
                 case 5:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 2]; // blue
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = decoded[si + 4]; // alpha
                         si += 5;
                     }
@@ -148,9 +146,9 @@ namespace OpenJPEGNet
                 case 4:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 2]; // blue
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = decoded[si + 3]; // alpha
                         si += 4;
                     }
@@ -158,9 +156,9 @@ namespace OpenJPEGNet
                 case 3:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 2]; // red
+                        tga[di++] = decoded[si + 2]; // blue
                         tga[di++] = decoded[si + 1]; // green
-                        tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = 0xFF; // alpha
                         si += 3;
                     }
@@ -168,9 +166,9 @@ namespace OpenJPEGNet
                 case 2:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si + 0]; // red
-                        tga[di++] = decoded[si + 0]; // green
                         tga[di++] = decoded[si + 0]; // blue
+                        tga[di++] = decoded[si + 0]; // green
+                        tga[di++] = decoded[si + 0]; // red
                         tga[di++] = decoded[si + 1]; // alpha
                         si += 2;
                     }
@@ -178,9 +176,9 @@ namespace OpenJPEGNet
                 case 1:
                     for (int i = 0; i < (width * height); i++)
                     {
-                        tga[di++] = decoded[si]; // red
-                        tga[di++] = decoded[si]; // green
                         tga[di++] = decoded[si]; // blue
+                        tga[di++] = decoded[si]; // green
+                        tga[di++] = decoded[si]; // red
                         tga[di++] = 0xFF; // alpha
                         si++;
                     }
@@ -205,20 +203,23 @@ namespace OpenJPEGNet
             byte[] decoded;
             int i = 0;
 
+            int bitmapWidth = bitmap.Width;
+            int bitmapHeight = bitmap.Height;
+
             if ((bitmap.PixelFormat & PixelFormat.Alpha) != 0 || (bitmap.PixelFormat & PixelFormat.PAlpha) != 0)
             {
                 // four layers, RGBA
                 numcomps = 4;
-                decoded = new byte[bitmap.Width * bitmap.Height * numcomps];
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly,
+                decoded = new byte[bitmapWidth * bitmapHeight * numcomps];
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly,
                     PixelFormat.Format32bppArgb);
 
-                for (int y = 0; y < bitmap.Height; y++)
+                for (int y = 0; y < bitmapHeight; y++)
                 {
-                    for (int x = 0; x < bitmap.Width; x++)
+                    for (int x = 0; x < bitmapWidth; x++)
                     {
                         byte* pixel = (byte*)bd.Scan0;
-                        pixel += (y * bitmap.Width + x) * numcomps;
+                        pixel += (y * bitmapWidth + x) * numcomps;
 
                         // GDI+ gives us BGRA and we need to turn that in to RGBA
                         decoded[i++] = *(pixel + 2);
@@ -233,16 +234,16 @@ namespace OpenJPEGNet
             {
                 // one layer
                 numcomps = 1;
-                decoded = new byte[bitmap.Width * bitmap.Height * numcomps];
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly,
+                decoded = new byte[bitmapWidth * bitmapHeight * numcomps];
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly,
                     PixelFormat.Format16bppGrayScale);
 
-                for (int y = 0; y < bitmap.Height; y++)
+                for (int y = 0; y < bitmapHeight; y++)
                 {
-                    for (int x = 0; x < bitmap.Width; x++)
+                    for (int x = 0; x < bitmapWidth; x++)
                     {
                         byte* pixel = (byte*)bd.Scan0;
-                        pixel += (y * bitmap.Width + x) * numcomps;
+                        pixel += (y * bitmapWidth + x) * numcomps;
 
                         // turn 16 bit data in to 8 bit data (TODO: Does this work?)
                         decoded[i++] = *(pixel);
@@ -254,16 +255,16 @@ namespace OpenJPEGNet
             {
                 // three layers, RGB
                 numcomps = 3;
-                decoded = new byte[bitmap.Width * bitmap.Height * numcomps];
-                bd = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly,
+                decoded = new byte[bitmapWidth * bitmapHeight * numcomps];
+                bd = bitmap.LockBits(new Rectangle(0, 0, bitmapWidth, bitmapHeight), ImageLockMode.ReadOnly,
                     PixelFormat.Format24bppRgb);
 
-                for (int y = 0; y < bitmap.Height; y++)
+                for (int y = 0; y < bitmapHeight; y++)
                 {
-                    for (int x = 0; x < bitmap.Width; x++)
+                    for (int x = 0; x < bitmapWidth; x++)
                     {
                         byte* pixel = (byte*)bd.Scan0;
-                        pixel += (y * bitmap.Width + x) * numcomps;
+                        pixel += (y * bitmapWidth + x) * numcomps;
 
                         decoded[i++] = *(pixel + 2);
                         decoded[i++] = *(pixel + 1);
@@ -291,8 +292,8 @@ namespace OpenJPEGNet
             {
                 for (x = 0; x < width; x++)
                 {
-                    si = x * y * sourceComponents;
-                    di = x * y * destComponents;
+                    si = (y * width + x) * sourceComponents;
+                    di = (y * width + x) * destComponents;
 
                     switch (sourceComponents)
                     {

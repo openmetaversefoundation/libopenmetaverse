@@ -29,8 +29,15 @@ namespace libsecondlife.TestClient
 
         //internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
 
+        private LLQuaternion bodyRotation = LLQuaternion.Identity;
+        private LLVector3 forward = new LLVector3(0, 0.9999f, 0);
+        private LLVector3 left = new LLVector3(0.9999f, 0, 0);
+        private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
-        
+
+        // FIXME: get rid of these when they are moved to the main lib
+        public AssetManager NewAssetManager;
+        public AppearanceManager NewAppearanceManager;
 
         /// <summary>
         /// 
@@ -38,6 +45,9 @@ namespace libsecondlife.TestClient
         public TestClient(ClientManager manager)
         {
 			ClientManager = manager;
+
+            NewAssetManager = new AssetManager(this);
+            NewAppearanceManager = new AppearanceManager(this, NewAssetManager);
 
             updateTimer = new System.Timers.Timer(1000);
             updateTimer.Elapsed += new System.Timers.ElapsedEventHandler(updateTimer_Elapsed);
@@ -59,7 +69,7 @@ namespace libsecondlife.TestClient
             this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
-
+            
             updateTimer.Start();
         }
 
@@ -88,7 +98,7 @@ namespace libsecondlife.TestClient
 			command.Client = this;
 			if (!Commands.ContainsKey(command.Name.ToLower()))
 			{
-				Commands.Add(command.Name.ToLower(), command);
+                Commands.Add(command.Name.ToLower(), command);
 			}
         }
 

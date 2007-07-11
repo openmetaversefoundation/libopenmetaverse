@@ -17,6 +17,7 @@ namespace libsecondlife.TestClient
         public string StartLocation;
         public string MasterName;
         public LLUUID MasterKey;
+        public string URI;
     }
 
     public class StartPosition
@@ -99,23 +100,19 @@ namespace libsecondlife.TestClient
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
 
-			if (!String.IsNullOrEmpty(account.StartLocation))
+            NetworkManager.LoginParams loginParams = client.Network.DefaultLoginParams(
+                    account.FirstName, account.LastName, account.Password, "TestClient", contactPerson);
+
+            if (!String.IsNullOrEmpty(account.StartLocation))
+                loginParams.Start = account.StartLocation;
+
+            if (!String.IsNullOrEmpty(account.URI))
+                loginParams.URI = account.URI;
+            
+            if (!client.Network.Login(loginParams))
             {
-                if (!client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient",
-                    account.StartLocation, contactPerson))
-                {
-                    Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                        client.Network.LoginMessage);
-                }
-            }
-            else
-            {
-                if (!client.Network.Login(account.FirstName, account.LastName, account.Password, "TestClient",
-                    contactPerson))
-                {
-                    Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                        client.Network.LoginMessage);
-                }
+                Console.WriteLine("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                    client.Network.LoginMessage);
             }
 
             if (client.Network.Connected)

@@ -25,208 +25,174 @@
  */
 
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace libsecondlife
+namespace libsecondlife.Baking
 {
     /// <summary>
-    /// A set of textures that are layered on top of each other and "baked"
+    /// A set of textures that are layered on texture of each other and "baked"
     /// in to a single texture, for avatar appearances
     /// </summary>
-    public class BakeLayer
+    public class Baker
     {
-        public enum BakeOrder
-        {
-            Unknown = -1,
-            HeadBodypaint = 0,
-            Hair,
-            EyesIris,
-            UpperBodypaint,
-            UpperUndershirt,
-            UpperShirt,
-            UpperJacket,
-            LowerBodypaint,
-            LowerUnderpants,
-            LowerSocks,
-            LowerShoes,
-            LowerPants,
-            LowerJacket,
-            Skirt
-        }
-
-        /// <summary>Maximum number of wearables for any baked layer</summary>
-        public const int WEARABLES_PER_LAYER = 7;
-
-        /// <summary>Final compressed JPEG2000 data</summary>
-        public byte[] FinalData = new byte[0];
-        /// <summary>Whether this bake is complete or not</summary>
-        public bool Finished = false;
-
         /// <summary>Reference to the SecondLife client</summary>
         protected SecondLife Client;
-        /// <summary>Total number of textures in this bake</summary>
-        protected int TotalLayers;
+
         /// <summary>Appearance parameters the drive the baking process</summary>
         protected Dictionary<int, float> ParamValues;
-        /// <summary>GDI+ image that textures are composited to</summary>
-        protected Bitmap Scratchpad;
-        /// <summary>List of textures sorted by their baking order</summary>
-        protected SortedList<BakeOrder, byte[]> Textures = new SortedList<BakeOrder, byte[]>(WEARABLES_PER_LAYER);
-        /// <summary>Width of the final baked image and scratchpad</summary>
-        protected int BakeWidth = 512;
-        /// <summary>Height of the final baked image and scratchpad</summary>
-        protected int BakeHeight = 512;
-
-
-        private Assembly assembly = null;
         
+        /// <summary>Wearable textures</summary>
+        protected Dictionary<AppearanceManager.TextureIndex, byte[]> EncodedTextures = new Dictionary<AppearanceManager.TextureIndex, byte[]>();
+        protected Dictionary<AppearanceManager.TextureIndex, byte[]> DecodedTextures = new Dictionary<AppearanceManager.TextureIndex, byte[]>();
+        protected int TextureCount;
+
+        public byte[] EncodedBake;
+
+        /// <summary>Width of the final baked image and scratchpad</summary>
+        protected int BakeWidth;
+        /// <summary>Height of the final baked image and scratchpad</summary>
+        protected int BakeHeight;
+        /// <summary>Bake type</summary>
+        public AppearanceManager.BakeType BakeType;
 
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="totalLayers">Total number of layers this bake set is
-        /// composed of</param>
-        /// <param name="paramValues">Appearance parameters the drive the 
-        /// baking process</param>
-        public BakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues)
-        {
-            Client = client;
-            TotalLayers = totalLayers;
-            ParamValues = paramValues;
-        }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="totalLayers">Total number of layers this bake set is
+        /// <param name="totalLayers">Total number of layers this layer set is
         /// composed of</param>
         /// <param name="paramValues">Appearance parameters the drive the 
         /// baking process</param>
         /// <param name="width">Width of the final baked image</param>
         /// <param name="height">Height of the final baked image</param>
-        public BakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues, int width, int height)
+        public Baker(SecondLife client, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
         {
             Client = client;
-            TotalLayers = totalLayers;
-            ParamValues = paramValues;
-            BakeWidth = width;
-            BakeHeight = height;
-        }
+            BakeType = bakeType;
+            TextureCount = textureCount;
 
-        /// <summary>
-        /// Adds an image to this baking layer and potentially processes it, or
-        /// stores it for processing later
-        /// </summary>
-        /// <param name="index">The baking layer index of the image to be added</param>
-        /// <param name="jp2data">JPEG2000 compressed image to be added to the 
-        /// baking layer</param>
-        /// <returns>True if this layer is completely baked and JPEG2000 data 
-        /// is available, otherwise false</returns>
-        public bool AddImage(BakeOrder index, byte[] jp2data)
-        {
-            lock (Textures)
+            if (bakeType == AppearanceManager.BakeType.Eyes)
             {
-                Textures.Add(index, jp2data);
-
-                if (Textures.Count == TotalLayers)
-                {
-                    // All of the layers are in place, we can bake
-                    Bake();
-                    Finished = true;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Create the various dynamic alpha masks, apply them to the affected
-        /// textures, and composite all of the textures in to the final scratch
-        /// pad
-        /// </summary>
-        protected void Bake()
-        {
-            if (TotalLayers == 1)
-            {
-                // FIXME: Create a properly formatted JP2 bake (5 comps)
-		// to silence the warning:
-		GetResource("fixme");
+                BakeWidth = 128;
+                BakeHeight = 128;
             }
             else
             {
-                Client.Log("Too many layers for the null baking code!", Helpers.LogLevel.Error);
+                BakeWidth = 512;
+                BakeHeight = 512;
             }
+
+            ParamValues = paramValues;
+
+            if (textureCount == 0)
+                Bake();
         }
-
-        private StreamReader GetResource(string resourceName)
-        {
-            if (assembly == null) assembly = Assembly.GetExecutingAssembly();
-
-            return new StreamReader(assembly.GetManifestResourceStream(String.Format("libsecondlife.Resources.{0}",
-                resourceName)));
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class UpperBakeLayer : BakeLayer
-    {
+        
         /// <summary>
-        /// Default constructor
+        /// Adds an image to this baking texture and potentially processes it, or
+        /// stores it for processing later
         /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="totalLayers">Total number of layers this bake set is
-        /// composed of</param>
-        /// <param name="paramValues">Appearance parameters the drive the 
-        /// baking process</param>
-        public UpperBakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues)
-            : base(client, totalLayers, paramValues)
+        /// <param name="index">The baking texture index of the image to be added</param>
+        /// <param name="jp2data">JPEG2000 compressed image to be added to the 
+        /// baking texture</param>
+        /// <returns>True if this texture is completely baked and JPEG2000 data 
+        /// is available, otherwise false</returns>
+        public bool AddTexture(AppearanceManager.TextureIndex index, byte[] jp2data)
         {
+            lock (EncodedTextures)
+            {
+                EncodedTextures.Add(index, jp2data);
+                Client.DebugLog("Adding texture " + index.ToString() + " to bake " + BakeType.ToString());
+            }
+
+            if (EncodedTextures.Count == TextureCount)
+            {
+                Bake();
+                return true;
+            }
+            else
+                return false;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        protected new void Bake()
+        public bool MissingTexture(AppearanceManager.TextureIndex index)
         {
-            // FIXME: Iterate through each texture, generate the alpha masks and apply them,
-            // and combine the masked texture in to the final scratch pad
-        }
-    }
+            Client.DebugLog("Missing texture " + index.ToString() + " in bake " + BakeType.ToString());
+            TextureCount--;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class LowerBakeLayer : BakeLayer
-    {
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="totalLayers">Total number of layers this bake set is
-        /// composed of</param>
-        /// <param name="paramValues">Appearance parameters the drive the 
-        /// baking process</param>
-        public LowerBakeLayer(SecondLife client, int totalLayers, Dictionary<int, float> paramValues)
-            : base(client, totalLayers, paramValues)
-        {
+            if (EncodedTextures.Count == TextureCount)
+            {
+                Bake();
+                return true;
+            }
+            else
+                return false;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        protected new void Bake()
+        protected void Bake()
         {
-            // FIXME: Iterate through each texture, generate the alpha masks and apply them,
-            // and combine the masked texture in to the final scratch pad
+            Client.DebugLog("Baking " + BakeType.ToString());
+            byte[] baked = new byte[BakeWidth * BakeHeight * 5];
+            int i = 0;
+
+            for (int y = 0; y < BakeHeight; y++)
+            {
+                for (int x = 0; x < BakeWidth; x++)
+                {
+                    if (((x ^ y) & 0x10) == 0)
+                    {
+                        baked[i++] = 255; // red
+                        baked[i++] = 0;   // green
+                        baked[i++] = 0;   // blue
+                        baked[i++] = 0;   // bump
+                        baked[i++] = 255; // alpha
+                    }
+                    else
+                    {
+                        baked[i++] = 0;   // red
+                        baked[i++] = 0;   // green
+                        baked[i++] = 255; // blue
+                        baked[i++] = 0;   // bump
+                        baked[i++] = 255; // alpha
+                    }
+                }
+            }
+
+            EncodedBake = OpenJPEGNet.OpenJPEG.Encode(baked,BakeWidth,BakeHeight,5);
+        }
+
+        public static AppearanceManager.BakeType BakeTypeFor(AppearanceManager.TextureIndex index)
+        {
+            switch (index)
+            {
+                case AppearanceManager.TextureIndex.HeadBodypaint:
+                    return AppearanceManager.BakeType.Head;
+
+                case AppearanceManager.TextureIndex.UpperBodypaint:
+                case AppearanceManager.TextureIndex.UpperGloves:
+                case AppearanceManager.TextureIndex.UpperUndershirt:
+                case AppearanceManager.TextureIndex.UpperShirt:
+                case AppearanceManager.TextureIndex.UpperJacket:
+                    return AppearanceManager.BakeType.UpperBody;
+
+                case AppearanceManager.TextureIndex.LowerBodypaint:
+                case AppearanceManager.TextureIndex.LowerUnderpants:
+                case AppearanceManager.TextureIndex.LowerSocks:
+                case AppearanceManager.TextureIndex.LowerShoes:
+                case AppearanceManager.TextureIndex.LowerPants:
+                case AppearanceManager.TextureIndex.LowerJacket:
+                    return AppearanceManager.BakeType.LowerBody;
+
+                case AppearanceManager.TextureIndex.EyesIris:
+                    return AppearanceManager.BakeType.Eyes;
+
+                case AppearanceManager.TextureIndex.Skirt:
+                    return AppearanceManager.BakeType.Skirt;
+
+                default:
+                    return AppearanceManager.BakeType.Unknown;
+            }
         }
     }
 }

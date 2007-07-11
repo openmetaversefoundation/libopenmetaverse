@@ -8,16 +8,14 @@ namespace libsecondlife.TestClient
 {
     public class DumpOutfitCommand : Command
     {
-        AssetManager Assets;
         List<LLUUID> OutfitAssets = new List<LLUUID>();
+        AssetManager.ImageReceivedCallback ImageReceivedHandler;
 
         public DumpOutfitCommand(TestClient testClient)
         {
             Name = "dumpoutfit";
             Description = "Dumps all of the textures from an avatars outfit to the hard drive. Usage: dumpoutfit [avatar-uuid]";
-
-            Assets = new AssetManager(testClient);
-            Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            ImageReceivedHandler = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -39,6 +37,7 @@ namespace libsecondlife.TestClient
                         StringBuilder output = new StringBuilder("Downloading ");
 
                         lock (OutfitAssets) OutfitAssets.Clear();
+                        Client.NewAssetManager.OnImageReceived += ImageReceivedHandler;
 
                         foreach (KeyValuePair<uint, LLObject.TextureEntryFace> face in avatar.Textures.FaceTextures)
                         {
@@ -55,7 +54,8 @@ namespace libsecondlife.TestClient
                                     break;
                             }
 
-                            Assets.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
+                            OutfitAssets.Add(face.Value.TextureID);
+                            Client.NewAssetManager.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
 
                             output.Append(((AppearanceManager.TextureIndex)face.Key).ToString());
                             output.Append(" ");
@@ -71,25 +71,36 @@ namespace libsecondlife.TestClient
 
         private void Assets_OnImageReceived(ImageDownload image)
         {
-            if (image.Success)
+            lock (OutfitAssets)
             {
-                try
+                if (OutfitAssets.Contains(image.ID))
                 {
-                    File.WriteAllBytes(image.ID.ToStringHyphenated() + ".jp2", image.AssetData);
-                    Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToStringHyphenated() + ".jp2");
+                    if (image.Success)
+                    {
+                        try
+                        {
+                            File.WriteAllBytes(image.ID.ToStringHyphenated() + ".jp2", image.AssetData);
+                            Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToStringHyphenated() + ".jp2");
 
-                    byte[] tgaFile = OpenJPEGNet.OpenJPEG.DecodeToTGA(image.AssetData);
-                    File.WriteAllBytes(image.ID.ToStringHyphenated() + ".tga", tgaFile);
-                    Console.WriteLine("Wrote TGA image " + image.ID.ToStringHyphenated() + ".tga");
+                            byte[] tgaFile = OpenJPEGNet.OpenJPEG.DecodeToTGA(image.AssetData);
+                            File.WriteAllBytes(image.ID.ToStringHyphenated() + ".tga", tgaFile);
+                            Console.WriteLine("Wrote TGA image " + image.ID.ToStringHyphenated() + ".tga");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.ToString());
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to download image " + image.ID.ToStringHyphenated());
+                    }
+
+                    OutfitAssets.Remove(image.ID);
+
+                    if (OutfitAssets.Count == 0)
+                        Client.NewAssetManager.OnImageReceived -= ImageReceivedHandler;
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
-            }
-            else
-            {
-                Console.WriteLine("Failed to download image " + image.ID.ToStringHyphenated());
             }
         }
     }

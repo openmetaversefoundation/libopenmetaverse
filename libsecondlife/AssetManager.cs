@@ -699,39 +699,38 @@ namespace libsecondlife
         {
             AssetUploadCompletePacket complete = (AssetUploadCompletePacket)packet;
 
-            if (OnAssetUploaded != null)
+            Client.DebugLog(complete.ToString());
+            
+            bool found = false;
+            KeyValuePair<LLUUID, Transfer> foundTransfer = new KeyValuePair<LLUUID, Transfer>();
+
+            // Xfer system sucks really really bad. Where is the damn XferID?
+            lock (Transfers)
             {
-                //Client.DebugLog(complete.ToString());
-
-                bool found = false;
-                KeyValuePair<LLUUID, Transfer> foundTransfer = new KeyValuePair<LLUUID, Transfer>();
-
-                // Xfer system sucks really really bad. Where is the damn XferID?
-                lock (Transfers)
+                foreach (KeyValuePair<LLUUID, Transfer> transfer in Transfers)
                 {
-                    foreach (KeyValuePair<LLUUID, Transfer> transfer in Transfers)
+                    if (transfer.Value.GetType() == typeof(AssetUpload))
                     {
-                        if (transfer.Value.GetType() == typeof(AssetUpload))
-                        {
-                            AssetUpload upload = (AssetUpload)transfer.Value;
+                        AssetUpload upload = (AssetUpload)transfer.Value;
 
-                            if ((upload).AssetID == complete.AssetBlock.UUID)
-                            {
-                                found = true;
-                                foundTransfer = transfer;
-                                upload.Success = complete.AssetBlock.Success;
-                                upload.Type = (AssetType)complete.AssetBlock.Type;
-                                found = true;
-                                break;
-                            }
+                        if (upload.AssetID == complete.AssetBlock.UUID)
+                        {
+                            found = true;
+                            foundTransfer = transfer;
+                            upload.Success = complete.AssetBlock.Success;
+                            upload.Type = (AssetType)complete.AssetBlock.Type;
+                            break;
                         }
                     }
                 }
+            }
 
-                if (found)
+            if (found)
+            {
+                lock (Transfers) Transfers.Remove(foundTransfer.Key);
+
+                if (OnAssetUploaded != null)
                 {
-                    lock (Transfers) Transfers.Remove(foundTransfer.Key);
-
                     try { OnAssetUploaded((AssetUpload)foundTransfer.Value); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
@@ -786,6 +785,24 @@ namespace libsecondlife
             }
         }
 
+        public void LogTransfer(LLUUID id)
+        {
+            lock (Transfers)
+            {
+                if (Transfers.ContainsKey(id))
+                    Client.DebugLog("Transfer " + id + ": " + Transfers[id].Transferred + "/" + Transfers[id].Size + "\n");
+            }
+        }
+
+        public void LogAllTransfers()
+        {
+            lock (Transfers)
+            {
+                foreach (KeyValuePair<LLUUID,Transfer> transfer in Transfers)
+                    Client.DebugLog("Transfer " + transfer.Value.ID + ": " + transfer.Value.Transferred + "/" + transfer.Value.Size + "\n");
+            }
+        }
+        
         /// <summary>
         /// Handles the remaining Image data that did not fit in the initial ImageData packet
         /// </summary>

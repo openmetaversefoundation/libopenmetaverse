@@ -105,23 +105,23 @@ namespace OpenJPEGNet
         static uint UnpackColor(
             uint sourceColor, ref tgaCD cd)
         {
-        	if (cd.RMask == 0xFF && cd.GMask == 0xFF && cd.BMask == 0xFF)
-        	{
-        		// Special case to deal with 8-bit TGA files that we treat as alpha masks
-        		return sourceColor << 24;
-        	}
-        	else
-        	{
-	            uint rpermute = (sourceColor << cd.RShift) | (sourceColor >> (32 - cd.RShift));
-	            uint gpermute = (sourceColor << cd.GShift) | (sourceColor >> (32 - cd.GShift));
-	            uint bpermute = (sourceColor << cd.BShift) | (sourceColor >> (32 - cd.BShift));
-	            uint apermute = (sourceColor << cd.AShift) | (sourceColor >> (32 - cd.AShift));
-	            uint result =
-	                (rpermute & cd.RMask) | (gpermute & cd.GMask)
-	                | (bpermute & cd.BMask) | (apermute & cd.AMask) | cd.FinalOr;
-	
-	            return result;
-        	}
+            if (cd.RMask == 0xFF && cd.GMask == 0xFF && cd.BMask == 0xFF)
+            {
+                // Special case to deal with 8-bit TGA files that we treat as alpha masks
+                return sourceColor << 24;
+            }
+            else
+            {
+                uint rpermute = (sourceColor << cd.RShift) | (sourceColor >> (32 - cd.RShift));
+                uint gpermute = (sourceColor << cd.GShift) | (sourceColor >> (32 - cd.GShift));
+                uint bpermute = (sourceColor << cd.BShift) | (sourceColor >> (32 - cd.BShift));
+                uint apermute = (sourceColor << cd.AShift) | (sourceColor >> (32 - cd.AShift));
+                uint result =
+                    (rpermute & cd.RMask) | (gpermute & cd.GMask)
+                    | (bpermute & cd.BMask) | (apermute & cd.AMask) | cd.FinalOr;
+
+                return result;
+            }
         }
 
         static unsafe void decodeLine(
@@ -252,13 +252,13 @@ namespace OpenJPEGNet
         }
 
         static void decodeStandard8(
-        	System.Drawing.Imaging.BitmapData b,
-        	tgaHeader hdr,
-        	System.IO.BinaryReader br)
+            System.Drawing.Imaging.BitmapData b,
+            tgaHeader hdr,
+            System.IO.BinaryReader br)
         {
-        	tgaCD cd = new tgaCD();
-        	cd.RMask = 0x000000ff;
-        	cd.GMask = 0x000000ff;
+            tgaCD cd = new tgaCD();
+            cd.RMask = 0x000000ff;
+            cd.GMask = 0x000000ff;
             cd.BMask = 0x000000ff;
             cd.AMask = 0x000000ff;
             cd.RShift = 0;
@@ -436,12 +436,9 @@ namespace OpenJPEGNet
                 System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
             switch (header.ImageSpec.PixelDepth)
             {
-            	case 8:
-            		if (header.ImageSpec.AlphaBits > 0)
-            			throw new ArgumentException("Not a supported tga file.");
-            		else
-            			decodeStandard8(bd, header, br);
-            		break;
+                case 8:
+                    decodeStandard8(bd, header, br);
+                    break;
                 case 16:
                     if (header.ImageSpec.AlphaBits > 0)
                         decodeSpecial16(bd, header, br);
@@ -465,6 +462,80 @@ namespace OpenJPEGNet
             b.UnlockBits(bd);
             br.Close();
             return b;
+        }
+
+        public static unsafe byte[] LoadTGARaw(System.IO.Stream source)
+        {
+            byte[] buffer = new byte[source.Length];
+            source.Read(buffer, 0, buffer.Length);
+
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
+
+            System.IO.BinaryReader br = new System.IO.BinaryReader(ms);
+
+            tgaHeader header = new tgaHeader();
+            header.Read(br);
+
+            if (header.ImageSpec.PixelDepth != 8 &&
+                header.ImageSpec.PixelDepth != 16 &&
+                header.ImageSpec.PixelDepth != 24 &&
+                header.ImageSpec.PixelDepth != 32)
+                throw new ArgumentException("Not a supported tga file.");
+
+            if (header.ImageSpec.AlphaBits > 8)
+                throw new ArgumentException("Not a supported tga file.");
+
+            if (header.ImageSpec.Width > 4096 ||
+                header.ImageSpec.Height > 4096)
+                throw new ArgumentException("Image too large.");
+
+            byte[] decoded = new byte[header.ImageSpec.Width * header.ImageSpec.Height * 4];
+            System.Drawing.Imaging.BitmapData bd = new System.Drawing.Imaging.BitmapData();
+
+            fixed (byte* pdecoded = &decoded[0])
+            {
+                bd.Width = header.ImageSpec.Width;
+                bd.Height = header.ImageSpec.Height;
+                bd.PixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppPArgb;
+                bd.Stride = header.ImageSpec.Width * 4;
+                bd.Scan0 = (IntPtr)pdecoded;
+
+                switch (header.ImageSpec.PixelDepth)
+                {
+                    case 8:
+                        decodeStandard8(bd, header, br);
+                        break;
+                    case 16:
+                        if (header.ImageSpec.AlphaBits > 0)
+                            decodeSpecial16(bd, header, br);
+                        else
+                            decodeStandard16(bd, header, br);
+                        break;
+                    case 24:
+                        if (header.ImageSpec.AlphaBits > 0)
+                            decodeSpecial24(bd, header, br);
+                        else
+                            decodeStandard24(bd, header, br);
+                        break;
+                    case 32:
+                        decodeStandard32(bd, header, br);
+                        break;
+                    default:
+                        return null;
+                }
+            }
+
+            // swap red and blue channels (TGA is BGRA)
+            byte tmp;
+            for (int i = 0; i < decoded.Length; i += 4)
+            {
+                tmp = decoded[i];
+                decoded[i] = decoded[i + 2];
+                decoded[i + 2] = tmp;
+            }
+
+            br.Close();
+            return decoded;
         }
 
         public static System.Drawing.Bitmap LoadTGA(string filename)

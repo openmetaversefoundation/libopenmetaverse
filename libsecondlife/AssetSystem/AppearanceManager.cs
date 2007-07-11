@@ -404,41 +404,44 @@ namespace libsecondlife.AssetSystem
             p.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
 
             string visualParamData = "";
+            int vpIndex = 0;
 
             // Add Visual Params
             lock (AgentAppearanceParams)
             {
-                for (int i = 0; i < 218; i++)
+                foreach (KeyValuePair<int,VisualParam> kvp in VisualParams.Params)
                 {
-                    VisualParam param = VisualParams.Params[i];
-                    p.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
+                    VisualParam param = kvp.Value;
+                    p.VisualParam[vpIndex] = new AgentSetAppearancePacket.VisualParamBlock();
 
-                    visualParamData += i + "," + param.ParamID + ",";
+                    visualParamData += vpIndex + "," + param.ParamID + ",";
 
                     if (AgentAppearanceParams.ContainsKey(param.ParamID))
                     {
-                        p.VisualParam[i].ParamValue = Helpers.FloatToByte(AgentAppearanceParams[param.ParamID],
+                        p.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(AgentAppearanceParams[param.ParamID],
                             param.MinValue, param.MaxValue);
 
-                        visualParamData += AgentAppearanceParams[param.ParamID] + "," + p.VisualParam[i].ParamValue + Environment.NewLine;
+                        visualParamData += AgentAppearanceParams[param.ParamID] + "," + p.VisualParam[vpIndex].ParamValue + Environment.NewLine;
                     }
                     else
                     {
                         // Use the default value for this parameter
-                        p.VisualParam[i].ParamValue = Helpers.FloatToByte(param.DefaultValue, param.MinValue,
+                        p.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(param.DefaultValue, param.MinValue,
                             param.MaxValue);
 
-                        visualParamData += "NA," + p.VisualParam[i].ParamValue + Environment.NewLine;
+                        visualParamData += "NA," + p.VisualParam[vpIndex].ParamValue + Environment.NewLine;
 
                     }
+
+                    vpIndex++;
                 }
 
 
             }
 
             // Add Size Data
-            p.AgentData.Size = GetAgentSizeFromVisualParam(Helpers.ByteToFloat(p.VisualParam[25].ParamValue,
-                VisualParams.Params[25].MinValue, VisualParams.Params[25].MaxValue));
+            p.AgentData.Size = GetAgentSizeFromVisualParam(Helpers.ByteToFloat(p.VisualParam[33].ParamValue,
+                VisualParams.Params[33].MinValue, VisualParams.Params[33].MaxValue));
 
             Client.Network.SendPacket(p);
         }

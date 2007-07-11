@@ -426,6 +426,7 @@ namespace libsecondlife
 
                     UpdateLoginStatus(LoginStatus.ReadingResponse, "Reading XMLRPC response...");
                     myContext.Request.BeginGetResponse(new AsyncCallback(LoginResponseCallback), myContext);
+                    //String r = new StreamReader(myContext.Request.GetResponse().GetResponseStream()).ReadToEnd();
                 }
                 catch (WebException e)
                 {
@@ -444,7 +445,7 @@ namespace libsecondlife
             {
                 HttpWebResponse response = null;
                 Stream xmlStream = null;
-                XmlReader reader = null;
+                XmlTextReader reader = null;
 
                 try
                 {
@@ -488,7 +489,8 @@ namespace libsecondlife
 
                     InternalRawLoginReply = Encoding.UTF8.GetString(buffer);
 
-                    reader = XmlReader.Create(xmlStream);
+                    //reader = XmlReader.Create(xmlStream);
+                    reader = new XmlTextReader(xmlStream);
 
                     // Parse the incoming xml
                     bool redirect = false;
@@ -782,7 +784,7 @@ namespace libsecondlife
                                     reader.ReadStartElement("data");
 
                                     // FIXME:
-
+                                    
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
