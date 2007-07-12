@@ -18,7 +18,7 @@ struct LibslImage
 #ifdef WIN32
 #define DLLEXPORT extern "C" __declspec(dllexport)
 #else
-#define DLLEXPORT
+#define DLLEXPORT extern "C"
 #endif
 
 // uncompresed images are raw RGBA 8bit/channel

@@ -505,9 +505,22 @@ namespace libsecondlife
         private Dictionary<Wearable.WearableType, WearableData> Wearables = new Dictionary<Wearable.WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this array
         private LLUUID[] AgentTextures = new LLUUID[AVATAR_TEXTURE_COUNT];
+
+        protected struct PendingAssetDownload
+        {
+            public LLUUID Id;
+            public AssetType Type;
+
+            public PendingAssetDownload(LLUUID id, AssetType type)
+            {
+                Id = id;
+                Type = type;
+            }
+        }
+        
         // Wearable assets are downloaded one at a time, a new request is pulled off the queue
         // and started when the previous one completes
-        private Queue<KeyValuePair<LLUUID, AssetType>> DownloadQueue = new Queue<KeyValuePair<LLUUID, AssetType>>();
+        private Queue<PendingAssetDownload> DownloadQueue = new Queue<PendingAssetDownload>();
         // A list of all the images we are currently downloading, prior to baking
         private Dictionary<LLUUID, TextureIndex> ImageDownloads = new Dictionary<LLUUID, TextureIndex>();
         // A list of all the bakes we need to complete
@@ -1004,18 +1017,12 @@ namespace libsecondlife
             Client.DebugLog("DownloadWearableAssets()");
             
             foreach (KeyValuePair<Wearable.WearableType,WearableData> kvp in Wearables)
-            {
-                DownloadQueue.Enqueue(
-                    new KeyValuePair<LLUUID, AssetType>(
-                        kvp.Value.AssetID,
-                        Wearable.WearableTypeToAssetType(
-                            kvp.Value.Wearable.Type)));
-            }
+                DownloadQueue.Enqueue(new PendingAssetDownload(kvp.Value.AssetID,Wearable.WearableTypeToAssetType(kvp.Value.Wearable.Type)));
 
             if (DownloadQueue.Count > 0)
             {
-                KeyValuePair<LLUUID, AssetType> download = DownloadQueue.Dequeue();
-                Assets.RequestAsset(download.Key, download.Value, true);
+                PendingAssetDownload download = DownloadQueue.Dequeue();
+                Assets.RequestAsset(download.Id, download.Type, true);
             }
         }
         
@@ -1052,8 +1059,7 @@ namespace libsecondlife
                         // Add this wearable asset to the download queue
                         if (DownloadWearables)
                         {
-                            KeyValuePair<LLUUID, AssetType> download = 
-                                new KeyValuePair<LLUUID,AssetType>(data.AssetID, assetType);
+                            PendingAssetDownload download = new PendingAssetDownload(data.AssetID, assetType);
                             DownloadQueue.Enqueue(download);
                         }
                     }
@@ -1061,8 +1067,8 @@ namespace libsecondlife
 
                 if (DownloadQueue.Count > 0)
                 {
-                    KeyValuePair<LLUUID, AssetType> download = DownloadQueue.Dequeue();
-                    Assets.RequestAsset(download.Key, download.Value, true);
+                    PendingAssetDownload download = DownloadQueue.Dequeue();
+                    Assets.RequestAsset(download.Id, download.Type, true);
                 }
 
                 // Don't download wearables twice in a row
@@ -1308,8 +1314,8 @@ namespace libsecondlife
             if (DownloadQueue.Count > 0)
             {
                 // Dowload the next wearable in line
-                KeyValuePair<LLUUID, AssetType> download = DownloadQueue.Dequeue();
-                Assets.RequestAsset(download.Key, download.Value, true);
+                PendingAssetDownload download = DownloadQueue.Dequeue();
+                Assets.RequestAsset(download.Id, download.Type, true);
             }
             else
             {
