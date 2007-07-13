@@ -1056,7 +1056,7 @@ namespace libsecondlife
                     waitHandle.Set();
                     if (callback != null)
                     {
-                        callback.Invoke(this);
+                        callback(this);
                     }
                 }
                 complete = value;
