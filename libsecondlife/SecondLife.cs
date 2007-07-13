@@ -25,10 +25,6 @@
  */
 
 using System;
-using System.Threading;
-using libsecondlife.Packets;
-using libsecondlife.AssetSystem;
-using libsecondlife.InventorySystem;
 
 namespace libsecondlife
 {
@@ -65,13 +61,11 @@ namespace libsecondlife
         /// <summary>Group Subsystem</summary>
         public GroupManager Groups;
         /// <summary>Asset Subsystem</summary>
-        public libsecondlife.AssetSystem.AssetManager Assets;
+        public AssetManager Assets;
         /// <summary>Appearance Subsystem</summary>
-        public libsecondlife.AssetSystem.AppearanceManager Appearance;
+        public AppearanceManager Appearance;
         /// <summary>Inventory Subsystem</summary>
-        public libsecondlife.InventorySystem.InventoryManager Inventory;
-        /// <summary>Image Subsystem</summary>
-        public ImageManager Images;
+        public InventoryManager Inventory;
         /// <summary>Directory searches including classifieds, people, land 
         /// sales, etc</summary>
         public DirectoryManager Directory;
@@ -104,9 +98,8 @@ namespace libsecondlife
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
-            Assets = new libsecondlife.AssetSystem.AssetManager(this);
-            Appearance = new libsecondlife.AssetSystem.AppearanceManager(this);
-            Images = new ImageManager(this);
+            Assets = new AssetManager(this);
+            Appearance = new AppearanceManager(this, Assets);
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);
             Terrain = new TerrainManager(this);
@@ -169,6 +162,34 @@ namespace libsecondlife
                         Console.WriteLine("DEBUG: {0}", message);
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="level"></param>
+        public static void LogStatic(string message, Helpers.LogLevel level)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="level"></param>
+        /// <param name="exception"></param>
+        public static void LogStatic(string message, Helpers.LogLevel level, Exception exception)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void DebugLogStatic(string message)
+        {
         }
     }
 }

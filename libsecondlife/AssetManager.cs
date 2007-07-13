@@ -219,7 +219,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="upload"></param>
         public delegate void AssetUploadedCallback(AssetUpload upload);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="upload"></param>
+        public delegate void UploadProgressCallback(AssetUpload upload);
 
         /// <summary>
         /// 
@@ -233,6 +237,10 @@ namespace libsecondlife
         /// 
         /// </summary>
         public event AssetUploadedCallback OnAssetUploaded;
+        /// <summary>
+        /// 
+        /// </summary>
+        public event UploadProgressCallback OnUploadProgress;
 
         private SecondLife Client;
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
@@ -689,6 +697,12 @@ namespace libsecondlife
                     //Client.DebugLog(String.Format("ACK for upload {0} of asset type {1} ({2}/{3})",
                     //    upload.AssetID.ToStringHyphenated(), upload.Type, upload.Transferred, upload.Size));
 
+                    if (OnUploadProgress != null)
+                    {
+                        try { OnUploadProgress(upload); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+
                     if (upload.Transferred < upload.Size)
                         SendNextUploadPacket((AssetUpload)Transfers[transferID]);
                 }
@@ -699,38 +713,39 @@ namespace libsecondlife
         {
             AssetUploadCompletePacket complete = (AssetUploadCompletePacket)packet;
 
-            Client.DebugLog(complete.ToString());
-            
-            bool found = false;
-            KeyValuePair<LLUUID, Transfer> foundTransfer = new KeyValuePair<LLUUID, Transfer>();
-
-            // Xfer system sucks really really bad. Where is the damn XferID?
-            lock (Transfers)
+            if (OnAssetUploaded != null)
             {
-                foreach (KeyValuePair<LLUUID, Transfer> transfer in Transfers)
-                {
-                    if (transfer.Value.GetType() == typeof(AssetUpload))
-                    {
-                        AssetUpload upload = (AssetUpload)transfer.Value;
+                //Client.DebugLog(complete.ToString());
 
-                        if (upload.AssetID == complete.AssetBlock.UUID)
+                bool found = false;
+                KeyValuePair<LLUUID, Transfer> foundTransfer = new KeyValuePair<LLUUID, Transfer>();
+
+                // Xfer system sucks really really bad. Where is the damn XferID?
+                lock (Transfers)
+                {
+                    foreach (KeyValuePair<LLUUID, Transfer> transfer in Transfers)
+                    {
+                        if (transfer.Value.GetType() == typeof(AssetUpload))
                         {
-                            found = true;
-                            foundTransfer = transfer;
-                            upload.Success = complete.AssetBlock.Success;
-                            upload.Type = (AssetType)complete.AssetBlock.Type;
-                            break;
+                            AssetUpload upload = (AssetUpload)transfer.Value;
+
+                            if ((upload).AssetID == complete.AssetBlock.UUID)
+                            {
+                                found = true;
+                                foundTransfer = transfer;
+                                upload.Success = complete.AssetBlock.Success;
+                                upload.Type = (AssetType)complete.AssetBlock.Type;
+                                found = true;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (found)
-            {
-                lock (Transfers) Transfers.Remove(foundTransfer.Key);
-
-                if (OnAssetUploaded != null)
+                if (found)
                 {
+                    lock (Transfers) Transfers.Remove(foundTransfer.Key);
+
                     try { OnAssetUploaded((AssetUpload)foundTransfer.Value); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
@@ -785,24 +800,6 @@ namespace libsecondlife
             }
         }
 
-        public void LogTransfer(LLUUID id)
-        {
-            lock (Transfers)
-            {
-                if (Transfers.ContainsKey(id))
-                    Client.DebugLog("Transfer " + id + ": " + Transfers[id].Transferred + "/" + Transfers[id].Size + "\n");
-            }
-        }
-
-        public void LogAllTransfers()
-        {
-            lock (Transfers)
-            {
-                foreach (KeyValuePair<LLUUID,Transfer> transfer in Transfers)
-                    Client.DebugLog("Transfer " + transfer.Value.ID + ": " + transfer.Value.Transferred + "/" + transfer.Value.Size + "\n");
-            }
-        }
-        
         /// <summary>
         /// Handles the remaining Image data that did not fit in the initial ImageData packet
         /// </summary>

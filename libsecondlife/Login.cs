@@ -56,6 +56,24 @@ namespace libsecondlife
 
     public partial class NetworkManager
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loginSuccess"></param>
+        /// <param name="redirect"></param>
+        /// <param name="simIP"></param>
+        /// <param name="simPort"></param>
+        /// <param name="regionX"></param>
+        /// <param name="regionY"></param>
+        /// <param name="reason"></param>
+        /// <param name="message"></param>
+        public delegate void LoginReplyCallback(bool loginSuccess, bool redirect, IPAddress simIP, int simPort, 
+            uint regionX, uint regionY, string reason, string message);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="login"></param>
+        /// <param name="message"></param>
         public delegate void LoginCallback(LoginStatus login, string message);
 
         /// <summary>
@@ -116,8 +134,12 @@ namespace libsecondlife
             Success
         }
 
+        /// <summary>Called when a reply is received from the login server, the
+        /// login sequence will block until this event returns</summary>
+        public event LoginReplyCallback OnLoginReply;
+
         /// <summary>Called any time the login status changes, will eventually
-        /// return Success or Failure</summary>
+        /// return LoginStatus.Success or LoginStatus.Failure</summary>
         public event LoginCallback OnLogin;
 
         /// <summary>Seed CAPS URL returned from the login server</summary>
@@ -147,7 +169,6 @@ namespace libsecondlife
             public byte[] XMLRPC;
         }
 
-        private object LockObject = new object();
         private LoginContext CurrentContext = null;
         private ManualResetEvent LoginEvent = new ManualResetEvent(false);
         private LoginStatus InternalStatusCode = LoginStatus.None;
@@ -258,22 +279,18 @@ namespace libsecondlife
             BeginLogin(loginParams);
 
             LoginEvent.WaitOne(loginParams.Timeout, false);
-            lock (LockObject)
-            {
-                if (CurrentContext != null)
-                {
-                    if (CurrentContext.Request != null)
-                        CurrentContext.Request.Abort();
-                    CurrentContext = null; // Will force any pending callbacks to bail out early
-                    InternalStatusCode = LoginStatus.Failed;
-                    InternalLoginMessage = "Timed out";
-                    return false;
-                }
 
-                if (InternalStatusCode != LoginStatus.Success)
-                    return false;
+            if (CurrentContext != null)
+            {
+                if (CurrentContext.Request != null)
+                    CurrentContext.Request.Abort();
+                CurrentContext = null; // Will force any pending callbacks to bail out early
+                InternalStatusCode = LoginStatus.Failed;
+                InternalLoginMessage = "Timed out";
+                return false;
             }
-            return true;
+
+            return (InternalStatusCode == LoginStatus.Success);
         }
 
         private void BeginLogin()
@@ -349,18 +366,15 @@ namespace libsecondlife
 
         public void BeginLogin(LoginParams loginParams)
         {
-            lock (LockObject)
-            {
-                if (CurrentContext != null)
-                    throw new Exception("Login already in progress");
+            if (CurrentContext != null)
+                throw new Exception("Login already in progress");
 
-                LoginEvent.Reset();
+            LoginEvent.Reset();
 
-                CurrentContext = new LoginContext();
-                CurrentContext.Params = loginParams;
+            CurrentContext = new LoginContext();
+            CurrentContext.Params = loginParams;
 
-                BeginLogin();
-            }
+            BeginLogin();
         }
 
         /// <summary>
@@ -400,10 +414,46 @@ namespace libsecondlife
         private void LoginRequestCallback(IAsyncResult result)
         {
             LoginContext myContext = result.AsyncState as LoginContext;
-            if (myContext == null)
-                return;
+            if (myContext == null) return;
 
-            lock (LockObject)
+            if (myContext != CurrentContext)
+            {
+                if (myContext.Request != null)
+                {
+                    myContext.Request.Abort();
+                    myContext.Request = null;
+                }
+                return;
+            }
+
+            try
+            {
+                byte[] bytes = myContext.XMLRPC;
+                Stream output = myContext.Request.EndGetRequestStream(result);
+
+                // Build the request
+                output.Write(bytes, 0, bytes.Length);
+                output.Close();
+
+                UpdateLoginStatus(LoginStatus.ReadingResponse, "Reading XMLRPC response...");
+                myContext.Request.BeginGetResponse(new AsyncCallback(LoginResponseCallback), myContext);
+            }
+            catch (WebException e)
+            {
+                UpdateLoginStatus(LoginStatus.Failed, "Error connecting to the login server: " + e.Message);
+            }
+        }
+
+        private void LoginResponseCallback(IAsyncResult result)
+        {
+            LoginContext myContext = result.AsyncState as LoginContext;
+            if (myContext == null) return;
+
+            HttpWebResponse response = null;
+            Stream xmlStream = null;
+            XmlReader reader = null;
+
+            try
             {
                 if (myContext != CurrentContext)
                 {
@@ -415,390 +465,222 @@ namespace libsecondlife
                     return;
                 }
 
-                try
+                response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
+
+                xmlStream = response.GetResponseStream();
+
+                MemoryStream memStream = new MemoryStream();
+                BinaryReader streamReader = new BinaryReader(xmlStream);
+                BinaryWriter streamWriter = new BinaryWriter(memStream);
+
+                // Put the entire response in to a byte array
+                byte[] buffer;
+                while ((buffer = streamReader.ReadBytes(1024)) != null)
                 {
-                    byte[] bytes = myContext.XMLRPC;
-                    Stream output = myContext.Request.EndGetRequestStream(result);
-
-                    // Build the request
-                    output.Write(bytes, 0, bytes.Length);
-                    output.Close();
-
-                    UpdateLoginStatus(LoginStatus.ReadingResponse, "Reading XMLRPC response...");
-                    myContext.Request.BeginGetResponse(new AsyncCallback(LoginResponseCallback), myContext);
-                    //String r = new StreamReader(myContext.Request.GetResponse().GetResponseStream()).ReadToEnd();
+                    if (buffer.Length == 0)
+                        break;
+                    streamWriter.Write(buffer);
                 }
-                catch (WebException e)
+                streamWriter.Flush();
+                xmlStream.Close();
+
+                // Write the entire memory stream out to a byte array
+                buffer = memStream.ToArray();
+
+                // Reset the position in the stream to the beginning
+                memStream.Seek(0, SeekOrigin.Begin);
+
+                // The memory stream will become an XML stream shortly
+                xmlStream = memStream;
+
+                InternalRawLoginReply = Encoding.UTF8.GetString(buffer);
+
+                reader = XmlReader.Create(xmlStream);
+
+                // Parse the incoming xml
+                bool redirect = false;
+                string nextURL = String.Empty;
+                string nextMethod = String.Empty;
+                string name, value;
+                IPAddress simIP = IPAddress.Loopback;
+                ushort simPort = 0;
+                uint regionX = 0;
+                uint regionY = 0;
+                bool loginSuccess = false;
+                string reason = String.Empty;
+                string message = String.Empty;
+
+                reader.ReadStartElement("methodResponse");
+
+                if (!reader.IsStartElement("fault"))
                 {
-                    UpdateLoginStatus(LoginStatus.Failed, "Error connecting to the login server: " + e.Message);
-                }
-            }
-        }
+                    #region XML Parsing
 
-        private void LoginResponseCallback(IAsyncResult result)
-        {
-            LoginContext myContext = result.AsyncState as LoginContext;
-            if (myContext == null)
-                return;
+                    reader.ReadStartElement("params");
+                    reader.ReadStartElement("param");
+                    reader.ReadStartElement("value");
+                    reader.ReadStartElement("struct");
 
-            lock (LockObject)
-            {
-                HttpWebResponse response = null;
-                Stream xmlStream = null;
-                XmlTextReader reader = null;
-
-                try
-                {
-                    if (myContext != CurrentContext)
+                    while (reader.IsStartElement("member"))
                     {
-                        if (myContext.Request != null)
+                        reader.ReadStartElement("member");
+                        name = reader.ReadElementString("name");
+
+                        switch (name)
                         {
-                            myContext.Request.Abort();
-                            myContext.Request = null;
-                        }
-                        return;
-                    }
+                            case "login":
+                                value = ReadStringValue(reader);
 
-                    response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
+                                if (value == "indeterminate")
+                                    redirect = true;
+                                else if (value == "true")
+                                    loginSuccess = true;
 
-                    xmlStream = response.GetResponseStream();
+                                break;
+                            case "reason":
+                                reason = ReadStringValue(reader);
+                                InternalErrorKey = reason;
+                                break;
+                            case "agent_id":
+                                LLUUID.TryParse(ReadStringValue(reader), out Client.Network.AgentID);
+                                Client.Self.ID = Client.Network.AgentID;
+                                break;
+                            case "session_id":
+                                LLUUID.TryParse(ReadStringValue(reader), out Client.Network.SessionID);
+                                break;
+                            case "secure_session_id":
+                                LLUUID.TryParse(ReadStringValue(reader), out Client.Network.SecureSessionID);
+                                break;
+                            case "circuit_code":
+                                Client.Network.CircuitCode = (uint)ReadIntegerValue(reader);
+                                break;
+                            case "first_name":
+                                Client.Self.FirstName = ReadStringValue(reader).Trim(new char[] { '"' });
+                                break;
+                            case "last_name":
+                                Client.Self.LastName = ReadStringValue(reader).Trim(new char[] { '"' });
+                                break;
+                            case "start_location":
+                                Client.Self.StartLocation = ReadStringValue(reader);
+                                break;
+                            case "look_at":
+                                ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(ReadStringValue(reader));
+                                Client.Self.LookAt = new LLVector3(
+                                    (float)(double)look_at[0],
+                                    (float)(double)look_at[1],
+                                    (float)(double)look_at[2]);
+                                break;
+                            case "home":
+                                Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(ReadStringValue(reader));
 
-                    MemoryStream memStream = new MemoryStream();
-                    BinaryReader streamReader = new BinaryReader(xmlStream);
-                    BinaryWriter streamWriter = new BinaryWriter(memStream);
+                                ArrayList array = (ArrayList)home["position"];
+                                Client.Self.HomePosition = new LLVector3(
+                                    (float)(double)array[0],
+                                    (float)(double)array[1],
+                                    (float)(double)array[2]);
 
-                    // Put the entire response in to a byte array
-                    byte[] buffer;
-                    while ((buffer = streamReader.ReadBytes(1024)) != null)
-                    {
-                        if (buffer.Length == 0)
-                            break;
-                        streamWriter.Write(buffer);
-                    }
-                    streamWriter.Flush();
-                    xmlStream.Close();
+                                array = (ArrayList)home["look_at"];
+                                Client.Self.HomeLookAt = new LLVector3(
+                                    (float)(double)array[0],
+                                    (float)(double)array[1],
+                                    (float)(double)array[2]);
+                                break;
+                            case "agent_access":
+                                Client.Self.AgentAccess = ReadStringValue(reader);
+                                break;
+                            case "message":
+                                message = ReadStringValue(reader);
+                                break;
+                            case "region_x":
+                                regionX = (uint)ReadIntegerValue(reader);
+                                break;
+                            case "region_y":
+                                regionY = (uint)ReadIntegerValue(reader);
+                                break;
+                            case "sim_port":
+                                simPort = (ushort)ReadIntegerValue(reader);
+                                break;
+                            case "sim_ip":
+                                IPAddress.TryParse(ReadStringValue(reader), out simIP);
+                                break;
+                            case "seconds_since_epoch":
+                                uint timestamp = (uint)ReadIntegerValue(reader);
+                                DateTime time = Helpers.UnixTimeToDateTime(timestamp);
+                                // FIXME: ???
+                                break;
+                            case "seed_capability":
+                                LoginSeedCapability = ReadStringValue(reader);
+                                break;
+                            case "inventory-root":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("struct");
 
-                    // Write the entire memory stream out to a byte array
-                    buffer = memStream.ToArray();
+                                ReadStringMember(reader, out name, out value);
+                                if (LLUUID.TryParse(value, out Client.Self.InventoryRootFolderUUID))
+                                    Client.Inventory.InitializeRootNode(Client.Self.InventoryRootFolderUUID);
+                                else
+                                    Client.Log("Failed to parse the inventory-root UUID, inventory system will not " +
+                                        "be properly initialized", Helpers.LogLevel.Error);
 
-                    // Reset the position in the stream to the beginning
-                    memStream.Seek(0, SeekOrigin.Begin);
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "inventory-lib-root":
+                                reader.ReadStartElement("value");
 
-                    // The memory stream will become an XML stream shortly
-                    xmlStream = memStream;
+                                // Fix this later
+                                reader.Skip();
 
-                    InternalRawLoginReply = Encoding.UTF8.GetString(buffer);
+                                //reader.ReadStartElement("array");
+                                //reader.ReadStartElement("data");
+                                //reader.ReadStartElement("value");
+                                //reader.ReadStartElement("struct");
 
-                    //reader = XmlReader.Create(xmlStream);
-                    reader = new XmlTextReader(xmlStream);
+                                //ReadStringMember(reader, out name, out value);
+                                // FIXME:
+                                //LLUUID.TryParse(value, out Client.Self.InventoryLibRootFolderUUID);
 
-                    // Parse the incoming xml
-                    bool redirect = false;
-                    string nextURL = String.Empty;
-                    string nextMethod = String.Empty;
-                    string name, value;
-                    IPAddress simIP = IPAddress.Loopback;
-                    ushort simPort = 0;
-                    bool loginSuccess = false;
-                    string reason = String.Empty;
-                    string message = String.Empty;
+                                //reader.ReadEndElement();
+                                //reader.ReadEndElement();
+                                //reader.ReadEndElement();
+                                //reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "inventory-lib-owner":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("struct");
 
-                    reader.ReadStartElement("methodResponse");
+                                ReadStringMember(reader, out name, out value);
+                                // FIXME:
+                                //LLUUID.TryParse(value, out Client.Self.InventoryLibOwnerUUID);
 
-                    if (!reader.IsStartElement("fault"))
-                    {
-                        #region XML Parsing
-
-                        reader.ReadStartElement("params");
-                        reader.ReadStartElement("param");
-                        reader.ReadStartElement("value");
-                        reader.ReadStartElement("struct");
-
-                        while (reader.IsStartElement("member"))
-                        {
-                            reader.ReadStartElement("member");
-                            name = reader.ReadElementString("name");
-
-                            switch (name)
-                            {
-                                case "login":
-                                    value = ReadStringValue(reader);
-
-                                    if (value == "indeterminate")
-                                        redirect = true;
-                                    else if (value == "true")
-                                        loginSuccess = true;
-
-                                    break;
-                                case "reason":
-                                    reason = ReadStringValue(reader);
-                                    InternalErrorKey = reason;
-                                    break;
-                                case "agent_id":
-                                    LLUUID.TryParse(ReadStringValue(reader), out Client.Network.AgentID);
-                                    Client.Self.ID = Client.Network.AgentID;
-                                    break;
-                                case "session_id":
-                                    LLUUID.TryParse(ReadStringValue(reader), out Client.Network.SessionID);
-                                    break;
-                                case "secure_session_id":
-                                    LLUUID.TryParse(ReadStringValue(reader), out Client.Network.SecureSessionID);
-                                    break;
-                                case "circuit_code":
-                                    Client.Network.CircuitCode = (uint)ReadIntegerValue(reader);
-                                    break;
-                                case "first_name":
-                                    Client.Self.FirstName = ReadStringValue(reader).Trim(new char[] { '"' });
-                                    break;
-                                case "last_name":
-                                    Client.Self.LastName = ReadStringValue(reader).Trim(new char[] { '"' });
-                                    break;
-                                case "start_location":
-                                    Client.Self.StartLocation = ReadStringValue(reader);
-                                    break;
-                                case "look_at":
-                                    ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(ReadStringValue(reader));
-                                    Client.Self.LookAt = new LLVector3(
-                                        (float)(double)look_at[0],
-                                        (float)(double)look_at[1],
-                                        (float)(double)look_at[2]);
-                                    break;
-                                case "home":
-                                    Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(ReadStringValue(reader));
-
-                                    ArrayList array = (ArrayList)home["position"];
-                                    Client.Self.HomePosition = new LLVector3(
-                                        (float)(double)array[0],
-                                        (float)(double)array[1],
-                                        (float)(double)array[2]);
-
-                                    array = (ArrayList)home["look_at"];
-                                    Client.Self.HomeLookAt = new LLVector3(
-                                        (float)(double)array[0],
-                                        (float)(double)array[1],
-                                        (float)(double)array[2]);
-                                    break;
-                                case "agent_access":
-                                    Client.Self.AgentAccess = ReadStringValue(reader);
-                                    break;
-                                case "message":
-                                    message = ReadStringValue(reader);
-                                    break;
-                                case "region_x":
-                                    //FIXME:
-                                    int regionX = ReadIntegerValue(reader);
-                                    break;
-                                case "region_y":
-                                    // FIXME:
-                                    int regionY = ReadIntegerValue(reader);
-                                    break;
-                                case "sim_port":
-                                    simPort = (ushort)ReadIntegerValue(reader);
-                                    break;
-                                case "sim_ip":
-                                    IPAddress.TryParse(ReadStringValue(reader), out simIP);
-                                    break;
-                                case "seconds_since_epoch":
-                                    uint timestamp = (uint)ReadIntegerValue(reader);
-                                    DateTime time = Helpers.UnixTimeToDateTime(timestamp);
-                                    // FIXME: ???
-                                    break;
-                                case "seed_capability":
-                                    LoginSeedCapability = ReadStringValue(reader);
-                                    break;
-                                case "inventory-root":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("struct");
-
-                                    ReadStringMember(reader, out name, out value);
-                                    LLUUID.TryParse(value, out Client.Self.InventoryRootFolderUUID);
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "inventory-lib-root":
-                                    reader.ReadStartElement("value");
-
-                                    // Fix this later
-                                    reader.Skip();
-
-                                    //reader.ReadStartElement("array");
-                                    //reader.ReadStartElement("data");
-                                    //reader.ReadStartElement("value");
-                                    //reader.ReadStartElement("struct");
-
-                                    //ReadStringMember(reader, out name, out value);
-                                    // FIXME:
-                                    //LLUUID.TryParse(value, out Client.Self.InventoryLibRootFolderUUID);
-
-                                    //reader.ReadEndElement();
-                                    //reader.ReadEndElement();
-                                    //reader.ReadEndElement();
-                                    //reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "inventory-lib-owner":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("struct");
-
-                                    ReadStringMember(reader, out name, out value);
-                                    // FIXME:
-                                    //LLUUID.TryParse(value, out Client.Self.InventoryLibOwnerUUID);
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "inventory-skeleton":
-                                    {
-                                        reader.ReadStartElement("value");
-                                        reader.ReadStartElement("array");
-                                        reader.ReadStartElement("data");
-
-                                        int typeDefault, version;
-                                        string invName;
-                                        LLUUID folderID, parentID;
-
-                                        while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                            out folderID, out parentID))
-                                        {
-                                            // FIXME:
-                                        }
-
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        break;
-                                    }
-                                case "inventory-skel-lib":
-                                    {
-                                        reader.ReadStartElement("value");
-                                        reader.ReadStartElement("array");
-                                        reader.ReadStartElement("data");
-
-                                        int typeDefault, version;
-                                        string invName;
-                                        LLUUID folderID, parentID;
-
-                                        while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                            out folderID, out parentID))
-                                        {
-                                            // FIXME:
-                                        }
-
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        break;
-                                    }
-                                case "gestures":
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "inventory-skeleton":
+                                {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
                                     reader.ReadStartElement("data");
 
-                                    while (reader.IsStartElement("value"))
-                                    {
-                                        reader.ReadStartElement("value");
-                                        reader.ReadStartElement("struct");
+                                    int typeDefault, version;
+                                    string invName;
+                                    LLUUID folderID, parentID;
 
-                                        while (ReadStringMember(reader, out name, out value))
-                                        {
-                                            switch (name)
-                                            {
-                                                case "asset_id":
-                                                    // FIXME:
-                                                    break;
-                                                case "item_id":
-                                                    // FIXME:
-                                                    break;
-                                                default:
-                                                    Client.Log("Unhandled element in login reply (gestures)",
-                                                        Helpers.LogLevel.Error);
-                                                    reader.Skip();
-                                                    break;
-                                            }
-
-                                            // FIXME:
-                                        }
-
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "event_categories":
-                                    {
-                                        reader.ReadStartElement("value");
-                                        reader.ReadStartElement("array");
-                                        reader.ReadStartElement("data");
-
-                                        int categoryID;
-                                        string categoryName;
-
-                                        while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                        {
-                                            // FIXME:
-                                        }
-
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        break;
-                                    }
-                                case "classified_categories":
-                                    {
-                                        reader.ReadStartElement("value");
-                                        reader.ReadStartElement("array");
-                                        reader.ReadStartElement("data");
-
-                                        int categoryID;
-                                        string categoryName;
-
-                                        while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                        {
-                                            // FIXME:
-                                        }
-
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        break;
-                                    }
-                                case "event_notifications":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-
-                                    // FIXME:
-                                    
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "buddy-list":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-
-                                    int buddyRightsGiven, buddyRightsHas;
-                                    LLUUID buddyID;
-
-                                    while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas,
-                                        out buddyID))
+                                    while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
+                                        out folderID, out parentID))
                                     {
                                         // FIXME:
                                     }
@@ -807,211 +689,355 @@ namespace libsecondlife
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
-                                case "ui-config":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("struct");
-
-                                    while (ReadStringMember(reader, out name, out value))
-                                    {
-                                        switch (name)
-                                        {
-                                            case "allow_first_life":
-                                                // FIXME:
-                                                break;
-                                            default:
-                                                Client.Log("Unhandled element in login reply (ui-config)",
-                                                    Helpers.LogLevel.Error);
-                                                reader.Skip();
-                                                break;
-                                        }
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "login-flags":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("struct");
-
-                                    while (ReadStringMember(reader, out name, out value))
-                                    {
-                                        switch (name)
-                                        {
-                                            case "ever_logged_in":
-                                                // FIXME:
-                                                break;
-                                            case "daylight_savings":
-                                                // FIXME:
-                                                break;
-                                            case "stipend_since_login":
-                                                // FIXME:
-                                                break;
-                                            case "gendered":
-                                                // FIXME:
-                                                break;
-                                            default:
-                                                Client.Log("Unhandled element in login reply (login-flags)",
-                                                    Helpers.LogLevel.Error);
-                                                reader.Skip();
-                                                break;
-                                        }
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "global-textures":
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("struct");
-
-                                    while (ReadStringMember(reader, out name, out value))
-                                    {
-                                        switch (name)
-                                        {
-                                            case "cloud_texture_id":
-                                                // FIXME:
-                                                break;
-                                            case "sun_texture_id":
-                                                // FIXME:
-                                                break;
-                                            case "moon_texture_id":
-                                                // FIXME:
-                                                break;
-                                            default:
-                                                Client.Log("Unhandled element in login reply (global-textures)",
-                                                    Helpers.LogLevel.Error);
-                                                reader.Skip();
-                                                break;
-                                        }
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                case "next_options":
-                                    // FIXME: Parse the next_options and only use those for the next_url
-                                    reader.Skip();
-                                    break;
-                                case "next_duration":
-                                    // FIXME: Use this value as the timeout for the next request
-                                    reader.Skip();
-                                    break;
-                                case "next_url":
-                                    nextURL = ReadStringValue(reader);
-                                    break;
-                                case "next_method":
-                                    nextMethod = ReadStringValue(reader);
-                                    break;
-                                default:
-                                    Client.Log("Unhandled element in login reply", Helpers.LogLevel.Error);
-                                    reader.Skip();
-                                    break;
-                            }
-
-                            reader.ReadEndElement();
-                        }
-
-                        reader.ReadEndElement();
-                        reader.ReadEndElement();
-                        reader.ReadEndElement();
-                        reader.ReadEndElement();
-
-                        #endregion XML Parsing
-
-                        if (redirect)
-                        {
-                            UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
-
-                            // Handle indeterminate logins
-                            CurrentContext = new LoginContext();
-                            CurrentContext.Params = myContext.Params;
-                            CurrentContext.Params.URI = nextURL;
-                            CurrentContext.Params.MethodName = nextMethod;
-                            BeginLogin();
-                        }
-                        else if (loginSuccess)
-                        {
-                            UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
-
-                            // Connect to the sim given in the login reply
-                            if (Connect(simIP, simPort, true, LoginSeedCapability) != null)
-                            {
-                                // Request the economy data right after login
-                                SendPacket(new EconomyDataRequestPacket());
-
-                                // Update the login message with the MOTD returned from the server
-                                UpdateLoginStatus(LoginStatus.Success, message);
-
-                                // Fire an event for connecting to the grid
-                                if (OnConnected != null)
-                                {
-                                    try { OnConnected(this.Client); }
-                                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                                 }
-                            }
-                            else
+                            case "inventory-skel-lib":
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.ReadStartElement("data");
+
+                                    int typeDefault, version;
+                                    string invName;
+                                    LLUUID folderID, parentID;
+
+                                    while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
+                                        out folderID, out parentID))
+                                    {
+                                        // FIXME:
+                                    }
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
+                            case "gestures":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+
+                                while (reader.IsStartElement("value"))
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("struct");
+
+                                    while (ReadStringMember(reader, out name, out value))
+                                    {
+                                        switch (name)
+                                        {
+                                            case "asset_id":
+                                                // FIXME:
+                                                break;
+                                            case "item_id":
+                                                // FIXME:
+                                                break;
+                                            default:
+                                                Client.Log("Unhandled element in login reply (gestures)",
+                                                    Helpers.LogLevel.Error);
+                                                reader.Skip();
+                                                break;
+                                        }
+
+                                        // FIXME:
+                                    }
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                }
+
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "event_categories":
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.ReadStartElement("data");
+
+                                    int categoryID;
+                                    string categoryName;
+
+                                    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
+                                    {
+                                        // FIXME:
+                                    }
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
+                            case "classified_categories":
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.ReadStartElement("data");
+
+                                    int categoryID;
+                                    string categoryName;
+
+                                    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
+                                    {
+                                        // FIXME:
+                                    }
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
+                            case "event_notifications":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+
+                                // FIXME:
+
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "buddy-list":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+
+                                int buddyRightsGiven, buddyRightsHas;
+                                LLUUID buddyID;
+
+                                while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas,
+                                    out buddyID))
+                                {
+                                    // FIXME:
+                                }
+
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "ui-config":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("struct");
+
+                                while (ReadStringMember(reader, out name, out value))
+                                {
+                                    switch (name)
+                                    {
+                                        case "allow_first_life":
+                                            // FIXME:
+                                            break;
+                                        default:
+                                            Client.Log("Unhandled element in login reply (ui-config)",
+                                                Helpers.LogLevel.Error);
+                                            reader.Skip();
+                                            break;
+                                    }
+                                }
+
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "login-flags":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("struct");
+
+                                while (ReadStringMember(reader, out name, out value))
+                                {
+                                    switch (name)
+                                    {
+                                        case "ever_logged_in":
+                                            // FIXME:
+                                            break;
+                                        case "daylight_savings":
+                                            // FIXME:
+                                            break;
+                                        case "stipend_since_login":
+                                            // FIXME:
+                                            break;
+                                        case "gendered":
+                                            // FIXME:
+                                            break;
+                                        default:
+                                            Client.Log("Unhandled element in login reply (login-flags)",
+                                                Helpers.LogLevel.Error);
+                                            reader.Skip();
+                                            break;
+                                    }
+                                }
+
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "global-textures":
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("array");
+                                reader.ReadStartElement("data");
+                                reader.ReadStartElement("value");
+                                reader.ReadStartElement("struct");
+
+                                while (ReadStringMember(reader, out name, out value))
+                                {
+                                    switch (name)
+                                    {
+                                        case "cloud_texture_id":
+                                            // FIXME:
+                                            break;
+                                        case "sun_texture_id":
+                                            // FIXME:
+                                            break;
+                                        case "moon_texture_id":
+                                            // FIXME:
+                                            break;
+                                        default:
+                                            Client.Log("Unhandled element in login reply (global-textures)",
+                                                Helpers.LogLevel.Error);
+                                            reader.Skip();
+                                            break;
+                                    }
+                                }
+
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                reader.ReadEndElement();
+                                break;
+                            case "next_options":
+                                // FIXME: Parse the next_options and only use those for the next_url
+                                reader.Skip();
+                                break;
+                            case "next_duration":
+                                // FIXME: Use this value as the timeout for the next request
+                                reader.Skip();
+                                break;
+                            case "next_url":
+                                nextURL = ReadStringValue(reader);
+                                break;
+                            case "next_method":
+                                nextMethod = ReadStringValue(reader);
+                                break;
+                            case "initial-outfit":
+                                // FIXME:
+                                reader.Skip();
+                                break;
+                            default:
+                                Client.Log("Unhandled element in login reply (" + name + ")", Helpers.LogLevel.Error);
+                                reader.Skip();
+                                break;
+                        }
+
+                        reader.ReadEndElement();
+                    }
+
+                    reader.ReadEndElement();
+                    reader.ReadEndElement();
+                    reader.ReadEndElement();
+                    reader.ReadEndElement();
+
+                    #endregion XML Parsing
+
+                    if (OnLoginReply != null)
+                    {
+                        try
+                        {
+                            OnLoginReply(loginSuccess, redirect, simIP, simPort, regionX, regionY, reason, message);
+                        }
+                        catch (Exception ex)
+                        {
+                            Client.Log(ex.ToString(), Helpers.LogLevel.Error);
+                        }
+                    }
+
+                    if (redirect)
+                    {
+                        UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
+
+                        // Handle indeterminate logins
+                        CurrentContext = new LoginContext();
+                        CurrentContext.Params = myContext.Params;
+                        CurrentContext.Params.URI = nextURL;
+                        CurrentContext.Params.MethodName = nextMethod;
+                        BeginLogin();
+                    }
+                    else if (loginSuccess)
+                    {
+                        UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
+
+                        ulong handle = Helpers.UIntsToLong(regionX, regionY);
+
+                        // Connect to the sim given in the login reply
+                        if (Connect(simIP, simPort, handle, true, LoginSeedCapability) != null)
+                        {
+                            // Request the economy data right after login
+                            SendPacket(new EconomyDataRequestPacket());
+
+                            // Update the login message with the MOTD returned from the server
+                            UpdateLoginStatus(LoginStatus.Success, message);
+
+                            // Fire an event for connecting to the grid
+                            if (OnConnected != null)
                             {
-                                UpdateLoginStatus(LoginStatus.Failed, "Unable to connect to simulator");
+                                try { OnConnected(this.Client); }
+                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                             }
                         }
                         else
                         {
-                            // Make sure a usable error key is set
-                            if (!String.IsNullOrEmpty(reason))
-                                InternalErrorKey = reason;
-                            else
-                                InternalErrorKey = "unknown";
-
-                            UpdateLoginStatus(LoginStatus.Failed, message);
+                            UpdateLoginStatus(LoginStatus.Failed, "Unable to connect to simulator");
                         }
                     }
                     else
                     {
-                        reader.ReadStartElement("fault");
-                        reader.ReadStartElement("value");
-                        reader.ReadStartElement("struct");
+                        // Make sure a usable error key is set
+                        if (!String.IsNullOrEmpty(reason))
+                            InternalErrorKey = reason;
+                        else
+                            InternalErrorKey = "unknown";
 
-                        ReadStringMember(reader, out name, out value);
-
-                        UpdateLoginStatus(LoginStatus.Failed, value);
+                        UpdateLoginStatus(LoginStatus.Failed, message);
                     }
+                }
+                else
+                {
+                    reader.ReadStartElement("fault");
+                    reader.ReadStartElement("value");
+                    reader.ReadStartElement("struct");
 
+                    ReadStringMember(reader, out name, out value);
+
+                    UpdateLoginStatus(LoginStatus.Failed, value);
                 }
-                catch (WebException e)
-                {
-                    UpdateLoginStatus(LoginStatus.Failed, "Error reading response: " + e.Message);
-                }
-                catch (XmlException e)
-                {
-                    UpdateLoginStatus(LoginStatus.Failed, "Error parsing reply XML: " + e.Message + Environment.NewLine + e.StackTrace);
-                }
-                finally
-                {
-                    if (reader != null)
-                        reader.Close();
-                    if (xmlStream != null)
-                        xmlStream.Close();
-                    if (response != null)
-                        response.Close();
-                }
+
+            }
+            catch (WebException e)
+            {
+                UpdateLoginStatus(LoginStatus.Failed, "Error reading response: " + e.Message);
+            }
+            catch (XmlException e)
+            {
+                UpdateLoginStatus(LoginStatus.Failed, "Error parsing reply XML: " + e.Message + Environment.NewLine + e.StackTrace);
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+                if (xmlStream != null)
+                    xmlStream.Close();
+                if (response != null)
+                    response.Close();
             }
         }
 

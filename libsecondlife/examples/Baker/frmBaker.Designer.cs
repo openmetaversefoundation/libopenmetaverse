@@ -29,94 +29,93 @@ namespace Baker
         private void InitializeComponent()
         {
             this.pic1 = new System.Windows.Forms.PictureBox();
-            this.cmdLoadPic1 = new System.Windows.Forms.Button();
-            this.pic2 = new System.Windows.Forms.PictureBox();
-            this.pic3 = new System.Windows.Forms.PictureBox();
-            this.cmdLoadPic2 = new System.Windows.Forms.Button();
-            this.cmdLoadPic3 = new System.Windows.Forms.Button();
+            this.cmdLoadShirt = new System.Windows.Forms.Button();
+            this.scrollWeight = new System.Windows.Forms.HScrollBar();
+            this.cmdLoadSkin = new System.Windows.Forms.Button();
+            this.cboMask = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.pic1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pic2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pic3)).BeginInit();
             this.SuspendLayout();
             // 
             // pic1
             // 
             this.pic1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pic1.Location = new System.Drawing.Point(12, 12);
+            this.pic1.Location = new System.Drawing.Point(12, 41);
             this.pic1.Name = "pic1";
-            this.pic1.Size = new System.Drawing.Size(256, 256);
+            this.pic1.Size = new System.Drawing.Size(512, 483);
             this.pic1.TabIndex = 0;
             this.pic1.TabStop = false;
-            this.pic1.AutoSize = true;
             // 
-            // cmdLoadPic1
+            // cmdLoadShirt
             // 
-            this.cmdLoadPic1.Location = new System.Drawing.Point(193, 274);
-            this.cmdLoadPic1.Name = "cmdLoadPic1";
-            this.cmdLoadPic1.Size = new System.Drawing.Size(75, 23);
-            this.cmdLoadPic1.TabIndex = 1;
-            this.cmdLoadPic1.Text = "Load";
-            this.cmdLoadPic1.UseVisualStyleBackColor = true;
-            this.cmdLoadPic1.Click += new System.EventHandler(this.cmdLoadPic_Click);
+            this.cmdLoadShirt.Location = new System.Drawing.Point(449, 530);
+            this.cmdLoadShirt.Name = "cmdLoadShirt";
+            this.cmdLoadShirt.Size = new System.Drawing.Size(75, 23);
+            this.cmdLoadShirt.TabIndex = 1;
+            this.cmdLoadShirt.Text = "Load Shirt";
+            this.cmdLoadShirt.UseVisualStyleBackColor = true;
             // 
-            // pic2
+            // scrollWeight
             // 
-            this.pic2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pic2.Location = new System.Drawing.Point(274, 12);
-            this.pic2.Name = "pic2";
-            this.pic2.Size = new System.Drawing.Size(256, 256);
-            this.pic2.TabIndex = 2;
-            this.pic2.TabStop = false;
-            this.pic1.AutoSize = true;
+            this.scrollWeight.Location = new System.Drawing.Point(12, 530);
+            this.scrollWeight.Maximum = 255;
+            this.scrollWeight.Name = "scrollWeight";
+            this.scrollWeight.Size = new System.Drawing.Size(345, 23);
+            this.scrollWeight.TabIndex = 0;
+            this.scrollWeight.Scroll += new System.Windows.Forms.ScrollEventHandler(this.scrollWeight_Scroll);
             // 
-            // pic3
+            // cmdLoadSkin
             // 
-            this.pic3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pic3.Location = new System.Drawing.Point(536, 12);
-            this.pic3.Name = "pic3";
-            this.pic3.Size = new System.Drawing.Size(256, 256);
-            this.pic3.TabIndex = 3;
-            this.pic3.TabStop = false;
-            this.pic1.AutoSize = true;
+            this.cmdLoadSkin.Location = new System.Drawing.Point(366, 530);
+            this.cmdLoadSkin.Name = "cmdLoadSkin";
+            this.cmdLoadSkin.Size = new System.Drawing.Size(75, 23);
+            this.cmdLoadSkin.TabIndex = 2;
+            this.cmdLoadSkin.Text = "Load Skin";
+            this.cmdLoadSkin.UseVisualStyleBackColor = true;
+            this.cmdLoadSkin.Click += new System.EventHandler(this.cmdLoadSkin_Click);
             // 
-            // cmdLoadPic2
+            // cboMask
             // 
-            this.cmdLoadPic2.Location = new System.Drawing.Point(455, 274);
-            this.cmdLoadPic2.Name = "cmdLoadPic2";
-            this.cmdLoadPic2.Size = new System.Drawing.Size(75, 23);
-            this.cmdLoadPic2.TabIndex = 4;
-            this.cmdLoadPic2.Text = "Load";
-            this.cmdLoadPic2.UseVisualStyleBackColor = true;
-            this.cmdLoadPic2.Click += new System.EventHandler(this.cmdLoadPic_Click);
-            // 
-            // cmdLoadPic3
-            // 
-            this.cmdLoadPic3.Location = new System.Drawing.Point(717, 274);
-            this.cmdLoadPic3.Name = "cmdLoadPic3";
-            this.cmdLoadPic3.Size = new System.Drawing.Size(75, 23);
-            this.cmdLoadPic3.TabIndex = 5;
-            this.cmdLoadPic3.Text = "Load";
-            this.cmdLoadPic3.UseVisualStyleBackColor = true;
-            this.cmdLoadPic3.Click += new System.EventHandler(this.cmdLoadPic_Click);
+            this.cboMask.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboMask.FormattingEnabled = true;
+            this.cboMask.Items.AddRange(new object[] {
+            "glove_length_alpha",
+            "gloves_fingers_alpha",
+            "jacket_length_lower_alpha",
+            "jacket_length_upper_alpha",
+            "jacket_open_lower_alpha",
+            "jacket_open_upper_alpha",
+            "pants_length_alpha",
+            "pants_waist_alpha",
+            "shirt_bottom_alpha",
+            "shirt_collar_alpha",
+            "shirt_collar_back_alpha",
+            "shirt_sleeve_alpha",
+            "shoe_height_alpha",
+            "skirt_length_alpha",
+            "skirt_slit_front_alpha",
+            "skirt_slit_left_alpha",
+            "skirt_slit_right_alpha"});
+            this.cboMask.Location = new System.Drawing.Point(358, 12);
+            this.cboMask.Name = "cboMask";
+            this.cboMask.Size = new System.Drawing.Size(166, 21);
+            this.cboMask.TabIndex = 3;
+            this.cboMask.SelectedIndexChanged += new System.EventHandler(this.cboMask_SelectedIndexChanged);
             // 
             // frmBaker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(806, 498);
-            this.Controls.Add(this.cmdLoadPic3);
-            this.Controls.Add(this.cmdLoadPic2);
-            this.Controls.Add(this.pic3);
-            this.Controls.Add(this.pic2);
-            this.Controls.Add(this.cmdLoadPic1);
+            this.ClientSize = new System.Drawing.Size(538, 563);
+            this.Controls.Add(this.cboMask);
+            this.Controls.Add(this.cmdLoadSkin);
+            this.Controls.Add(this.scrollWeight);
+            this.Controls.Add(this.cmdLoadShirt);
             this.Controls.Add(this.pic1);
             this.Name = "frmBaker";
             this.Text = "Baker";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmBaker_FormClosing);
             this.Load += new System.EventHandler(this.frmBaker_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pic1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pic2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pic3)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -124,11 +123,10 @@ namespace Baker
         #endregion
 
         private System.Windows.Forms.PictureBox pic1;
-        private System.Windows.Forms.Button cmdLoadPic1;
-        private System.Windows.Forms.PictureBox pic2;
-        private System.Windows.Forms.PictureBox pic3;
-        private System.Windows.Forms.Button cmdLoadPic2;
-        private System.Windows.Forms.Button cmdLoadPic3;
+        private System.Windows.Forms.HScrollBar scrollWeight;
+        private System.Windows.Forms.Button cmdLoadShirt;
+        private System.Windows.Forms.Button cmdLoadSkin;
+        private System.Windows.Forms.ComboBox cboMask;
 
     }
 }

@@ -33,7 +33,6 @@ using System.Threading;
 using System.IO;
 using libsecondlife;
 using libsecondlife.Packets;
-using libsecondlife.InventorySystem;
 using libsecondlife.Baking;
 
 namespace libsecondlife
@@ -361,7 +360,7 @@ namespace libsecondlife
         /// <param name="aw">AssetWearable to convert</param>
         /// <returns></returns>
         
-        public static Wearable FromAssetWearable(SecondLife client, libsecondlife.AssetSystem.AssetWearable aw)
+        /*public static Wearable FromAssetWearable(SecondLife client, libsecondlife.AssetSystem.AssetWearable aw)
         {
             Wearable w = new Wearable(client);
             w.Creator = aw.Creator_ID;
@@ -387,7 +386,7 @@ namespace libsecondlife
             w.Type = (Wearable.WearableType)aw.AppearanceLayer; // assumes these two enums are identical
 
             return w;
-        }
+        }*/
     }
 
     /// <summary>
@@ -399,7 +398,7 @@ namespace libsecondlife
         public LLUUID AssetID;
         public LLUUID ItemID;
 
-        public static WearableData FromInventoryWearable(SecondLife client, InventorySystem.InventoryWearable iw)
+        /*public static WearableData FromInventoryWearable(SecondLife client, InventorySystem.InventoryWearable iw)
         {
             WearableData wd = new WearableData();
             wd.Wearable = Wearable.FromAssetWearable(client,(libsecondlife.AssetSystem.AssetWearable)iw.Asset);
@@ -407,7 +406,7 @@ namespace libsecondlife
             wd.ItemID = iw.ItemID;
 
             return wd;
-        }
+        }*/
     }
 
     /// <summary>
@@ -599,7 +598,7 @@ namespace libsecondlife
         /// Add a single wearable to your outfit, replacing if nessesary.
         /// </summary>
         /// <param name="wearable"></param>
-        public void Wear(libsecondlife.InventorySystem.InventoryWearable wearable)
+        /*public void Wear(libsecondlife.InventorySystem.InventoryWearable wearable)
         {
             List<libsecondlife.InventorySystem.InventoryWearable> x = new List<libsecondlife.InventorySystem.InventoryWearable>();
             x.Add(wearable);
@@ -684,7 +683,7 @@ namespace libsecondlife
             }
 
             Wear(iws);
-        }
+        }*/
 
         /// <summary>
         /// Build hashes out of the texture assetIDs for each baking layer to

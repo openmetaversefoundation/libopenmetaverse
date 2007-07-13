@@ -34,10 +34,9 @@ using libsecondlife.Packets;
 namespace libsecondlife
 {
     /// <summary>
-    /// Simulator is a wrapper for a network connection to a simulator and the
-    /// Region class representing the block of land in the metaverse
+    /// 
     /// </summary>
-    public class Simulator
+    public class Simulator : UDPBase
     {
         #region Enums
 
@@ -232,29 +231,38 @@ namespace libsecondlife
         public int MissedPings = 0;
         /// <summary>Current time dilation of this simulator</summary>
         public float Dilation = 0;
-		public int FPS = 0;
-		public float PhysicsFPS = 0;
-		public float AgentUpdates = 0;
-		public float FrameTime = 0;
-		public float NetTime = 0;
-		public float PhysicsTime = 0;
-		public float ImageTime = 0;
-		public float ScriptTime = 0;
-		public float OtherTime = 0;
-		public int Objects = 0;
-		public int ScriptedObjects = 0;
-		public int Agents = 0;
-		public int ChildAgents = 0;
-		public int ActiveScripts = 0;
-		public int LSLIPS = 0;
-		public int INPPS = 0;
-		public int OUTPPS = 0;
-		public int PendingDownloads = 0;
-		public int PendingUploads = 0;
-		public int VirtualSize = 0;
-		public int ResidentSize = 0;
-		public int PendingLocalUploads = 0;
-		public int UnackedBytes = 0;
+        public int FPS = 0;
+        public float PhysicsFPS = 0;
+        public float AgentUpdates = 0;
+        public float FrameTime = 0;
+        public float NetTime = 0;
+        public float PhysicsTime = 0;
+        public float ImageTime = 0;
+        public float ScriptTime = 0;
+        public float OtherTime = 0;
+        public int Objects = 0;
+        public int ScriptedObjects = 0;
+        public int Agents = 0;
+        public int ChildAgents = 0;
+        public int ActiveScripts = 0;
+        public int LSLIPS = 0;
+        public int INPPS = 0;
+        public int OUTPPS = 0;
+        public int PendingDownloads = 0;
+        public int PendingUploads = 0;
+        public int VirtualSize = 0;
+        public int ResidentSize = 0;
+        public int PendingLocalUploads = 0;
+        public int UnackedBytes = 0;
+
+        /// <summary>Used to obtain a lock on the sequence number for packets
+        /// sent to this simulator. Only useful for applications manipulating
+        /// sequence numbers</summary>
+        public object SequenceLock = new object();
+        /// <summary>The current sequence number for packets sent to this
+        /// simulator. Must be locked with SequenceLock before modifying. Only
+        /// useful for applications manipulating sequence numbers</summary>
+        public volatile uint Sequence = 0;
 
         #endregion Public Members
 
@@ -287,56 +295,43 @@ namespace libsecondlife
         internal Queue<uint> PacketArchive;
         /// <summary>Packets we sent out that need ACKs from the simulator</summary>
         internal Dictionary<uint, Packet> NeedAck = new Dictionary<uint, Packet>();
-        
+
         private NetworkManager Network;
-        private uint Sequence = 0;
-        private object SequenceLock = new object();
-        private byte[] RecvBuffer = new byte[4096];
-        private byte[] ZeroBuffer = new byte[8192];
-        private byte[] ZeroOutBuffer = new byte[4096];
-        private Socket Connection = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        private AsyncCallback ReceivedData;
         private Queue<ulong> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
         private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
         private IPEndPoint ipEndPoint;
-        private EndPoint endPoint;
         private System.Timers.Timer AckTimer;
         private System.Timers.Timer PingTimer;
         private System.Timers.Timer StatsTimer;
 
         #endregion Internal/Private Members
 
-
         /// <summary>
-        /// Default constructor
+        /// 
         /// </summary>
         /// <param name="client">Reference to the SecondLife client</param>
-        /// <param name="address">IP address and port of the simulator</param>
-        public Simulator(SecondLife client, IPEndPoint address)
+        /// <param name="port"></param>
+        public Simulator(SecondLife client, IPEndPoint address, ulong handle)
+            : base(address)
         {
             Client = client;
 
+            ipEndPoint = address;
+            Handle = handle;
             Estate = new EstateTools(Client);
-            Network = client.Network;
+            Network = Client.Network;
             PacketArchive = new Queue<uint>(Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
 
-            // Create an endpoint that we will be communicating with (need it in two 
-            // types due to .NET weirdness)
-            ipEndPoint = address;
-            endPoint = (EndPoint)ipEndPoint;
-
-            // Initialize the callback for receiving a new packet
-            ReceivedData = new AsyncCallback(OnReceivedData);
-
+            // Timer for sending out queued packet acknowledgements
             AckTimer = new System.Timers.Timer(Settings.NETWORK_TICK_LENGTH);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
-
+            // Timer for recording simulator connection statistics
             StatsTimer = new System.Timers.Timer(1000);
             StatsTimer.Elapsed += new System.Timers.ElapsedEventHandler(StatsTimer_Elapsed);
-
+            // Timer for periodically pinging the simulator
             PingTimer = new System.Timers.Timer(Settings.PING_INTERVAL);
             PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
         }
@@ -366,9 +361,8 @@ namespace libsecondlife
             {
                 ConnectedEvent.Reset();
 
-                // Associate this simulator's socket with the given ip/port and start listening
-                Connection.Connect(endPoint);
-                Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
+                // Create the UDP connection
+                Start();
 
                 // Mark ourselves as connected before firing everything else up
                 connected = true;
@@ -392,7 +386,7 @@ namespace libsecondlife
 
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
-                    Client.Log("Giving up on waiting for RegionHandshake for " + this.ToString(), 
+                    Client.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
                         Helpers.LogLevel.Warning);
                 }
 
@@ -406,58 +400,59 @@ namespace libsecondlife
             return false;
         }
 
-	public void setSeedCaps(string seedcaps) {
-		if(SimCaps != null) {
-			if(SimCaps.Seedcaps == seedcaps) return;
+        public void SetSeedCaps(string seedcaps)
+        {
+            if (SimCaps != null)
+            {
+                if (SimCaps.Seedcaps == seedcaps) return;
 
-			Client.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
-	                SimCaps.Disconnect(true);
-        	        SimCaps = null;
-		}	
-		
-                if (Client.Settings.ENABLE_CAPS) // [TODO] Implement caps
-                {
-                    // Connect to the new CAPS system
-                    if (!String.IsNullOrEmpty(seedcaps))
-                        SimCaps = new Caps(Client, this, seedcaps);
-                    else
-                        Client.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
-                }
-		
-	}
+                Client.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
+                SimCaps.Disconnect(true);
+                SimCaps = null;
+            }
+
+            if (Client.Settings.ENABLE_CAPS) // [TODO] Implement caps
+            {
+                // Connect to the new CAPS system
+                if (!String.IsNullOrEmpty(seedcaps))
+                    SimCaps = new Caps(Client, this, seedcaps);
+                else
+                    Client.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
+            }
+
+        }
 
         /// <summary>
         /// Disconnect from this simulator
         /// </summary>
         public void Disconnect()
         {
-            connected = false;
-            AckTimer.Stop();
-            StatsTimer.Stop();
-            if (Client.Settings.SEND_PINGS) PingTimer.Stop();
-
-            // Kill the current CAPS system
-            if (SimCaps != null)
+            if (connected)
             {
-                SimCaps.Disconnect(true);
-                SimCaps = null;
+                connected = false;
+
+                AckTimer.Stop();
+                StatsTimer.Stop();
+                if (Client.Settings.SEND_PINGS) PingTimer.Stop();
+
+                // Kill the current CAPS system
+                if (SimCaps != null)
+                {
+                    SimCaps.Disconnect(true);
+                    SimCaps = null;
+                }
+
+                // Try to send the CloseCircuit notice
+                CloseCircuitPacket close = new CloseCircuitPacket();
+                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
+                buf.Data = close.ToBytes();
+                buf.DataLength = buf.Data.Length;
+
+                AsyncBeginSend(buf);
+
+                // Shut the socket communication down
+                Stop();
             }
-
-
-            // Make sure the socket is hooked up
-            if (!Connection.Connected) return;
-
-            // Try to send the CloseCircuit notice
-            CloseCircuitPacket close = new CloseCircuitPacket();
-
-            // There's a high probability of this failing if the network is
-            // disconnecting, so don't even bother logging the error
-            try { Connection.Send(close.ToBytes()); }
-            catch (SocketException) { }
-
-            // Shut the socket communication down
-            try { Connection.Shutdown(SocketShutdown.Both); }
-            catch (SocketException) { }
         }
 
         /// <summary>
@@ -482,13 +477,13 @@ namespace libsecondlife
                         Sequence = 1;
                     else
                         Sequence++;
+
                     packet.Header.Sequence = Sequence;
                 }
 
                 // Scrub any appended ACKs since all of the ACK handling is done here
                 if (packet.Header.AckList.Length > 0)
                     packet.Header.AckList = new uint[0];
-
                 packet.Header.AppendedAcks = false;
 
                 if (packet.Header.Reliable)
@@ -533,30 +528,25 @@ namespace libsecondlife
             SentBytes += (ulong)bytes;
             SentPackets++;
 
-            try
-            {
-                // Zerocode if needed
-                if (packet.Header.Zerocoded)
-                {
-                    lock (ZeroOutBuffer)
-                    {
-                        bytes = Helpers.ZeroEncode(buffer, bytes, ZeroOutBuffer);
-                        Connection.Send(ZeroOutBuffer, bytes, SocketFlags.None);
-                    }
-                }
-                else
-                {
-                    Connection.Send(buffer, bytes, SocketFlags.None);
-                }
-            }
-            catch (SocketException)
-            {
-                Client.Log("Tried to send a " + packet.Type.ToString() + " on a closed socket, shutting down " +
-                    this.ToString(), Helpers.LogLevel.Info);
+            UDPPacketBuffer buf;
 
-                Network.DisconnectSim(this);
-                return;
+            // Zerocode if needed
+            if (packet.Header.Zerocoded)
+            {
+                buf = new UDPPacketBuffer(ipEndPoint, true, false);
+
+                bytes = Helpers.ZeroEncode(buffer, bytes, buf.Data);
+                buf.DataLength = bytes;
             }
+            else
+            {
+                buf = new UDPPacketBuffer(ipEndPoint, false, false);
+
+                buf.Data = buffer;
+                buf.DataLength = bytes;
+            }
+
+            AsyncBeginSend(buf);
         }
 
         /// <summary>
@@ -584,7 +574,12 @@ namespace libsecondlife
 
                 SentBytes += (ulong)payload.Length;
                 SentPackets++;
-                Connection.Send(payload, payload.Length, SocketFlags.None);
+
+                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
+                buf.Data = payload;
+                buf.DataLength = payload.Length;
+
+                AsyncBeginSend(buf);
             }
             catch (SocketException)
             {
@@ -596,6 +591,9 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SendPing()
         {
             StartPingCheckPacket ping = new StartPingCheckPacket();
@@ -604,46 +602,6 @@ namespace libsecondlife
             ping.Header.Reliable = false;
             SendPacket(ping, true);
             LastPingSent = Environment.TickCount;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="west"></param>
-        /// <param name="south"></param>
-        /// <param name="east"></param>
-        /// <param name="north"></param>
-        public void ParcelSubdivide(float west, float south, float east, float north)
-        {
-            ParcelDividePacket divide = new ParcelDividePacket();
-            divide.AgentData.AgentID = Client.Network.AgentID;
-            divide.AgentData.SessionID = Client.Network.SessionID;
-            divide.ParcelData.East = east;
-            divide.ParcelData.North = north;
-            divide.ParcelData.South = south;
-            divide.ParcelData.West = west;
-
-            SendPacket(divide, true);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="west"></param>
-        /// <param name="south"></param>
-        /// <param name="east"></param>
-        /// <param name="north"></param>
-        public void ParcelJoin(float west, float south, float east, float north)
-        {
-            ParcelJoinPacket join = new ParcelJoinPacket();
-            join.AgentData.AgentID = Client.Network.AgentID;
-            join.AgentData.SessionID = Client.Network.SessionID;
-            join.ParcelData.East = east;
-            join.ParcelData.North = north;
-            join.ParcelData.South = south;
-            join.ParcelData.West = west;
-
-            SendPacket(join, true);
         }
 
         /// <summary>
@@ -664,7 +622,7 @@ namespace libsecondlife
         /// <returns></returns>
         public override int GetHashCode()
         {
-            return ID.GetHashCode();
+            return Handle.GetHashCode();
         }
 
         /// <summary>
@@ -700,6 +658,66 @@ namespace libsecondlife
         public static bool operator !=(Simulator lhs, Simulator rhs)
         {
             return !(lhs == rhs);
+        }
+
+        protected override void PacketReceived(UDPPacketBuffer buffer)
+        {
+            Packet packet = null;
+
+            // Update the disconnect flag so this sim doesn't time out
+            DisconnectCandidate = false;
+
+            #region Packet Decoding
+
+            int packetEnd = buffer.DataLength - 1;
+            packet = Packet.BuildPacket(buffer.Data, ref packetEnd, buffer.ZeroData);
+
+            // Fail-safe check
+            if (packet == null)
+            {
+                Client.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning);
+                return;
+            }
+
+            RecvBytes += (ulong)buffer.DataLength;
+            RecvPackets++;
+
+            #endregion Packet Decoding
+
+            #region Reliable Handling
+
+            if (packet.Header.Reliable)
+            {
+                // Add this packet to the list of ACKs that need to be sent out
+                lock (PendingAcks)
+                {
+                    uint sequence = (uint)packet.Header.Sequence;
+                    if (!PendingAcks.ContainsKey(sequence)) PendingAcks[sequence] = sequence;
+                }
+
+                // Send out ACKs if we have a lot of them
+                if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
+                    SendAcks();
+
+                if (packet.Header.Resent) ++ReceivedResends;
+            }
+
+            #endregion Reliable Handling
+
+            #region Inbox Insertion
+
+            NetworkManager.IncomingPacket incomingPacket;
+            incomingPacket.Simulator = this;
+            incomingPacket.Packet = packet;
+
+            // TODO: Prioritize the queue
+            Network.PacketInbox.Enqueue(incomingPacket);
+
+            #endregion Inbox Insertion
+        }
+
+        protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
+        {
         }
 
         private void DoThrottle()
@@ -765,9 +783,9 @@ namespace libsecondlife
                     {
                         try
                         {
-                            if (Client.Settings.LOG_RESENDS) 
-                            Client.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed", 
-                                packet.Header.Sequence, now - packet.TickCount));
+                            if (Client.Settings.LOG_RESENDS)
+                                Client.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
+                                    packet.Header.Sequence, now - packet.TickCount));
 
                             packet.Header.Resent = true;
                             ++ResentPackets;
@@ -780,85 +798,6 @@ namespace libsecondlife
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Callback handler for incomming data
-        /// </summary>
-        /// <param name="result"></param>
-        private void OnReceivedData(IAsyncResult result)
-        {
-            Packet packet = null;
-            int numBytes;
-
-            // Update the disconnect flag so this sim doesn't time out
-            DisconnectCandidate = false;
-
-            #region Packet Decoding
-
-            lock (RecvBuffer)
-            {
-                // Retrieve the incoming packet
-                try
-                {
-                    numBytes = Connection.EndReceiveFrom(result, ref endPoint);
-
-                    int packetEnd = numBytes - 1;
-                    packet = Packet.BuildPacket(RecvBuffer, ref packetEnd, ZeroBuffer);
-
-                    Connection.BeginReceiveFrom(RecvBuffer, 0, RecvBuffer.Length, SocketFlags.None, ref endPoint, ReceivedData, null);
-                }
-                catch (SocketException)
-                {
-                    Client.Log(endPoint.ToString() + " socket is closed, shutting down " + this.ToString(),
-                        Helpers.LogLevel.Info);
-                    Network.DisconnectSim(this);
-                    return;
-                }
-            }
-
-            // Fail-safe check
-            if (packet == null)
-            {
-                Client.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning);
-                return;
-            }
-
-            RecvBytes += (ulong)numBytes;
-            RecvPackets++;
-
-            #endregion Packet Decoding
-
-            #region Reliable Handling
-
-            if (packet.Header.Reliable)
-            {
-                // Queue up ACKs for resent packets
-                lock (PendingAcks)
-                {
-                    uint sequence = (uint)packet.Header.Sequence;
-                    if (!PendingAcks.ContainsKey(sequence)) PendingAcks[sequence] = sequence;
-                }
-
-                // Send out ACKs if we have a lot of them
-                if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
-                    SendAcks();
-
-                if (packet.Header.Resent) ++ReceivedResends;
-            }
-
-            #endregion Reliable Handling
-
-            #region Inbox Insertion
-
-            NetworkManager.IncomingPacket incomingPacket;
-            incomingPacket.Simulator = this;
-            incomingPacket.Packet = packet;
-
-            // TODO: Prioritize the queue
-            Network.PacketInbox.Enqueue(incomingPacket);
-
-            #endregion Inbox Insertion
         }
 
         private void AckTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)

@@ -67,7 +67,7 @@ namespace groupmanager
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
                 if (Client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, "GroupManager",
-                    "jhurliman@wsu.edu"))
+                    "jhurliman@metaverseindustries.com"))
                 {
                     groupBox.Enabled = true;
 

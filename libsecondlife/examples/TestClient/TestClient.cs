@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Xml;
 using libsecondlife;
 using libsecondlife.Packets;
-using libsecondlife.AssetSystem;
 
 namespace libsecondlife.TestClient
 {
@@ -66,6 +65,7 @@ namespace libsecondlife.TestClient
 			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
+            Inventory.OnInventoryObjectReceived += new InventoryManager.InventoryObjectReceived(Inventory_OnInventoryObjectReceived);
             this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
@@ -282,53 +282,60 @@ namespace libsecondlife.TestClient
             lock (Appearances) Appearances[appearance.Sender.ID] = appearance;
         }
 
-        private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, 
-            uint parentEstateID, LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog, 
-            bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
-            MainAvatar.InstantMessageOnline offline, byte[] binaryBucket)
+        private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID,
+            uint parentEstateID, LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog,
+            bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
+            MainAvatar.InstantMessageOnline offline, byte[] binaryBucket, Simulator simulator)
         {
             if (MasterKey != LLUUID.Zero)
             {
                 if (fromAgentID != MasterKey)
                 {
                     // Received an IM from someone that is not the bot's master, ignore
-                    Console.WriteLine("<IM>" + fromAgentName + " (not master): " + message + "@"  + regionID.ToString() + ":" + position.ToString() );
+                    Console.WriteLine("<IM ({0})> {1} (not master): {2} (@{3}:{4})", dialog, fromAgentName, message,
+                        regionID, position);
                     return;
                 }
             }
-            else
+            else if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
             {
-                if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
-                {
-                    // Received an IM from someone outside the bot's group, ignore
-                    Console.WriteLine("<IM>" + fromAgentName + " (not in group): " + message + "@" + regionID.ToString() + ":" + position.ToString());
-                    return;
-                }
+                // Received an IM from someone outside the bot's group, ignore
+                Console.WriteLine("<IM ({0})> {1} (not in group): {2} (@{3}:{4})", dialog, fromAgentName,
+                    message, regionID, position);
+                return;
             }
 
-            Console.WriteLine("<IM>" + fromAgentName + ": " + message);
+            // Received an IM from someone that is authenticated
+            Console.WriteLine("<IM ({0})> {1}: {2} (@{3}:{4})", dialog, fromAgentName, message, regionID, position);
 
             if (dialog == MainAvatar.InstantMessageDialog.RequestTeleport)
             {
                 Console.WriteLine("Accepting teleport lure.");
                 Self.TeleportLureRespond(fromAgentID, true);
             }
-            else
+            else if (
+                dialog == MainAvatar.InstantMessageDialog.MessageFromAgent ||
+                dialog == MainAvatar.InstantMessageDialog.MessageFromObject)
             {
-                if (dialog == MainAvatar.InstantMessageDialog.InventoryOffered)
-                {
-                    Console.WriteLine("Accepting inventory offer.");
-
-                    Self.InstantMessage(Self.FirstName + " " + Self.LastName, fromAgentID, String.Empty,
-                        imSessionID, MainAvatar.InstantMessageDialog.InventoryAccepted,
-                        MainAvatar.InstantMessageOnline.Offline, Self.Position, LLUUID.Zero,
-                        Self.InventoryRootFolderUUID.GetBytes());
-                }
-                else
-                {
-                    DoCommand(message, fromAgentID, imSessionID);
-                }
+                DoCommand(message, fromAgentID, imSessionID);
             }
+        }
+
+        private bool Inventory_OnInventoryObjectReceived(LLUUID fromAgentID, string fromAgentName,
+            uint parentEstateID, LLUUID regionID, LLVector3 position, DateTime timestamp, AssetType type,
+            LLUUID objectID, bool fromTask)
+        {
+            if (MasterKey != LLUUID.Zero)
+            {
+                if (fromAgentID != MasterKey)
+                    return false;
+            }
+            else if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
+            {
+                return false;
+            }
+
+            return true;
         }
 	}
 }

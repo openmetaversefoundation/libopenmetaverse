@@ -92,21 +92,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AssetManager.cs" />
-    <Compile Include="AssetSystem\AppearanceManager.cs" />
-    <Compile Include="AssetSystem\Asset.cs" />
-    <Compile Include="AssetSystem\AssetImage.cs" />
-    <Compile Include="AssetSystem\AssetLandmark.cs" />
-    <Compile Include="AssetSystem\AssetManager.cs" />
-    <Compile Include="AssetSystem\AssetNotecard.cs" />
-    <Compile Include="AssetSystem\AssetPacketHelpers.cs" />
-    <Compile Include="AssetSystem\AssetRequestUpload.cs" />
-    <Compile Include="AssetSystem\AssetScript.cs" />
-    <Compile Include="AssetSystem\AssetWearable.cs" />
-    <Compile Include="AssetSystem\AssetWearable_Body.cs" />
-    <Compile Include="AssetSystem\AssetWearable_Clothing.cs" />
-    <Compile Include="AssetSystem\AssetRequest.cs" />
-    <Compile Include="AssetSystem\ImageManager.cs" />
-    <Compile Include="AssetSystem\ImagePacketHelpers.cs" />
     <Compile Include="Avatar.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -117,10 +102,8 @@
     <Compile Include="Caps.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendManager.cs" />
-    <Compile Include="InventorySystem\DownloadRequest_Folder.cs" />
-    <Compile Include="InventorySystem\InventoryLandmark.cs" />
-    <Compile Include="InventorySystem\InventoryScript.cs" />
-    <Compile Include="InventorySystem\InventoryWearable.cs" />
+    <Compile Include="Inventory.cs" />
+    <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />
     <Compile Include="LLSD.cs" />
     <Compile Include="Login.cs" />
@@ -134,14 +117,6 @@
     </Compile>
     <Compile Include="GroupManager.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="InventorySystem\InventoryBase.cs" />
-    <Compile Include="InventorySystem\InventoryFolder.cs" />
-    <Compile Include="InventorySystem\InventoryImage.cs" />
-    <Compile Include="InventorySystem\InventoryItem.cs" />
-    <Compile Include="InventorySystem\InventoryManager.cs" />
-    <Compile Include="InventorySystem\InventoryNotecard.cs" />
-    <Compile Include="InventorySystem\InventoryPacketHelper.cs" />
-    <Compile Include="ManagedThreadPool.cs" />
     <Compile Include="NameValue.cs" />
     <Compile Include="NetworkManager.cs">
       <SubType>Code</SubType>
@@ -149,6 +124,7 @@
     <Compile Include="ObjectManager.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ObjectPoolBase.cs" />
     <Compile Include="ParcelManager.cs" />
     <Compile Include="ParticleSystem.cs">
       <SubType>Code</SubType>
@@ -174,11 +150,63 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ThreadUtil.cs" />
+    <Compile Include="InventoryNode.cs" />
+    <Compile Include="InventoryNodeDictionary.cs" />
     <Compile Include="Types.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UDPBase.cs" />
     <Compile Include="_Packets_.cs" />
     <Compile Include="_VisualParam_.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\openjpegnet\openjpegnet.csproj">
+      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
+      <Name>openjpegnet</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\blush_alpha.tga" />
+    <None Include="Resources\bodyfreckles_alpha.tga" />
+    <None Include="Resources\body_skingrain.tga" />
+    <None Include="Resources\bump_face_wrinkles.tga" />
+    <None Include="Resources\bump_head_base.tga" />
+    <None Include="Resources\bump_lowerbody_base.tga" />
+    <None Include="Resources\bump_pants_wrinkles.tga" />
+    <None Include="Resources\bump_shirt_wrinkles.tga" />
+    <None Include="Resources\bump_upperbody_base.tga" />
+    <None Include="Resources\eyebrows_alpha.tga" />
+    <None Include="Resources\eyeliner_alpha.tga" />
+    <None Include="Resources\eyeshadow_inner_alpha.tga" />
+    <None Include="Resources\eyeshadow_outer_alpha.tga" />
+    <None Include="Resources\eyewhite.tga" />
+    <None Include="Resources\facehair_chincurtains_alpha.tga" />
+    <None Include="Resources\facehair_moustache_alpha.tga" />
+    <None Include="Resources\facehair_sideburns_alpha.tga" />
+    <None Include="Resources\facehair_soulpatch_alpha.tga" />
+    <None Include="Resources\freckles_alpha.tga" />
+    <None Include="Resources\head_alpha.tga" />
+    <None Include="Resources\head_color.tga" />
+    <None Include="Resources\head_hair.tga" />
+    <None Include="Resources\head_highlights_alpha.tga" />
+    <None Include="Resources\head_shading_alpha.tga" />
+    <None Include="Resources\head_skingrain.tga" />
+    <None Include="Resources\lipgloss_alpha.tga" />
+    <None Include="Resources\lipstick_alpha.tga" />
+    <None Include="Resources\lips_mask.tga" />
+    <None Include="Resources\lowerbody_color.tga" />
+    <None Include="Resources\lowerbody_highlights_alpha.tga" />
+    <None Include="Resources\lowerbody_shading_alpha.tga" />
+    <None Include="Resources\nailpolish_alpha.tga" />
+    <None Include="Resources\rosyface_alpha.tga" />
+    <None Include="Resources\rouge_alpha.tga" />
+    <None Include="Resources\underpants_trial_female.tga" />
+    <None Include="Resources\underpants_trial_male.tga" />
+    <None Include="Resources\undershirt_trial_female.tga" />
+    <None Include="Resources\upperbodyfreckles_alpha.tga" />
+    <None Include="Resources\upperbody_color.tga" />
+    <None Include="Resources\upperbody_highlights_alpha.tga" />
+    <None Include="Resources\upperbody_shading_alpha.tga" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\gloves_fingers_alpha.tga" />
@@ -199,55 +227,6 @@
     <EmbeddedResource Include="Resources\skirt_slit_front_alpha.tga" />
     <EmbeddedResource Include="Resources\skirt_slit_left_alpha.tga" />
     <EmbeddedResource Include="Resources\skirt_slit_right_alpha.tga" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\openjpegnet\openjpegnet.csproj">
-      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
-      <Name>openjpegnet</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\blush_alpha.tga" />
-    <EmbeddedResource Include="Resources\bodyfreckles_alpha.tga" />
-    <EmbeddedResource Include="Resources\body_skingrain.tga" />
-    <EmbeddedResource Include="Resources\bump_face_wrinkles.tga" />
-    <EmbeddedResource Include="Resources\bump_head_base.tga" />
-    <EmbeddedResource Include="Resources\bump_lowerbody_base.tga" />
-    <EmbeddedResource Include="Resources\bump_pants_wrinkles.tga" />
-    <EmbeddedResource Include="Resources\bump_shirt_wrinkles.tga" />
-    <EmbeddedResource Include="Resources\bump_upperbody_base.tga" />
-    <EmbeddedResource Include="Resources\eyebrows_alpha.tga" />
-    <EmbeddedResource Include="Resources\eyeliner_alpha.tga" />
-    <EmbeddedResource Include="Resources\eyeshadow_inner_alpha.tga" />
-    <EmbeddedResource Include="Resources\eyeshadow_outer_alpha.tga" />
-    <EmbeddedResource Include="Resources\eyewhite.tga" />
-    <EmbeddedResource Include="Resources\facehair_chincurtains_alpha.tga" />
-    <EmbeddedResource Include="Resources\facehair_moustache_alpha.tga" />
-    <EmbeddedResource Include="Resources\facehair_sideburns_alpha.tga" />
-    <EmbeddedResource Include="Resources\facehair_soulpatch_alpha.tga" />
-    <EmbeddedResource Include="Resources\freckles_alpha.tga" />
-    <EmbeddedResource Include="Resources\head_alpha.tga" />
-    <EmbeddedResource Include="Resources\head_color.tga" />
-    <EmbeddedResource Include="Resources\head_hair.tga" />
-    <EmbeddedResource Include="Resources\head_highlights_alpha.tga" />
-    <EmbeddedResource Include="Resources\head_shading_alpha.tga" />
-    <EmbeddedResource Include="Resources\head_skingrain.tga" />
-    <EmbeddedResource Include="Resources\lipgloss_alpha.tga" />
-    <EmbeddedResource Include="Resources\lipstick_alpha.tga" />
-    <EmbeddedResource Include="Resources\lips_mask.tga" />
-    <EmbeddedResource Include="Resources\lowerbody_color.tga" />
-    <EmbeddedResource Include="Resources\lowerbody_highlights_alpha.tga" />
-    <EmbeddedResource Include="Resources\lowerbody_shading_alpha.tga" />
-    <EmbeddedResource Include="Resources\nailpolish_alpha.tga" />
-    <EmbeddedResource Include="Resources\rosyface_alpha.tga" />
-    <EmbeddedResource Include="Resources\rouge_alpha.tga" />
-    <EmbeddedResource Include="Resources\underpants_trial_female.tga" />
-    <EmbeddedResource Include="Resources\underpants_trial_male.tga" />
-    <EmbeddedResource Include="Resources\undershirt_trial_female.tga" />
-    <EmbeddedResource Include="Resources\upperbodyfreckles_alpha.tga" />
-    <EmbeddedResource Include="Resources\upperbody_color.tga" />
-    <EmbeddedResource Include="Resources\upperbody_highlights_alpha.tga" />
-    <EmbeddedResource Include="Resources\upperbody_shading_alpha.tga" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

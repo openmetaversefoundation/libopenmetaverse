@@ -5,7 +5,6 @@ using System.Xml;
 using System.Threading;
 using libsecondlife;
 using libsecondlife.Packets;
-using libsecondlife.AssetSystem;
 
 namespace libsecondlife.TestClient
 {

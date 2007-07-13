@@ -101,6 +101,21 @@ namespace libsecondlife
         /// <param name="simulator"></param>
         public delegate void PacketCallback(Packet packet, Simulator simulator);
         /// <summary>
+        /// Assigned by the OnConnected event. Raised when login was a success
+        /// </summary>
+        /// <param name="sender">Reference to the SecondLife class that called the event</param>
+        public delegate void ConnectedCallback(object sender);
+        /// <summary>
+        /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
+        /// </summary>
+        /// <param name="inventoryItems"></param>
+        public delegate void LogoutCallback(List<LLUUID> inventoryItems);
+        /// <summary>
+        /// Triggered when a new connection to a simulator is established
+        /// </summary>
+        /// <param name="simulator">The simulator that is being connected to</param>
+        public delegate void SimConnectedCallback(Simulator simulator);
+        /// <summary>
         /// Triggered when a simulator other than the simulator that is currently
         /// being occupied disconnects for whatever reason
         /// </summary>
@@ -121,12 +136,6 @@ namespace libsecondlife
         /// </summary>
         /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
         public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
-        /// <summary>
-        /// Assigned by the OnConnected event. Raised when login was a success
-        /// </summary>
-        /// <param name="sender">Reference to the SecondLife class that called the event</param>
-        public delegate void ConnectedCallback(object sender);
-
 
         /// <summary>
         /// Event raised when the client was able to connected successfully.
@@ -134,14 +143,13 @@ namespace libsecondlife
         /// <remarks>Uses the ConnectedCallback delegate.</remarks>
         public event ConnectedCallback OnConnected;
         /// <summary>
-        /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
-        /// </summary>
-        /// <param name="inventoryItems"></param>
-        public delegate void LogoutCallback(List<LLUUID> inventoryItems);
-        /// <summary>
         /// Event raised when a logout is confirmed by the simulator
         /// </summary>
         public event LogoutCallback OnLogoutReply;
+        /// <summary>
+        /// Event raised when a connection to a simulator is established
+        /// </summary>
+        public event SimConnectedCallback OnSimConnected;
         /// <summary>
         /// An event for the connection to a simulator other than the currently
         /// occupied one disconnecting
@@ -219,8 +227,8 @@ namespace libsecondlife
             ServicePointManager.Expect100Continue = false;
 
             // Catch exceptions from threads in the managed threadpool
-            Toub.Threading.ManagedThreadPool.UnhandledException += 
-                new UnhandledExceptionEventHandler(ManagedThreadPool_UnhandledException);
+            AppDomain.CurrentDomain.UnhandledException += 
+                new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
         }
 
         /// <summary>
@@ -331,12 +339,14 @@ namespace libsecondlife
         /// </summary>
         /// <param name="ip">IP address to connect to</param>
         /// <param name="port">Port to connect to</param>
+        /// <param name="handle">Handle for this simulator, to identify its
+        /// location in the grid</param>
         /// <param name="setDefault">Whether to set CurrentSim to this new
         /// connection, use this if the avatar is moving in to this simulator</param>
         /// <param name="seedcaps">URL of the capabilities server to use for
         /// this sim connection</param>
         /// <returns>A Simulator object on success, otherwise null</returns>
-        public Simulator Connect(IPAddress ip, ushort port, bool setDefault, string seedcaps)
+        public Simulator Connect(IPAddress ip, ushort port, ulong handle, bool setDefault, string seedcaps)
         {
             IPEndPoint endPoint = new IPEndPoint(ip, (int)port);
             Simulator simulator = FindSimulator(endPoint);
@@ -344,7 +354,7 @@ namespace libsecondlife
             if (simulator == null)
             {
                 // We're not tracking this sim, create a new Simulator object
-                simulator = new Simulator(Client, endPoint);
+                simulator = new Simulator(Client, endPoint, handle);
 
                 // Immediately add this simulator to the list of current sims. It will be removed if the
                 // connection fails
@@ -371,10 +381,17 @@ namespace libsecondlife
                     // Start a timer that checks if we've been disconnected
                     DisconnectTimer.Start();
 
+                    if (setDefault) SetCurrentSim(simulator, seedcaps);
+
+                    // Fire the simulator connection callback if one is registered
+                    if (OnSimConnected != null)
+                    {
+                        try { OnSimConnected(simulator); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                    }
+
                     // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
                     if (Client.Settings.SEND_AGENT_THROTTLE) Client.Throttle.Set(simulator);
-
-                    if (setDefault) SetCurrentSim(simulator, seedcaps);
                 }
                 else
                 {
@@ -533,7 +550,7 @@ namespace libsecondlife
                             }
                             else
                             {
-                                // Keep the Inbox size within a certain capacity
+                                // Keep the PacketArchive size within a certain capacity
                                 while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
                                 {
                                     simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
@@ -574,32 +591,6 @@ namespace libsecondlife
 
                         #region FireCallbacks
 
-                        if (Callbacks.ContainsKey(packet.Type))
-                        {
-                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
-
-                            // Fire any registered callbacks
-                            for (int i = 0; i < callbackArray.Count; i++)
-                            {
-                                if (callbackArray[i] != null)
-                                {
-                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
-                                    if (sync)
-                                    {
-                                        callbackArray[i](packet, simulator);
-                                    }
-                                    else
-                                    {
-                                        PacketCallbackWrapper wrapper;
-                                        wrapper.Callback = callbackArray[i];
-                                        wrapper.Packet = packet;
-                                        wrapper.Simulator = simulator;
-                                        Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
-                                    }
-                                }
-                            }
-                        }
-
                         if (Callbacks.ContainsKey(PacketType.Default))
                         {
                             List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
@@ -620,7 +611,33 @@ namespace libsecondlife
                                         wrapper.Callback = callbackArray[i];
                                         wrapper.Packet = packet;
                                         wrapper.Simulator = simulator;
-                                        Toub.Threading.ManagedThreadPool.QueueUserWorkItem(callback, wrapper);
+                                        ThreadPool.QueueUserWorkItem(callback, wrapper);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (Callbacks.ContainsKey(packet.Type))
+                        {
+                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
+
+                            // Fire any registered callbacks
+                            for (int i = 0; i < callbackArray.Count; i++)
+                            {
+                                if (callbackArray[i] != null)
+                                {
+                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
+                                    if (sync)
+                                    {
+                                        callbackArray[i](packet, simulator);
+                                    }
+                                    else
+                                    {
+                                        PacketCallbackWrapper wrapper;
+                                        wrapper.Callback = callbackArray[i];
+                                        wrapper.Packet = packet;
+                                        wrapper.Simulator = simulator;
+                                        ThreadPool.QueueUserWorkItem(callback, wrapper);
                                     }
                                 }
                             }
@@ -647,7 +664,7 @@ namespace libsecondlife
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
-		simulator.setSeedCaps(seedcaps);
+		simulator.SetSeedCaps(seedcaps);
 
                 // If the current simulator changed fire the callback
                 if (OnCurrentSimChanged != null && simulator != oldSim)
@@ -663,7 +680,7 @@ namespace libsecondlife
         /// </summary>
         private void FinalizeLogout()
         {
-            LogoutTimer.Stop();
+            if (LogoutTimer != null) LogoutTimer.Stop();
 
             // Shutdown the network layer
             Shutdown(DisconnectType.ClientInitiated);
@@ -672,7 +689,7 @@ namespace libsecondlife
             {
                 try
                 {
-                    OnDisconnected(DisconnectType.ClientInitiated, "");
+                    OnDisconnected(DisconnectType.ClientInitiated, String.Empty);
                 }
                 catch (Exception e)
                 {
@@ -753,7 +770,7 @@ namespace libsecondlife
             return null;
         }
 
-        private void ManagedThreadPool_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             // An exception occurred in a packet callback, log it
             Client.Log(((Exception)e.ExceptionObject).ToString(), Helpers.LogLevel.Error);
@@ -1079,7 +1096,7 @@ namespace libsecondlife
             if (FindSimulator(endPoint) != null) return;
 
             IPAddress address = new IPAddress(p.SimulatorInfo.IP);
-            if (Connect(address, p.SimulatorInfo.Port, false, LoginSeedCapability) == null)
+            if (Connect(address, p.SimulatorInfo.Port, p.SimulatorInfo.Handle, false, LoginSeedCapability) == null)
             {
                 Client.Log("Unabled to connect to new sim " + address + ":" + p.SimulatorInfo.Port, 
                     Helpers.LogLevel.Error);

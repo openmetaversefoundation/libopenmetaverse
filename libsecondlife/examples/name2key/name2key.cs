@@ -78,7 +78,7 @@ namespace name2key
 			// Setup the callback
             client.Directory.OnDirPeopleReply += new DirectoryManager.DirPeopleReplyCallback(DirQueryHandler);
 
-			if (!client.Network.Login(args[0], args[1], args[2], "name2key", "jhurliman@wsu.edu"))
+			if (!client.Network.Login(args[0], args[1], args[2], "name2key", "jhurliman@metaverseindustries.com"))
 			{
 				// Login failed
 				Console.WriteLine("ERROR: " + client.Network.LoginMessage);

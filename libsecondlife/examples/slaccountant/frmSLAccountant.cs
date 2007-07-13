@@ -409,7 +409,7 @@ namespace SLAccountant
 				txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
 
 				if (client.Network.Login(txtFirstName.Text, txtLastName.Text, txtPassword.Text, 
-                    "accountant", "jhurliman@wsu.edu"))
+                    "accountant", "jhurliman@metaverseindustries.com"))
 				{
 					Random rand = new Random();
 					

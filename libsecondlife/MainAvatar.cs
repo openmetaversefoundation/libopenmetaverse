@@ -570,11 +570,12 @@ namespace libsecondlife
         /// <param name="message">Text of message</param>
         /// <param name="offline">Enum of whether this message is held for 
         /// offline avatars</param>
-        /// <param name="binaryBucket"></param>
+        /// <param name="binaryBucket">Context specific packed data</param>
+        /// <param name="simulator">Simulator where this IM was received from</param>
         public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
             LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
             InstantMessageDialog dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
-            InstantMessageOnline offline, byte[] binaryBucket);
+            InstantMessageOnline offline, byte[] binaryBucket, Simulator simulator);
 
         /// <summary>
         /// Triggered for any status updates of a teleport (progress, failed, succeeded)
@@ -792,8 +793,9 @@ namespace libsecondlife
             // Health callback
             Client.Network.RegisterCallback(PacketType.HealthMessage, new NetworkManager.PacketCallback(HealthHandler));
 
-            // Money callback
-            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
+            // Money callbacks
+            callback = new NetworkManager.PacketCallback(BalanceHandler);
+            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, callback);
 
             // Group callbacks
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
@@ -1802,6 +1804,7 @@ namespace libsecondlife
                         , Helpers.FieldToUTF8String(im.MessageBlock.Message)
                         , (InstantMessageOnline)im.MessageBlock.Offline
                         , im.MessageBlock.BinaryBucket
+                        , simulator
                         );
                 }
             }
@@ -1954,16 +1957,19 @@ namespace libsecondlife
         /// <param name="simulator">Unused</param>
         private void BalanceHandler(Packet packet, Simulator simulator)
         {
-            MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
-            balance = mbrp.MoneyData.MoneyBalance;
-
-            if (OnMoneyBalanceReplyReceived != null)
+            if (packet.Type == PacketType.MoneyBalanceReply)
             {
-                try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
-                    mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
-                    mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
-                    Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
-                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
+                balance = mbrp.MoneyData.MoneyBalance;
+
+                if (OnMoneyBalanceReplyReceived != null)
+                {
+                    try { OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID, 
+                        mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance, 
+                        mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted, 
+                        Helpers.FieldToUTF8String(mbrp.MoneyData.Description)); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
 
             if (OnBalanceUpdated != null)
@@ -2012,7 +2018,7 @@ namespace libsecondlife
 		{
 			Client.Log("Got EstablishAgentCommunication for sim "
 				+ ipAndPort + ", seed cap " + (string)body["seed-capability"],  Helpers.LogLevel.Info);
-			sim.setSeedCaps((string)body["seed-capability"]);
+			sim.SetSeedCaps((string)body["seed-capability"]);
 		}
             }
             else
@@ -2074,8 +2080,8 @@ namespace libsecondlife
                 Client.DebugLog("TeleportFinish received from " + simulator.ToString() + ", Flags: " + flags.ToString());
 
                 // Connect to the new sim
-                Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP), 
-                    finish.Info.SimPort, true, seedcaps);
+                Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP),
+                    finish.Info.SimPort, finish.Info.RegionHandle, true, seedcaps);
 
                 if (newSimulator != null)
                 {
@@ -2092,12 +2098,8 @@ namespace libsecondlife
                     teleportMessage = "Failed to connect to the new sim after a teleport";
                     TeleportStat = TeleportStatus.Failed;
 
-                    // Attempt to reconnect to the previous simulator
-                    // TODO: This hasn't been tested at all
-                    Client.Network.Connect(simulator.IPEndPoint.Address, (ushort)simulator.IPEndPoint.Port,
-                        true, simulator.SimCaps.Seedcaps);
-
-                    Client.Log(teleportMessage, Helpers.LogLevel.Warning);
+                    // We're going to get disconnected now
+                    Client.Log(teleportMessage, Helpers.LogLevel.Error);
                 }
             }
             else if (packet.Type == PacketType.TeleportCancel)

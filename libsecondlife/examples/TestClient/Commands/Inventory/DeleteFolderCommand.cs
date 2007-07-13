@@ -5,10 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using System.Xml.Serialization;
-
 using libsecondlife;
-using libsecondlife.Packets;
-using libsecondlife.InventorySystem;
 
 namespace libsecondlife.TestClient
 {

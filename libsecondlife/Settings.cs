@@ -42,9 +42,10 @@ namespace libsecondlife
         /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
         public string VERSION = "libsecondlife 0.0.9";
         /// <summary>XML-RPC login server to connect to</summary>
-        public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+        public string LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
 
-	/// Timeouts:
+	    // Timeouts
+
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
         public int TELEPORT_TIMEOUT = 40 * 1000;
@@ -67,7 +68,7 @@ namespace libsecondlife
         /// the grid interface</summary>
         public int MAP_REQUEST_TIMEOUT = 5 * 1000;
 
-	/// Sizes
+	    // Sizes
 
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
@@ -98,20 +99,23 @@ namespace libsecondlife
         /// <summary>Network stats queue length (seconds)</summary>
         public int STATS_QUEUE_SIZE = 5;
 
-	/// Configuration options (mostly booleans)
-        /// <summary>Whether or not to process packet callbacks async. This is
-        /// better off being true, but the option exists to set it to false and
-        /// use the old behavior. Please fix your packet callback to return to
-        /// the pump rather than just setting this back to false, if you can</summary>
+	    // Configuration options (mostly booleans)
+
+        /// <summary>Enable to process packets synchronously, where all of the
+        /// callbacks for each packet must return before the next packet is
+        /// processed</summary>
         /// <remarks>This is an experimental feature and is not completely
-        /// reliable yet</remarks>
+        /// reliable yet. Ideally it would reduce context switches and thread
+        /// overhead, but several calls currently block for a long time and
+        /// would need to be rewritten as asynchronous code before this is
+        /// feasible</remarks>
         public bool SYNC_PACKETCALLBACKS = false;
         /// <summary>Enable/disable debugging log messages</summary>
         public bool DEBUG = true;
         /// <summary>Attach avatar names to log messages</summary>
         public bool LOG_NAMES = true;
-	/// <summary>Log packet retransmission info</summary>
-	public bool LOG_RESENDS = true;
+	    /// <summary>Log packet retransmission info</summary>
+	    public bool LOG_RESENDS = true;
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
@@ -146,8 +150,15 @@ namespace libsecondlife
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
         public bool ENABLE_CAPS = true;
-	/// <summary>Whether to decode sim stats</summary>
-	public bool ENABLE_SIMSTATS = true;
+	    /// <summary>Whether to decode sim stats</summary>
+	    public bool ENABLE_SIMSTATS = true;
+        /// <summary>The capabilities servers are currently designed to
+        /// periodically return a 502 error which signals for the client to
+        /// re-establish a connection. Set this to true to log those 502 errors</summary>
+        public bool LOG_ALL_CAPS_ERRORS = false;
+        /// <summary>If true, any reference received for a folder or item
+        /// libsecondlife is not aware of will automatically be fetched.</summary>
+        public bool FETCH_MISSING_INVENTORY = true;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

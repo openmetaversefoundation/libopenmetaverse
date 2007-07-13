@@ -739,6 +739,48 @@ namespace libsecondlife
             Client.Network.SendPacket(request, simulator);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="west"></param>
+        /// <param name="south"></param>
+        /// <param name="east"></param>
+        /// <param name="north"></param>
+        public void ParcelSubdivide(Simulator simulator, float west, float south, float east, float north)
+        {
+            ParcelDividePacket divide = new ParcelDividePacket();
+            divide.AgentData.AgentID = Client.Network.AgentID;
+            divide.AgentData.SessionID = Client.Network.SessionID;
+            divide.ParcelData.East = east;
+            divide.ParcelData.North = north;
+            divide.ParcelData.South = south;
+            divide.ParcelData.West = west;
+
+            Client.Network.SendPacket(divide, simulator);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="west"></param>
+        /// <param name="south"></param>
+        /// <param name="east"></param>
+        /// <param name="north"></param>
+        public void ParcelJoin(Simulator simulator, float west, float south, float east, float north)
+        {
+            ParcelJoinPacket join = new ParcelJoinPacket();
+            join.AgentData.AgentID = Client.Network.AgentID;
+            join.AgentData.SessionID = Client.Network.SessionID;
+            join.ParcelData.East = east;
+            join.ParcelData.North = north;
+            join.ParcelData.South = south;
+            join.ParcelData.West = west;
+
+            Client.Network.SendPacket(join, simulator);
+        }
+
         #endregion Public Methods
 
         #region Packet Handlers

@@ -12,6 +12,8 @@ namespace Baker
 {
     public partial class frmBaker : Form
     {
+        Bitmap AlphaMask;
+
         public frmBaker()
         {
             InitializeComponent();
@@ -19,59 +21,65 @@ namespace Baker
 
         private void frmBaker_Load(object sender, EventArgs e)
         {
-        	Stream stream = libsecondlife.Helpers.GetResourceStream("shirt_sleeve_alpha.tga");
-        	
-        	if (stream != null)
-        	{
-        		Bitmap alphaMask = OpenJPEGNet.LoadTGAClass.LoadTGA(stream);
-        		pic1.Image = Oven.ModifyAlphaMask(alphaMask, 245, 0.0f);
-        	}
-        	else
-        	{
-        		;
-        	}
+            cboMask.SelectedIndex = 0;
+            DisplayResource(cboMask.Text);
+        }
+
+        private void DisplayResource(string resource)
+        {
+            Stream stream = libsecondlife.Helpers.GetResourceStream(resource + ".tga");
+
+            if (stream != null)
+            {
+                AlphaMask = OpenJPEGNet.LoadTGAClass.LoadTGA(stream);
+                pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
+            }
+            else
+            {
+                MessageBox.Show("Failed to load embedded resource \"" + resource + "\"", "Baker",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void scrollWeight_Scroll(object sender, ScrollEventArgs e)
+        {
+            pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
         }
 
         private void frmBaker_FormClosing(object sender, FormClosingEventArgs e)
         {
         }
 
-        private void cmdLoadPic_Click(object sender, EventArgs e)
+        private void cmdLoadSkin_Click(object sender, EventArgs e)
         {
-            Button caller = (Button)sender;
-            PictureBox pic = null;
 
-            switch (caller.Name)
-            {
-                case "cmdLoadPic1":
-                    pic = pic1;
-                    break;
-                case "cmdLoadPic2":
-                    pic = pic2;
-                    break;
-                case "cmdLoadPic3":
-                    pic = pic3;
-                    break;
-            }
+        }
 
-            if (pic != null)
-            {
-                OpenFileDialog dialog = new OpenFileDialog();
-                dialog.Filter = "JPEG2000 (*.jp2,*.j2c,*.j2k)|";
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        byte[] j2kdata = File.ReadAllBytes(dialog.FileName);
-                        Image image = OpenJPEGNet.OpenJPEG.DecodeToImage(j2kdata);
-                        pic.Image = image;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
-                }
-            }
+        private void cmdLoadShirt_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            
+
+
+            //dialog.Filter = "JPEG2000 (*.jp2,*.j2c,*.j2k)|";
+            //if (dialog.ShowDialog() == DialogResult.OK)
+            //{
+            //    try
+            //    {
+            //        byte[] j2kdata = File.ReadAllBytes(dialog.FileName);
+            //        Image image = OpenJPEGNet.OpenJPEG.DecodeToImage(j2kdata);
+            //        pic1.Image = image;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show(ex.Message);
+            //    }
+            //}
+        }
+
+        private void cboMask_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DisplayResource(cboMask.Text);
         }
     }
 }
