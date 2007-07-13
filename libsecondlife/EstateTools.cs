@@ -35,7 +35,7 @@ namespace libsecondlife
 	public class EstateTools
 	{
 		private SecondLife Client;
-        public TerrainTextureSettings TerrainTextures;
+        public GroundTextureSettings GroundTextures;
 
         /// <summary>
         /// Triggered on incoming LandStatReply
@@ -101,27 +101,21 @@ namespace libsecondlife
             UnbanUser = 128
         }
 
-        /// <summary>Used by TerrainTextureSettings</summary>
-        public class TerrainTextureRegion
+        /// <summary>Used by GroundTextureSettings</summary>
+        public class GroundTextureRegion
         {
             public LLUUID TextureID;
             public float Low;
             public float High;
-            TerrainTextureRegion()
-            {
-                TextureID = LLUUID.Zero;
-                Low = 0f;
-                High = 0f;
-            }
         }
 
-        /// <summary>Texture settings for each corner of the region</summary>
-        public class TerrainTextureSettings
+        /// <summary>Ground texture settings for each corner of the region</summary>
+        public class GroundTextureSettings
         {
-            public TerrainTextureRegion Southwest;
-            public TerrainTextureRegion Northwest;
-            public TerrainTextureRegion Southeast;
-            public TerrainTextureRegion Northeast;
+            public GroundTextureRegion Southwest;
+            public GroundTextureRegion Northwest;
+            public GroundTextureRegion Southeast;
+            public GroundTextureRegion Northeast;
         }
 
         /// <summary>
@@ -267,8 +261,9 @@ namespace libsecondlife
         public void BanUser(LLUUID userID)
         {
             List<string> listParams = new List<string>();
+            uint flag = (uint)EstateAccessDelta.BanUser;
             listParams.Add(Client.Network.AgentID.ToStringHyphenated());
-            listParams.Add(EstateAccessDelta.BanUser.ToString());
+            listParams.Add(flag.ToString());
             listParams.Add(userID.ToStringHyphenated());
             EstateOwnerMessage("estateaccessdelta", listParams);
         }
@@ -277,8 +272,9 @@ namespace libsecondlife
         public void UnbanUser(LLUUID userID)
         {
             List<string> listParams = new List<string>();
+            uint flag = (uint)EstateAccessDelta.BanUser;
             listParams.Add(Client.Network.AgentID.ToStringHyphenated());
-            listParams.Add(EstateAccessDelta.UnbanUser.ToString());
+            listParams.Add(flag.ToString());
             listParams.Add(userID.ToStringHyphenated());
             EstateOwnerMessage("estateaccessdelta", listParams);
         }
