@@ -266,7 +266,7 @@ namespace libsecondlife
         }
 
         #region Searching
-        private Dictionary<LLUUID, List<FindResult>> folderRequests = new Dictionary<LLUUID, List<FindResult>>();
+        private Dictionary<IAsyncResult, FindResult> FindDescendantsMap = new Dictionary<IAsyncResult, FindResult>();
 
         /// <summary>
         /// Starts a search for any items whose names match the regex within 
@@ -282,30 +282,31 @@ namespace libsecondlife
         /// <returns>An IAsyncResult that represents this find operation, and can be passed to EndFindObjects.</returns>
         public IAsyncResult BeginFindObjects(LLUUID baseFolder, string regex, bool recurse, bool refresh, AsyncCallback callback, object asyncState)
         {
-            return BeginFindObjects(baseFolder, new Regex(regex), recurse, refresh, callback, asyncState);
+            return BeginFindObjects(baseFolder, new Regex(regex), recurse, refresh, false, callback, asyncState);
         }
 
-        public IAsyncResult BeginFindObjects(LLUUID baseFolder, Regex regexp, bool recurse, bool refresh, AsyncCallback callback, object asyncState)
+        public IAsyncResult BeginFindObjects(LLUUID baseFolder, string regex, bool recurse, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState)
+        {
+            return BeginFindObjects(baseFolder, new Regex(regex), recurse, refresh, firstOnly, callback, asyncState);
+        }
+
+        public IAsyncResult BeginFindObjects(LLUUID baseFolder, Regex regexp, bool recurse, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState)
         {
             FindResult result = new FindResult(regexp, recurse, callback);
+            result.FirstOnly = firstOnly;
             result.AsyncState = asyncState;
+            result.FoldersWaiting = 1;
             if (refresh)
             {
-                result.FoldersWaiting = 1; // waiting for baseFolder.
-                lock (folderRequests)
+                lock (FindDescendantsMap)
                 {
-                    if (!folderRequests.ContainsKey(baseFolder))
-                    {
-                        folderRequests.Add(baseFolder, new List<FindResult>());
-                    }
-                    List<FindResult> reqsForFolder = folderRequests[baseFolder];
-                    reqsForFolder.Add(result);
-                    RequestFolderContents(baseFolder, Client.Network.AgentID, true, true, InventorySortOrder.ByName);
+                    IAsyncResult descendReq = BeginRequestFolderContents(baseFolder, Client.Network.AgentID, true, true, recurse && !firstOnly, InventorySortOrder.ByName, new AsyncCallback(SearchDescendantsCallback), baseFolder);
+                    FindDescendantsMap.Add(descendReq, result);
                 }
             }
             else
             {
-                result.Result = LocalFind(baseFolder, regexp, recurse);
+                result.Result = LocalFind(baseFolder, regexp, recurse, firstOnly);
                 result.CompletedSynchronously = true;
                 result.IsCompleted = true;
             }
@@ -317,15 +318,8 @@ namespace libsecondlife
             if (result is FindResult)
             {
                 FindResult fr = result as FindResult;
-                if (fr.IsCompleted)
-                {
-                    return fr.Result;
-                }
-                else
-                {
-                    fr.AsyncWaitHandle.WaitOne();
-                    return fr.Result;
-                }
+                if (!fr.IsCompleted) fr.AsyncWaitHandle.WaitOne();
+                return fr.Result;
             }
             else
             {
@@ -333,44 +327,58 @@ namespace libsecondlife
             }
         }
 
-        private void HandleDescendantsForFind(LLUUID refreshedFolder)
+        public void SearchDescendantsCallback(IAsyncResult result)
         {
-            lock (folderRequests)
+            EndRequestFolderContents(result);
+            LLUUID updatedFolder = (LLUUID)result.AsyncState;
+            FindResult find = null;
+            lock (FindDescendantsMap)
             {
-                // Get the finds that requested this folder.
-                List<FindResult> requests = folderRequests[refreshedFolder];
-                foreach (FindResult req in requests)
+                if (FindDescendantsMap.TryGetValue(result, out find))
+                    FindDescendantsMap.Remove(result);
+                else
+                    return;
+            }
+            Interlocked.Decrement(ref find.FoldersWaiting);
+            List<InventoryObject> folderContents = Store.GetContents(updatedFolder);
+            foreach (InventoryObject obj in folderContents)
+            {
+                if (find.Regex.IsMatch(obj.Name))
                 {
-                    Interlocked.Decrement(ref req.FoldersWaiting);
-                    List<InventoryObject> contents = Store.GetContents(refreshedFolder);
-                    foreach (InventoryObject obj in contents)
+                    find.Result.Add(obj);
+                    if (find.FirstOnly)
                     {
-                        if (req.Regex.IsMatch(obj.Name))
-                        {
-                            req.Result.Add(obj);
-                        }
-
-                        if (obj is InventoryFolder && req.Recurse)
-                        {
-                            Interlocked.Increment(ref req.FoldersWaiting);
-                            if (!folderRequests.ContainsKey(obj.UUID))
-                            {
-                                folderRequests.Add(obj.UUID, new List<FindResult>());
-                            }
-                            List<FindResult> reqsForFolder = folderRequests[obj.UUID];
-                            reqsForFolder.Add(req);
-                            RequestFolderContents(obj.UUID, Client.Network.AgentID, true, true, InventorySortOrder.ByName);
-                        }
+                        find.IsCompleted = true;
+                        return;
                     }
-                    req.IsCompleted = (req.FoldersWaiting == 0);
                 }
-                // Satasfied all finds requesting this folder.
-                folderRequests.Remove(refreshedFolder);
+                if (find.Recurse && obj is InventoryFolder)
+                {
+                    Interlocked.Increment(ref find.FoldersWaiting);
+                    lock (FindDescendantsMap)
+                    {
+                        IAsyncResult descendReq = BeginRequestFolderContents(
+                            obj.UUID,
+                            Client.Network.AgentID,
+                            true,
+                            true,
+                            true,
+                            InventorySortOrder.ByName,
+                            new AsyncCallback(SearchDescendantsCallback),
+                            obj.UUID);
+                        FindDescendantsMap.Add(descendReq, find);
+                    }
+                }
+            }
+
+            if (Interlocked.Equals(find.FoldersWaiting, 0))
+            {
+                find.IsCompleted = true;
             }
         }
 
 
-        private List<InventoryObject> LocalFind(LLUUID baseFolder, Regex regexp, bool recurse)
+        private List<InventoryObject> LocalFind(LLUUID baseFolder, Regex regexp, bool recurse, bool firstOnly)
         {
             List<InventoryObject> objects = new List<InventoryObject>();
             List<InventoryFolder> folders = new List<InventoryFolder>();
@@ -381,6 +389,8 @@ namespace libsecondlife
                 if (regexp.IsMatch(inv.Name))
                 {
                     objects.Add(inv);
+                    if (firstOnly)
+                        return objects;
                 }
                 if (inv is InventoryFolder)
                 {
@@ -393,7 +403,7 @@ namespace libsecondlife
             {
                 foreach (InventoryFolder folder in folders)
                 {
-                    objects.AddRange(LocalFind(folder.UUID, regexp, true));
+                    objects.AddRange(LocalFind(folder.UUID, regexp, true, firstOnly));
                 }
             }
             return objects;
@@ -402,21 +412,101 @@ namespace libsecondlife
 
         #region Folder Actions
 
-        public void RequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, 
+        private Dictionary<LLUUID, List<DescendantsResult>> folderRequests = new Dictionary<LLUUID, List<DescendantsResult>>();
+
+        public void RequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, bool recurse,
             InventorySortOrder order)
         {
-            FetchInventoryDescendentsPacket fetch = new FetchInventoryDescendentsPacket();
+            EndRequestFolderContents(BeginRequestFolderContents(folder, owner, folders, items, recurse, order, null, null));
+        }
 
+        public IAsyncResult BeginRequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, bool recurse, InventorySortOrder order, AsyncCallback callback, object asyncState)
+        {
+            DescendantsResult result = new DescendantsResult(callback);
+            result.AsyncState = asyncState;
+            result.Folders = folders;
+            result.Items = items;
+            result.Recurse = recurse;
+            result.SortOrder = order;
+            return InternalFolderContentsRequest(folder, owner, result);
+        }
+
+        private void EndRequestFolderContents(IAsyncResult result)
+        {
+            result.AsyncWaitHandle.WaitOne();
+        }
+
+        private DescendantsResult InternalFolderContentsRequest(LLUUID folder, LLUUID owner, DescendantsResult parameters)
+        {
+            lock (folderRequests)
+            {
+                List<DescendantsResult> requestsForFolder;
+                if (!folderRequests.TryGetValue(folder, out requestsForFolder))
+                {
+                    requestsForFolder = new List<DescendantsResult>();
+                    folderRequests.Add(folder, requestsForFolder);
+                }
+                lock (requestsForFolder)
+                    requestsForFolder.Add(parameters);
+            }
+
+            FetchInventoryDescendentsPacket fetch = new FetchInventoryDescendentsPacket();
             fetch.AgentData.AgentID = Client.Network.AgentID;
             fetch.AgentData.SessionID = Client.Network.SessionID;
 
-            fetch.InventoryData.FetchFolders = folders;
-            fetch.InventoryData.FetchItems = items;
+            fetch.InventoryData.FetchFolders = parameters.Folders;
+            fetch.InventoryData.FetchItems = parameters.Items;
             fetch.InventoryData.FolderID = folder;
             fetch.InventoryData.OwnerID = owner;
-            fetch.InventoryData.SortOrder = (int)order;
+            fetch.InventoryData.SortOrder = (int)parameters.SortOrder;
 
             Client.Network.SendPacket(fetch);
+            return parameters;
+        }
+
+        public void HandleDescendantsRetrieved(LLUUID uuid)
+        {
+            List<DescendantsResult> satasfiedResults = null;
+            lock (folderRequests)
+            {
+                if (folderRequests.TryGetValue(uuid, out satasfiedResults))
+                    folderRequests.Remove(uuid);
+            }
+            if (satasfiedResults == null)
+                return;
+            lock (satasfiedResults)
+            {
+                List<InventoryObject> contents = Store.GetContents(uuid);
+                foreach (DescendantsResult result in satasfiedResults)
+                {
+                    if (result.Recurse)
+                    {
+                        bool done = true;
+
+                        foreach (InventoryObject obj in contents)
+                        {
+                            if (obj is InventoryFolder)
+                            {
+                                done = false;
+                                DescendantsResult child = new DescendantsResult(null);
+                                child.Folders = result.Folders;
+                                child.Items = result.Items;
+                                child.Recurse = result.Recurse;
+                                child.SortOrder = result.SortOrder;
+                                child.Parent = result;
+                                result.AddChild(child);
+                                InternalFolderContentsRequest(obj.UUID, obj.OwnerID, child);
+                            }
+                        }
+                        if (done)
+                            result.IsCompleted = true;
+                    }
+                    else
+                    {
+                        result.IsCompleted = true;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -742,9 +832,9 @@ namespace libsecondlife
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
 
-            // For FindObjects - only unblock if we've received all the descendants
+            // For RequestFolderContents - only call the handler if we've retrieved all the descendants.
             if (folderRequests.ContainsKey(parentFolder.UUID) && parentFolder.DescendentCount == Store.GetContents(parentFolder.UUID).Count)
-                HandleDescendantsForFind(parentFolder.UUID);
+                HandleDescendantsRetrieved(parentFolder.UUID);
         }
 
         /// <summary>
@@ -1009,7 +1099,7 @@ namespace libsecondlife
             get { return callback; }
         }
         public int FoldersWaiting;
-
+        public bool FirstOnly;
         private AsyncCallback callback;
         private Regex regex;
         private bool recurse;
@@ -1060,6 +1150,90 @@ namespace libsecondlife
                     }
                 }
                 complete = value;
+            }
+        }
+
+        #endregion
+    }
+
+    class DescendantsResult : IAsyncResult
+    {
+        public bool Folders = true;
+        public bool Items = true;
+        public bool Recurse = false;
+        public InventorySortOrder SortOrder = InventorySortOrder.ByName;
+        public DescendantsResult Parent;
+        private AsyncCallback _Callback;
+        private ManualResetEvent _AsyncWaitHandle;
+        private object _AsyncState;
+        private bool _IsCompleted;
+        private List<DescendantsResult> _ChildrenWaiting = new List<DescendantsResult>();
+
+        public DescendantsResult(AsyncCallback callback)
+        {
+            _Callback = callback;
+            _AsyncWaitHandle = new ManualResetEvent(false);
+        }
+
+        public void AddChild(DescendantsResult child)
+        {
+            lock (_ChildrenWaiting)
+            {
+                if (!child.IsCompleted)
+                    _ChildrenWaiting.Add(child);
+            }
+        }
+
+        public void ChildComplete(DescendantsResult child)
+        {
+            lock (_ChildrenWaiting)
+            {
+                _ChildrenWaiting.Remove(child);
+                if (_ChildrenWaiting.Count == 0)
+                    IsCompleted = true;
+            }
+        }
+
+        #region IAsyncResult Members
+
+        public object AsyncState
+        {
+            get { return _AsyncState; }
+            set { _AsyncState = value; }
+        }
+
+        public WaitHandle AsyncWaitHandle
+        {
+            get { return _AsyncWaitHandle; }
+        }
+
+        public bool CompletedSynchronously
+        {
+            get { return false; }
+        }
+
+        public bool IsCompleted
+        {
+            get { return _IsCompleted; }
+            set
+            {
+                _IsCompleted = value;
+                if (value)
+                {
+                    if (_ChildrenWaiting.Count == 0)
+                    {
+                        if (Parent != null)
+                        {
+                            Parent.ChildComplete(this);
+                        }
+                        else
+                        {
+                            _AsyncWaitHandle.Set();
+                            if (_Callback != null)
+                                _Callback(this);
+                        }
+                    }
+                }
             }
         }
 

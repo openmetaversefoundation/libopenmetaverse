@@ -51,7 +51,7 @@ namespace libsecondlife.InventorySystem
 //        private ManualResetEvent InventoryManagerInitialized = new ManualResetEvent(false);
 
         // Reference to the Asset Manager
-        internal libsecondlife.AssetSystem.AssetManager AssetManager
+        internal libsecondlife.AssetManager AssetManager
         {
             get { return slClient.Assets; }
         }

@@ -40,16 +40,29 @@ namespace libsecondlife
     public class Inventory
     {
         /// <summary>
-        /// 
+        /// Delegate to use for the OnInventoryObjectUpdated event.
         /// </summary>
-        /// <param name="oldObject"></param>
-        /// <param name="newObject"></param>
+        /// <param name="oldObject">The state of the InventoryObject before the update occured.</param>
+        /// <param name="newObject">The state of the InventoryObject after the update occured.</param>
         public delegate void InventoryObjectUpdated(InventoryObject oldObject, InventoryObject newObject);
 
         /// <summary>
-        /// 
+        /// Called when an InventoryObject's state is changed.
         /// </summary>
         public event InventoryObjectUpdated OnInventoryObjectUpdated;
+
+
+        /// <summary>
+        /// Delegate to use for the OnInventoryObjectRemoved event.
+        /// </summary>
+        /// <param name="obj">The InventoryObject that was removed.</param>
+        public delegate void InventoryObjectRemoved(InventoryObject obj);
+
+
+        /// <summary>
+        /// Called when an item or folder is removed from inventory.
+        /// </summary>
+        public event InventoryObjectRemoved OnInventoryObjectRemoved;
 
         /// <summary>
         /// 
@@ -152,14 +165,8 @@ namespace libsecondlife
         {
             lock (Items)
             {
-                if (item.ParentUUID == LLUUID.Zero)
-                {
-                    Client.Log("UpdateNodeFor(): Cannot add the root folder", Helpers.LogLevel.Warning);
-                    return;
-                }
-
-                InventoryNode itemParent;
-                if (!Items.TryGetValue(item.ParentUUID, out itemParent))
+                InventoryNode itemParent = null;
+                if (item.ParentUUID != LLUUID.Zero && !Items.TryGetValue(item.ParentUUID, out itemParent))
                 {
                     // OK, we have no data on the parent, let's create a fake one.
                     InventoryFolder fakeParent = new InventoryFolder(item.ParentUUID);
@@ -205,6 +212,12 @@ namespace libsecondlife
                 }
                 else // We're adding.
                 {
+                    if (item.ParentUUID == LLUUID.Zero)
+                    {
+                        Client.Log("UpdateNodeFor(): Cannot add the root folder", Helpers.LogLevel.Warning);
+                        return;
+                    }
+
                     itemNode = new InventoryNode(item, itemParent);
                     Items.Add(item.UUID, itemNode);
                 }
@@ -226,6 +239,7 @@ namespace libsecondlife
                         lock (node.Parent.Nodes.SyncRoot)
                             node.Parent.Nodes.Remove(item.UUID);
                     Items.Remove(item.UUID);
+                    FireOnInventoryObjectRemoved(item);
                 }
 
                 // In case there's a new parent:
@@ -259,6 +273,11 @@ namespace libsecondlife
         {
             if (OnInventoryObjectUpdated != null)
                 OnInventoryObjectUpdated(oldObject, newObject);
+        }
+        protected void FireOnInventoryObjectRemoved(InventoryObject obj)
+        {
+            if (OnInventoryObjectRemoved != null)
+                OnInventoryObjectRemoved(obj);
         }
         #endregion
 
