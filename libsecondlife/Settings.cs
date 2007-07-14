@@ -42,7 +42,7 @@ namespace libsecondlife
         /// <summary>The version of libsecondlife (not the SL protocol itself)</summary>
         public string VERSION = "libsecondlife 0.0.9";
         /// <summary>XML-RPC login server to connect to</summary>
-        public string LOGIN_SERVER = "https://login.aditi.lindenlab.com/cgi-bin/login.cgi";
+        public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
 
 	    // Timeouts
 
