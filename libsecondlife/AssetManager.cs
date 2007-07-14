@@ -274,7 +274,7 @@ namespace libsecondlife
         /// <param name="assetID"></param>
         /// <param name="type"></param>
         /// <param name="priority"></param>
-        public void RequestAsset(LLUUID assetID, AssetType type, bool priority)
+        public LLUUID RequestAsset(LLUUID assetID, AssetType type, bool priority)
         {
             AssetDownload transfer = new AssetDownload();
             transfer.ID = LLUUID.Random();
@@ -300,6 +300,7 @@ namespace libsecondlife
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);
+            return transfer.ID;
         }
 
         /// <summary>
@@ -313,7 +314,7 @@ namespace libsecondlife
         /// <param name="ownerID">The owner of this asset</param>
         /// <param name="type">Asset type</param>
         /// <param name="priority">Whether to prioritize this asset download or not</param>
-        public void RequestInventoryAsset(LLUUID assetID, LLUUID itemID, LLUUID taskID, LLUUID ownerID, AssetType type,
+        public LLUUID RequestInventoryAsset(LLUUID assetID, LLUUID itemID, LLUUID taskID, LLUUID ownerID, AssetType type,
             bool priority)
         {
             AssetDownload transfer = new AssetDownload();
@@ -345,6 +346,7 @@ namespace libsecondlife
             request.TransferInfo.Params = paramField;
 
             Client.Network.SendPacket(request, transfer.Simulator);
+            return transfer.ID;
         }
 
         public void RequestEstateAsset()
