@@ -653,39 +653,50 @@ namespace libsecondlife
                                 reader.ReadEndElement();
                                 break;
                             case "inventory-lib-owner":
+				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
+				    reader.MoveToContent();
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("data");
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("struct");
+				    if(!isEmpty) {
+                                        reader.ReadStartElement("value");
+                                        reader.ReadStartElement("struct");
 
-                                ReadStringMember(reader, out name, out value);
-                                // FIXME:
-                                //LLUUID.TryParse(value, out Client.Self.InventoryLibOwnerUUID);
+                                        ReadStringMember(reader, out name, out value);
+                                        // FIXME:
+                                        //LLUUID.TryParse(value, out Client.Self.InventoryLibOwnerUUID);
 
+                                        reader.ReadEndElement();
+                                        reader.ReadEndElement();
+                                        reader.ReadEndElement();
+				    }
                                 reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
+                                    reader.ReadEndElement(); 
                                 break;
+				  }  
                             case "inventory-skeleton":
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
+				        reader.MoveToContent();
+					bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int typeDefault, version;
                                     string invName;
                                     LLUUID folderID, parentID;
 
-                                    while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                        out folderID, out parentID))
-                                    {
-                                        // FIXME:
-                                    }
+					if(!isEmpty) {
+					    while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
+                                            	  out folderID, out parentID))
+                                            {
+						// FIXME:
+                                            }
 
-                                    reader.ReadEndElement();
+					    reader.ReadEndElement();
+					}
+
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
@@ -694,35 +705,47 @@ namespace libsecondlife
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
+ 				        reader.MoveToContent();
+					bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int typeDefault, version;
                                     string invName;
                                     LLUUID folderID, parentID;
 
-                                    while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                        out folderID, out parentID))
-                                    {
-                                        // FIXME:
-                                    }
+					if(!isEmpty) {
+                                            while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
+                                                out folderID, out parentID))
+                                            {
+                                                // FIXME:
+                                            }
+					    reader.ReadEndElement();
+					}
 
-                                    reader.ReadEndElement();
+                                        
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
                                 }
                             case "gestures":
+				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
+				    reader.MoveToContent();
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("data");
 
-                                while (reader.IsStartElement("value"))
-                                {
+				    if(!isEmpty) {
+                                      while (reader.IsStartElement("value"))
+                                      {
                                     reader.ReadStartElement("value");
+  				        reader.MoveToContent();
+					isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("struct");
 
-                                    while (ReadStringMember(reader, out name, out value))
-                                    {
+					if(!isEmpty) { 
+                                          while (ReadStringMember(reader, out name, out value))
+                                          {
                                         switch (name)
                                         {
                                             case "asset_id":
@@ -739,31 +762,40 @@ namespace libsecondlife
                                         }
 
                                         // FIXME:
+					  }
+					  reader.ReadEndElement();
                                     }
 
+                                        
                                     reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                }
+                                      }
+				      reader.ReadEndElement();
+				    }  
 
-                                reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 break;
+				  }  
                             case "event_categories":
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
+ 				        reader.MoveToContent();
+					bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int categoryID;
                                     string categoryName;
 
-                                    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                    {
-                                        // FIXME:
-                                    }
+					if(!isEmpty) {
+                                            while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
+                                            {
+                                                // FIXME:
+                                            }
+					    reader.ReadEndElement();
+					}
 
-                                    reader.ReadEndElement();
+                                        
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
@@ -772,59 +804,79 @@ namespace libsecondlife
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
+ 				        reader.MoveToContent();
+					bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int categoryID;
                                     string categoryName;
 
-                                    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                    {
-                                        // FIXME:
-                                    }
+					if(!isEmpty) {
+					    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
+                                            {
+						// FIXME:
+                                            }
+					    reader.ReadEndElement();
+					}
 
-                                    reader.ReadEndElement();
+                                        
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
                                 }
                             case "event_notifications":
+				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
+ 				    reader.MoveToContent();
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("data");
 
                                 // FIXME:
 
-                                reader.ReadEndElement();
+                                    if(!isEmpty) reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 break;
+				  }
                             case "buddy-list":
+ 				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
+ 				    reader.MoveToContent();
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("data");
 
                                 int buddyRightsGiven, buddyRightsHas;
                                 LLUUID buddyID;
 
-                                while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas,
+				    if(!isEmpty) {
+                                        while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas,
                                     out buddyID))
-                                {
-                                    // FIXME:
-                                }
+                                        {
+                                            // FIXME:
+                                        }
+					reader.ReadEndElement();
+				    }
 
-                                reader.ReadEndElement();
+                                    
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 break;
+				  }  
                             case "ui-config":
+				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
                                 reader.ReadStartElement("data");
                                 reader.ReadStartElement("value");
+ 				    reader.MoveToContent();
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("struct");
 
-                                while (ReadStringMember(reader, out name, out value))
-                                {
+				    if(!isEmpty) {
+				      while (ReadStringMember(reader, out name, out value))
+                                      {
                                     switch (name)
                                     {
                                         case "allow_first_life":
@@ -836,23 +888,30 @@ namespace libsecondlife
                                             reader.Skip();
                                             break;
                                     }
-                                }
+                                      }
+				      reader.ReadEndElement();
+				    }  
 
-                                reader.ReadEndElement();
+                                    
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 break;
+				  }  
                             case "login-flags":
+				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
                                 reader.ReadStartElement("data");
                                 reader.ReadStartElement("value");
+ 				    reader.MoveToContent();
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("struct");
 
-                                while (ReadStringMember(reader, out name, out value))
-                                {
+				    if(!isEmpty) {
+                                      while (ReadStringMember(reader, out name, out value))
+                                      {
                                     switch (name)
                                     {
                                         case "ever_logged_in":
@@ -873,23 +932,28 @@ namespace libsecondlife
                                             reader.Skip();
                                             break;
                                     }
+				      }
+				      reader.ReadEndElement();
                                 }
 
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
-                                reader.ReadEndElement();
                                 break;
+				  }  
                             case "global-textures":
+				  {
                                 reader.ReadStartElement("value");
                                 reader.ReadStartElement("array");
                                 reader.ReadStartElement("data");
                                 reader.ReadStartElement("value");
+				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("struct");
 
-                                while (ReadStringMember(reader, out name, out value))
-                                {
+				    if(!isEmpty) {
+                                      while (ReadStringMember(reader, out name, out value))
+                                      {
                                     switch (name)
                                     {
                                         case "cloud_texture_id":
@@ -907,14 +971,17 @@ namespace libsecondlife
                                             reader.Skip();
                                             break;
                                     }
+				      }
+				      reader.ReadEndElement();
                                 }
 
-                                reader.ReadEndElement();
+                                    
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 reader.ReadEndElement();
                                 break;
+				  }  
                             case "next_options":
                                 // FIXME: Parse the next_options and only use those for the next_url
                                 reader.Skip();
@@ -1154,12 +1221,15 @@ namespace libsecondlife
 
                 if (reader.IsStartElement("struct"))
                 {
+ 		    reader.MoveToContent();
+		    bool isEmpty = reader.IsEmptyElement;
                     reader.ReadStartElement("struct");
 
                     string name;
 
-                    while (reader.IsStartElement("member"))
-                    {
+		    if(!isEmpty) {
+                      while (reader.IsStartElement("member"))
+                      {
                         reader.ReadStartElement("member");
                         name = reader.ReadElementString("name");
 
@@ -1179,9 +1249,10 @@ namespace libsecondlife
                         }
 
                         reader.ReadEndElement();
-                    }
+                      }
 
-                    reader.ReadEndElement();
+		      reader.ReadEndElement();
+		    }
                     ret = true;
                 }
 
