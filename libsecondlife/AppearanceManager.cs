@@ -664,12 +664,14 @@ namespace libsecondlife
             wearOutfitThread.Start(folder);
         }
 
-        public void WearOutfitAsync(object _folder)
+        public void WearOutfitAsync(string _folder)
         {
-            InventoryFolder folder;
+            InventoryFolder rootFolder = Client.Inventory;
+            InventoryFolder.
 
             if (_folder is string)
-                folder = Client.Inventory.getFolder((string)_folder);
+                folder = Client.Inventory.
+
             else
                 folder = (InventoryFolder)_folder;
             
@@ -683,7 +685,8 @@ namespace libsecondlife
             }
 
             Wear(iws);
-        }*/
+        }
+        */
 
         /// <summary>
         /// Build hashes out of the texture assetIDs for each baking layer to
@@ -1260,7 +1263,7 @@ namespace libsecondlife
             return 0;
         }
 
-        private void Assets_OnAssetReceived(AssetDownload asset)
+        private void Assets_OnAssetReceived(AssetDownload asset, Asset blah)
         {
             Client.DebugLog("Assets_OnAssetReceived()");
             

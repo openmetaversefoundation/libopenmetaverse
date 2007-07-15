@@ -155,6 +155,7 @@ namespace libsecondlife
         public byte[] AssetData = new byte[0];
         public int Transferred = 0;
         public bool Success = false;
+        public AssetType AssetType = AssetType.Unknown;
     }
 
     /// <summary>
@@ -208,7 +209,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="asset"></param>
-        public delegate void AssetReceivedCallback(AssetDownload asset);
+        public delegate void AssetReceivedCallback(AssetDownload transfer, Asset asset);
         /// <summary>
         /// 
         /// </summary>
@@ -279,6 +280,7 @@ namespace libsecondlife
             AssetDownload transfer = new AssetDownload();
             transfer.ID = LLUUID.Random();
             transfer.AssetID = assetID;
+            //transfer.AssetType = type; // Set in TransferInfoHandler.
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
             transfer.Source = SourceType.Asset;
@@ -320,6 +322,7 @@ namespace libsecondlife
             AssetDownload transfer = new AssetDownload();
             transfer.ID = LLUUID.Random();
             transfer.AssetID = assetID;
+            //transfer.AssetType = type; // Set in TransferInfoHandler.
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
             transfer.Source = SourceType.SimInventoryItem;
@@ -366,6 +369,7 @@ namespace libsecondlife
             if (!Transfers.ContainsKey(imageID))
             {
                 ImageDownload transfer = new ImageDownload();
+                //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
                 transfer.ID = imageID;
                 transfer.Simulator = Client.Network.CurrentSim;
 
@@ -409,6 +413,7 @@ namespace libsecondlife
             {
                 AssetUpload upload = new AssetUpload();
                 upload.AssetData = data;
+                upload.AssetType = type;
                 upload.ID = transactionID;
                 upload.AssetID = ((transactionID == LLUUID.Zero) ? transactionID : transactionID.Combine(Client.Network.SecureSessionID));
                 upload.Size = data.Length;
@@ -523,7 +528,7 @@ namespace libsecondlife
                         transfer.AssetData = null;
 
                         // Fire the event with our transfer that contains Success = false;
-                        try { OnAssetReceived(transfer); }
+                        try { OnAssetReceived(transfer, null); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                     else
@@ -533,7 +538,7 @@ namespace libsecondlife
                         if (transfer.Source == SourceType.Asset && info.TransferInfo.Params.Length == 20)
                         {
                             transfer.AssetID = new LLUUID(info.TransferInfo.Params, 0);
-                            AssetType type = (AssetType)(int)Helpers.BytesToUInt(info.TransferInfo.Params, 16);
+                            transfer.AssetType = (AssetType)(sbyte)info.TransferInfo.Params[16];
 
                             //Client.DebugLog(String.Format("TransferInfo packet received. AssetID: {0} Type: {1}",
                             //    transfer.AssetID, type));
@@ -547,7 +552,7 @@ namespace libsecondlife
                             LLUUID taskID = new LLUUID(info.TransferInfo.Params, 48);
                             LLUUID itemID = new LLUUID(info.TransferInfo.Params, 64);
                             transfer.AssetID = new LLUUID(info.TransferInfo.Params, 80);
-                            AssetType type = (AssetType)(int)Helpers.BytesToUInt(info.TransferInfo.Params, 96);
+                            transfer.AssetType = (AssetType)(sbyte)info.TransferInfo.Params[96];
 
                             //Client.DebugLog(String.Format("TransferInfo packet received. AgentID: {0} SessionID: {1} " + 
                             //    "OwnerID: {2} TaskID: {3} ItemID: {4} AssetID: {5} Type: {6}", agentID, sessionID, 
@@ -601,7 +606,7 @@ namespace libsecondlife
                         // Fire the event with our transfer that contains Success = false
                         if (OnAssetReceived != null)
                         {
-                            try { OnAssetReceived(transfer); }
+                            try { OnAssetReceived(transfer, null); }
                             catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                         }
 
@@ -629,7 +634,7 @@ namespace libsecondlife
 
                     if (OnAssetReceived != null)
                     {
-                        try { OnAssetReceived(transfer); }
+                        try { OnAssetReceived(transfer, CreateAsset(transfer)); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
@@ -639,6 +644,27 @@ namespace libsecondlife
                 //Client.DebugLog("Received a TransferPacket for unknown transfer " +
                 //    asset.TransferData.TransferID.ToStringHyphenated());
             }
+        }
+
+        private Asset CreateAsset(AssetDownload download)
+        {
+            switch (download.AssetType)
+            {
+                case AssetType.Notecard:
+                    AssetNotecard notecard = new AssetNotecard();
+                    notecard.AssetID = download.AssetID;
+                    notecard.SetEncodedData(download.AssetData);
+                    return notecard;
+                case AssetType.LSLText:
+                    AssetScript script = new AssetScript();
+                    script.AssetID = download.AssetID;
+                    script.SetEncodedData(download.AssetData);
+                    return script;
+                default:
+                    Client.Log("Unimplemented asset type: " + download.AssetType, Helpers.LogLevel.Error);
+                    break;
+            }
+            return null;
         }
 
         private void RequestXferHandler(Packet packet, Simulator simulator)
@@ -777,6 +803,7 @@ namespace libsecondlife
                     transfer.PacketCount = data.ImageID.Packets;
                     transfer.Size = (int)data.ImageID.Size;
                     transfer.AssetData = new byte[transfer.Size];
+                    transfer.AssetType = AssetType.Texture;
                     Buffer.BlockCopy(data.ImageData.Data, 0, transfer.AssetData, 0, data.ImageData.Data.Length);
                     transfer.InitialDataSize = data.ImageData.Data.Length;
                     transfer.Transferred += data.ImageData.Data.Length;

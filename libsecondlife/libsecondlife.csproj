@@ -92,6 +92,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AssetManager.cs" />
+    <Compile Include="AssetTypes.cs" />
     <Compile Include="Avatar.cs">
       <SubType>Code</SubType>
     </Compile>
