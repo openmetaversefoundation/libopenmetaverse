@@ -525,7 +525,6 @@ namespace libsecondlife
                     {
                         reader.ReadStartElement("member");
                         name = reader.ReadElementString("name");
-			Console.WriteLine("DEBUG: Got member named "+name);
 
                         switch (name)
                         {
