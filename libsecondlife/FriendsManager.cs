@@ -47,7 +47,7 @@ namespace libsecondlife
             /// <summary>The avatar can see the location of the target avatar on the map</summary>
             CanSeeOnMap = 2,
             /// <summary>The avatar can modify the ojects of the target avatar </summary>
-            CanModiyObjects = 4
+            CanModifyObjects = 4
         }
 
         /// <summary>
@@ -80,11 +80,11 @@ namespace libsecondlife
                 m_id = id;
                 m_canSeeMeOnline = (theirRights & RightsFlags.CanSeeOnline) != 0;
                 m_canSeeMeOnMap = (theirRights & RightsFlags.CanSeeOnMap) != 0;
-                m_canModifyMyObjects = (theirRights & RightsFlags.CanModiyObjects) != 0;
+                m_canModifyMyObjects = (theirRights & RightsFlags.CanModifyObjects) != 0;
 
                 m_canSeeThemOnline = (myRights & RightsFlags.CanSeeOnline) != 0;
                 m_canSeeThemOnMap = (myRights & RightsFlags.CanSeeOnMap) != 0;
-                m_canModifyTheirObjects = (myRights & RightsFlags.CanModiyObjects) != 0;
+                m_canModifyTheirObjects = (myRights & RightsFlags.CanModifyObjects) != 0;
             }
 
             /// <summary>
@@ -177,7 +177,7 @@ namespace libsecondlife
                     if (m_canSeeMeOnMap)
                         results |= RightsFlags.CanSeeOnMap;
                     if (m_canModifyMyObjects)
-                        results |= RightsFlags.CanModiyObjects;
+                        results |= RightsFlags.CanModifyObjects;
 
                     return results;
                 }
@@ -185,7 +185,7 @@ namespace libsecondlife
                 {
                     m_canSeeMeOnline = (value & RightsFlags.CanSeeOnline) != 0;
                     m_canSeeMeOnMap = (value & RightsFlags.CanSeeOnMap) != 0;
-                    m_canModifyMyObjects = (value & RightsFlags.CanModiyObjects) != 0;
+                    m_canModifyMyObjects = (value & RightsFlags.CanModifyObjects) != 0;
                 }
             }
 
@@ -202,7 +202,7 @@ namespace libsecondlife
                     if (m_canSeeThemOnMap)
                         results |= RightsFlags.CanSeeOnMap;
                     if (m_canModifyTheirObjects)
-                        results |= RightsFlags.CanModiyObjects;
+                        results |= RightsFlags.CanModifyObjects;
 
                     return results;
                 }
@@ -210,7 +210,7 @@ namespace libsecondlife
                 {
                     m_canSeeThemOnline = (value & RightsFlags.CanSeeOnline) != 0;
                     m_canSeeThemOnMap = (value & RightsFlags.CanSeeOnMap) != 0;
-                    m_canModifyTheirObjects = (value & RightsFlags.CanModiyObjects) != 0;
+                    m_canModifyTheirObjects = (value & RightsFlags.CanModifyObjects) != 0;
                 }
             }
 
