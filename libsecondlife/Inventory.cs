@@ -44,7 +44,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="oldObject">The state of the InventoryObject before the update occured.</param>
         /// <param name="newObject">The state of the InventoryObject after the update occured.</param>
-        public delegate void InventoryObjectUpdated(InventoryObject oldObject, InventoryObject newObject);
+        public delegate void InventoryObjectUpdated(InventoryBase oldObject, InventoryBase newObject);
 
         /// <summary>
         /// Called when an InventoryObject's state is changed.
@@ -56,7 +56,7 @@ namespace libsecondlife
         /// Delegate to use for the OnInventoryObjectRemoved event.
         /// </summary>
         /// <param name="obj">The InventoryObject that was removed.</param>
-        public delegate void InventoryObjectRemoved(InventoryObject obj);
+        public delegate void InventoryObjectRemoved(InventoryBase obj);
 
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="uuid">The UUID of the InventoryObject to get or set, ignored if set to non-null value.</param>
         /// <returns>The InventoryObject corresponding to <code>uuid</code>.</returns>
-        public InventoryObject this[LLUUID uuid]
+        public InventoryBase this[LLUUID uuid]
         {
             get
             {
@@ -123,7 +123,7 @@ namespace libsecondlife
         }
 
 
-        public List<InventoryObject> GetContents(InventoryFolder folder)
+        public List<InventoryBase> GetContents(InventoryFolder folder)
         {
             return GetContents(folder.UUID);
         }
@@ -134,14 +134,14 @@ namespace libsecondlife
         /// <param name="folder">A folder's UUID.</param>
         /// <returns>The contents of the folder corresponding to <code>folder</code>.</returns>
         /// <exception cref="InventoryException">When <code>folder</code> does not exist in the inventory.</exception>
-        public List<InventoryObject> GetContents(LLUUID folder)
+        public List<InventoryBase> GetContents(LLUUID folder)
         {
             InventoryNode folderNode;
             if (!Items.TryGetValue(folder, out folderNode))
                 throw new InventoryException("Unknown folder: " + folder);
             lock (folderNode.Nodes.SyncRoot)
             {
-                List<InventoryObject> contents = new List<InventoryObject>(folderNode.Nodes.Count);
+                List<InventoryBase> contents = new List<InventoryBase>(folderNode.Nodes.Count);
                 foreach (InventoryNode node in folderNode.Nodes.Values)
                 {
                     contents.Add(node.Data);
@@ -161,7 +161,7 @@ namespace libsecondlife
         /// You can not set the inventory root folder using this method.
         /// </summary>
         /// <param name="item">The InventoryObject to store.</param>
-        public void UpdateNodeFor(InventoryObject item)
+        public void UpdateNodeFor(InventoryBase item)
         {
             lock (Items)
             {
@@ -228,7 +228,7 @@ namespace libsecondlife
         /// Removes the InventoryObject and all related node data from Inventory.
         /// </summary>
         /// <param name="item">The InventoryObject to remove.</param>
-        public void RemoveNodeFor(InventoryObject item)
+        public void RemoveNodeFor(InventoryBase item)
         {
             lock (Items)
             {
@@ -263,18 +263,18 @@ namespace libsecondlife
             return Items.ContainsKey(uuid);
         }
 
-        public bool Contains(InventoryObject obj)
+        public bool Contains(InventoryBase obj)
         {
             return Contains(obj.UUID);
         }
 
         #region Event Firing
-        protected void FireOnInventoryObjectUpdated(InventoryObject oldObject, InventoryObject newObject)
+        protected void FireOnInventoryObjectUpdated(InventoryBase oldObject, InventoryBase newObject)
         {
             if (OnInventoryObjectUpdated != null)
                 OnInventoryObjectUpdated(oldObject, newObject);
         }
-        protected void FireOnInventoryObjectRemoved(InventoryObject obj)
+        protected void FireOnInventoryObjectRemoved(InventoryBase obj)
         {
             if (OnInventoryObjectRemoved != null)
                 OnInventoryObjectRemoved(obj);

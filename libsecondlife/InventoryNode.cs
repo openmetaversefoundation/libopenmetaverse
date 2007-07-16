@@ -6,12 +6,12 @@ namespace libsecondlife
 {
     public class InventoryNode
     {
-        private InventoryObject data;
+        private InventoryBase data;
         private InventoryNode parent;
         private InventoryNodeDictionary nodes;
 
         /// <summary></summary>
-        public InventoryObject Data
+        public InventoryBase Data
         {
             get { return data; }
             set { data = value; }
@@ -48,12 +48,12 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="data"></param>
-        public InventoryNode(InventoryObject data)
+        public InventoryNode(InventoryBase data)
         {
             this.data = data;
         }
 
-        public InventoryNode(InventoryObject data, InventoryNode parent)
+        public InventoryNode(InventoryBase data, InventoryNode parent)
         {
             this.data = data;
             this.parent = parent;

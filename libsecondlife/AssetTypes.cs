@@ -11,10 +11,7 @@ namespace libsecondlife
         public LLUUID AssetID
         {
             get { return _AssetID; }
-            internal set
-            {
-                _AssetID = value;
-            }
+            internal set { _AssetID = value; }
         }
 
         private bool _DecodeNeeded;
@@ -24,7 +21,6 @@ namespace libsecondlife
         /// </summary>
         public bool DecodeNeeded
         {
-            private set { _DecodeNeeded = value; }
             get { return _DecodeNeeded; }
         }
 
@@ -35,19 +31,18 @@ namespace libsecondlife
         /// </summary>
         public bool EncodeNeeded
         {
-            private set { _EncodeNeeded = value; }
             get { return _EncodeNeeded; }
         }
 
         public Asset() { }
 
-        public void SetEncodedData(byte[] assetData)
+        public virtual void SetEncodedData(byte[] assetData)
         {
             byte[] copy = new byte[assetData.Length];
             Buffer.BlockCopy(assetData, 0, copy, 0, assetData.Length);
             _AssetData = copy;
-            DecodeNeeded = true;
-            EncodeNeeded = false;
+            _DecodeNeeded = true;
+            _EncodeNeeded = false;
         }
 
         public void GetEncodedData(byte[] dest, int off)
@@ -74,7 +69,7 @@ namespace libsecondlife
         /// </summary>
         protected void InvalidateEncodedData()
         {
-            EncodeNeeded = true;
+            _EncodeNeeded = true;
         }
 
         /// <summary>
@@ -89,7 +84,7 @@ namespace libsecondlife
             if (EncodeNeeded)
             {
                 Encode(out _AssetData);
-                EncodeNeeded = false;
+                _EncodeNeeded = false;
             }
         }
 
@@ -107,7 +102,7 @@ namespace libsecondlife
             if (DecodeNeeded)
             {
                 Decode(_AssetData);
-                DecodeNeeded = false;
+                _DecodeNeeded = false;
             }
         }
 
@@ -153,7 +148,7 @@ namespace libsecondlife
         }
     }
 
-    public class AssetScript : Asset
+    public class AssetScriptText : Asset
     {
         private string _Source = null;
         public string Source
@@ -179,6 +174,52 @@ namespace libsecondlife
         protected override void Decode(byte[] assetData)
         {
             _Source = Helpers.FieldToUTF8String(assetData);
+        }
+    }
+
+    public class AssetScriptBinary : Asset
+    {
+        public AssetScriptBinary() { }
+
+        protected override void Encode(out byte[] newAssetData)
+        {
+            SecondLife.LogStatic("AssetScriptBinary.Encode() should never be called!", Helpers.LogLevel.Error);
+            newAssetData = new byte[0];
+        }
+        protected override void Decode(byte[] assetData) { }
+    }
+
+    public class AssetTexture : Asset
+    {
+        // TODO: Expand this later to take a byte[] of a non-JPEG2000 image as
+        // the unencoded source
+        public AssetTexture() { }
+
+        protected override void Encode(out byte[] newAssetData)
+        {
+            SecondLife.LogStatic("AssetTexture.Encode() should never be called!", Helpers.LogLevel.Error);
+            newAssetData = new byte[0];
+        }
+        protected override void Decode(byte[] assetData) { }
+    }
+
+    public class AssetObject : Asset
+    {
+        public AssetObject() { }
+
+        public override void SetEncodedData(byte[] assetData)
+        {
+            throw new InventoryException("There is no encoded data to set for object assets");
+        }
+
+        protected override void Encode(out byte[] newAssetData)
+        {
+            SecondLife.LogStatic("AssetObject.Encode() should never be called!", Helpers.LogLevel.Error);
+            newAssetData = new byte[0];
+        }
+        protected override void Decode(byte[] assetData)
+        {
+            SecondLife.LogStatic("AssetObject.Decode() should never be called!", Helpers.LogLevel.Error);
         }
     }
 }

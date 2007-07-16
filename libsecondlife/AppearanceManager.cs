@@ -688,6 +688,50 @@ namespace libsecondlife
         }
         */
 
+        public void Attach(InventoryItem item, ObjectManager.AttachmentPoint attachPoint)
+        {
+            Attach(item.UUID, item.OwnerID, item.Name, item.Description, item.Permissions, item.Flags, 
+                attachPoint);
+        }
+
+        public void Attach(LLUUID itemID, LLUUID ownerID, string name, string description,
+            Permissions perms, uint itemFlags, ObjectManager.AttachmentPoint attachPoint)
+        {
+            // TODO: At some point it might be beneficial to have AppearanceManager track what we
+            // are currently wearing for attachments to make enumeration and detachment easier
+
+            RezSingleAttachmentFromInvPacket attach = new RezSingleAttachmentFromInvPacket();
+
+            attach.AgentData.AgentID = Client.Network.AgentID;
+            attach.AgentData.SessionID = Client.Network.SessionID;
+
+            attach.ObjectData.AttachmentPt = (byte)attachPoint;
+            attach.ObjectData.Description = Helpers.StringToField(description);
+            attach.ObjectData.EveryoneMask = (uint)perms.EveryoneMask;
+            attach.ObjectData.GroupMask = (uint)perms.GroupMask;
+            attach.ObjectData.ItemFlags = itemFlags;
+            attach.ObjectData.ItemID = itemID;
+            attach.ObjectData.Name = Helpers.StringToField(name);
+            attach.ObjectData.NextOwnerMask = (uint)perms.NextOwnerMask;
+            attach.ObjectData.OwnerID = ownerID;
+
+            Client.Network.SendPacket(attach);
+        }
+
+        public void Detach(InventoryItem item)
+        {
+            Detach(item.UUID);
+        }
+
+        public void Detach(LLUUID itemID)
+        {
+            DetachAttachmentIntoInvPacket detach = new DetachAttachmentIntoInvPacket();
+            detach.ObjectData.AgentID = Client.Network.AgentID;
+            detach.ObjectData.ItemID = itemID;
+
+            Client.Network.SendPacket(detach);
+        }
+
         /// <summary>
         /// Build hashes out of the texture assetIDs for each baking layer to
         /// ask the simulator whether it has cached copies of each baked texture

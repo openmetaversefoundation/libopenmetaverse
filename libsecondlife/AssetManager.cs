@@ -639,32 +639,37 @@ namespace libsecondlife
                     }
                 }
             }
-            else
-            {
-                //Client.DebugLog("Received a TransferPacket for unknown transfer " +
-                //    asset.TransferData.TransferID.ToStringHyphenated());
-            }
         }
 
         private Asset CreateAsset(AssetDownload download)
         {
+            Asset asset;
+
             switch (download.AssetType)
             {
                 case AssetType.Notecard:
-                    AssetNotecard notecard = new AssetNotecard();
-                    notecard.AssetID = download.AssetID;
-                    notecard.SetEncodedData(download.AssetData);
-                    return notecard;
+                    asset = new AssetNotecard();
+                    break;
                 case AssetType.LSLText:
-                    AssetScript script = new AssetScript();
-                    script.AssetID = download.AssetID;
-                    script.SetEncodedData(download.AssetData);
-                    return script;
+                    asset = new AssetScriptText();
+                    break;
+                case AssetType.LSLBytecode:
+                    asset = new AssetScriptBinary();
+                    break;
+                case AssetType.Texture:
+                    asset = new AssetTexture();
+                    break;
+                case AssetType.Object:
+                    asset = new AssetObject();
+                    break;
                 default:
                     Client.Log("Unimplemented asset type: " + download.AssetType, Helpers.LogLevel.Error);
-                    break;
+                    return null;
             }
-            return null;
+
+            asset.AssetID = download.AssetID;
+            asset.SetEncodedData(download.AssetData);
+            return asset;
         }
 
         private void RequestXferHandler(Packet packet, Simulator simulator)

@@ -81,14 +81,14 @@ namespace libsecondlife
         SystemFoldersToTop = 4
     }
 
-    public abstract class InventoryObject
+    public abstract class InventoryBase
     {
         public readonly LLUUID UUID;
         public LLUUID ParentUUID;
         public string Name;
         public LLUUID OwnerID;
 
-        public InventoryObject(LLUUID itemID)
+        public InventoryBase(LLUUID itemID)
         {
             if (itemID == LLUUID.Zero)
                 throw new ArgumentException("Inventory item ID cannot be NULL_KEY (LLUUID.Zero)");
@@ -102,11 +102,11 @@ namespace libsecondlife
 
         public override bool Equals(object o)
         {
-            InventoryObject inv = o as InventoryObject;
+            InventoryBase inv = o as InventoryBase;
             return inv != null && Equals(inv);
         }
 
-        public virtual bool Equals(InventoryObject o)
+        public virtual bool Equals(InventoryBase o)
         {
             return o.UUID == UUID
                 && o.ParentUUID == ParentUUID
@@ -115,7 +115,7 @@ namespace libsecondlife
         }
     }
 
-    public class InventoryItem : InventoryObject
+    public class InventoryItem : InventoryBase
     {
         public LLUUID AssetUUID;
         public Permissions Permissions;
@@ -148,7 +148,7 @@ namespace libsecondlife
             return item != null && Equals(item);
         }
 
-        public override bool Equals(InventoryObject o)
+        public override bool Equals(InventoryBase o)
         {
             InventoryItem item = o as InventoryItem;
             return item != null && Equals(item);
@@ -156,7 +156,7 @@ namespace libsecondlife
 
         public bool Equals(InventoryItem o)
         {
-            return base.Equals(o as InventoryObject)
+            return base.Equals(o as InventoryBase)
                 && o.AssetType == AssetType
                 && o.AssetUUID == AssetUUID
                 && o.CreationDate == CreationDate
@@ -171,7 +171,7 @@ namespace libsecondlife
         }
     }
 
-    public class InventoryFolder : InventoryObject
+    public class InventoryFolder : InventoryBase
     {
         public AssetType PreferredType;
         public int Version;
@@ -191,7 +191,7 @@ namespace libsecondlife
             return folder != null && Equals(folder);
         }
 
-        public override bool Equals(InventoryObject o)
+        public override bool Equals(InventoryBase o)
         {
             InventoryFolder folder = o as InventoryFolder;
             return folder != null && Equals(folder);
@@ -199,7 +199,7 @@ namespace libsecondlife
 
         public bool Equals(InventoryFolder o)
         {
-            return base.Equals(o as InventoryObject)
+            return base.Equals(o as InventoryBase)
                 && o.DescendentCount == DescendentCount
                 && o.PreferredType == PreferredType
                 && o.Version == Version;
@@ -313,7 +313,7 @@ namespace libsecondlife
             return result;
         }
 
-        public List<InventoryObject> EndFindObjects(IAsyncResult result)
+        public List<InventoryBase> EndFindObjects(IAsyncResult result)
         {
             if (result is FindResult)
             {
@@ -340,8 +340,8 @@ namespace libsecondlife
                     return;
             }
             Interlocked.Decrement(ref find.FoldersWaiting);
-            List<InventoryObject> folderContents = Store.GetContents(updatedFolder);
-            foreach (InventoryObject obj in folderContents)
+            List<InventoryBase> folderContents = Store.GetContents(updatedFolder);
+            foreach (InventoryBase obj in folderContents)
             {
                 if (find.Regex.IsMatch(obj.Name))
                 {
@@ -378,13 +378,13 @@ namespace libsecondlife
         }
 
 
-        private List<InventoryObject> LocalFind(LLUUID baseFolder, Regex regexp, bool recurse, bool firstOnly)
+        private List<InventoryBase> LocalFind(LLUUID baseFolder, Regex regexp, bool recurse, bool firstOnly)
         {
-            List<InventoryObject> objects = new List<InventoryObject>();
+            List<InventoryBase> objects = new List<InventoryBase>();
             List<InventoryFolder> folders = new List<InventoryFolder>();
 
-            List<InventoryObject> contents = Store.GetContents(baseFolder);
-            foreach (InventoryObject inv in contents)
+            List<InventoryBase> contents = Store.GetContents(baseFolder);
+            foreach (InventoryBase inv in contents)
             {
                 if (regexp.IsMatch(inv.Name))
                 {
@@ -476,14 +476,14 @@ namespace libsecondlife
                 return;
             lock (satasfiedResults)
             {
-                List<InventoryObject> contents = Store.GetContents(uuid);
+                List<InventoryBase> contents = Store.GetContents(uuid);
                 foreach (DescendantsResult result in satasfiedResults)
                 {
                     if (result.Recurse)
                     {
                         bool done = true;
 
-                        foreach (InventoryObject obj in contents)
+                        foreach (InventoryBase obj in contents)
                         {
                             if (obj is InventoryFolder)
                             {
@@ -534,8 +534,8 @@ namespace libsecondlife
 
             // Loop through each top-level directory and check if PreferredType
             // matches the requested type
-            List<InventoryObject> contents = Store.GetContents(Store.RootFolder.UUID);
-            foreach (InventoryObject inv in contents)
+            List<InventoryBase> contents = Store.GetContents(Store.RootFolder.UUID);
+            foreach (InventoryBase inv in contents)
             {
                 if (inv is InventoryFolder)
                 {
@@ -610,8 +610,8 @@ namespace libsecondlife
             // Update our local copy:
             if (Store.Contains(folder))
             {
-                List<InventoryObject> contents = Store.GetContents(folder);
-                foreach (InventoryObject obj in contents) {
+                List<InventoryBase> contents = Store.GetContents(folder);
+                foreach (InventoryBase obj in contents) {
                     Store.RemoveNodeFor(obj);
                 }
             }
@@ -667,18 +667,18 @@ namespace libsecondlife
             Client.Network.SendPacket(fetch);
         }
 
-        public void Remove(InventoryObject obj)
+        public void Remove(InventoryBase obj)
         {
-            List<InventoryObject> temp = new List<InventoryObject>(1);
+            List<InventoryBase> temp = new List<InventoryBase>(1);
             temp.Add(obj);
             Remove(temp);
         }
 
-        public void Remove(List<InventoryObject> objects)
+        public void Remove(List<InventoryBase> objects)
         {
             List<LLUUID> items = new List<LLUUID>(objects.Count);
             List<LLUUID> folders = new List<LLUUID>(objects.Count);
-            foreach (InventoryObject obj in objects)
+            foreach (InventoryBase obj in objects)
             {
                 if (obj is InventoryFolder)
                 {
@@ -1083,7 +1083,7 @@ namespace libsecondlife
 
     class FindResult : IAsyncResult
     {
-        public List<InventoryObject> Result;
+        public List<InventoryBase> Result;
 
         public bool Recurse
         {
@@ -1114,7 +1114,7 @@ namespace libsecondlife
             this.callback = callback;
             this.recurse = recurse;
             this.regex = regex;
-            this.Result = new List<InventoryObject>();
+            this.Result = new List<InventoryBase>();
         }
 
         #region IAsyncResult Members
