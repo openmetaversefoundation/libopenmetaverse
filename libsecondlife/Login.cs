@@ -525,6 +525,7 @@ namespace libsecondlife
                     {
                         reader.ReadStartElement("member");
                         name = reader.ReadElementString("name");
+			Console.WriteLine("DEBUG: Got member named "+name);
 
                         switch (name)
                         {
@@ -948,6 +949,7 @@ namespace libsecondlife
                                 reader.ReadStartElement("array");
                                 reader.ReadStartElement("data");
                                 reader.ReadStartElement("value");
+				reader.MoveToContent();
 				    bool isEmpty = reader.IsEmptyElement;
                                 reader.ReadStartElement("struct");
 
@@ -984,10 +986,12 @@ namespace libsecondlife
 				  }  
                             case "next_options":
                                 // FIXME: Parse the next_options and only use those for the next_url
+				reader.MoveToContent();
                                 reader.Skip();
                                 break;
                             case "next_duration":
                                 // FIXME: Use this value as the timeout for the next request
+				reader.MoveToContent();
                                 reader.Skip();
                                 break;
                             case "next_url":
@@ -998,12 +1002,18 @@ namespace libsecondlife
                                 break;
                             case "initial-outfit":
                                 // FIXME:
+				reader.MoveToContent();
                                 reader.Skip();
                                 break;
                             default:
                                 Client.Log("Unhandled element in login reply (" + name + ")", Helpers.LogLevel.Error);
+				reader.MoveToContent();
                                 reader.Skip();
                                 break;
+                        }
+                        
+			if(reader.IsStartElement()) {
+                            Client.Log("Unexpected start element: " + reader.LocalName + ", expected </member>", Helpers.LogLevel.Error);
                         }
 
                         reader.ReadEndElement();
