@@ -67,7 +67,7 @@ namespace libsecondlife
         /// <param name="regionY"></param>
         /// <param name="reason"></param>
         /// <param name="message"></param>
-        public delegate void LoginReplyCallback(bool loginSuccess, bool redirect, IPAddress simIP, int simPort, 
+        public delegate void LoginReplyCallback(bool loginSuccess, bool redirect, IPAddress simIP, int simPort,
             uint regionX, uint regionY, string reason, string message);
         /// <summary>
         /// 
@@ -653,13 +653,14 @@ namespace libsecondlife
                                 reader.ReadEndElement();
                                 break;
                             case "inventory-lib-owner":
-				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
-				    reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("data");
-				    if(!isEmpty) {
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("data");
+                                    if (!isEmpty)
+                                    {
                                         reader.ReadStartElement("value");
                                         reader.ReadStartElement("struct");
 
@@ -670,32 +671,33 @@ namespace libsecondlife
                                         reader.ReadEndElement();
                                         reader.ReadEndElement();
                                         reader.ReadEndElement();
-				    }
-                                reader.ReadEndElement();
-                                    reader.ReadEndElement(); 
-                                break;
-				  }  
+                                    }
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "inventory-skeleton":
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
-				        reader.MoveToContent();
-					bool isEmpty = reader.IsEmptyElement;
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int typeDefault, version;
                                     string invName;
                                     LLUUID folderID, parentID;
 
-					if(!isEmpty) {
-					    while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                            	  out folderID, out parentID))
-                                            {
-						// FIXME:
-                                            }
+                                    if (!isEmpty)
+                                    {
+                                        while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
+                                                                  out folderID, out parentID))
+                                        {
+                                            // FIXME:
+                                        }
 
-					    reader.ReadEndElement();
-					}
+                                        reader.ReadEndElement();
+                                    }
 
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
@@ -705,97 +707,101 @@ namespace libsecondlife
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
- 				        reader.MoveToContent();
-					bool isEmpty = reader.IsEmptyElement;
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int typeDefault, version;
                                     string invName;
                                     LLUUID folderID, parentID;
 
-					if(!isEmpty) {
-                                            while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                                out folderID, out parentID))
-                                            {
-                                                // FIXME:
-                                            }
-					    reader.ReadEndElement();
-					}
+                                    if (!isEmpty)
+                                    {
+                                        while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
+                                            out folderID, out parentID))
+                                        {
+                                            // FIXME:
+                                        }
+                                        reader.ReadEndElement();
+                                    }
 
-                                        
+
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
                                 }
                             case "gestures":
-				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
-				    reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("data");
-
-				    if(!isEmpty) {
-                                      while (reader.IsStartElement("value"))
-                                      {
+                                {
                                     reader.ReadStartElement("value");
-  				        reader.MoveToContent();
-					isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("struct");
+                                    reader.ReadStartElement("array");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("data");
 
-					if(!isEmpty) { 
-                                          while (ReadStringMember(reader, out name, out value))
-                                          {
-                                        switch (name)
+                                    if (!isEmpty)
+                                    {
+                                        while (reader.IsStartElement("value"))
                                         {
-                                            case "asset_id":
-                                                // FIXME:
-                                                break;
-                                            case "item_id":
-                                                // FIXME:
-                                                break;
-                                            default:
-                                                Client.Log("Unhandled element in login reply (gestures)",
-                                                    Helpers.LogLevel.Error);
-                                                reader.Skip();
-                                                break;
-                                        }
+                                            reader.ReadStartElement("value");
+                                            reader.MoveToContent();
+                                            isEmpty = reader.IsEmptyElement;
+                                            reader.ReadStartElement("struct");
 
-                                        // FIXME:
-					  }
-					  reader.ReadEndElement();
+                                            if (!isEmpty)
+                                            {
+                                                while (ReadStringMember(reader, out name, out value))
+                                                {
+                                                    switch (name)
+                                                    {
+                                                        case "asset_id":
+                                                            // FIXME:
+                                                            break;
+                                                        case "item_id":
+                                                            // FIXME:
+                                                            break;
+                                                        default:
+                                                            Client.Log("Unhandled element in login reply (gestures)",
+                                                                Helpers.LogLevel.Error);
+                                                            reader.Skip();
+                                                            break;
+                                                    }
+
+                                                    // FIXME:
+                                                }
+                                                reader.ReadEndElement();
+                                            }
+
+
+                                            reader.ReadEndElement();
+                                        }
+                                        reader.ReadEndElement();
                                     }
 
-                                        
                                     reader.ReadEndElement();
-                                      }
-				      reader.ReadEndElement();
-				    }  
-
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-				  }  
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "event_categories":
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
- 				        reader.MoveToContent();
-					bool isEmpty = reader.IsEmptyElement;
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int categoryID;
                                     string categoryName;
 
-					if(!isEmpty) {
-                                            while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                            {
-                                                // FIXME:
-                                            }
-					    reader.ReadEndElement();
-					}
+                                    if (!isEmpty)
+                                    {
+                                        while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
+                                        {
+                                            // FIXME:
+                                        }
+                                        reader.ReadEndElement();
+                                    }
 
-                                        
+
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
@@ -804,193 +810,198 @@ namespace libsecondlife
                                 {
                                     reader.ReadStartElement("value");
                                     reader.ReadStartElement("array");
- 				        reader.MoveToContent();
-					bool isEmpty = reader.IsEmptyElement;
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
                                     reader.ReadStartElement("data");
 
                                     int categoryID;
                                     string categoryName;
 
-					if(!isEmpty) {
-					    while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                            {
-						// FIXME:
-                                            }
-					    reader.ReadEndElement();
-					}
+                                    if (!isEmpty)
+                                    {
+                                        while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
+                                        {
+                                            // FIXME:
+                                        }
+                                        reader.ReadEndElement();
+                                    }
 
-                                        
+
                                     reader.ReadEndElement();
                                     reader.ReadEndElement();
                                     break;
                                 }
                             case "event_notifications":
-				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
- 				    reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("data");
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("data");
 
-                                // FIXME:
+                                    // FIXME:
 
-                                    if(!isEmpty) reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-				  }
+                                    if (!isEmpty) reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "buddy-list":
- 				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
- 				    reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("data");
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("data");
 
-                                int buddyRightsGiven, buddyRightsHas;
-                                LLUUID buddyID;
+                                    int buddyRightsGiven, buddyRightsHas;
+                                    LLUUID buddyID;
 
-				    if(!isEmpty) {
-                                        while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas,
-                                    out buddyID))
+                                    if (!isEmpty)
+                                    {
+                                        while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas, out buddyID))
                                         {
-                                            // FIXME:
+                                            Client.Friends.AddFriend(buddyID, (FriendsManager.RightsFlags)buddyRightsGiven,
+                                                (FriendsManager.RightsFlags)buddyRightsHas);
                                         }
-					reader.ReadEndElement();
-				    }
+                                        reader.ReadEndElement();
+                                    }
 
-                                    
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-				  }  
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "ui-config":
-				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
-                                reader.ReadStartElement("data");
-                                reader.ReadStartElement("value");
- 				    reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("struct");
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.ReadStartElement("data");
+                                    reader.ReadStartElement("value");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("struct");
 
-				    if(!isEmpty) {
-				      while (ReadStringMember(reader, out name, out value))
-                                      {
-                                    switch (name)
+                                    if (!isEmpty)
                                     {
-                                        case "allow_first_life":
-                                            // FIXME:
-                                            break;
-                                        default:
-                                            Client.Log("Unhandled element in login reply (ui-config)",
-                                                Helpers.LogLevel.Error);
-                                            reader.Skip();
-                                            break;
+                                        while (ReadStringMember(reader, out name, out value))
+                                        {
+                                            switch (name)
+                                            {
+                                                case "allow_first_life":
+                                                    // FIXME:
+                                                    break;
+                                                default:
+                                                    Client.Log("Unhandled element in login reply (ui-config)",
+                                                        Helpers.LogLevel.Error);
+                                                    reader.Skip();
+                                                    break;
+                                            }
+                                        }
+                                        reader.ReadEndElement();
                                     }
-                                      }
-				      reader.ReadEndElement();
-				    }  
 
-                                    
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-				  }  
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "login-flags":
-				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
-                                reader.ReadStartElement("data");
-                                reader.ReadStartElement("value");
- 				    reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("struct");
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.ReadStartElement("data");
+                                    reader.ReadStartElement("value");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("struct");
 
-				    if(!isEmpty) {
-                                      while (ReadStringMember(reader, out name, out value))
-                                      {
-                                    switch (name)
+                                    if (!isEmpty)
                                     {
-                                        case "ever_logged_in":
-                                            // FIXME:
-                                            break;
-                                        case "daylight_savings":
-                                            // FIXME:
-                                            break;
-                                        case "stipend_since_login":
-                                            // FIXME:
-                                            break;
-                                        case "gendered":
-                                            // FIXME:
-                                            break;
-                                        default:
-                                            Client.Log("Unhandled element in login reply (login-flags)",
-                                                Helpers.LogLevel.Error);
-                                            reader.Skip();
-                                            break;
+                                        while (ReadStringMember(reader, out name, out value))
+                                        {
+                                            switch (name)
+                                            {
+                                                case "ever_logged_in":
+                                                    // FIXME:
+                                                    break;
+                                                case "daylight_savings":
+                                                    // FIXME:
+                                                    break;
+                                                case "stipend_since_login":
+                                                    // FIXME:
+                                                    break;
+                                                case "gendered":
+                                                    // FIXME:
+                                                    break;
+                                                default:
+                                                    Client.Log("Unhandled element in login reply (login-flags)",
+                                                        Helpers.LogLevel.Error);
+                                                    reader.Skip();
+                                                    break;
+                                            }
+                                        }
+                                        reader.ReadEndElement();
                                     }
-				      }
-				      reader.ReadEndElement();
-                                }
 
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-				  }  
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "global-textures":
-				  {
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
-                                reader.ReadStartElement("data");
-                                reader.ReadStartElement("value");
-				reader.MoveToContent();
-				    bool isEmpty = reader.IsEmptyElement;
-                                reader.ReadStartElement("struct");
+                                {
+                                    reader.ReadStartElement("value");
+                                    reader.ReadStartElement("array");
+                                    reader.ReadStartElement("data");
+                                    reader.ReadStartElement("value");
+                                    reader.MoveToContent();
+                                    bool isEmpty = reader.IsEmptyElement;
+                                    reader.ReadStartElement("struct");
 
-				    if(!isEmpty) {
-                                      while (ReadStringMember(reader, out name, out value))
-                                      {
-                                    switch (name)
+                                    if (!isEmpty)
                                     {
-                                        case "cloud_texture_id":
-                                            // FIXME:
-                                            break;
-                                        case "sun_texture_id":
-                                            // FIXME:
-                                            break;
-                                        case "moon_texture_id":
-                                            // FIXME:
-                                            break;
-                                        default:
-                                            Client.Log("Unhandled element in login reply (global-textures)",
-                                                Helpers.LogLevel.Error);
-                                            reader.Skip();
-                                            break;
+                                        while (ReadStringMember(reader, out name, out value))
+                                        {
+                                            switch (name)
+                                            {
+                                                case "cloud_texture_id":
+                                                    // FIXME:
+                                                    break;
+                                                case "sun_texture_id":
+                                                    // FIXME:
+                                                    break;
+                                                case "moon_texture_id":
+                                                    // FIXME:
+                                                    break;
+                                                default:
+                                                    Client.Log("Unhandled element in login reply (global-textures)",
+                                                        Helpers.LogLevel.Error);
+                                                    reader.Skip();
+                                                    break;
+                                            }
+                                        }
+                                        reader.ReadEndElement();
                                     }
-				      }
-				      reader.ReadEndElement();
-                                }
 
-                                    
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-				  }  
+
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    reader.ReadEndElement();
+                                    break;
+                                }
                             case "next_options":
                                 // FIXME: Parse the next_options and only use those for the next_url
-				reader.MoveToContent();
+                                reader.MoveToContent();
                                 reader.Skip();
                                 break;
                             case "next_duration":
                                 // FIXME: Use this value as the timeout for the next request
-				reader.MoveToContent();
+                                reader.MoveToContent();
                                 reader.Skip();
                                 break;
                             case "next_url":
@@ -1001,17 +1012,18 @@ namespace libsecondlife
                                 break;
                             case "initial-outfit":
                                 // FIXME:
-				reader.MoveToContent();
+                                reader.MoveToContent();
                                 reader.Skip();
                                 break;
                             default:
                                 Client.Log("Unhandled element in login reply (" + name + ")", Helpers.LogLevel.Error);
-				reader.MoveToContent();
+                                reader.MoveToContent();
                                 reader.Skip();
                                 break;
                         }
-                        
-			if(reader.IsStartElement()) {
+
+                        if (reader.IsStartElement())
+                        {
                             Client.Log("Unexpected start element: " + reader.LocalName + ", expected </member>", Helpers.LogLevel.Error);
                         }
 
@@ -1217,7 +1229,7 @@ namespace libsecondlife
             return ret;
         }
 
-        private static bool ReadCategoryMember(SecondLife client, XmlReader reader, out int categoryID, 
+        private static bool ReadCategoryMember(SecondLife client, XmlReader reader, out int categoryID,
             out string categoryName)
         {
             categoryID = 0;
@@ -1230,38 +1242,39 @@ namespace libsecondlife
 
                 if (reader.IsStartElement("struct"))
                 {
- 		    reader.MoveToContent();
-		    bool isEmpty = reader.IsEmptyElement;
+                    reader.MoveToContent();
+                    bool isEmpty = reader.IsEmptyElement;
                     reader.ReadStartElement("struct");
 
                     string name;
 
-		    if(!isEmpty) {
-                      while (reader.IsStartElement("member"))
-                      {
-                        reader.ReadStartElement("member");
-                        name = reader.ReadElementString("name");
-
-                        switch (name)
+                    if (!isEmpty)
+                    {
+                        while (reader.IsStartElement("member"))
                         {
-                            case "category_id":
-                                categoryID = ReadIntegerValue(reader);
-                                break;
-                            case "category_name":
-                                categoryName = ReadStringValue(reader);
-                                break;
-                            default:
-                                client.Log("Unhandled element in login reply (CategoryMember)", 
-                                    Helpers.LogLevel.Error);
-                                reader.Skip();
-                                break;
+                            reader.ReadStartElement("member");
+                            name = reader.ReadElementString("name");
+
+                            switch (name)
+                            {
+                                case "category_id":
+                                    categoryID = ReadIntegerValue(reader);
+                                    break;
+                                case "category_name":
+                                    categoryName = ReadStringValue(reader);
+                                    break;
+                                default:
+                                    client.Log("Unhandled element in login reply (CategoryMember)",
+                                        Helpers.LogLevel.Error);
+                                    reader.Skip();
+                                    break;
+                            }
+
+                            reader.ReadEndElement();
                         }
 
                         reader.ReadEndElement();
-                      }
-
-		      reader.ReadEndElement();
-		    }
+                    }
                     ret = true;
                 }
 
@@ -1271,7 +1284,7 @@ namespace libsecondlife
             return ret;
         }
 
-        private static bool ReadBuddyMember(SecondLife client, XmlReader reader, out int buddyRightsGiven, 
+        private static bool ReadBuddyMember(SecondLife client, XmlReader reader, out int buddyRightsGiven,
             out int buddyRightsHas, out LLUUID buddyID)
         {
             buddyRightsGiven = 0;
@@ -1307,7 +1320,7 @@ namespace libsecondlife
                                 buddyRightsHas = ReadIntegerValue(reader);
                                 break;
                             default:
-                                client.Log("Unhandled element in login reply (BuddyMember)", 
+                                client.Log("Unhandled element in login reply (BuddyMember)",
                                     Helpers.LogLevel.Error);
                                 reader.Skip();
                                 break;

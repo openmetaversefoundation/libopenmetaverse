@@ -102,7 +102,7 @@
     <Compile Include="BlockingQueue.cs" />
     <Compile Include="Caps.cs" />
     <Compile Include="DirectoryManager.cs" />
-    <Compile Include="FriendManager.cs" />
+    <Compile Include="FriendsManager.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />

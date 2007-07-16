@@ -53,7 +53,7 @@ namespace libsecondlife
         /// <summary>Other Avatars Subsystem</summary>
         public AvatarManager Avatars;
         /// <summary>Friends List Subsystem</summary>
-        public FriendManager Friends;
+        public FriendsManager Friends;
         /// <summary>Grid (aka simulator group) Subsystem</summary>
         public GridManager Grid;
         /// <summary>Object Subsystem</summary>
@@ -94,7 +94,7 @@ namespace libsecondlife
             Parcels = new ParcelManager(this);
             Self = new MainAvatar(this);
             Avatars = new AvatarManager(this);
-            Friends = new FriendManager(this);
+            Friends = new FriendsManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
