@@ -289,6 +289,28 @@ namespace libsecondlife
 
 
         /// <summary>
+        /// Get a list of all the friends we are currently aware of
+        /// </summary>
+        /// <remarks>
+        /// This function performs a shallow copy from the internal dictionary
+        /// in FriendsManager. Avoid calling it multiple times when it is not 
+        /// necessary to as it can be expensive memory-wise
+        /// </remarks>
+        public List<FriendInfo> GetFriendsList()
+        {
+            List<FriendInfo> friends = new List<FriendInfo>();
+
+            lock (_Friends)
+            {
+                foreach (FriendInfo info in _Friends.Values)
+                    friends.Add(info);
+            }
+
+            return friends;
+        }
+
+
+        /// <summary>
         /// Offer friendship to an avatar.
         /// </summary>
         /// <param name="agentID">System ID of the avatar you are offering friendship to</param>
