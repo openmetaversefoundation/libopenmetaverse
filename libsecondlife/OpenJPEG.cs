@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace OpenJPEGNet
 {
+#if NO_UNSAFE
+#else
+
     public class OpenJPEG
     {
         // This structure is used to pass images back and forth for both encoding and decoding
@@ -369,4 +372,6 @@ namespace OpenJPEGNet
             return dest;
         }
     }
+
+#endif
 }

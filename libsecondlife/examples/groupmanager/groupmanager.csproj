@@ -88,10 +88,6 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
-    <ProjectReference Include="..\..\..\openjpegnet\openjpegnet.csproj">
-      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
-      <Name>openjpegnet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\libsecondlife.csproj">
       <Name>libsecondlife</Name>
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>

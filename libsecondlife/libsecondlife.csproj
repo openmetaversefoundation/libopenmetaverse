@@ -29,7 +29,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\bin\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
@@ -52,7 +52,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\bin\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
@@ -126,6 +126,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ObjectPoolBase.cs" />
+    <Compile Include="OpenJPEG.cs" />
     <Compile Include="ParcelManager.cs" />
     <Compile Include="ParticleSystem.cs">
       <SubType>Code</SubType>
@@ -150,6 +151,7 @@
     <Compile Include="Textures.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="TGALoader.cs" />
     <Compile Include="ThreadUtil.cs" />
     <Compile Include="InventoryNode.cs" />
     <Compile Include="InventoryNodeDictionary.cs" />
@@ -159,12 +161,6 @@
     <Compile Include="UDPBase.cs" />
     <Compile Include="_Packets_.cs" />
     <Compile Include="_VisualParam_.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\openjpegnet\openjpegnet.csproj">
-      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
-      <Name>openjpegnet</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\blush_alpha.tga" />

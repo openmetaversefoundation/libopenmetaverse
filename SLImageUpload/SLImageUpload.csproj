@@ -72,10 +72,6 @@
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Name>libsecondlife</Name>
     </ProjectReference>
-    <ProjectReference Include="..\openjpegnet\openjpegnet.csproj">
-      <Project>{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}</Project>
-      <Name>openjpegnet</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

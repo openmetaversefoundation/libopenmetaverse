@@ -22,8 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libsecondlife.Tests", "libs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisualParamGenerator", "VisualParamGenerator\VisualParamGenerator.csproj", "{D2A514C5-5590-4789-9032-6E5B4C297B80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openjpegnet", "..\openjpegnet\openjpegnet.csproj", "{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heightmap", "examples\Heightmap\Heightmap.csproj", "{D9669D08-AC81-4F45-AD23-82787C6EFBBA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "key2name", "examples\Key2Name\key2name.csproj", "{4FF68142-9C61-42D1-87DC-5D37CB671C29}"
@@ -93,10 +91,6 @@ Global
 		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2A514C5-5590-4789-9032-6E5B4C297B80}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0DCFDCB-71FA-4343-A8D1-24D4665A94A4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D9669D08-AC81-4F45-AD23-82787C6EFBBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9669D08-AC81-4F45-AD23-82787C6EFBBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9669D08-AC81-4F45-AD23-82787C6EFBBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
