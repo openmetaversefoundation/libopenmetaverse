@@ -95,7 +95,7 @@
 		<mkdir dir="${bin_dir}" failonerror="true"/>
 
 		<!-- Compile the library -->
-		<csc target="library" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
+		<csc target="library" unsafe="true" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
 			<sources>
 				<include name="*.cs" />
 				<include name="libsecondlife.Utilities/*.cs" />
