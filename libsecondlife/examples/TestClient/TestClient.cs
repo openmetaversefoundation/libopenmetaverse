@@ -212,9 +212,6 @@ namespace libsecondlife.TestClient
 
         private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
         {
-            regionX = (int)(regionHandle >> 32);
-            regionY = (int)(regionHandle & 0xFFFFFFFF);
-
             if (update.Avatar)
             {
                 lock (AvatarList)

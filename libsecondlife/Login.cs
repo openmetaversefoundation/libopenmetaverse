@@ -27,14 +27,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net;
-using System.Xml;
-using System.IO;
-using System.Text;
 using System.Threading;
+using System.IO;
+using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using libsecondlife.Packets;
+using CookComputing.XmlRpc;
 
 namespace libsecondlife
 {
@@ -164,13 +163,11 @@ namespace libsecondlife
 
         private class LoginContext
         {
-            public HttpWebRequest Request;
             public LoginParams Params;
-            public byte[] XMLRPC;
         }
 
         private LoginContext CurrentContext = null;
-        private ManualResetEvent LoginEvent = new ManualResetEvent(false);
+        private AutoResetEvent LoginEvent = new AutoResetEvent(false);
         private LoginStatus InternalStatusCode = LoginStatus.None;
         private string InternalErrorKey = String.Empty;
         private string InternalLoginMessage = String.Empty;
@@ -202,6 +199,7 @@ namespace libsecondlife
             options.Add("ui-config");
             options.Add("login-flags");
             options.Add("global-textures");
+            // initial-outfit?
 
             LoginParams loginParams = new LoginParams();
 
@@ -282,8 +280,6 @@ namespace libsecondlife
 
             if (CurrentContext != null)
             {
-                if (CurrentContext.Request != null)
-                    CurrentContext.Request.Abort();
                 CurrentContext = null; // Will force any pending callbacks to bail out early
                 InternalStatusCode = LoginStatus.Failed;
                 InternalLoginMessage = "Timed out";
@@ -295,6 +291,22 @@ namespace libsecondlife
 
         private void BeginLogin()
         {
+            // Sanity check some of the parameters
+            if (CurrentContext.Params.ViewerDigest == null)
+                CurrentContext.Params.ViewerDigest = String.Empty;
+            if (CurrentContext.Params.Version == null)
+                CurrentContext.Params.Version = String.Empty;
+            if (CurrentContext.Params.UserAgent == null)
+                CurrentContext.Params.UserAgent = String.Empty;
+            if (CurrentContext.Params.Platform == null)
+                CurrentContext.Params.Platform = String.Empty;
+            if (CurrentContext.Params.Options == null)
+                CurrentContext.Params.Options = new List<string>();
+            if (CurrentContext.Params.MAC == null)
+                CurrentContext.Params.MAC = String.Empty;
+            if (CurrentContext.Params.Channel == null)
+                CurrentContext.Params.Channel = String.Empty;
+
             // Convert the password to MD5 if it isn't already
             if (CurrentContext.Params.Password.Length != 35 && !CurrentContext.Params.Password.StartsWith("$1$"))
                 CurrentContext.Params.Password = Helpers.MD5(CurrentContext.Params.Password);
@@ -308,59 +320,34 @@ namespace libsecondlife
             //    object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors errors)
             //    { return true; // TODO: At some point, maybe we should check the cert? };
 
-            // Build the request data
-            StringBuilder output = new StringBuilder(2048);
+            LoginMethodParams loginParams = new LoginMethodParams();
+            loginParams.first = CurrentContext.Params.FirstName;
+            loginParams.last = CurrentContext.Params.LastName;
+            loginParams.passwd = CurrentContext.Params.Password;
+            loginParams.start = CurrentContext.Params.Start;
+            loginParams.channel = CurrentContext.Params.Channel;
+            loginParams.version = CurrentContext.Params.Version;
+            loginParams.platform = CurrentContext.Params.Platform;
+            loginParams.mac = CurrentContext.Params.MAC;
+            loginParams.user_agent = CurrentContext.Params.UserAgent;
+            loginParams.author = CurrentContext.Params.Author;
+            loginParams.agree_to_tos = "true";
+            loginParams.read_critical = "true";
+            loginParams.viewer_digest = CurrentContext.Params.ViewerDigest;
+            loginParams.options = CurrentContext.Params.Options.ToArray();
 
-            XmlWriter login = XmlWriter.Create(output);
-
-            login.WriteProcessingInstruction("xml", "version='1.0'");
-            login.WriteStartElement("methodCall");
-            login.WriteElementString("methodName", CurrentContext.Params.MethodName);
-            login.WriteStartElement("params");
-            login.WriteStartElement("param");
-            login.WriteStartElement("value");
-            login.WriteStartElement("struct");
-
-            WriteStringMember(login, "first", CurrentContext.Params.FirstName);
-            WriteStringMember(login, "last", CurrentContext.Params.LastName);
-            WriteStringMember(login, "passwd", CurrentContext.Params.Password);
-            WriteStringMember(login, "start", CurrentContext.Params.Start);
-            WriteStringMember(login, "channel", CurrentContext.Params.Channel);
-            WriteStringMember(login, "version", CurrentContext.Params.Version);
-            WriteStringMember(login, "platform", CurrentContext.Params.Platform);
-            WriteStringMember(login, "mac", CurrentContext.Params.MAC);
-            WriteStringMember(login, "user-agent", CurrentContext.Params.UserAgent);
-            WriteStringMember(login, "author", CurrentContext.Params.Author);
-            WriteStringMember(login, "agree_to_tos", "true");
-            WriteStringMember(login, "read_critical", "true");
-            WriteStringMember(login, "viewer_digest", CurrentContext.Params.ViewerDigest);
-
-            WriteOptionsMember(login, CurrentContext.Params.Options);
-
-            login.WriteEndElement();
-            login.WriteEndElement();
-            login.WriteEndElement();
-            login.WriteEndElement();
-            login.WriteEndElement();
-
-            login.Close();
-
-            CurrentContext.XMLRPC = Encoding.UTF8.GetBytes(output.ToString());
-            CurrentContext.Request = (HttpWebRequest)HttpWebRequest.Create(CurrentContext.Params.URI);
-            CurrentContext.Request.KeepAlive = false;
-            CurrentContext.Request.Method = "POST";
-            CurrentContext.Request.ContentType = "text/xml";
-            CurrentContext.Request.ContentLength = CurrentContext.XMLRPC.Length;
-
-            UpdateLoginStatus(LoginStatus.ConnectingToLogin, "Connecting...");
             try
             {
+                ILoginProxy proxy = XmlRpcProxyGen.Create<ILoginProxy>();
+                proxy.ResponseEvent += new XmlRpcResponseEventHandler(proxy_ResponseEvent);
+                proxy.Url = CurrentContext.Params.URI;
+                proxy.XmlRpcMethod = CurrentContext.Params.MethodName; // make sure this isnt evil.
                 // Start the request
-                CurrentContext.Request.BeginGetRequestStream(new AsyncCallback(LoginRequestCallback), CurrentContext);
+                proxy.BeginLoginToSimulator(loginParams, new AsyncCallback(LoginMethodCallback), new object[] { proxy, CurrentContext });
             }
-            catch (WebException e)
+            catch (Exception e)
             {
-                UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e.Message);
+                UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e);
             }
         }
 
@@ -404,973 +391,420 @@ namespace libsecondlife
 
             if (status == LoginStatus.Success || status == LoginStatus.Failed)
             {
-                if (status == LoginStatus.Failed)
-                    CurrentContext.Request.Abort();
                 CurrentContext = null;
                 LoginEvent.Set();
             }
         }
 
-        private void LoginRequestCallback(IAsyncResult result)
+        private void proxy_ResponseEvent(object sender, XmlRpcResponseEventArgs args)
         {
-            LoginContext myContext = result.AsyncState as LoginContext;
-            if (myContext == null) return;
+            TextReader reader = new StreamReader(args.ResponseStream);
+            InternalRawLoginReply = reader.ReadToEnd();
+        }
 
-            if (myContext != CurrentContext)
+        private void LoginMethodCallback(IAsyncResult result)
+        {
+            object[] asyncState = result.AsyncState as object[];
+            ILoginProxy proxy = asyncState[0] as ILoginProxy;
+            LoginContext context = asyncState[1] as LoginContext;
+            XmlRpcAsyncResult clientResult = result as XmlRpcAsyncResult;
+            LoginMethodResponse reply;
+            IPAddress simIP = IPAddress.Any; // Temporary
+            ushort simPort = 0;
+            uint regionX = 0;
+            uint regionY = 0;
+            bool loginSuccess = false;
+
+            // Fetch the login response
+            try
             {
-                if (myContext.Request != null)
-                {
-                    myContext.Request.Abort();
-                    myContext.Request = null;
-                }
+                reply = proxy.EndLoginToSimulator(clientResult);
+                if (context != CurrentContext)
+                    return;
+            }
+            catch (Exception)
+            {
+                UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server");
                 return;
             }
 
-            try
+            string reason = reply.reason;
+            string message = reply.message;
+
+            if (reply.login == "true")
             {
-                byte[] bytes = myContext.XMLRPC;
-                Stream output = myContext.Request.EndGetRequestStream(result);
+                loginSuccess = true;
 
-                // Build the request
-                output.Write(bytes, 0, bytes.Length);
-                output.Close();
+                #region Critical Information
 
-                UpdateLoginStatus(LoginStatus.ReadingResponse, "Reading XMLRPC response...");
-                myContext.Request.BeginGetResponse(new AsyncCallback(LoginResponseCallback), myContext);
-            }
-            catch (WebException e)
-            {
-                UpdateLoginStatus(LoginStatus.Failed, "Error connecting to the login server: " + e.Message);
-            }
-        }
-
-        private void LoginResponseCallback(IAsyncResult result)
-        {
-            LoginContext myContext = result.AsyncState as LoginContext;
-            if (myContext == null) return;
-
-            HttpWebResponse response = null;
-            Stream xmlStream = null;
-            XmlReader reader = null;
-
-            try
-            {
-                if (myContext != CurrentContext)
+                try
                 {
-                    if (myContext.Request != null)
-                    {
-                        myContext.Request.Abort();
-                        myContext.Request = null;
-                    }
+                    // Self
+                    Client.Self.ID = reply.agent_id;
+                    Client.Self.FirstName = reply.first_name;
+                    Client.Self.LastName = reply.last_name;
+                    Client.Self.StartLocation = reply.start_location;
+                    Client.Self.AgentAccess = reply.agent_access;
+                    ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);
+                    Client.Self.LookAt = new LLVector3(
+                        (float)(double)look_at[0],
+                        (float)(double)look_at[1],
+                        (float)(double)look_at[2]);
+
+                    // Home
+                    Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
+                    ArrayList array = (ArrayList)home["position"];
+                    Client.Self.HomePosition = new LLVector3(
+                        (float)(double)array[0],
+                        (float)(double)array[1],
+                        (float)(double)array[2]);
+
+                    array = (ArrayList)home["look_at"];
+                    Client.Self.HomeLookAt = new LLVector3(
+                        (float)(double)array[0],
+                        (float)(double)array[1],
+                        (float)(double)array[2]);
+
+                    // Networking
+                    Client.Network.AgentID = reply.agent_id;
+                    Client.Network.SessionID = reply.session_id;
+                    Client.Network.SecureSessionID = reply.secure_session_id;
+                    Client.Network.CircuitCode = (uint)reply.circuit_code;
+                    regionX = (uint)reply.region_x;
+                    regionY = (uint)reply.region_y;
+                    simPort = (ushort)reply.sim_port;
+                    IPAddress.TryParse(reply.sim_ip, out simIP);
+                    LoginSeedCapability = reply.seed_capability;
+                }
+                catch (Exception)
+                {
+                    UpdateLoginStatus(LoginStatus.Failed, "Login server failed to return critical information");
                     return;
                 }
 
-                response = (HttpWebResponse)myContext.Request.EndGetResponse(result);
+                #endregion Critical Information
 
-                xmlStream = response.GetResponseStream();
+                // Inventory:
+                if (reply.inventory_root != null && reply.inventory_root.Length > 0 && reply.inventory_root[0].folder_id != null)
+                    Client.Inventory.InitializeRootNode(reply.inventory_root[0].folder_id);
 
-                MemoryStream memStream = new MemoryStream();
-                BinaryReader streamReader = new BinaryReader(xmlStream);
-                BinaryWriter streamWriter = new BinaryWriter(memStream);
-
-                // Put the entire response in to a byte array
-                byte[] buffer;
-                while ((buffer = streamReader.ReadBytes(1024)) != null)
+                // Buddies:
+                if (reply.buddy_list != null)
                 {
-                    if (buffer.Length == 0)
-                        break;
-                    streamWriter.Write(buffer);
+                    foreach (BuddyListEntry buddy in reply.buddy_list)
+                    {
+                        Client.Friends.AddFriend(buddy.buddy_id, (FriendsManager.RightsFlags)buddy.buddy_rights_given,
+                            (FriendsManager.RightsFlags)buddy.buddy_rights_has);
+                    }
                 }
-                streamWriter.Flush();
-                xmlStream.Close();
 
-                // Write the entire memory stream out to a byte array
-                buffer = memStream.ToArray();
+                // Misc:
+                uint timestamp = (uint)reply.seconds_since_epoch;
+                DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
 
-                // Reset the position in the stream to the beginning
-                memStream.Seek(0, SeekOrigin.Begin);
+                // Unhandled:
+                // reply.gestures
+                // reply.event_categories
+                // reply.classified_categories
+                // reply.event_notifications
+                // reply.ui_config
+                // reply.login_flags
+                // reply.global_textures
+                // reply.inventory_lib_root
+                // reply.inventory_lib_owner
+                // reply.inventory_skeleton
+                // reply.inventory_skel_lib
+                // reply.initial_outfit
+            }
 
-                // The memory stream will become an XML stream shortly
-                xmlStream = memStream;
+            bool redirect = (reply.login == "indeterminate");
 
-                InternalRawLoginReply = Encoding.UTF8.GetString(buffer);
+            // Fire the client handler
+            if (OnLoginReply != null)
+            {
+                try { OnLoginReply(loginSuccess, redirect, simIP, simPort, regionX, regionY, reason, message); }
+                catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
+            }
 
-                reader = XmlReader.Create(xmlStream);
+            // Make the next network jump, if needed
+            if (redirect)
+            {
+                UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
 
-                // Parse the incoming xml
-                bool redirect = false;
-                string nextURL = String.Empty;
-                string nextMethod = String.Empty;
-                string name, value;
-                IPAddress simIP = IPAddress.Loopback;
-                ushort simPort = 0;
-                uint regionX = 0;
-                uint regionY = 0;
-                bool loginSuccess = false;
-                string reason = String.Empty;
-                string message = String.Empty;
+                // Handle indeterminate logins
+                CurrentContext = new LoginContext();
+                CurrentContext.Params = context.Params;
+                CurrentContext.Params.Options = new List<string>(reply.next_options.Length);
+                CurrentContext.Params.Options.AddRange(reply.next_options);
+                CurrentContext.Params.URI = reply.next_url;
+                CurrentContext.Params.MethodName = reply.next_method; // FIXME: XMLRPC runtime method invoking?
+                BeginLogin();
+            }
+            else if (loginSuccess)
+            {
+                UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
 
-                reader.ReadStartElement("methodResponse");
+                ulong handle = Helpers.UIntsToLong(regionX, regionY);
 
-                if (!reader.IsStartElement("fault"))
+                // Connect to the sim given in the login reply
+                if (Connect(simIP, simPort, handle, true, LoginSeedCapability) != null)
                 {
-                    #region XML Parsing
+                    // Request the economy data right after login
+                    SendPacket(new EconomyDataRequestPacket());
 
-                    reader.ReadStartElement("params");
-                    reader.ReadStartElement("param");
-                    reader.ReadStartElement("value");
-                    reader.ReadStartElement("struct");
+                    // Update the login message with the MOTD returned from the server
+                    UpdateLoginStatus(LoginStatus.Success, message);
 
-                    while (reader.IsStartElement("member"))
+                    // Fire an event for connecting to the grid
+                    if (OnConnected != null)
                     {
-                        reader.ReadStartElement("member");
-                        name = reader.ReadElementString("name");
-
-                        switch (name)
-                        {
-                            case "login":
-                                value = ReadStringValue(reader);
-
-                                if (value == "indeterminate")
-                                    redirect = true;
-                                else if (value == "true")
-                                    loginSuccess = true;
-
-                                break;
-                            case "reason":
-                                reason = ReadStringValue(reader);
-                                InternalErrorKey = reason;
-                                break;
-                            case "agent_id":
-                                LLUUID.TryParse(ReadStringValue(reader), out Client.Network.AgentID);
-                                Client.Self.ID = Client.Network.AgentID;
-                                break;
-                            case "session_id":
-                                LLUUID.TryParse(ReadStringValue(reader), out Client.Network.SessionID);
-                                break;
-                            case "secure_session_id":
-                                LLUUID.TryParse(ReadStringValue(reader), out Client.Network.SecureSessionID);
-                                break;
-                            case "circuit_code":
-                                Client.Network.CircuitCode = (uint)ReadIntegerValue(reader);
-                                break;
-                            case "first_name":
-                                Client.Self.FirstName = ReadStringValue(reader).Trim(new char[] { '"' });
-                                break;
-                            case "last_name":
-                                Client.Self.LastName = ReadStringValue(reader).Trim(new char[] { '"' });
-                                break;
-                            case "start_location":
-                                Client.Self.StartLocation = ReadStringValue(reader);
-                                break;
-                            case "look_at":
-                                ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(ReadStringValue(reader));
-                                Client.Self.LookAt = new LLVector3(
-                                    (float)(double)look_at[0],
-                                    (float)(double)look_at[1],
-                                    (float)(double)look_at[2]);
-                                break;
-                            case "home":
-                                Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(ReadStringValue(reader));
-
-                                ArrayList array = (ArrayList)home["position"];
-                                Client.Self.HomePosition = new LLVector3(
-                                    (float)(double)array[0],
-                                    (float)(double)array[1],
-                                    (float)(double)array[2]);
-
-                                array = (ArrayList)home["look_at"];
-                                Client.Self.HomeLookAt = new LLVector3(
-                                    (float)(double)array[0],
-                                    (float)(double)array[1],
-                                    (float)(double)array[2]);
-                                break;
-                            case "agent_access":
-                                Client.Self.AgentAccess = ReadStringValue(reader);
-                                break;
-                            case "message":
-                                message = ReadStringValue(reader);
-                                break;
-                            case "region_x":
-                                regionX = (uint)ReadIntegerValue(reader);
-                                break;
-                            case "region_y":
-                                regionY = (uint)ReadIntegerValue(reader);
-                                break;
-                            case "sim_port":
-                                simPort = (ushort)ReadIntegerValue(reader);
-                                break;
-                            case "sim_ip":
-                                IPAddress.TryParse(ReadStringValue(reader), out simIP);
-                                break;
-                            case "seconds_since_epoch":
-                                uint timestamp = (uint)ReadIntegerValue(reader);
-                                DateTime time = Helpers.UnixTimeToDateTime(timestamp);
-                                // FIXME: ???
-                                break;
-                            case "seed_capability":
-                                LoginSeedCapability = ReadStringValue(reader);
-                                break;
-                            case "inventory-root":
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("array");
-                                reader.ReadStartElement("data");
-                                reader.ReadStartElement("value");
-                                reader.ReadStartElement("struct");
-
-                                ReadStringMember(reader, out name, out value);
-                                if (LLUUID.TryParse(value, out Client.Self.InventoryRootFolderUUID))
-                                    Client.Inventory.InitializeRootNode(Client.Self.InventoryRootFolderUUID);
-                                else
-                                    Client.Log("Failed to parse the inventory-root UUID, inventory system will not " +
-                                        "be properly initialized", Helpers.LogLevel.Error);
-
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-                            case "inventory-lib-root":
-                                reader.ReadStartElement("value");
-
-                                // Fix this later
-                                reader.Skip();
-
-                                //reader.ReadStartElement("array");
-                                //reader.ReadStartElement("data");
-                                //reader.ReadStartElement("value");
-                                //reader.ReadStartElement("struct");
-
-                                //ReadStringMember(reader, out name, out value);
-                                // FIXME:
-                                //LLUUID.TryParse(value, out Client.Self.InventoryLibRootFolderUUID);
-
-                                //reader.ReadEndElement();
-                                //reader.ReadEndElement();
-                                //reader.ReadEndElement();
-                                //reader.ReadEndElement();
-                                reader.ReadEndElement();
-                                break;
-                            case "inventory-lib-owner":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-                                    if (!isEmpty)
-                                    {
-                                        reader.ReadStartElement("value");
-                                        reader.ReadStartElement("struct");
-
-                                        ReadStringMember(reader, out name, out value);
-                                        // FIXME:
-                                        //LLUUID.TryParse(value, out Client.Self.InventoryLibOwnerUUID);
-
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                        reader.ReadEndElement();
-                                    }
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "inventory-skeleton":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    int typeDefault, version;
-                                    string invName;
-                                    LLUUID folderID, parentID;
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                                                  out folderID, out parentID))
-                                        {
-                                            // FIXME:
-                                        }
-
-                                        reader.ReadEndElement();
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "inventory-skel-lib":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    int typeDefault, version;
-                                    string invName;
-                                    LLUUID folderID, parentID;
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadInventoryMember(reader, out typeDefault, out version, out invName,
-                                            out folderID, out parentID))
-                                        {
-                                            // FIXME:
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "gestures":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    if (!isEmpty)
-                                    {
-                                        while (reader.IsStartElement("value"))
-                                        {
-                                            reader.ReadStartElement("value");
-                                            reader.MoveToContent();
-                                            isEmpty = reader.IsEmptyElement;
-                                            reader.ReadStartElement("struct");
-
-                                            if (!isEmpty)
-                                            {
-                                                while (ReadStringMember(reader, out name, out value))
-                                                {
-                                                    switch (name)
-                                                    {
-                                                        case "asset_id":
-                                                            // FIXME:
-                                                            break;
-                                                        case "item_id":
-                                                            // FIXME:
-                                                            break;
-                                                        default:
-                                                            Client.Log("Unhandled element in login reply (gestures)",
-                                                                Helpers.LogLevel.Error);
-                                                            reader.Skip();
-                                                            break;
-                                                    }
-
-                                                    // FIXME:
-                                                }
-                                                reader.ReadEndElement();
-                                            }
-
-
-                                            reader.ReadEndElement();
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "event_categories":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    int categoryID;
-                                    string categoryName;
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                        {
-                                            // FIXME:
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "classified_categories":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    int categoryID;
-                                    string categoryName;
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadCategoryMember(Client, reader, out categoryID, out categoryName))
-                                        {
-                                            // FIXME:
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "event_notifications":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    // FIXME:
-
-                                    if (!isEmpty) reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "buddy-list":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("data");
-
-                                    int buddyRightsGiven, buddyRightsHas;
-                                    LLUUID buddyID;
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadBuddyMember(Client, reader, out buddyRightsGiven, out buddyRightsHas, out buddyID))
-                                        {
-                                            Client.Friends.AddFriend(buddyID, (FriendsManager.RightsFlags)buddyRightsGiven,
-                                                (FriendsManager.RightsFlags)buddyRightsHas);
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "ui-config":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("struct");
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadStringMember(reader, out name, out value))
-                                        {
-                                            switch (name)
-                                            {
-                                                case "allow_first_life":
-                                                    // FIXME:
-                                                    break;
-                                                default:
-                                                    Client.Log("Unhandled element in login reply (ui-config)",
-                                                        Helpers.LogLevel.Error);
-                                                    reader.Skip();
-                                                    break;
-                                            }
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "login-flags":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("struct");
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadStringMember(reader, out name, out value))
-                                        {
-                                            switch (name)
-                                            {
-                                                case "ever_logged_in":
-                                                    // FIXME:
-                                                    break;
-                                                case "daylight_savings":
-                                                    // FIXME:
-                                                    break;
-                                                case "stipend_since_login":
-                                                    // FIXME:
-                                                    break;
-                                                case "gendered":
-                                                    // FIXME:
-                                                    break;
-                                                default:
-                                                    Client.Log("Unhandled element in login reply (login-flags)",
-                                                        Helpers.LogLevel.Error);
-                                                    reader.Skip();
-                                                    break;
-                                            }
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "global-textures":
-                                {
-                                    reader.ReadStartElement("value");
-                                    reader.ReadStartElement("array");
-                                    reader.ReadStartElement("data");
-                                    reader.ReadStartElement("value");
-                                    reader.MoveToContent();
-                                    bool isEmpty = reader.IsEmptyElement;
-                                    reader.ReadStartElement("struct");
-
-                                    if (!isEmpty)
-                                    {
-                                        while (ReadStringMember(reader, out name, out value))
-                                        {
-                                            switch (name)
-                                            {
-                                                case "cloud_texture_id":
-                                                    // FIXME:
-                                                    break;
-                                                case "sun_texture_id":
-                                                    // FIXME:
-                                                    break;
-                                                case "moon_texture_id":
-                                                    // FIXME:
-                                                    break;
-                                                default:
-                                                    Client.Log("Unhandled element in login reply (global-textures)",
-                                                        Helpers.LogLevel.Error);
-                                                    reader.Skip();
-                                                    break;
-                                            }
-                                        }
-                                        reader.ReadEndElement();
-                                    }
-
-
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    reader.ReadEndElement();
-                                    break;
-                                }
-                            case "next_options":
-                                // FIXME: Parse the next_options and only use those for the next_url
-                                reader.MoveToContent();
-                                reader.Skip();
-                                break;
-                            case "next_duration":
-                                // FIXME: Use this value as the timeout for the next request
-                                reader.MoveToContent();
-                                reader.Skip();
-                                break;
-                            case "next_url":
-                                nextURL = ReadStringValue(reader);
-                                break;
-                            case "next_method":
-                                nextMethod = ReadStringValue(reader);
-                                break;
-                            case "initial-outfit":
-                                // FIXME:
-                                reader.MoveToContent();
-                                reader.Skip();
-                                break;
-                            default:
-                                Client.Log("Unhandled element in login reply (" + name + ")", Helpers.LogLevel.Error);
-                                reader.MoveToContent();
-                                reader.Skip();
-                                break;
-                        }
-
-                        if (reader.IsStartElement())
-                        {
-                            Client.Log("Unexpected start element: " + reader.LocalName + ", expected </member>", Helpers.LogLevel.Error);
-                        }
-
-                        reader.ReadEndElement();
-                    }
-
-                    reader.ReadEndElement();
-                    reader.ReadEndElement();
-                    reader.ReadEndElement();
-                    reader.ReadEndElement();
-
-                    #endregion XML Parsing
-
-                    if (OnLoginReply != null)
-                    {
-                        try
-                        {
-                            OnLoginReply(loginSuccess, redirect, simIP, simPort, regionX, regionY, reason, message);
-                        }
-                        catch (Exception ex)
-                        {
-                            Client.Log(ex.ToString(), Helpers.LogLevel.Error);
-                        }
-                    }
-
-                    if (redirect)
-                    {
-                        UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
-
-                        // Handle indeterminate logins
-                        CurrentContext = new LoginContext();
-                        CurrentContext.Params = myContext.Params;
-                        CurrentContext.Params.URI = nextURL;
-                        CurrentContext.Params.MethodName = nextMethod;
-                        BeginLogin();
-                    }
-                    else if (loginSuccess)
-                    {
-                        UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
-
-                        ulong handle = Helpers.UIntsToLong(regionX, regionY);
-
-                        // Connect to the sim given in the login reply
-                        if (Connect(simIP, simPort, handle, true, LoginSeedCapability) != null)
-                        {
-                            // Request the economy data right after login
-                            SendPacket(new EconomyDataRequestPacket());
-
-                            // Update the login message with the MOTD returned from the server
-                            UpdateLoginStatus(LoginStatus.Success, message);
-
-                            // Fire an event for connecting to the grid
-                            if (OnConnected != null)
-                            {
-                                try { OnConnected(this.Client); }
-                                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                            }
-                        }
-                        else
-                        {
-                            UpdateLoginStatus(LoginStatus.Failed, "Unable to connect to simulator");
-                        }
-                    }
-                    else
-                    {
-                        // Make sure a usable error key is set
-                        if (!String.IsNullOrEmpty(reason))
-                            InternalErrorKey = reason;
-                        else
-                            InternalErrorKey = "unknown";
-
-                        UpdateLoginStatus(LoginStatus.Failed, message);
+                        try { OnConnected(this.Client); }
+                        catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
                 else
                 {
-                    reader.ReadStartElement("fault");
-                    reader.ReadStartElement("value");
-                    reader.ReadStartElement("struct");
-
-                    ReadStringMember(reader, out name, out value);
-
-                    UpdateLoginStatus(LoginStatus.Failed, value);
+                    UpdateLoginStatus(LoginStatus.Failed, "Unable to connect to simulator");
                 }
-
-            }
-            catch (WebException e)
-            {
-                UpdateLoginStatus(LoginStatus.Failed, "Error reading response: " + e.Message);
-            }
-            catch (XmlException e)
-            {
-                UpdateLoginStatus(LoginStatus.Failed, "Error parsing reply XML: " + e.Message + Environment.NewLine + e.StackTrace);
-            }
-            finally
-            {
-                if (reader != null)
-                    reader.Close();
-                if (xmlStream != null)
-                    xmlStream.Close();
-                if (response != null)
-                    response.Close();
-            }
-        }
-
-        private static string ReadStringValue(XmlReader reader)
-        {
-            reader.ReadStartElement("value");
-            string value = reader.ReadElementString("string");
-            reader.ReadEndElement();
-            return value;
-        }
-
-        private static int ReadIntegerValue(XmlReader reader)
-        {
-            reader.ReadStartElement("value");
-            int value;
-            Int32.TryParse(reader.ReadElementString("i4"), out value);
-            reader.ReadEndElement();
-            return value;
-        }
-
-        private static bool ReadStringMember(XmlReader reader, out string name, out string value)
-        {
-            if (reader.IsStartElement("member"))
-            {
-                reader.ReadStartElement("member");
-                name = reader.ReadElementString("name");
-                reader.ReadStartElement("value");
-                value = reader.ReadElementString("string");
-                reader.ReadEndElement();
-                reader.ReadEndElement();
-
-                return true;
             }
             else
             {
-                name = String.Empty;
-                value = String.Empty;
-                return false;
+                // Make sure a usable error key is set
+                if (!String.IsNullOrEmpty(reason))
+                    InternalErrorKey = reason;
+                else
+                    InternalErrorKey = "unknown";
+
+                UpdateLoginStatus(LoginStatus.Failed, message);
             }
         }
 
-        private static bool ReadInventoryMember(XmlReader reader, out int typeDefault, out int version,
-            out string invName, out LLUUID folderID, out LLUUID parentID)
+        public interface ILoginProxy : IXmlRpcProxy
         {
-            typeDefault = 0;
-            version = 0;
-            invName = String.Empty;
-            folderID = LLUUID.Zero;
-            parentID = LLUUID.Zero;
-            bool ret = false;
+            [XmlRpcMethod("login_to_simulator")]
+            LoginMethodResponse LoginToSimulator(LoginMethodParams loginParams);
 
-            if (reader.IsStartElement("value"))
-            {
-                reader.ReadStartElement("value");
+            [XmlRpcBegin("login_to_simulator")]
+            IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams);
 
-                if (reader.IsStartElement("struct"))
-                {
-                    reader.ReadStartElement("struct");
+            [XmlRpcBegin("login_to_simulator")]
+            IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback);
 
-                    string name;
+            [XmlRpcBegin("login_to_simulator")]
+            IAsyncResult BeginLoginToSimulator(LoginMethodParams loginParams, AsyncCallback callback, object asyncState);
 
-                    while (reader.IsStartElement("member"))
-                    {
-                        reader.ReadStartElement("member");
-                        name = reader.ReadElementString("name");
-
-                        switch (name)
-                        {
-                            case "type_default":
-                                typeDefault = ReadIntegerValue(reader);
-                                break;
-                            case "version":
-                                version = ReadIntegerValue(reader);
-                                break;
-                            case "name":
-                                invName = ReadStringValue(reader);
-                                break;
-                            case "folder_id":
-                                string folder = ReadStringValue(reader);
-                                LLUUID.TryParse(folder, out folderID);
-                                break;
-                            case "parent_id":
-                                string parent = ReadStringValue(reader);
-                                LLUUID.TryParse(parent, out parentID);
-                                break;
-                            default:
-                                ;
-                                break;
-                        }
-
-                        reader.ReadEndElement();
-                    }
-
-                    reader.ReadEndElement();
-                    ret = true;
-                }
-
-                reader.ReadEndElement();
-            }
-
-            return ret;
+            [XmlRpcEnd("login_to_simulator")]
+            LoginMethodResponse EndLoginToSimulator(IAsyncResult result);
         }
 
-        private static bool ReadCategoryMember(SecondLife client, XmlReader reader, out int categoryID,
-            out string categoryName)
+        #region XML-RPC structs
+
+        public struct LoginMethodParams
         {
-            categoryID = 0;
-            categoryName = String.Empty;
-            bool ret = false;
-
-            if (reader.IsStartElement("value"))
-            {
-                reader.ReadStartElement("value");
-
-                if (reader.IsStartElement("struct"))
-                {
-                    reader.MoveToContent();
-                    bool isEmpty = reader.IsEmptyElement;
-                    reader.ReadStartElement("struct");
-
-                    string name;
-
-                    if (!isEmpty)
-                    {
-                        while (reader.IsStartElement("member"))
-                        {
-                            reader.ReadStartElement("member");
-                            name = reader.ReadElementString("name");
-
-                            switch (name)
-                            {
-                                case "category_id":
-                                    categoryID = ReadIntegerValue(reader);
-                                    break;
-                                case "category_name":
-                                    categoryName = ReadStringValue(reader);
-                                    break;
-                                default:
-                                    client.Log("Unhandled element in login reply (CategoryMember)",
-                                        Helpers.LogLevel.Error);
-                                    reader.Skip();
-                                    break;
-                            }
-
-                            reader.ReadEndElement();
-                        }
-
-                        reader.ReadEndElement();
-                    }
-                    ret = true;
-                }
-
-                reader.ReadEndElement();
-            }
-
-            return ret;
+            public string first;
+            public string last;
+            public string passwd;
+            public string start;
+            public string channel;
+            public string version;
+            public string platform;
+            public string mac;
+            [XmlRpcMember("user-agent")]
+            public string user_agent;
+            public string author;
+            public string agree_to_tos;
+            public string read_critical;
+            public string viewer_digest;
+            public string[] options;
         }
 
-        private static bool ReadBuddyMember(SecondLife client, XmlReader reader, out int buddyRightsGiven,
-            out int buddyRightsHas, out LLUUID buddyID)
+        public struct LoginMethodResponse
         {
-            buddyRightsGiven = 0;
-            buddyRightsHas = 0;
-            buddyID = LLUUID.Zero;
-            bool ret = false;
+            public string login;
+            public string message;
 
-            if (reader.IsStartElement("value"))
-            {
-                reader.ReadStartElement("value");
+            #region Login Failure
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string reason;
+            #endregion
 
-                if (reader.IsStartElement("struct"))
-                {
-                    reader.ReadStartElement("struct");
+            #region Login Success
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("inventory-skeleton")]
+            public InventorySkeletonEntry[] inventory_skeleton;
 
-                    string name;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string session_id;
 
-                    while (reader.IsStartElement("member"))
-                    {
-                        reader.ReadStartElement("member");
-                        name = reader.ReadElementString("name");
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("inventory-root")]
+            public InventoryRootEntry[] inventory_root;
 
-                        switch (name)
-                        {
-                            case "buddy_rights_given":
-                                buddyRightsGiven = ReadIntegerValue(reader);
-                                break;
-                            case "buddy_id":
-                                string buddy = ReadStringValue(reader);
-                                LLUUID.TryParse(buddy, out buddyID);
-                                break;
-                            case "buddy_rights_has":
-                                buddyRightsHas = ReadIntegerValue(reader);
-                                break;
-                            default:
-                                client.Log("Unhandled element in login reply (BuddyMember)",
-                                    Helpers.LogLevel.Error);
-                                reader.Skip();
-                                break;
-                        }
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public EventNotificationEntry[] event_notifications;
 
-                        reader.ReadEndElement();
-                    }
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public CategoryEntry[] event_categories;
 
-                    reader.ReadEndElement();
-                    ret = true;
-                }
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string secure_session_id;
 
-                reader.ReadEndElement();
-            }
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string start_location;
 
-            return ret;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string first_name;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string last_name;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public int region_x;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public int region_y;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("global-textures")]
+            public GlobalTextureEntry[] global_textures;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string home;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("inventory-lib-owner")]
+            public InventoryLibraryOwnerEntry[] inventory_lib_owner;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("inventory-lib-root")]
+            public InventoryRootEntry[] inventory_lib_root;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("inventory-skel-lib")]
+            public InventorySkeletonEntry[] inventory_skel_lib;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public CategoryEntry[] classified_categories;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("login-flags")]
+            public LoginFlagsEntry[] login_flags;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string agent_access;
+
+            [XmlRpcMember("buddy-list")]
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public BuddyListEntry[] buddy_list;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public int circuit_code;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public int sim_port;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public GestureEntry[] gestures;
+            [XmlRpcMember("ui-config")]
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public UIConfigEntry[] ui_config;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string sim_ip;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string look_at;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string agent_id;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public int seconds_since_epoch;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string seed_capability;
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            [XmlRpcMember("initial-outfit")]
+            public OutfitEntry[] initial_outfit;
+            #endregion
+
+            #region Redirection
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string next_method;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string next_url;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string[] next_options;
+
+            [XmlRpcMissingMapping(MappingAction.Ignore)]
+            public string next_duration;
+            #endregion
         }
 
-        private static void WriteStringMember(XmlWriter writer, string name, string value)
+        public struct InventoryRootEntry
         {
-            writer.WriteStartElement("member");
-            writer.WriteElementString("name", name);
-            writer.WriteStartElement("value");
-            writer.WriteElementString("string", value);
-            writer.WriteEndElement();
-            writer.WriteEndElement();
+            public string folder_id;
         }
 
-        private static void WriteOptionsMember(XmlWriter writer, List<string> options)
+        public struct InventorySkeletonEntry
         {
-            writer.WriteStartElement("member");
-            writer.WriteElementString("name", "options");
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("array");
-            writer.WriteStartElement("data");
-
-            if (options != null)
-            {
-                for (int i = 0; i < options.Count; i++)
-                {
-                    writer.WriteStartElement("value");
-                    writer.WriteElementString("string", options[i]);
-                    writer.WriteEndElement();
-                }
-            }
-
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-            writer.WriteEndElement();
+            public int type_default;
+            public int version;
+            public string name;
+            public string folder_id;
+            public string parent_id;
         }
+
+        public struct CategoryEntry
+        {
+            public int category_id;
+            public string category_name;
+        }
+
+        public struct EventNotificationEntry
+        {
+            // ???
+        }
+
+        public struct OutfitEntry
+        {
+            // ???
+        }
+
+        public struct GlobalTextureEntry
+        {
+            public string cloud_texture_id;
+            public string sun_texture_id;
+            public string moon_texture_id;
+        }
+
+        public struct InventoryLibraryOwnerEntry
+        {
+            public string agent_id;
+        }
+
+        public struct LoginFlagsEntry
+        {
+            public string ever_logged_in;
+            public string daylight_savings;
+            public string stipend_since_login;
+            public string gendered;
+        }
+
+        public struct BuddyListEntry
+        {
+            public int buddy_rights_given;
+            public string buddy_id;
+            public int buddy_rights_has;
+        }
+
+        public struct GestureEntry
+        {
+            public string asset_id;
+            public string item_id;
+        }
+
+        public struct UIConfigEntry
+        {
+            public string allow_first_life;
+        }
+
+        #endregion
     }
 }
