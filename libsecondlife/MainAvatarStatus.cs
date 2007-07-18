@@ -332,7 +332,7 @@ namespace libsecondlife
                 Camera.CameraAtAxis = new LLVector3(0, 0.9999f, 0);
                 Camera.CameraLeftAxis = new LLVector3(0.9999f, 0, 0);
                 Camera.CameraUpAxis = new LLVector3(0, 0, 0.9999f);
-                Camera.Far = 384.0f;
+                Camera.Far = 128.0f;
 
                 UpdateTimer = new Timer(Settings.AGENT_UPDATE_INTERVAL);
                 UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
@@ -348,14 +348,14 @@ namespace libsecondlife
             /// or not</param>
             public void UpdateFromHeading(double heading, bool reliable)
             {
-                Client.Self.Status.Camera.CameraCenter = Client.Self.Position;
-                Client.Self.Status.Camera.CameraAtAxis.X = (float)Math.Cos(heading);
-                Client.Self.Status.Camera.CameraAtAxis.Y = (float)Math.Sin(heading);
-                Client.Self.Status.Camera.CameraLeftAxis.X = (float)-Math.Sin(heading);
-                Client.Self.Status.Camera.CameraLeftAxis.Y = (float)Math.Cos(heading);
-                Client.Self.Status.Camera.BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
-                Client.Self.Status.Camera.BodyRotation.W = (float)Math.Cos(heading / 2.0d);
-                Client.Self.Status.Camera.HeadRotation = Client.Self.Status.Camera.BodyRotation;
+                Camera.CameraCenter = Client.Self.Position;
+                Camera.CameraAtAxis.X = (float)Math.Cos(heading);
+                Camera.CameraAtAxis.Y = (float)Math.Sin(heading);
+                Camera.CameraLeftAxis.X = (float)-Math.Sin(heading);
+                Camera.CameraLeftAxis.Y = (float)Math.Cos(heading);
+                Camera.BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
+                Camera.BodyRotation.W = (float)Math.Cos(heading / 2.0d);
+                Camera.HeadRotation = Client.Self.Status.Camera.BodyRotation;
 
                 Client.Self.Status.SendUpdate(reliable);
             }
@@ -393,7 +393,7 @@ namespace libsecondlife
                 if (agentControls == 0 &&
                     Camera.CameraAtAxis == Camera.LastCameraAtAxis &&
                     Camera.CameraCenter == Camera.LastCameraCenter &&
-                    State != lastState &&
+                    State == lastState &&
                     Camera.HeadRotation == Camera.LastHeadRotation &&
                     Camera.BodyRotation == Camera.LastBodyRotation &&
                     Camera.CameraLeftAxis == Camera.LastCameraLeftAxis &&

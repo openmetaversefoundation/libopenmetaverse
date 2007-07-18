@@ -649,7 +649,8 @@ namespace libsecondlife
         /// <param name="groupID"></param>
         /// <param name="removeContribution"></param>
         /// <returns></returns>
-        public void Buy(Simulator simulator, int localID, bool forGroup, LLUUID groupID, bool removeContribution)
+        public void Buy(Simulator simulator, int localID, bool forGroup, LLUUID groupID, 
+            bool removeContribution, int parcelArea, int parcelPrice)
         {
             ParcelBuyPacket request = new ParcelBuyPacket();
 
@@ -661,6 +662,9 @@ namespace libsecondlife
             request.Data.LocalID = localID;
             request.Data.IsGroupOwned = forGroup;
             request.Data.RemoveContribution = removeContribution;
+
+            request.ParcelData.Area = parcelArea;
+            request.ParcelData.Price = parcelPrice;
 
             Client.Network.SendPacket(request, simulator);
         }
