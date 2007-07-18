@@ -1002,24 +1002,31 @@ namespace libsecondlife
             GroupRoleMembersReplyPacket members = (GroupRoleMembersReplyPacket)packet;
             List<KeyValuePair<LLUUID, LLUUID>> groupRoleMemberCache = null;
 
-            lock (GroupRolesMembersCaches)
+            try
             {
-                // If nothing is registered to receive this RequestID drop the data
-                if (GroupRolesMembersCaches.ContainsKey(members.AgentData.RequestID))
+                lock (GroupRolesMembersCaches)
                 {
-                    groupRoleMemberCache = GroupRolesMembersCaches[members.AgentData.RequestID];
-
-                    foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                    // If nothing is registered to receive this RequestID drop the data
+                    if (GroupRolesMembersCaches.ContainsKey(members.AgentData.RequestID))
                     {
-                        KeyValuePair<LLUUID, LLUUID> rolemember = 
-                            new KeyValuePair<LLUUID, LLUUID>(block.RoleID, block.MemberID);
+                        groupRoleMemberCache = GroupRolesMembersCaches[members.AgentData.RequestID];
 
-                        groupRoleMemberCache.Add(rolemember);
+                        foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                        {
+                            KeyValuePair<LLUUID, LLUUID> rolemember =
+                                new KeyValuePair<LLUUID, LLUUID>(block.RoleID, block.MemberID);
+
+                            groupRoleMemberCache.Add(rolemember);
+                        }
                     }
                 }
             }
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
 
-            Client.DebugLog("Pairs Ratio: " + groupRoleMemberCache.Count + "/" + members.AgentData.TotalPairs);
+            //Client.DebugLog("Pairs Ratio: " + groupRoleMemberCache.Count + "/" + members.AgentData.TotalPairs);
             
             // Check if we've received all the pairs that are showing up
             if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)

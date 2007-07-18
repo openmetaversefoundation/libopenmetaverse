@@ -557,8 +557,6 @@ namespace libsecondlife
         /// should be modified to the current stream sequence number</param>
         public void SendPacket(byte[] payload, bool setSequence)
         {
-            if (Client.Settings.OUTBOUND_THROTTLE) DoThrottle();
-
             try
             {
                 if (setSequence && payload.Length > 3)
@@ -583,12 +581,27 @@ namespace libsecondlife
             }
             catch (SocketException)
             {
-                Client.Log("Tried to send a " + payload.Length + " byte payload on a closed socket, shutting down " +
-                    this.ToString(), Helpers.LogLevel.Info);
+                Client.Log("Tried to send a " + payload.Length +
+                    " byte payload on a closed socket, shutting down " + this.ToString(),
+                    Helpers.LogLevel.Info);
 
                 Network.DisconnectSim(this);
                 return;
             }
+            catch (Exception e)
+            {
+                Client.Log(e.ToString(), Helpers.LogLevel.Error);
+            }
+        }
+
+        /// <summary>
+        /// Send a prepared <code>UDPPacketBuffer</code> object as a packet
+        /// </summary>
+        /// <param name="buffer">The prepared packet structure to be sent out</param>
+        public void SendPacket(UDPPacketBuffer buffer)
+        {
+            try { AsyncBeginSend(buffer); }
+            catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
         }
 
         /// <summary>
@@ -718,22 +731,6 @@ namespace libsecondlife
 
         protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
         {
-        }
-
-        private void DoThrottle()
-        {
-            int throttle;
-
-            if (OutgoingBPS > Client.Settings.OUTBOUND_THROTTLE_RATE)
-            {
-                throttle = (int)((OutgoingBPS - Client.Settings.OUTBOUND_THROTTLE_RATE) * 2000 /
-                    Client.Settings.OUTBOUND_THROTTLE_RATE);
-
-                Client.DebugLog(String.Format("Simulator {0} throttling for {1}ms", this.ToString(), throttle));
-                // FIXME: When the outgoing message pumps are in place we won't need to throttle by locking up
-                // the application
-                Thread.Sleep(throttle);
-            }
         }
 
         /// <summary>

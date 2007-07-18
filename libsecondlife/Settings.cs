@@ -83,7 +83,7 @@ namespace libsecondlife
         public const int MAX_SEQUENCE = 0xFFFFFF;
         /// <summary>The maximum size of the sequence number archive, used to
         /// check for resent and/or duplicate packets</summary>
-        public const int PACKET_ARCHIVE_SIZE = 50;
+        public const int PACKET_ARCHIVE_SIZE = 200;
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public const int PING_INTERVAL = 2200;
         /// <summary>Number of milliseconds between sending camera updates</summary>
@@ -128,10 +128,6 @@ namespace libsecondlife
         /// set a throttle your connection will by default be throttled well
         /// below the minimum values and you may experience connection problems</remarks>
         public bool SEND_AGENT_THROTTLE = true;
-        /// <summary></summary>
-        public bool OUTBOUND_THROTTLE = false;
-        /// <summary>Maximum outgoing bytes/sec, per sim</summary>
-        public int OUTBOUND_THROTTLE_RATE = 1500;
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
         public bool SEND_PINGS = false;
