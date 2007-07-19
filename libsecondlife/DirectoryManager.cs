@@ -343,7 +343,11 @@ namespace libsecondlife
 
         public LLUUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
         {
-            LLUUID queryID = LLUUID.Random();
+            return StartPeopleSearch(findFlags, searchText, queryStart, LLUUID.Random());
+        }
+
+        public LLUUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart, LLUUID queryID)
+        {
             DirFindQueryPacket find = new DirFindQueryPacket();
             find.AgentData.AgentID = Client.Network.AgentID;
             find.AgentData.SessionID = Client.Network.SessionID;

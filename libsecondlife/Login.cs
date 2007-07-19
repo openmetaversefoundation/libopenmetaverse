@@ -452,18 +452,26 @@ namespace libsecondlife
                         (float)(double)look_at[2]);
 
                     // Home
-                    Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
-                    ArrayList array = (ArrayList)home["position"];
-                    Client.Self.HomePosition = new LLVector3(
-                        (float)(double)array[0],
-                        (float)(double)array[1],
-                        (float)(double)array[2]);
+                    if (reply.home != null)
+                    {
+                        Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
+                        ArrayList array = (ArrayList)home["position"];
+                        Client.Self.HomePosition = new LLVector3(
+                            (float)(double)array[0],
+                            (float)(double)array[1],
+                            (float)(double)array[2]);
 
-                    array = (ArrayList)home["look_at"];
-                    Client.Self.HomeLookAt = new LLVector3(
-                        (float)(double)array[0],
-                        (float)(double)array[1],
-                        (float)(double)array[2]);
+                        array = (ArrayList)home["look_at"];
+                        Client.Self.HomeLookAt = new LLVector3(
+                            (float)(double)array[0],
+                            (float)(double)array[1],
+                            (float)(double)array[2]);
+                    }
+                    else
+                    {
+                        Client.Self.HomePosition = LLVector3.Zero;
+                        Client.Self.HomeLookAt = LLVector3.Zero;
+                    }
 
                     // Networking
                     Client.Network.AgentID = reply.agent_id;
