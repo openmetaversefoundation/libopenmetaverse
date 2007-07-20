@@ -82,13 +82,7 @@ namespace SLProxy
                 }
 
             commandDelegates["/load"] = new CommandDelegate(CmdLoad);
-
-            if (!externalPlugin)
-            {
-                ProxyPlugin analyst = new Analyst(this);
-                analyst.Init();
-            }
-        }
+       }
 
         private void CmdLoad(string[] words)
         {

@@ -7,6 +7,8 @@ class ProxyMain
     public static void Main(string[] args)
     {
         ProxyFrame p = new ProxyFrame(args);
-        p.proxy.Start();
+	ProxyPlugin analyst = new Analyst(p);
+        analyst.Init(); 
+	p.proxy.Start();
     }
 }

@@ -47,7 +47,7 @@
      description="build analyst and chatconsole"
        FIXME: Analyst's build is broken and Analyst and SLProxyLoader have
               circular dependencies.  Skipping Analyst for now.  -axial -->
-  <target name="build" depends="build-slproxy build-chatconsole build-main"
+  <target name="build" depends="build-analyst build-slproxy build-chatconsole build-main"
      description="build SLProxy and chatconsole">
   </target>
 
@@ -62,7 +62,7 @@
       <sources failonempty="true">
         <include name="SLProxy.cs" />
         <include name="XmlRpcCS/*.cs" />
-        <!-- include name="SLProxyLoader.cs" / -->
+        <include name="SLProxyLoader.cs" />
         <!-- <include name="legacy/*.cs" /> -->
       </sources>
       <references basedir="${bin_dir}/">
@@ -90,6 +90,8 @@
     </csc>
   </target>
 
+  <!-- Note - please, please, PLEASE, refrain from calling the executable
+       SLProxy.exe, as the name conflict with SLProxy.dll confuses Mono -->
   <target name="build-main"
     depends="init build-slproxy"
     description="build SLProxy main">
@@ -98,13 +100,14 @@
     <csc
       target="exe"
       debug="${build.debug}"
-      output="${bin_dir}/SLProxy.exe">
+      output="${bin_dir}/SLProxyMain.exe">
       <sources failonempty="true">
         <include name="SLProxyMain.cs" />
       </sources>
       <references basedir="${bin_dir}/">
         <include name="libsecondlife.dll"/>
         <include name="SLProxy.dll"/>
+        <include name="Analyst.dll"/>
       </references>
     </csc>
   </target>
