@@ -394,16 +394,21 @@ namespace libsecondlife
         {
             List<LLUUID> names = new List<LLUUID>();
 
-            lock (_Friends)
-            {
-                foreach (KeyValuePair<LLUUID, FriendInfo> kvp in _Friends)
+            if ( _Friends.Count > 0 ) {
+                lock (_Friends)
                 {
-                    if (String.IsNullOrEmpty(kvp.Value.Name))
-                        names.Add(kvp.Key);
+                    foreach (KeyValuePair<LLUUID, FriendInfo> kvp in _Friends)
+                    {
+                        if (String.IsNullOrEmpty(kvp.Value.Name)) {
+                            names.Add(kvp.Key);
+                            Client.DebugLog("Friend lookup for " + kvp.Key.ToString() );
+                        } else {
+                            Client.DebugLog("Already recognize " + kvp.Value.ToString() + " ( " + kvp.Key.ToString() + " ) ");
+                        }
+                    }
                 }
+                Client.Avatars.RequestAvatarNames(names);
             }
-
-            Client.Avatars.RequestAvatarNames(names);
         }
 
 
@@ -420,7 +425,7 @@ namespace libsecondlife
                     if (_Friends.ContainsKey(kvp.Key))
                     {
                         _Friends[kvp.Key].Name = names[kvp.Key];
-                        //Client.DebugLog(_Friends[kvp.Key].ToString());
+                        Client.DebugLog(_Friends[kvp.Key].ToString());
                     }
                 }
             }

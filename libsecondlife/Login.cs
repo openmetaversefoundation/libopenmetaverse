@@ -66,6 +66,7 @@ namespace libsecondlife
         /// <param name="regionY"></param>
         /// <param name="reason"></param>
         /// <param name="message"></param>
+        [Obsolete("Use LoginResponseCallback instead.")]
         public delegate void LoginReplyCallback(bool loginSuccess, bool redirect, IPAddress simIP, int simPort,
             uint regionX, uint regionY, string reason, string message);
         /// <summary>
@@ -74,6 +75,14 @@ namespace libsecondlife
         /// <param name="login"></param>
         /// <param name="message"></param>
         public delegate void LoginCallback(LoginStatus login, string message);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loginSuccess"></param>
+        /// <param name="redirect"></param>
+        /// <param name="replyData"></param>
+        public delegate void LoginResponseCallback(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData);
 
         /// <summary>
         /// 
@@ -112,6 +121,128 @@ namespace libsecondlife
             public List<string> Options;
         }
 
+        public struct LoginResponseData
+        {
+            public LLUUID AgentID;
+            public LLUUID SessionID;
+            public LLUUID SecureSessionID;
+            public string FirstName;
+            public string LastName;
+            public string StartLocation;
+            public string AgentAccess;
+            public LLVector3 LookAt;
+            public LLVector3 HomePosition;
+            public LLVector3 HomeLookAt;
+            public uint CircuitCode;
+            public uint RegionX;
+            public uint RegionY;
+            public ushort SimPort;
+            public IPAddress SimIP;
+            public string SeedCapability;
+            public FriendsManager.FriendInfo[] BuddyList;
+            public DateTime SecondsSinceEpoch;
+            public LLUUID InventoryRoot;
+            public LLUUID LibraryRoot;
+            public InventoryFolder[] InventorySkeleton;
+            public InventoryFolder[] LibrarySkeleton;
+            public LLUUID LibraryOwner;
+
+            public void Parse(LoginMethodResponse reply)
+            {
+                AgentID = LLUUID.Parse(reply.agent_id);
+                SessionID = LLUUID.Parse(reply.session_id);
+                SecureSessionID = LLUUID.Parse(reply.secure_session_id);
+                FirstName = reply.first_name;
+                LastName = reply.last_name;
+                StartLocation = reply.start_location;
+                AgentAccess = reply.agent_access;
+
+                ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);
+                LookAt = new LLVector3(
+                    (float)(double)look_at[0],
+                    (float)(double)look_at[1],
+                    (float)(double)look_at[2]);
+
+                Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
+                ArrayList array = (ArrayList)home["position"];
+                HomePosition = new LLVector3(
+                    (float)(double)array[0],
+                    (float)(double)array[1],
+                    (float)(double)array[2]);
+
+                array = (ArrayList)home["look_at"];
+                HomeLookAt = new LLVector3(
+                    (float)(double)array[0],
+                    (float)(double)array[1],
+                    (float)(double)array[2]);
+
+                CircuitCode = (uint)reply.circuit_code;
+                RegionX = (uint)reply.region_x;
+                RegionY = (uint)reply.region_y;
+                SimPort = (ushort)reply.sim_port;
+                SimIP = IPAddress.Parse(reply.sim_ip);
+                SeedCapability = reply.seed_capability;
+
+                BuddyList = new FriendsManager.FriendInfo[reply.buddy_list.Length];
+                for (int i = 0; i < BuddyList.Length; ++i)
+                {
+                    BuddyListEntry buddy = reply.buddy_list[i];
+                    BuddyList[i] = new FriendsManager.FriendInfo(buddy.buddy_id, (FriendsManager.RightsFlags)buddy.buddy_rights_given,
+                            (FriendsManager.RightsFlags)buddy.buddy_rights_has);
+                }
+
+                InventoryRoot = LLUUID.Parse(reply.inventory_root[0].folder_id);
+                LibraryRoot = LLUUID.Parse(reply.inventory_lib_root[0].folder_id);
+                LibraryOwner = LLUUID.Parse(reply.inventory_lib_owner[0].agent_id);
+                InventorySkeleton = ParseSkeleton(reply.inventory_skeleton, AgentID);
+                LibrarySkeleton = ParseSkeleton(reply.inventory_skel_lib, LibraryOwner);
+            }
+
+            public InventoryFolder[] ParseSkeleton(InventorySkeletonEntry[] skeleton, LLUUID owner)
+            {
+                Dictionary<LLUUID, InventoryFolder> Folders = new Dictionary<LLUUID, InventoryFolder>();
+                Dictionary<LLUUID, List<InventoryFolder>> FoldersChildren = new Dictionary<LLUUID, List<InventoryFolder>>(skeleton.Length);
+
+                foreach (InventorySkeletonEntry entry in skeleton)
+                {
+                    InventoryFolder folder = new InventoryFolder(entry.folder_id);
+                    if (entry.type_default != -1)
+                        folder.PreferredType = (AssetType)entry.type_default;
+                    folder.Version = entry.version;
+                    folder.OwnerID = owner;
+                    folder.ParentUUID = LLUUID.Parse(entry.parent_id);
+                    folder.Name = entry.name;
+                    Folders.Add(entry.folder_id, folder);
+
+                    if (entry.parent_id != LLUUID.Zero)
+                    {
+                        List<InventoryFolder> parentChildren;
+                        if (!FoldersChildren.TryGetValue(entry.parent_id, out parentChildren))
+                        {
+                            parentChildren = new List<InventoryFolder>();
+                            FoldersChildren.Add(entry.parent_id, parentChildren);
+                        }
+                        parentChildren.Add(folder);
+                    }
+                }
+
+                foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren) {
+                    InventoryFolder parentFolder = Folders[pair.Key];
+                    parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
+                }
+
+                // Should we do this or just return an IEnumerable?
+                InventoryFolder[] ret = new InventoryFolder[Folders.Count];
+                int index = 0;
+                foreach (InventoryFolder folder in Folders.Values)
+                {
+                    ret[index] = folder;
+                    ++index;
+                }
+                return ret;
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -135,11 +266,16 @@ namespace libsecondlife
 
         /// <summary>Called when a reply is received from the login server, the
         /// login sequence will block until this event returns</summary>
+        [Obsolete("Use RegisterLoginResponse instead.")]
         public event LoginReplyCallback OnLoginReply;
 
         /// <summary>Called any time the login status changes, will eventually
         /// return LoginStatus.Success or LoginStatus.Failure</summary>
         public event LoginCallback OnLogin;
+
+        /// <summary>Called when a reply is received from the login server, the
+        /// login sequence will block until this event returns</summary>
+        private event LoginResponseCallback OnLoginResponse;
 
         /// <summary>Seed CAPS URL returned from the login server</summary>
         public string LoginSeedCapability = String.Empty;
@@ -172,7 +308,7 @@ namespace libsecondlife
         private string InternalErrorKey = String.Empty;
         private string InternalLoginMessage = String.Empty;
         private string InternalRawLoginReply = String.Empty;
-
+        private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
         /// <summary>
         /// 
         /// </summary>
@@ -334,7 +470,17 @@ namespace libsecondlife
             loginParams.agree_to_tos = "true";
             loginParams.read_critical = "true";
             loginParams.viewer_digest = CurrentContext.Params.ViewerDigest;
-            loginParams.options = CurrentContext.Params.Options.ToArray();
+
+            List<string> options = new List<string>(CurrentContext.Params.Options.Count + CallbackOptions.Values.Count);
+            options.AddRange(CurrentContext.Params.Options);
+            foreach (string[] callbackOpts in CallbackOptions.Values)
+            {
+                if (callbackOpts != null)
+                    foreach (string option in callbackOpts)
+                        if (!options.Contains(option)) // TODO: Replace with some kind of Dictionary/Set?
+                            options.Add(option);
+            }
+            loginParams.options = options.ToArray();
 
             try
             {
@@ -362,6 +508,22 @@ namespace libsecondlife
             CurrentContext.Params = loginParams;
 
             BeginLogin();
+        }
+
+        public void RegisterLoginResponseCallback(LoginResponseCallback callback)
+        {
+            RegisterLoginResponseCallback(callback, null);
+        }
+
+        public void RegisterLoginResponseCallback(LoginResponseCallback callback, string[] options) {
+            CallbackOptions.Add(callback, options);
+            OnLoginResponse += callback;
+        }
+
+        public void UnregisterLoginResponseCallback(LoginResponseCallback callback)
+        {
+            CallbackOptions.Remove(callback);
+            OnLoginResponse -= callback;
         }
 
         /// <summary>
@@ -434,6 +596,12 @@ namespace libsecondlife
             if (reply.login == "true")
             {
                 loginSuccess = true;
+
+                // Remove the quotes around our first name.
+                if (reply.first_name[0] == '"')
+                    reply.first_name = reply.first_name.Remove(0, 1);
+                if (reply.first_name[reply.first_name.Length - 1] == '"')
+                    reply.first_name = reply.first_name.Remove(reply.first_name.Length - 1);
 
                 #region Critical Information
 
@@ -533,6 +701,21 @@ namespace libsecondlife
                 try { OnLoginReply(loginSuccess, redirect, simIP, simPort, regionX, regionY, reason, message); }
                 catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
             }
+
+            try
+            {
+                if (OnLoginResponse != null)
+                {
+                    LoginResponseData data = new LoginResponseData();
+                    if (loginSuccess)
+                    {
+                        data.Parse(reply);
+                    }
+                    try { OnLoginResponse(loginSuccess, redirect, message, reason, data); }
+                    catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+            catch (Exception ex) { Client.Log(ex.ToString(), Helpers.LogLevel.Error); }
 
             // Make the next network jump, if needed
             if (redirect)

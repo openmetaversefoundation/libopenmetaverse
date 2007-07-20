@@ -21,6 +21,7 @@
 		403A918E0C4FCCA40020DD34 /* AssetTypes.cs in Sources */ = {isa = PBXBuildFile; fileRef = 403A918D0C4FCCA40020DD34 /* AssetTypes.cs */; };
 		403A91920C4FCD720020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */; };
 		403A91970C4FCD960020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 403A91730C4FC4620020DD34 /* CookComputing.XmlRpcV2.dll */; };
+		403A92CB0C502F1C0020DD34 /* libsecondlife.Utilities.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */; };
 		4041F33A0BED7D8E0084F948 /* Analyst.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F30F0BED7D550084F948 /* Analyst.cs */; };
 		4041F33B0BED7D8E0084F948 /* Logger.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2F90BED7D550084F948 /* Logger.cs */; };
 		4041F33C0BED7D8E0084F948 /* SimpleHttpRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4041F2FA0BED7D550084F948 /* SimpleHttpRequest.cs */; };
@@ -169,7 +170,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4054E2A70B5733B200B0667D /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 4054E36E0B57375B00B0667D /* libsecondlife.Utilities */;
+			remoteGlobalIDString = 4054E36E0B57375B00B0667D;
 			remoteInfo = libsecondlife.Utilities;
 		};
 		4041F3520BED7DA90084F948 /* PBXContainerItemProxy */ = {
@@ -444,6 +445,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				403A92CB0C502F1C0020DD34 /* libsecondlife.Utilities.dll in Frameworks */,
 				403A91970C4FCD960020DD34 /* CookComputing.XmlRpcV2.dll in Frameworks */,
 				4054E4060B573A9F00B0667D /* libsecondlife.dll in Frameworks */,
 			);
