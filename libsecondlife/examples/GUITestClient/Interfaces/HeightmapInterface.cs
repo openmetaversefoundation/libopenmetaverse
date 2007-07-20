@@ -80,7 +80,7 @@ namespace libsecondlife.GUITestClient
                 }
             }
 
-            Boxes[x, y].Image = (Image)patch;
+            Boxes[x, y].Image = (System.Drawing.Image)patch;
         }
     }
 }

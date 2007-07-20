@@ -145,7 +145,7 @@ namespace Heightmap
                 }
             }
 
-            Boxes[x, y].Image = (Image)patch;
+            Boxes[x, y].Image = (System.Drawing.Image)patch;
         }
 
         private void frmHeightmap_FormClosing(object sender, FormClosingEventArgs e)
