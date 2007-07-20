@@ -12,6 +12,9 @@ namespace libsecondlife.TestClient
 {
     public class InventoryCommand : Command
     {
+        private Inventory Inventory;
+        private InventoryManager Manager;
+        
 		public InventoryCommand(TestClient testClient)
         {
             Name = "i";
@@ -20,35 +23,25 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            return "Broken until someone fixes me";
+        
+            Manager = Client.Inventory;
+            Inventory = Manager.Store;
 
-            //Client.Inventory.DownloadInventory();
-            //StringBuilder result = new StringBuilder();
-            //PrintFolder(Client.Inventory.GetRootFolder(), result, 0);
-            //return result.ToString();
+            StringBuilder result = new StringBuilder();
+            Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, true, true, true, InventorySortOrder.ByName);
+            //result.Append(Inventory.RootNode.Name);
+            PrintFolder(Inventory.RootNode, result, 0);
+            return result.ToString();
         }
-
-        //void PrintFolder(InventoryFolder folder, StringBuilder output, int indenting)
-        //{
-        //    Indent(output, indenting);
-        //    output.Append(folder.Name);
-        //    output.Append("\n");
-        //    foreach (InventoryBase b in folder.GetContents())
-        //    {
-        //        InventoryItem item = b as InventoryItem;
-        //        if (item != null)
-        //        {
-        //            Indent(output, indenting + 1);
-        //            output.Append(item.Name);
-        //            output.Append("\n");
-        //            continue;
-        //        }
-        //        InventoryFolder subFolder = b as InventoryFolder;
-        //        if (subFolder != null)
-        //            PrintFolder(subFolder, output, indenting + 1);
-        //    }
-        //}
-
+        void PrintFolder(InventoryNode f, StringBuilder result, int indent)
+        {
+            foreach ( InventoryNode i in f.Nodes.Values ) {
+                result.Append(i.Data.Name + "\n");
+                if ( i.Nodes.Count > 0 ) {
+                    PrintFolder(i, result, indent + 1);
+                }
+            }
+        }
         //void Indent(StringBuilder output, int indenting)
         //{
         //    for (int count = 0; count < indenting; count++)

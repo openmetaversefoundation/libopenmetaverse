@@ -273,7 +273,7 @@
 		4054E36F0B57375B00B0667D /* libsecondlife.Utilities.dll */ = {isa = PBXFileReference; explicitFileType = compiled.mono.library; includeInIndex = 0; path = libsecondlife.Utilities.dll; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3830B57394E00B0667D /* name2key.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = name2key.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4054E3980B573A0900B0667D /* Key2Name.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = Key2Name.exe; sourceTree = BUILT_PRODUCTS_DIR; };
-		4054E3AB0B573A6500B0667D /* TestClient.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = TestClient.exe; sourceTree = BUILT_PRODUCTS_DIR; };
+		4054E3AB0B573A6500B0667D /* TestClient.exe */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = compiled.mono.executable; path = TestClient.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		4082AEF20BE5CF73005601E2 /* Types.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Types.cs; path = libsecondlife/Types.cs; sourceTree = "<group>"; };
 		4082AEF30BE5CF73005601E2 /* ThreadUtil.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = ThreadUtil.cs; path = libsecondlife/ThreadUtil.cs; sourceTree = "<group>"; };
 		4082AEF40BE5CF73005601E2 /* Textures.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Textures.cs; path = libsecondlife/Textures.cs; sourceTree = "<group>"; };
