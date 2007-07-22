@@ -976,7 +976,7 @@ namespace libsecondlife
             // TODO: MainAvatar.InstantMessageDialog.GroupNotice can also be an inventory offer, should we
             // handle it here?
 
-            if (OnInventoryObjectReceived != null)
+            if (OnInventoryObjectReceived != null && ( dialog == MainAvatar.InstantMessageDialog.InventoryOffered || dialog == MainAvatar.InstantMessageDialog.TaskInventoryOffered ) )
             {
                 AssetType type = AssetType.Unknown;
                 LLUUID objectID = LLUUID.Zero;
