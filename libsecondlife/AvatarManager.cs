@@ -38,12 +38,6 @@ namespace libsecondlife
     public class AvatarManager
     {
         /// <summary>
-        /// Triggered after friend request packet is sent out
-        /// </summary>
-        /// <param name="agentID"></param>
-        /// <param name="online"></param>
-        public delegate void FriendNotificationCallback(LLUUID agentID, bool online);
-        /// <summary>
         /// Triggered when a UUIDNameReply is received
         /// </summary>
         /// <param name="names"></param>
@@ -113,8 +107,6 @@ namespace libsecondlife
             LLVector3d targetPos, float duration, LLUUID id);
 
 
-        /// <summary>Triggered whenever a friend comes online or goes offline</summary>
-        public event FriendNotificationCallback OnFriendNotification;
         /// <summary></summary>
         public event AvatarNamesCallback OnAvatarNames;
         /// <summary></summary>
@@ -143,11 +135,6 @@ namespace libsecondlife
         public AvatarManager(SecondLife client)
         {
             Client = client;
-
-            // Friend notification callback
-            NetworkManager.PacketCallback callback = new NetworkManager.PacketCallback(FriendNotificationHandler);
-            Client.Network.RegisterCallback(PacketType.OnlineNotification, callback);
-            Client.Network.RegisterCallback(PacketType.OfflineNotification, callback);
 
             // Avatar profile callbacks
             Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
@@ -252,74 +239,6 @@ namespace libsecondlife
                 OnAvatarNames(names);
             }
         }
-
-        /// <summary>
-        /// Handle incoming friend notifications
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void FriendNotificationHandler(Packet packet, Simulator simulator)
-        {
-            if (OnFriendNotification != null)
-            {
-                if (packet.Type == PacketType.OnlineNotification)
-                {
-                    // If the agent is online
-                    foreach (OnlineNotificationPacket.AgentBlockBlock block in ((OnlineNotificationPacket)packet).AgentBlock)
-                        OnFriendNotification(block.AgentID, true);
-                }
-                else if (packet.Type == PacketType.OfflineNotification)
-                {
-                    // If the agent is offline
-                    foreach (OfflineNotificationPacket.AgentBlockBlock block in ((OfflineNotificationPacket)packet).AgentBlock)
-                        OnFriendNotification(block.AgentID, false);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles incoming avatar statistics, such as ratings
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-/*        private void AvatarStatisticsHandler(Packet packet, Simulator simulator)
-        {
-            if (OnAvatarStatistics != null)
-            {
-                AvatarStatisticsReplyPacket asr = (AvatarStatisticsReplyPacket)packet;
-                Avatar.Statistics stats = new Avatar.Statistics();
-
-                foreach (AvatarStatisticsReplyPacket.StatisticsDataBlock b in asr.StatisticsData)
-                {
-                    string n = Helpers.FieldToUTF8String(b.Name);
-
-                    switch (n)
-                    {
-                        case "Behavior":
-                            stats.BehaviorPositive = b.Positive;
-                            stats.BehaviorNegative = b.Negative;
-                            break;
-                        case "Appearance":
-                            stats.AppearancePositive = b.Positive;
-                            stats.AppearanceNegative = b.Negative;
-                            break;
-                        case "Building":
-                            stats.AppearancePositive = b.Positive;
-                            stats.AppearanceNegative = b.Negative;
-                            break;
-                        case "Given":
-                            stats.GivenPositive = b.Positive;
-                            stats.GivenNegative = b.Negative;
-                            break;
-                        default:
-                            Client.Log("Got an AvatarStatistics block with the name " + n, Helpers.LogLevel.Warning);
-                            break;
-                    }
-                }
-
-                OnAvatarStatistics(asr.AvatarData.AvatarID, stats);
-            }
-        } */
 
         /// <summary>
         /// Process incoming avatar properties (profile data)
