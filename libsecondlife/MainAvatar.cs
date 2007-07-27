@@ -1360,6 +1360,25 @@ namespace libsecondlife
             AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
         }
 
+        /// <summary>Cancels autopilot sim function</summary>
+        /// <remarks>Not certain if this is how it is really done</remarks>
+        public void AutoPilotCancel()
+        {
+            Client.Self.Status.AtPos = true;
+            Client.Self.Status.SendUpdate();
+            Client.Self.Status.AtPos = false;
+            Client.Self.Status.SendUpdate();
+        }
+
+        /// <summary>Stands up from sitting on a prim or the ground</summary>
+        public void Stand()
+        {
+            Client.Self.Status.StandUp = true;
+            Client.Self.Status.SendUpdate();
+            Client.Self.Status.StandUp = false;
+            Client.Self.Status.SendUpdate();
+        }
+
 		/// <summary>Attempt teleport to specified LLUUID</summary>
 		public bool Teleport(LLUUID landmark)
 		{
