@@ -376,10 +376,13 @@ namespace libsecondlife
         /// <param name="myRights">rights you have</param>
         internal void AddFriend(LLUUID agentID, RightsFlags theirRights, RightsFlags myRights)
         {
-            if (!_Friends.ContainsKey(agentID))
+            lock (_Friends)
             {
-                FriendInfo info = new FriendInfo(agentID, theirRights, myRights);
-                _Friends.Add(agentID, info);
+                if (!_Friends.ContainsKey(agentID))
+                {
+                    FriendInfo friend = new FriendInfo(agentID, theirRights, myRights);
+                    _Friends[agentID] = friend;
+                }
             }
         }
 
@@ -445,12 +448,28 @@ namespace libsecondlife
 
                 foreach (OnlineNotificationPacket.AgentBlockBlock block in notification.AgentBlock)
                 {
-                    bool doNotify = !_Friends[block.AgentID].IsOnline;
-                    _Friends[block.AgentID].IsOnline = true;
+                    FriendInfo friend;
+
+                    lock (_Friends)
+                    {
+                        if (!_Friends.ContainsKey(block.AgentID))
+                        {
+                            friend = new FriendInfo(block.AgentID, RightsFlags.CanSeeOnline,
+                                RightsFlags.CanSeeOnline);
+                            _Friends.Add(block.AgentID, friend);
+                        }
+                        else
+                        {
+                            friend = _Friends[block.AgentID];
+                        }
+                    }
+
+                    bool doNotify = !friend.IsOnline;
+                    friend.IsOnline = true;
 
                     if (OnFriendOnline != null && doNotify)
                     {
-                        try { OnFriendOnline(_Friends[block.AgentID]); }
+                        try { OnFriendOnline(friend); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
@@ -471,11 +490,20 @@ namespace libsecondlife
 
                 foreach (OfflineNotificationPacket.AgentBlockBlock block in notification.AgentBlock)
                 {
-                    _Friends[block.AgentID].IsOnline = false;
+                    FriendInfo friend;
+
+                    lock (_Friends)
+                    {
+                        if (!_Friends.ContainsKey(block.AgentID))
+                            _Friends.Add(block.AgentID, new FriendInfo(block.AgentID, RightsFlags.CanSeeOnline, RightsFlags.CanSeeOnline));
+
+                        friend = _Friends[block.AgentID];
+                        friend.IsOnline = false;
+                    }
 
                     if (OnFriendOffline != null)
                     {
-                        try { OnFriendOffline(_Friends[block.AgentID]); }
+                        try { OnFriendOffline(friend); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
@@ -571,7 +599,7 @@ namespace libsecondlife
 
                             FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline,
                                 RightsFlags.CanSeeOnline);
-                            _Friends.Add(friend.UUID, friend);
+                            lock (_Friends) _Friends.Add(friend.UUID, friend);
 
                             Client.Avatars.RequestAvatarName(fromAgentID);
                         }
@@ -593,7 +621,7 @@ namespace libsecondlife
             {
                 FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline, RightsFlags.CanSeeOnline);
                 friend.Name = fromAgentName;
-                _Friends.Add(friend.UUID, friend);
+                lock (_Friends) _Friends[friend.UUID] = friend;
 
                 if (OnFriendshipResponse != null)
                 {
