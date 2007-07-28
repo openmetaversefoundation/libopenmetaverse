@@ -250,7 +250,7 @@ namespace libsecondlife
         /// <param name="agentName">full name of the agent offereing friendship</param>
         /// <param name="IMSessionID">session ID need when accepting/declining the offer</param>
         /// <returns>Return true to accept the friendship, false to deny it</returns>
-        public delegate bool FriendshipOfferedEvent(LLUUID agentID, string agentName, LLUUID imSessionID);
+        public delegate void FriendshipOfferedEvent(LLUUID agentID, string agentName, LLUUID imSessionID);
 
         /// <summary>
         /// Trigger when your friendship offer has been excepted
@@ -269,6 +269,7 @@ namespace libsecondlife
 
         private SecondLife Client;
         private Dictionary<LLUUID, FriendInfo> _Friends = new Dictionary<LLUUID, FriendInfo>();
+        private Dictionary<LLUUID, LLUUID> _Requests = new Dictionary<LLUUID, LLUUID>();
 
         /// <summary>
         /// This constructor is intened to for use only the the libsecondlife framework
@@ -296,7 +297,7 @@ namespace libsecondlife
         /// in FriendsManager. Avoid calling it multiple times when it is not 
         /// necessary to as it can be expensive memory-wise
         /// </remarks>
-        public List<FriendInfo> GetFriendsList()
+        public List<FriendInfo> FriendsList()
         {
             List<FriendInfo> friends = new List<FriendInfo>();
 
@@ -309,6 +310,62 @@ namespace libsecondlife
             return friends;
         }
 
+        /// <summary>
+        /// Dictionary of unanswered friendship offers
+        /// </summary>
+        public Dictionary<LLUUID, LLUUID> PendingOffers()
+        {
+            Dictionary<LLUUID, LLUUID> requests = new Dictionary<LLUUID,LLUUID>();
+
+            lock (_Requests)
+            {
+                foreach(KeyValuePair<LLUUID, LLUUID> req in _Requests)
+                    requests.Add(req.Key, req.Value);
+            }
+
+            return requests;
+        }
+
+        /// <summary>
+        /// Accept a friendship request
+        /// </summary>
+        /// <param name="imSessionID">imSessionID of the friendship request message</param>
+        public void AcceptFriendship(LLUUID fromAgentID, LLUUID imSessionID)
+        {
+            LLUUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
+
+            AcceptFriendshipPacket request = new AcceptFriendshipPacket();
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.TransactionBlock.TransactionID = imSessionID;
+            request.FolderData = new AcceptFriendshipPacket.FolderDataBlock[1];
+            request.FolderData[0] = new AcceptFriendshipPacket.FolderDataBlock();
+            request.FolderData[0].FolderID = callingCardFolder;
+
+            Client.Network.SendPacket(request);
+
+            FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline,
+                RightsFlags.CanSeeOnline);
+            lock (_Friends) _Friends.Add(friend.UUID, friend);
+            lock (_Requests) { if (_Requests.ContainsKey(fromAgentID)) _Requests.Remove(fromAgentID); }
+
+            Client.Avatars.RequestAvatarName(fromAgentID);
+        }
+
+        /// <summary>
+        /// Decline a friendship request
+        /// </summary>
+        /// <param name="imSessionID">imSessionID of the friendship request message</param>
+        public void DeclineFriendship(LLUUID fromAgentID, LLUUID imSessionID)
+        {
+            DeclineFriendshipPacket request = new DeclineFriendshipPacket();
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.TransactionBlock.TransactionID = imSessionID;
+            Client.Network.SendPacket(request);
+
+            lock (_Requests) { if (_Requests.ContainsKey(fromAgentID)) _Requests.Remove(fromAgentID); }
+        }
 
         /// <summary>
         /// Offer friendship to an avatar.
@@ -580,40 +637,12 @@ namespace libsecondlife
             {
                 if (OnFriendshipOffered != null)
                 {
-                    try
+                    lock (_Requests)
                     {
-                        if (OnFriendshipOffered(fromAgentID, fromAgentName, imSessionID))
-                        {
-                            // Accept the offer
-                            LLUUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
-
-                            AcceptFriendshipPacket request = new AcceptFriendshipPacket();
-                            request.AgentData.AgentID = Client.Network.AgentID;
-                            request.AgentData.SessionID = Client.Network.SessionID;
-                            request.TransactionBlock.TransactionID = imSessionID;
-                            request.FolderData = new AcceptFriendshipPacket.FolderDataBlock[1];
-                            request.FolderData[0] = new AcceptFriendshipPacket.FolderDataBlock();
-                            request.FolderData[0].FolderID = callingCardFolder;
-
-                            Client.Network.SendPacket(request);
-
-                            FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline,
-                                RightsFlags.CanSeeOnline);
-                            lock (_Friends) _Friends.Add(friend.UUID, friend);
-
-                            Client.Avatars.RequestAvatarName(fromAgentID);
-                        }
-                        else
-                        {
-                            // Decline the offer
-                            DeclineFriendshipPacket request = new DeclineFriendshipPacket();
-                            request.AgentData.AgentID = Client.Network.AgentID;
-                            request.AgentData.SessionID = Client.Network.SessionID;
-                            request.TransactionBlock.TransactionID = imSessionID;
-
-                            Client.Network.SendPacket(request);
-                        }
+                        if (_Requests.ContainsKey(fromAgentID)) _Requests[fromAgentID] = imSessionID;
+                        else _Requests.Add(fromAgentID, imSessionID);
                     }
+                    try { OnFriendshipOffered(fromAgentID, fromAgentName, imSessionID); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
