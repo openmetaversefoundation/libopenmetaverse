@@ -270,11 +270,12 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Request an asset download
         /// </summary>
-        /// <param name="assetID"></param>
-        /// <param name="type"></param>
-        /// <param name="priority"></param>
+        /// <param name="assetID">Asset UUID</param>
+        /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
+        /// <param name="priority">Whether to give this transfer an elevated priority</param>
+        /// <returns>The transaction ID generated for this transfer</returns>
         public LLUUID RequestAsset(LLUUID assetID, AssetType type, bool priority)
         {
             AssetDownload transfer = new AssetDownload();
@@ -398,15 +399,18 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Initiate an asset upload
         /// </summary>
         /// <param name="transactionID">Usually a randomly generated UUID</param>
-        /// <param name="type"></param>
-        /// <param name="data"></param>
-        /// <param name="tempFile"></param>
-        /// <param name="storeLocal"></param>
-        /// <param name="isPriority"></param>
-        public void RequestUpload(LLUUID transactionID, AssetType type, byte[] data, bool tempFile, bool storeLocal, 
+        /// <param name="type">Asset type to upload this data as</param>
+        /// <param name="data">Raw asset data to upload</param>
+        /// <param name="tempFile">Whether this is a temporary file or not</param>
+        /// <param name="storeLocal">Whether to store this asset on the local
+        /// simulator or the grid-wide asset server</param>
+        /// <param name="isPriority">Give this upload a higher priority</param>
+        /// <returns>The asset ID the new file will have once the upload is
+        /// complete</returns>
+        public LLUUID RequestUpload(LLUUID transactionID, AssetType type, byte[] data, bool tempFile, bool storeLocal, 
             bool isPriority)
         {
             if (!Transfers.ContainsKey(transactionID))
@@ -456,11 +460,15 @@ namespace libsecondlife
                 lock (Transfers) Transfers[upload.AssetID] = upload;
 
                 Client.Network.SendPacket(request);
+
+                return upload.AssetID;
             }
             else
             {
                 Client.Log("RequestUpload() called for an asset we are already uploading, ignoring",
                     Helpers.LogLevel.Info);
+
+                return LLUUID.Zero;
             }
         }
 
