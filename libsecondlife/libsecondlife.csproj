@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgentThrottle.cs" />
+    <Compile Include="Animations.cs" />
     <Compile Include="AppearanceManager.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
