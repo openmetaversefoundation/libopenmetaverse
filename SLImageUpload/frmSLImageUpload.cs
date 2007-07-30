@@ -140,11 +140,9 @@ namespace SLImageUpload
                 cmdUpload.Enabled = false;
                 grpLogin.Enabled = false;
 
-                // Generate the Transaction ID and Asset ID
-                LLUUID transactionid = LLUUID.Random();
-                txtAssetID.Text = transactionid.Combine(Client.Network.SecureSessionID).ToStringHyphenated();
-
-                Assets.RequestUpload(transactionid, AssetType.Texture, UploadData, false, false, true);
+                LLUUID assetID;
+                LLUUID transactionid = Assets.RequestUpload(out assetID, AssetType.Texture, UploadData, false, false, true);
+                txtAssetID.Text = assetID.ToStringHyphenated();
             }
         }
 

@@ -186,7 +186,7 @@ namespace importprimscript
             }
 
             CurrentUpload = null;
-            Assets.RequestUpload(LLUUID.Random(), AssetType.Texture, jp2data, false, false, true);
+            LLUUID transactionID = Assets.RequestUpload(AssetType.Texture, jp2data, false, false, true);
 
             // The textures are small, 60 seconds should be plenty
             UploadEvent.WaitOne(1000 * 60, false);

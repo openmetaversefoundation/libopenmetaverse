@@ -1435,14 +1435,11 @@ namespace libsecondlife
 
         private void UploadBake(Baker bake)
         {
-            // Create a transactionID and assetID for this upload
-            LLUUID transactionID = LLUUID.Random();
-            LLUUID assetID = transactionID.Combine(Client.Network.SecureSessionID);
+            // Upload the completed layer data
+            LLUUID assetID;
+            LLUUID transactionID = Assets.RequestUpload(out assetID, AssetType.Texture, bake.EncodedBake, true, true, false);
 
             Client.DebugLog("Bake " + bake.BakeType.ToString() + " completed. Uploading asset " + assetID.ToStringHyphenated());
-
-            // Upload the completed layer data
-            Assets.RequestUpload(transactionID, AssetType.Texture, bake.EncodedBake, true, true, false);
 
             // Add it to a pending uploads list
             lock (PendingUploads) PendingUploads.Add(assetID, BakeTypeToAgentTextureIndex(bake.BakeType));

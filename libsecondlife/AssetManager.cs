@@ -398,78 +398,76 @@ namespace libsecondlife
             }
         }
 
+        public LLUUID RequestUpload(AssetType type, byte[] data, bool tempFile, bool storeLocal,
+            bool isPriority)
+        {
+            LLUUID assetID;
+            return RequestUpload(out assetID, type, data, tempFile, storeLocal, isPriority);
+        }
+
         /// <summary>
         /// Initiate an asset upload
         /// </summary>
-        /// <param name="transactionID">Usually a randomly generated UUID</param>
+        /// <param name="transactionID">The ID this asset will have if the
+        /// upload succeeds</param>
         /// <param name="type">Asset type to upload this data as</param>
         /// <param name="data">Raw asset data to upload</param>
         /// <param name="tempFile">Whether this is a temporary file or not</param>
         /// <param name="storeLocal">Whether to store this asset on the local
         /// simulator or the grid-wide asset server</param>
         /// <param name="isPriority">Give this upload a higher priority</param>
-        /// <returns>The asset ID the new file will have once the upload is
-        /// complete</returns>
-        public LLUUID RequestUpload(LLUUID transactionID, AssetType type, byte[] data, bool tempFile, bool storeLocal, 
+        /// <returns>The transaction ID of this transfer</returns>
+        public LLUUID RequestUpload(out LLUUID assetID, AssetType type, byte[] data, bool tempFile, bool storeLocal, 
             bool isPriority)
         {
-            if (!Transfers.ContainsKey(transactionID))
+            AssetUpload upload = new AssetUpload();
+            upload.AssetData = data;
+            upload.AssetType = type;
+            upload.ID = LLUUID.Random();
+            assetID = upload.ID.Combine(Client.Network.SecureSessionID);
+            upload.AssetID = assetID;
+            upload.Size = data.Length;
+            upload.XferID = 0;
+
+            // Build and send the upload packet
+            AssetUploadRequestPacket request = new AssetUploadRequestPacket();
+            request.AssetBlock.StoreLocal = storeLocal;
+            request.AssetBlock.Tempfile = tempFile;
+            request.AssetBlock.TransactionID = upload.ID;
+            request.AssetBlock.Type = (sbyte)type;
+
+            if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
             {
-                AssetUpload upload = new AssetUpload();
-                upload.AssetData = data;
-                upload.AssetType = type;
-                upload.ID = transactionID;
-                upload.AssetID = ((transactionID == LLUUID.Zero) ? transactionID : transactionID.Combine(Client.Network.SecureSessionID));
-                upload.Size = data.Length;
-                upload.XferID = 0;
+                Client.Log(
+                    String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
+                    upload.ID.ToStringHyphenated(), upload.AssetID.ToStringHyphenated(), upload.Size),
+                    Helpers.LogLevel.Info);
 
-                // Build and send the upload packet
-                AssetUploadRequestPacket request = new AssetUploadRequestPacket();
-                request.AssetBlock.StoreLocal = storeLocal;
-                request.AssetBlock.Tempfile = tempFile;
-                request.AssetBlock.TransactionID = upload.ID;
-                request.AssetBlock.Type = (sbyte)type;
-
-                if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
-                {
-                    Client.Log(
-                        String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
-                        upload.ID.ToStringHyphenated(), upload.AssetID.ToStringHyphenated(), upload.Size),
-                        Helpers.LogLevel.Info);
-
-                    // The whole asset will fit in this packet, makes things easy
-                    request.AssetBlock.AssetData = data;
-                    upload.Transferred = data.Length;
-                }
-                else
-                {
-                    Client.Log(
-                        String.Format("Beginning asset upload [Multiple Packets], ID: {0}, AssetID: {1}, Size: {2}",
-                        upload.ID.ToStringHyphenated(), upload.AssetID.ToStringHyphenated(), upload.Size),
-                        Helpers.LogLevel.Info);
-
-                    // Asset is too big, send in multiple packets
-                    request.AssetBlock.AssetData = new byte[0];
-                }
-
-                //Client.DebugLog(request.ToString());
-
-                // Add this upload to the Transfers dictionary using the assetID as the key.
-                // Once the simulator assigns an actual identifier for this upload it will be
-                // removed from Transfers and reinserted with the proper identifier
-                lock (Transfers) Transfers[upload.AssetID] = upload;
-
-                Client.Network.SendPacket(request);
-
-                return upload.AssetID;
+                // The whole asset will fit in this packet, makes things easy
+                request.AssetBlock.AssetData = data;
+                upload.Transferred = data.Length;
             }
             else
             {
-                Client.Log("RequestUpload() called for an asset we are already uploading, ignoring",
+                Client.Log(
+                    String.Format("Beginning asset upload [Multiple Packets], ID: {0}, AssetID: {1}, Size: {2}",
+                    upload.ID.ToStringHyphenated(), upload.AssetID.ToStringHyphenated(), upload.Size),
                     Helpers.LogLevel.Info);
 
-                return LLUUID.Zero;
+                // Asset is too big, send in multiple packets
+                request.AssetBlock.AssetData = new byte[0];
             }
+
+            //Client.DebugLog(request.ToString());
+
+            // Add this upload to the Transfers dictionary using the assetID as the key.
+            // Once the simulator assigns an actual identifier for this upload it will be
+            // removed from Transfers and reinserted with the proper identifier
+            lock (Transfers) Transfers[upload.AssetID] = upload;
+
+            Client.Network.SendPacket(request);
+
+            return upload.ID;
         }
 
         private void SendNextUploadPacket(AssetUpload upload)

@@ -48,7 +48,7 @@ namespace SLProxy
 
         public ProxyFrame(string[] args)
         {
-            bool externalPlugin = false;
+            //bool externalPlugin = false;
             this.args = args;
 
             ProxyConfig proxyConfig = new ProxyConfig("SLProxy", "Austin Jennings / Andrew Ortman", args);
@@ -75,7 +75,7 @@ namespace SLProxy
                         Console.WriteLine("arg '" + sw + "' val '" + val + "'");
                         if (sw == "--load")
                         {
-                            externalPlugin = true;
+                            //externalPlugin = true;
                             LoadPlugin(val);
                         }
                     }
