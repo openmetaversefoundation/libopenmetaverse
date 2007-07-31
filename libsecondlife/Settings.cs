@@ -43,6 +43,8 @@ namespace libsecondlife
         public string VERSION = "libsecondlife 0.0.9";
         /// <summary>XML-RPC login server to connect to</summary>
         public string LOGIN_SERVER = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+        /// <summary>The relative directory where files needed for baking are kept</summary>
+        public string RESOURCE_DIR = "avatar_data";
 
 	    // Timeouts
 
@@ -162,18 +164,18 @@ namespace libsecondlife
 
         private SecondLife Client;
         private int priceUpload = 0;
+        private string resourcePath;
 
         /// <summary>Constructor</summary>
-        /// <param name="client">Client connection Object to use</param>
+        /// <param name="client">Reference to a SecondLife client object</param>
         public Settings(SecondLife client)
         {
             Client = client;
-
             Client.Network.RegisterCallback(Packets.PacketType.EconomyData, new NetworkManager.PacketCallback(EconomyDataHandler));
         }
 
         /// <summary>
-        /// Presumably for outputting asset upload costs.
+        /// Gets the cost of uploading an asset to the grid
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>

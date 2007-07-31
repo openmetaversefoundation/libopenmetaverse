@@ -1026,16 +1026,50 @@ namespace libsecondlife
             object list = serializer.Deserialize(reader);
             return (List<Packet>)list;
         }
-        
+
         /// <summary>
-        /// 
+        /// Attempts to load a file embedded in the assembly
         /// </summary>
-        /// <param name="resourceName"></param>
-        /// <returns></returns>
+        /// <param name="resourceName">The filename of the resource to load</param>
+        /// <returns>A Stream for the requested file, or null if the resource
+        /// was not successfully loaded</returns>
         public static System.IO.Stream GetResourceStream(string resourceName)
         {
-        	System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-        	return a.GetManifestResourceStream("libsecondlife.Resources." + resourceName);
+            return GetResourceStream(resourceName, String.Empty);
+        }
+        
+        /// <summary>
+        /// Attempts to load a file either embedded in the assembly or found in
+        /// a given search path
+        /// </summary>
+        /// <param name="resourceName">The filename of the resource to load</param>
+        /// <param name="searchPath">An optional path that will be searched if
+        /// the asset is not found embedded in the assembly</param>
+        /// <returns>A Stream for the requested file, or null if the resource
+        /// was not successfully loaded</returns>
+        public static System.IO.Stream GetResourceStream(string resourceName, string searchPath)
+        {
+            try
+            {
+                System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+                return a.GetManifestResourceStream("libsecondlife.Resources." + resourceName);
+            }
+            catch (Exception)
+            {
+                // Failed to load the resource from the assembly itself
+            }
+
+            try
+            {
+                return new System.IO.FileStream(searchPath + System.IO.Path.DirectorySeparatorChar + resourceName,
+                    System.IO.FileMode.Open);
+            }
+            catch (Exception)
+            {
+                // Failed to load the resource from the given path
+            }
+
+            return null;
         }
     }
 }
