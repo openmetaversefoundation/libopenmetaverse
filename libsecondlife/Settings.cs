@@ -164,7 +164,6 @@ namespace libsecondlife
 
         private SecondLife Client;
         private int priceUpload = 0;
-        private string resourcePath;
 
         /// <summary>Constructor</summary>
         /// <param name="client">Reference to a SecondLife client object</param>

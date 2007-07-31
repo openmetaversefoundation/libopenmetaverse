@@ -93,7 +93,7 @@
 
 		<!-- Make sure the bin/ directory exists -->
 		<mkdir dir="${bin_dir}" failonerror="true"/>
-
+		
 		<!-- Compile the library -->
 		<csc target="library" unsafe="true" output="../bin/libsecondlife.dll" doc="../bin/libsecondlife.xml" debug="${build.debug}">
 			<sources>
@@ -108,6 +108,16 @@
 			    <warning number="1591" />
 			</nowarn>
 		</csc>
+		
+		<!-- Create the avatar_data directory -->
+		<mkdir dir="${bin_dir}/avatar_data" failonerror="false"/>
+		
+		<!-- Copy the resource files to the avatar_data dir -->
+		<copy todir="${bin_dir}/avatar_data">
+    		<fileset basedir="Resources">
+        		<include name="*.*" />
+    		</fileset>
+		</copy>
 	</target>
 
 	<target name="test-dll" depends="init build" description="makes the test dll">

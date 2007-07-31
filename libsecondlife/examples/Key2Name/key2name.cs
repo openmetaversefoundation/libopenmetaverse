@@ -1,11 +1,12 @@
 using System;
 using libsecondlife;
-using libsecondlife.Utilities;
 
 namespace Key2Name
 {
     class Program
     {
+        static System.Threading.AutoResetEvent NameEvent = new System.Threading.AutoResetEvent(false);
+
         static void Main(string[] args)
         {
             if (args.Length < 4)
@@ -15,6 +16,8 @@ namespace Key2Name
             }
 
             SecondLife client = new SecondLife();
+            client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
+
             Console.WriteLine("Attempting to connect and login to Second Life.");
 
             // Login to Second Life
@@ -25,19 +28,28 @@ namespace Key2Name
                 return;
             }
 
-            AvatarTracker avatarTracker = new AvatarTracker(client);
-
             LLUUID lookup = new LLUUID();
             LLUUID.TryParse(args[3], out lookup);
 
             Console.WriteLine("Looking up name for " + lookup.ToStringHyphenated());
 
-            string name = avatarTracker.GetAvatarName(lookup);
+            client.Avatars.RequestAvatarName(lookup);
 
-            Console.WriteLine("Name: " + name + Environment.NewLine + "Press enter to logout.");
+            if (!NameEvent.WaitOne(15 * 1000, false))
+                Console.WriteLine("Name lookup timed out.");
+
+            Console.WriteLine("Press enter to logout.");
             Console.ReadLine();
 
             client.Network.Logout();
+        }
+
+        static void Avatars_OnAvatarNames(System.Collections.Generic.Dictionary<LLUUID, string> names)
+        {
+            foreach (string name in names.Values)
+                Console.WriteLine("Name: " + name);
+
+            NameEvent.Set();
         }
     }
 }

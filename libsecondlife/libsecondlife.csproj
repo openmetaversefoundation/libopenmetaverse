@@ -164,74 +164,10 @@
     <Compile Include="_Packets_.cs" />
     <Compile Include="_VisualParam_.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\blush_alpha.tga" />
-    <None Include="Resources\bodyfreckles_alpha.tga" />
-    <None Include="Resources\body_skingrain.tga" />
-    <None Include="Resources\bump_face_wrinkles.tga" />
-    <None Include="Resources\bump_head_base.tga" />
-    <None Include="Resources\bump_lowerbody_base.tga" />
-    <None Include="Resources\bump_pants_wrinkles.tga" />
-    <None Include="Resources\bump_shirt_wrinkles.tga" />
-    <None Include="Resources\bump_upperbody_base.tga" />
-    <None Include="Resources\eyebrows_alpha.tga" />
-    <None Include="Resources\eyeliner_alpha.tga" />
-    <None Include="Resources\eyeshadow_inner_alpha.tga" />
-    <None Include="Resources\eyeshadow_outer_alpha.tga" />
-    <None Include="Resources\eyewhite.tga" />
-    <None Include="Resources\facehair_chincurtains_alpha.tga" />
-    <None Include="Resources\facehair_moustache_alpha.tga" />
-    <None Include="Resources\facehair_sideburns_alpha.tga" />
-    <None Include="Resources\facehair_soulpatch_alpha.tga" />
-    <None Include="Resources\freckles_alpha.tga" />
-    <None Include="Resources\head_alpha.tga" />
-    <None Include="Resources\head_color.tga" />
-    <None Include="Resources\head_hair.tga" />
-    <None Include="Resources\head_highlights_alpha.tga" />
-    <None Include="Resources\head_shading_alpha.tga" />
-    <None Include="Resources\head_skingrain.tga" />
-    <None Include="Resources\lipgloss_alpha.tga" />
-    <None Include="Resources\lipstick_alpha.tga" />
-    <None Include="Resources\lips_mask.tga" />
-    <None Include="Resources\lowerbody_color.tga" />
-    <None Include="Resources\lowerbody_highlights_alpha.tga" />
-    <None Include="Resources\lowerbody_shading_alpha.tga" />
-    <None Include="Resources\nailpolish_alpha.tga" />
-    <None Include="Resources\rosyface_alpha.tga" />
-    <None Include="Resources\rouge_alpha.tga" />
-    <None Include="Resources\underpants_trial_female.tga" />
-    <None Include="Resources\underpants_trial_male.tga" />
-    <None Include="Resources\undershirt_trial_female.tga" />
-    <None Include="Resources\upperbodyfreckles_alpha.tga" />
-    <None Include="Resources\upperbody_color.tga" />
-    <None Include="Resources\upperbody_highlights_alpha.tga" />
-    <None Include="Resources\upperbody_shading_alpha.tga" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\gloves_fingers_alpha.tga" />
-    <EmbeddedResource Include="Resources\glove_length_alpha.tga" />
-    <EmbeddedResource Include="Resources\jacket_length_lower_alpha.tga" />
-    <EmbeddedResource Include="Resources\jacket_length_upper_alpha.tga" />
-    <EmbeddedResource Include="Resources\jacket_open_lower_alpha.tga" />
-    <EmbeddedResource Include="Resources\jacket_open_upper_alpha.tga" />
-    <EmbeddedResource Include="Resources\pants_length_alpha.tga" />
-    <EmbeddedResource Include="Resources\pants_waist_alpha.tga" />
-    <EmbeddedResource Include="Resources\shirt_bottom_alpha.tga" />
-    <EmbeddedResource Include="Resources\shirt_collar_alpha.tga" />
-    <EmbeddedResource Include="Resources\shirt_collar_back_alpha.tga" />
-    <EmbeddedResource Include="Resources\shirt_sleeve_alpha.tga" />
-    <EmbeddedResource Include="Resources\shoe_height_alpha.tga" />
-    <EmbeddedResource Include="Resources\skirt_length_alpha.tga" />
-    <EmbeddedResource Include="Resources\skirt_slit_back_alpha.tga" />
-    <EmbeddedResource Include="Resources\skirt_slit_front_alpha.tga" />
-    <EmbeddedResource Include="Resources\skirt_slit_left_alpha.tga" />
-    <EmbeddedResource Include="Resources\skirt_slit_right_alpha.tga" />
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>xcopy $(SolutionDir)Resources\*.* $(OutDir)avatar_data /i /d /y</PostBuildEvent>
   </PropertyGroup>
 </Project>

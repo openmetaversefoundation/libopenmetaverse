@@ -24,8 +24,6 @@ namespace libsecondlife.Utilities
 
     public static class Realism
     {
-        public readonly static LLUUID TypingAnimation = new LLUUID("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
-
         /// <summary>
         ///  A psuedo-realistic chat function that uses the typing sound and
         /// animation, types at three characters per second, and randomly 
@@ -55,7 +53,7 @@ namespace libsecondlife.Utilities
 
             // Start typing
             client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StartTyping);
-            client.Self.AnimationStart(TypingAnimation);
+            client.Self.AnimationStart(Animations.TYPE);
 
             while (characters < message.Length)
             {
@@ -63,7 +61,7 @@ namespace libsecondlife.Utilities
                 {
                     // Start typing again
                     client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StartTyping);
-                    client.Self.AnimationStart(TypingAnimation);
+                    client.Self.AnimationStart(Animations.TYPE);
                     typing = true;
                 }
                 else
@@ -72,7 +70,7 @@ namespace libsecondlife.Utilities
                     if (rand.Next(10) >= 9)
                     {
                         client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StopTyping);
-                        client.Self.AnimationStop(TypingAnimation);
+                        client.Self.AnimationStop(Animations.TYPE);
                         typing = false;
                     }
                 }
@@ -87,7 +85,7 @@ namespace libsecondlife.Utilities
 
             // Stop typing
             client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StopTyping);
-            client.Self.AnimationStop(TypingAnimation);
+            client.Self.AnimationStop(Animations.TYPE);
         }
     }
 
@@ -191,231 +189,6 @@ namespace libsecondlife.Utilities
                     Client.Self.Teleport(SimHandle, Position);
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// Maintains a cache of avatars and does blocking lookups for avatar data
-    /// </summary>
-    public class AvatarTracker
-    {
-        protected SecondLife Client;
-        protected Dictionary<LLUUID, Avatar> avatars = new Dictionary<LLUUID, Avatar>();
-        protected Dictionary<LLUUID, ManualResetEvent> NameLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
-        protected Dictionary<LLUUID, ManualResetEvent> PropertiesLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
-        protected Dictionary<LLUUID, ManualResetEvent> InterestsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
-        protected Dictionary<LLUUID, ManualResetEvent> GroupsLookupEvents = new Dictionary<LLUUID, ManualResetEvent>();
-
-        public AvatarTracker(SecondLife client)
-        {
-            Client = client;
-
-            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
-            Client.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
-            Client.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
-            Client.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
-
-            //Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            //Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
-        }
-
-        /// <summary>
-        /// Check if a particular avatar is in the local cache
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public bool Contains(LLUUID id)
-        {
-            return avatars.ContainsKey(id);
-        }
-
-        public Dictionary<LLUUID, Avatar> SimLocalAvatars()
-        {
-            Dictionary<LLUUID, Avatar> local = new Dictionary<LLUUID, Avatar>();
-
-            lock (avatars)
-            {
-                foreach (Avatar avatar in avatars.Values)
-                {
-                    if (avatar.CurrentSim == Client.Network.CurrentSim)
-                        local[avatar.ID] = avatar;
-                }
-            }
-
-            return local;
-        }
-
-        /// <summary>
-        /// Get an avatar's name, either from the cache or request it.
-        /// This function is blocking
-        /// </summary>
-        /// <param name="id">Avatar key to look up</param>
-        /// <returns>The avatar name, or String.Empty if the lookup failed</returns>
-        public string GetAvatarName(LLUUID id)
-        {
-            // Short circuit the cache lookup in GetAvatarNames
-            if (Contains(id))
-                return LocalAvatarNameLookup(id);
-
-            // Add to the dictionary
-            lock (NameLookupEvents) NameLookupEvents.Add(id, new ManualResetEvent(false));
-
-            // Call function
-            Client.Avatars.RequestAvatarName(id);
-
-            // Start blocking while we wait for this name to be fetched
-            NameLookupEvents[id].WaitOne(5000, false);
-
-            // Clean up
-            lock (NameLookupEvents) NameLookupEvents.Remove(id);
-
-            // Return
-            return LocalAvatarNameLookup(id);
-        }
-
-        public bool GetAvatarProfile(LLUUID id, out Avatar.Interests interests, out Avatar.AvatarProperties properties,
-            out List<LLUUID> groups)
-        {
-            // Do a local lookup first
-            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null &&
-                avatars[id].ProfileProperties.BornOn != String.Empty)
-            {
-                interests = avatars[id].ProfileInterests;
-                properties = avatars[id].ProfileProperties;
-                groups = avatars[id].Groups;
-
-                return true;
-            }
-
-            // Create the ManualResetEvents
-            lock (PropertiesLookupEvents)
-                if (!PropertiesLookupEvents.ContainsKey(id))
-                    PropertiesLookupEvents[id] = new ManualResetEvent(false);
-            lock (InterestsLookupEvents)
-                if (!InterestsLookupEvents.ContainsKey(id))
-                    InterestsLookupEvents[id] = new ManualResetEvent(false);
-            lock (GroupsLookupEvents)
-                if (!GroupsLookupEvents.ContainsKey(id))
-                    GroupsLookupEvents[id] = new ManualResetEvent(false);
-
-            // Request the avatar profile
-            Client.Avatars.RequestAvatarProperties(id);
-
-            // Wait for all of the events to complete
-            PropertiesLookupEvents[id].WaitOne(5000, false);
-            InterestsLookupEvents[id].WaitOne(5000, false);
-            GroupsLookupEvents[id].WaitOne(5000, false);
-
-            // Destroy the ManualResetEvents
-            lock (PropertiesLookupEvents)
-                PropertiesLookupEvents.Remove(id);
-            lock (InterestsLookupEvents)
-                InterestsLookupEvents.Remove(id);
-            lock (GroupsLookupEvents)
-                GroupsLookupEvents.Remove(id);
-
-            // If we got a filled in profile return everything
-            if (avatars.ContainsKey(id) && avatars[id].ProfileProperties.BornOn != null &&
-                avatars[id].ProfileProperties.BornOn != String.Empty)
-            {
-                interests = avatars[id].ProfileInterests;
-                properties = avatars[id].ProfileProperties;
-                groups = avatars[id].Groups;
-
-                return true;
-            }
-            else
-            {
-                interests = new Avatar.Interests();
-                properties = new Avatar.AvatarProperties();
-                groups = null;
-
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// This function will only check if the avatar name exists locally,
-        /// it will not do any networking calls to fetch the name
-        /// </summary>
-        /// <returns>The avatar name, or an empty string if it's not found</returns>
-        protected string LocalAvatarNameLookup(LLUUID id)
-        {
-            lock (avatars)
-            {
-                if (avatars.ContainsKey(id))
-                    return avatars[id].Name;
-                else
-                    return String.Empty;
-            }
-        }
-
-        private void Avatars_OnAvatarNames(Dictionary<LLUUID, string> names)
-        {
-            lock (avatars)
-            {
-                foreach (KeyValuePair<LLUUID, string> kvp in names)
-                {
-                    if (!avatars.ContainsKey(kvp.Key) || avatars[kvp.Key] == null)
-                        avatars[kvp.Key] = new Avatar();
-
-                    // FIXME: Change this to .name when we move inside libsecondlife
-                    avatars[kvp.Key].Name = kvp.Value;
-
-                    if (NameLookupEvents.ContainsKey(kvp.Key))
-                        NameLookupEvents[kvp.Key].Set();
-                }
-            }
-        }
-
-        void Avatars_OnAvatarProperties(LLUUID avatarID, Avatar.AvatarProperties properties)
-        {
-            lock (avatars)
-            {
-                if (!avatars.ContainsKey(avatarID))
-                    avatars[avatarID] = new Avatar();
-
-                avatars[avatarID].ProfileProperties = properties;
-            }
-
-            if (PropertiesLookupEvents.ContainsKey(avatarID))
-                PropertiesLookupEvents[avatarID].Set();
-        }
-
-        void Avatars_OnAvatarInterests(LLUUID avatarID, Avatar.Interests interests)
-        {
-            lock (avatars)
-            {
-                if (!avatars.ContainsKey(avatarID))
-                    avatars[avatarID] = new Avatar();
-
-                avatars[avatarID].ProfileInterests = interests;
-            }
-
-            if (InterestsLookupEvents.ContainsKey(avatarID))
-                InterestsLookupEvents[avatarID].Set();
-        }
-
-        void Avatars_OnAvatarGroups(LLUUID avatarID, AvatarGroupsReplyPacket.GroupDataBlock[] groups)
-        {
-            List<LLUUID> groupList = new List<LLUUID>();
-
-            foreach (AvatarGroupsReplyPacket.GroupDataBlock block in groups)
-            {
-                // TODO: We just toss away all the other information here, seems like a waste...
-                groupList.Add(block.GroupID);
-            }
-
-            lock (avatars)
-            {
-                if (!avatars.ContainsKey(avatarID))
-                    avatars[avatarID] = new Avatar();
-
-                avatars[avatarID].Groups = groupList;
-            }
-
-            if (GroupsLookupEvents.ContainsKey(avatarID))
-                GroupsLookupEvents[avatarID].Set();
         }
     }
 
