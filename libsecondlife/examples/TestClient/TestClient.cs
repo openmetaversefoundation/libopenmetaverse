@@ -66,7 +66,6 @@ namespace libsecondlife.TestClient
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
             Inventory.OnInventoryObjectReceived += new InventoryManager.InventoryObjectReceived(Inventory_OnInventoryObjectReceived);
-            this.OnLogMessage += new LogCallback(TestClient_OnLogMessage);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
             
@@ -182,11 +181,6 @@ namespace libsecondlife.TestClient
 
                 sim.Client.Groups.BeginGetGroupMembers(GroupID);
             }
-        }
-
-        private void TestClient_OnLogMessage(string message, Helpers.LogLevel level)
-        {
-            Console.WriteLine("<" + this.ToString() + "> " + level.ToString() + ": " + message);
         }
 
         private void GroupMembersHandler(Dictionary<LLUUID, GroupMember> members)

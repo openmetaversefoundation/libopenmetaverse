@@ -102,9 +102,12 @@
     <Compile Include="BakeLayer.cs" />
     <Compile Include="BitPack.cs" />
     <Compile Include="BlockingQueue.cs" />
-    <Compile Include="Caps.cs" />
+    <Compile Include="Capabilities.cs" />
+    <Compile Include="CapsEventQueue.cs" />
+    <Compile Include="CapsRequest.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendsManager.cs" />
+    <Compile Include="HttpBase.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />

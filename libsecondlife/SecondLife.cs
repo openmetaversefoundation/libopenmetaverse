@@ -171,6 +171,7 @@ namespace libsecondlife
         /// <param name="level"></param>
         public static void LogStatic(string message, Helpers.LogLevel level)
         {
+            Console.WriteLine("{0}: {1}", level.ToString().ToUpper(), message);
         }
 
         /// <summary>
@@ -181,6 +182,7 @@ namespace libsecondlife
         /// <param name="exception"></param>
         public static void LogStatic(string message, Helpers.LogLevel level, Exception exception)
         {
+            Console.WriteLine("{0} [libsecondlife]: {1} ({2})", level.ToString().ToUpper(), message, exception);
         }
 
         /// <summary>
@@ -190,6 +192,7 @@ namespace libsecondlife
         [System.Diagnostics.Conditional("DEBUG")]
         public static void DebugLogStatic(string message)
         {
+            Console.WriteLine("DEBUG [libsecondlife]: {0}", message);
         }
     }
 }

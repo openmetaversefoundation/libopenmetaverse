@@ -220,7 +220,7 @@ namespace libsecondlife
             /// <returns>A string reprentation of both my rights and my friend's righs</returns>
             public override string ToString()
             {
-                return String.Format("{0} (their rights: {1}, my rights: {2})", m_name, TheirRightsFlags, 
+                return String.Format("{0} (Their Rights: {1}, My Rights: {2})", m_name, TheirRightsFlags, 
                     MyRightsFlags);
             }
         }
@@ -454,19 +454,17 @@ namespace libsecondlife
         {
             List<LLUUID> names = new List<LLUUID>();
 
-            if ( _Friends.Count > 0 ) {
+            if ( _Friends.Count > 0 )
+            {
                 lock (_Friends)
                 {
                     foreach (KeyValuePair<LLUUID, FriendInfo> kvp in _Friends)
                     {
-                        if (String.IsNullOrEmpty(kvp.Value.Name)) {
+                        if (String.IsNullOrEmpty(kvp.Value.Name))
                             names.Add(kvp.Key);
-                            Client.DebugLog("Friend lookup for " + kvp.Key.ToString() );
-                        } else {
-                            Client.DebugLog("Already recognize " + kvp.Value.ToString() + " ( " + kvp.Key.ToString() + " ) ");
-                        }
                     }
                 }
+
                 Client.Avatars.RequestAvatarNames(names);
             }
         }
@@ -483,10 +481,7 @@ namespace libsecondlife
                 foreach (KeyValuePair<LLUUID, string> kvp in names)
                 {
                     if (_Friends.ContainsKey(kvp.Key))
-                    {
                         _Friends[kvp.Key].Name = names[kvp.Key];
-                        Client.DebugLog(_Friends[kvp.Key].ToString());
-                    }
                 }
             }
         }

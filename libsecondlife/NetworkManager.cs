@@ -189,7 +189,7 @@ namespace libsecondlife
         public int InboxCount { get { return PacketInbox.Count; } }
 
         /// <summary></summary>
-        internal List<Caps.EventQueueCallback> EventQueueCallbacks = new List<Caps.EventQueueCallback>();
+        internal List<Capabilities.EventQueueCallback> EventQueueCallbacks = new List<Capabilities.EventQueueCallback>();
         /// <summary>Incoming packets that are awaiting handling</summary>
         internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
@@ -283,7 +283,7 @@ namespace libsecondlife
         /// Register a CAPS event handler
         /// </summary>
         /// <param name="callback">Callback to fire when a CAPS event is received</param>
-        public void RegisterEventCallback(Caps.EventQueueCallback callback)
+        public void RegisterEventCallback(Capabilities.EventQueueCallback callback)
         {
             lock (EventQueueCallbacks) EventQueueCallbacks.Add(callback);
         }

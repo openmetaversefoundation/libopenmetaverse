@@ -339,6 +339,11 @@ namespace libsecondlife.Utilities
                     Helpers.LogLevel.Error);
                 return WaterType.Unknown;
             }
+            else if (!Client.Network.Connected && Client.Network.CurrentSim != null)
+            {
+                Client.Log("GetWaterType() can only be used with an online client", Helpers.LogLevel.Error);
+                return WaterType.Unknown;
+            }
 
             bool underwater = false;
             bool abovewater = false;

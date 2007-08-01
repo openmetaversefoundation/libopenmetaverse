@@ -806,7 +806,7 @@ namespace libsecondlife
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
 	        // Event queue callback (used for Caps teleports currently)
-	        Client.Network.RegisterEventCallback(new Caps.EventQueueCallback(EventQueueHandler));
+	        Client.Network.RegisterEventCallback(new Capabilities.EventQueueCallback(EventQueueHandler));
         }
 
         /// <summary>
@@ -1998,7 +1998,7 @@ namespace libsecondlife
             }
         }
 
-	    private void EventQueueHandler(string message, Hashtable body, Caps caps)
+	    private void EventQueueHandler(string message, Hashtable body, CapsEventQueue caps)
         {
             if (message == "TeleportFinish" && body.ContainsKey("Info"))
             {
@@ -2065,7 +2065,7 @@ namespace libsecondlife
                 flags = (TeleportFlags)start.Info.TeleportFlags;
                 TeleportStat = TeleportStatus.Start;
 
-                Client.DebugLog("TeleportStart received from " + simulator.ToString() + ", Flags: " + flags.ToString());
+                Client.DebugLog("TeleportStart received, Flags: " + flags.ToString());
             }
             else if (packet.Type == PacketType.TeleportProgress)
             {
@@ -2075,8 +2075,7 @@ namespace libsecondlife
                 flags = (TeleportFlags)progress.Info.TeleportFlags;
                 TeleportStat = TeleportStatus.Progress;
 
-                Client.DebugLog("TeleportProgress received from " + simulator.ToString() + "Message: " + 
-                    teleportMessage + ", Flags: " + flags.ToString());
+                Client.DebugLog("TeleportProgress received, Message: " + teleportMessage + ", Flags: " + flags.ToString());
             }
             else if (packet.Type == PacketType.TeleportFailed)
             {
@@ -2086,7 +2085,7 @@ namespace libsecondlife
                 TeleportStat = TeleportStatus.Failed;
                 finished = true;
 
-                Client.DebugLog("TeleportFailed received from " + simulator.ToString() + ", Reason: " + teleportMessage);
+                Client.DebugLog("TeleportFailed received, Reason: " + teleportMessage);
             }
             else if (packet.Type == PacketType.TeleportFinish)
             {
@@ -2096,7 +2095,7 @@ namespace libsecondlife
                 string seedcaps = Helpers.FieldToUTF8String(finish.Info.SeedCapability);
                 finished = true;
 
-                Client.DebugLog("TeleportFinish received from " + simulator.ToString() + ", Flags: " + flags.ToString());
+                Client.DebugLog("TeleportFinish received, Flags: " + flags.ToString());
 
                 // Connect to the new sim
                 Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP),
@@ -2144,7 +2143,7 @@ namespace libsecondlife
                 //local.Info.LocationID;
                 finished = true;
 
-                Client.DebugLog("TeleportLocal received from " + simulator.ToString() + ", Flags: " + flags.ToString());
+                Client.DebugLog("TeleportLocal received, Flags: " + flags.ToString());
             }
 
             if (OnTeleport != null)

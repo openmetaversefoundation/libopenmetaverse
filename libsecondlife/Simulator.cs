@@ -136,7 +136,7 @@ namespace libsecondlife
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
-        public Caps SimCaps = null;
+        public Capabilities SimCaps = null;
         /// <summary></summary>
         public ulong Handle;
         /// <summary></summary>
@@ -404,7 +404,7 @@ namespace libsecondlife
         {
             if (SimCaps != null)
             {
-                if (SimCaps.Seedcaps == seedcaps) return;
+                if (SimCaps._Seedcaps == seedcaps) return;
 
                 Client.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
                 SimCaps.Disconnect(true);
@@ -415,7 +415,7 @@ namespace libsecondlife
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))
-                    SimCaps = new Caps(Client, this, seedcaps);
+                    SimCaps = new Capabilities(this, seedcaps);
                 else
                     Client.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
             }
