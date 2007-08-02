@@ -145,18 +145,20 @@ namespace libsecondlife
             _SeedRequest.MakeRequest(postData);
         }
 
-        private void seedRequest_OnCapsResponse(Hashtable response, HttpRequestState state)
+        private void seedRequest_OnCapsResponse(object response, HttpRequestState state)
         {
-            if (response != null)
+            if (response is Hashtable)
             {
+                Hashtable respTable = (Hashtable)response;
+
                 StringBuilder capsList = new StringBuilder();
 
-                foreach (string cap in response.Keys)
+                foreach (string cap in respTable.Keys)
                 {
                     capsList.Append(cap);
                     capsList.Append(' ');
 
-                    _Caps[cap] = (string)response[cap];
+                    _Caps[cap] = (string)respTable[cap];
                 }
 
                 Simulator.Client.DebugLog("Got capabilities: " + capsList.ToString());

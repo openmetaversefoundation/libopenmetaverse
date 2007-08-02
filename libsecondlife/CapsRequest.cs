@@ -33,7 +33,7 @@ namespace libsecondlife
 {
     public class CapsRequest : HttpBase
     {
-        public delegate void CapsResponseCallback(Hashtable response, HttpRequestState state);
+        public delegate void CapsResponseCallback(object response, HttpRequestState state);
 
         public event CapsResponseCallback OnCapsResponse;
 
@@ -75,11 +75,11 @@ namespace libsecondlife
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
-            Hashtable response = null;
+            object response = null;
 
             if (success)
             {
-                response = (Hashtable)LLSD.LLSDDeserialize(state.ResponseData);
+                response = LLSD.LLSDDeserialize(state.ResponseData);
             }
             else if (exception != null && exception.Message.Contains("502"))
             {
