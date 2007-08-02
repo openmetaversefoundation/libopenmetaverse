@@ -883,6 +883,7 @@ namespace libsecondlife
                 GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
                 GroupProfile group = new GroupProfile();
 
+                group.ID = profile.GroupData.GroupID;
                 group.AllowPublish = profile.GroupData.AllowPublish;
                 group.Charter = Helpers.FieldToUTF8String(profile.GroupData.Charter);
                 group.FounderID = profile.GroupData.FounderID;
