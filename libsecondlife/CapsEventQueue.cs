@@ -35,9 +35,11 @@ namespace libsecondlife
     public class CapsEventQueue : HttpBase
     {
         public Simulator Simulator;
-        public bool Running = false;
 
-        internal bool Dead = false;
+        protected bool _Running = false;
+        protected bool _Dead = false;
+
+        public bool Running { get { return _Running; } }
 
         public CapsEventQueue(Simulator simulator, string eventQueueURI)
             : this(simulator, eventQueueURI, String.Empty)
@@ -65,17 +67,17 @@ namespace libsecondlife
             byte[] postData = LLSD.LLSDSerialize(request);
 
             // Create a new HttpWebRequest
-            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(RequestURL);
-            RequestState = new HttpRequestState(httpRequest);
+            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
+            _RequestState = new HttpRequestState(httpRequest);
 
-            if (ProxyURL != String.Empty)
+            if (_ProxyURL != String.Empty)
             {
                 // Create a proxy object
                 WebProxy proxy = new WebProxy();
 
                 // Associate a new Uri object to the _wProxy object, using the proxy address
                 // selected by the user
-                proxy.Address = new Uri(ProxyURL);
+                proxy.Address = new Uri(_ProxyURL);
 
                 // Finally, initialize the Web request object proxy property with the _wProxy
                 // object
@@ -86,65 +88,74 @@ namespace libsecondlife
             httpRequest.KeepAlive = false;
 
             // POST request
-            RequestState.WebRequest.Method = "POST";
-            RequestState.WebRequest.ContentLength = postData.Length;
-            RequestState.RequestData = postData;
+            _RequestState.WebRequest.Method = "POST";
+            _RequestState.WebRequest.ContentLength = postData.Length;
+            _RequestState.RequestData = postData;
 
-            IAsyncResult result = (IAsyncResult)RequestState.WebRequest.BeginGetRequestStream(
-                new AsyncCallback(EventRequestStreamCallback), RequestState);
-
-            // If there is a timeout, the callback fires and the request becomes aborted
-            ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(AbortCallback),
-                RequestState, HTTP_TIMEOUT, true);
+            IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
+                new AsyncCallback(EventRequestStreamCallback), _RequestState);
         }
 
         public new void Abort()
         {
-            SecondLife.LogStatic("CapsEventQueue.Abort(): Aborting event queue", Helpers.LogLevel.Info);
+            Disconnect(true);
+        }
 
-            Dead = true;
+        public void Disconnect(bool immediate)
+        {
+            Simulator.Client.Log(String.Format("Event queue for {0} is {1}", Simulator, 
+                (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info);
 
-            // Abort the callback if it hasn't been already
-            RequestState.WebRequest.Abort();
+            _Dead = true;
+
+            if (immediate)
+            {
+                _Running = false;
+
+                // Abort the callback if it hasn't been already
+                _RequestState.WebRequest.Abort();
+            }
+        }
+
+        protected override void Log(string message, Helpers.LogLevel level)
+        {
+            Simulator.Client.Log(String.Format("[Caps event queue for {0}] {1}", Simulator, message), level);
         }
 
         protected void EventRequestStreamCallback(IAsyncResult result)
         {
-            if (!Dead)
+            if (!_Dead)
             {
                 // We are connected to the event queue
-                Running = true;
+                _Running = true;
 
-                SecondLife.DebugLogStatic("CapsEventQueue.RequestStreamCallback(): Event queue connected");
-
-                RequestStreamCallback(result);
+                Simulator.Client.Log("Capabilities event queue connected for " + Simulator.ToString(), Helpers.LogLevel.Info);
             }
+
+            base.RequestStreamCallback(result);
         }
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
-            if (Simulator == null)
-                return;
-
             ArrayList events = null;
             int ack = 0;
 
             #region Exception Handling
 
-            if (!Dead && exception != null)
+            if (exception != null)
             {
                 // Check what kind of exception happened
                 if (exception.Message.Contains("404") || exception.Message.Contains("410"))
                 {
-                    SecondLife.LogStatic("CapsEventQueue.RequestReply(): Closing event queue due to missing caps URI", 
-                        Helpers.LogLevel.Error);
+                    Simulator.Client.Log("Closing event queue for " + Simulator.ToString() + " due to missing caps URI",
+                        Helpers.LogLevel.Info);
 
-                    Running = false;
-                    Dead = true;
+                    _Running = false;
+                    _Dead = true;
                 }
                 else if (!exception.Message.Contains("aborted") && !exception.Message.Contains("502"))
                 {
-                    SecondLife.LogStatic("CapsEventQueue.RequestReply(): Unrecognized CAPS exception: " + exception.Message, 
+                    Simulator.Client.Log(String.Format("Unrecognized caps exception for {0}: {1}", Simulator, exception.Message),
                         Helpers.LogLevel.Warning);
                 }
             }
@@ -170,12 +181,12 @@ namespace libsecondlife
 
             #region Make New Request
 
-            if (Running)
+            if (_Running)
             {
                 Hashtable request = new Hashtable();
                 if (ack != 0) request["ack"] = ack;
                 else request["ack"] = null;
-                request["done"] = Dead;
+                request["done"] = _Dead;
 
                 byte[] postData = LLSD.LLSDSerialize(request);
 
@@ -183,7 +194,13 @@ namespace libsecondlife
 
                 // If the event queue is dead at this point, turn it off since
                 // that was the last thing we want to do
-                if (Dead) Running = false;
+                if (_Dead)
+                {
+                    _Running = false;
+
+                    Simulator.Client.Log("Sent event queue shutdown message to " + Simulator.ToString(), 
+                        Helpers.LogLevel.Info);
+                }
             }
 
             #endregion Make New Request
@@ -200,8 +217,8 @@ namespace libsecondlife
                         string msg = (string)evt["message"];
                         Hashtable body = (Hashtable)evt["body"];
 
-                        Simulator.Client.DebugLog(
-                            String.Format("Event {0}: {1}{2}", msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));
+                        //Simulator.Client.DebugLog(
+                        //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));
 
                         for (int i = 0; i < Simulator.Client.Network.EventQueueCallbacks.Count; i++)
                         {

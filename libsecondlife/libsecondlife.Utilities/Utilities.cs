@@ -230,6 +230,12 @@ namespace libsecondlife.Utilities
 
         public void DownloadSimParcels(Simulator simulator)
         {
+            if (simulator == null)
+            {
+                Client.Log("DownloadSimParcels() will not work with a null simulator", Helpers.LogLevel.Error);
+                return;
+            }
+
             lock (active_sims)
             {
                 if (active_sims.Contains(simulator))

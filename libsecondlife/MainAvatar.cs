@@ -1998,7 +1998,7 @@ namespace libsecondlife
             }
         }
 
-	    private void EventQueueHandler(string message, Hashtable body, CapsEventQueue caps)
+        private void EventQueueHandler(string message, Hashtable body, CapsEventQueue caps)
         {
             if (message == "TeleportFinish" && body.ContainsKey("Info"))
             {
@@ -2018,34 +2018,37 @@ namespace libsecondlife
                 packet.Info.SimAccess = (byte)(int)info["SimAccess"];
 
                 Client.DebugLog(String.Format(
-                    "Received a TeleportFinish event from {0}, SimIP: {1}, Location: {2}, RegionHandle: {3}", 
+                    "Received a TeleportFinish event from {0}, SimIP: {1}, Location: {2}, RegionHandle: {3}",
                     caps.Simulator.ToString(), packet.Info.SimIP, packet.Info.LocationID, packet.Info.RegionHandle));
 
                 TeleportHandler(packet, Client.Network.CurrentSim);
-	    }
-	    else if(message == "EstablishAgentCommunication" && Client.Settings.MULTIPLE_SIMS)
-	    {
-		string ipAndPort = (string)body["sim-ip-and-port"];
-		string[] pieces = ipAndPort.Split(':');
-		IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(pieces[0]), Convert.ToInt32(pieces[1]));
-		Simulator sim = Client.Network.FindSimulator(endPoint);
-		if(sim == null) {
-			Client.Log("Got EstablishAgentCommunication for unknown sim "
-				+ ipAndPort,  Helpers.LogLevel.Error);
-		}
-		else
-		{
-			Client.Log("Got EstablishAgentCommunication for sim "
-				+ ipAndPort + ", seed cap " + (string)body["seed-capability"],  Helpers.LogLevel.Info);
-			sim.SetSeedCaps((string)body["seed-capability"]);
-		}
+            }
+            else if (message == "EstablishAgentCommunication" && Client.Settings.MULTIPLE_SIMS)
+            {
+                string ipAndPort = (string)body["sim-ip-and-port"];
+                string[] pieces = ipAndPort.Split(':');
+                IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(pieces[0]), Convert.ToInt32(pieces[1]));
+                Simulator sim = Client.Network.FindSimulator(endPoint);
+
+                if (sim == null)
+                {
+                    Client.Log("Got EstablishAgentCommunication for unknown sim " + ipAndPort,
+                        Helpers.LogLevel.Error);
+                }
+                else
+                {
+                    Client.Log("Got EstablishAgentCommunication for " + sim.ToString(),
+                        Helpers.LogLevel.Info);
+
+                    sim.SetSeedCaps((string)body["seed-capability"]);
+                }
             }
             else
             {
-                Client.Log("Received unhandled event " + message + " in the EventQueueHandler", 
+                Client.Log("Received unhandled event " + message + " in the EventQueueHandler",
                     Helpers.LogLevel.Warning);
             }
-	    }
+        }
 
         /// <summary>
         /// Handler for teleport Requests

@@ -57,8 +57,15 @@ namespace libsecondlife
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
 
+        internal string _Seedcaps;
+        internal StringDictionary _Caps = new StringDictionary();
+
+        private CapsRequest _SeedRequest;
+        private CapsEventQueue _EventQueueCap = null;
+
         /// <summary>Capabilities URI this system was initialized with</summary>
         public string SeedCapsURI { get { return _Seedcaps; } }
+
         /// <summary>Whether the capabilities event queue is connected and
         /// listening for incoming events</summary>
         public bool IsEventQueueRunning
@@ -71,11 +78,6 @@ namespace libsecondlife
                     return false;
             }
         }
-
-        internal string _Seedcaps;
-        internal StringDictionary _Caps = new StringDictionary();
-
-        private CapsEventQueue _EventQueueCap = null;
 
         /// <summary>
         /// Default constructor
@@ -93,15 +95,17 @@ namespace libsecondlife
 
         public void Disconnect(bool immediate)
         {
-            Simulator.Client.DebugLog("Disconnecting CAPS for " + Simulator.ToString());
+            Simulator.Client.Log(String.Format("Caps system for {0} is {1}", Simulator,
+                (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info);
+
+            if (_SeedRequest != null)
+            {
+                _SeedRequest.Abort();
+            }
 
             if (_EventQueueCap != null)
             {
-                _EventQueueCap.Dead = true;
-                _EventQueueCap.Running = false;
-
-                if (immediate)
-                    _EventQueueCap.Abort();
+                _EventQueueCap.Disconnect(immediate);
             }
         }
 
@@ -136,9 +140,9 @@ namespace libsecondlife
 
             Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
 
-            CapsRequest seedRequest = new CapsRequest(_Seedcaps);
-            seedRequest.OnCapsResponse += new CapsRequest.CapsResponseCallback(seedRequest_OnCapsResponse);
-            seedRequest.MakeRequest(postData);
+            _SeedRequest = new CapsRequest(_Seedcaps);
+            _SeedRequest.OnCapsResponse += new CapsRequest.CapsResponseCallback(seedRequest_OnCapsResponse);
+            _SeedRequest.MakeRequest(postData);
         }
 
         private void seedRequest_OnCapsResponse(Hashtable response, HttpRequestState state)

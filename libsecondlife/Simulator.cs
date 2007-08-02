@@ -36,7 +36,7 @@ namespace libsecondlife
     /// <summary>
     /// 
     /// </summary>
-    public class Simulator : UDPBase
+    public class Simulator : UDPBase, IDisposable
     {
         #region Enums
 
@@ -334,6 +334,18 @@ namespace libsecondlife
             // Timer for periodically pinging the simulator
             PingTimer = new System.Timers.Timer(Settings.PING_INTERVAL);
             PingTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingTimer_Elapsed);
+        }
+
+        /// <summary>
+        /// Called when this Simulator object is being destroyed
+        /// </summary>
+        public void Dispose()
+        {
+            // Force all the CAPS connections closed for this simulator
+            if (SimCaps != null)
+            {
+                SimCaps.Disconnect(true);
+            }
         }
 
         /// <summary>

@@ -68,9 +68,10 @@ namespace libsecondlife
         /// <summary>A default timeout for HTTP connections</summary>
         protected const int HTTP_TIMEOUT = 1 * 30 * 1000;
 
-        protected HttpRequestState RequestState;
-        protected string RequestURL;
-        protected string ProxyURL;
+        protected HttpRequestState _RequestState;
+        protected string _RequestURL;
+        protected string _ProxyURL;
+        protected bool _Aborted = false;
 
         public HttpBase(string requestURL)
             : this(requestURL, String.Empty)
@@ -78,8 +79,8 @@ namespace libsecondlife
 
         public HttpBase(string requestURL, string proxyURL)
         {
-            RequestURL = requestURL;
-            ProxyURL = proxyURL;
+            _RequestURL = requestURL;
+            _ProxyURL = proxyURL;
         }
 
         public void MakeRequest()
@@ -90,17 +91,17 @@ namespace libsecondlife
         public void MakeRequest(byte[] postData)
         {
             // Create a new HttpWebRequest
-            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(RequestURL);
-            RequestState = new HttpRequestState(httpRequest);
+            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
+            _RequestState = new HttpRequestState(httpRequest);
 
-            if (ProxyURL != String.Empty)
+            if (_ProxyURL != String.Empty)
             {
                 // Create a proxy object
                 WebProxy proxy = new WebProxy();
 
                 // Associate a new Uri object to the _wProxy object, using the proxy address
                 // selected by the user
-                proxy.Address = new Uri(ProxyURL);
+                proxy.Address = new Uri(_ProxyURL);
 
                 // Finally, initialize the Web request object proxy property with the _wProxy
                 // object
@@ -114,170 +115,187 @@ namespace libsecondlife
             {
                 if (postData != null && postData.Length > 0)
                 {
-                    //SecondLife.DebugLogStatic(String.Format("HttpBase.MakeRequest(): {0} byte POST", postData.Length));
-
                     // POST request
-                    RequestState.WebRequest.Method = "POST";
-                    RequestState.WebRequest.ContentLength = postData.Length;
-                    RequestState.RequestData = postData;
+                    _RequestState.WebRequest.Method = "POST";
+                    _RequestState.WebRequest.ContentLength = postData.Length;
+                    _RequestState.RequestData = postData;
 
-                    IAsyncResult result = (IAsyncResult)RequestState.WebRequest.BeginGetRequestStream(
-                        new AsyncCallback(RequestStreamCallback), RequestState);
+                    IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
+                        new AsyncCallback(RequestStreamCallback), _RequestState);
 
                     // If there is a timeout, the callback fires and the request becomes aborted
-                    ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(AbortCallback),
-                        RequestState, HTTP_TIMEOUT, true);
+                    ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                        _RequestState, HTTP_TIMEOUT, true);
                 }
                 else
                 {
                     // GET request
-                    IAsyncResult result = (IAsyncResult)RequestState.WebRequest.BeginGetResponse(
-                        new AsyncCallback(ResponseCallback), RequestState);
+                    IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetResponse(
+                        new AsyncCallback(ResponseCallback), _RequestState);
 
                     // If there is a timeout, the callback fires and the request becomes aborted
-                    ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(AbortCallback),
-                        RequestState, HTTP_TIMEOUT, true);
+                    ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                        _RequestState, HTTP_TIMEOUT, true);
 
                     // If we get here the request has been initialized, so fire the callback for a request being started
-                    RequestSent(RequestState);
+                    RequestSent(_RequestState);
                 }
             }
             catch (WebException e)
             {
-                SecondLife.LogStatic(String.Format("HttpBase.MakeRequest(): {0} (Status: {1})", e.Message, e.Status),
-                    Helpers.LogLevel.Warning);
-
-                AbortCallback(false, e);
+                Abort(false, e);
             }
             catch (Exception e)
             {
-                SecondLife.LogStatic(String.Format("HttpBase.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
+                Log(String.Format("HttpBase.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
                     Helpers.LogLevel.Warning);
 
-                AbortCallback(false, null);
+                Abort(false, null);
             }
         }
 
         public void Abort()
         {
-            AbortCallback(false, null);
+            Abort(false, null);
         }
 
-        protected void AbortCallback(object state, bool timedOut)
+        protected void TimeoutCallback(object state, bool timedOut)
         {
-            if (timedOut) AbortCallback(true, null);
-            //else SecondLife.DebugLogStatic("HttpBase.AbortCallback(): timedOut = false");
+            if (timedOut) Abort(true, null);
         }
 
-        protected void AbortCallback(bool fromTimeout, WebException exception)
+        protected void Abort(bool fromTimeout, WebException exception)
         {
             if (fromTimeout)
-                SecondLife.DebugLogStatic("HttpBase.AbortCallback(): HTTP request timed out");
-            else if (exception == null)
-                SecondLife.DebugLogStatic("HttpBase.AbortCallback(): HTTP request cancelled");
+            {
+                Log("HttpBase.Abort(): HTTP request timed out", Helpers.LogLevel.Debug);
+            }
+            else
+            {
+                if (exception == null)
+                {
+                    _Aborted = true;
+                    Log("HttpBase.Abort(): HTTP request aborted", Helpers.LogLevel.Debug);
+                }
+                else if (exception.Message.Contains("404") || exception.Message.Contains("410"))
+                {
+                    _Aborted = true;
+                    Log("HttpBase.Abort(): HTTP request target is missing", Helpers.LogLevel.Debug);
+                }
+                else if (exception.Message.Contains("aborted"))
+                {
+                    // A callback threw an exception because the request is aborting, return to
+                    // avoid circular problems
+                    return;
+                }
+                else
+                {
+                    Log(String.Format("HttpBase.Abort(): {0} (Status: {1})", exception.Message, exception.Status),
+                        Helpers.LogLevel.Warning);
+                }
+            }
 
             // Abort the callback if it hasn't been already
-            RequestState.WebRequest.Abort();
+            _RequestState.WebRequest.Abort();
 
             // Fire the callback for the request completing
-            try { RequestReply(RequestState, false, exception); }
-            catch (Exception e) { SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Error); }
+            try { RequestReply(_RequestState, false, exception); }
+            catch (Exception e) { Log(e.ToString(), Helpers.LogLevel.Error); }
+        }
+
+        protected virtual void Log(string message, Helpers.LogLevel level)
+        {
+            if (level == Helpers.LogLevel.Debug)
+                SecondLife.DebugLogStatic(message);
+            else
+                SecondLife.LogStatic(message, level);
         }
 
         protected void RequestStreamCallback(IAsyncResult result)
         {
-            //SecondLife.DebugLogStatic("HttpBase.RequestStreamCallback()");
-
             try
             {
-                RequestState = (HttpRequestState)result.AsyncState;
-                Stream reqStream = RequestState.WebRequest.EndGetRequestStream(result);
+                _RequestState = (HttpRequestState)result.AsyncState;
+                Stream reqStream = _RequestState.WebRequest.EndGetRequestStream(result);
 
-                reqStream.Write(RequestState.RequestData, 0, RequestState.RequestData.Length);
+                reqStream.Write(_RequestState.RequestData, 0, _RequestState.RequestData.Length);
                 reqStream.Close();
 
-                IAsyncResult newResult = RequestState.WebRequest.BeginGetResponse(new AsyncCallback(ResponseCallback), RequestState);
+                IAsyncResult newResult = _RequestState.WebRequest.BeginGetResponse(new AsyncCallback(ResponseCallback), _RequestState);
 
                 // If there is a timeout, the callback fires and the request becomes aborted
-                ThreadPool.RegisterWaitForSingleObject(newResult.AsyncWaitHandle, new WaitOrTimerCallback(AbortCallback),
-                    RequestState, HTTP_TIMEOUT, true);
+                ThreadPool.RegisterWaitForSingleObject(newResult.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                    _RequestState, HTTP_TIMEOUT, true);
             }
             catch (WebException e)
             {
-                AbortCallback(false, e);
+                Abort(false, e);
             }
         }
 
         private void ResponseCallback(IAsyncResult result)
         {
-            //SecondLife.DebugLogStatic("HttpBase.ResponseCallback()");
-
             try
             {
-                RequestState = (HttpRequestState)result.AsyncState;
-                RequestState.WebResponse = (HttpWebResponse)RequestState.WebRequest.EndGetResponse(result);
+                _RequestState = (HttpRequestState)result.AsyncState;
+                _RequestState.WebResponse = (HttpWebResponse)_RequestState.WebRequest.EndGetResponse(result);
 
                 // Read the response into a Stream object
-                Stream responseStream = RequestState.WebResponse.GetResponseStream();
-                RequestState.ResponseStream = responseStream;
+                Stream responseStream = _RequestState.WebResponse.GetResponseStream();
+                _RequestState.ResponseStream = responseStream;
 
                 // Begin reading of the contents of the response
-                IAsyncResult asynchronousInputRead = responseStream.BeginRead(RequestState.BufferRead, 0, BUFFER_SIZE, 
-                    new AsyncCallback(ReadCallback), RequestState);
+                IAsyncResult asynchronousInputRead = responseStream.BeginRead(_RequestState.BufferRead, 0, BUFFER_SIZE, 
+                    new AsyncCallback(ReadCallback), _RequestState);
 
                 // If there is a timeout, the callback fires and the request becomes aborted
-                ThreadPool.RegisterWaitForSingleObject(asynchronousInputRead.AsyncWaitHandle, new WaitOrTimerCallback(AbortCallback),
-                    RequestState, HTTP_TIMEOUT, true);
+                ThreadPool.RegisterWaitForSingleObject(asynchronousInputRead.AsyncWaitHandle, new WaitOrTimerCallback(TimeoutCallback),
+                    _RequestState, HTTP_TIMEOUT, true);
             }
             catch (WebException e)
             {
-                AbortCallback(false, e);
+                Abort(false, e);
             }
         }
 
         private void ReadCallback(IAsyncResult result)
         {
-            //SecondLife.DebugLogStatic("HttpBase.ReadCallback()");
-
             try
             {
-                RequestState = (HttpRequestState)result.AsyncState;
-                Stream responseStream = RequestState.ResponseStream;
+                _RequestState = (HttpRequestState)result.AsyncState;
+                Stream responseStream = _RequestState.ResponseStream;
                 int read = responseStream.EndRead(result);
 
                 // Check if we have read the entire response
                 if (read > 0)
                 {
                     // Create the byte array if it hasn't been created yet
-                    if (RequestState.ResponseData == null || RequestState.ResponseData.Length != RequestState.WebResponse.ContentLength)
-                        RequestState.ResponseData = new byte[RequestState.WebResponse.ContentLength];
+                    if (_RequestState.ResponseData == null || _RequestState.ResponseData.Length != _RequestState.WebResponse.ContentLength)
+                        _RequestState.ResponseData = new byte[_RequestState.WebResponse.ContentLength];
 
                     // Copy the current buffer data in to the response variable
-                    Buffer.BlockCopy(RequestState.BufferRead, 0, RequestState.ResponseData, RequestState.ResponseDataPos, read);
+                    Buffer.BlockCopy(_RequestState.BufferRead, 0, _RequestState.ResponseData, _RequestState.ResponseDataPos, read);
                     // Increment our writing position in the response variable
-                    RequestState.ResponseDataPos += read;
+                    _RequestState.ResponseDataPos += read;
 
                     // Continue reading the response until EndRead() returns 0
-                    IAsyncResult asynchronousResult = responseStream.BeginRead(RequestState.BufferRead, 0, BUFFER_SIZE, 
-                        new AsyncCallback(ReadCallback), RequestState);
+                    IAsyncResult asynchronousResult = responseStream.BeginRead(_RequestState.BufferRead, 0, BUFFER_SIZE, 
+                        new AsyncCallback(ReadCallback), _RequestState);
 
                     return;
                 }
                 else
                 {
                     // Fire the callback for receiving a response
-                    try { RequestReply(RequestState, true, null); }
-                    catch (Exception e) { SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Error); }
+                    try { RequestReply(_RequestState, true, null); }
+                    catch (Exception e) { Log(e.ToString(), Helpers.LogLevel.Error); }
 
                     responseStream.Close();
                 }
             }
             catch (WebException e)
             {
-                SecondLife.LogStatic(String.Format("HttpBase.ReadCallback(): {0} (Status: {1})", e.Message, e.Status),
-                    Helpers.LogLevel.Warning);
-
-                AbortCallback(false, e);
+                Abort(false, e);
             }
         }
     }

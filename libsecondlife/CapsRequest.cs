@@ -37,14 +37,35 @@ namespace libsecondlife
 
         public event CapsResponseCallback OnCapsResponse;
 
+        public Simulator Simulator;
+
         public CapsRequest(string capsURI)
-            : this(capsURI, String.Empty)
+            : this(capsURI, String.Empty, null)
         {
         }
 
         public CapsRequest(string capsURI, string proxy)
+            : this(capsURI, proxy, null)
+        {
+        }
+
+        public CapsRequest(string capsURI, Simulator simulator)
+            : this(capsURI, String.Empty, simulator)
+        {
+        }
+
+        public CapsRequest(string capsURI, string proxy, Simulator simulator)
             : base(capsURI, proxy)
         {
+            Simulator = simulator;
+        }
+
+        protected override void Log(string message, Helpers.LogLevel level)
+        {
+            if (Simulator != null)
+                Simulator.Client.Log(String.Format("[Caps request for {0}] {1}", Simulator, message), level);
+            else
+                SecondLife.LogStatic(message, level);
         }
 
         protected override void RequestSent(HttpRequestState request)
@@ -68,11 +89,16 @@ namespace libsecondlife
                 return;
             }
 
-            // Fire the callback with the decoded CAPS data
-            if (OnCapsResponse != null)
+            // Only fire the callback if there is response data or the call has
+            // not been aborted. Timeouts and 502 errors don't count as aborting,
+            // although 502 errors are already handled above
+            if (response != null || !_Aborted)
             {
-                try { OnCapsResponse(response, state); }
-                catch (Exception e) { SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Error); }
+                if (OnCapsResponse != null)
+                {
+                    try { OnCapsResponse(response, state); }
+                    catch (Exception e) { SecondLife.LogStatic(e.ToString(), Helpers.LogLevel.Error); }
+                }
             }
         }
     }
