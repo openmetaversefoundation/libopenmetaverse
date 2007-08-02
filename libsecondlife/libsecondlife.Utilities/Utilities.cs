@@ -439,7 +439,8 @@ namespace libsecondlife.Utilities
         private void Parcels_OnParcelAccessList(Simulator simulator, int sequenceID, int localID, uint flags,
                                                 List<ParcelManager.ParcelAccessEntry> accessEntries)
         {
-            Parcels[simulator][localID].AccessList = accessEntries;
+            if (simulator != null && Parcels.ContainsKey(simulator) && Parcels[simulator].ContainsKey(localID))
+                Parcels[simulator][localID].AccessList = accessEntries;
         }
 
         private void Parcels_OnParcelProperties(Parcel parcel, ParcelManager.ParcelResult result, int sequenceID,
