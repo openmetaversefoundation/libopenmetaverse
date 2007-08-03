@@ -423,7 +423,7 @@ namespace libsecondlife
                 SimCaps = null;
             }
 
-            if (Client.Settings.ENABLE_CAPS) // [TODO] Implement caps
+            if (Client.Settings.ENABLE_CAPS)
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))

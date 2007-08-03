@@ -2034,6 +2034,8 @@ namespace libsecondlife
                 {
                     Client.Log("Got EstablishAgentCommunication for unknown sim " + ipAndPort,
                         Helpers.LogLevel.Error);
+
+                    // FIXME: Should we use this opportunity to connect to the simulator?
                 }
                 else
                 {

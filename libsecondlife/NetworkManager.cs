@@ -664,7 +664,7 @@ namespace libsecondlife
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
-		simulator.SetSeedCaps(seedcaps);
+		        simulator.SetSeedCaps(seedcaps);
 
                 // If the current simulator changed fire the callback
                 if (OnCurrentSimChanged != null && simulator != oldSim)
