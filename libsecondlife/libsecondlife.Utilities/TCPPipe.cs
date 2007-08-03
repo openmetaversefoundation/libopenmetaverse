@@ -109,16 +109,18 @@ public class TCPPipe
         }
     }
 
+    static char[] splitNull = { '\0' };
+    static string[] splitLines = { "\r", "\n", "\r\n" };
+
     void ReceiveData(string data)
     {
         if (OnReceiveLine == null) return;
 
-        string[] splitNull = { "\0" };
+        //string[] splitNull = { "\0" };
         string[] line = data.Split(splitNull, StringSplitOptions.None);
         _Buffer += line[0];
-        string[] splitLines = { "\r\n", "\r", "\n" };
+        //string[] splitLines = { "\r\n", "\r", "\n" };
         string[] lines = _Buffer.Split(splitLines, StringSplitOptions.None);
-
         if (lines.Length > 1)
         {
             int i;

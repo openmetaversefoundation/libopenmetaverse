@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Net;
 using System.Text;
+using System.IO;
 using System.Threading;
 
 namespace libsecondlife
@@ -96,6 +97,59 @@ namespace libsecondlife
                 new AsyncCallback(EventRequestStreamCallback), _RequestState);
         }
 
+        public new void MakeRequest(byte[] postData)
+        {
+            // Create a new HttpWebRequest
+            HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
+            _RequestState = new HttpRequestState(httpRequest);
+
+            if (_ProxyURL != String.Empty)
+            {
+                // Create a proxy object
+                WebProxy proxy = new WebProxy();
+
+                // Associate a new Uri object to the _wProxy object, using the proxy address
+                // selected by the user
+                proxy.Address = new Uri(_ProxyURL);
+
+                // Finally, initialize the Web request object proxy property with the _wProxy
+                // object
+                httpRequest.Proxy = proxy;
+            }
+
+            // Always disable keep-alive for our purposes
+            httpRequest.KeepAlive = false;
+
+            try
+            {
+                if (postData != null)
+                {
+                    // POST request
+                    _RequestState.WebRequest.Method = "POST";
+                    _RequestState.WebRequest.ContentLength = postData.Length;
+                    _RequestState.RequestData = postData;
+
+                    IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
+                        new AsyncCallback(EventRequestStreamCallback), _RequestState);
+                }
+                else
+                {
+                    throw new ArgumentException("postData cannot be null for the event queue", "postData");
+                }
+            }
+            catch (WebException e)
+            {
+                Abort(false, e);
+            }
+            catch (Exception e)
+            {
+                Log(String.Format("CapsEventQueue.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
+                    Helpers.LogLevel.Warning);
+
+                Abort(false, null);
+            }
+        }
+
         public new void Abort()
         {
             Disconnect(true);
@@ -132,7 +186,41 @@ namespace libsecondlife
                 Simulator.Client.Log("Capabilities event queue connected for " + Simulator.ToString(), Helpers.LogLevel.Info);
             }
 
-            base.RequestStreamCallback(result);
+            try
+            {
+                _RequestState = (HttpRequestState)result.AsyncState;
+                Stream reqStream = _RequestState.WebRequest.EndGetRequestStream(result);
+
+                reqStream.Write(_RequestState.RequestData, 0, _RequestState.RequestData.Length);
+                reqStream.Close();
+
+                IAsyncResult newResult = _RequestState.WebRequest.BeginGetResponse(new AsyncCallback(EventResponseCallback), _RequestState);
+            }
+            catch (WebException e)
+            {
+                Abort(false, e);
+            }
+        }
+
+        protected void EventResponseCallback(IAsyncResult result)
+        {
+            try
+            {
+                _RequestState = (HttpRequestState)result.AsyncState;
+                _RequestState.WebResponse = (HttpWebResponse)_RequestState.WebRequest.EndGetResponse(result);
+
+                // Read the response into a Stream object
+                Stream responseStream = _RequestState.WebResponse.GetResponseStream();
+                _RequestState.ResponseStream = responseStream;
+
+                // Begin reading of the contents of the response
+                IAsyncResult asynchronousInputRead = responseStream.BeginRead(_RequestState.BufferRead, 0, BUFFER_SIZE,
+                    new AsyncCallback(ReadCallback), _RequestState);
+            }
+            catch (WebException e)
+            {
+                Abort(false, e);
+            }
         }
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
@@ -153,7 +241,7 @@ namespace libsecondlife
                     _Running = false;
                     _Dead = true;
                 }
-                else if (!exception.Message.Contains("aborted") && !exception.Message.Contains("502"))
+                else if (!exception.Message.ToLower().Contains("aborted") && !exception.Message.Contains("502"))
                 {
                     Simulator.Client.Log(String.Format("Unrecognized caps exception for {0}: {1}", Simulator, exception.Message),
                         Helpers.LogLevel.Warning);

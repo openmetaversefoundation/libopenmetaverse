@@ -60,6 +60,11 @@ namespace libsecondlife
             Simulator = simulator;
         }
 
+        public new void MakeRequest()
+        {
+            base.MakeRequest(new byte[0]);
+        }
+
         protected override void Log(string message, Helpers.LogLevel level)
         {
             if (Simulator != null)

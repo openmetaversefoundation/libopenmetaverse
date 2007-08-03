@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.IO;
+using System.Xml;
+using System.Threading;
 using libsecondlife;
 
 namespace libsecondlife.Utilities
@@ -31,7 +35,7 @@ namespace libsecondlife.Utilities
         TypeC
     }
 
-    public class VoiceManager
+    public partial class VoiceManager
     {
         public const string DAEMON_ARGS = " -p tcp -h -c -ll ";
         public const int DAEMON_LOG_LEVEL = 1;
@@ -40,31 +44,98 @@ namespace libsecondlife.Utilities
         public const string VOICE_DEBUG_SERVER = "bhd.vivox.com";
         public const string REQUEST_TERMINATOR = "\n\n\n";
 
+        public delegate void LoginStateChangeCallback(int cookie, string accountHandle, int statusCode, string statusString, int state);
+        public delegate void NewSessionCallback(int cookie, string accountHandle, string eventSessionHandle, int state, string nameString, string uriString);
+        public delegate void SessionStateChangeCallback(int cookie, string uriString, int statusCode, string statusString, string eventSessionHandle, int state, bool isChannel, string nameString);
+        public delegate void ParticipantStateChangeCallback(int cookie, string uriString, int statusCode, string statusString, int state, string nameString, string displayNameString, int participantType);
+        public delegate void ParticipantPropertiesCallback(int cookie, string uriString, int statusCode, string statusString, bool isLocallyMuted, bool isModeratorMuted, bool isSpeaking, int volume, float energy);
+        public delegate void AuxAudioPropertiesCallback(int cookie, float energy);
+        public delegate void BasicActionCallback(int cookie, int statusCode, string statusString);
+        public delegate void ConnectorCreatedCallback(int cookie, int statusCode, string statusString, string connectorHandle);
+        public delegate void LoginCallback(int cookie, int statusCode, string statusString, string accountHandle);
+        public delegate void SessionCreatedCallback(int cookie, int statusCode, string statusString, string sessionHandle);
+        public delegate void DevicesCallback(int cookie, int statusCode, string statusString, string currentDevice);
+        public delegate void ProvisionAccountCallback(string username, string password);
+
+        public event LoginStateChangeCallback OnLoginStateChange;
+        public event NewSessionCallback OnNewSession;
+        public event SessionStateChangeCallback OnSessionStateChange;
+        public event ParticipantStateChangeCallback OnParticipantStateChange;
+        public event ParticipantPropertiesCallback OnParticipantProperties;
+        public event AuxAudioPropertiesCallback OnAuxAudioProperties;
+        public event ConnectorCreatedCallback OnConnectorCreated;
+        public event LoginCallback OnLogin;
+        public event SessionCreatedCallback OnSessionCreated;
+        public event BasicActionCallback OnSessionConnected;
+        public event BasicActionCallback OnAccountLogout;
+        public event BasicActionCallback OnConnectorInitiateShutdown;
+        public event BasicActionCallback OnAccountChannelGetList;
+        public event BasicActionCallback OnSessionTerminated;
+        public event DevicesCallback OnCaptureDevices;
+        public event DevicesCallback OnRenderDevices;
+        public event ProvisionAccountCallback OnProvisionAccount;
+
         public SecondLife Client;
+        public string VoiceServer = VOICE_RELEASE_SERVER;
 
         protected TCPPipe _DaemonPipe;
         protected VoiceStatus _Status;
         protected int _CommandCookie = 0;
         protected string _TuningSoundFile = String.Empty;
-        protected string _VoiceServer = VOICE_RELEASE_SERVER;
+        protected Dictionary<string, string> _ChannelMap = new Dictionary<string, string>();
+        protected List<string> _CaptureDevices = new List<string>();
+        protected List<string> _RenderDevices = new List<string>();
+
+        #region Response Processing Variables
+
+        private bool isEvent = false;
+        private bool isChannel = false;
+        private bool isLocallyMuted = false;
+        private bool isModeratorMuted = false;
+        private bool isSpeaking = false;
+        private int cookie = 0;
+        private int returnCode = 0;
+        private int statusCode = 0;
+        private int volume = 0;
+        private int state = 0;
+        private int participantType = 0;
+        private float energy = 0f;
+        private string statusString = String.Empty;
+        private string uuidString = String.Empty;
+        private string actionString = String.Empty;
+        private string connectorHandle = String.Empty;
+        private string accountHandle = String.Empty;
+        private string sessionHandle = String.Empty;
+        private string eventSessionHandle = String.Empty;
+        private string eventTypeString = String.Empty;
+        private string uriString = String.Empty;
+        private string nameString = String.Empty;
+        private string audioMediaString = String.Empty;
+        private string displayNameString = String.Empty;
+
+        #endregion Response Processing Variables
 
         public VoiceManager(SecondLife client)
         {
             Client = client;
+
+            // Register callback handlers for the blocking functions
+            RegisterCallbacks();
         }
 
         public bool IsDaemonRunning()
         {
-            return false;
+            throw new NotImplementedException();
         }
 
         public bool StartDaemon()
         {
-            return false;
+            throw new NotImplementedException();
         }
 
         public void StopDaemon()
         {
+            throw new NotImplementedException();
         }
 
         public bool ConnectToDaemon()
@@ -89,6 +160,21 @@ namespace libsecondlife.Utilities
                 Console.WriteLine("Connection failed: " + se.Message);
                 return false;
             }
+        }
+
+        public Dictionary<string, string> GetChannelMap()
+        {
+            return new Dictionary<string, string>(_ChannelMap);
+        }
+
+        public List<string> CurrentCaptureDevices()
+        {
+            return new List<string>(_CaptureDevices);
+        }
+
+        public List<string> CurrentRenderDevices()
+        {
+            return new List<string>(_RenderDevices);
         }
 
         public string VoiceAccountFromUUID(LLUUID id)
@@ -117,10 +203,10 @@ namespace libsecondlife.Utilities
 
         public string SIPURIFromVoiceAccount(string account)
         {
-            return String.Format("sip:{0}@{1}", account, _VoiceServer);
+            return String.Format("sip:{0}@{1}", account, VoiceServer);
         }
 
-        public void RequestCaptureDevices()
+        public int RequestCaptureDevices()
         {
             if (_DaemonPipe.Connected)
             {
@@ -128,14 +214,17 @@ namespace libsecondlife.Utilities
                     "<Request requestId=\"{0}\" action=\"Aux.GetCaptureDevices.1\"></Request>{1}",
                     _CommandCookie++,
                     REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestCaptureDevices() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestRenderDevices()
+        public int RequestRenderDevices()
         {
             if (_DaemonPipe.Connected)
             {
@@ -143,25 +232,28 @@ namespace libsecondlife.Utilities
                     "<Request requestId=\"{0}\" action=\"Aux.GetRenderDevices.1\"></Request>{1}",
                     _CommandCookie++,
                     REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestRenderDevices() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestCreateConnector()
+        public int RequestCreateConnector()
         {
-            RequestCreateConnector(VOICE_RELEASE_SERVER);
+            return RequestCreateConnector(VoiceServer);
         }
 
-        public void RequestCreateConnector(string voiceServer)
+        public int RequestCreateConnector(string voiceServer)
         {
             if (_DaemonPipe.Connected)
             {
-                _VoiceServer = voiceServer;
+                VoiceServer = voiceServer;
 
-                string accountServer = String.Format("https://www.{0}/api2/", _VoiceServer);
+                string accountServer = String.Format("https://www.{0}/api2/", VoiceServer);
                 string logPath = ".";
 
                 StringBuilder request = new StringBuilder();
@@ -179,14 +271,35 @@ namespace libsecondlife.Utilities
                 request.Append(REQUEST_TERMINATOR);
 
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(request.ToString()));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.CreateConnector() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestLogin(string accountName, string password, string connectorHandle)
+        public void RequestProvisionAccount()
+        {
+            if (Client.Network.Connected)
+            {
+                if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.SimCaps != null)
+                {
+                    string requestURI = Client.Network.CurrentSim.SimCaps.CapabilityURI("ProvisionVoiceAccountRequest");
+
+                    if (requestURI != String.Empty)
+                    {
+                        CapsRequest request = new CapsRequest(requestURI, Client.Network.CurrentSim);
+                        request.OnCapsResponse += new CapsRequest.CapsResponseCallback(ProvisionCapsResponse);
+                        request.MakeRequest();
+                    }
+                }
+            }
+        }
+
+        public int RequestLogin(string accountName, string password, string connectorHandle)
         {
             if (_DaemonPipe.Connected)
             {
@@ -200,56 +313,68 @@ namespace libsecondlife.Utilities
                 request.Append(REQUEST_TERMINATOR);
 
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(request.ToString()));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.Login() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestSetRenderDevice(string deviceName)
+        public int RequestSetRenderDevice(string deviceName)
         {
             if (_DaemonPipe.Connected)
             {
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.SetRenderDevice.1\"><RenderDeviceSpecifier>{1}</RenderDeviceSpecifier></Request>{2}",
                     _CommandCookie, deviceName, REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestSetRenderDevice() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestStartTuningMode(int duration)
+        public int RequestStartTuningMode(int duration)
         {
             if (_DaemonPipe.Connected)
             {
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.CaptureAudioStart.1\"><Duration>{1}</Duration></Request>{2}",
                     _CommandCookie, duration, REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestStartTuningMode() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestStopTuningMode()
+        public int RequestStopTuningMode()
         {
             if (_DaemonPipe.Connected)
             {
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.CaptureAudioStop.1\"></Request>{1}",
                     _CommandCookie, REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestStopTuningMode() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return _CommandCookie - 1;
             }
         }
 
-        public void RequestSetSpeakerVolume(int volume)
+        public int RequestSetSpeakerVolume(int volume)
         {
             if (volume < 0 || volume > 100)
                 throw new ArgumentException("volume must be between 0 and 100", "volume");
@@ -259,14 +384,17 @@ namespace libsecondlife.Utilities
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.SetSpeakerLevel.1\"><Level>{1}</Level></Request>{2}",
                     _CommandCookie, volume, REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestSetSpeakerVolume() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestSetCaptureVolume(int volume)
+        public int RequestSetCaptureVolume(int volume)
         {
             if (volume < 0 || volume > 100)
                 throw new ArgumentException("volume must be between 0 and 100", "volume");
@@ -276,10 +404,13 @@ namespace libsecondlife.Utilities
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.SetMicLevel.1\"><Level>{1}</Level></Request>{2}",
                     _CommandCookie, volume, REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestSetCaptureVolume() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
@@ -288,7 +419,7 @@ namespace libsecondlife.Utilities
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="loop"></param>
-        public void RequestRenderAudioStart(string fileName, bool loop)
+        public int RequestRenderAudioStart(string fileName, bool loop)
         {
             if (_DaemonPipe.Connected)
             {
@@ -297,24 +428,42 @@ namespace libsecondlife.Utilities
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.RenderAudioStart.1\"><SoundFilePath>{1}</SoundFilePath><Loop>{2}</Loop></Request>{3}",
                     _CommandCookie++, _TuningSoundFile, (loop ? "1" : "0"), REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestRenderAudioStart() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
             }
         }
 
-        public void RequestRenderAudioStop()
+        public int RequestRenderAudioStop()
         {
             if (_DaemonPipe.Connected)
             {
                 _DaemonPipe.SendData(Encoding.ASCII.GetBytes(String.Format(
                     "<Request requestId=\"{0}\" action=\"Aux.RenderAudioStop.1\"><SoundFilePath>{1}</SoundFilePath></Request>{2}",
                     _CommandCookie++, _TuningSoundFile, REQUEST_TERMINATOR)));
+
+                return _CommandCookie - 1;
             }
             else
             {
                 Client.Log("VoiceManager.RequestRenderAudioStop() called when the daemon pipe is disconnected", Helpers.LogLevel.Error);
+                return -1;
+            }
+        }
+
+        #region Callbacks
+
+        private void ProvisionCapsResponse(object response, HttpRequestState state)
+        {
+            if (response is System.Collections.Hashtable)
+            {
+                System.Collections.Hashtable respTable = (System.Collections.Hashtable)response;
+
+                if (OnProvisionAccount != null) OnProvisionAccount((string)respTable["username"], (string)respTable["password"]);
             }
         }
 
@@ -326,7 +475,245 @@ namespace libsecondlife.Utilities
 
         private void _DaemonPipe_OnReceiveLine(string line)
         {
-            Client.DebugLog("VOICE: " + line);
+            XmlTextReader reader = new XmlTextReader(new StringReader(line));
+
+            while (reader.Read())
+            {
+                switch (reader.NodeType)
+                {
+                    case XmlNodeType.Element:
+                    {
+                        if (reader.Depth == 0)
+                        {
+                            isEvent = (reader.Name == "Event");
+
+                            if (isEvent || reader.Name == "Response")
+                            {
+                                for (int i = 0; i < reader.AttributeCount; i++)
+                                {
+                                    reader.MoveToAttribute(i);
+
+                                    switch (reader.Name)
+                                    {
+                                        case "requestId":
+                                            uuidString = reader.Value;
+                                            break;
+                                        case "action":
+                                            actionString = reader.Value;
+                                            break;
+                                        case "type":
+                                            eventTypeString = reader.Value;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            switch (reader.Name)
+                            {
+                                case "InputXml":
+                                    cookie = -1;
+
+                                    // Parse through here to get the cookie value
+                                    reader.Read();
+                                    if (reader.Name == "Request")
+                                    {
+                                        for (int i = 0; i < reader.AttributeCount; i++)
+                                        {
+                                            reader.MoveToAttribute(i);
+
+                                            if (reader.Name == "requestId")
+                                            {
+                                                Int32.TryParse(reader.Value, out cookie);
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (cookie == -1)
+                                    {
+                                        Client.Log("VoiceManager._DaemonPipe_OnReceiveLine(): Failed to parse InputXml for the cookie",
+                                            Helpers.LogLevel.Warning);
+                                    }
+                                    break;
+                                case "CaptureDevices":
+                                    _CaptureDevices.Clear();
+                                    break;
+                                case "RenderDevices":
+                                    _RenderDevices.Clear();
+                                    break;
+                                case "ReturnCode":
+                                    returnCode = reader.ReadElementContentAsInt();
+                                    break;
+                                case "StatusCode":
+                                    statusCode = reader.ReadElementContentAsInt();
+                                    break;
+                                case "StatusString":
+                                    statusString = reader.ReadElementContentAsString();
+                                    break;
+                                case "State":
+                                    state = reader.ReadElementContentAsInt();
+                                    break;
+                                case "ConnectorHandle":
+                                    connectorHandle = reader.ReadElementContentAsString();
+                                    break;
+                                case "AccountHandle":
+                                    accountHandle = reader.ReadElementContentAsString();
+                                    break;
+                                case "SessionHandle":
+                                    sessionHandle = reader.ReadElementContentAsString();
+                                    break;
+                                case "URI":
+                                    uriString = reader.ReadElementContentAsString();
+                                    break;
+                                case "IsChannel":
+                                    isChannel = reader.ReadElementContentAsBoolean();
+                                    break;
+                                case "Name":
+                                    nameString = reader.ReadElementContentAsString();
+                                    break;
+                                case "AudioMedia":
+                                    audioMediaString = reader.ReadElementContentAsString();
+                                    break;
+                                case "ChannelName":
+                                    nameString = reader.ReadElementContentAsString();
+                                    break;
+                                case "ParticipantURI":
+                                    uriString = reader.ReadElementContentAsString();
+                                    break;
+                                case "DisplayName":
+                                    displayNameString = reader.ReadElementContentAsString();
+                                    break;
+                                case "AccountName":
+                                    nameString = reader.ReadElementContentAsString();
+                                    break;
+                                case "ParticipantType":
+                                    participantType = reader.ReadElementContentAsInt();
+                                    break;
+                                case "IsLocallyMuted":
+                                    isLocallyMuted = reader.ReadElementContentAsBoolean();
+                                    break;
+                                case "IsModeratorMuted":
+                                    isModeratorMuted = reader.ReadElementContentAsBoolean();
+                                    break;
+                                case "IsSpeaking":
+                                    isSpeaking = reader.ReadElementContentAsBoolean();
+                                    break;
+                                case "Volume":
+                                    volume = reader.ReadElementContentAsInt();
+                                    break;
+                                case "Energy":
+                                    energy = reader.ReadElementContentAsFloat();
+                                    break;
+                                case "MicEnergy":
+                                    energy = reader.ReadElementContentAsFloat();
+                                    break;
+                                case "ChannelURI":
+                                    uriString = reader.ReadElementContentAsString();
+                                    break;
+                                case "ChannelListResult":
+                                    _ChannelMap[nameString] = uriString;
+                                    break;
+                                case "CaptureDevice":
+                                    reader.Read();
+                                    _CaptureDevices.Add(reader.ReadElementContentAsString());
+                                    break;
+                                case "CurrentCaptureDevice":
+                                    reader.Read();
+                                    nameString = reader.ReadElementContentAsString();
+                                    break;
+                                case "RenderDevice":
+                                    reader.Read();
+                                    _RenderDevices.Add(reader.ReadElementContentAsString());
+                                    break;
+                                case "CurrentRenderDevice":
+                                    reader.Read();
+                                    nameString = reader.ReadElementContentAsString();
+                                    break;
+                            }
+                        }
+
+                        break;
+                    }
+                    case XmlNodeType.EndElement:
+                        if (reader.Depth == 0)
+                            ProcessEvent();
+                        break;
+                }
+            }
+
+            if (isEvent)
+            {
+            }
+
+            //Client.DebugLog("VOICE: " + line);
         }
+
+        private void ProcessEvent()
+        {
+            if (isEvent)
+            {
+                switch (eventTypeString)
+                {
+                    case "LoginStateChangeEvent":
+                        if (OnLoginStateChange != null) OnLoginStateChange(cookie, accountHandle, statusCode, statusString, state);
+                        break;
+                    case "SessionNewEvent":
+                        if (OnNewSession != null) OnNewSession(cookie, accountHandle, eventSessionHandle, state, nameString, uriString);
+                        break;
+                    case "SessionStateChangeEvent":
+                        if (OnSessionStateChange != null) OnSessionStateChange(cookie, uriString, statusCode, statusString, eventSessionHandle, state, isChannel, nameString);
+                        break;
+                    case "ParticipantStateChangeEvent":
+                        if (OnParticipantStateChange != null) OnParticipantStateChange(cookie, uriString, statusCode, statusString, state, nameString, displayNameString, participantType);
+                        break;
+                    case "ParticipantPropertiesEvent":
+                        if (OnParticipantProperties != null) OnParticipantProperties(cookie, uriString, statusCode, statusString, isLocallyMuted, isModeratorMuted, isSpeaking, volume, energy);
+                        break;
+                    case "AuxAudioPropertiesEvent":
+                        if (OnAuxAudioProperties != null) OnAuxAudioProperties(cookie, energy);
+                        break;
+                }
+            }
+            else
+            {
+                switch (actionString)
+                {
+                    case "Connector.Create.1":
+                        if (OnConnectorCreated != null) OnConnectorCreated(cookie, statusCode, statusString, connectorHandle);
+                        break;
+                    case "Account.Login.1":
+                        if (OnLogin != null) OnLogin(cookie, statusCode, statusString, accountHandle);
+                        break;
+                    case "Session.Create.1":
+                        if (OnSessionCreated != null) OnSessionCreated(cookie, statusCode, statusString, sessionHandle);
+                        break;
+                    case "Session.Connect.1":
+                        if (OnSessionConnected != null) OnSessionConnected(cookie, statusCode, statusString);
+                        break;
+                    case "Session.Terminate.1":
+                        if (OnSessionTerminated != null) OnSessionTerminated(cookie, statusCode, statusString);
+                        break;
+                    case "Account.Logout.1":
+                        if (OnAccountLogout != null) OnAccountLogout(cookie, statusCode, statusString);
+                        break;
+                    case "Connector.InitiateShutdown.1":
+                        if (OnConnectorInitiateShutdown != null) OnConnectorInitiateShutdown(cookie, statusCode, statusString);
+                        break;
+                    case "Account.ChannelGetList.1":
+                        if (OnAccountChannelGetList != null) OnAccountChannelGetList(cookie, statusCode, statusString);
+                        break;
+                    case "Aux.GetCaptureDevices.1":
+                        if (OnCaptureDevices != null) OnCaptureDevices(cookie, statusCode, statusString, nameString);
+                        break;
+                    case "Aux.GetRenderDevices.1":
+                        if (OnRenderDevices != null) OnRenderDevices(cookie, statusCode, statusString, nameString);
+                        break;
+                }
+            }
+        }
+
+        #endregion Callbacks
     }
 }

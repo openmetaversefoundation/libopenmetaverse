@@ -113,7 +113,7 @@ namespace libsecondlife
 
             try
             {
-                if (postData != null && postData.Length > 0)
+                if (postData != null)
                 {
                     // POST request
                     _RequestState.WebRequest.Method = "POST";
@@ -175,18 +175,22 @@ namespace libsecondlife
                 if (exception == null)
                 {
                     _Aborted = true;
-                    Log("HttpBase.Abort(): HTTP request aborted", Helpers.LogLevel.Debug);
+                    //Log("HttpBase.Abort(): HTTP request aborted", Helpers.LogLevel.Debug);
                 }
                 else if (exception.Message.Contains("404") || exception.Message.Contains("410"))
                 {
                     _Aborted = true;
                     Log("HttpBase.Abort(): HTTP request target is missing", Helpers.LogLevel.Debug);
                 }
-                else if (exception.Message.Contains("aborted"))
+                else if (exception.Message.Contains("Aborted") || exception.Message.Contains("aborted"))
                 {
                     // A callback threw an exception because the request is aborting, return to
                     // avoid circular problems
                     return;
+                }
+                else if (exception.Message.Contains("502"))
+                {
+                    // Don't log anything since 502 errors are so common
                 }
                 else
                 {
@@ -258,7 +262,7 @@ namespace libsecondlife
             }
         }
 
-        private void ReadCallback(IAsyncResult result)
+        protected void ReadCallback(IAsyncResult result)
         {
             try
             {

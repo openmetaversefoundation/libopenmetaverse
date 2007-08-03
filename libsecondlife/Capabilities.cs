@@ -26,7 +26,7 @@
 
 using System;
 using System.Collections;
-using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.Text;
 
 namespace libsecondlife
@@ -58,7 +58,7 @@ namespace libsecondlife
         public Simulator Simulator;
 
         internal string _Seedcaps;
-        internal StringDictionary _Caps = new StringDictionary();
+        internal Dictionary<string, string> _Caps = new Dictionary<string, string>();
 
         private CapsRequest _SeedRequest;
         private CapsEventQueue _EventQueueCap = null;
@@ -109,6 +109,14 @@ namespace libsecondlife
             }
         }
 
+        public string CapabilityURI(string capability)
+        {
+            if (_Caps.ContainsKey(capability))
+                return _Caps[capability];
+            else
+                return String.Empty;
+        }
+
         private void MakeSeedRequest()
         {
             if (Simulator == null || !Simulator.Client.Network.Connected)
@@ -135,6 +143,7 @@ namespace libsecondlife
             req.Add("UntrustedSimulatorMessage");
             req.Add("ParcelVoiceInfoRequest");
             req.Add("ChatSessionRequest");
+            req.Add("ProvisionVoiceAccountRequest");
 
             byte[] postData = LLSD.LLSDSerialize(req);
 
