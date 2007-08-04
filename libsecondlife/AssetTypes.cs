@@ -5,7 +5,7 @@ namespace libsecondlife
 {
     public abstract class Asset
     {
-        private byte[] _AssetData = new byte[0];
+        public byte[] AssetData;
 
         private LLUUID _AssetID;
         public LLUUID AssetID
@@ -14,212 +14,145 @@ namespace libsecondlife
             internal set { _AssetID = value; }
         }
 
-        private bool _DecodeNeeded;
-        /// <summary>
-        /// <code>true</code> if the asset's properties need to be decoded
-        /// from the asset's data byte array.
-        /// </summary>
-        public bool DecodeNeeded
+        public abstract AssetType AssetType
         {
-            get { return _DecodeNeeded; }
-        }
-
-        private bool _EncodeNeeded;
-        /// <summary>
-        /// <code>true</code> if the asset's data byte array needs to be 
-        /// regenerated from the asset's properties, <code>false</code> otherwise.
-        /// </summary>
-        public bool EncodeNeeded
-        {
-            get { return _EncodeNeeded; }
+            get;
         }
 
         public Asset() { }
 
-        public virtual void SetEncodedData(byte[] assetData)
+        public Asset(byte[] assetData)
         {
-            byte[] copy = new byte[assetData.Length];
-            Buffer.BlockCopy(assetData, 0, copy, 0, assetData.Length);
-            _AssetData = copy;
-            _DecodeNeeded = true;
-            _EncodeNeeded = false;
-        }
-
-        public void GetEncodedData(byte[] dest, int off)
-        {
-            EncodeIfNeeded();
-            Buffer.BlockCopy(_AssetData, 0, dest, off, _AssetData.Length);
-        }
-
-        public byte[] GetEncodedData()
-        {
-            byte[] copy = new byte[_AssetData.Length];
-            GetEncodedData(copy, 0);
-            return copy;
-        }
-
-
-        /// <summary>
-        /// This method signals that the <code>AssetData</code> byte 
-        /// array no longer corresponds to the state of the Asset.
-        /// <remarks>
-        /// Derived classes should call this method if their properties
-        /// change. 
-        /// </remarks>
-        /// </summary>
-        protected void InvalidateEncodedData()
-        {
-            _EncodeNeeded = true;
-        }
-
-        /// <summary>
-        /// Regenerates the <code>AssetData</code> array if and only if the properties
-        /// of the class have been modified.
-        /// <remarks>
-        /// Call this method instead of calling <code>Encode</code> directly.
-        /// </remarks>
-        /// </summary>
-        public void EncodeIfNeeded()
-        {
-            if (EncodeNeeded)
-            {
-                Encode(out _AssetData);
-                _EncodeNeeded = false;
-            }
-        }
-
-        /// <summary>
-        /// Decodes the AssetData byte array, if and only if it hasn't been
-        /// decoded before.
-        /// <remarks>
-        /// Derived classes should call this method before returning a value in their
-        /// properties' getters and before setting the value in their properties' setters.
-        /// Call this method instead of calling <code>Decode</code> directly.
-        /// </remarks>
-        /// </summary>
-        public void DecodeIfNeeded()
-        {
-            if (DecodeNeeded)
-            {
-                Decode(_AssetData);
-                _DecodeNeeded = false;
-            }
+            AssetData = assetData;
         }
 
         /// <summary>
         /// Regenerates the <code>AssetData</code> byte array from the properties 
         /// of the derived class.
         /// </summary>
-        protected abstract void Encode(out byte[] newAssetData);
+        public abstract void Encode();
 
         /// <summary>
         /// Decodes the AssetData, placing it in appropriate properties of the derived
         /// class.
         /// </summary>
-        protected abstract void Decode(byte[] assetData);
+        public abstract void Decode();
     }
 
     public class AssetNotecard : Asset
     {
-        private string _Text = null;
-        public string Text
-        {
-            get
-            {
-                DecodeIfNeeded();
-                return _Text;
-            }
-            set
-            {
-                DecodeIfNeeded();
-                _Text = value;
-                InvalidateEncodedData();
-            }
-        }
+        public override AssetType AssetType { get { return AssetType.Notecard; } }
 
-        protected override void Encode(out byte[] newAssetData)
+        public string Text = null;
+
+        public AssetNotecard() { }
+        
+        public AssetNotecard(byte[] assetData)
         {
-            newAssetData = Helpers.StringToField(_Text);
+            AssetData = assetData;
         }
         
-        protected override void Decode(byte[] assetData)
+        public AssetNotecard(string text)
         {
-            _Text = Helpers.FieldToUTF8String(assetData);
+            Text = text;
+        }
+
+        public override void Encode()
+        {
+            AssetData = Helpers.StringToField(Text);
+        }
+        
+        public override void Decode()
+        {
+            Text = Helpers.FieldToUTF8String(AssetData);
         }
     }
 
     public class AssetScriptText : Asset
     {
-        private string _Source = null;
-        public string Source
+        public override AssetType AssetType { get { return AssetType.LSLText; } }
+
+        public string Source;
+
+        public AssetScriptText() { }
+        
+        public AssetScriptText(byte[] assetData)
         {
-            get
-            {
-                DecodeIfNeeded();
-                return _Source;
-            }
-            set
-            {
-                DecodeIfNeeded();
-                _Source = value;
-                InvalidateEncodedData();
-            }
+            AssetData = assetData;
+        }
+        
+        public AssetScriptText(string source)
+        {
+            Source = source;
         }
 
-        protected override void Encode(out byte[] newAssetData)
+        public override void Encode()
         {
-            newAssetData = Helpers.StringToField(_Source);
+            AssetData = Helpers.StringToField(Source);
         }
 
-        protected override void Decode(byte[] assetData)
+        public override void Decode()
         {
-            _Source = Helpers.FieldToUTF8String(assetData);
+            Source = Helpers.FieldToUTF8String(AssetData);
         }
     }
 
     public class AssetScriptBinary : Asset
     {
-        public AssetScriptBinary() { }
+        public override AssetType AssetType { get { return AssetType.LSLBytecode; } }
 
-        protected override void Encode(out byte[] newAssetData)
+        public byte[] Bytecode;
+
+        public AssetScriptBinary() { }
+        
+        public AssetScriptBinary(byte[] assetData)
         {
-            SecondLife.LogStatic("AssetScriptBinary.Encode() should never be called!", Helpers.LogLevel.Error);
-            newAssetData = new byte[0];
+            AssetData = assetData;
+            Bytecode = assetData;
         }
-        protected override void Decode(byte[] assetData) { }
+
+        public override void Encode() { AssetData = Bytecode; }
+        public override void Decode() { Bytecode = AssetData; }
     }
 
+    /*
     public class AssetTexture : Asset
     {
-        // TODO: Expand this later to take a byte[] of a non-JPEG2000 image as
-        // the unencoded source
+        public override AssetType AssetType { get { return AssetType.Texture; } }
+
+        public Image Image;
+        
         public AssetTexture() { }
 
-        protected override void Encode(out byte[] newAssetData)
+        public AssetTexture(byte[] assetData)
         {
-            SecondLife.LogStatic("AssetTexture.Encode() should never be called!", Helpers.LogLevel.Error);
-            newAssetData = new byte[0];
+            AssetData = assetData;
         }
-        protected override void Decode(byte[] assetData) { }
+        
+        public AssetTexture(Image image)
+        {
+            Image = image;
+        }
+
+        public override void Encode()
+        {
+            AssetData = OpenJPEGNet.OpenJPEG.Encode(Image);
+        }
+        
+        public override void Decode()
+        {
+            Image = OpenJPEGNet.OpenJPEG.Decode(AssetData);
+        }
     }
+    */ 
 
     public class AssetObject : Asset
     {
+        public override AssetType AssetType { get { return AssetType.Object; } }
+        
         public AssetObject() { }
 
-        public override void SetEncodedData(byte[] assetData)
-        {
-            throw new InventoryException("There is no encoded data to set for object assets");
-        }
-
-        protected override void Encode(out byte[] newAssetData)
-        {
-            SecondLife.LogStatic("AssetObject.Encode() should never be called!", Helpers.LogLevel.Error);
-            newAssetData = new byte[0];
-        }
-        protected override void Decode(byte[] assetData)
-        {
-            SecondLife.LogStatic("AssetObject.Decode() should never be called!", Helpers.LogLevel.Error);
-        }
+        public override void Encode() { }
+        public override void Decode() { }
     }
 }
