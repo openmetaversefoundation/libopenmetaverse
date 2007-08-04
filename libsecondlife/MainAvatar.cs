@@ -805,8 +805,9 @@ namespace libsecondlife
 			//Agent Update Callback
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
-	        // Event queue callback (used for Caps teleports currently)
-	        Client.Network.RegisterEventCallback(new Capabilities.EventQueueCallback(EventQueueHandler));
+	        // CAPS callbacks
+	        Client.Network.RegisterEventCallback("TeleportFinish", new Capabilities.EventQueueCallback(TeleportFinishEventHandler));
+            Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Capabilities.EventQueueCallback(EstablishAgentCommunicationEventHandler));
         }
 
         /// <summary>
@@ -1998,9 +1999,9 @@ namespace libsecondlife
             }
         }
 
-        private void EventQueueHandler(string message, Hashtable body, CapsEventQueue caps)
+        private void TeleportFinishEventHandler(string message, Hashtable body, CapsEventQueue caps)
         {
-            if (message == "TeleportFinish" && body.ContainsKey("Info"))
+            if (body.ContainsKey("Info"))
             {
                 ArrayList infoList = (ArrayList)body["Info"];
                 Hashtable info = (Hashtable)infoList[0];
@@ -2023,7 +2024,11 @@ namespace libsecondlife
 
                 TeleportHandler(packet, Client.Network.CurrentSim);
             }
-            else if (message == "EstablishAgentCommunication" && Client.Settings.MULTIPLE_SIMS)
+        }
+
+        private void EstablishAgentCommunicationEventHandler(string message, Hashtable body, CapsEventQueue caps)
+        {
+            if (Client.Settings.MULTIPLE_SIMS && body.ContainsKey("sim-ip-and-port"))
             {
                 string ipAndPort = (string)body["sim-ip-and-port"];
                 string[] pieces = ipAndPort.Split(':');
@@ -2044,11 +2049,6 @@ namespace libsecondlife
 
                     sim.SetSeedCaps((string)body["seed-capability"]);
                 }
-            }
-            else
-            {
-                Client.Log("Received unhandled event " + message + " in the EventQueueHandler",
-                    Helpers.LogLevel.Warning);
             }
         }
 

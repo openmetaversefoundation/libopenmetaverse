@@ -64,20 +64,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Object that is passed to worker threads in the ThreadPool for
-        /// firing packet callbacks
-        /// </summary>
-        private struct PacketCallbackWrapper
-        {
-            /// <summary>Callback to fire for this packet</summary>
-            public PacketCallback Callback;
-            /// <summary>Reference to the simulator that this packet came from</summary>
-            public Simulator Simulator;
-            /// <summary>The packet that needs to be processed</summary>
-            public Packet Packet;
-        }
-
-        /// <summary>
         /// Explains why a simulator or the grid disconnected from us
         /// </summary>
         public enum DisconnectType
@@ -188,13 +174,14 @@ namespace libsecondlife
         public bool Connected { get { return connected; } }
         public int InboxCount { get { return PacketInbox.Count; } }
 
-        /// <summary></summary>
-        internal List<Capabilities.EventQueueCallback> EventQueueCallbacks = new List<Capabilities.EventQueueCallback>();
+        /// <summary>Handlers for incoming capability events</summary>
+        internal CapsEventDictionary CapsEvents;
+        /// <summary>Handlers for incoming packets</summary>
+        internal PacketEventDictionary PacketEvents;
         /// <summary>Incoming packets that are awaiting handling</summary>
         internal BlockingQueue PacketInbox = new BlockingQueue(Settings.PACKET_INBOX_SIZE);
 
         private SecondLife Client;
-        private Dictionary<PacketType, List<PacketCallback>> Callbacks = new Dictionary<PacketType, List<PacketCallback>>();
         private System.Timers.Timer DisconnectTimer, LogoutTimer;
         private bool connected = false;
         private ManualResetEvent LogoutReplyEvent = new ManualResetEvent(false);
@@ -208,6 +195,9 @@ namespace libsecondlife
         {
             Client = client;
             CurrentSim = null;
+
+            PacketEvents = new PacketEventDictionary(client);
+            CapsEvents = new CapsEventDictionary(client);
             
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
@@ -223,12 +213,8 @@ namespace libsecondlife
             DisconnectTimer = new System.Timers.Timer();
             DisconnectTimer.Elapsed += new ElapsedEventHandler(DisconnectTimer_Elapsed);
 
-            // Don't force Expect-100: Continue headers on HTTP POST calls
+            // GLOBAL SETTING: Don't force Expect-100: Continue headers on HTTP POST calls
             ServicePointManager.Expect100Continue = false;
-
-            // Catch exceptions from threads in the managed threadpool
-            AppDomain.CurrentDomain.UnhandledException += 
-                new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
         }
 
         /// <summary>
@@ -241,13 +227,7 @@ namespace libsecondlife
         /// is received</param>
         public void RegisterCallback(PacketType type, PacketCallback callback)
         {
-            if (!Callbacks.ContainsKey(type))
-            {
-                Callbacks[type] = new List<PacketCallback>();
-            }
-
-            List<PacketCallback> callbackArray = Callbacks[type];
-            callbackArray.Add(callback);
+            PacketEvents.RegisterEvent(type, callback);
         }
 
         /// <summary>
@@ -259,33 +239,32 @@ namespace libsecondlife
         /// <param name="callback">Callback to stop firing events for</param>
         public void UnregisterCallback(PacketType type, PacketCallback callback)
         {
-            if (!Callbacks.ContainsKey(type))
-            {
-                Client.Log("Trying to unregister a callback for packet " + type.ToString() +
-                    " when no callbacks are setup for that packet", Helpers.LogLevel.Info);
-                return;
-            }
-
-            List<PacketCallback> callbackArray = Callbacks[type];
-
-            if (callbackArray.Contains(callback))
-            {
-                callbackArray.Remove(callback);
-            }
-            else
-            {
-                Client.Log("Trying to unregister a non-existant callback for packet " + type.ToString(),
-                    Helpers.LogLevel.Info);
-            }
+            PacketEvents.UnregisterEvent(type, callback);
         }
 
         /// <summary>
-        /// Register a CAPS event handler
+        /// Register a CAPS event handler. This is a low level event interface
+        /// and should only be used if you are doing something not supported in
+        /// libsecondlife
         /// </summary>
+        /// <param name="eventName">Name of the CAPS event to register a handler for</param>
         /// <param name="callback">Callback to fire when a CAPS event is received</param>
-        public void RegisterEventCallback(Capabilities.EventQueueCallback callback)
+        public void RegisterEventCallback(string capsEvent, Capabilities.EventQueueCallback callback)
         {
-            lock (EventQueueCallbacks) EventQueueCallbacks.Add(callback);
+            CapsEvents.RegisterEvent(capsEvent, callback);
+        }
+
+        /// <summary>
+        /// Unregister a CAPS event handler. This is a low level event interface
+        /// and should only be used if you are doing something not supported in
+        /// libsecondlife
+        /// </summary>
+        /// <param name="capsEvent">Name of the CAPS event this callback is
+        /// registered with</param>
+        /// <param name="callback">Callback to stop firing events for</param>
+        public void UnregisterEventCallback(string capsEvent, Capabilities.EventQueueCallback callback)
+        {
+            CapsEvents.UnregisterEvent(capsEvent, callback);
         }
 
         /// <summary>
@@ -512,7 +491,6 @@ namespace libsecondlife
             IncomingPacket incomingPacket = new IncomingPacket();
             Packet packet = null;
             Simulator simulator = null;
-            WaitCallback callback = new WaitCallback(CallPacketDelegate);
 
             while (connected)
             {
@@ -591,56 +569,15 @@ namespace libsecondlife
 
                         #region FireCallbacks
 
-                        if (Callbacks.ContainsKey(PacketType.Default))
+                        if (Client.Settings.SYNC_PACKETCALLBACKS)
                         {
-                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[PacketType.Default];
-
-                            // Fire any registered callbacks
-                            for (int i = 0; i < callbackArray.Count; i++)
-                            {
-                                if (callbackArray[i] != null)
-                                {
-                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
-                                    if (sync)
-                                    {
-                                        callbackArray[i](packet, simulator);
-                                    }
-                                    else
-                                    {
-                                        PacketCallbackWrapper wrapper;
-                                        wrapper.Callback = callbackArray[i];
-                                        wrapper.Packet = packet;
-                                        wrapper.Simulator = simulator;
-                                        ThreadPool.QueueUserWorkItem(callback, wrapper);
-                                    }
-                                }
-                            }
+                            PacketEvents.RaiseEvent(PacketType.Default, packet, simulator);
+                            PacketEvents.RaiseEvent(packet.Type, packet, simulator);
                         }
-
-                        if (Callbacks.ContainsKey(packet.Type))
+                        else
                         {
-                            List<NetworkManager.PacketCallback> callbackArray = Callbacks[packet.Type];
-
-                            // Fire any registered callbacks
-                            for (int i = 0; i < callbackArray.Count; i++)
-                            {
-                                if (callbackArray[i] != null)
-                                {
-                                    bool sync = Client.Settings.SYNC_PACKETCALLBACKS;
-                                    if (sync)
-                                    {
-                                        callbackArray[i](packet, simulator);
-                                    }
-                                    else
-                                    {
-                                        PacketCallbackWrapper wrapper;
-                                        wrapper.Callback = callbackArray[i];
-                                        wrapper.Packet = packet;
-                                        wrapper.Simulator = simulator;
-                                        ThreadPool.QueueUserWorkItem(callback, wrapper);
-                                    }
-                                }
-                            }
+                            PacketEvents.BeginRaiseEvent(PacketType.Default, packet, simulator);
+                            PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
                         }
 
                         #endregion FireCallbacks
@@ -649,12 +586,6 @@ namespace libsecondlife
                     }
                 }
             }
-        }
-
-        private void CallPacketDelegate(Object state)
-        {
-            PacketCallbackWrapper wrapper = (PacketCallbackWrapper)state;
-            wrapper.Callback(wrapper.Packet, wrapper.Simulator);
         }
 
         private void SetCurrentSim(Simulator simulator, string seedcaps)
@@ -768,12 +699,6 @@ namespace libsecondlife
             }
 
             return null;
-        }
-
-        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            // An exception occurred in a packet callback, log it
-            Client.Log(((Exception)e.ExceptionObject).ToString(), Helpers.LogLevel.Error);
         }
 
         #region Timers

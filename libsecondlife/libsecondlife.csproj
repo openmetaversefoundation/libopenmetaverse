@@ -105,6 +105,7 @@
     <Compile Include="Capabilities.cs" />
     <Compile Include="CapsEventQueue.cs" />
     <Compile Include="CapsRequest.cs" />
+    <Compile Include="EventDictionary.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendsManager.cs" />
     <Compile Include="HttpBase.cs" />
@@ -151,6 +152,7 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Simulator.cs" />
+    <Compile Include="SoundManager.cs" />
     <Compile Include="TerrainManager.cs" />
     <Compile Include="TextureEntry.cs" />
     <Compile Include="Textures.cs">

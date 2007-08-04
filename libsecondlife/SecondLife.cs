@@ -46,6 +46,9 @@ namespace libsecondlife
 
         /// <summary>Networking Subsystem</summary>
         public NetworkManager Network;
+        /// <summary>Settings class including constant values and changeable
+        /// parameters for everything</summary>
+        public Settings Settings;
         /// <summary>Parcel (subdivided simulator lots) Subsystem</summary>
         public ParcelManager Parcels;
         /// <summary>'Client's Avatar' Subsystem</summary>
@@ -71,12 +74,12 @@ namespace libsecondlife
         public DirectoryManager Directory;
         /// <summary>Handles land, wind, and cloud heightmaps</summary>
         public TerrainManager Terrain;
+        /// <summary>Handles sound-related networking</summary>
+        public SoundManager Sound;
         /// <summary>Throttling total bandwidth usage, or allocating bandwidth
         /// for specific data stream types</summary>
         public AgentThrottle Throttle;
-        /// <summary>Settings class including constant values and changeable
-        /// parameters for everything</summary>
-        public Settings Settings;
+        
 
         /// <summary>Triggered whenever a message is logged.
         /// If this is left null, log messages will go to 
@@ -103,6 +106,7 @@ namespace libsecondlife
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);
             Terrain = new TerrainManager(this);
+            Sound = new SoundManager(this);
             Throttle = new AgentThrottle(this);
         }
 

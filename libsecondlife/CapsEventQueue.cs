@@ -298,21 +298,23 @@ namespace libsecondlife
             if (events != null && events.Count > 0)
             {
                 // Fire callbacks for each event received
-                lock (Simulator.Client.Network.EventQueueCallbacks)
+                foreach (Hashtable evt in events)
                 {
-                    foreach (Hashtable evt in events)
+                    string msg = (string)evt["message"];
+                    Hashtable body = (Hashtable)evt["body"];
+
+                    //Simulator.Client.DebugLog(
+                    //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));
+
+                    if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
                     {
-                        string msg = (string)evt["message"];
-                        Hashtable body = (Hashtable)evt["body"];
-
-                        //Simulator.Client.DebugLog(
-                        //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));
-
-                        for (int i = 0; i < Simulator.Client.Network.EventQueueCallbacks.Count; i++)
-                        {
-                            try { Simulator.Client.Network.EventQueueCallbacks[i](msg, body, this); }
-                            catch (Exception e) { Simulator.Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-                        }
+                        Simulator.Client.Network.CapsEvents.RaiseEvent(String.Empty, msg, body, this);
+                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, msg, body, this);
+                    }
+                    else
+                    {
+                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(String.Empty, msg, body, this);
+                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, msg, body, this);
                     }
                 }
             }

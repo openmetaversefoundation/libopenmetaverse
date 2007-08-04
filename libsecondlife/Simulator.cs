@@ -416,7 +416,7 @@ namespace libsecondlife
         {
             if (SimCaps != null)
             {
-                if (SimCaps._Seedcaps == seedcaps) return;
+                if (SimCaps._SeedCapsURI == seedcaps) return;
 
                 Client.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
                 SimCaps.Disconnect(true);

@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,7 +51,9 @@ namespace VoiceTest
             string password = args[2];
 
             SecondLife client = new SecondLife();
-            client.OnLogMessage += new SecondLife.LogCallback(client_OnLogMessage);
+            client.Settings.MULTIPLE_SIMS = false;
+            //client.OnLogMessage += new SecondLife.LogCallback(client_OnLogMessage);
+
             VoiceManager voice = new VoiceManager(client);
             voice.OnProvisionAccount += new VoiceManager.ProvisionAccountCallback(voice_OnProvisionAccount);
 
@@ -45,6 +73,8 @@ namespace VoiceTest
                     Console.WriteLine(String.Format("{0}. \"{1}\"", i, renderDevices[i]));
                 Console.WriteLine();
 
+                Console.WriteLine("Logging in to Second Life as " + firstName + " " + lastName + "...");
+
                 // Login to SL
                 if (client.Network.Login(firstName, lastName, password, "Voice Test", "Metaverse Industries LLC <jhurliman@metaverseindustries.com>"))
                 {
@@ -56,31 +86,40 @@ namespace VoiceTest
                     if (connectorHandle != String.Empty)
                     {
                         Console.WriteLine("Voice connector handle: " + connectorHandle);
+
+                        // Wait for the simulator capabilities to show up
+                        client.Network.CurrentSim.SimCaps.CapsReceivedEvent.WaitOne(45 * 1000, false);
+
                         Console.WriteLine("Asking the current simulator to create a provisional account...");
 
-                        voice.RequestProvisionAccount();
-
-                        if (ProvisionEvent.WaitOne(45 * 1000, false))
+                        if (voice.RequestProvisionAccount())
                         {
-                            Console.WriteLine("Provisional account created. Username: " + VoiceAccount + ", Password: " + VoicePassword);
-                            Console.WriteLine("Logging in to voice server " + voice.VoiceServer);
-
-                            string accountHandle = voice.Login(VoiceAccount, VoicePassword, connectorHandle, out status);
-
-                            if (accountHandle != String.Empty)
+                            if (ProvisionEvent.WaitOne(45 * 1000, false))
                             {
-                                Console.WriteLine("Login succeeded, account handle: " + accountHandle);
+                                Console.WriteLine("Provisional account created. Username: " + VoiceAccount + ", Password: " + VoicePassword);
+                                Console.WriteLine("Logging in to voice server " + voice.VoiceServer);
+
+                                string accountHandle = voice.Login(VoiceAccount, VoicePassword, connectorHandle, out status);
+
+                                if (accountHandle != String.Empty)
+                                {
+                                    Console.WriteLine("Login succeeded, account handle: " + accountHandle);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Login failed, error code: " + status);
+                                    client.Network.Logout();
+                                }
                             }
                             else
                             {
-                                Console.WriteLine("Login failed, error code: " + status);
+                                Console.WriteLine("Failed to create a provisional account");
                                 client.Network.Logout();
                             }
                         }
                         else
                         {
-                            Console.WriteLine("Failed to create a provisional account");
-                            client.Network.Logout();
+                            Console.WriteLine("Failed to request a provisional account");
                         }
                     }
                     else

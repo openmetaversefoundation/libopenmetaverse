@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2006-2007, Second Life Reverse Engineering Team
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the Second Life Reverse Engineering Team nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
@@ -37,6 +63,7 @@ namespace libsecondlife.Utilities
 
     public partial class VoiceManager
     {
+        public const int VOICE_MAJOR_VERSION = 1;
         public const string DAEMON_ARGS = " -p tcp -h -c -ll ";
         public const int DAEMON_LOG_LEVEL = 1;
         public const int DAEMON_PORT = 44124;
@@ -77,6 +104,7 @@ namespace libsecondlife.Utilities
 
         public SecondLife Client;
         public string VoiceServer = VOICE_RELEASE_SERVER;
+        public bool Enabled;
 
         protected TCPPipe _DaemonPipe;
         protected VoiceStatus _Status;
@@ -118,9 +146,12 @@ namespace libsecondlife.Utilities
         public VoiceManager(SecondLife client)
         {
             Client = client;
+            Client.Network.RegisterEventCallback("RequiredVoiceVersion", new Capabilities.EventQueueCallback(RequiredVoiceVersionEventHandler));
 
             // Register callback handlers for the blocking functions
             RegisterCallbacks();
+
+            Enabled = true;
         }
 
         public bool IsDaemonRunning()
@@ -140,11 +171,15 @@ namespace libsecondlife.Utilities
 
         public bool ConnectToDaemon()
         {
+            if (!Enabled) return false;
+
             return ConnectToDaemon("127.0.0.1", DAEMON_PORT);
         }
 
         public bool ConnectToDaemon(string address, int port)
         {
+            if (!Enabled) return false;
+
             _DaemonPipe = new TCPPipe();
             _DaemonPipe.OnDisconnected += new TCPPipe.OnDisconnectedCallback(_DaemonPipe_OnDisconnected);
             _DaemonPipe.OnReceiveLine += new TCPPipe.OnReceiveLineCallback(_DaemonPipe_OnReceiveLine);
@@ -281,9 +316,9 @@ namespace libsecondlife.Utilities
             }
         }
 
-        public void RequestProvisionAccount()
+        public bool RequestProvisionAccount()
         {
-            if (Client.Network.Connected)
+            if (Enabled && Client.Network.Connected)
             {
                 if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.SimCaps != null)
                 {
@@ -294,9 +329,20 @@ namespace libsecondlife.Utilities
                         CapsRequest request = new CapsRequest(requestURI, Client.Network.CurrentSim);
                         request.OnCapsResponse += new CapsRequest.CapsResponseCallback(ProvisionCapsResponse);
                         request.MakeRequest();
+
+                        return true;
+                    }
+                    else
+                    {
+                        Client.Log("VoiceManager.RequestProvisionAccount(): ProvisionVoiceAccountRequest capability is missing", 
+                            Helpers.LogLevel.Info);
+                        return false;
                     }
                 }
             }
+
+            Client.Log("VoiceManager.RequestProvisionAccount(): Voice system is currently disabled", Helpers.LogLevel.Info);
+            return false;
         }
 
         public int RequestLogin(string accountName, string password, string connectorHandle)
@@ -456,6 +502,25 @@ namespace libsecondlife.Utilities
         }
 
         #region Callbacks
+
+        private void RequiredVoiceVersionEventHandler(string message, System.Collections.Hashtable body, CapsEventQueue caps)
+        {
+            if (body.ContainsKey("major_version"))
+            {
+                int majorVersion = (int)body["major_version"];
+
+                if (VOICE_MAJOR_VERSION != majorVersion)
+                {
+                    Client.Log(String.Format("Voice version mismatch! Got {0}, expecting {1}. Disabling the voice manager",
+                        majorVersion, VOICE_MAJOR_VERSION), Helpers.LogLevel.Error);
+                    Enabled = false;
+                }
+                else
+                {
+                    Client.DebugLog("Voice version " + majorVersion + " verified");
+                }
+            }
+        }
 
         private void ProvisionCapsResponse(object response, HttpRequestState state)
         {

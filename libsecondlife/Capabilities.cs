@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace libsecondlife
 {
@@ -57,14 +58,15 @@ namespace libsecondlife
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
 
-        internal string _Seedcaps;
+        internal string _SeedCapsURI;
         internal Dictionary<string, string> _Caps = new Dictionary<string, string>();
 
         private CapsRequest _SeedRequest;
         private CapsEventQueue _EventQueueCap = null;
 
         /// <summary>Capabilities URI this system was initialized with</summary>
-        public string SeedCapsURI { get { return _Seedcaps; } }
+        public string SeedCapsURI { get { return _SeedCapsURI; } }
+        public ManualResetEvent CapsReceivedEvent = new ManualResetEvent(false);
 
         /// <summary>Whether the capabilities event queue is connected and
         /// listening for incoming events</summary>
@@ -79,6 +81,7 @@ namespace libsecondlife
             }
         }
 
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -88,7 +91,7 @@ namespace libsecondlife
         internal Capabilities(Simulator simulator, string seedcaps)
         {
             Simulator = simulator;
-            _Seedcaps = seedcaps;
+            _SeedCapsURI = seedcaps;
 
             MakeSeedRequest();
         }
@@ -149,7 +152,7 @@ namespace libsecondlife
 
             Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
 
-            _SeedRequest = new CapsRequest(_Seedcaps);
+            _SeedRequest = new CapsRequest(_SeedCapsURI);
             _SeedRequest.OnCapsResponse += new CapsRequest.CapsResponseCallback(seedRequest_OnCapsResponse);
             _SeedRequest.MakeRequest(postData);
         }
@@ -171,6 +174,9 @@ namespace libsecondlife
                 }
 
                 Simulator.Client.DebugLog("Got capabilities: " + capsList.ToString());
+
+                // Signal that we have connected to the CAPS server and received a list of capability URIs
+                CapsReceivedEvent.Set();
 
                 if (_Caps.ContainsKey("EventQueueGet"))
                 {

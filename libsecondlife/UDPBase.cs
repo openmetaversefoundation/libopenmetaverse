@@ -37,7 +37,7 @@ namespace libsecondlife
     public class UDPPacketBuffer
     {
         // size of the buffer
-        public const int BUFFER_SIZE = 1536;
+        public const int BUFFER_SIZE = 2048;
         /// <summary>Size of the temporary buffer for zerodecoding and 
         /// zeroencoding this packet</summary>
         public const int ZERO_BUFFER_SIZE = 4096;
@@ -275,7 +275,6 @@ namespace libsecondlife
                         0,
                         UDPPacketBuffer.BUFFER_SIZE,
                         SocketFlags.None,
-                        //ref buf.Instance.RemoteEndPoint,
                         ref buf.RemoteEndPoint,
                         new AsyncCallback(AsyncEndReceive),
                         buf);
