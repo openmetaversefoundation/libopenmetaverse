@@ -662,9 +662,11 @@ namespace libsecondlife
                 case AssetType.LSLBytecode:
                     asset = new AssetScriptBinary();
                     break;
+                /*
                 case AssetType.Texture:
                     asset = new AssetTexture();
                     break;
+                */
                 case AssetType.Object:
                     asset = new AssetObject();
                     break;
@@ -674,7 +676,7 @@ namespace libsecondlife
             }
 
             asset.AssetID = download.AssetID;
-            asset.SetEncodedData(download.AssetData);
+            asset.AssetData = download.AssetData;
             return asset;
         }
 
