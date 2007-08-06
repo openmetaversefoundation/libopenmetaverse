@@ -455,10 +455,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Convert a variable length field (byte array) to a UTF8 string
+        /// Convert a variable length UTF8 byte array to a string
         /// </summary>
-        /// <param name="bytes">The byte array to convert to a string</param>
-        /// <returns>A UTF8 string</returns>
+        /// <param name="bytes">The UTF8 encoded byte array to convert</param>
+        /// <returns>The decoded string</returns>
         public static string FieldToUTF8String(byte[] bytes)
         {
             if (bytes.Length > 0 && bytes[bytes.Length - 1] == 0x00)
@@ -634,10 +634,10 @@ namespace libsecondlife
         //}
 
         /// <summary>
-        /// Convert a UTF8 string to a byte array
+        /// Convert a string to a UTF8 encoded byte array
         /// </summary>
-        /// <param name="str">The string to convert to a byte array</param>
-        /// <returns>A null-terminated byte array</returns>
+        /// <param name="str">The string to convert</param>
+        /// <returns>A null-terminated UTF8 byte array</returns>
         public static byte[] StringToField(string str)
         {
             if (str.Length == 0) { return new byte[0]; }
