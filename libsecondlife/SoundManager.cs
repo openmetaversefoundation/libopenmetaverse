@@ -40,6 +40,7 @@ namespace libsecondlife
 
             Client.Network.RegisterCallback(PacketType.AttachedSound, new NetworkManager.PacketCallback(AttachedSoundHandler));
             Client.Network.RegisterCallback(PacketType.PreloadSound, new NetworkManager.PacketCallback(PreloadSoundHandler));
+	    Client.Network.RegisterCallback(PacketType.SoundTrigger, new NetworkManager.PacketCallback(SoundTriggerHandler));
         }
 
         protected void AttachedSoundHandler(Packet packet, Simulator simulator)
@@ -51,5 +52,10 @@ namespace libsecondlife
         {
             //FIXME
         }
+	
+	protected void SoundTriggerHandler(Packet packet, Simulator simulator)
+	{
+	   //FIXME
+	}
     }
 }
