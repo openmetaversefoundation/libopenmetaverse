@@ -150,7 +150,13 @@ namespace libsecondlife
             // Other callbacks
             Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
             Client.Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
+	    Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
         }
+
+	protected void AvatarAnimationHandler(Packet p, Simulator sim)
+	{
+		//FIXME
+	}
 
         /// <summary>
         /// Request a single avatar name
