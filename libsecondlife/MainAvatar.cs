@@ -1229,6 +1229,17 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Does a "ground sit" at the avatar's current position
+        /// </summary>
+        public void SitOnGround()
+        {
+            Client.Self.Status.SitOnGround = true;
+            Client.Self.Status.SendUpdate();
+            Client.Self.Status.SitOnGround = false;
+            Client.Self.Status.SendUpdate();
+        }
+
+        /// <summary>
         /// Give Money to destination Avatar
         /// </summary>
         /// <param name="target">UUID of the Target Avatar</param>
