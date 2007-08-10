@@ -1231,7 +1231,7 @@ namespace libsecondlife
         /// <summary>
         /// Does a "ground sit" at the avatar's current position
         /// </summary>
-        public void SitOnGround()
+        public bool SitOnGround()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
@@ -1239,6 +1239,7 @@ namespace libsecondlife
                 Client.Self.Status.SendUpdate();
                 Client.Self.Status.SitOnGround = false;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
@@ -1251,12 +1252,13 @@ namespace libsecondlife
         /// <summary>
         /// Starts crouching (begin holding the crouch key)
         /// </summary>
-        public void StartCrouch()
+        public bool StartCrouch()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
                 Client.Self.Status.UpNeg = true;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
@@ -1268,12 +1270,13 @@ namespace libsecondlife
         /// <summary>
         /// Finishes crouching (releases the crouch key)
         /// </summary>
-        public void StopCrouch()
+        public bool StopCrouch()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
                 Client.Self.Status.UpNeg = false;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
@@ -1291,6 +1294,7 @@ namespace libsecondlife
             {
                 Client.Self.Status.UpPos = true;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
@@ -1311,6 +1315,7 @@ namespace libsecondlife
                 Client.Self.Status.SendUpdate();
                 Client.Self.Status.FinishAnim = false;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
@@ -1454,7 +1459,7 @@ namespace libsecondlife
 
         /// <summary>Cancels autopilot sim function</summary>
         /// <remarks>Not certain if this is how it is really done</remarks>
-        public void AutoPilotCancel()
+        public bool AutoPilotCancel()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
@@ -1462,6 +1467,7 @@ namespace libsecondlife
                 Client.Self.Status.SendUpdate();
                 Client.Self.Status.AtPos = false;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
@@ -1471,7 +1477,7 @@ namespace libsecondlife
         }
 
         /// <summary>Stands up from sitting on a prim or the ground</summary>
-        public void Stand()
+        public bool Stand()
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
@@ -1479,6 +1485,7 @@ namespace libsecondlife
                 Client.Self.Status.SendUpdate();
                 Client.Self.Status.StandUp = false;
                 Client.Self.Status.SendUpdate();
+                return true;
             }
             else
             {
