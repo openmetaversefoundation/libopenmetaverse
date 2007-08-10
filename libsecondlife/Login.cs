@@ -609,8 +609,8 @@ namespace libsecondlife
                 {
                     // Self
                     Client.Self.ID = reply.agent_id;
-                    Client.Self.FirstName = reply.first_name;
-                    Client.Self.LastName = reply.last_name;
+                    Client.Self.firstName = reply.first_name;
+                    Client.Self.lastName = reply.last_name;
                     Client.Self.StartLocation = reply.start_location;
                     Client.Self.AgentAccess = reply.agent_access;
                     ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);

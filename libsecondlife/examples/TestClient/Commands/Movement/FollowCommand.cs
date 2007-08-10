@@ -12,6 +12,8 @@ namespace libsecondlife.TestClient
 		{
 			Name = "follow";
 			Description = "Follow another avatar. (usage: follow [FirstName LastName])  If no target is set then will follow master.";
+
+            testClient.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -38,7 +40,7 @@ namespace libsecondlife.TestClient
 		}
 
         const float DISTANCE_BUFFER = 3.0f;
-		Avatar followAvatar;
+        uint targetLocalID = 0;
 
         bool Follow(string name)
         {
@@ -46,11 +48,13 @@ namespace libsecondlife.TestClient
             {
                 if (av.Name == name)
 				{
-					followAvatar = av;
+                    targetLocalID = av.LocalID;
 					Active = true;
 	                return true;
 				}
             }
+
+            Active = false;
             return false;
         }
 
@@ -60,31 +64,57 @@ namespace libsecondlife.TestClient
             {
                 if (av.ID == id)
                 {
-                    followAvatar = av;
+                    targetLocalID = av.LocalID;
                     Active = true;
                     return true;
                 }
             }
+
+            Active = false;
             return false;
         }
 
 		public override void Think()
 		{
-            if (Helpers.VecDist(followAvatar.Position, Client.Self.Position) > DISTANCE_BUFFER)
+            // Find the target position
+            if (Client.Network.CurrentSim != null && Client.AvatarList.ContainsKey(targetLocalID))
             {
-                //move toward target
-           		LLVector3 avPos = followAvatar.Position; 
-				Client.Self.AutoPilot((ulong)avPos.X + (ulong)Client.regionX, (ulong)avPos.Y + (ulong)Client.regionY, avPos.Z);
-			}
-			//else
-			//{
-			//    //stop at current position
-			//    LLVector3 myPos = client.Self.Position;
-			//    client.Self.AutoPilot((ulong)myPos.x, (ulong)myPos.y, myPos.Z);
-			//}
+                Avatar targetAv = Client.AvatarList[targetLocalID];
+                float distance = Helpers.VecDist(targetAv.Position, Client.Self.Position);
+
+                if (distance > DISTANCE_BUFFER)
+                {
+                    uint regionX, regionY;
+                    Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out regionX, out regionY);
+
+                    double xTarget = (double)targetAv.Position.X + (double)regionX;
+                    double yTarget = (double)targetAv.Position.Y + (double)regionY;
+                    double zTarget = targetAv.Position.Z - 2f;
+
+                    Client.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
+                        distance, xTarget, yTarget, zTarget));
+
+                    Client.Self.AutoPilot(xTarget, yTarget, zTarget);
+                }
+                else
+                {
+                    // We are in range of the target and moving, stop moving
+                    Client.Self.AutoPilotCancel();
+                }
+            }
 
 			base.Think();
 		}
 
+        private void AlertMessageHandler(Packet packet, Simulator simulator)
+        {
+            AlertMessagePacket alert = (AlertMessagePacket)packet;
+            string message = Helpers.FieldToUTF8String(alert.AlertData.Message);
+
+            if (message.Contains("Autopilot cancel"))
+            {
+                Client.Log("Server cancelled the autopilot", Helpers.LogLevel.Info);
+            }
+        }
     }
 }

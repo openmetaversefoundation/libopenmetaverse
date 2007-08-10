@@ -33,6 +33,85 @@ namespace libsecondlife
 {
     public partial class MainAvatar
     {
+        #region Enums
+
+        /// <summary>
+        /// Used to specify movement actions for your agent
+        /// </summary>
+        [Flags]
+        public enum ControlFlags
+        {
+            /// <summary>Empty flag</summary>
+            NONE = 0,
+            /// <summary>Move Forward (SL Keybinding: W/Up Arrow)</summary>
+            AGENT_CONTROL_AT_POS = 0x1 << CONTROL_AT_POS_INDEX,
+            /// <summary>Move Backward (SL Keybinding: S/Down Arrow)</summary>
+            AGENT_CONTROL_AT_NEG = 0x1 << CONTROL_AT_NEG_INDEX,
+            /// <summary>Move Left (SL Keybinding: Shift-(A/Left Arrow))</summary>
+            AGENT_CONTROL_LEFT_POS = 0x1 << CONTROL_LEFT_POS_INDEX,
+            /// <summary>Move Right (SL Keybinding: Shift-(D/Right Arrow))</summary>
+            AGENT_CONTROL_LEFT_NEG = 0x1 << CONTROL_LEFT_NEG_INDEX,
+            /// <summary>Not Flying: Jump/Flying: Move Up (SL Keybinding: E)</summary>
+            AGENT_CONTROL_UP_POS = 0x1 << CONTROL_UP_POS_INDEX,
+            /// <summary>Not Flying: Croutch/Flying: Move Down (SL Keybinding: C)</summary>
+            AGENT_CONTROL_UP_NEG = 0x1 << CONTROL_UP_NEG_INDEX,
+            /// <summary>Unused</summary>
+            AGENT_CONTROL_PITCH_POS = 0x1 << CONTROL_PITCH_POS_INDEX,
+            /// <summary>Unused</summary>
+            AGENT_CONTROL_PITCH_NEG = 0x1 << CONTROL_PITCH_NEG_INDEX,
+            /// <summary>Unused</summary>
+            AGENT_CONTROL_YAW_POS = 0x1 << CONTROL_YAW_POS_INDEX,
+            /// <summary>Unused</summary>
+            AGENT_CONTROL_YAW_NEG = 0x1 << CONTROL_YAW_NEG_INDEX,
+            /// <summary>ORed with AGENT_CONTROL_AT_* if the keyboard is being used</summary>
+            AGENT_CONTROL_FAST_AT = 0x1 << CONTROL_FAST_AT_INDEX,
+            /// <summary>ORed with AGENT_CONTROL_LEFT_* if the keyboard is being used</summary>
+            AGENT_CONTROL_FAST_LEFT = 0x1 << CONTROL_FAST_LEFT_INDEX,
+            /// <summary>ORed with AGENT_CONTROL_UP_* if the keyboard is being used</summary>
+            AGENT_CONTROL_FAST_UP = 0x1 << CONTROL_FAST_UP_INDEX,
+            /// <summary>Fly</summary>
+            AGENT_CONTROL_FLY = 0x1 << CONTROL_FLY_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_STOP = 0x1 << CONTROL_STOP_INDEX,
+            /// <summary>Finish our current animation</summary>
+            AGENT_CONTROL_FINISH_ANIM = 0x1 << CONTROL_FINISH_ANIM_INDEX,
+            /// <summary>Stand up from the ground or a prim seat</summary>
+            AGENT_CONTROL_STAND_UP = 0x1 << CONTROL_STAND_UP_INDEX,
+            /// <summary>Sit on the ground at our current location</summary>
+            AGENT_CONTROL_SIT_ON_GROUND = 0x1 << CONTROL_SIT_ON_GROUND_INDEX,
+            /// <summary>Whether mouselook is currently enabled</summary>
+            AGENT_CONTROL_MOUSELOOK = 0x1 << CONTROL_MOUSELOOK_INDEX,
+            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
+            AGENT_CONTROL_NUDGE_AT_POS = 0x1 << CONTROL_NUDGE_AT_POS_INDEX,
+            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
+            AGENT_CONTROL_NUDGE_AT_NEG = 0x1 << CONTROL_NUDGE_AT_NEG_INDEX,
+            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
+            AGENT_CONTROL_NUDGE_LEFT_POS = 0x1 << CONTROL_NUDGE_LEFT_POS_INDEX,
+            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
+            AGENT_CONTROL_NUDGE_LEFT_NEG = 0x1 << CONTROL_NUDGE_LEFT_NEG_INDEX,
+            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
+            AGENT_CONTROL_NUDGE_UP_POS = 0x1 << CONTROL_NUDGE_UP_POS_INDEX,
+            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
+            AGENT_CONTROL_NUDGE_UP_NEG = 0x1 << CONTROL_NUDGE_UP_NEG_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_TURN_LEFT = 0x1 << CONTROL_TURN_LEFT_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_TURN_RIGHT = 0x1 << CONTROL_TURN_RIGHT_INDEX,
+            /// <summary>Set when the avatar is idled or set to away. Note that the away animation is 
+            /// activated separately from setting this flag</summary>
+            AGENT_CONTROL_AWAY = 0x1 << CONTROL_AWAY_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_LBUTTON_DOWN = 0x1 << CONTROL_LBUTTON_DOWN_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_LBUTTON_UP = 0x1 << CONTROL_LBUTTON_UP_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_ML_LBUTTON_DOWN = 0x1 << CONTROL_ML_LBUTTON_DOWN_INDEX,
+            /// <summary></summary>
+            AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
+        }
+
+        #endregion Enums
+
         /// <summary> 
         /// Holds current camera and control key status
         /// </summary> 
@@ -302,8 +381,7 @@ namespace libsecondlife
             #endregion Properties
 
 
-            /// <summary>Timer for sending AgentUpdate packets, disabled by
-            /// default</summary>
+            /// <summary>Timer for sending AgentUpdate packets</summary>
             public Timer UpdateTimer;
             /// <summary>Holds camera flags</summary>
             public CameraStatus Camera;
@@ -336,7 +414,7 @@ namespace libsecondlife
 
                 UpdateTimer = new Timer(Settings.AGENT_UPDATE_INTERVAL);
                 UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
-                UpdateTimer.Enabled = Client.Settings.SEND_AGENT_UPDATES;
+                UpdateTimer.Start();
             }
 
             /// <summary>
@@ -407,7 +485,7 @@ namespace libsecondlife
                     duplicateCount = 0;
                 }
 
-                if (duplicateCount < 2)
+                if (Client.Settings.CONTINUOUS_AGENT_UPDATES || duplicateCount < 10)
                 {
                     // Store the current state to do duplicate checking in the future
                     Camera.LastHeadRotation = Camera.HeadRotation;
@@ -453,7 +531,7 @@ namespace libsecondlife
 
             private void UpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
             {
-                if (Client.Network.Connected)
+                if (Client.Network.Connected && Client.Settings.SEND_AGENT_UPDATES)
                 {
                     //Send an AgentUpdate packet
                     SendUpdate();

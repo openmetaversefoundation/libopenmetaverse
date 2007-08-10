@@ -23,8 +23,6 @@ namespace libsecondlife.TestClient
         public string MasterName = String.Empty;
         public LLUUID MasterKey = LLUUID.Zero;
 		public ClientManager ClientManager;
-        public int regionX;
-        public int regionY;
 
         //internal libsecondlife.InventorySystem.InventoryFolder currentDirectory;
 
@@ -34,10 +32,6 @@ namespace libsecondlife.TestClient
         private LLVector3 up = new LLVector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
 
-        // FIXME: get rid of these when they are moved to the main lib
-        public AssetManager NewAssetManager;
-        public AppearanceManager NewAppearanceManager;
-
         /// <summary>
         /// 
         /// </summary>
@@ -45,10 +39,7 @@ namespace libsecondlife.TestClient
         {
 			ClientManager = manager;
 
-            NewAssetManager = new AssetManager(this);
-            NewAppearanceManager = new AppearanceManager(this, NewAssetManager);
-
-            updateTimer = new System.Timers.Timer(1000);
+            updateTimer = new System.Timers.Timer(500);
             updateTimer.Elapsed += new System.Timers.ElapsedEventHandler(updateTimer_Elapsed);
 
             RegisterAllCommands(Assembly.GetExecutingAssembly());
@@ -56,6 +47,7 @@ namespace libsecondlife.TestClient
             Settings.DEBUG = true;
             Settings.STORE_LAND_PATCHES = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
+            Settings.SEND_AGENT_UPDATES = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
@@ -68,6 +60,7 @@ namespace libsecondlife.TestClient
             Inventory.OnInventoryObjectReceived += new InventoryManager.InventoryObjectReceived(Inventory_OnInventoryObjectReceived);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
+            Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
             
             updateTimer.Start();
         }
@@ -179,7 +172,7 @@ namespace libsecondlife.TestClient
                 Console.WriteLine("Got the group ID for " + sim.Client.ToString() + ", requesting group members...");
                 GroupID = p.AgentData.ActiveGroupID;
 
-                sim.Client.Groups.BeginGetGroupMembers(GroupID);
+                sim.Client.Groups.RequestGroupMembers(GroupID);
             }
         }
 
@@ -271,6 +264,13 @@ namespace libsecondlife.TestClient
             AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
 
             lock (Appearances) Appearances[appearance.Sender.ID] = appearance;
+        }
+
+        private void AlertMessageHandler(Packet packet, Simulator simulator)
+        {
+            AlertMessagePacket message = (AlertMessagePacket)packet;
+
+            Log("[AlertMessage] " + Helpers.FieldToUTF8String(message.AlertData.Message), Helpers.LogLevel.Info);
         }
 
         private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID,

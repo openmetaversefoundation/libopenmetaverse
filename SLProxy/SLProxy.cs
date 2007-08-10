@@ -458,10 +458,12 @@ namespace SLProxy
             NetworkStream netStream = new NetworkStream(client);
             HandyNetReader reader = new HandyNetReader(netStream);
 
-            string line; int reqNo;
+            string line = null;
+            int reqNo;
             int contentLength = 0;
             Match match;
-            string uri; string meth;
+            string uri;
+            string meth;
             Dictionary<string, string> headers = new Dictionary<string, string>();
 
             lock (this)
@@ -469,7 +471,8 @@ namespace SLProxy
                 capsReqCount++; reqNo = capsReqCount;
             }
 
-            line = Encoding.UTF8.GetString(reader.ReadLine()).Replace("\r", "");
+            byte[] byteLine = reader.ReadLine();
+            if (byteLine != null) line = Encoding.UTF8.GetString(byteLine).Replace("\r", "");
 
             if (line == null)
                 throw new Exception("EOF in client HTTP header");

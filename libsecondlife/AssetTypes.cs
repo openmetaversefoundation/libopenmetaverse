@@ -146,13 +146,39 @@ namespace libsecondlife
     }
     */ 
 
-    public class AssetObject : Asset
+    public class AssetPrim : Asset
     {
-        public override AssetType AssetType { get { return AssetType.Object; } }
+        public override AssetType AssetType { get { return AssetType.Primitive; } }
         
-        public AssetObject() { }
+        public AssetPrim() { }
 
         public override void Encode() { }
         public override void Decode() { }
+    }
+
+    public class AssetSound : Asset
+    {
+        public override AssetType AssetType { get { return AssetType.Sound; } }
+
+        public AssetSound() { }
+
+        // TODO: Sometime we could add OGG encoding/decoding?
+        public override void Encode() { }
+        public override void Decode() { }
+    }
+
+    public class AssetClothing : Asset
+    {
+        public override AssetType AssetType { get { return AssetType.Clothing; } }
+
+        public AssetClothing() { }
+
+        public override void Encode()
+        {
+        }
+
+        public override void Decode()
+        {
+        }
     }
 }

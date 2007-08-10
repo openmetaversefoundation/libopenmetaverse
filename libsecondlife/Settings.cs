@@ -157,6 +157,10 @@ namespace libsecondlife
         /// <summary>If true, any reference received for a folder or item
         /// libsecondlife is not aware of will automatically be fetched.</summary>
         public bool FETCH_MISSING_INVENTORY = true;
+        /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
+        /// AgentUpdate packets will continuously be sent out to give the bot
+        /// smoother movement and autopiloting</summary>
+        public bool CONTINUOUS_AGENT_UPDATES = true;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

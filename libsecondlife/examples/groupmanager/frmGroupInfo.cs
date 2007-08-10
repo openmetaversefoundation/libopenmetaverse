@@ -52,9 +52,9 @@ namespace groupmanager
             Client.Avatars.OnAvatarNames += AvatarNamesCallback;
 
             // Request the group information
-            Client.Groups.BeginGetGroupProfile(Group.ID);
-            Client.Groups.BeginGetGroupMembers(Group.ID);
-            Client.Groups.BeginGetGroupTitles(Group.ID);
+            Client.Groups.RequestGroupProfile(Group.ID);
+            Client.Groups.RequestGroupMembers(Group.ID);
+            Client.Groups.RequestGroupTitles(Group.ID);
         }
 
         ~frmGroupInfo()
@@ -249,7 +249,17 @@ namespace groupmanager
             }
             else
             {
-                // TODO: Finish this
+                lock (Titles)
+                {
+                    foreach (KeyValuePair<LLUUID, GroupTitle> kvp in Titles)
+                    {
+                        Console.Write("Title: " + kvp.Value.Title + " = " + kvp.Key.ToStringHyphenated());
+                        if (kvp.Value.Selected)
+                            Console.WriteLine(" (Selected)");
+                        else
+                            Console.WriteLine();
+                    }
+                }
             }
         }
     }

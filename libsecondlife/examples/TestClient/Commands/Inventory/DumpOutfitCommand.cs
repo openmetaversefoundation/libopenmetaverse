@@ -37,7 +37,7 @@ namespace libsecondlife.TestClient
                         StringBuilder output = new StringBuilder("Downloading ");
 
                         lock (OutfitAssets) OutfitAssets.Clear();
-                        Client.NewAssetManager.OnImageReceived += ImageReceivedHandler;
+                        Client.Assets.OnImageReceived += ImageReceivedHandler;
 
                         foreach (KeyValuePair<uint, LLObject.TextureEntryFace> face in avatar.Textures.FaceTextures)
                         {
@@ -55,7 +55,7 @@ namespace libsecondlife.TestClient
                             }
 
                             OutfitAssets.Add(face.Value.TextureID);
-                            Client.NewAssetManager.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
+                            Client.Assets.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
 
                             output.Append(((AppearanceManager.TextureIndex)face.Key).ToString());
                             output.Append(" ");
@@ -99,7 +99,7 @@ namespace libsecondlife.TestClient
                     OutfitAssets.Remove(image.ID);
 
                     if (OutfitAssets.Count == 0)
-                        Client.NewAssetManager.OnImageReceived -= ImageReceivedHandler;
+                        Client.Assets.OnImageReceived -= ImageReceivedHandler;
                 }
             }
         }

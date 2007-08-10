@@ -44,6 +44,7 @@ namespace groupmanager
 
                 foreach (Group group in Groups.Values)
                 {
+                    Console.WriteLine(String.Format("Adding group {0} ({1})", group.Name, group.ID.ToStringHyphenated()));
                     lstGroups.Items.Add(group);
                 }
             }
@@ -71,7 +72,7 @@ namespace groupmanager
                 {
                     groupBox.Enabled = true;
 
-                    Client.Groups.BeginGetCurrentGroups();
+                    Client.Groups.RequestCurrentGroups();
                 }
                 else
                 {

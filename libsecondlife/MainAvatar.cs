@@ -43,81 +43,6 @@ namespace libsecondlife
         #region Enums
 
         /// <summary>
-        /// Used to specify movement actions for your agent
-        /// </summary>
-        [Flags]
-        public enum ControlFlags
-        {
-            /// <summary>Empty flag</summary>
-            NONE = 0,
-            /// <summary>Move Forward (SL Keybinding: W/Up Arrow)</summary>
-            AGENT_CONTROL_AT_POS = 0x1 << CONTROL_AT_POS_INDEX,
-            /// <summary>Move Backward (SL Keybinding: S/Down Arrow)</summary>
-            AGENT_CONTROL_AT_NEG = 0x1 << CONTROL_AT_NEG_INDEX,
-            /// <summary>Move Left (SL Keybinding: Shift-(A/Left Arrow))</summary>
-            AGENT_CONTROL_LEFT_POS = 0x1 << CONTROL_LEFT_POS_INDEX,
-            /// <summary>Move Right (SL Keybinding: Shift-(D/Right Arrow))</summary>
-            AGENT_CONTROL_LEFT_NEG = 0x1 << CONTROL_LEFT_NEG_INDEX,
-            /// <summary>Not Flying: Jump/Flying: Move Up (SL Keybinding: E)</summary>
-            AGENT_CONTROL_UP_POS = 0x1 << CONTROL_UP_POS_INDEX,
-            /// <summary>Not Flying: Croutch/Flying: Move Down (SL Keybinding: C)</summary>
-            AGENT_CONTROL_UP_NEG = 0x1 << CONTROL_UP_NEG_INDEX,
-            /// <summary>Unused</summary>
-            AGENT_CONTROL_PITCH_POS = 0x1 << CONTROL_PITCH_POS_INDEX,
-            /// <summary>Unused</summary>
-            AGENT_CONTROL_PITCH_NEG = 0x1 << CONTROL_PITCH_NEG_INDEX,
-            /// <summary>Unused</summary>
-            AGENT_CONTROL_YAW_POS = 0x1 << CONTROL_YAW_POS_INDEX,
-            /// <summary>Unused</summary>
-            AGENT_CONTROL_YAW_NEG = 0x1 << CONTROL_YAW_NEG_INDEX,
-            /// <summary>ORed with AGENT_CONTROL_AT_* if the keyboard is being used</summary>
-            AGENT_CONTROL_FAST_AT = 0x1 << CONTROL_FAST_AT_INDEX,
-            /// <summary>ORed with AGENT_CONTROL_LEFT_* if the keyboard is being used</summary>
-            AGENT_CONTROL_FAST_LEFT = 0x1 << CONTROL_FAST_LEFT_INDEX,
-            /// <summary>ORed with AGENT_CONTROL_UP_* if the keyboard is being used</summary>
-            AGENT_CONTROL_FAST_UP = 0x1 << CONTROL_FAST_UP_INDEX,
-            /// <summary>Fly</summary>
-            AGENT_CONTROL_FLY = 0x1 << CONTROL_FLY_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_STOP = 0x1 << CONTROL_STOP_INDEX,
-            /// <summary>Finish our current animation</summary>
-            AGENT_CONTROL_FINISH_ANIM = 0x1 << CONTROL_FINISH_ANIM_INDEX,
-            /// <summary>Stand up from the ground or a prim seat</summary>
-            AGENT_CONTROL_STAND_UP = 0x1 << CONTROL_STAND_UP_INDEX,
-            /// <summary>Sit on the ground at our current location</summary>
-            AGENT_CONTROL_SIT_ON_GROUND = 0x1 << CONTROL_SIT_ON_GROUND_INDEX,
-            /// <summary>Whether mouselook is currently enabled</summary>
-            AGENT_CONTROL_MOUSELOOK = 0x1 << CONTROL_MOUSELOOK_INDEX,
-            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
-            AGENT_CONTROL_NUDGE_AT_POS = 0x1 << CONTROL_NUDGE_AT_POS_INDEX,
-            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
-            AGENT_CONTROL_NUDGE_AT_NEG = 0x1 << CONTROL_NUDGE_AT_NEG_INDEX,
-            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
-            AGENT_CONTROL_NUDGE_LEFT_POS = 0x1 << CONTROL_NUDGE_LEFT_POS_INDEX,
-            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
-            AGENT_CONTROL_NUDGE_LEFT_NEG = 0x1 << CONTROL_NUDGE_LEFT_NEG_INDEX,
-            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
-            AGENT_CONTROL_NUDGE_UP_POS = 0x1 << CONTROL_NUDGE_UP_POS_INDEX,
-            /// <summary>Legacy, used if a key was pressed for less than a certain amount of time</summary>
-            AGENT_CONTROL_NUDGE_UP_NEG = 0x1 << CONTROL_NUDGE_UP_NEG_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_TURN_LEFT = 0x1 << CONTROL_TURN_LEFT_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_TURN_RIGHT = 0x1 << CONTROL_TURN_RIGHT_INDEX,
-            /// <summary>Set when the avatar is idled or set to away. Note that the away animation is 
-            /// activated separately from setting this flag</summary>
-            AGENT_CONTROL_AWAY = 0x1 << CONTROL_AWAY_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_LBUTTON_DOWN = 0x1 << CONTROL_LBUTTON_DOWN_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_LBUTTON_UP = 0x1 << CONTROL_LBUTTON_UP_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_ML_LBUTTON_DOWN = 0x1 << CONTROL_ML_LBUTTON_DOWN_INDEX,
-            /// <summary></summary>
-            AGENT_CONTROL_ML_LBUTTON_UP = 0x1 << CONTROL_ML_LBUTTON_UP_INDEX
-        }
-
-        /// <summary>
         /// Currently only used to hide your group title
         /// </summary>
         [Flags]
@@ -606,10 +531,15 @@ namespace libsecondlife
         public delegate void GroupDroppedCallback(LLUUID groupID);
 
         /// <summary>
-        /// Informs the avatar that the active group has changed
+        /// 
         /// </summary>
-        /// <param name="groupID">The group that is now the active group</param>
-        public delegate void ActiveGroupChangedCallback(LLUUID groupID);
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <param name="activeGroupID"></param>
+        /// <param name="groupTitle"></param>
+        /// <param name="groupPowers"></param>
+        /// <param name="groupName"></param>
+        public delegate void AgentDataCallback(string firstName, string lastName, LLUUID activeGroupID, string groupTitle, ulong groupPowers, string groupName);
 
 
         /// <summary>Callback for incoming chat packets</summary>
@@ -626,27 +556,23 @@ namespace libsecondlife
         public event BalanceCallback OnBalanceUpdated;
         /// <summary>Callback for incoming Money Balance Replies</summary>
         public event MoneyBalanceReplyCallback OnMoneyBalanceReplyReceived;
-        /// <summary>Callback reply for an attempt to join a group</summary>
-        public event JoinGroupCallback OnJoinGroup;
-        /// <summary>Callback reply for an attempt to leave a group</summary>
-        public event LeaveGroupCallback OnLeaveGroup;
-        /// <summary>Callback for informing the avatar that it is no longer a member of a group</summary>
-        public event GroupDroppedCallback OnGroupDropped;
-        /// <summary>Callback reply for the current group changing</summary>
-        public event ActiveGroupChangedCallback OnActiveGroupChanged;
+        /// <summary>Callback reply for agent data updates, such as the active
+        /// group changing</summary>
+        public event AgentDataCallback OnAgentDataUpdated;
 
         #endregion
 
         #region Public Members
 
+        /// <summary>Reference to the SecondLife client object</summary>
+        public SecondLife Client;
+
+        // FIXME: Most all of these should change from public variables to read-only public properties
+
         /// <summary>Your (client) avatar UUID</summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary>Your (client) avatar ID, local to the current region/sim</summary>
         public uint LocalID = 0;
-        /// <summary>Avatar First Name (i.e. Philip)</summary>
-        public string FirstName = String.Empty;
-        /// <summary>Avatar Last Name (i.e. Linden)</summary>
-        public string LastName = String.Empty;
         /// <summary>Where the avatar started at login. Can be "last", "home" 
         /// or a login URI</summary>
         public string StartLocation = String.Empty;
@@ -691,6 +617,10 @@ namespace libsecondlife
         /// <summary>The UUID of your root inventory folder</summary>
         public LLUUID InventoryRootFolderUUID = LLUUID.Zero;
 
+        /// <summary>Avatar First Name (i.e. Philip)</summary>
+        public string FirstName { get { return firstName; } }
+        /// <summary>Avatar Last Name (i.e. Linden)</summary>
+        public string LastName { get { return lastName; } }
         /// <summary>Gets the health of the agent</summary>
         public float Health { get { return health; } }
         /// <summary>Gets the current balance of the agent</summary>
@@ -705,11 +635,12 @@ namespace libsecondlife
 
         #endregion Public Members
 
+        internal string firstName = String.Empty;
+        internal string lastName = String.Empty;
         internal string teleportMessage = String.Empty;
         internal uint sittingOn = 0;
         internal DateTime lastInterpolation;
 
-        private SecondLife Client;
         private TeleportStatus TeleportStat = TeleportStatus.None;
         private ManualResetEvent TeleportEvent = new ManualResetEvent(false);
         private uint HeightWidthGenCounter = 0;
@@ -797,11 +728,6 @@ namespace libsecondlife
             callback = new NetworkManager.PacketCallback(BalanceHandler);
             Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, callback);
 
-            // Group callbacks
-            Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
-            Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupHandler));
-            Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(DropGroupHandler));
-			
 			//Agent Update Callback
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
@@ -1414,6 +1340,26 @@ namespace libsecondlife
             Client.Network.SendPacket(animate);
         }
 
+        public void AutoPilot(double globalX, double globalY, double z)
+        {
+            GenericMessagePacket autopilot = new GenericMessagePacket();
+
+            autopilot.AgentData.AgentID = Client.Network.AgentID;
+            autopilot.AgentData.SessionID = Client.Network.SessionID;
+            autopilot.AgentData.TransactionID = LLUUID.Zero;
+            autopilot.MethodData.Invoice = LLUUID.Zero;
+            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
+            autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
+            autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
+            autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
+            autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+
+            Client.Network.SendPacket(autopilot);
+        }
+
         /// <summary>
         /// Use the autopilot sim function to move the avatar to a new position
         /// </summary>
@@ -1421,7 +1367,6 @@ namespace libsecondlife
         /// <param name="globalX">Integer value for the global X coordinate to move to</param>
         /// <param name="globalY">Integer value for the global Y coordinate to move to</param>
         /// <param name="z">Floating-point value for the Z coordinate to move to</param>
-        /// <example>AutoPilot(252620, 247078, 20.2674);</example>
         public void AutoPilot(ulong globalX, ulong globalY, float z)
         {
             GenericMessagePacket autopilot = new GenericMessagePacket();
@@ -1437,8 +1382,7 @@ namespace libsecondlife
             autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
             autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
             autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
-            // TODO: Do we need to prevent z coordinates from being sent in 1.4827e-18 notation?
-            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString("{0:00.0000}"));
 
             Client.Network.SendPacket(autopilot);
         }
@@ -1823,36 +1767,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Set this avatar's tier contribution
-        /// </summary>
-        /// <param name="group">Group to change tier in</param>
-        /// <param name="contribution">amount of tier to donate</param>
-        public void SetGroupContribution(LLUUID group, int contribution)
-        {
-            libsecondlife.Packets.SetGroupContributionPacket sgp = new SetGroupContributionPacket();
-            sgp.AgentData.AgentID = Client.Network.AgentID;
-            sgp.AgentData.SessionID = Client.Network.SessionID;
-            sgp.Data.GroupID = group;
-            sgp.Data.Contribution = contribution;
-            Client.Network.SendPacket(sgp);
-        }
-
-        /// <summary>
-        /// Change the role that determines your active title
-        /// </summary>
-        /// <param name="group">Group to use</param>
-        /// <param name="role">Role to change to</param>
-        public void ChangeTitle(LLUUID group, LLUUID role)
-        {
-            libsecondlife.Packets.GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
-            gtu.AgentData.AgentID = Client.Network.AgentID;
-            gtu.AgentData.SessionID = Client.Network.SessionID;
-            gtu.AgentData.TitleRoleID = role;
-            gtu.AgentData.GroupID = group;
-            Client.Network.SendPacket(gtu);
-        }
-
-        /// <summary>
         /// Sends camera and action updates to the server including the 
         /// position and orientation of our camera, and a ControlFlags field
         /// specifying our current movement actions
@@ -2043,44 +1957,31 @@ namespace libsecondlife
             health = ((HealthMessagePacket)packet).HealthData.Health;
         }
 
-        private void JoinGroupHandler(Packet packet, Simulator simulator)
-        {
-            if (OnJoinGroup != null)
-            {
-                JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
-
-                OnJoinGroup(reply.GroupData.GroupID, reply.GroupData.Success);
-            }
-        }
-
-        private void LeaveGroupHandler(Packet packet, Simulator simulator)
-        {
-            if (OnLeaveGroup != null)
-            {
-                LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
-
-                OnLeaveGroup(reply.GroupData.GroupID, reply.GroupData.Success);
-            }
-        }
+        
 
         public void AgentDataUpdateHandler(Packet packet, Simulator simulator)
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
-            if (p.AgentData.AgentID == simulator.Client.Network.AgentID) {
-                if (activeGroup != p.AgentData.ActiveGroupID)
+
+            if (p.AgentData.AgentID == simulator.Client.Network.AgentID)
+            {
+                firstName = Helpers.FieldToUTF8String(p.AgentData.FirstName);
+                lastName = Helpers.FieldToUTF8String(p.AgentData.LastName);
+                activeGroup = p.AgentData.ActiveGroupID;
+
+                if (OnAgentDataUpdated != null)
                 {
-                    activeGroup = p.AgentData.ActiveGroupID;
-                    if (OnActiveGroupChanged != null)
-                        OnActiveGroupChanged(activeGroup);
+                    string groupTitle = Helpers.FieldToUTF8String(p.AgentData.GroupTitle);
+                    string groupName = Helpers.FieldToUTF8String(p.AgentData.GroupName);
+
+                    try { OnAgentDataUpdated(firstName, lastName, activeGroup, groupTitle, p.AgentData.GroupPowers, groupName); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
-        }
-		
-        private void DropGroupHandler(Packet packet, Simulator simulator)
-        {
-            if (OnGroupDropped != null)
+            else
             {
-                OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID);
+                Client.Log("Got an AgentDataUpdate packet for avatar " + p.AgentData.AgentID.ToStringHyphenated() +
+                    " instead of " + Client.Network.AgentID.ToStringHyphenated() + ", this shouldn't happen", Helpers.LogLevel.Error);
             }
         }
 

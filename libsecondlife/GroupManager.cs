@@ -452,6 +452,30 @@ namespace libsecondlife
         /// </summary>
         /// <param name="transactions"></param>
         public delegate void GroupAccountTransactionsCallback(GroupAccountTransactions transactions);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupID"></param>
+        /// <param name="success"></param>
+        /// <param name="message"></param>
+        public delegate void GroupCreatedCallback(LLUUID groupID, bool success, string message);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupID"></param>
+        /// <param name="success"></param>
+        public delegate void GroupJoinedCallback(LLUUID groupID, bool success);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupID"></param>
+        /// <param name="success"></param>
+        public delegate void GroupLeftCallback(LLUUID groupID, bool success);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupID"></param>
+        public delegate void GroupDroppedCallback(LLUUID groupID);
 
         #endregion Delegates
 
@@ -474,7 +498,13 @@ namespace libsecondlife
         /// <summary></summary>
         public event GroupAccountDetailsCallback OnGroupAccountDetails;
         /// <summary></summary>
-        //public event GroupAccountTransactionsCallback OnGroupAccountTransactions;
+        public event GroupCreatedCallback OnGroupCreated;
+        /// <summary></summary>
+        public event GroupJoinedCallback OnGroupJoined;
+        /// <summary></summary>
+        public event GroupLeftCallback OnGroupLeft;
+        /// <summary></summary>
+        public event GroupDroppedCallback OnGroupDropped;
 
         #endregion Events
 
@@ -501,6 +531,7 @@ namespace libsecondlife
             GroupRolesMembersCaches = new Dictionary<LLUUID, List<KeyValuePair<LLUUID, LLUUID>>>();
 
             Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(GroupDataHandler));
+            Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
             Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
             Client.Network.RegisterCallback(PacketType.GroupMembersReply, new NetworkManager.PacketCallback(GroupMembersHandler));
@@ -511,12 +542,15 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryHandler));
             Client.Network.RegisterCallback(PacketType.GroupAccountDetailsReply, new NetworkManager.PacketCallback(GroupAccountDetailsHandler));
             Client.Network.RegisterCallback(PacketType.GroupAccountTransactionsReply, new NetworkManager.PacketCallback(GroupAccountTransactionsHandler));
+            Client.Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
+            Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
+            Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void BeginGetCurrentGroups()
+        public void RequestCurrentGroups()
         {
             AgentDataUpdateRequestPacket request = new AgentDataUpdateRequestPacket();
 
@@ -530,7 +564,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        public void BeginGetGroupProfile(LLUUID group)
+        public void RequestGroupProfile(LLUUID group)
         {
             GroupProfileRequestPacket request = new GroupProfileRequestPacket();
 
@@ -545,7 +579,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        public void BeginGetGroupMembers(LLUUID group)
+        public void RequestGroupMembers(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
             lock (GroupMembersCaches) GroupMembersCaches[requestID] = new Dictionary<LLUUID, GroupMember>();
@@ -564,7 +598,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        public void BeginGetGroupRoles(LLUUID group)
+        public void RequestGroupRoles(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
             lock (GroupRolesCaches) GroupRolesCaches[requestID] = new Dictionary<LLUUID, GroupRole>();
@@ -583,7 +617,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        public void BeginGetGroupRoleMembers(LLUUID group)
+        public void RequestGroupRoleMembers(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
             lock (GroupRolesMembersCaches)
@@ -603,7 +637,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="group"></param>
-        public void BeginGetGroupTitles(LLUUID group)
+        public void RequestGroupTitles(LLUUID group)
         {
             LLUUID requestID = LLUUID.Random();
 
@@ -623,7 +657,7 @@ namespace libsecondlife
         /// <param name="group">The group's ID</param>
         /// <param name="intervalDays">How long of an interval</param>
         /// <param name="currentInterval">Which interval (0 for current, 1 for last)</param>
-        public void BeginGetGroupAccountSummary(LLUUID group, int intervalDays, int currentInterval)
+        public void RequestGroupAccountSummary(LLUUID group, int intervalDays, int currentInterval)
         {
             GroupAccountSummaryRequestPacket p = new GroupAccountSummaryRequestPacket();
             p.AgentData.AgentID = Client.Network.AgentID;
@@ -638,34 +672,99 @@ namespace libsecondlife
         /// <summary>
         /// Invites a user to a group
         /// </summary>
-        /// <param name="group">The group to invite to.</param>
+        /// <param name="group">The group to invite to</param>
         /// <param name="roles">A list of roles to invite a person to</param>
         /// <param name="personkey">Key of person to invite</param>
         public void Invite(LLUUID group, List<LLUUID> roles, LLUUID personkey)
         {
-            libsecondlife.Packets.InviteGroupRequestPacket igp = new libsecondlife.Packets.InviteGroupRequestPacket();
-            igp.AgentData = new libsecondlife.Packets.InviteGroupRequestPacket.AgentDataBlock();
+            InviteGroupRequestPacket igp = new InviteGroupRequestPacket();
+
+            igp.AgentData = new InviteGroupRequestPacket.AgentDataBlock();
             igp.AgentData.AgentID = Client.Network.AgentID;
             igp.AgentData.SessionID = Client.Network.SessionID;
-            igp.GroupData = new libsecondlife.Packets.InviteGroupRequestPacket.GroupDataBlock();
+
+            igp.GroupData = new InviteGroupRequestPacket.GroupDataBlock();
             igp.GroupData.GroupID = group;
-            List<libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock> idbs = new List<libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock>();
-            foreach (LLUUID role in roles)
+
+            igp.InviteData = new InviteGroupRequestPacket.InviteDataBlock[roles.Count];
+
+            for (int i = 0; i < roles.Count; i++)
             {
-                libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock idb = new libsecondlife.Packets.InviteGroupRequestPacket.InviteDataBlock();
-                idb.InviteeID = personkey;
-                idb.RoleID = role;
-                idbs.Add(idb);
+                igp.InviteData[i] = new InviteGroupRequestPacket.InviteDataBlock();
+                igp.InviteData[i].InviteeID = personkey;
+                igp.InviteData[i].RoleID = roles[i];
             }
-            igp.InviteData = idbs.ToArray();
+
             Client.Network.SendPacket(igp);
         }
 
         /// <summary>
-        /// Create a new group. This method automaticaly deducts the group creation feild
+        /// Set a group as the current active group
+        /// </summary>
+        /// <param name="id"></param>
+        public void ActivateGroup(LLUUID id)
+        {
+            ActivateGroupPacket activate = new ActivateGroupPacket();
+            activate.AgentData.AgentID = Client.Network.AgentID;
+            activate.AgentData.SessionID = Client.Network.SessionID;
+            activate.AgentData.GroupID = id;
+
+            Client.Network.SendPacket(activate);
+        }
+
+        /// <summary>
+        /// Change the role that determines your active title
+        /// </summary>
+        /// <param name="group">Group to use</param>
+        /// <param name="role">Role to change to</param>
+        public void ActivateTitle(LLUUID group, LLUUID role)
+        {
+            GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
+            gtu.AgentData.AgentID = Client.Network.AgentID;
+            gtu.AgentData.SessionID = Client.Network.SessionID;
+            gtu.AgentData.TitleRoleID = role;
+            gtu.AgentData.GroupID = group;
+
+            Client.Network.SendPacket(gtu);
+        }
+
+        /// <summary>
+        /// Set this avatar's tier contribution
+        /// </summary>
+        /// <param name="group">Group to change tier in</param>
+        /// <param name="contribution">amount of tier to donate</param>
+        public void SetGroupContribution(LLUUID group, int contribution)
+        {
+            SetGroupContributionPacket sgp = new SetGroupContributionPacket();
+            sgp.AgentData.AgentID = Client.Network.AgentID;
+            sgp.AgentData.SessionID = Client.Network.SessionID;
+            sgp.Data.GroupID = group;
+            sgp.Data.Contribution = contribution;
+
+            Client.Network.SendPacket(sgp);
+        }
+
+        /// <summary>
+        /// Request to join a group
+        /// </summary>
+        /// <param name="id">Group ID to join</param>
+        public void RequestJoinGroup(LLUUID id)
+        {
+            JoinGroupRequestPacket join = new JoinGroupRequestPacket();
+            join.AgentData.AgentID = Client.Network.AgentID;
+            join.AgentData.SessionID = Client.Network.SessionID;
+
+            join.GroupData.GroupID = id;
+
+            Client.Network.SendPacket(join);
+        }
+
+        /// <summary>
+        /// Request to create a new group. If the group is successfully
+        /// created, L$100 will automatically be deducted
         /// </summary>
         /// <param name="group">Group struct containing the new group info</param>
-        public void CreateGroup(Group group)
+        public void RequestCreateGroup(Group group)
         {
             libsecondlife.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
             //Fill in agent data
@@ -872,6 +971,15 @@ namespace libsecondlife
                 }
 
                 try { OnCurrentGroups(currentGroups); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void AgentDropGroupHandler(Packet packet, Simulator simulator)
+        {
+            if (OnGroupDropped != null)
+            {
+                try { OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
@@ -1111,19 +1219,44 @@ namespace libsecondlife
 
         private void GroupAccountTransactionsHandler(Packet packet, Simulator simulator)
         {
-            //GroupAccountTransactionsReplyPacket transactions = (GroupAccountTransactionsReplyPacket)packet;
+            GroupAccountTransactionsReplyPacket reply = (GroupAccountTransactionsReplyPacket)packet;
 
-            // TODO: This one is slightly different than the previous two
+            Client.Log("Got a GroupAccountTransactionsReply packet, implement this callback!" + Environment.NewLine +
+                reply.ToString(), Helpers.LogLevel.Error);
+        }
 
-            //if (GroupAccountTransactionsCallbacks.ContainsKey(transactions.AgentData.GroupID))
-            //{
-            //    GroupAccountTransactions account = new GroupAccountTransactions();
+        private void CreateGroupReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnGroupCreated != null)
+            {
+                CreateGroupReplyPacket reply = (CreateGroupReplyPacket)packet;
 
-            //    ;
+                string message = Helpers.FieldToUTF8String(reply.ReplyData.Message);
 
-            //    try { OnGroupAccountTransactions(account); }
-            //    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-            //}
+                try { OnGroupCreated(reply.ReplyData.GroupID, reply.ReplyData.Success, message); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void JoinGroupReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnGroupJoined != null)
+            {
+                JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
+
+                try { OnGroupJoined(reply.GroupData.GroupID, reply.GroupData.Success); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void LeaveGroupReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnGroupLeft != null)
+            {
+                LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
+
+                OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success);
+            }
         }
 
         #endregion Packet Handlers

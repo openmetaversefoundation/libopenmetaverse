@@ -39,11 +39,17 @@ namespace libsecondlife
             Client = client;
 
             Client.Network.RegisterCallback(PacketType.AttachedSound, new NetworkManager.PacketCallback(AttachedSoundHandler));
+            Client.Network.RegisterCallback(PacketType.AttachedSoundGainChange, new NetworkManager.PacketCallback(AttachedSoundGainChangeHandler));
             Client.Network.RegisterCallback(PacketType.PreloadSound, new NetworkManager.PacketCallback(PreloadSoundHandler));
-	    Client.Network.RegisterCallback(PacketType.SoundTrigger, new NetworkManager.PacketCallback(SoundTriggerHandler));
+	        Client.Network.RegisterCallback(PacketType.SoundTrigger, new NetworkManager.PacketCallback(SoundTriggerHandler));
         }
 
         protected void AttachedSoundHandler(Packet packet, Simulator simulator)
+        {
+            //FIXME
+        }
+
+        protected void AttachedSoundGainChangeHandler(Packet packet, Simulator simulator)
         {
             //FIXME
         }

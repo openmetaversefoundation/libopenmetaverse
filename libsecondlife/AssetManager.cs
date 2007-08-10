@@ -29,7 +29,7 @@ namespace libsecondlife
         Clothing = 5,
         /// <summary>Primitive that can contain textures, sounds, 
         /// scripts and more</summary>
-        Object = 6,
+        Primitive = 6,
         /// <summary>Notecard asset</summary>
         Notecard = 7,
         /// <summary>Holds a collection of inventory items</summary>
@@ -667,8 +667,8 @@ namespace libsecondlife
                     asset = new AssetTexture();
                     break;
                 */
-                case AssetType.Object:
-                    asset = new AssetObject();
+                case AssetType.Primitive:
+                    asset = new AssetPrim();
                     break;
                 default:
                     Client.Log("Unimplemented asset type: " + download.AssetType, Helpers.LogLevel.Error);
