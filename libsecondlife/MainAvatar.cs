@@ -1233,10 +1233,90 @@ namespace libsecondlife
         /// </summary>
         public void SitOnGround()
         {
-            Client.Self.Status.SitOnGround = true;
-            Client.Self.Status.SendUpdate();
-            Client.Self.Status.SitOnGround = false;
-            Client.Self.Status.SendUpdate();
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.SitOnGround = true;
+                Client.Self.Status.SendUpdate();
+                Client.Self.Status.SitOnGround = false;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted SitOnGround but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Starts crouching (begin holding the crouch key)
+        /// </summary>
+        public void StartCrouch()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.UpNeg = true;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted StartCrouch but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finishes crouching (releases the crouch key)
+        /// </summary>
+        public void StopCrouch()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.UpNeg = false;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted StopCrouch but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Starts a jump (begin holding the jump key)
+        /// </summary>
+        public bool StartJump()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.UpPos = true;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted StartJump but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finishes a jump (release the jump key)
+        /// </summary>
+        public bool StopJump()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.UpPos = false;
+                Client.Self.Status.FinishAnim = true;
+                Client.Self.Status.SendUpdate();
+                Client.Self.Status.FinishAnim = false;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted StopJump but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
         }
 
         /// <summary>
@@ -1376,19 +1456,35 @@ namespace libsecondlife
         /// <remarks>Not certain if this is how it is really done</remarks>
         public void AutoPilotCancel()
         {
-            Client.Self.Status.AtPos = true;
-            Client.Self.Status.SendUpdate();
-            Client.Self.Status.AtPos = false;
-            Client.Self.Status.SendUpdate();
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.AtPos = true;
+                Client.Self.Status.SendUpdate();
+                Client.Self.Status.AtPos = false;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted AutoPilotCancel but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
         }
 
         /// <summary>Stands up from sitting on a prim or the ground</summary>
         public void Stand()
         {
-            Client.Self.Status.StandUp = true;
-            Client.Self.Status.SendUpdate();
-            Client.Self.Status.StandUp = false;
-            Client.Self.Status.SendUpdate();
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.StandUp = true;
+                Client.Self.Status.SendUpdate();
+                Client.Self.Status.StandUp = false;
+                Client.Self.Status.SendUpdate();
+            }
+            else
+            {
+                Client.Log("Attempted Stand but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
         }
 
 		/// <summary>Attempt teleport to specified LLUUID</summary>
