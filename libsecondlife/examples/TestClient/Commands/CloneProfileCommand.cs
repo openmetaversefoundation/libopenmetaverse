@@ -21,7 +21,7 @@ namespace libsecondlife.TestClient
             testClient.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
             testClient.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
             testClient.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
-            testClient.Self.OnJoinGroup += new MainAvatar.JoinGroupCallback(Self_OnJoinGroup);
+            testClient.Groups.OnGroupJoined += new GroupManager.GroupJoinedCallback(Groups_OnGroupJoined);
 
             Name = "cloneprofile";
             Description = "Clones another avatars profile as closely as possible. WARNING: This command will " +
@@ -115,14 +115,14 @@ namespace libsecondlife.TestClient
             }
         }
 
-        void Self_OnJoinGroup(LLUUID groupID, bool success)
+        void Groups_OnGroupJoined(LLUUID groupID, bool success)
         {
-            Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") + 
+            Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
                 groupID.ToStringHyphenated());
 
             if (success)
             {
-                Console.WriteLine(Client.ToString() + " setting " + groupID.ToStringHyphenated() + 
+                Console.WriteLine(Client.ToString() + " setting " + groupID.ToStringHyphenated() +
                     " as the active group");
                 Client.Self.ActivateGroup(groupID);
             }

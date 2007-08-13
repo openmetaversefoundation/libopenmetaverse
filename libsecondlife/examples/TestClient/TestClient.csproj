@@ -36,6 +36,7 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="ClientManager.cs" />
+    <Compile Include="Commands\CloneProfileCommand.cs" />
     <Compile Include="Commands\Communication\EchoMasterCommand.cs" />
     <Compile Include="Commands\Communication\IMCommand.cs" />
     <Compile Include="Commands\Communication\SayCommand.cs" />
@@ -82,6 +83,9 @@
     <Compile Include="Commands\System\SetMasterCommand.cs" />
     <Compile Include="Commands\System\SetMasterKeyCommand.cs" />
     <Compile Include="Commands\System\ShowEffectsCommand.cs" />
+    <Compile Include="Commands\TouchCommand.cs" />
+    <Compile Include="Commands\TreeCommand.cs" />
+    <Compile Include="Commands\WhoCommand.cs" />
     <Compile Include="Parsing.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="TestClient.cs" />
