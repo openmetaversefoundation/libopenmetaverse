@@ -881,10 +881,12 @@ namespace libsecondlife
 
             Client.DebugLog("WearablesDownloadEvent completed");
 
+            /* FIXME: Baking disabled
             // Now that we know what the avatar is wearing, we can check if anything needs to be rebaked
             RequestCachedBakes();
 
             CachedResponseEvent.WaitOne();
+            */
 
             // Send a list of what we are currently wearing
             SendAgentIsNowWearing();
