@@ -4,7 +4,6 @@
  *
  * - Redistribution and use in source and binary forms, with or without 
  *   modification, are permitted provided that the following conditions are met:
- *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * - Neither the name of the Second Life Reverse Engineering Team nor the names 
@@ -401,6 +400,12 @@ namespace libsecondlife
                 request.ExBlock.OtherID = agentID;
 
                 Client.Network.SendPacket(request);
+
+                lock (_Friends)
+                {
+                    if (_Friends.ContainsKey(agentID))
+                        _Friends.Remove(agentID);
+                }
             }
         }
 
