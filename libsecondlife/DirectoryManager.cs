@@ -182,7 +182,15 @@ namespace libsecondlife
             public string LastName;
             public LLUUID AgentID;
         }
-
+        /// <summary>
+        ///  Response to a "Groups" Search
+        /// </summary>
+        public struct GroupSearchData
+        {
+            public LLUUID GroupID;
+            public string GroupName;
+            public int Members;
+        }
         /*/// <summary></summary>
         public LLUUID OwnerID;
         /// <summary></summary>
@@ -221,6 +229,12 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="queryID"></param>
+        /// <param name="matchedGroups"></param>
+        public delegate void DirGroupsReplyCallback(LLUUID queryID, List<GroupSearchData> matchedGroups);
+        /// <summary>
+        /// 
+        /// </summary>
         public event ClassifiedReplyCallback OnClassifiedReply;
         /// <summary>
         /// 
@@ -228,6 +242,8 @@ namespace libsecondlife
         public event DirLandReplyCallback OnDirLandReply;
 
         public event DirPeopleReplyCallback OnDirPeopleReply;
+
+        public event DirGroupsReplyCallback OnDirGroupsReply;
 
         private SecondLife Client;
 
@@ -239,6 +255,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
 
         }
 
@@ -340,6 +357,38 @@ namespace libsecondlife
 
             return queryID;
         }
+        /// <summary>
+        /// Starts a search for a Group in the directory manager
+        /// </summary>
+        /// <param name="findFlags"></param>
+        /// <param name="searchText">The text to search for</param>
+        /// <param name="queryStart">Each request is limited to 100 parcels
+        /// being returned. To get the first 100 parcels of a request use 0,
+        /// from 100-199 use 100, 200-299 use 200, etc.</param>
+        /// <returns>A unique identifier that can identify packets associated
+        /// with this query from other queries</returns>
+        /// <remarks>The OnDirLandReply event handler must be registered before
+        /// calling this function. There is no way to determine how many 
+        /// results will be returned, or how many times the callback will be 
+        /// fired other than you won't get more than 100 total parcels from 
+        /// each query.</remarks>
+        public LLUUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart)
+        {
+            return StartGroupSearch(findFlags, searchText, queryStart, LLUUID.Random());
+        }
+
+        public LLUUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart, LLUUID queryID)
+        {
+            DirFindQueryPacket find = new DirFindQueryPacket();
+            find.AgentData.AgentID = Client.Network.AgentID;
+            find.AgentData.SessionID = Client.Network.SessionID;
+            find.QueryData.QueryFlags = (uint)findFlags;
+            find.QueryData.QueryText = Helpers.StringToField(searchText);
+            find.QueryData.QueryID = queryID;
+            find.QueryData.QueryStart = queryStart;
+            Client.Network.SendPacket(find);
+            return queryID;
+        }
 
         public LLUUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
         {
@@ -426,6 +475,25 @@ namespace libsecondlife
                     matches.Add(searchData);
                 }
                 try { OnDirPeopleReply(peopleReply.QueryData.QueryID, matches); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        protected void DirGroupsReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnDirGroupsReply != null)
+            {
+                DirGroupsReplyPacket groupsReply = packet as DirGroupsReplyPacket;
+                List<GroupSearchData> matches = new List<GroupSearchData>(groupsReply.QueryReplies.Length);
+                foreach (DirGroupsReplyPacket.QueryRepliesBlock reply in groupsReply.QueryReplies)
+                {
+                    GroupSearchData groupsData = new GroupSearchData();
+                    groupsData.GroupID = reply.GroupID;
+                    groupsData.GroupName = Helpers.FieldToUTF8String(reply.GroupName);
+                    groupsData.Members = reply.Members;
+                    matches.Add(groupsData);
+                }
+                try { OnDirGroupsReply(groupsReply.QueryData.QueryID, matches); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
