@@ -77,7 +77,6 @@
 		4082AF320BE5CF73005601E2 /* GridManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0E0BE5CF73005601E2 /* GridManager.cs */; };
 		4082AF330BE5CF73005601E2 /* EstateTools.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF0F0BE5CF73005601E2 /* EstateTools.cs */; };
 		4082AF340BE5CF73005601E2 /* DirectoryManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF100BE5CF73005601E2 /* DirectoryManager.cs */; };
-		4082AF350BE5CF73005601E2 /* Caps.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF110BE5CF73005601E2 /* Caps.cs */; };
 		4082AF360BE5CF73005601E2 /* BlockingQueue.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF120BE5CF73005601E2 /* BlockingQueue.cs */; };
 		4082AF370BE5CF73005601E2 /* BitPack.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF130BE5CF73005601E2 /* BitPack.cs */; };
 		4082AF380BE5CF73005601E2 /* BakeLayer.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AF140BE5CF73005601E2 /* BakeLayer.cs */; };
@@ -101,6 +100,13 @@
 		4082AFC60BE5D064005601E2 /* name2key.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC50BE5D064005601E2 /* name2key.cs */; };
 		4082AFCD0BE5D099005601E2 /* Utilities.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC70BE5D099005601E2 /* Utilities.cs */; };
 		4082AFCE0BE5D099005601E2 /* AssemblyInfo.cs in Sources */ = {isa = PBXBuildFile; fileRef = 4082AFC90BE5D099005601E2 /* AssemblyInfo.cs */; };
+		40894F870C77CE970028E9FE /* SoundManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F800C77CE970028E9FE /* SoundManager.cs */; };
+		40894F880C77CE970028E9FE /* HttpBase.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F810C77CE970028E9FE /* HttpBase.cs */; };
+		40894F890C77CE970028E9FE /* EventDictionary.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F820C77CE970028E9FE /* EventDictionary.cs */; };
+		40894F8A0C77CE970028E9FE /* CapsRequest.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F830C77CE970028E9FE /* CapsRequest.cs */; };
+		40894F8B0C77CE970028E9FE /* Capabilities.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F840C77CE970028E9FE /* Capabilities.cs */; };
+		40894F8C0C77CE970028E9FE /* Animations.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F850C77CE970028E9FE /* Animations.cs */; };
+		40894F8D0C77CE970028E9FE /* CapsEventQueue.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40894F860C77CE970028E9FE /* CapsEventQueue.cs */; };
 		408D586B0BFA25DB0076F241 /* TextureEntry.cs in Sources */ = {isa = PBXBuildFile; fileRef = 408D586A0BFA25DB0076F241 /* TextureEntry.cs */; };
 		40C88D750B59DECE0002929B /* libsecondlife.dll in Frameworks */ = {isa = PBXBuildFile; fileRef = 4054E3050B57345B00B0667D /* libsecondlife.dll */; };
 		40F4CB9B0C45924C00F4B9CD /* AppearanceManager.cs in Sources */ = {isa = PBXBuildFile; fileRef = 40F4CB9A0C45924C00F4B9CD /* AppearanceManager.cs */; };
@@ -299,7 +305,6 @@
 		4082AF0E0BE5CF73005601E2 /* GridManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = GridManager.cs; path = libsecondlife/GridManager.cs; sourceTree = "<group>"; };
 		4082AF0F0BE5CF73005601E2 /* EstateTools.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = EstateTools.cs; path = libsecondlife/EstateTools.cs; sourceTree = "<group>"; };
 		4082AF100BE5CF73005601E2 /* DirectoryManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = DirectoryManager.cs; path = libsecondlife/DirectoryManager.cs; sourceTree = "<group>"; };
-		4082AF110BE5CF73005601E2 /* Caps.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Caps.cs; path = libsecondlife/Caps.cs; sourceTree = "<group>"; };
 		4082AF120BE5CF73005601E2 /* BlockingQueue.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BlockingQueue.cs; path = libsecondlife/BlockingQueue.cs; sourceTree = "<group>"; };
 		4082AF130BE5CF73005601E2 /* BitPack.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BitPack.cs; path = libsecondlife/BitPack.cs; sourceTree = "<group>"; };
 		4082AF140BE5CF73005601E2 /* BakeLayer.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = BakeLayer.cs; path = libsecondlife/BakeLayer.cs; sourceTree = "<group>"; };
@@ -323,6 +328,13 @@
 		4082AFC50BE5D064005601E2 /* name2key.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = name2key.cs; path = libsecondlife/examples/name2key/name2key.cs; sourceTree = "<group>"; };
 		4082AFC70BE5D099005601E2 /* Utilities.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Utilities.cs; path = libsecondlife/libsecondlife.Utilities/Utilities.cs; sourceTree = "<group>"; };
 		4082AFC90BE5D099005601E2 /* AssemblyInfo.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; path = AssemblyInfo.cs; sourceTree = "<group>"; };
+		40894F800C77CE970028E9FE /* SoundManager.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = SoundManager.cs; path = libsecondlife/SoundManager.cs; sourceTree = "<group>"; };
+		40894F810C77CE970028E9FE /* HttpBase.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = HttpBase.cs; path = libsecondlife/HttpBase.cs; sourceTree = "<group>"; };
+		40894F820C77CE970028E9FE /* EventDictionary.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = EventDictionary.cs; path = libsecondlife/EventDictionary.cs; sourceTree = "<group>"; };
+		40894F830C77CE970028E9FE /* CapsRequest.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = CapsRequest.cs; path = libsecondlife/CapsRequest.cs; sourceTree = "<group>"; };
+		40894F840C77CE970028E9FE /* Capabilities.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Capabilities.cs; path = libsecondlife/Capabilities.cs; sourceTree = "<group>"; };
+		40894F850C77CE970028E9FE /* Animations.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = Animations.cs; path = libsecondlife/Animations.cs; sourceTree = "<group>"; };
+		40894F860C77CE970028E9FE /* CapsEventQueue.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = CapsEventQueue.cs; path = libsecondlife/CapsEventQueue.cs; sourceTree = "<group>"; };
 		408D586A0BFA25DB0076F241 /* TextureEntry.cs */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.csharp; name = TextureEntry.cs; path = libsecondlife/TextureEntry.cs; sourceTree = "<group>"; };
 		40AAAB5B0B60C03C00EC04F0 /* mapgenerator.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = mapgenerator.exe; sourceTree = BUILT_PRODUCTS_DIR; };
 		40C88D670B59DE640002929B /* IA_NotecardTool.exe */ = {isa = PBXFileReference; explicitFileType = compiled.mono.executable; includeInIndex = 0; path = IA_NotecardTool.exe; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -531,6 +543,13 @@
 		4054E2B50B5733D200B0667D /* libsecondlife */ = {
 			isa = PBXGroup;
 			children = (
+				40894F800C77CE970028E9FE /* SoundManager.cs */,
+				40894F810C77CE970028E9FE /* HttpBase.cs */,
+				40894F820C77CE970028E9FE /* EventDictionary.cs */,
+				40894F830C77CE970028E9FE /* CapsRequest.cs */,
+				40894F840C77CE970028E9FE /* Capabilities.cs */,
+				40894F850C77CE970028E9FE /* Animations.cs */,
+				40894F860C77CE970028E9FE /* CapsEventQueue.cs */,
 				403A918D0C4FCCA40020DD34 /* AssetTypes.cs */,
 				403A918C0C4FCC850020DD34 /* AssetSystem */,
 				403A91800C4FCAF00020DD34 /* OpenJPEG.cs */,
@@ -571,7 +590,6 @@
 				4082AF0E0BE5CF73005601E2 /* GridManager.cs */,
 				4082AF0F0BE5CF73005601E2 /* EstateTools.cs */,
 				4082AF100BE5CF73005601E2 /* DirectoryManager.cs */,
-				4082AF110BE5CF73005601E2 /* Caps.cs */,
 				4082AF120BE5CF73005601E2 /* BlockingQueue.cs */,
 				4082AF130BE5CF73005601E2 /* BitPack.cs */,
 				4082AF140BE5CF73005601E2 /* BakeLayer.cs */,
@@ -1062,7 +1080,6 @@
 				4082AF380BE5CF73005601E2 /* BakeLayer.cs in Sources */,
 				4082AF370BE5CF73005601E2 /* BitPack.cs in Sources */,
 				4082AF360BE5CF73005601E2 /* BlockingQueue.cs in Sources */,
-				4082AF350BE5CF73005601E2 /* Caps.cs in Sources */,
 				4082AF340BE5CF73005601E2 /* DirectoryManager.cs in Sources */,
 				4082AF330BE5CF73005601E2 /* EstateTools.cs in Sources */,
 				403A91710C4FC4310020DD34 /* FriendsManager.cs in Sources */,
@@ -1100,6 +1117,13 @@
 				4082AF1B0BE5CF73005601E2 /* Types.cs in Sources */,
 				402D03D00C4846F300991307 /* UDPBase.cs in Sources */,
 				403A918E0C4FCCA40020DD34 /* AssetTypes.cs in Sources */,
+				40894F870C77CE970028E9FE /* SoundManager.cs in Sources */,
+				40894F880C77CE970028E9FE /* HttpBase.cs in Sources */,
+				40894F890C77CE970028E9FE /* EventDictionary.cs in Sources */,
+				40894F8A0C77CE970028E9FE /* CapsRequest.cs in Sources */,
+				40894F8B0C77CE970028E9FE /* Capabilities.cs in Sources */,
+				40894F8C0C77CE970028E9FE /* Animations.cs in Sources */,
+				40894F8D0C77CE970028E9FE /* CapsEventQueue.cs in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
