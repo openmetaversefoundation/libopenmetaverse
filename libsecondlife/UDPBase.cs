@@ -279,12 +279,12 @@ namespace libsecondlife
                         new AsyncCallback(AsyncEndReceive),
                         buf);
                 }
-                catch (SocketException se)
+                catch (SocketException)
                 {
                     // something bad happened
-                    SecondLife.LogStatic(
-                        "A SocketException occurred in UDPServer.AsyncBeginReceive()", 
-                        Helpers.LogLevel.Error, se);
+                    //SecondLife.LogStatic(
+                    //    "A SocketException occurred in UDPServer.AsyncBeginReceive()", 
+                    //    Helpers.LogLevel.Error, se);
 
                     // an error occurred, therefore the operation is void.  Decrement the reference count.
                     Interlocked.Decrement(ref rwOperationCount);
@@ -330,12 +330,12 @@ namespace libsecondlife
                     // has just been filled from the socket read.
                     PacketReceived(buffer);
                 }
-                catch (SocketException se)
+                catch (SocketException)
                 {
                     // something bad happened
-                    SecondLife.LogStatic(
-                        "A SocketException occurred in UDPServer.AsyncEndReceive()",
-                        Helpers.LogLevel.Error, se);
+                    //SecondLife.LogStatic(
+                    //    "A SocketException occurred in UDPServer.AsyncEndReceive()",
+                    //    Helpers.LogLevel.Error, se);
 
                     // an error occurred, therefore the operation is void.  Decrement the reference count.
                     Interlocked.Decrement(ref rwOperationCount);
@@ -373,11 +373,11 @@ namespace libsecondlife
                         new AsyncCallback(AsyncEndSend),
                         buf);
                 }
-                catch (SocketException se)
+                catch (SocketException)
                 {
-                    SecondLife.LogStatic(
-                        "A SocketException occurred in UDPServer.AsyncBeginSend()",
-                        Helpers.LogLevel.Error, se);
+                    //SecondLife.LogStatic(
+                    //    "A SocketException occurred in UDPServer.AsyncBeginSend()",
+                    //    Helpers.LogLevel.Error, se);
                 }
             }
 
@@ -402,11 +402,11 @@ namespace libsecondlife
                     // buffer was part of a send or a receive).
                     PacketSent(buffer, bytesSent);
                 }
-                catch (SocketException se)
+                catch (SocketException)
                 {
-                    SecondLife.LogStatic(
-                        "A SocketException occurred in UDPServer.AsyncEndSend()",
-                        Helpers.LogLevel.Error, se);
+                    //SecondLife.LogStatic(
+                    //    "A SocketException occurred in UDPServer.AsyncEndSend()",
+                    //    Helpers.LogLevel.Error, se);
                 }
             }
 
