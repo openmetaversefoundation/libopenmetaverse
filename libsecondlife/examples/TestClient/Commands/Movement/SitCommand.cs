@@ -19,19 +19,16 @@ namespace libsecondlife.TestClient
             Primitive closest = null;
 		    double closestDistance = Double.MaxValue;
 
-		    lock (Client.SimPrims)
+		    lock (Client.Network.CurrentSim.Objects.Prims)
 		    {
-                if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
+                foreach (Primitive p in Client.Network.CurrentSim.Objects.Prims.Values)
                 {
-                    foreach (Primitive p in Client.SimPrims[Client.Network.CurrentSim].Values)
-                    {
-                        float distance = Helpers.VecDist(Client.Self.Position, p.Position);
+                    float distance = Helpers.VecDist(Client.Self.Position, p.Position);
 
-                        if (closest == null || distance < closestDistance)
-                        {
-                            closest = p;
-                            closestDistance = distance;
-                        }
+                    if (closest == null || distance < closestDistance)
+                    {
+                        closest = p;
+                        closestDistance = distance;
                     }
                 }
 		    }

@@ -183,7 +183,7 @@ namespace libsecondlife
                 // We are connected to the event queue
                 _Running = true;
 
-                Simulator.Client.Log("Capabilities event queue connected for " + Simulator.ToString(), Helpers.LogLevel.Info);
+                Simulator.Client.DebugLog("Capabilities event queue connected for " + Simulator.ToString());
             }
 
             try

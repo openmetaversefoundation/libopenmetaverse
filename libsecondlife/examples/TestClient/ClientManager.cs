@@ -95,7 +95,6 @@ namespace libsecondlife.TestClient
             client.Throttle.Land = 1000000;
             client.Throttle.Task = 1000000;
 
-			client.SimPrims = SimPrims;
 			client.MasterName = account.MasterName;
             client.MasterKey = account.MasterKey;
 

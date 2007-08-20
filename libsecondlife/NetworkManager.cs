@@ -140,6 +140,9 @@ namespace libsecondlife
         /// An event for the connection to a simulator other than the currently
         /// occupied one disconnecting
         /// </summary>
+        /// <remarks>The Simulators list is locked when this event is 
+        /// triggered, do not attempt to modify the collection or acquire a
+        /// lock on it when this callback is fired</remarks>
         public event SimDisconnectedCallback OnSimDisconnected;
         /// <summary>
         /// An event for being logged out either through client request, server
@@ -204,6 +207,7 @@ namespace libsecondlife
             RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
             RegisterCallback(PacketType.ParcelOverlay, new PacketCallback(ParcelOverlayHandler));
             RegisterCallback(PacketType.EnableSimulator, new PacketCallback(EnableSimulatorHandler));
+            RegisterCallback(PacketType.DisableSimulator, new PacketCallback(DisableSimulatorHandler));
             RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
             RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
             RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
@@ -456,11 +460,11 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="sim"></param>
-        public void DisconnectSim(Simulator sim)
+        public void DisconnectSim(Simulator sim, bool sendCloseCircuit)
         {
             if (sim != null)
             {
-                sim.Disconnect();
+                sim.Disconnect(sendCloseCircuit);
 
                 // Fire the SimDisconnected event if a handler is registered
                 if (OnSimDisconnected != null)
@@ -641,6 +645,9 @@ namespace libsecondlife
         {
             Client.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
 
+            // Send a CloseCircuit packet to simulators if we are initiating the disconnect
+            bool sendCloseCircuit = (type == DisconnectType.ClientInitiated || type == DisconnectType.NetworkTimeout);
+
             lock (Simulators)
             {
                 // Disconnect all simulators except the current one
@@ -648,11 +655,9 @@ namespace libsecondlife
                 {
                     if (Simulators[i] != null && Simulators[i] != CurrentSim)
                     {
-                        Simulators[i].Disconnect();
+                        Simulators[i].Disconnect(sendCloseCircuit);
 
                         // Fire the SimDisconnected event if a handler is registered
-                        // FIXME: This is a recipe for disaster, locking Simulators and
-                        // firing a callback
                         if (OnSimDisconnected != null)
                         {
                             try { OnSimDisconnected(Simulators[i], type); }
@@ -667,7 +672,7 @@ namespace libsecondlife
             if (CurrentSim != null)
             {
                 // Kill the connection to the curent simulator
-                CurrentSim.Disconnect();
+                CurrentSim.Disconnect(sendCloseCircuit);
 
                 // Fire the SimDisconnected event if a handler is registered
                 if (OnSimDisconnected != null)
@@ -786,7 +791,7 @@ namespace libsecondlife
                             Client.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
                                 ", disconnecting", Helpers.LogLevel.Warning);
 
-                            DisconnectSim(disconnectedSims[i]);
+                            DisconnectSim(disconnectedSims[i], true);
                         }
                     }
                 }
@@ -848,12 +853,12 @@ namespace libsecondlife
         private void PongHandler(Packet packet, Simulator simulator)
         {
             CompletePingCheckPacket pong = (CompletePingCheckPacket)packet;
-            String retval = "Pong2: " + (Environment.TickCount - simulator.LastPingSent);
-            if ((pong.PingID.PingID - simulator.LastPingID + 1) != 0)
-                retval += " (gap of " + (pong.PingID.PingID - simulator.LastPingID + 1) + ")";
+            String retval = "Pong2: " + (Environment.TickCount - simulator.Stats.LastPingSent);
+            if ((pong.PingID.PingID - simulator.Stats.LastPingID + 1) != 0)
+                retval += " (gap of " + (pong.PingID.PingID - simulator.Stats.LastPingID + 1) + ")";
 
-            simulator.LastLag = Environment.TickCount - simulator.LastPingSent;
-            simulator.ReceivedPongs++;
+            simulator.Stats.LastLag = Environment.TickCount - simulator.Stats.LastPingSent;
+            simulator.Stats.ReceivedPongs++;
             //			Client.Log(retval, Helpers.LogLevel.Info);
         }
 		
@@ -868,76 +873,76 @@ namespace libsecondlife
 				switch (s.StatID )
 				{
 					case 0:
-						simulator.Dilation = s.StatValue;
+                        simulator.Stats.Dilation = s.StatValue;
 						break;
 					case 1:
-						simulator.FPS = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.FPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 2:
-						simulator.PhysicsFPS = s.StatValue;
+                        simulator.Stats.PhysicsFPS = s.StatValue;
 						break;
 					case 3:
-						simulator.AgentUpdates = s.StatValue;
+                        simulator.Stats.AgentUpdates = s.StatValue;
 						break;
 					case 4:
-						simulator.FrameTime = s.StatValue;
+                        simulator.Stats.FrameTime = s.StatValue;
 						break;
 					case 5:
-						simulator.NetTime = s.StatValue;
+                        simulator.Stats.NetTime = s.StatValue;
 						break;
 					case 7:
-						simulator.PhysicsTime = s.StatValue;
+                        simulator.Stats.PhysicsTime = s.StatValue;
 						break;
 					case 8:
-						simulator.ImageTime = s.StatValue;
+                        simulator.Stats.ImageTime = s.StatValue;
 						break;
 					case 9:
-						simulator.ScriptTime = s.StatValue;
+                        simulator.Stats.ScriptTime = s.StatValue;
 						break;
 					case 10:
-						simulator.OtherTime = s.StatValue;
+                        simulator.Stats.OtherTime = s.StatValue;
 						break;
 					case 11:
-						simulator.Objects = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.Objects = Convert.ToInt32(s.StatValue);
 						break;
 					case 12:
-						simulator.ScriptedObjects = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.ScriptedObjects = Convert.ToInt32(s.StatValue);
 						break;
 					case 13:
-						simulator.Agents = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.Agents = Convert.ToInt32(s.StatValue);
 						break;
 					case 14:
-						simulator.ChildAgents = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.ChildAgents = Convert.ToInt32(s.StatValue);
 						break;
 					case 15:
-						simulator.ActiveScripts = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.ActiveScripts = Convert.ToInt32(s.StatValue);
 						break;
 					case 16:
-						simulator.LSLIPS = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.LSLIPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 17:
-						simulator.INPPS = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.INPPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 18:
-						simulator.OUTPPS = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.OUTPPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 19:
-						simulator.PendingDownloads = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.PendingDownloads = Convert.ToInt32(s.StatValue);
 						break;
 					case 20:
-						simulator.PendingUploads = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.PendingUploads = Convert.ToInt32(s.StatValue);
 						break;
 					case 21:
-						simulator.VirtualSize = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.VirtualSize = Convert.ToInt32(s.StatValue);
 						break;
 					case 22:
-						simulator.ResidentSize = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.ResidentSize = Convert.ToInt32(s.StatValue);
 						break;
 					case 23:
-						simulator.PendingLocalUploads = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.PendingLocalUploads = Convert.ToInt32(s.StatValue);
 						break;
 					case 24:
-						simulator.UnackedBytes = Convert.ToInt32(s.StatValue);
+                        simulator.Stats.UnackedBytes = Convert.ToInt32(s.StatValue);
 						break;
 				}
 			}
@@ -1027,6 +1032,13 @@ namespace libsecondlife
                     Helpers.LogLevel.Error);
                 return;
             }
+        }
+
+        private void DisableSimulatorHandler(Packet packet, Simulator simulator)
+        {
+            Client.DebugLog("Received a DisableSimulator packet from " + simulator + ", shutting it down");
+
+            DisconnectSim(simulator, false);
         }
 
         private void KickUserHandler(Packet packet, Simulator simulator)

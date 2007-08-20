@@ -1470,9 +1470,6 @@ namespace libsecondlife
                         prim.AngularVelocity = angularVelocity;
                         #endregion
 
-                        // Used to notify subclasses that a prim was updated
-                        llObjectUpdated(simulator, prim);
-
                         if (attachment)
                             FireOnNewAttachment(simulator, prim, update.RegionData.RegionHandle, 
                                 update.RegionData.TimeDilation);
@@ -1603,7 +1600,9 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Usually called when an Prim moves.
+        /// A terse object update, used when a transformation matrix or
+        /// velocity/acceleration for an object changes but nothing else
+        /// (scale/position/rotation/acceleration/velocity)
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
@@ -1699,8 +1698,6 @@ namespace libsecondlife
                     obj.Rotation = update.Rotation;
                     obj.Textures = update.Textures;
                     obj.Velocity = update.Velocity;
-
-                    llObjectUpdated(simulator, obj);
                     
                     // Fire the callback
                     FireOnObjectUpdated(simulator, update, terse.RegionData.RegionHandle, terse.RegionData.TimeDilation);
@@ -2013,8 +2010,6 @@ namespace libsecondlife
                                 ", implement this!");
                             break;
                     }
-
-                    llObjectUpdated(simulator, prim);
                 }
                 catch (IndexOutOfRangeException e)
                 {
@@ -2029,13 +2024,13 @@ namespace libsecondlife
         {
             if (Client.Settings.ALWAYS_REQUEST_OBJECTS)
             {
-                List<uint> ids = new List<uint>();
                 ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
+                List<uint> ids = new List<uint>(update.ObjectData.Length);
 
-                // Assume clients aren't caching objects for now, so request updates for all of these objects
-                foreach (ObjectUpdateCachedPacket.ObjectDataBlock block in update.ObjectData)
+                // No object caching implemented yet, so request updates for all of these objects
+                for (int i = 0; i < update.ObjectData.Length; i++)
                 {
-                    ids.Add(block.ID);
+                    ids.Add(update.ObjectData[i].ID);
                 }
 
                 RequestObjects(simulator, ids);
@@ -2044,9 +2039,24 @@ namespace libsecondlife
 
         protected void KillObjectHandler(Packet packet, Simulator simulator)
         {
-            foreach (KillObjectPacket.ObjectDataBlock block in ((KillObjectPacket)packet).ObjectData)
+            KillObjectPacket kill = (KillObjectPacket)packet;
+
+            for (int i = 0; i < kill.ObjectData.Length; i++)
             {
-                FireOnObjectKilled(simulator, block.ID);
+                uint localID = kill.ObjectData[i].ID;
+
+                if (simulator.Objects.Prims.ContainsKey(localID))
+                {
+                    lock (simulator.Objects.Prims)
+                        simulator.Objects.Prims.Remove(localID);
+                }
+                if (simulator.Objects.Avatars.ContainsKey(localID))
+                {
+                    lock (simulator.Objects.Avatars)
+                        simulator.Objects.Avatars.Remove(localID);
+                }
+
+                FireOnObjectKilled(simulator, localID);
             }
         }
 
@@ -2121,7 +2131,7 @@ namespace libsecondlife
             FireOnObjectPropertiesFamily(sim, props);
         }
 
-        #endregion
+        #endregion Packet Handlers
 
         #region Utility Functions
 
@@ -2156,40 +2166,10 @@ namespace libsecondlife
 
 		protected void UpdateDilation(Simulator s, uint dilation)
 		{
-			s.Dilation = (float)dilation / 65535.0f;
-		}
-
-        protected void InterpolationTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            if (Client.Network.Connected)
-            {
-                // For now we only update Client.Self since there is no object tracking
-                // built in to the library
-
-                // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
-                // no acceleration
-                if (Client.Self.Velocity != LLVector3.Zero || Client.Self.Acceleration != LLVector3.Zero)
-                {
-                    try
-                    {
-                        TimeSpan interval = DateTime.Now - Client.Self.lastInterpolation;
-                        float adjSeconds = (float)interval.TotalSeconds * Client.Network.CurrentSim.Dilation;
-
-                        Client.Self.Position += (Client.Self.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
-                            Client.Self.Acceleration) * adjSeconds;
-                    }
-                    catch (Exception except)
-                    {
-                        Client.Log(except.ToString(), Helpers.LogLevel.Warning);
-                    }
-                }
-            }
-
-            // Make sure the last interpolated time is always updated
-            Client.Self.lastInterpolation = DateTime.Now;
+            s.Stats.Dilation = (float)dilation / 65535.0f;
         }
 
-        #endregion
+        #endregion Utility Functions
 
         #region Event Notification
 
@@ -2227,10 +2207,6 @@ namespace libsecondlife
                 try { OnNewPrim(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
-            else
-            {
-                prim = null;
-            }
         }
 
         protected void FireOnNewFoliage(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
@@ -2240,10 +2216,6 @@ namespace libsecondlife
                 try { OnNewFoliage(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
-            else
-            {
-                prim = null;
-            }
         }
 
         protected void FireOnNewAttachment(Simulator simulator, Primitive prim, ulong RegionHandle, ushort TimeDilation)
@@ -2252,10 +2224,6 @@ namespace libsecondlife
             {
                 try { OnNewAttachment(simulator, prim, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-            }
-            else
-            {
-                prim = null;
             }
         }
 
@@ -2275,10 +2243,6 @@ namespace libsecondlife
                 try { OnNewAvatar(simulator, avatar, RegionHandle, TimeDilation); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
-            else
-            {
-                avatar = null;
-            }
         }
 
         protected void FireOnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong RegionHandle, ushort TimeDilation)
@@ -2292,43 +2256,130 @@ namespace libsecondlife
 
         #endregion
 
-        #region Subclass Indirection
+        #region Object Tracking Link
 
-        /// <summary>
-        /// Primitive Factory, this allows a subclass to lookup a copy of the Primitive
-        /// and return it for updating, rather then always creating a new Primitive
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="LocalID"></param>
-        /// <param name="UUID"></param>
-        /// <returns></returns>
-        virtual protected Primitive GetPrimitive(Simulator simulator, uint LocalID, LLUUID UUID)
+        protected Primitive GetPrimitive(Simulator simulator, uint localID, LLUUID fullID)
         {
-            return new Primitive();
+            if (simulator.Objects.Prims.ContainsKey(localID))
+            {
+                return simulator.Objects.Prims[localID];
+            }
+            else
+            {
+                Primitive prim = new Primitive();
+                prim.LocalID = localID;
+                prim.ID = fullID;
+                lock (simulator.Objects.Prims)
+                    simulator.Objects.Prims[localID] = prim;
+
+                return prim;
+            }
         }
 
-        /// <summary>
-        /// Primitive Factory, this allows a subclass to lookup a copy of the Avatar
-        /// and return it for updating, rather then always creating a new Avatar
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="LocalID"></param>
-        /// <param name="UUID"></param>
-        /// <returns></returns>
-        virtual protected Avatar GetAvatar(Simulator simulator, uint LocalID, LLUUID UUID)
+        protected Avatar GetAvatar(Simulator simulator, uint localID, LLUUID fullID)
         {
-            return new Avatar();
+            if (simulator.Objects.Avatars.ContainsKey(localID))
+            {
+                return simulator.Objects.Avatars[localID];
+            }
+            else
+            {
+                Avatar avatar = new Avatar();
+                avatar.LocalID = localID;
+                avatar.ID = fullID;
+                lock (simulator.Objects.Avatars)
+                    simulator.Objects.Avatars[localID] = avatar;
+
+                return avatar;
+            }
         }
 
-        /// <summary>
-        /// Used to flag to a subclass that an LLObject was updated/created
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="obj"></param>
-        virtual protected void llObjectUpdated(Simulator simulator, LLObject obj)
-        {
-        }
+        #endregion Object Tracking Link
 
-        #endregion
+        protected void InterpolationTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (Client.Network.Connected)
+            {
+                TimeSpan interval = DateTime.Now - Client.Self.lastInterpolation;
+
+                // Iterate through all of the simulators
+                lock (Client.Network.Simulators)
+                {
+                    for (int i = 0; i < Client.Network.Simulators.Count; i++)
+                    {
+                        float adjSeconds = (float)interval.TotalSeconds * Client.Network.Simulators[i].Stats.Dilation;
+
+                        // Iterate through all of this sims avatars
+                        lock (Client.Network.Simulators[i].Objects.Avatars)
+                        {
+                            foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                            {
+                                #region Linear Motion
+                                // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
+                                // no acceleration
+                                if (avatar.Acceleration != LLVector3.Zero && avatar.Velocity == LLVector3.Zero)
+                                {
+                                    avatar.Position += (avatar.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
+                                        avatar.Acceleration) * adjSeconds;
+                                    avatar.Velocity = avatar.Velocity + avatar.Acceleration * adjSeconds;
+                                }
+                                #endregion Linear Motion
+                            }
+                        }
+
+                        // Iterate through all of this sims primitives
+                        lock (Client.Network.Simulators[i].Objects.Prims)
+                        {
+                            foreach (Primitive prim in Client.Network.Simulators[i].Objects.Prims.Values)
+                            {
+                                if (prim.Joint == Primitive.JointType.Invalid)
+                                {
+                                    #region Angular Velocity
+                                    LLVector3 angVel = prim.AngularVelocity;
+                                    float omega = Helpers.VecMagSquared(angVel);
+
+                                    if (omega > 0.00001f)
+                                    {
+                                        omega = (float)Math.Sqrt(omega);
+                                        float angle = omega * adjSeconds;
+                                        angVel *= 1.0f / omega;
+                                        LLQuaternion dQ = new LLQuaternion(angle, angVel);
+
+                                        prim.Rotation *= dQ;
+                                    }
+                                    #endregion Angular Velocity
+
+                                    #region Linear Motion
+                                    // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
+                                    // no acceleration
+                                    if (prim.Acceleration != LLVector3.Zero && prim.Velocity == LLVector3.Zero)
+                                    {
+                                        prim.Position += (prim.Velocity + (0.5f * (adjSeconds - HAVOK_TIMESTEP)) *
+                                        prim.Acceleration) * adjSeconds;
+                                        prim.Velocity = prim.Velocity + prim.Acceleration * adjSeconds;
+                                    }
+                                    #endregion Linear Motion
+                                }
+                                else if (prim.Joint == Primitive.JointType.Hinge)
+                                {
+                                    //FIXME: Hinge movement extrapolation
+                                }
+                                else if (prim.Joint == Primitive.JointType.Point)
+                                {
+                                    //FIXME: Point movement extrapolation
+                                }
+                                else
+                                {
+                                    Client.Log("Unhandled joint type " + prim.Joint, Helpers.LogLevel.Warning);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Make sure the last interpolated time is always updated
+                Client.Self.lastInterpolation = DateTime.Now;
+            }
+        }
     }
 }

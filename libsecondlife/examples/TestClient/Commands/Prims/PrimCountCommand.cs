@@ -11,22 +11,28 @@ namespace libsecondlife.TestClient
         public PrimCountCommand(TestClient testClient)
 		{
 			Name = "primcount";
-			Description = "Shows the number of prims that have been received.";
+			Description = "Shows the number of objects currently being tracked.";
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
             int count = 0;
 
-            lock (Client.SimPrims)
+            lock (Client.Network.Simulators)
             {
-                foreach (Dictionary<uint, Primitive> prims in Client.SimPrims.Values)
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    count += prims.Count;
+                    Console.WriteLine("{0} (Avatars: {1} Primitives: {2})", 
+                        Client.Network.Simulators[i].Name,
+                        Client.Network.Simulators[i].Objects.Avatars.Count,
+                        Client.Network.Simulators[i].Objects.Prims.Count);
+
+                    count += Client.Network.Simulators[i].Objects.Avatars.Count;
+                    count += Client.Network.Simulators[i].Objects.Prims.Count;
                 }
             }
 
-			return count.ToString();
+			return "Tracking a total of " + count + " objects";
 		}
     }
 }

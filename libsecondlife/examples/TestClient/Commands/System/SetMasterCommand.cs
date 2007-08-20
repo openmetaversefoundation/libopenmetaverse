@@ -16,9 +16,8 @@ namespace libsecondlife.TestClient
 
         public SetMasterCommand(TestClient testClient)
 		{
-			Name = "setMaster";
-			Description = "Sets the user name of the master user.  The master user can IM to run commands.";
-            
+			Name = "setmaster";
+            Description = "Sets the user name of the master user. The master user can IM to run commands. Usage: setmaster name";
 		}
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -29,11 +28,13 @@ namespace libsecondlife.TestClient
             masterName = masterName.TrimEnd();
 
             if (masterName.Length == 0)
-                return "Usage setMaster name";
+                return "Usage: setmaster name";
 
             DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
             Client.Directory.OnDirPeopleReply += callback;
+
             query = Client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, masterName, 0);
+
             if (keyResolution.WaitOne(TimeSpan.FromMinutes(1), false))
             {
                 Client.MasterKey = resolvedMasterKey;
@@ -47,17 +48,28 @@ namespace libsecondlife.TestClient
                 return "Unable to obtain UUID for \"" + masterName + "\". Master unchanged.";
             }
             
+            // If we see this avatar standing around, IM them. Otherwise don't bother
+            // because they may be offline
+            lock (Client.Network.Simulators)
+            {
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
+                {
+                    lock (Client.Network.Simulators[i].Objects.Avatars)
+                    {
+                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                        {
+                            if (avatar.ID == Client.MasterKey)
+                            {
+                                Client.Self.InstantMessage(avatar.ID, 
+                                    "You are now my master.  IM me with \"help\" for a command list.");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
-			foreach (Avatar av in Client.AvatarList.Values)
-			{
-			    if (av.ID == Client.MasterKey)
-			    {
-			        Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
-			        break;
-			    }
-			}
-
-            return "Master set to " + masterName + " (" + Client.MasterKey.ToStringHyphenated() + ")";
+            return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToStringHyphenated());
 		}
 
         private void KeyResolvHandler(LLUUID queryid, List<DirectoryManager.AgentSearchData> matches)

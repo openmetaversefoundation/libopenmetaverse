@@ -16,40 +16,27 @@ namespace libsecondlife.TestClient
 		
         public override string Execute(string[] args, LLUUID fromAgentID)
 		{
-		    Primitive target = null;
+            LLUUID target;
 
-		    lock (Client.SimPrims)
-		    {
-                if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
+            if (args.Length != 1)
+                return "Usage: touch UUID";
+            
+            if (LLUUID.TryParse(args[0], out target))
+            {
+                lock (Client.Network.CurrentSim.Objects.Prims)
                 {
-                    foreach (Primitive p in Client.SimPrims[Client.Network.CurrentSim].Values)
+                    foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
                     {
-                        if (args.Length == 0)
-                            return "You must specify a UUID of the prim.";
-
-                        try
+                        if (prim.ID == target)
                         {
-                            if (p.ID == args[0])
-                                target = p;
-                        }
-                        catch
-                        {
-                            // handle exception
-                            return "Sorry, I don't think " + args[0] + " is a valid UUID.  I'm unable to touch it.";
+                            Client.Self.Touch(prim.LocalID);
+                            return "Touched prim " + prim.LocalID;
                         }
                     }
                 }
-		    }
+            }
 
-            if (target != null)
-            {
-                Client.Self.Touch(target.LocalID);
-                return "Touched prim " + target.ID + ".";
-            }
-            else
-            {
-                return "Couldn't find that prim.";
-            }
+            return "Couldn't find a prim to touch with UUID " + args[0];
 		}
     }
 }

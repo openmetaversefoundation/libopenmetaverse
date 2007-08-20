@@ -128,6 +128,77 @@ namespace libsecondlife
 
         #endregion Enums
 
+        #region Structs
+
+        public struct SimStats
+        {
+            /// <summary></summary>
+            public ulong SentPackets;
+            /// <summary></summary>
+            public ulong RecvPackets;
+            /// <summary></summary>
+            public ulong SentBytes;
+            /// <summary></summary>
+            public ulong RecvBytes;
+            /// <summary></summary>
+            public int ConnectTime;
+            /// <summary></summary>
+            public int ResentPackets;
+            /// <summary></summary>
+            public int ReceivedResends;
+            /// <summary></summary>
+            public int SentPings;
+            /// <summary></summary>
+            public int ReceivedPongs;
+            /// <summary>
+            /// Incoming bytes per second
+            /// </summary>
+            /// <remarks>It would be nice to have this claculated on the fly, but
+            /// this is far, far easier</remarks>
+            public int IncomingBPS;
+            /// <summary>
+            /// Outgoing bytes per second
+            /// </summary>
+            /// <remarks>It would be nice to have this claculated on the fly, but
+            /// this is far, far easier</remarks>
+            public int OutgoingBPS;
+            /// <summary></summary>
+            public int LastPingSent;
+            /// <summary></summary>
+            public byte LastPingID;
+            /// <summary></summary>
+            public int LastLag;
+            /// <summary></summary>
+            public int MissedPings;
+            /// <summary>Current time dilation of this simulator</summary>
+            public float Dilation;
+            public int FPS;
+            public float PhysicsFPS;
+            public float AgentUpdates;
+            public float FrameTime;
+            public float NetTime;
+            public float PhysicsTime;
+            public float ImageTime;
+            public float ScriptTime;
+            public float OtherTime;
+            public int Objects;
+            public int ScriptedObjects;
+            public int Agents;
+            public int ChildAgents;
+            public int ActiveScripts;
+            public int LSLIPS;
+            public int INPPS;
+            public int OUTPPS;
+            public int PendingDownloads;
+            public int PendingUploads;
+            public int VirtualSize;
+            public int ResidentSize;
+            public int PendingLocalUploads;
+            public int UnackedBytes;
+        }
+
+        #endregion Structs
+
         #region Public Members
 
         /// <summary>A public reference to the client that this Simulator object
@@ -191,69 +262,14 @@ namespace libsecondlife
         public SimAccess Access;
         /// <summary></summary>
         public float BillableFactor;
-        /// <summary></summary>
-        public ulong SentPackets = 0;
-        /// <summary></summary>
-        public ulong RecvPackets = 0;
-        /// <summary></summary>
-        public ulong SentBytes = 0;
-        /// <summary></summary>
-        public ulong RecvBytes = 0;
-        /// <summary></summary>
-        public int ConnectTime = 0;
-        /// <summary></summary>
-        public int ResentPackets = 0;
-        /// <summary></summary>
-        public int ReceivedResends = 0;
-        /// <summary></summary>
-        public int SentPings = 0;
-        /// <summary></summary>
-        public int ReceivedPongs = 0;
-        /// <summary>
-        /// Incoming bytes per second
-        /// </summary>
-        /// <remarks>It would be nice to have this claculated on the fly, but
-        /// this is far, far easier</remarks>
-        public int IncomingBPS = 0;
-        /// <summary>
-        /// Outgoing bytes per second
-        /// </summary>
-        /// <remarks>It would be nice to have this claculated on the fly, but
-        /// this is far, far easier</remarks>
-        public int OutgoingBPS = 0;
-        /// <summary></summary>
-        public int LastPingSent = 0;
-        /// <summary></summary>
-        public byte LastPingID = 0;
-        /// <summary></summary>
-        public int LastLag = 0;
-        /// <summary></summary>
-        public int MissedPings = 0;
-        /// <summary>Current time dilation of this simulator</summary>
-        public float Dilation = 0;
-        public int FPS = 0;
-        public float PhysicsFPS = 0;
-        public float AgentUpdates = 0;
-        public float FrameTime = 0;
-        public float NetTime = 0;
-        public float PhysicsTime = 0;
-        public float ImageTime = 0;
-        public float ScriptTime = 0;
-        public float OtherTime = 0;
-        public int Objects = 0;
-        public int ScriptedObjects = 0;
-        public int Agents = 0;
-        public int ChildAgents = 0;
-        public int ActiveScripts = 0;
-        public int LSLIPS = 0;
-        public int INPPS = 0;
-        public int OUTPPS = 0;
-        public int PendingDownloads = 0;
-        public int PendingUploads = 0;
-        public int VirtualSize = 0;
-        public int ResidentSize = 0;
-        public int PendingLocalUploads = 0;
-        public int UnackedBytes = 0;
+        /// <summary>Statistics information for this simulator and the
+        /// connection to the simulator, calculated by the simulator itself
+        /// and libsecondlife</summary>
+        public SimStats Stats;
+
+        /// <summary>Provides access to two thread-safe dictionaries containing
+        /// avatars and primitives found in this simulator</summary>
+        public ObjectTracker Objects = new ObjectTracker();
 
         /// <summary>Used to obtain a lock on the sequence number for packets
         /// sent to this simulator. Only useful for applications manipulating
@@ -262,7 +278,7 @@ namespace libsecondlife
         /// <summary>The current sequence number for packets sent to this
         /// simulator. Must be locked with SequenceLock before modifying. Only
         /// useful for applications manipulating sequence numbers</summary>
-        public volatile uint Sequence = 0;
+        public volatile uint Sequence;
 
         #endregion Public Members
 
@@ -388,7 +404,7 @@ namespace libsecondlife
                 // Send the initial packet out
                 SendPacket(use, true);
 
-                ConnectTime = Environment.TickCount;
+                Stats.ConnectTime = Environment.TickCount;
 
                 // Move our agent in to the sim to complete the connection
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
@@ -437,7 +453,7 @@ namespace libsecondlife
         /// <summary>
         /// Disconnect from this simulator
         /// </summary>
-        public void Disconnect()
+        public void Disconnect(bool sendCloseCircuit)
         {
             if (connected)
             {
@@ -454,13 +470,16 @@ namespace libsecondlife
                     SimCaps = null;
                 }
 
-                // Try to send the CloseCircuit notice
-                CloseCircuitPacket close = new CloseCircuitPacket();
-                UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
-                buf.Data = close.ToBytes();
-                buf.DataLength = buf.Data.Length;
+                if (sendCloseCircuit)
+                {
+                    // Try to send the CloseCircuit notice
+                    CloseCircuitPacket close = new CloseCircuitPacket();
+                    UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
+                    buf.Data = close.ToBytes();
+                    buf.DataLength = buf.Data.Length;
 
-                AsyncBeginSend(buf);
+                    AsyncBeginSend(buf);
+                }
 
                 // Shut the socket communication down
                 Stop();
@@ -537,8 +556,8 @@ namespace libsecondlife
             // Serialize the packet
             buffer = packet.ToBytes();
             bytes = buffer.Length;
-            SentBytes += (ulong)bytes;
-            SentPackets++;
+            Stats.SentBytes += (ulong)bytes;
+            Stats.SentPackets++;
 
             UDPPacketBuffer buf;
 
@@ -582,8 +601,8 @@ namespace libsecondlife
                     }
                 }
 
-                SentBytes += (ulong)payload.Length;
-                SentPackets++;
+                Stats.SentBytes += (ulong)payload.Length;
+                Stats.SentPackets++;
 
                 UDPPacketBuffer buf = new UDPPacketBuffer(ipEndPoint, false);
                 buf.Data = payload;
@@ -597,7 +616,7 @@ namespace libsecondlife
                     " byte payload on a closed socket, shutting down " + this.ToString(),
                     Helpers.LogLevel.Info);
 
-                Network.DisconnectSim(this);
+                Network.DisconnectSim(this, false);
                 return;
             }
             catch (Exception e)
@@ -622,11 +641,11 @@ namespace libsecondlife
         public void SendPing()
         {
             StartPingCheckPacket ping = new StartPingCheckPacket();
-            ping.PingID.PingID = LastPingID++;
+            ping.PingID.PingID = Stats.LastPingID++;
             ping.PingID.OldestUnacked = 0; // FIXME
             ping.Header.Reliable = false;
             SendPacket(ping, true);
-            LastPingSent = Environment.TickCount;
+            Stats.LastPingSent = Environment.TickCount;
         }
 
         /// <summary>
@@ -704,8 +723,8 @@ namespace libsecondlife
                 return;
             }
 
-            RecvBytes += (ulong)buffer.DataLength;
-            RecvPackets++;
+            Stats.RecvBytes += (ulong)buffer.DataLength;
+            Stats.RecvPackets++;
 
             #endregion Packet Decoding
 
@@ -724,7 +743,7 @@ namespace libsecondlife
                 if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
                     SendAcks();
 
-                if (packet.Header.Resent) ++ReceivedResends;
+                if (packet.Header.Resent) ++Stats.ReceivedResends;
             }
 
             #endregion Reliable Handling
@@ -797,7 +816,7 @@ namespace libsecondlife
                                     packet.Header.Sequence, packet.GetType(), now - packet.TickCount));
 
                             packet.Header.Resent = true;
-                            ++ResentPackets;
+                            ++Stats.ResentPackets;
                             SendPacket(packet, false);
                         }
                         catch (Exception ex)
@@ -824,13 +843,13 @@ namespace libsecondlife
             if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_out = OutBytes.Dequeue();
 
-            InBytes.Enqueue(RecvBytes);
-            OutBytes.Enqueue(SentBytes);
+            InBytes.Enqueue(Stats.RecvBytes);
+            OutBytes.Enqueue(Stats.SentBytes);
 
             if (old_in > 0 && old_out > 0)
             {
-                IncomingBPS = (int)(RecvBytes - old_in) / Client.Settings.STATS_QUEUE_SIZE;
-                OutgoingBPS = (int)(SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.IncomingBPS = (int)(Stats.RecvBytes - old_in) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.OutgoingBPS = (int)(Stats.SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
                 //Client.Log("Incoming: " + IncomingBPS + " Out: " + OutgoingBPS +
                 //    " Lag: " + LastLag + " Pings: " + ReceivedPongs +
                 //    "/" + SentPings, Helpers.LogLevel.Debug); 
@@ -840,7 +859,7 @@ namespace libsecondlife
         private void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs ea)
         {
             SendPing();
-            SentPings++;
+            Stats.SentPings++;
         }
     }
 }

@@ -2127,7 +2127,7 @@ namespace libsecondlife
                     TeleportStat = TeleportStatus.Finished;
 
                     // Disconnect from the previous sim
-                    Client.Network.DisconnectSim(simulator);
+                    Client.Network.DisconnectSim(simulator, true);
 
                     Client.Log("Moved to new sim " + newSimulator.ToString(), Helpers.LogLevel.Info);
                 }

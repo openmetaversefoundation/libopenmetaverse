@@ -83,7 +83,7 @@ namespace libsecondlife.TestClient
 
             if (!registeredCreateEvent)
             {
-                Client.OnPrimCreated += new TestClient.PrimCreatedCallback(TestClient_OnPrimCreated);
+                Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
                 registeredCreateEvent = true;
             }
 
@@ -197,7 +197,7 @@ namespace libsecondlife.TestClient
             return "Import complete.";
         }
 
-        void TestClient_OnPrimCreated(Simulator simulator, Primitive prim)
+        void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
         {
             if ((prim.Flags & LLObject.ObjectFlags.CreateSelected) == 0)
                 return; // We received an update for an object we didn't create
@@ -220,7 +220,7 @@ namespace libsecondlife.TestClient
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
                             currentClient.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Description))
-                            currentClient.Objects.SetDescription(simulator, prim.LocalID, 
+                            currentClient.Objects.SetDescription(simulator, prim.LocalID,
                                 currentPrim.Properties.Description);
 
                         primsCreated.Add(prim);

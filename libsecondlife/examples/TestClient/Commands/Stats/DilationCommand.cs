@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            return "Dilation is " + Client.Network.CurrentSim.Dilation.ToString();
+            return "Dilation is " + Client.Network.CurrentSim.Stats.Dilation.ToString();
         }
     }
 }

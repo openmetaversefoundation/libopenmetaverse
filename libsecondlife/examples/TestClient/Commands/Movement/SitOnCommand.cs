@@ -6,49 +6,39 @@ using libsecondlife.Packets;
 
 namespace libsecondlife.TestClient
 {
-    public class SitOnCommand: Command
+    public class SitOnCommand : Command
     {
         public SitOnCommand(TestClient testClient)
-		{
-			Name = "siton";
-			Description = "Attempt to sit on a particular prim, with specified UUID";
-		}
-			
+        {
+            Name = "siton";
+            Description = "Attempt to sit on a particular prim, with specified UUID";
+        }
+
         public override string Execute(string[] args, LLUUID fromAgentID)
-		{
-		    LLObject targetSeat = null;
+        {
+            if (args.Length != 1)
+                return "Usage: siton UUID";
 
-		    lock (Client.SimPrims)
-		    {
-                if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
+            LLUUID target;
+
+            if (LLUUID.TryParse(args[0], out target))
+            {
+                lock (Client.Network.CurrentSim.Objects.Prims)
                 {
-                    foreach (LLObject p in Client.SimPrims[Client.Network.CurrentSim].Values)
-                   {
-                       try
-                       {
-                           if (p.ID == args[0])
-                               targetSeat = p;
-                       }
-                       catch
-                       {
-                           // handle exception
-                           return "Sorry, I don't think " + args[0] + " is a valid UUID.  I'm unable to sit there.";
-                       }
-                   }
+                    foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
+                    {
+                        if (prim.ID == target)
+                        {
+                            Client.Self.RequestSit(prim.ID, LLVector3.Zero);
+                            Client.Self.Sit();
+                            return "Requested to sit on prim " + prim.ID.ToStringHyphenated() + 
+                                " (" + prim.LocalID + ")";
+                        }
+                    }
                 }
-		    }
-
-            if (targetSeat != null)
-            {
-                Client.Self.RequestSit(targetSeat.ID, LLVector3.Zero);
-                Client.Self.Sit();
-
-                return "Sat on prim " + targetSeat.ID + ".";
             }
-            else
-            {
-                return "Couldn't find specified prim to sit on";
-            }
-		}
+
+            return "Couldn't find a prim to sit on with UUID " + args[0];
+        }
     }
 }

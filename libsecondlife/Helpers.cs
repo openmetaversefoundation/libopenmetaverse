@@ -723,6 +723,16 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Calculate the squared magnitude of the supplied vector
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static float VecMagSquared(LLVector3 v)
+        {
+            return v.X * v.X + v.Y * v.Y + v.Z * v.Z;
+        }
+
+        /// <summary>
         /// Calculate the magnitude of the supplied quaternion
         /// </summary>
         public static float RotMag(LLQuaternion q)

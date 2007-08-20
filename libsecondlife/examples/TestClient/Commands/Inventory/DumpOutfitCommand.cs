@@ -28,40 +28,46 @@ namespace libsecondlife.TestClient
             if (!LLUUID.TryParse(args[0], out target))
                 return "Usage: dumpoutfit [avatar-uuid]";
 
-            lock (Client.AvatarList)
+            lock (Client.Network.Simulators)
             {
-                foreach (Avatar avatar in Client.AvatarList.Values)
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    if (avatar.ID == target)
+                    lock (Client.Network.Simulators[i].Objects.Avatars)
                     {
-                        StringBuilder output = new StringBuilder("Downloading ");
-
-                        lock (OutfitAssets) OutfitAssets.Clear();
-                        Client.Assets.OnImageReceived += ImageReceivedHandler;
-
-                        foreach (KeyValuePair<uint, LLObject.TextureEntryFace> face in avatar.Textures.FaceTextures)
+                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
                         {
-                            ImageType type = ImageType.Normal;
-
-                            switch ((AppearanceManager.TextureIndex)face.Key)
+                            if (avatar.ID == target)
                             {
-                                case AppearanceManager.TextureIndex.HeadBaked:
-                                case AppearanceManager.TextureIndex.EyesBaked:
-                                case AppearanceManager.TextureIndex.UpperBaked:
-                                case AppearanceManager.TextureIndex.LowerBaked:
-                                case AppearanceManager.TextureIndex.SkirtBaked:
-                                    type = ImageType.Baked;
-                                    break;
+                                StringBuilder output = new StringBuilder("Downloading ");
+
+                                lock (OutfitAssets) OutfitAssets.Clear();
+                                Client.Assets.OnImageReceived += ImageReceivedHandler;
+
+                                foreach (KeyValuePair<uint, LLObject.TextureEntryFace> face in avatar.Textures.FaceTextures)
+                                {
+                                    ImageType type = ImageType.Normal;
+
+                                    switch ((AppearanceManager.TextureIndex)face.Key)
+                                    {
+                                        case AppearanceManager.TextureIndex.HeadBaked:
+                                        case AppearanceManager.TextureIndex.EyesBaked:
+                                        case AppearanceManager.TextureIndex.UpperBaked:
+                                        case AppearanceManager.TextureIndex.LowerBaked:
+                                        case AppearanceManager.TextureIndex.SkirtBaked:
+                                            type = ImageType.Baked;
+                                            break;
+                                    }
+
+                                    OutfitAssets.Add(face.Value.TextureID);
+                                    Client.Assets.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
+
+                                    output.Append(((AppearanceManager.TextureIndex)face.Key).ToString());
+                                    output.Append(" ");
+                                }
+
+                                return output.ToString();
                             }
-
-                            OutfitAssets.Add(face.Value.TextureID);
-                            Client.Assets.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
-
-                            output.Append(((AppearanceManager.TextureIndex)face.Key).ToString());
-                            output.Append(" ");
                         }
-
-                        return output.ToString();
                     }
                 }
             }

@@ -1003,6 +1003,56 @@ namespace libsecondlife
 		}
 
         /// <summary>
+        /// Build a quaternion from an angle and a vector
+        /// </summary>
+        /// <param name="angle">Angle value</param>
+        /// <param name="vector">Vector value</param>
+        public LLQuaternion(float angle, LLVector3 vector)
+        {
+            vector = Helpers.VecNorm(vector);
+            angle *= 0.5f;
+
+            float c = (float)Math.Cos(angle);
+            float s = (float)Math.Sin(angle);
+
+            X = vector.X * s;
+            Y = vector.Y * s;
+            Z = vector.Z * s;
+            W = c;
+
+            Normalize();
+        }
+
+        /// <summary>
+        /// Normalize this quaternion
+        /// </summary>
+        /// <returns>Magnitude of the quaternion</returns>
+        public float Normalize()
+        {
+            const float MAG_THRESHOLD = 0.0000001f;
+
+            float mag = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
+
+            if (mag > MAG_THRESHOLD)
+            {
+                float oomag = 1.0f / mag;
+                X *= oomag;
+                Y *= oomag;
+                Z *= oomag;
+                W *= oomag;
+            }
+            else
+            {
+                X = 0.0f;
+                Y = 0.0f;
+                Z = 0.0f;
+                W = 1.0f;
+            }
+
+            return mag;
+        }
+
+        /// <summary>
         /// Normalize this quaternion and serialize it to a byte array
         /// </summary>
         /// <returns>A 12 byte array containing normalized X, Y, and Z floating

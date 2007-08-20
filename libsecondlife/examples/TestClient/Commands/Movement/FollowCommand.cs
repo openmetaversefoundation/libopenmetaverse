@@ -44,14 +44,23 @@ namespace libsecondlife.TestClient
 
         bool Follow(string name)
         {
-            foreach (Avatar av in Client.AvatarList.Values)
+            lock (Client.Network.Simulators)
             {
-                if (av.Name == name)
-				{
-                    targetLocalID = av.LocalID;
-					Active = true;
-	                return true;
-				}
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
+                {
+                    lock (Client.Network.Simulators[i].Objects.Avatars)
+                    {
+                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                        {
+                            if (avatar.Name == name)
+                            {
+                                targetLocalID = avatar.LocalID;
+                                Active = true;
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
 
             Active = false;
@@ -60,13 +69,22 @@ namespace libsecondlife.TestClient
 
         bool Follow(LLUUID id)
         {
-            foreach (Avatar av in Client.AvatarList.Values)
+            lock (Client.Network.Simulators)
             {
-                if (av.ID == id)
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    targetLocalID = av.LocalID;
-                    Active = true;
-                    return true;
+                    lock (Client.Network.Simulators[i].Objects.Avatars)
+                    {
+                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                        {
+                            if (avatar.ID == id)
+                            {
+                                targetLocalID = avatar.LocalID;
+                                Active = true;
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -77,29 +95,44 @@ namespace libsecondlife.TestClient
 		public override void Think()
 		{
             // Find the target position
-            if (Client.Network.CurrentSim != null && Client.AvatarList.ContainsKey(targetLocalID))
+            lock (Client.Network.Simulators)
             {
-                Avatar targetAv = Client.AvatarList[targetLocalID];
-                float distance = Helpers.VecDist(targetAv.Position, Client.Self.Position);
-
-                if (distance > DISTANCE_BUFFER)
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    uint regionX, regionY;
-                    Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out regionX, out regionY);
+                    if (Client.Network.Simulators[i].Objects.Avatars.ContainsKey(targetLocalID))
+                    {
+                        Avatar targetAv = Client.Network.Simulators[i].Objects.Avatars[targetLocalID];
+                        float distance = 0.0f;
 
-                    double xTarget = (double)targetAv.Position.X + (double)regionX;
-                    double yTarget = (double)targetAv.Position.Y + (double)regionY;
-                    double zTarget = targetAv.Position.Z - 2f;
+                        if (Client.Network.Simulators[i] == Client.Network.CurrentSim)
+                        {
+                            distance = Helpers.VecDist(targetAv.Position, Client.Self.Position);
+                        }
+                        else
+                        {
+                            // FIXME: Calculate global distances
+                        }
 
-                    Client.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
-                        distance, xTarget, yTarget, zTarget));
+                        if (distance > DISTANCE_BUFFER)
+                        {
+                            uint regionX, regionY;
+                            Helpers.LongToUInts(Client.Network.Simulators[i].Handle, out regionX, out regionY);
 
-                    Client.Self.AutoPilot(xTarget, yTarget, zTarget);
-                }
-                else
-                {
-                    // We are in range of the target and moving, stop moving
-                    Client.Self.AutoPilotCancel();
+                            double xTarget = (double)targetAv.Position.X + (double)regionX;
+                            double yTarget = (double)targetAv.Position.Y + (double)regionY;
+                            double zTarget = targetAv.Position.Z - 2f;
+
+                            Client.DebugLog(String.Format("[Autopilot] {0} meters away from the target, starting autopilot to <{1},{2},{3}>",
+                                distance, xTarget, yTarget, zTarget));
+
+                            Client.Self.AutoPilot(xTarget, yTarget, zTarget);
+                        }
+                        else
+                        {
+                            // We are in range of the target and moving, stop moving
+                            Client.Self.AutoPilotCancel();
+                        }
+                    }
                 }
             }
 

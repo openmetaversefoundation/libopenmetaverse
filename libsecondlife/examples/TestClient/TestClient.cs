@@ -9,14 +9,8 @@ namespace libsecondlife.TestClient
 {
     public class TestClient : SecondLife
     {
-        public delegate void PrimCreatedCallback(Simulator simulator, Primitive prim);
-
-        public event PrimCreatedCallback OnPrimCreated;
-
-        public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims;
         public LLUUID GroupID = LLUUID.Zero;
         public Dictionary<LLUUID, GroupMember> GroupMembers;
-        public Dictionary<uint, Avatar> AvatarList = new Dictionary<uint,Avatar>();
 		public Dictionary<LLUUID, AvatarAppearancePacket> Appearances = new Dictionary<LLUUID, AvatarAppearancePacket>();
 		public Dictionary<string, Command> Commands = new Dictionary<string,Command>();
 		public bool Running = true;
@@ -46,15 +40,12 @@ namespace libsecondlife.TestClient
 
             Settings.DEBUG = true;
             Settings.STORE_LAND_PATCHES = true;
+            Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.SEND_AGENT_UPDATES = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
-            Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
-            Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
-			Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
             Inventory.OnInventoryObjectReceived += new InventoryManager.InventoryObjectReceived(Inventory_OnInventoryObjectReceived);
@@ -181,83 +172,6 @@ namespace libsecondlife.TestClient
             Console.WriteLine("Got " + members.Count + " group members.");
             GroupMembers = members;
         }
-
-        private void Objects_OnObjectKilled(Simulator simulator, uint objectID)
-        {
-            lock (SimPrims)
-            {
-                if (SimPrims.ContainsKey(simulator) && SimPrims[simulator].ContainsKey(objectID))
-                    SimPrims[simulator].Remove(objectID);
-            }
-
-			lock (AvatarList)
-			{
-			    if (AvatarList.ContainsKey(objectID))
-			        AvatarList.Remove(objectID);
-			}
-        }
-
-        private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
-        {
-            if (update.Avatar)
-            {
-                lock (AvatarList)
-                {
-                    // TODO: We really need a solid avatar and object tracker in Utilities to use here
-                    if (AvatarList.ContainsKey(update.LocalID))
-                    {
-                        AvatarList[update.LocalID].CollisionPlane = update.CollisionPlane;
-                        AvatarList[update.LocalID].Position = update.Position;
-                        AvatarList[update.LocalID].Velocity = update.Velocity;
-                        AvatarList[update.LocalID].Acceleration = update.Acceleration;
-                        AvatarList[update.LocalID].Rotation = update.Rotation;
-                        AvatarList[update.LocalID].AngularVelocity = update.AngularVelocity;
-                        AvatarList[update.LocalID].Textures = update.Textures;
-                    }
-                }
-            }
-            else
-            {
-                lock (SimPrims)
-                {
-                    if (SimPrims.ContainsKey(simulator) && SimPrims[simulator].ContainsKey(update.LocalID))
-                    {
-                        SimPrims[simulator][update.LocalID].Position = update.Position;
-                        SimPrims[simulator][update.LocalID].Velocity = update.Velocity;
-                        SimPrims[simulator][update.LocalID].Acceleration = update.Acceleration;
-                        SimPrims[simulator][update.LocalID].Rotation = update.Rotation;
-                        SimPrims[simulator][update.LocalID].AngularVelocity = update.AngularVelocity;
-                        SimPrims[simulator][update.LocalID].Textures = update.Textures;
-                    }
-                }
-            }
-        }
-
-        private void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
-        {
-            lock (SimPrims)
-            {
-                if (!SimPrims.ContainsKey(simulator))
-                {
-                    SimPrims[simulator] = new Dictionary<uint, Primitive>(10000);
-                }
-
-                SimPrims[simulator][prim.LocalID] = prim;
-            }
-
-            if ((prim.Flags & LLObject.ObjectFlags.CreateSelected) != 0 && OnPrimCreated != null)
-            {
-                OnPrimCreated(simulator, prim);
-            }
-        }
-
-		private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
-		{
-		    lock (AvatarList)
-		    {
-		        AvatarList[avatar.LocalID] = avatar;
-		    }
-		}
 
         private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
         {

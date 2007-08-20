@@ -20,16 +20,26 @@ namespace libsecondlife.TestClient
         {
             Client.MasterKey = LLUUID.Parse(args[0]);
 
-            foreach (Avatar av in Client.AvatarList.Values)
+            lock (Client.Network.Simulators)
             {
-                if (av.ID == Client.MasterKey)
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Client.Self.InstantMessage(av.ID, "You are now my master.  IM me with \"help\" for a command list.");
-                    break;
+                    lock (Client.Network.Simulators[i].Objects.Avatars)
+                    {
+                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                        {
+                            if (avatar.ID == Client.MasterKey)
+                            {
+                                Client.Self.InstantMessage(avatar.ID, 
+                                    "You are now my master. IM me with \"help\" for a command list.");
+                                break;
+                            }
+                        }
+                    }
                 }
             }
 
-            return "Master set to " + Client.MasterKey;
+            return "Master set to " + Client.MasterKey.ToStringHyphenated();
         }
     }
 }

@@ -50,22 +50,19 @@ namespace libsecondlife.TestClient
                 file = args[0];
                 id = SelectedObject;
             }
-            
-            lock (Client.SimPrims)
-            {
-                if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
-                {
-                    foreach (Primitive prim in Client.SimPrims[Client.Network.CurrentSim].Values)
-                    {
-                        if (prim.ID == id)
-                        {
-                            if (prim.ParentID != 0)
-                                localid = prim.ParentID;
-                            else
-                                localid = prim.LocalID;
 
-                            break;
-                        }
+            lock (Client.Network.CurrentSim.Objects.Prims)
+            {
+                foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
+                {
+                    if (prim.ID == id)
+                    {
+                        if (prim.ParentID != 0)
+                            localid = prim.ParentID;
+                        else
+                            localid = prim.LocalID;
+
+                        break;
                     }
                 }
             }
@@ -102,17 +99,14 @@ namespace libsecondlife.TestClient
 					{
                         List<Primitive> prims = new List<Primitive>();
 
-						lock (Client.SimPrims)
-						{
-							if (Client.SimPrims.ContainsKey(Client.Network.CurrentSim))
-							{
-                                foreach (Primitive prim in Client.SimPrims[Client.Network.CurrentSim].Values)
+                        lock (Client.Network.CurrentSim.Objects.Prims)
+                        {
+                            foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
+                            {
+								if (prim.LocalID == localid || prim.ParentID == localid)
 								{
-									if (prim.LocalID == localid || prim.ParentID == localid)
-									{
-										prims.Add(prim);
-										count++;
-									}
+									prims.Add(prim);
+									count++;
 								}
 							}
 						}
@@ -147,7 +141,7 @@ namespace libsecondlife.TestClient
             else
             {
                 return "Couldn't find UUID " + id.ToString() + " in the " + 
-                    Client.SimPrims[Client.Network.CurrentSim].Count + 
+                    Client.Network.CurrentSim.Objects.Prims.Count + 
                     "objects currently indexed in the current simulator";
             }
         }
