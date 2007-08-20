@@ -134,8 +134,7 @@ namespace libsecondlife
             /// <summary></summary>
             Estate = 1 << 4
         }
-
-
+        
         /// <summary>
         /// A classified ad in Second Life
         /// </summary>
@@ -176,7 +175,8 @@ namespace libsecondlife
             public bool ForSale;
         }
 
-        public struct AgentSearchData {
+        public struct AgentSearchData 
+        {
             public bool Online;
             public string FirstName;
             public string LastName;
@@ -191,6 +191,28 @@ namespace libsecondlife
             public string GroupName;
             public int Members;
         }
+
+        /// <summary>
+        /// Response to a "Places" Search
+        /// Note: This is not DirPlacesReply
+        /// </summary>
+        public struct PlacesSearchData
+        {
+            public LLUUID OwnerID;
+            public string Name;
+            public string Desc;
+            public int ActualArea;
+            public int BillableArea;
+            public byte Flags;
+            public float GlobalX;
+            public float GlobalY;
+            public float GlobalZ;
+            public string SimName;
+            public LLUUID SnapshotID;
+            public float Dwell;
+            public int Price;   
+        }
+
         /*/// <summary></summary>
         public LLUUID OwnerID;
         /// <summary></summary>
@@ -232,6 +254,14 @@ namespace libsecondlife
         /// <param name="queryID"></param>
         /// <param name="matchedGroups"></param>
         public delegate void DirGroupsReplyCallback(LLUUID queryID, List<GroupSearchData> matchedGroups);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="queryID"></param>
+        /// <param name="matchedPlaces"></param>
+        public delegate void PlacesReplyCallback(LLUUID queryID, List<PlacesSearchData> matchedPlaces);
+
         /// <summary>
         /// 
         /// </summary>
@@ -245,6 +275,8 @@ namespace libsecondlife
 
         public event DirGroupsReplyCallback OnDirGroupsReply;
 
+        public event PlacesReplyCallback OnPlacesReply;
+
         private SecondLife Client;
 
 
@@ -256,6 +288,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
+            Client.Network.RegisterCallback(PacketType.PlacesReply, new NetworkManager.PacketCallback(PlacesReplyHandler));
 
         }
 
@@ -404,8 +437,75 @@ namespace libsecondlife
             find.QueryData.QueryText = Helpers.StringToField(searchText);
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryStart = queryStart;
+
             Client.Network.SendPacket(find);
+
             return queryID;
+        }
+
+        /// <summary>
+        /// Search "places" for Land you personally own
+        /// </summary>
+        public LLUUID StartPlacesSearch()
+        {
+            return StartPlacesSearch(DirFindFlags.AgentOwned, Parcel.ParcelCategory.Any, String.Empty, String.Empty, 
+                LLUUID.Zero, LLUUID.Zero);
+        }
+
+        /// <summary>
+        /// Searches Places for Land owned by a specific user or group
+        /// </summary>
+        /// <param name="findFlags">One of the Values from the DirFindFlags struct, ie: AgentOwned, GroupOwned, etc.</param>
+        /// <param name="groupID">LLUID of group you want to recieve land list for (You must be in group), or
+        /// LLUID.Zero for Your own land</param>
+        /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
+        public LLUUID StartPlacesSearch(DirFindFlags findFlags, LLUUID groupID)
+        {
+            return StartPlacesSearch(findFlags, Parcel.ParcelCategory.Any, String.Empty, String.Empty, groupID, 
+                LLUUID.Random());
+        }
+
+        /// <summary>
+        ///  Search Places 
+        /// </summary>
+        /// <param name="findFlags">One of the Values from the DirFindFlags struct, ie: AgentOwned, GroupOwned, etc.</param>
+        /// <param name="searchCategory">One of the values from the SearchCategory Struct, ie: Any, Linden, Newcomer</param>
+        /// <param name="groupID">LLUID of group you want to recieve results for</param>
+        /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
+        /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
+        public LLUUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, LLUUID groupID, LLUUID transactionID)
+        {
+            return StartPlacesSearch(findFlags, searchCategory, String.Empty, String.Empty, groupID, transactionID);
+        }
+
+        /// <summary>
+        /// Search Places - All Options
+        /// </summary>
+        /// <param name="findFlags">One of the Values from the DirFindFlags struct, ie: AgentOwned, GroupOwned, etc.</param>
+        /// <param name="searchCategory">One of the values from the SearchCategory Struct, ie: Any, Linden, Newcomer</param>
+        /// <param name="searchText">String Text to search for</param>
+        /// <param name="simulatorName">String Simulator Name to search in</param>
+        /// <param name="groupID">LLUID of group you want to recieve results for</param>
+        /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
+        /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
+        public LLUUID StartPlacesSearch(DirFindFlags findFlags, Parcel.ParcelCategory searchCategory, string searchText, string simulatorName, LLUUID groupID, LLUUID transactionID)
+        {
+            PlacesQueryPacket find = new PlacesQueryPacket();
+            find.AgentData.AgentID = Client.Network.AgentID;
+            find.AgentData.SessionID = Client.Network.SessionID;
+            find.AgentData.QueryID = groupID;
+
+            find.TransactionData.TransactionID = transactionID;
+
+            find.QueryData.QueryText = Helpers.StringToField(searchText);
+            find.QueryData.QueryFlags = (uint)findFlags;
+            find.QueryData.Category = (sbyte)searchCategory;
+            find.QueryData.SimName = Helpers.StringToField(simulatorName);
+            
+            
+            Client.Network.SendPacket(find);
+            Console.WriteLine(find.ToString());
+            return transactionID;
         }
 
         private void DirClassifiedReplyHandler(Packet packet, Simulator simulator)
@@ -494,6 +594,37 @@ namespace libsecondlife
                     matches.Add(groupsData);
                 }
                 try { OnDirGroupsReply(groupsReply.QueryData.QueryID, matches); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
+        private void PlacesReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnPlacesReply != null)
+            {
+                PlacesReplyPacket placesReply = packet as PlacesReplyPacket;
+                List<PlacesSearchData> places = new List<PlacesSearchData>();
+
+                foreach (PlacesReplyPacket.QueryDataBlock block in placesReply.QueryData)
+                {
+                    PlacesSearchData place = new PlacesSearchData();
+                    place.OwnerID = block.OwnerID;
+                    place.Name = Helpers.FieldToUTF8String(block.Name);
+                    place.Desc = Helpers.FieldToUTF8String(block.Desc);
+                    place.ActualArea = block.ActualArea;
+                    place.BillableArea = block.BillableArea;
+                    place.Flags = block.Flags;
+                    place.GlobalX = block.GlobalX;
+                    place.GlobalY = block.GlobalY;
+                    place.GlobalZ = block.GlobalZ;
+                    place.SimName = Helpers.FieldToUTF8String(block.SimName);
+                    place.SnapshotID = block.SnapshotID;
+                    place.Dwell = block.Dwell;
+                    place.Price = block.Price;
+                    
+                    places.Add(place);
+                }
+                try { OnPlacesReply(placesReply.TransactionData.TransactionID, places); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
