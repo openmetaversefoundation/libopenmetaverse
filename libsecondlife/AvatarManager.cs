@@ -82,7 +82,7 @@ namespace libsecondlife
         /// <param name="duration"></param>
         /// <param name="id"></param>
         public delegate void PointAtCallback(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
-            MainAvatar.PointAtType pointType, float duration, LLUUID id);
+            PointAtType pointType, float duration, LLUUID id);
         /// <summary>
         /// 
         /// </summary>
@@ -93,7 +93,7 @@ namespace libsecondlife
         /// <param name="duration"></param>
         /// <param name="id"></param>
         public delegate void LookAtCallback(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos,
-            MainAvatar.LookAtType lookType, float duration, LLUUID id);
+            LookAtType lookType, float duration, LLUUID id);
         /// <summary>
         /// 
         /// </summary>
@@ -103,7 +103,7 @@ namespace libsecondlife
         /// <param name="targetPos"></param>
         /// <param name="duration"></param>
         /// <param name="id"></param>
-        public delegate void EffectCallback(MainAvatar.EffectType type, LLUUID sourceID, LLUUID targetID,
+        public delegate void EffectCallback(EffectType type, LLUUID sourceID, LLUUID targetID,
             LLVector3d targetPos, float duration, LLUUID id);
 
 
@@ -334,7 +334,7 @@ namespace libsecondlife
 
             foreach (ViewerEffectPacket.EffectBlock block in effect.Effect)
             {
-                MainAvatar.EffectType type = (MainAvatar.EffectType)block.Type;
+                EffectType type = (EffectType)block.Type;
 
                 //LLColor color;
                 //if (block.Color.Length == 4)
@@ -351,44 +351,44 @@ namespace libsecondlife
                 // Each ViewerEffect type uses it's own custom binary format for additional data. Fun eh?
                 switch (type)
                 {
-                    case MainAvatar.EffectType.Text:
+                    case EffectType.Text:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.Icon:
+                    case EffectType.Icon:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.Connector:
+                    case EffectType.Connector:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.FlexibleObject:
+                    case EffectType.FlexibleObject:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.AnimalControls:
+                    case EffectType.AnimalControls:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.AnimationObject:
+                    case EffectType.AnimationObject:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.Cloth:
+                    case EffectType.Cloth:
                         Client.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.Glow:
+                    case EffectType.Glow:
                         Client.Log("Received a Glow ViewerEffect which is not implemented yet",
                             Helpers.LogLevel.Warning);
                         break;
-                    case MainAvatar.EffectType.Beam:
-                    case MainAvatar.EffectType.Point:
-                    case MainAvatar.EffectType.Trail:
-                    case MainAvatar.EffectType.Sphere:
-                    case MainAvatar.EffectType.Spiral:
-                    case MainAvatar.EffectType.Edit:
+                    case EffectType.Beam:
+                    case EffectType.Point:
+                    case EffectType.Trail:
+                    case EffectType.Sphere:
+                    case EffectType.Spiral:
+                    case EffectType.Edit:
                         if (OnEffect != null)
                         {
                             if (block.TypeData.Length == 56)
@@ -408,7 +408,7 @@ namespace libsecondlife
                             }
                         }
                         break;
-                    case MainAvatar.EffectType.LookAt:
+                    case EffectType.LookAt:
                         if (OnLookAt != null)
                         {
                             if (block.TypeData.Length == 57)
@@ -416,7 +416,7 @@ namespace libsecondlife
                                 LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
                                 LLUUID targetObject = new LLUUID(block.TypeData, 16);
                                 LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
-                                MainAvatar.LookAtType lookAt = (MainAvatar.LookAtType)block.TypeData[56];
+                                LookAtType lookAt = (LookAtType)block.TypeData[56];
 
                                 try { OnLookAt(sourceAvatar, targetObject, targetPos, lookAt, block.Duration,
                                     block.ID); }
@@ -429,7 +429,7 @@ namespace libsecondlife
                             }
                         }
                         break;
-                    case MainAvatar.EffectType.PointAt:
+                    case EffectType.PointAt:
                         if (OnPointAt != null)
                         {
                             if (block.TypeData.Length == 57)
@@ -437,7 +437,7 @@ namespace libsecondlife
                                 LLUUID sourceAvatar = new LLUUID(block.TypeData, 0);
                                 LLUUID targetObject = new LLUUID(block.TypeData, 16);
                                 LLVector3d targetPos = new LLVector3d(block.TypeData, 32);
-                                MainAvatar.PointAtType pointAt = (MainAvatar.PointAtType)block.TypeData[56];
+                                PointAtType pointAt = (PointAtType)block.TypeData[56];
 
                                 try { OnPointAt(sourceAvatar, targetObject, targetPos, pointAt, block.Duration, 
                                     block.ID); }

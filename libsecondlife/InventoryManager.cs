@@ -968,26 +968,24 @@ namespace libsecondlife
                 Store[item.UUID] = item;
             }
         }
-        private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID, 
-            uint parentEstateID, LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog, 
-            bool groupIM, LLUUID imSessionID, DateTime timestamp, string message, 
-            MainAvatar.InstantMessageOnline offline, byte[] binaryBucket, Simulator simulator)
+        private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
         {
             // TODO: MainAvatar.InstantMessageDialog.GroupNotice can also be an inventory offer, should we
             // handle it here?
 
-            if (OnInventoryObjectReceived != null && ( dialog == MainAvatar.InstantMessageDialog.InventoryOffered || dialog == MainAvatar.InstantMessageDialog.TaskInventoryOffered ) )
+            if (OnInventoryObjectReceived != null && 
+                (im.Dialog == InstantMessageDialog.InventoryOffered || im.Dialog == InstantMessageDialog.TaskInventoryOffered))
             {
                 AssetType type = AssetType.Unknown;
                 LLUUID objectID = LLUUID.Zero;
                 bool fromTask = false;
 
-                if (dialog == MainAvatar.InstantMessageDialog.InventoryOffered)
+                if (im.Dialog == InstantMessageDialog.InventoryOffered)
                 {
-                    if (binaryBucket.Length == 17)
+                    if (im.BinaryBucket.Length == 17)
                     {
-                        type = (AssetType)binaryBucket[0];
-                        objectID = new LLUUID(binaryBucket, 1);
+                        type = (AssetType)im.BinaryBucket[0];
+                        objectID = new LLUUID(im.BinaryBucket, 1);
                         fromTask = false;
                     }
                     else
@@ -996,11 +994,11 @@ namespace libsecondlife
                         return;
                     }
                 }
-                else if (dialog == MainAvatar.InstantMessageDialog.TaskInventoryOffered)
+                else if (im.Dialog == InstantMessageDialog.TaskInventoryOffered)
                 {
-                    if (binaryBucket.Length == 1)
+                    if (im.BinaryBucket.Length == 1)
                     {
-                        type = (AssetType)binaryBucket[0];
+                        type = (AssetType)im.BinaryBucket[0];
                         fromTask = true;
                     }
                     else
@@ -1016,59 +1014,59 @@ namespace libsecondlife
                 // Fire the callback
                 try
                 {
-                    ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
-                    im.AgentData.AgentID = Client.Network.AgentID;
-                    im.AgentData.SessionID = Client.Network.SessionID;
-                    im.MessageBlock.FromGroup = false;
-                    im.MessageBlock.ToAgentID = fromAgentID;
-                    im.MessageBlock.Offline = 0;
-                    im.MessageBlock.ID = imSessionID;
-                    im.MessageBlock.Timestamp = 0;
-                    im.MessageBlock.FromAgentName = Helpers.StringToField(Client.ToString());
-                    im.MessageBlock.Message = new byte[0];
-                    im.MessageBlock.ParentEstateID = 0;
-                    im.MessageBlock.RegionID = LLUUID.Zero;
-                    im.MessageBlock.Position = Client.Self.Position;
+                    ImprovedInstantMessagePacket imp = new ImprovedInstantMessagePacket();
+                    imp.AgentData.AgentID = Client.Network.AgentID;
+                    imp.AgentData.SessionID = Client.Network.SessionID;
+                    imp.MessageBlock.FromGroup = false;
+                    imp.MessageBlock.ToAgentID = im.FromAgentID;
+                    imp.MessageBlock.Offline = 0;
+                    imp.MessageBlock.ID = im.IMSessionID;
+                    imp.MessageBlock.Timestamp = 0;
+                    imp.MessageBlock.FromAgentName = Helpers.StringToField(Client.ToString());
+                    imp.MessageBlock.Message = new byte[0];
+                    imp.MessageBlock.ParentEstateID = 0;
+                    imp.MessageBlock.RegionID = LLUUID.Zero;
+                    imp.MessageBlock.Position = Client.Self.Position;
 
-                    if (OnInventoryObjectReceived(fromAgentID, fromAgentName, parentEstateID, regionID, position,
-                        timestamp, type, objectID, fromTask))
+                    if (OnInventoryObjectReceived(im.FromAgentID, im.FromAgentName, im.ParentEstateID, im.RegionID, im.Position,
+                        im.Timestamp, type, objectID, fromTask))
                     {
                         // Accept the inventory offer
-                        switch (dialog)
+                        switch (im.Dialog)
                         {
-                            case MainAvatar.InstantMessageDialog.InventoryOffered:
-                                im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.InventoryAccepted;
+                            case InstantMessageDialog.InventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.InventoryAccepted;
                                 break;
-                            case MainAvatar.InstantMessageDialog.TaskInventoryOffered:
-                                im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.TaskInventoryOffered;
+                            case InstantMessageDialog.TaskInventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.TaskInventoryOffered;
                                 break;
-                            case MainAvatar.InstantMessageDialog.GroupNotice:
-                                im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.GroupNoticeInventoryAccepted;
+                            case InstantMessageDialog.GroupNotice:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryAccepted;
                                 break;
                         }
 
-                        im.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
+                        imp.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
                     }
                     else
                     {
                         // Decline the inventory offer
-                        switch (dialog)
+                        switch (im.Dialog)
                         {
-                            case MainAvatar.InstantMessageDialog.InventoryOffered:
-                                im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.InventoryDeclined;
+                            case InstantMessageDialog.InventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.InventoryDeclined;
                                 break;
-                            case MainAvatar.InstantMessageDialog.TaskInventoryOffered:
-                                im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.TaskInventoryDeclined;
+                            case InstantMessageDialog.TaskInventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.TaskInventoryDeclined;
                                 break;
-                            case MainAvatar.InstantMessageDialog.GroupNotice:
-                                im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.GroupNoticeInventoryDeclined;
+                            case InstantMessageDialog.GroupNotice:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryDeclined;
                                 break;
                         }
 
-                        im.MessageBlock.BinaryBucket = new byte[0];
+                        imp.MessageBlock.BinaryBucket = new byte[0];
                     }
 
-                    Client.Network.SendPacket(im, simulator);
+                    Client.Network.SendPacket(imp, simulator);
                 }
                 catch (Exception e)
                 {

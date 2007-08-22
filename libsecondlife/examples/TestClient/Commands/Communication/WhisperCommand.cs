@@ -41,7 +41,7 @@ namespace libsecondlife.TestClient
                 message += args[i] + " ";
             }
 
-            Client.Self.Chat(message, channel, MainAvatar.ChatType.Whisper);
+            Client.Self.Chat(message, channel, ChatType.Whisper);
 
             return "Whispered " + message;
         }

@@ -924,7 +924,7 @@ namespace libsecondlife
         public void SendGroupNotice(LLUUID group, GroupNotice notice)
         {
             Client.Self.InstantMessage(Client.ToString(), group, notice.Subject + "|" + notice.Message,
-                LLUUID.Zero, MainAvatar.InstantMessageDialog.GroupNotice, MainAvatar.InstantMessageOnline.Online, 
+                LLUUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online, 
                 LLVector3.Zero, LLUUID.Zero, notice.SerializeAttachment());
         }
 

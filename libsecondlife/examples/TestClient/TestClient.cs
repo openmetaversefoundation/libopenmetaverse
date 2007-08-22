@@ -187,42 +187,39 @@ namespace libsecondlife.TestClient
             Log("[AlertMessage] " + Helpers.FieldToUTF8String(message.AlertData.Message), Helpers.LogLevel.Info);
         }
 
-        private void Self_OnInstantMessage(LLUUID fromAgentID, string fromAgentName, LLUUID toAgentID,
-            uint parentEstateID, LLUUID regionID, LLVector3 position, MainAvatar.InstantMessageDialog dialog,
-            bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
-            MainAvatar.InstantMessageOnline offline, byte[] binaryBucket, Simulator simulator)
+        private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
         {
             if (MasterKey != LLUUID.Zero)
             {
-                if (fromAgentID != MasterKey)
+                if (im.FromAgentID != MasterKey)
                 {
                     // Received an IM from someone that is not the bot's master, ignore
-                    Console.WriteLine("<IM ({0})> {1} (not master): {2} (@{3}:{4})", dialog, fromAgentName, message,
-                        regionID, position);
+                    Console.WriteLine("<IM ({0})> {1} (not master): {2} (@{3}:{4})", im.Dialog, im.FromAgentName, im.Message,
+                        im.RegionID, im.Position);
                     return;
                 }
             }
-            else if (GroupMembers != null && !GroupMembers.ContainsKey(fromAgentID))
+            else if (GroupMembers != null && !GroupMembers.ContainsKey(im.FromAgentID))
             {
                 // Received an IM from someone outside the bot's group, ignore
-                Console.WriteLine("<IM ({0})> {1} (not in group): {2} (@{3}:{4})", dialog, fromAgentName,
-                    message, regionID, position);
+                Console.WriteLine("<IM ({0})> {1} (not in group): {2} (@{3}:{4})", im.Dialog, im.FromAgentName,
+                    im.Message, im.RegionID, im.Position);
                 return;
             }
 
             // Received an IM from someone that is authenticated
-            Console.WriteLine("<IM ({0})> {1}: {2} (@{3}:{4})", dialog, fromAgentName, message, regionID, position);
+            Console.WriteLine("<IM ({0})> {1}: {2} (@{3}:{4})", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
 
-            if (dialog == MainAvatar.InstantMessageDialog.RequestTeleport)
+            if (im.Dialog == InstantMessageDialog.RequestTeleport)
             {
                 Console.WriteLine("Accepting teleport lure.");
-                Self.TeleportLureRespond(fromAgentID, true);
+                Self.TeleportLureRespond(im.FromAgentID, true);
             }
             else if (
-                dialog == MainAvatar.InstantMessageDialog.MessageFromAgent ||
-                dialog == MainAvatar.InstantMessageDialog.MessageFromObject)
+                im.Dialog == InstantMessageDialog.MessageFromAgent ||
+                im.Dialog == InstantMessageDialog.MessageFromObject)
             {
-                DoCommand(message, fromAgentID, imSessionID);
+                DoCommand(im.Message, im.FromAgentID, im.IMSessionID);
             }
         }
 

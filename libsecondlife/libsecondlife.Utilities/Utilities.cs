@@ -63,7 +63,7 @@ namespace libsecondlife.Utilities
         /// <param name="message">The chat message to send</param>
         public static void Chat(SecondLife client, string message)
         {
-            Chat(client, message, MainAvatar.ChatType.Normal, 3);
+            Chat(client, message, ChatType.Normal, 3);
         }
 
         /// <summary>
@@ -75,14 +75,14 @@ namespace libsecondlife.Utilities
         /// <param name="message">The chat message to send</param>
         /// <param name="type">The chat type (usually Normal, Whisper or Shout)</param>
         /// <param name="cps">Characters per second rate for chatting</param>
-        public static void Chat(SecondLife client, string message, MainAvatar.ChatType type, int cps)
+        public static void Chat(SecondLife client, string message, ChatType type, int cps)
         {
             Random rand = new Random();
             int characters = 0;
             bool typing = true;
 
             // Start typing
-            client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StartTyping);
+            client.Self.Chat(String.Empty, 0, ChatType.StartTyping);
             client.Self.AnimationStart(Animations.TYPE);
 
             while (characters < message.Length)
@@ -90,7 +90,7 @@ namespace libsecondlife.Utilities
                 if (!typing)
                 {
                     // Start typing again
-                    client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StartTyping);
+                    client.Self.Chat(String.Empty, 0, ChatType.StartTyping);
                     client.Self.AnimationStart(Animations.TYPE);
                     typing = true;
                 }
@@ -99,7 +99,7 @@ namespace libsecondlife.Utilities
                     // Randomly pause typing
                     if (rand.Next(10) >= 9)
                     {
-                        client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StopTyping);
+                        client.Self.Chat(String.Empty, 0, ChatType.StopTyping);
                         client.Self.AnimationStop(Animations.TYPE);
                         typing = false;
                     }
@@ -114,7 +114,7 @@ namespace libsecondlife.Utilities
             client.Self.Chat(message, 0, type);
 
             // Stop typing
-            client.Self.Chat(String.Empty, 0, MainAvatar.ChatType.StopTyping);
+            client.Self.Chat(String.Empty, 0, ChatType.StopTyping);
             client.Self.AnimationStop(Animations.TYPE);
         }
     }

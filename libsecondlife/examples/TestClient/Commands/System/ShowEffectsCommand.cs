@@ -44,7 +44,7 @@ namespace libsecondlife.TestClient
         }
 
         private void Avatars_OnPointAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
-            MainAvatar.PointAtType pointType, float duration, LLUUID id)
+            PointAtType pointType, float duration, LLUUID id)
         {
             if (ShowEffects)
                 Console.WriteLine(
@@ -54,7 +54,7 @@ namespace libsecondlife.TestClient
         }
 
         private void Avatars_OnLookAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
-            MainAvatar.LookAtType lookType, float duration, LLUUID id)
+            LookAtType lookType, float duration, LLUUID id)
         {
             if (ShowEffects)
                 Console.WriteLine(
@@ -63,7 +63,7 @@ namespace libsecondlife.TestClient
                 id.ToStringHyphenated());
         }
 
-        private void Avatars_OnEffect(MainAvatar.EffectType type, LLUUID sourceID, LLUUID targetID, 
+        private void Avatars_OnEffect(EffectType type, LLUUID sourceID, LLUUID targetID, 
             LLVector3d targetPos, float duration, LLUUID id)
         {
             if (ShowEffects)

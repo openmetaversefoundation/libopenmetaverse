@@ -168,7 +168,7 @@ namespace libsecondlife.TestClient
         }
 
         void Avatars_OnPointAt(LLUUID sourceID, LLUUID targetID, LLVector3d targetPos, 
-            MainAvatar.PointAtType pointType, float duration, LLUUID id)
+            PointAtType pointType, float duration, LLUUID id)
         {
             if (sourceID == Client.MasterKey)
             {

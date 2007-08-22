@@ -36,7 +36,7 @@ namespace libsecondlife.TestClient
                 if (i != args.Length - 1) message.Append(" ");
             }
 
-			Client.Self.Chat(message.ToString(), channel, MainAvatar.ChatType.Normal);
+			Client.Self.Chat(message.ToString(), channel, ChatType.Normal);
 
             return "Said " + message.ToString();
 		}

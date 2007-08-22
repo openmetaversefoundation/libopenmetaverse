@@ -41,7 +41,7 @@ namespace libsecondlife.TestClient
                 message += args[i] + " ";
             }
 
-            Client.Self.Chat(message, channel, MainAvatar.ChatType.Shout);
+            Client.Self.Chat(message, channel, ChatType.Shout);
 
             return "Shouted " + message;
         }

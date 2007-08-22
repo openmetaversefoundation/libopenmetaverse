@@ -378,8 +378,8 @@ namespace libsecondlife
                 agentID,
                 callingCardFolder.ToString(),
                 LLUUID.Random(),
-                MainAvatar.InstantMessageDialog.FriendshipOffered,
-                MainAvatar.InstantMessageOnline.Online,
+                InstantMessageDialog.FriendshipOffered,
+                InstantMessageOnline.Online,
                 Client.Self.Position,
                 Client.Network.CurrentSim.ID,
                 new byte[0]);
@@ -627,42 +627,40 @@ namespace libsecondlife
         /// <param name="offline"></param>
         /// <param name="binaryBucket"></param>
         /// <param name="simulator"></param>
-        private void MainAvatar_InstantMessage(LLUUID fromAgentID, string fromAgentName,
-            LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
-            MainAvatar.InstantMessageDialog dialog, bool groupIM, LLUUID imSessionID,
-            DateTime timestamp, string message,
-            MainAvatar.InstantMessageOnline offline, byte[] binaryBucket, Simulator simulator)
+        private void MainAvatar_InstantMessage(InstantMessage im, Simulator simulator)
         {
-            if (dialog == MainAvatar.InstantMessageDialog.FriendshipOffered)
+            if (im.Dialog == InstantMessageDialog.FriendshipOffered)
             {
                 if (OnFriendshipOffered != null)
                 {
                     lock (_Requests)
                     {
-                        if (_Requests.ContainsKey(fromAgentID)) _Requests[fromAgentID] = imSessionID;
-                        else _Requests.Add(fromAgentID, imSessionID);
+                        if (_Requests.ContainsKey(im.FromAgentID))
+                        	_Requests[im.FromAgentID] = im.IMSessionID;
+                        else
+                        	_Requests.Add(im.FromAgentID, im.IMSessionID);
                     }
-                    try { OnFriendshipOffered(fromAgentID, fromAgentName, imSessionID); }
+                    try { OnFriendshipOffered(im.FromAgentID, im.FromAgentName, im.IMSessionID); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
-            else if (dialog == MainAvatar.InstantMessageDialog.FriendshipAccepted)
+            else if (im.Dialog == InstantMessageDialog.FriendshipAccepted)
             {
-                FriendInfo friend = new FriendInfo(fromAgentID, RightsFlags.CanSeeOnline, RightsFlags.CanSeeOnline);
-                friend.Name = fromAgentName;
+                FriendInfo friend = new FriendInfo(im.FromAgentID, RightsFlags.CanSeeOnline, RightsFlags.CanSeeOnline);
+                friend.Name = im.FromAgentName;
                 lock (_Friends) _Friends[friend.UUID] = friend;
 
                 if (OnFriendshipResponse != null)
                 {
-                    try { OnFriendshipResponse(fromAgentID, fromAgentName, true); }
+                    try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, true); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
-            else if (dialog == MainAvatar.InstantMessageDialog.FriendshipDeclined)
+            else if (im.Dialog == InstantMessageDialog.FriendshipDeclined)
             {
                 if (OnFriendshipResponse != null)
                 {
-                    try { OnFriendshipResponse(fromAgentID, fromAgentName, false); }
+                    try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, false); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }

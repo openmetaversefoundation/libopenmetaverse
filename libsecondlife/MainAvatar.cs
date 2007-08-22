@@ -35,6 +35,328 @@ using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+	#region Enums
+	
+	/// <summary>
+    /// 
+    /// </summary>
+    [Flags]
+    public enum ScriptPermission : int
+    {
+		/// <summary>Placeholder for empty values, shouldn't ever see this</summary>
+		None = 0,
+		/// <summary>Script wants to take money from you</summary>
+		Debit = 1 << 1,
+		/// <summary></summary>
+		TakeControls = 1 << 2,
+		/// <summary></summary>
+		RemapControls = 1 << 3,
+		/// <summary>Script wants to trigger avatar animations</summary>
+		TriggerAnimation = 1 << 4,
+		/// <summary></summary>
+		Attach = 1 << 5,
+		/// <summary></summary>
+		ReleaseOwnership = 1 << 6,
+		/// <summary></summary>
+		ChangeLinks = 1 << 7,
+		/// <summary></summary>
+		ChangeJoints = 1 << 8,
+		/// <summary></summary>
+		ChangePermissions = 1 << 9,
+		/// <summary></summary>
+		TrackCamera = 1 << 10,
+		/// <summary>Script wants to control your camera</summary>
+		ControlCamera = 1 << 11
+    }
+    
+    /// <summary>
+	/// Special commands used in Instant Messages
+	/// </summary>
+	public enum InstantMessageDialog : byte
+	{
+		/// <summary>Indicates a regular IM from another agent</summary>
+		MessageFromAgent = 0,
+		/// <summary>Simple notification box with an OK button</summary>
+		MessageBox = 1,
+		/// <summary>Used to show a countdown notification with an OK
+		/// button, deprecated now</summary>
+		[Obsolete]
+		MessageBoxCountdown = 2,
+		/// <summary>You've been invited to join a group.</summary>
+		GroupInvitation = 3,
+		/// <summary>Inventory offer</summary>
+		InventoryOffered = 4,
+		/// <summary>Accepted inventory offer</summary>
+		InventoryAccepted = 5,
+		/// <summary>Declined inventory offer</summary>
+		InventoryDeclined = 6,
+		/// <summary>Group vote</summary>
+		GroupVote = 7,
+		/// <summary>A message to everyone in the agent's group, no longer
+		/// used</summary>
+		[Obsolete]
+		DeprecatedGroupMessage = 8,
+		/// <summary>An object is offering its inventory</summary>
+		TaskInventoryOffered = 9,
+		/// <summary>Accept an inventory offer from an object</summary>
+		TaskInventoryAccepted = 10,
+		/// <summary>Decline an inventory offer from an object</summary>
+		TaskInventoryDeclined = 11,
+		/// <summary>Unknown</summary>
+		NewUserDefault = 12,
+		/// <summary>Start a session, or add users to a session</summary>
+		SessionAdd = 13,
+		/// <summary>Start a session, but don't prune offline users</summary>
+		SessionOfflineAdd = 14,
+		/// <summary>Start a session with your group</summary>
+		SessionGroupStart = 15,
+		/// <summary>Start a session without a calling card (finder or objects)</summary>
+		SessionCardlessStart = 16,
+		/// <summary>Send a message to a session</summary>
+		SessionSend = 17,
+		/// <summary>Leave a session</summary>
+		SessionDrop = 18,
+		/// <summary>Indicates that the IM is from an object</summary>
+		MessageFromObject = 19,
+		/// <summary>sent an IM to a busy user, this is the auto response</summary>
+		BusyAutoResponse = 20,
+		/// <summary>Shows the message in the console and chat history</summary>
+		ConsoleAndChatHistory = 21,
+		/// <summary>IM Types used for luring your friends</summary>
+		RequestTeleport = 22,
+		/// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+		AcceptTeleport = 23,
+		/// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
+		DenyTeleport = 24,
+		/// <summary>Only useful if you have Linden permissions</summary>
+		GodLikeRequestTeleport = 25,
+		/// <summary>A placeholder type for future expansion, currently not
+		/// used</summary>
+		CurrentlyUnused = 26,
+		/// <summary>Notification of a new group election, this is 
+		/// deprecated</summary>
+		[Obsolete]
+		DeprecatedGroupElection = 27,
+		/// <summary>IM to tell the user to go to an URL</summary>
+		GotoUrl = 28,
+		/// <summary>IM for help</summary>
+		Session911Start = 29,
+		/// <summary>IM sent automatically on call for help, sends a lure 
+		/// to each Helper reached</summary>
+		Lure911 = 30,
+		/// <summary>Like an IM but won't go to email</summary>
+		FromTaskAsAlert = 31,
+		/// <summary>IM from a group officer to all group members</summary>
+		GroupNotice = 32,
+		/// <summary>Unknown</summary>
+		GroupNoticeInventoryAccepted = 33,
+		/// <summary>Unknown</summary>
+		GroupNoticeInventoryDeclined = 34,
+		/// <summary>Accept a group invitation</summary>
+		GroupInvitationAccept = 35,
+		/// <summary>Decline a group invitation</summary>
+		GroupInvitationDecline = 36,
+		/// <summary>Unknown</summary>
+		GroupNoticeRequested = 37,
+		/// <summary>An avatar is offering you friendship</summary>
+		FriendshipOffered = 38,
+		/// <summary>An avatar has accepted your friendship offer</summary>
+		FriendshipAccepted = 39,
+		/// <summary>An avatar has declined your friendship offer</summary>
+		FriendshipDeclined = 40,
+		/// <summary>Indicates that a user has started typing</summary>
+		StartTyping = 41,
+		/// <summary>Indicates that a user has stopped typing</summary>
+		StopTyping = 42
+    }
+
+	/// <summary>
+	/// Flag in Instant Messages, whether the IM should be delivered to
+	/// offline avatars as well
+	/// </summary>
+	public enum InstantMessageOnline
+	{
+		/// <summary>Only deliver to online avatars</summary>
+		Online = 0,
+		/// <summary>If the avatar is offline the message will be held until
+		/// they login next, and possibly forwarded to their e-mail account</summary>
+		Offline = 1
+	}
+
+	/// <summary>
+	/// Conversion type to denote Chat Packet types in an easier-to-understand format
+	/// </summary>
+	public enum ChatType : byte
+	{
+		/// <summary>Whisper (5m radius)</summary>
+		Whisper = 0,
+		/// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
+		Normal = 1,
+		/// <summary>Shouting! (100m radius)</summary>
+		Shout = 2,
+		/// <summary>Say chat (10/20m radius) - The official viewer will 
+		/// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
+		[Obsolete]
+		Say = 3,
+		/// <summary>Event message when an Avatar has begun to type</summary>
+		StartTyping = 4,
+		/// <summary>Event message when an Avatar has stopped typing</summary>
+		StopTyping = 5,
+		/// <summary>Unknown</summary>
+		Debug = 6
+	}
+
+	/// <summary>
+	/// Identifies the source of a chat message
+	/// </summary>
+	public enum ChatSourceType : byte
+	{
+		/// <summary>Chat from the grid or simulator</summary>
+		System = 0,
+		/// <summary>Chat from another avatar</summary>
+		Agent = 1,
+		/// <summary>Chat from an object</summary>
+		Object = 2
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	public enum ChatAudibleLevel : sbyte
+	{
+		/// <summary></summary>
+		Not = -1,
+		/// <summary></summary>
+		Barely = 0,
+		/// <summary></summary>
+		Fully = 1
+	}
+
+	/// <summary>
+	/// Effect type used in ViewerEffect packets
+	/// </summary>
+	public enum EffectType : byte
+	{
+		/// <summary>Place floating text above an object</summary>
+		Text = 0,
+		/// <summary>Unknown, probably places an icon above an object</summary>
+		Icon,
+		/// <summary>Unknown</summary>
+		Connector,
+		/// <summary>Unknown</summary>
+		FlexibleObject,
+		/// <summary>Unknown</summary>
+		AnimalControls,
+		/// <summary>Unknown</summary>
+		AnimationObject,
+		/// <summary>Unknown</summary>
+		Cloth,
+		/// <summary>Project a beam from a source to a destination, such as
+		/// the one used when editing an object</summary>
+		Beam,
+		/// <summary>Not implemented yet</summary>
+		Glow,
+		/// <summary>Unknown</summary>
+		Point,
+		/// <summary>Unknown</summary>
+		Trail,
+		/// <summary>Create a swirl of particles around an object</summary>
+		Sphere,
+		/// <summary>Unknown</summary>
+		Spiral,
+		/// <summary>Unknown</summary>
+		Edit,
+		/// <summary>Cause an avatar to look at an object</summary>
+		LookAt,
+		/// <summary>Cause an avatar to point at an object</summary>
+		PointAt
+	}
+
+	/// <summary>
+	/// The action an avatar is doing when looking at something, used in 
+	/// ViewerEffect packets for the LookAt effect
+	/// </summary>
+	public enum LookAtType : byte
+	{
+		/// <summary></summary>
+		None,
+		/// <summary></summary>
+		Idle,
+		/// <summary></summary>
+		AutoListen,
+		/// <summary></summary>
+		FreeLook,
+		/// <summary></summary>
+		Respond,
+		/// <summary></summary>
+		Hover,
+		/// <summary>Deprecated</summary>
+		Conversation,
+		/// <summary></summary>
+		Select,
+		/// <summary></summary>
+		Focus,
+		/// <summary></summary>
+		Mouselook,
+		/// <summary></summary>
+		Clear
+	}
+
+	/// <summary>
+	/// The action an avatar is doing when pointing at something, used in
+	/// ViewerEffect packets for the PointAt effect
+	/// </summary>
+	public enum PointAtType : byte
+	{
+		/// <summary></summary>
+		None,
+		/// <summary></summary>
+		Select,
+		/// <summary></summary>
+		Grab,
+		/// <summary></summary>
+		Clear
+    }
+    
+    #endregion Enums
+    
+    #region Structs
+	
+	/// <summary>
+	/// Instant Message
+	/// </summary>
+	public struct InstantMessage
+	{
+		/// <summary>Key of sender</summary>
+		public LLUUID FromAgentID;
+		/// <summary>Name of sender</summary>
+        public string FromAgentName;
+        /// <summary>Key of destination avatar</summary>
+        public LLUUID ToAgentID;
+        /// <summary>ID of originating estate</summary>
+        public uint ParentEstateID;
+        /// <summary>Key of originating region</summary>
+        public LLUUID RegionID;
+        /// <summary>Coordinates in originating region</summary>
+        public LLVector3 Position;
+        /// <summary>Instant message type</summary>
+        public InstantMessageDialog Dialog;
+        /// <summary>Group IM session toggle</summary>
+        public bool GroupIM;
+        /// <summary>Key of IM session</summary>
+        public LLUUID IMSessionID;
+        /// <summary>Timestamp of the instant message</summary>
+        public DateTime Timestamp;
+        /// <summary>Instant message text</summary>
+        public string Message;
+        /// <summary>Whether this message is held for offline avatars</summary>
+        public InstantMessageOnline Offline;
+        /// <summary>Context specific packed data</summary>
+        public byte[] BinaryBucket;
+	}
+	
+	#endregion Structs
+	
     /// <summary>
     /// Class to hold Client Avatar's data
     /// </summary>
@@ -70,38 +392,6 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        [Flags]
-        public enum ScriptPermission : int
-        {
-            /// <summary>Placeholder for empty values, shouldn't ever see this</summary>
-            None = 0,
-            /// <summary>Script wants to take money from you</summary>
-            Debit = 1 << 1,
-            /// <summary></summary>
-            TakeControls = 1 << 2,
-            /// <summary></summary>
-            RemapControls = 1 << 3,
-            /// <summary>Script wants to trigger avatar animations</summary>
-            TriggerAnimation = 1 << 4,
-            /// <summary></summary>
-            Attach = 1 << 5,
-            /// <summary></summary>
-            ReleaseOwnership = 1 << 6,
-            /// <summary></summary>
-            ChangeLinks = 1 << 7,
-            /// <summary></summary>
-            ChangeJoints = 1 << 8,
-            /// <summary></summary>
-            ChangePermissions = 1 << 9,
-            /// <summary></summary>
-            TrackCamera = 1 << 10,
-            /// <summary>Script wants to control your camera</summary>
-            ControlCamera = 1 << 11
-        }
-
-        /// <summary>
         /// Current teleport status
         /// </summary>
         public enum TeleportStatus
@@ -118,255 +408,6 @@ namespace libsecondlife
             Finished,
             /// <summary>Teleport cancelled</summary>
             Cancelled
-        }
-
-        /// <summary>
-        /// Special commands used in Instant Messages
-        /// </summary>
-        public enum InstantMessageDialog : byte
-        {
-            /// <summary>Indicates a regular IM from another agent</summary>
-            MessageFromAgent = 0,
-			/// <summary>Simple notification box with an OK button</summary>
-			MessageBox = 1,
-            /// <summary>Used to show a countdown notification with an OK
-            /// button, deprecated now</summary>
-            [Obsolete]
-            MessageBoxCountdown = 2,
-			/// <summary>You've been invited to join a group.</summary>
-			GroupInvitation = 3,
-            /// <summary>Inventory offer</summary>
-            InventoryOffered = 4,
-			/// <summary>Accepted inventory offer</summary>
-			InventoryAccepted = 5,
-            /// <summary>Declined inventory offer</summary>
-			InventoryDeclined = 6,
-			/// <summary>Group vote</summary>
-			GroupVote = 7,
-            /// <summary>A message to everyone in the agent's group, no longer
-            /// used</summary>
-            [Obsolete]
-            DeprecatedGroupMessage = 8,
-			/// <summary>An object is offering its inventory</summary>
-			TaskInventoryOffered = 9,
-            /// <summary>Accept an inventory offer from an object</summary>
-			TaskInventoryAccepted = 10,
-            /// <summary>Decline an inventory offer from an object</summary>
-			TaskInventoryDeclined = 11,
-			/// <summary>Unknown</summary>
-			NewUserDefault = 12,
-			/// <summary>Start a session, or add users to a session</summary>
-			SessionAdd = 13,
-			/// <summary>Start a session, but don't prune offline users</summary>
-			SessionOfflineAdd = 14,
-			/// <summary>Start a session with your group</summary>
-			SessionGroupStart = 15,
-			/// <summary>Start a session without a calling card (finder or objects)</summary>
-			SessionCardlessStart = 16,
-			/// <summary>Send a message to a session</summary>
-			SessionSend = 17,
-			/// <summary>Leave a session</summary>
-			SessionDrop = 18,
-            /// <summary>Indicates that the IM is from an object</summary>
-            MessageFromObject = 19,
-			/// <summary>sent an IM to a busy user, this is the auto response</summary>
-			BusyAutoResponse = 20,
-			/// <summary>Shows the message in the console and chat history</summary>
-			ConsoleAndChatHistory = 21,
-			/// <summary>IM Types used for luring your friends</summary>
-            RequestTeleport = 22,
-            /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
-            AcceptTeleport = 23,
-            /// <summary>Response sent to the agent which inititiated a teleport invitation</summary>
-            DenyTeleport = 24,
-            /// <summary>Only useful if you have Linden permissions</summary>
-            GodLikeRequestTeleport = 25,
-            /// <summary>A placeholder type for future expansion, currently not
-            /// used</summary>
-            CurrentlyUnused = 26,
-            /// <summary>Notification of a new group election, this is 
-            /// deprecated</summary>
-            [Obsolete]
-            DeprecatedGroupElection = 27,
-			/// <summary>IM to tell the user to go to an URL</summary>
-			GotoUrl = 28,
-			/// <summary>IM for help</summary>
-			Session911Start = 29,
-			/// <summary>IM sent automatically on call for help, sends a lure 
-            /// to each Helper reached</summary>
-			Lure911 = 30,
-			/// <summary>Like an IM but won't go to email</summary>
-			FromTaskAsAlert = 31,
-			/// <summary>IM from a group officer to all group members</summary>
-			GroupNotice = 32,
-			/// <summary>Unknown</summary>
-			GroupNoticeInventoryAccepted = 33,
-            /// <summary>Unknown</summary>
-			GroupNoticeInventoryDeclined = 34,
-			/// <summary>Accept a group invitation</summary>
-			GroupInvitationAccept = 35,
-			/// <summary>Decline a group invitation</summary>
-			GroupInvitationDecline = 36,
-            /// <summary>Unknown</summary>
-			GroupNoticeRequested = 37,
-			/// <summary>An avatar is offering you friendship</summary>
-			FriendshipOffered = 38,
-			/// <summary>An avatar has accepted your friendship offer</summary>
-			FriendshipAccepted = 39,
-			/// <summary>An avatar has declined your friendship offer</summary>
-			FriendshipDeclined = 40,
-            /// <summary>Indicates that a user has started typing</summary>
-            StartTyping = 41,
-            /// <summary>Indicates that a user has stopped typing</summary>
-            StopTyping = 42
-        }
-
-        /// <summary>
-        /// Flag in Instant Messages, whether the IM should be delivered to
-        /// offline avatars as well
-        /// </summary>
-        public enum InstantMessageOnline
-        {
-            /// <summary>Only deliver to online avatars</summary>
-            Online = 0,
-            /// <summary>If the avatar is offline the message will be held until
-            /// they login next, and possibly forwarded to their e-mail account</summary>
-            Offline = 1
-        }
-
-        /// <summary>
-        /// Conversion type to denote Chat Packet types in an easier-to-understand format
-        /// </summary>
-        public enum ChatType : byte
-        {
-            /// <summary>Whisper (5m radius)</summary>
-            Whisper = 0,
-            /// <summary>Normal chat (10/20m radius), what the official viewer typically sends</summary>
-            Normal = 1,
-            /// <summary>Shouting! (100m radius)</summary>
-            Shout = 2,
-            /// <summary>Say chat (10/20m radius) - The official viewer will 
-            /// print "[4:15] You say, hey" instead of "[4:15] You: hey"</summary>
-            [Obsolete]
-            Say = 3,
-            /// <summary>Event message when an Avatar has begun to type</summary>
-            StartTyping = 4,
-            /// <summary>Event message when an Avatar has stopped typing</summary>
-            StopTyping = 5,
-            /// <summary>Unknown</summary>
-            Debug = 6
-        }
-
-        /// <summary>
-        /// Identifies the source of a chat message
-        /// </summary>
-        public enum ChatSourceType : byte
-        {
-            /// <summary>Chat from the grid or simulator</summary>
-            System = 0,
-            /// <summary>Chat from another avatar</summary>
-            Agent = 1,
-            /// <summary>Chat from an object</summary>
-            Object = 2
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum ChatAudibleLevel : sbyte
-        {
-            /// <summary></summary>
-            Not = -1,
-            /// <summary></summary>
-            Barely = 0,
-            /// <summary></summary>
-            Fully = 1
-        }
-
-        /// <summary>
-        /// Effect type used in ViewerEffect packets
-        /// </summary>
-        public enum EffectType : byte
-	    {
-            /// <summary>Place floating text above an object</summary>
-		    Text = 0,
-            /// <summary>Unknown, probably places an icon above an object</summary>
-		    Icon,
-            /// <summary>Unknown</summary>
-		    Connector,
-            /// <summary>Unknown</summary>
-		    FlexibleObject,
-            /// <summary>Unknown</summary>
-		    AnimalControls,
-            /// <summary>Unknown</summary>
-		    AnimationObject,
-            /// <summary>Unknown</summary>
-		    Cloth,
-            /// <summary>Project a beam from a source to a destination, such as
-            /// the one used when editing an object</summary>
-		    Beam,
-            /// <summary>Not implemented yet</summary>
-		    Glow,
-            /// <summary>Unknown</summary>
-		    Point,
-            /// <summary>Unknown</summary>
-		    Trail,
-            /// <summary>Create a swirl of particles around an object</summary>
-		    Sphere,
-            /// <summary>Unknown</summary>
-		    Spiral,
-            /// <summary>Unknown</summary>
-		    Edit,
-            /// <summary>Cause an avatar to look at an object</summary>
-		    LookAt,
-            /// <summary>Cause an avatar to point at an object</summary>
-		    PointAt
-	    }
-
-        /// <summary>
-        /// The action an avatar is doing when looking at something, used in 
-        /// ViewerEffect packets for the LookAt effect
-        /// </summary>
-        public enum LookAtType : byte
-        {
-            /// <summary></summary>
-	        None,
-            /// <summary></summary>
-            Idle,
-            /// <summary></summary>
-            AutoListen,
-            /// <summary></summary>
-            FreeLook,
-            /// <summary></summary>
-            Respond,
-            /// <summary></summary>
-            Hover,
-            /// <summary>Deprecated</summary>
-            Conversation,
-            /// <summary></summary>
-            Select,
-            /// <summary></summary>
-            Focus,
-            /// <summary></summary>
-            Mouselook,
-            /// <summary></summary>
-            Clear
-        }
-
-        /// <summary>
-        /// The action an avatar is doing when pointing at something, used in
-        /// ViewerEffect packets for the PointAt effect
-        /// </summary>
-        public enum PointAtType : byte
-        {
-            /// <summary></summary>
-            None,
-            /// <summary></summary>
-            Select,
-            /// <summary></summary>
-            Grab,
-            /// <summary></summary>
-            Clear
         }
 
         /// <summary>
@@ -482,25 +523,9 @@ namespace libsecondlife
         /// <summary>
         /// Triggered on incoming instant messages
         /// </summary>
-        /// <param name="fromAgentID">Key of sender</param>
-        /// <param name="fromAgentName">Name of sender</param>
-        /// <param name="toAgentID">Key of destination Avatar</param>
-        /// <param name="parentEstateID">ID of originating Estate</param>
-        /// <param name="regionID">Key of originating Region</param>
-        /// <param name="position">Coordinates in originating Region</param>
-        /// <param name="dialog"></param>
-        /// <param name="groupIM">Group IM session toggle</param>
-        /// <param name="imSessionID">Key of IM Session</param>
-        /// <param name="timestamp">Timestamp of message</param>
-        /// <param name="message">Text of message</param>
-        /// <param name="offline">Enum of whether this message is held for 
-        /// offline avatars</param>
-        /// <param name="binaryBucket">Context specific packed data</param>
+        /// <param name="im">Instant message data structure</param>
         /// <param name="simulator">Simulator where this IM was received from</param>
-        public delegate void InstantMessageCallback(LLUUID fromAgentID, string fromAgentName,
-            LLUUID toAgentID, uint parentEstateID, LLUUID regionID, LLVector3 position,
-            InstantMessageDialog dialog, bool groupIM, LLUUID imSessionID, DateTime timestamp, string message,
-            InstantMessageOnline offline, byte[] binaryBucket, Simulator simulator);
+        public delegate void InstantMessageCallback(InstantMessage im, Simulator simulator);
 
         /// <summary>
         /// Triggered for any status updates of a teleport (progress, failed, succeeded)
@@ -856,7 +881,7 @@ namespace libsecondlife
 
             im.AgentData.AgentID = Client.Network.AgentID;
             im.AgentData.SessionID = Client.Network.SessionID;
-            im.MessageBlock.Dialog = (byte)MainAvatar.InstantMessageDialog.SessionSend;
+            im.MessageBlock.Dialog = (byte)InstantMessageDialog.SessionSend;
             im.MessageBlock.FromAgentName = Helpers.StringToField(fromName);
             im.MessageBlock.FromGroup = false;
             im.MessageBlock.Message = Helpers.StringToField(message);
@@ -1838,22 +1863,23 @@ namespace libsecondlife
 
                 if (OnInstantMessage != null)
                 {
-                    OnInstantMessage(
-                        im.AgentData.AgentID
-                        , Helpers.FieldToUTF8String(im.MessageBlock.FromAgentName),
-                        im.MessageBlock.ToAgentID
-                        , im.MessageBlock.ParentEstateID
-                        , im.MessageBlock.RegionID
-                        , im.MessageBlock.Position
-                        , (InstantMessageDialog)im.MessageBlock.Dialog
-                        , im.MessageBlock.FromGroup
-                        , im.MessageBlock.ID
-                        , new DateTime(im.MessageBlock.Timestamp)
-                        , Helpers.FieldToUTF8String(im.MessageBlock.Message)
-                        , (InstantMessageOnline)im.MessageBlock.Offline
-                        , im.MessageBlock.BinaryBucket
-                        , simulator
-                        );
+                	InstantMessage message;
+                	message.FromAgentID = im.AgentData.AgentID;
+                	message.FromAgentName = Helpers.FieldToUTF8String(im.MessageBlock.FromAgentName);
+                	message.ToAgentID = im.MessageBlock.ToAgentID;
+                	message.ParentEstateID = im.MessageBlock.ParentEstateID;
+                	message.RegionID = im.MessageBlock.RegionID;
+                	message.Position = im.MessageBlock.Position;
+                	message.Dialog = (InstantMessageDialog)im.MessageBlock.Dialog;
+                	message.GroupIM = im.MessageBlock.FromGroup;
+                	message.IMSessionID = im.MessageBlock.ID;
+                	message.Timestamp = new DateTime(im.MessageBlock.Timestamp);
+                	message.Message = Helpers.FieldToUTF8String(im.MessageBlock.Message);
+                	message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
+                	message.BinaryBucket = im.MessageBlock.BinaryBucket;
+                	
+                	try { OnInstantMessage(message, simulator); }
+                	catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
         }
