@@ -36,8 +36,23 @@ namespace libsecondlife
     /// Life networking protocol
     /// </summary>
     [Serializable]
-    public struct LLUUID
-	{
+    public struct LLUUID : IComparable
+    {
+        /// <summary>
+        /// IComparable.CompareTo implementation.
+        /// </summary>
+        public int CompareTo(object obj)
+        {
+            if (obj is LLUUID)
+            {
+                LLUUID ID = (LLUUID)obj;
+                return this.UUID.CompareTo(ID.UUID);
+            }
+
+            throw new ArgumentException("object is not a LLUUID");
+        }
+
+	
         /// <summary>The System.Guid object this struct wraps around</summary>
         [XmlAttribute]
         public Guid UUID;
