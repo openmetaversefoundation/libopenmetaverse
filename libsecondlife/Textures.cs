@@ -766,6 +766,12 @@ namespace libsecondlife
 
             #endregion Properties
 
+            public TextureEntryFace()
+            {
+            	DefaultTexture = null;
+            	hasAttribute = TextureAttributes.All;
+            }
+            
             /// <summary>
             /// Contains the definition for individual faces
             /// </summary>

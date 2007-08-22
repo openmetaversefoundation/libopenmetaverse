@@ -143,7 +143,7 @@ namespace libsecondlife
         /// you have a TextureEntry with a default texture uuid of X, and face 72
         /// has a texture UUID of Y, every face would be textured with X except for
         /// face 72 that uses Y. In practice however, primitives utilize a maximum
-        /// of nine faces and avatars utilize</remarks>
+        /// of nine faces</remarks>
         [Serializable]
         public class TextureEntry2
         {
@@ -157,11 +157,11 @@ namespace libsecondlife
             /// <summary>
             /// Default constructor, DefaultTexture will be null
             /// </summary>
-            //public TextureEntry2()
-            //{
-            //    DefaultTexture = null;
-            //    FaceTextures = new TextureEntryFace[0];
-            //}
+            public TextureEntry2()
+            {
+                DefaultTexture = null;
+                FaceTextures = new TextureEntryFace[0];
+            }
 
             /// <summary>
             /// Constructor that takes a default texture UUID
