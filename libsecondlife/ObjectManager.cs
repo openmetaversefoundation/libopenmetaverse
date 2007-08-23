@@ -2260,37 +2260,51 @@ namespace libsecondlife
 
         protected Primitive GetPrimitive(Simulator simulator, uint localID, LLUUID fullID)
         {
-            if (simulator.Objects.Prims.ContainsKey(localID))
+            if (Client.Settings.OBJECT_TRACKING)
             {
-                return simulator.Objects.Prims[localID];
+                if (simulator.Objects.Prims.ContainsKey(localID))
+                {
+                    return simulator.Objects.Prims[localID];
+                }
+                else
+                {
+                    Primitive prim = new Primitive();
+                    prim.LocalID = localID;
+                    prim.ID = fullID;
+                    lock (simulator.Objects.Prims)
+                        simulator.Objects.Prims[localID] = prim;
+
+                    return prim;
+                }
             }
             else
             {
-                Primitive prim = new Primitive();
-                prim.LocalID = localID;
-                prim.ID = fullID;
-                lock (simulator.Objects.Prims)
-                    simulator.Objects.Prims[localID] = prim;
-
-                return prim;
+                return new Primitive();
             }
         }
 
         protected Avatar GetAvatar(Simulator simulator, uint localID, LLUUID fullID)
         {
-            if (simulator.Objects.Avatars.ContainsKey(localID))
+            if (Client.Settings.OBJECT_TRACKING)
             {
-                return simulator.Objects.Avatars[localID];
+                if (simulator.Objects.Avatars.ContainsKey(localID))
+                {
+                    return simulator.Objects.Avatars[localID];
+                }
+                else
+                {
+                    Avatar avatar = new Avatar();
+                    avatar.LocalID = localID;
+                    avatar.ID = fullID;
+                    lock (simulator.Objects.Avatars)
+                        simulator.Objects.Avatars[localID] = avatar;
+
+                    return avatar;
+                }
             }
             else
             {
-                Avatar avatar = new Avatar();
-                avatar.LocalID = localID;
-                avatar.ID = fullID;
-                lock (simulator.Objects.Avatars)
-                    simulator.Objects.Avatars[localID] = avatar;
-
-                return avatar;
+                return new Avatar();
             }
         }
 

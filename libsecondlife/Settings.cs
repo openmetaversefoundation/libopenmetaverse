@@ -161,6 +161,11 @@ namespace libsecondlife
         /// AgentUpdate packets will continuously be sent out to give the bot
         /// smoother movement and autopiloting</summary>
         public bool CONTINUOUS_AGENT_UPDATES = true;
+        /// <summary>If true, currently visible primitives and avatars will be
+        /// stored in dictionaries inside <code>Simulator.Objects</code>. If 
+        /// false, a new Avatar or Primitive object will be created each time
+        /// an object update packet is received</summary>
+        public bool OBJECT_TRACKING = true;
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

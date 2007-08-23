@@ -657,6 +657,24 @@ namespace libsecondlife
 		public LLUUID ActiveGroup { get { return activeGroup; } }
         /// <summary>Current status message for teleporting</summary>
         public string TeleportMessage { get { return teleportMessage; } }
+        /// <summary>Returns the global grid position of the avatar</summary>
+        public LLVector3d GlobalPosition
+        {
+            get
+            {
+                if (Client.Network.CurrentSim != null)
+                {
+                    uint globalX, globalY;
+                    Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out globalX, out globalY);
+                    return new LLVector3d(
+                        (double)globalX + (double)Position.X,
+                        (double)globalY + (double)Position.Y,
+                        (double)Position.Z);
+                }
+                else
+                    return LLVector3d.Zero;
+            }
+        }
 
         #endregion Public Members
 

@@ -715,6 +715,17 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Calculates the distance between two vectors
+        /// </summary>
+        public static double VecDist(LLVector3d pointA, LLVector3d pointB)
+        {
+            double xd = pointB.X - pointA.X;
+            double yd = pointB.Y - pointA.Y;
+            double zd = pointB.Z - pointA.Z;
+            return Math.Sqrt(xd * xd + yd * yd + zd * zd);
+        }
+
+        /// <summary>
         /// Calculate the magnitude of the supplied vector
         /// </summary>
         public static float VecMag(LLVector3 v)
