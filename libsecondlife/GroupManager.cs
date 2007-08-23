@@ -946,6 +946,19 @@ namespace libsecondlife
             Client.Network.SendPacket(p);
         }
 
+        /// <summary>
+        /// Request to leave a group
+        /// </summary>
+        /// <param name="groupID">The group to leave</param>
+        public void LeaveGroup(LLUUID groupID)
+        {
+            LeaveGroupRequestPacket p = new LeaveGroupRequestPacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            p.GroupData.GroupID = groupID;
+            Client.Network.SendPacket(p);
+        }
+
         #region Packet Handlers
 
         private void GroupDataHandler(Packet packet, Simulator simulator)
@@ -1255,7 +1268,8 @@ namespace libsecondlife
             {
                 LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
 
-                OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success);
+                try { OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
 
