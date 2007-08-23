@@ -114,8 +114,10 @@ namespace libsecondlife
 
         public string CapabilityURI(string capability)
         {
-            if (_Caps.ContainsKey(capability))
-                return _Caps[capability];
+            string cap;
+
+            if (_Caps.TryGetValue(capability, out cap))
+                return cap;
             else
                 return String.Empty;
         }

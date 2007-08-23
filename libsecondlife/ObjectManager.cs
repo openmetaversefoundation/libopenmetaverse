@@ -2041,22 +2041,30 @@ namespace libsecondlife
         {
             KillObjectPacket kill = (KillObjectPacket)packet;
 
-            for (int i = 0; i < kill.ObjectData.Length; i++)
+            if (Client.Settings.OBJECT_TRACKING)
             {
-                uint localID = kill.ObjectData[i].ID;
-
-                if (simulator.Objects.Prims.ContainsKey(localID))
+                for (int i = 0; i < kill.ObjectData.Length; i++)
                 {
-                    lock (simulator.Objects.Prims)
-                        simulator.Objects.Prims.Remove(localID);
-                }
-                if (simulator.Objects.Avatars.ContainsKey(localID))
-                {
-                    lock (simulator.Objects.Avatars)
-                        simulator.Objects.Avatars.Remove(localID);
-                }
+                    uint localID = kill.ObjectData[i].ID;
 
-                FireOnObjectKilled(simulator, localID);
+                    if (simulator.Objects.Prims.ContainsKey(localID))
+                    {
+                        lock (simulator.Objects.Prims)
+                            simulator.Objects.Prims.Remove(localID);
+                    }
+                    if (simulator.Objects.Avatars.ContainsKey(localID))
+                    {
+                        lock (simulator.Objects.Avatars)
+                            simulator.Objects.Avatars.Remove(localID);
+                    }
+
+                    FireOnObjectKilled(simulator, localID);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < kill.ObjectData.Length; i++)
+                    FireOnObjectKilled(simulator, kill.ObjectData[i].ID);
             }
         }
 
@@ -2262,13 +2270,15 @@ namespace libsecondlife
         {
             if (Client.Settings.OBJECT_TRACKING)
             {
-                if (simulator.Objects.Prims.ContainsKey(localID))
+                Primitive prim;
+
+                if (simulator.Objects.Prims.TryGetValue(localID, out prim))
                 {
-                    return simulator.Objects.Prims[localID];
+                    return prim;
                 }
                 else
                 {
-                    Primitive prim = new Primitive();
+                    prim = new Primitive();
                     prim.LocalID = localID;
                     prim.ID = fullID;
                     lock (simulator.Objects.Prims)
@@ -2287,13 +2297,15 @@ namespace libsecondlife
         {
             if (Client.Settings.OBJECT_TRACKING)
             {
-                if (simulator.Objects.Avatars.ContainsKey(localID))
+                Avatar avatar;
+
+                if (simulator.Objects.Avatars.TryGetValue(localID, out avatar))
                 {
-                    return simulator.Objects.Avatars[localID];
+                    return avatar;
                 }
                 else
                 {
-                    Avatar avatar = new Avatar();
+                    avatar = new Avatar();
                     avatar.LocalID = localID;
                     avatar.ID = fullID;
                     lock (simulator.Objects.Avatars)

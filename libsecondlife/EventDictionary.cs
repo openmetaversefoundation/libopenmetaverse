@@ -82,11 +82,13 @@ namespace libsecondlife
         /// <param name="simulator">Simulator this packet was received from</param>
         internal void RaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
         {
-            if (_EventTable.ContainsKey(packetType) && _EventTable[packetType] != null)
+            NetworkManager.PacketCallback callback;
+
+            if (_EventTable.TryGetValue(packetType, out callback))
             {
                 try
                 {
-                    _EventTable[packetType](packet, simulator);
+                    callback(packet, simulator);
                 }
                 catch (Exception ex)
                 {
@@ -107,15 +109,23 @@ namespace libsecondlife
         /// <param name="simulator">Simulator this packet was received from</param>
         internal void BeginRaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
         {
-            if (_EventTable.ContainsKey(packetType) && _EventTable[packetType] != null)
+            NetworkManager.PacketCallback callback;
+
+            if (_EventTable.TryGetValue(packetType, out callback))
             {
-                PacketCallbackWrapper wrapper;
-                wrapper.Callback = _EventTable[packetType];
-                wrapper.Packet = packet;
-                wrapper.Simulator = simulator;
-                ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+                if (callback != null)
+                {
+                    PacketCallbackWrapper wrapper;
+                    wrapper.Callback = callback;
+                    wrapper.Packet = packet;
+                    wrapper.Simulator = simulator;
+                    ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+
+                    return;
+                }
             }
-            else if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
+
+            if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
                 Client.Log("No handler registered for packet event " + packetType, Helpers.LogLevel.Debug);
             }
@@ -219,18 +229,26 @@ namespace libsecondlife
         /// generated this event</param>
         internal void RaiseEvent(string capsEvent, string eventName, System.Collections.Hashtable body, CapsEventQueue eventQueue)
         {
-            if (_EventTable.ContainsKey(capsEvent) && _EventTable[capsEvent] != null)
+            Capabilities.EventQueueCallback callback;
+
+            if (_EventTable.TryGetValue(capsEvent, out callback))
             {
-                try
+                if (callback != null)
                 {
-                    _EventTable[capsEvent](eventName, body, eventQueue);
-                }
-                catch (Exception ex)
-                {
-                    Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
+                    try
+                    {
+                        callback(eventName, body, eventQueue);
+                    }
+                    catch (Exception ex)
+                    {
+                        Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
+                    }
+
+                    return;
                 }
             }
-            else if (capsEvent != String.Empty)
+
+            if (capsEvent != String.Empty)
             {
                 Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
             }
@@ -247,16 +265,24 @@ namespace libsecondlife
         /// generated this event</param>
         internal void BeginRaiseEvent(string capsEvent, string eventName, System.Collections.Hashtable body, CapsEventQueue eventQueue)
         {
-            if (_EventTable.ContainsKey(capsEvent) && _EventTable[capsEvent] != null)
+            Capabilities.EventQueueCallback callback;
+
+            if (_EventTable.TryGetValue(capsEvent, out callback))
             {
-                CapsCallbackWrapper wrapper;
-                wrapper.Callback = _EventTable[capsEvent];
-                wrapper.CapsEvent = eventName;
-                wrapper.Body = body;
-                wrapper.EventQueue = eventQueue;
-                ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+                if (callback != null)
+                {
+                    CapsCallbackWrapper wrapper;
+                    wrapper.Callback = callback;
+                    wrapper.CapsEvent = eventName;
+                    wrapper.Body = body;
+                    wrapper.EventQueue = eventQueue;
+                    ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+
+                    return;
+                }
             }
-            else if (capsEvent != String.Empty)
+
+            if (capsEvent != String.Empty)
             {
                 Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
             }

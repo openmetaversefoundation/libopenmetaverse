@@ -568,8 +568,10 @@ namespace libsecondlife
         /// <returns></returns>
         public LLUUID GetWearableAsset(Wearable.WearableType type)
         {
-            if (Wearables.ContainsKey(type))
-                return Wearables[type].AssetID;
+            WearableData wearable;
+
+            if (Wearables.TryGetValue(type, out wearable))
+                return wearable.AssetID;
             else
                 return LLUUID.Zero;
         }
