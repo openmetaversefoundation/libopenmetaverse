@@ -997,9 +997,9 @@ namespace SLProxy
 
                 // forward the XML-RPC response to the client
                 StreamWriter writer = new StreamWriter(netStream);
-                writer.WriteLine("HTTP/1.0 200 OK");
-                writer.WriteLine("Content-type: text/xml");
-                writer.WriteLine();
+                writer.Write("HTTP/1.0 200 OK\r\n");
+                writer.Write("Content-type: text/xml\r\n");
+                writer.Write("\r\n");
 
                 XmlTextWriter responseWriter = new XmlTextWriter(writer);
                 XmlRpcResponseSerializer.Singleton.Serialize(responseWriter, response);
