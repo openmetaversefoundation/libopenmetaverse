@@ -157,9 +157,6 @@
     <Compile Include="SoundManager.cs" />
     <Compile Include="TerrainManager.cs" />
     <Compile Include="TextureEntry.cs" />
-    <Compile Include="Textures.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="TGALoader.cs" />
     <Compile Include="ThreadUtil.cs" />
     <Compile Include="InventoryNode.cs" />

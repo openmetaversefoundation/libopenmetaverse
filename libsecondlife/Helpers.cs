@@ -105,7 +105,7 @@ namespace libsecondlife
         /// <returns></returns>
         public static float TEOffsetFloat(byte[] bytes, int pos)
         {
-            float offset = (float)BitConverter.ToInt16(bytes, 0);
+            float offset = (float)BitConverter.ToInt16(bytes, pos);
             return offset / 32767.0f;
         }
 

@@ -164,7 +164,7 @@ namespace libsecondlife.Tests
         [Test]
         public void TextureEntry()
         {
-            LLObject.TextureEntry2 te = new LLObject.TextureEntry2(LLUUID.Random());
+            LLObject.TextureEntry te = new LLObject.TextureEntry(LLUUID.Random());
             LLObject.TextureEntryFace face = te.CreateFace(0);
             face.Bump = LLObject.Bumpiness.Concrete;
             face.Fullbright = true;
@@ -181,7 +181,7 @@ namespace libsecondlife.Tests
 
             byte[] teBytes = te.ToBytes();
 
-            LLObject.TextureEntry2 te2 = new LLObject.TextureEntry2(teBytes, 0, teBytes.Length);
+            LLObject.TextureEntry te2 = new LLObject.TextureEntry(teBytes, 0, teBytes.Length);
 
             byte[] teBytes2 = te2.ToBytes();
 

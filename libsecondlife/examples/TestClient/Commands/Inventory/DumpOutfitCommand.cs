@@ -43,26 +43,31 @@ namespace libsecondlife.TestClient
                                 lock (OutfitAssets) OutfitAssets.Clear();
                                 Client.Assets.OnImageReceived += ImageReceivedHandler;
 
-                                foreach (KeyValuePair<uint, LLObject.TextureEntryFace> face in avatar.Textures.FaceTextures)
+                                for (int j = 0; j < avatar.Textures.FaceTextures.Length; j++)
                                 {
-                                    ImageType type = ImageType.Normal;
+                                    LLObject.TextureEntryFace face = avatar.Textures.FaceTextures[j];
 
-                                    switch ((AppearanceManager.TextureIndex)face.Key)
+                                    if (face != null)
                                     {
-                                        case AppearanceManager.TextureIndex.HeadBaked:
-                                        case AppearanceManager.TextureIndex.EyesBaked:
-                                        case AppearanceManager.TextureIndex.UpperBaked:
-                                        case AppearanceManager.TextureIndex.LowerBaked:
-                                        case AppearanceManager.TextureIndex.SkirtBaked:
-                                            type = ImageType.Baked;
-                                            break;
+                                        ImageType type = ImageType.Normal;
+
+                                        switch ((AppearanceManager.TextureIndex)j)
+                                        {
+                                            case AppearanceManager.TextureIndex.HeadBaked:
+                                            case AppearanceManager.TextureIndex.EyesBaked:
+                                            case AppearanceManager.TextureIndex.UpperBaked:
+                                            case AppearanceManager.TextureIndex.LowerBaked:
+                                            case AppearanceManager.TextureIndex.SkirtBaked:
+                                                type = ImageType.Baked;
+                                                break;
+                                        }
+
+                                        OutfitAssets.Add(face.TextureID);
+                                        Client.Assets.RequestImage(face.TextureID, type, 100000.0f, 0);
+
+                                        output.Append(((AppearanceManager.TextureIndex)j).ToString());
+                                        output.Append(" ");
                                     }
-
-                                    OutfitAssets.Add(face.Value.TextureID);
-                                    Client.Assets.RequestImage(face.Value.TextureID, type, 100000.0f, 0);
-
-                                    output.Append(((AppearanceManager.TextureIndex)face.Key).ToString());
-                                    output.Append(" ");
                                 }
 
                                 return output.ToString();

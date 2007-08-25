@@ -136,16 +136,306 @@ namespace libsecondlife
         #endregion Enumerations
 
         /// <summary>
+        /// A single textured face. Don't instantiate this class yourself, use the
+        /// methods in TextureEntry
+        /// </summary>
+        [Serializable]
+        public class TextureEntryFace
+        {
+            // +----------+ S = Shiny
+            // | SSFBBBBB | F = Fullbright
+            // | 76543210 | B = Bumpmap
+            // +----------+
+            private const byte BUMP_MASK = 0x1F;
+            private const byte FULLBRIGHT_MASK = 0x20;
+            private const byte SHINY_MASK = 0xC0;
+            // +----------+ M = Media Flags (web page)
+            // | .....TTM | T = Texture Mapping
+            // | 76543210 | . = Unused
+            // +----------+
+            private const byte MEDIA_MASK = 0x01;
+            private const byte TEX_MAP_MASK = 0x06;
+
+            private uint rgba;
+            private float repeatU = 1.0f;
+            private float repeatV = 1.0f;
+            private float offsetU;
+            private float offsetV;
+            private float rotation;
+            private TextureAttributes hasAttribute;
+            private LLUUID textureID;
+            private TextureEntryFace DefaultTexture = null;
+
+            internal byte material;
+            internal byte media;
+
+            #region Properties
+
+            /// <summary></summary>
+            public uint RGBA
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.RGBA) != 0)
+                        return rgba;
+                    else
+                        return DefaultTexture.rgba;
+                }
+                set
+                {
+                    rgba = value;
+                    hasAttribute |= TextureAttributes.RGBA;
+                }
+            }
+
+            /// <summary></summary>
+            public float RepeatU
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.RepeatU) != 0)
+                        return repeatU;
+                    else
+                        return DefaultTexture.repeatU;
+                }
+                set
+                {
+                    repeatU = value;
+                    hasAttribute |= TextureAttributes.RepeatU;
+                }
+            }
+
+            /// <summary></summary>
+            public float RepeatV
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.RepeatV) != 0)
+                        return repeatV;
+                    else
+                        return DefaultTexture.repeatV;
+                }
+                set
+                {
+                    repeatV = value;
+                    hasAttribute |= TextureAttributes.RepeatV;
+                }
+            }
+
+            /// <summary></summary>
+            public float OffsetU
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.OffsetU) != 0)
+                        return offsetU;
+                    else
+                        return DefaultTexture.offsetU;
+                }
+                set
+                {
+                    offsetU = value;
+                    hasAttribute |= TextureAttributes.OffsetU;
+                }
+            }
+
+            /// <summary></summary>
+            public float OffsetV
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.OffsetV) != 0)
+                        return offsetV;
+                    else
+                        return DefaultTexture.offsetV;
+                }
+                set
+                {
+                    offsetV = value;
+                    hasAttribute |= TextureAttributes.OffsetV;
+                }
+            }
+
+            /// <summary></summary>
+            public float Rotation
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Rotation) != 0)
+                        return rotation;
+                    else
+                        return DefaultTexture.rotation;
+                }
+                set
+                {
+                    rotation = value;
+                    hasAttribute |= TextureAttributes.Rotation;
+                }
+            }
+
+            /// <summary></summary>
+            public Bumpiness Bump
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return (Bumpiness)(material & BUMP_MASK);
+                    else
+                        return DefaultTexture.Bump;
+                }
+                set
+                {
+                    // Clear out the old material value
+                    material &= 0xE0;
+                    // Put the new bump value in the material byte
+                    material |= (byte)value;
+                    hasAttribute |= TextureAttributes.Material;
+                }
+            }
+
+            public Shininess Shiny
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return (Shininess)(material & SHINY_MASK);
+                    else
+                        return DefaultTexture.Shiny;
+                }
+                set
+                {
+                    // Clear out the old shiny value
+                    material &= 0x3F;
+                    // Put the new shiny value in the material byte
+                    material |= (byte)value;
+                    hasAttribute |= TextureAttributes.Material;
+                }
+            }
+
+            public bool Fullbright
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Material) != 0)
+                        return (material & FULLBRIGHT_MASK) != 0;
+                    else
+                        return DefaultTexture.Fullbright;
+                }
+                set
+                {
+                    // Clear out the old fullbright value
+                    material &= 0xDF;
+                    if (value)
+                    {
+                        material |= 0x20;
+                        hasAttribute |= TextureAttributes.Material;
+                    }
+                }
+            }
+
+            /// <summary>In the future this will specify whether a webpage is
+            /// attached to this face</summary>
+            public bool MediaFlags
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Media) != 0)
+                        return (media & MEDIA_MASK) != 0;
+                    else
+                        return DefaultTexture.MediaFlags;
+                }
+                set
+                {
+                    // Clear out the old mediaflags value
+                    media &= 0xFE;
+                    if (value)
+                    {
+                        media |= 0x01;
+                        hasAttribute |= TextureAttributes.Media;
+                    }
+                }
+            }
+
+            public Mapping TexMapType
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.Media) != 0)
+                        return (Mapping)(media & TEX_MAP_MASK);
+                    else
+                        return DefaultTexture.TexMapType;
+                }
+                set
+                {
+                    // Clear out the old texmap value
+                    media &= 0xF9;
+                    // Put the new texmap value in the media byte
+                    media |= (byte)value;
+                    hasAttribute |= TextureAttributes.Media;
+                }
+            }
+
+            /// <summary></summary>
+            public LLUUID TextureID
+            {
+                get
+                {
+                    if ((hasAttribute & TextureAttributes.TextureID) != 0)
+                        return textureID;
+                    else
+                        return DefaultTexture.textureID;
+                }
+                set
+                {
+                    textureID = value;
+                    hasAttribute |= TextureAttributes.TextureID;
+                }
+            }
+
+            #endregion Properties
+
+            public TextureEntryFace()
+            {
+            	DefaultTexture = null;
+            	hasAttribute = TextureAttributes.All;
+            }
+            
+            /// <summary>
+            /// Contains the definition for individual faces
+            /// </summary>
+            /// <param name="defaultTexture"></param>
+            public TextureEntryFace(TextureEntryFace defaultTexture)
+            {
+                DefaultTexture = defaultTexture;
+                if (DefaultTexture == null)
+                    hasAttribute = TextureAttributes.All;
+                else
+                    hasAttribute = TextureAttributes.None;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return String.Format("RGBA: {0} RepeatU: {1} RepeatV: {2} OffsetU: {3} OffsetV: {4} Rotation: {5} " +
+                    "TextureAttributes: {6} Material: {7} Media: {8} ID: {9}", rgba, repeatU, repeatV, offsetU, 
+                    offsetV, rotation, hasAttribute.ToString(), material, media, textureID.ToStringHyphenated());
+            }
+        }
+
+        /// <summary>
         /// Represents all of the texturable faces for an object
         /// </summary>
         /// <remarks>Objects in Second Life have infinite faces, with each face
         /// using the properties of the default face unless set otherwise. So if
-        /// you have a TextureEntry with a default texture uuid of X, and face 72
+        /// you have a TextureEntry with a default texture uuid of X, and face 18
         /// has a texture UUID of Y, every face would be textured with X except for
-        /// face 72 that uses Y. In practice however, primitives utilize a maximum
+        /// face 18 that uses Y. In practice however, primitives utilize a maximum
         /// of nine faces</remarks>
         [Serializable]
-        public class TextureEntry2
+        public class TextureEntry
         {
             /// <summary></summary>
             public TextureEntryFace DefaultTexture;
@@ -157,7 +447,7 @@ namespace libsecondlife
             /// <summary>
             /// Default constructor, DefaultTexture will be null
             /// </summary>
-            public TextureEntry2()
+            public TextureEntry()
             {
                 DefaultTexture = null;
                 FaceTextures = new TextureEntryFace[0];
@@ -167,7 +457,7 @@ namespace libsecondlife
             /// Constructor that takes a default texture UUID
             /// </summary>
             /// <param name="defaultTextureID">Texture UUID to use as the default texture</param>
-            public TextureEntry2(LLUUID defaultTextureID)
+            public TextureEntry(LLUUID defaultTextureID)
             {
                 DefaultTexture = new TextureEntryFace(null);
                 DefaultTexture.TextureID = defaultTextureID;
@@ -181,7 +471,7 @@ namespace libsecondlife
             /// <param name="pos">Starting position of the TextureEntry field in 
             /// the byte array</param>
             /// <param name="length">Length of the TextureEntry field, in bytes</param>
-            public TextureEntry2(byte[] data, int pos, int length)
+            public TextureEntry(byte[] data, int pos, int length)
             {
                 FromBytes(data, pos, length);
             }
@@ -207,17 +497,19 @@ namespace libsecondlife
 
             private void FromBytes(byte[] data, int pos, int length)
             {
+                // Always initialize FaceTextures with MAX_FACES null pointers
+                // so new faces can be created without resizing the array
+                FaceTextures = new TextureEntryFace[MAX_FACES];
+
                 if (length <= 0)
                 {
                     // No TextureEntry to process
                     DefaultTexture = null;
-                    FaceTextures = new TextureEntryFace[0];
                     return;
                 }
                 else
                 {
                     DefaultTexture = new TextureEntryFace(null);
-                    FaceTextures = new TextureEntryFace[MAX_FACES];
                 }
 
                 uint bitfieldSize = 0;
