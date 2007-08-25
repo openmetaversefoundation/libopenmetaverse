@@ -169,12 +169,12 @@ namespace libsecondlife.Tests
             face.Bump = LLObject.Bumpiness.Concrete;
             face.Fullbright = true;
             face.MediaFlags = true;
-            face.OffsetU = 1.0f;
-            face.OffsetV = 2.0f;
+            face.OffsetU = 0.5f;
+            face.OffsetV = -0.5f;
             face.RepeatU = 3.0f;
             face.RepeatV = 4.0f;
             face.RGBA = 1234;
-            face.Rotation = 5.0f;
+            face.Rotation = 1.5f;
             face.Shiny = LLObject.Shininess.Medium;
             face.TexMapType = LLObject.Mapping.Planar;
             face.TextureID = LLUUID.Random();

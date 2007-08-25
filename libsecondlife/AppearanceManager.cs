@@ -165,7 +165,7 @@ namespace libsecondlife
         // A list of all the uploads that are in progress
         private Dictionary<LLUUID, TextureIndex> PendingUploads = new Dictionary<LLUUID, TextureIndex>(BAKED_TEXTURE_COUNT);
         // Whether the handler for our current wearable list should automatically start downloading the assets
-        private bool DownloadWearables = false;
+        //private bool DownloadWearables = false;
         private static int CacheCheckSerialNum = 1; //FIXME
         private static uint SetAppearanceSerialNum = 1; //FIXME
         private AutoResetEvent WearablesRequestEvent = new AutoResetEvent(false);
