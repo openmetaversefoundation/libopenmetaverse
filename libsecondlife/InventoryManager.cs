@@ -40,27 +40,20 @@ namespace libsecondlife
         Sound = 1,
         CallingCard = 2,
         Landmark = 3,
-        [Obsolete]
-        Script = 4,
-        [Obsolete]
-        Clothing = 5,
+        [Obsolete] Script = 4,
+        [Obsolete] Clothing = 5,
         Object = 6,
         Notecard = 7,
         Category = 8,
         Folder = 8,
         RootCategory = 0,
         LSL = 10,
-        [Obsolete]
-        LSLBytecode = 11,
-        [Obsolete]
-        TextureTGA = 12,
-        [Obsolete]
-        Bodypart = 13,
-        [Obsolete]
-        Trash = 14,
+        [Obsolete] LSLBytecode = 11,
+        [Obsolete] TextureTGA = 12,
+        [Obsolete] Bodypart = 13,
+        [Obsolete] Trash = 14,
         Snapshot = 15,
-        [Obsolete]
-        LostAndFound = 16,
+        [Obsolete] LostAndFound = 16,
         Attachment = 17,
         Wearable = 18,
         Animation = 19,
@@ -171,6 +164,31 @@ namespace libsecondlife
         }
     }
 
+    public class InventoryTexture     : InventoryItem { public InventoryTexture(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Texture; } }
+    public class InventorySound       : InventoryItem { public InventorySound(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Sound; } }
+    public class InventoryCallingCard : InventoryItem { public InventoryCallingCard(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.CallingCard; } }
+    public class InventoryLandmark    : InventoryItem { public InventoryLandmark(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Landmark; } }
+    public class InventoryObject      : InventoryItem { public InventoryObject(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Object; } }
+    public class InventoryNotecard    : InventoryItem { public InventoryNotecard(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Notecard; } }
+    public class InventoryCategory    : InventoryItem { public InventoryCategory(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Category; } }
+    public class InventoryLSL         : InventoryItem { public InventoryLSL(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.LSL; } }
+    public class InventorySnapshot    : InventoryItem { public InventorySnapshot(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Snapshot; } }
+    public class InventoryAttachment  : InventoryItem { public InventoryAttachment(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Attachment; } }
+
+    public class InventoryWearable : InventoryItem
+    {
+        public InventoryWearable(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Wearable; }
+
+        public WearableType WearableType
+        {
+            get { return (WearableType)Flags; }
+            set { Flags = (uint)value; }
+        }
+    }
+
+    public class InventoryAnimation   : InventoryItem { public InventoryAnimation(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Animation; } }
+    public class InventoryGesture     : InventoryItem { public InventoryGesture(LLUUID itemID) : base(itemID) { InventoryType = InventoryType.Gesture; } }
+
     public class InventoryFolder : InventoryBase
     {
         public AssetType PreferredType;
@@ -263,6 +281,27 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
             // Watch for inventory given to us through instant message
             Client.Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
+        }
+
+        private InventoryItem CreateInventoryItem(InventoryType type, LLUUID id)
+        {
+            switch (type)
+            {
+                case InventoryType.Texture: return new InventoryTexture(id);
+                case InventoryType.Sound: return new InventorySound(id);
+                case InventoryType.CallingCard: return new InventoryCallingCard(id);
+                case InventoryType.Landmark: return new InventoryLandmark(id);
+                case InventoryType.Object: return new InventoryObject(id);
+                case InventoryType.Notecard: return new InventoryNotecard(id);
+                case InventoryType.Category: return new InventoryCategory(id);
+                case InventoryType.LSL: return new InventoryLSL(id);
+                case InventoryType.Snapshot: return new InventorySnapshot(id);
+                case InventoryType.Attachment: return new InventoryAttachment(id);
+                case InventoryType.Wearable: return new InventoryWearable(id);
+                case InventoryType.Animation: return new InventoryAnimation(id);
+                case InventoryType.Gesture: return new InventoryGesture(id);
+                default: return null;
+            }
         }
 
         #region Searching
@@ -399,6 +438,7 @@ namespace libsecondlife
             }
             // Recurse outside of the loop because subsequent calls to FindObjects may
             // modify the baseNode.Nodes collection.
+            // FIXME: I'm pretty sure this is not necessary
             if (recurse)
             {
                 foreach (InventoryFolder folder in folders)
@@ -408,6 +448,124 @@ namespace libsecondlife
             }
             return objects;
         }
+
+        private class FindObjectsByPathState
+        {
+            public FindResult Result;
+            public LLUUID Folder;
+            public int Level;
+
+            public FindObjectsByPathState(FindResult result, LLUUID folder, int level)
+            {
+                Result = result;
+                Folder = folder;
+                Level = level;
+            }
+        }
+
+        public List<InventoryBase> FindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly)
+        {
+            IAsyncResult r = BeginFindObjectsByPath(baseFolder, path, refresh, firstOnly, null, null);
+            return EndFindObjects(r);
+        }
+        
+        public IAsyncResult BeginFindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState)
+        {
+            if (path.Length == 0)
+                throw new ArgumentException("Empty path is not supported");
+            
+            FindResult result = new FindResult(path, callback);
+            result.FirstOnly = firstOnly;
+            result.AsyncState = asyncState;
+            
+            if (refresh)
+            {
+                result.FoldersWaiting = 1;
+                BeginRequestFolderContents(
+                    baseFolder,
+                    Client.Network.AgentID,
+                    true,
+                    true,
+                    false,
+                    InventorySortOrder.ByName,
+                    new AsyncCallback(FindObjectsByPathCallback),
+                    new FindObjectsByPathState(result, baseFolder, 0));
+            }
+            else
+            {
+                result.Result = LocalFind(baseFolder, path, 0, firstOnly);
+                result.CompletedSynchronously = true;
+                result.IsCompleted = true;
+            }
+
+            return result;
+        }
+
+        private void FindObjectsByPathCallback(IAsyncResult result)
+        {
+            EndRequestFolderContents(result);
+            FindObjectsByPathState state = (FindObjectsByPathState)result.AsyncState;
+
+            Interlocked.Decrement(ref state.Result.FoldersWaiting);
+            List<InventoryBase> folderContents = Store.GetContents(state.Folder);
+
+            foreach (InventoryBase obj in folderContents)
+            {
+                if (obj.Name.CompareTo(state.Result.Path[state.Level]) == 0)
+                {
+                    if (state.Level == state.Result.Path.Length - 1)
+                    {
+                        state.Result.Result.Add(obj);
+
+                        if (state.Result.FirstOnly)
+                        {
+                            state.Result.IsCompleted = true;
+                            return;
+                        }
+                    }
+                    else if (obj is InventoryFolder)
+                    {
+                        Interlocked.Increment(ref state.Result.FoldersWaiting);
+                        BeginRequestFolderContents(
+                            obj.UUID,
+                            Client.Network.AgentID,
+                            true,
+                            true,
+                            false,
+                            InventorySortOrder.ByName,
+                            new AsyncCallback(FindObjectsByPathCallback),
+                            new FindObjectsByPathState(state.Result, obj.UUID, state.Level + 1));
+                    }
+                }
+            }
+
+            if (Interlocked.Equals(state.Result.FoldersWaiting, 0))
+                state.Result.IsCompleted = true;
+        }
+
+        private List<InventoryBase> LocalFind(LLUUID baseFolder, string[] path, int level, bool firstOnly)
+        {
+            List<InventoryBase> objects = new List<InventoryBase>();
+            List<InventoryFolder> folders = new List<InventoryFolder>();
+            List<InventoryBase> contents = Store.GetContents(baseFolder);
+
+            foreach (InventoryBase inv in contents)
+            {
+                if (inv.Name.CompareTo(path[level]) == 0)
+                {
+                    if (level == path.Length - 1)
+                    {
+                        objects.Add(inv);
+                        if (firstOnly) return objects;
+                    }
+                    else if (inv is InventoryFolder)
+                        objects.AddRange(LocalFind(inv.UUID, path, level + 1, firstOnly));
+                }
+            }
+
+            return objects;
+        }
+
         #endregion
 
         #region Folder Actions
@@ -466,18 +624,18 @@ namespace libsecondlife
 
         public void HandleDescendantsRetrieved(LLUUID uuid)
         {
-            List<DescendantsResult> satasfiedResults = null;
+            List<DescendantsResult> satisfiedResults = null;
             lock (folderRequests)
             {
-                if (folderRequests.TryGetValue(uuid, out satasfiedResults))
+                if (folderRequests.TryGetValue(uuid, out satisfiedResults))
                     folderRequests.Remove(uuid);
             }
-            if (satasfiedResults == null)
+            if (satisfiedResults == null)
                 return;
-            lock (satasfiedResults)
+            lock (satisfiedResults)
             {
                 List<InventoryBase> contents = Store.GetContents(uuid);
-                foreach (DescendantsResult result in satasfiedResults)
+                foreach (DescendantsResult result in satisfiedResults)
                 {
                     if (result.Recurse)
                     {
@@ -667,6 +825,13 @@ namespace libsecondlife
             Client.Network.SendPacket(fetch);
         }
 
+        public void FetchInventory(LLUUID itemID)
+        {
+            List<LLUUID> list = new List<LLUUID>(1);
+            list.Add(itemID);
+            FetchInventory(list);
+        }
+
         public void Remove(InventoryBase obj)
         {
             List<InventoryBase> temp = new List<InventoryBase>(1);
@@ -796,14 +961,13 @@ namespace libsecondlife
                     {
                         if (reply.ItemData[i].ItemID != LLUUID.Zero)
                         {
-                            InventoryItem item = new InventoryItem(reply.ItemData[i].ItemID);
+                            InventoryItem item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType,reply.ItemData[i].ItemID);
                             item.ParentUUID = reply.ItemData[i].FolderID;
                             item.AssetType = (AssetType)reply.ItemData[i].Type;
                             item.AssetUUID = reply.ItemData[i].AssetID;
                             item.CreationDate = Helpers.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);
                             item.Description = Helpers.FieldToUTF8String(reply.ItemData[i].Description);
                             item.Flags = reply.ItemData[i].Flags;
-                            item.InventoryType = (InventoryType)reply.ItemData[i].InvType;
                             item.Name = Helpers.FieldToUTF8String(reply.ItemData[i].Name);
                             item.GroupID = reply.ItemData[i].GroupID;
                             item.GroupOwned = reply.ItemData[i].GroupOwned;
@@ -853,8 +1017,8 @@ namespace libsecondlife
                     Client.Log("Received InventoryFolder in an UpdateCreateInventoryItem packet.", Helpers.LogLevel.Error);
                     continue;
                 }
-                InventoryItem item = new InventoryItem(dataBlock.ItemID);
 
+                InventoryItem item = CreateInventoryItem((InventoryType)dataBlock.InvType,dataBlock.ItemID);
                 item.AssetType = (AssetType)dataBlock.Type;
                 item.AssetUUID = dataBlock.AssetID;
                 item.CreationDate = DateTime.FromBinary(dataBlock.CreationDate);
@@ -862,7 +1026,6 @@ namespace libsecondlife
                 item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
-                item.InventoryType = (InventoryType)dataBlock.InvType;
                 item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
                 item.OwnerID = dataBlock.OwnerID;
                 item.ParentUUID = dataBlock.FolderID;
@@ -906,7 +1069,7 @@ namespace libsecondlife
                     if (!Store.Contains(dataBlock.ItemID))
                         Client.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning);
 
-                    InventoryItem item = new InventoryItem(dataBlock.ItemID);
+                    InventoryItem item = CreateInventoryItem((InventoryType)dataBlock.InvType,dataBlock.ItemID);
                     item.AssetType = (AssetType)dataBlock.Type;
                     item.AssetUUID = dataBlock.AssetID; // FIXME: Should we set this here? Isnt it always zero?
                     item.CreationDate = DateTime.FromBinary(dataBlock.CreationDate);
@@ -914,7 +1077,6 @@ namespace libsecondlife
                     item.Flags = dataBlock.Flags;
                     item.GroupID = dataBlock.GroupID;
                     item.GroupOwned = dataBlock.GroupOwned;
-                    item.InventoryType = (InventoryType)dataBlock.InvType;
                     item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
                     item.OwnerID = dataBlock.OwnerID;
                     item.ParentUUID = dataBlock.FolderID;
@@ -944,7 +1106,7 @@ namespace libsecondlife
                     continue;
                 }
 
-                InventoryItem item = new InventoryItem(dataBlock.ItemID);
+                InventoryItem item = CreateInventoryItem((InventoryType)dataBlock.InvType,dataBlock.ItemID);
                 item.AssetType = (AssetType)dataBlock.Type;
                 item.AssetUUID = dataBlock.AssetID;
                 item.CreationDate = DateTime.FromBinary(dataBlock.CreationDate);
@@ -952,7 +1114,6 @@ namespace libsecondlife
                 item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
-                item.InventoryType = (InventoryType)dataBlock.InvType;
                 item.Name = Helpers.FieldToUTF8String(dataBlock.Name);
                 item.OwnerID = dataBlock.OwnerID;
                 item.ParentUUID = dataBlock.FolderID;
@@ -1092,6 +1253,12 @@ namespace libsecondlife
         {
             get { return regex; }
         }
+
+        public string[] Path
+        {
+            get { return path; }
+        }
+        
         public AsyncCallback Callback
         {
             get { return callback; }
@@ -1100,6 +1267,7 @@ namespace libsecondlife
         public bool FirstOnly;
         private AsyncCallback callback;
         private Regex regex;
+        private string[] path;
         private bool recurse;
         private ManualResetEvent waitHandle;
         private bool complete;
@@ -1112,6 +1280,14 @@ namespace libsecondlife
             this.callback = callback;
             this.recurse = recurse;
             this.regex = regex;
+            this.Result = new List<InventoryBase>();
+        }
+
+        public FindResult(string[] path, AsyncCallback callback)
+        {
+            this.waitHandle = new ManualResetEvent(false);
+            this.callback = callback;
+            this.path = path;
             this.Result = new List<InventoryBase>();
         }
 

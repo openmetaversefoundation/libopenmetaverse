@@ -108,6 +108,7 @@
     <Compile Include="EventDictionary.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendsManager.cs" />
+    <Compile Include="Image.cs" />
     <Compile Include="HttpBase.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryManager.cs" />

@@ -93,7 +93,7 @@ namespace SLImageUpload
                         if (lowfilename.EndsWith(".tga"))
                             bitmap = OpenJPEGNet.LoadTGAClass.LoadTGA(dialog.FileName);
                         else
-                            bitmap = (Bitmap)Image.FromFile(dialog.FileName);
+                            bitmap = (Bitmap)System.Drawing.Image.FromFile(dialog.FileName);
 
                         // Handle resizing to prevent excessively large images
                         if (bitmap.Width > 1024 || bitmap.Height > 1024)

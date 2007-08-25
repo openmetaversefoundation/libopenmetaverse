@@ -75,7 +75,7 @@ namespace libsecondlife.TestClient
             return "Couldn't find avatar " + target.ToStringHyphenated();
         }
 
-        private void Assets_OnImageReceived(ImageDownload image)
+        private void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
         {
             lock (OutfitAssets)
             {

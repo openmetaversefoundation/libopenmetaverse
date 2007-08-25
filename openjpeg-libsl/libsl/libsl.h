@@ -3,8 +3,7 @@
 #ifndef LIBSL_H
 #define LIBSL_H
 
-
-struct LibslImage
+struct MarshalledImage
 {
 	unsigned char* encoded;
 	int length;
@@ -22,11 +21,11 @@ struct LibslImage
 #endif
 
 // uncompresed images are raw RGBA 8bit/channel
-DLLEXPORT bool LibslEncode(LibslImage* image, bool lossless);
-DLLEXPORT bool LibslDecode(LibslImage* image);
-DLLEXPORT bool LibslAllocEncoded(LibslImage* image);
-DLLEXPORT bool LibslAllocDecoded(LibslImage* image);
-DLLEXPORT void LibslFree(LibslImage* image);
+DLLEXPORT bool LibslEncode(MarshalledImage* image, bool lossless);
+DLLEXPORT bool LibslDecode(MarshalledImage* image);
+DLLEXPORT bool LibslAllocEncoded(MarshalledImage* image);
+DLLEXPORT bool LibslAllocDecoded(MarshalledImage* image);
+DLLEXPORT void LibslFree(MarshalledImage* image);
 
 
 #endif

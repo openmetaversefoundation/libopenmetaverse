@@ -4,6 +4,7 @@
 extern "C" {
 #include "../libopenjpeg/openjpeg.h"
 }
+#include <algorithm>
 
 #define NULL 0
 
@@ -96,7 +97,7 @@ struct cio_wrapper
 	}
 };
 
-bool LibslAllocEncoded(LibslImage* image)
+bool LibslAllocEncoded(MarshalledImage* image)
 {
 	try
 	{
@@ -112,7 +113,7 @@ bool LibslAllocEncoded(LibslImage* image)
 	return true;
 }
 
-bool LibslAllocDecoded(LibslImage* image)
+bool LibslAllocDecoded(MarshalledImage* image)
 {
 	try
 	{
@@ -128,14 +129,14 @@ bool LibslAllocDecoded(LibslImage* image)
 	return true;
 }
 
-void LibslFree(LibslImage* image)
+void LibslFree(MarshalledImage* image)
 {
-	if (image->encoded != 0) delete image->encoded;
-	if (image->decoded != 0) delete image->decoded;
+	if (image->encoded != 0) delete[] image->encoded;
+	if (image->decoded != 0) delete[] image->decoded;
 }
 
 
-bool LibslEncode(LibslImage* image, bool lossless)
+bool LibslEncode(MarshalledImage* image, bool lossless)
 {
 	try
 	{
@@ -160,12 +161,8 @@ bool LibslEncode(LibslImage* image, bool lossless)
 		}
 
 		cparameters.cp_comment = "LL_RGBHM";
-
-		if (image->components > 5)
-			return false;
-		
 		opj_image_comptparm comptparm[5];
-		
+
 		for (int i = 0; i < image->components; i++)
 		{
 			comptparm[i].bpp = 8;
@@ -184,20 +181,11 @@ bool LibslEncode(LibslImage* image, bool lossless)
 		cimage.image->y0 = 0;
 		cimage.image->x1 = image->width;
 		cimage.image->y1 = image->height;
-
-		int dataIndex = 0, compIndex = 0, x, y, c;
-
-		for (y = 0; y < image->height; y++)
-		{
-			for (x = 0; x < image->width; x++)
-			{
-				for (c = 0; c < image->components; c++)
-					cimage.image->comps[c].data[compIndex] = image->decoded[dataIndex++];
-
-				compIndex++;
-			}
-		}
-
+		int n = image->width * image->height;
+		
+		for (int i = 0; i < image->components; i++)
+			std::copy(image->decoded+i*n,image->decoded+(i+1)*n,cimage.image->comps[i].data);
+		
 		cinfo_wrapper cinfo(CODEC_J2K);
 		opj_setup_encoder(cinfo.cinfo,&cparameters,cimage.image);
 		cio_wrapper cio(cinfo.cinfo,NULL,0);
@@ -207,9 +195,7 @@ bool LibslEncode(LibslImage* image, bool lossless)
 
 		image->length = cio_tell(cio.cio);
 		image->encoded = new unsigned char[image->length];
-		
-		for (int i = 0; i < image->length; i++)
-			image->encoded[i] = cio.cio->buffer[i];
+		std::copy(cio.cio->buffer,cio.cio->buffer+image->length,image->encoded);
 		
 		return true;
 	}
@@ -220,7 +206,7 @@ bool LibslEncode(LibslImage* image, bool lossless)
 	}
 }
 
-bool LibslDecode(LibslImage* image)
+bool LibslDecode(MarshalledImage* image)
 {
 	opj_dparameters dparameters;
 	
@@ -232,22 +218,14 @@ bool LibslDecode(LibslImage* image)
 		cio_wrapper cio(dinfo.dinfo,image->encoded,image->length);
 		image_wrapper cimage(dinfo.dinfo, cio.cio); // decode happens here
 
-		int dataIndex = 0, compIndex = 0, x, y, c;
 		image->width = cimage.image->x1 - cimage.image->x0;
 		image->height = cimage.image->y1 - cimage.image->y0;
 		image->components = cimage.image->numcomps;
-		image->decoded = new unsigned char[image->width*image->height*image->components];
+		int n = image->width * image->height;
+		image->decoded = new unsigned char[n*image->components];
 		
-		for (y = 0; y < image->height; y++)
-		{
-			for (x = 0; x < image->width; x++)
-			{
-				for (c = 0; c < image->components; c++)
-					image->decoded[dataIndex++] = cimage.image->comps[c].data[compIndex];
-
-				compIndex++;
-			}
-		}
+		for (int i = 0; i < image->components; i++)
+			std::copy(cimage.image->comps[i].data,cimage.image->comps[i].data+n,image->decoded+i*n);
 
 		return true;
 	}

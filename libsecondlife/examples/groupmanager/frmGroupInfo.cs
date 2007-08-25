@@ -78,7 +78,7 @@ namespace groupmanager
                 this.BeginInvoke(new MethodInvoker(UpdateProfile));
         }
 
-        void Assets_OnImageReceived(ImageDownload image)
+        void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
         {
             if (image.Success)
                 picInsignia.Image = OpenJPEGNet.OpenJPEG.DecodeToImage(image.AssetData);

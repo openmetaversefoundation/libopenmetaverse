@@ -214,7 +214,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="image"></param>
-        public delegate void ImageReceivedCallback(ImageDownload image);
+        public delegate void ImageReceivedCallback(ImageDownload image, AssetTexture asset);
         /// <summary>
         /// 
         /// </summary>
@@ -317,8 +317,7 @@ namespace libsecondlife
         /// <param name="ownerID">The owner of this asset</param>
         /// <param name="type">Asset type</param>
         /// <param name="priority">Whether to prioritize this asset download or not</param>
-        public LLUUID RequestInventoryAsset(LLUUID assetID, LLUUID itemID, LLUUID taskID, LLUUID ownerID, AssetType type,
-            bool priority)
+        public LLUUID RequestInventoryAsset(LLUUID assetID, LLUUID itemID, LLUUID taskID, LLUUID ownerID, AssetType type, bool priority)
         {
             AssetDownload transfer = new AssetDownload();
             transfer.ID = LLUUID.Random();
@@ -351,6 +350,11 @@ namespace libsecondlife
 
             Client.Network.SendPacket(request, transfer.Simulator);
             return transfer.ID;
+        }
+
+        public LLUUID RequestInventoryAsset(InventoryItem item, bool priority)
+        {
+            return RequestInventoryAsset(item.AssetUUID, item.UUID, LLUUID.Zero, item.OwnerID, item.AssetType, priority);
         }
 
         public void RequestEstateAsset()
@@ -398,8 +402,18 @@ namespace libsecondlife
             }
         }
 
-        public LLUUID RequestUpload(AssetType type, byte[] data, bool tempFile, bool storeLocal,
-            bool isPriority)
+        public LLUUID RequestUpload(Asset asset, bool tempFile, bool storeLocal, bool isPriority)
+        {
+            if (asset.AssetData == null)
+                throw new ArgumentException("Can't upload an asset with no data (did you forget to call Encode?)");
+
+            LLUUID assetID;
+            LLUUID transferID = RequestUpload(out assetID, asset.AssetType, asset.AssetData, tempFile, storeLocal, isPriority);
+            asset.AssetID = assetID;
+            return transferID;
+        }
+        
+        public LLUUID RequestUpload(AssetType type, byte[] data, bool tempFile, bool storeLocal, bool isPriority)
         {
             LLUUID assetID;
             return RequestUpload(out assetID, type, data, tempFile, storeLocal, isPriority);
@@ -417,8 +431,7 @@ namespace libsecondlife
         /// simulator or the grid-wide asset server</param>
         /// <param name="isPriority">Give this upload a higher priority</param>
         /// <returns>The transaction ID of this transfer</returns>
-        public LLUUID RequestUpload(out LLUUID assetID, AssetType type, byte[] data, bool tempFile, bool storeLocal, 
-            bool isPriority)
+        public LLUUID RequestUpload(out LLUUID assetID, AssetType type, byte[] data, bool tempFile, bool storeLocal, bool isPriority)
         {
             AssetUpload upload = new AssetUpload();
             upload.AssetData = data;
@@ -640,18 +653,18 @@ namespace libsecondlife
 
                     if (OnAssetReceived != null)
                     {
-                        try { OnAssetReceived(transfer, CreateAsset(transfer)); }
+                        try { OnAssetReceived(transfer, WrapAsset(transfer)); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
             }
         }
 
-        private Asset CreateAsset(AssetDownload download)
+        private Asset CreateAssetWrapper(AssetType type)
         {
             Asset asset;
 
-            switch (download.AssetType)
+            switch (type)
             {
                 case AssetType.Notecard:
                     asset = new AssetNotecard();
@@ -662,19 +675,29 @@ namespace libsecondlife
                 case AssetType.LSLBytecode:
                     asset = new AssetScriptBinary();
                     break;
-                /*
                 case AssetType.Texture:
                     asset = new AssetTexture();
                     break;
-                */
                 case AssetType.Primitive:
                     asset = new AssetPrim();
                     break;
+                case AssetType.Clothing:
+                    asset = new AssetClothing();
+                    break;
+                case AssetType.Bodypart:
+                    asset = new AssetBodypart();
+                    break;
                 default:
-                    Client.Log("Unimplemented asset type: " + download.AssetType, Helpers.LogLevel.Error);
+                    Client.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error);
                     return null;
             }
 
+            return asset;
+        }
+
+        private Asset WrapAsset(AssetDownload download)
+        {
+            Asset asset = CreateAssetWrapper(download.AssetType);
             asset.AssetID = download.AssetID;
             asset.AssetData = download.AssetData;
             return asset;
@@ -836,7 +859,7 @@ namespace libsecondlife
 
                 if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
                 {
-                    try { OnImageReceived(transfer); }
+                    try { OnImageReceived(transfer, new AssetTexture(transfer.AssetData)); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
@@ -893,7 +916,7 @@ namespace libsecondlife
 
             if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
             {
-                try { OnImageReceived(transfer); }
+                try { OnImageReceived(transfer, new AssetTexture(transfer.AssetData)); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }
@@ -919,7 +942,7 @@ namespace libsecondlife
             // Fire the event with our transfer that contains Success = false;
             if (transfer != null && OnImageReceived != null)
             {
-                try { OnImageReceived(transfer); }
+                try { OnImageReceived(transfer, null); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
         }

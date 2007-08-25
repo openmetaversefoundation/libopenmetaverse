@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            Client.Appearance.SetPreviousAppearance();
+            Client.Appearance.SetPreviousAppearance(!(args.Length > 0 && args[0].Equals("nobake")));
             return "Done.";
         }
     }

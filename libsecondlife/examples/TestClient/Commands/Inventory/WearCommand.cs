@@ -22,22 +22,29 @@ namespace libsecondlife.TestClient
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
             string target = String.Empty;
+            bool bake = true;
 
             for (int ct = 0; ct < args.Length; ct++)
-                target = target + args[ct] + " ";
+            {
+                if (args[ct].Equals("nobake"))
+                    bake = false;
+                else
+                    target = target + args[ct] + " ";
+            }
             
-            //target = target.TrimEnd();
-            //InventoryFolder folder = Client.Inventory.getFolder(target);
-            
-            //if (folder != null)
-            //{
-            //    Client.Appearance.WearOutfit(folder);
-            //    return "Outfit " + target + " worn.";
-            //}
+            target = target.TrimEnd();
 
-            //return "Unable to find: " + target;
+            try
+            {
+                Client.Appearance.WearOutfit(target.Split('/'), bake);
+            }
 
-            return "Broken, someone please update me";
+            catch (InvalidOutfitException ex)
+            {
+                return "Invalid outfit (" + ex.Message + ")";
+            }
+
+            return String.Empty;
         }
     }
 }

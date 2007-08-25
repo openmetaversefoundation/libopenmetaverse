@@ -44,11 +44,10 @@ namespace libsecondlife.Baking
         protected Dictionary<int, float> ParamValues;
         
         /// <summary>Wearable textures</summary>
-        protected Dictionary<AppearanceManager.TextureIndex, byte[]> EncodedTextures = new Dictionary<AppearanceManager.TextureIndex, byte[]>();
-        protected Dictionary<AppearanceManager.TextureIndex, byte[]> DecodedTextures = new Dictionary<AppearanceManager.TextureIndex, byte[]>();
+        protected Dictionary<AppearanceManager.TextureIndex, AssetTexture> Textures = new Dictionary<AppearanceManager.TextureIndex, AssetTexture>();
         protected int TextureCount;
 
-        public byte[] EncodedBake;
+        public AssetTexture BakedTexture;
 
         /// <summary>Width of the final baked image and scratchpad</summary>
         protected int BakeWidth;
@@ -99,15 +98,16 @@ namespace libsecondlife.Baking
         /// baking texture</param>
         /// <returns>True if this texture is completely baked and JPEG2000 data 
         /// is available, otherwise false</returns>
-        public bool AddTexture(AppearanceManager.TextureIndex index, byte[] jp2data)
+        public bool AddTexture(AppearanceManager.TextureIndex index, AssetTexture texture)
         {
-            lock (EncodedTextures)
+            lock (Textures)
             {
-                EncodedTextures.Add(index, jp2data);
+                texture.Decode();
+                Textures.Add(index, texture);
                 Client.DebugLog("Adding texture " + index.ToString() + " to bake " + BakeType.ToString());
             }
 
-            if (EncodedTextures.Count == TextureCount)
+            if (Textures.Count == TextureCount)
             {
                 Bake();
                 return true;
@@ -121,7 +121,7 @@ namespace libsecondlife.Baking
             Client.DebugLog("Missing texture " + index.ToString() + " in bake " + BakeType.ToString());
             TextureCount--;
 
-            if (EncodedTextures.Count == TextureCount)
+            if (Textures.Count == TextureCount)
             {
                 Bake();
                 return true;
@@ -133,7 +133,7 @@ namespace libsecondlife.Baking
         protected void Bake()
         {
             Client.DebugLog("Baking " + BakeType.ToString());
-            byte[] baked = new byte[BakeWidth * BakeHeight * 5];
+            BakedTexture = new AssetTexture(new Image(BakeWidth, BakeHeight, ImageChannels.Color | ImageChannels.Alpha | ImageChannels.Bump));
             int i = 0;
 
             for (int y = 0; y < BakeHeight; y++)
@@ -142,24 +142,26 @@ namespace libsecondlife.Baking
                 {
                     if (((x ^ y) & 0x10) == 0)
                     {
-                        baked[i++] = 255; // red
-                        baked[i++] = 0;   // green
-                        baked[i++] = 0;   // blue
-                        baked[i++] = 0;   // bump
-                        baked[i++] = 255; // alpha
+                        BakedTexture.Image.Red[i] = 255;
+                        BakedTexture.Image.Green[i] = 0;
+                        BakedTexture.Image.Blue[i] = 0;
+                        BakedTexture.Image.Alpha[i] = 255;
+                        BakedTexture.Image.Bump[i] = 0;
                     }
                     else
                     {
-                        baked[i++] = 0;   // red
-                        baked[i++] = 0;   // green
-                        baked[i++] = 255; // blue
-                        baked[i++] = 0;   // bump
-                        baked[i++] = 255; // alpha
+                        BakedTexture.Image.Red[i] = 0;
+                        BakedTexture.Image.Green[i] = 0;
+                        BakedTexture.Image.Blue[i] = 255;
+                        BakedTexture.Image.Alpha[i] = 255;
+                        BakedTexture.Image.Bump[i] = 0;
                     }
+
+                    ++i;
                 }
             }
 
-            EncodedBake = OpenJPEGNet.OpenJPEG.Encode(baked,BakeWidth,BakeHeight,5);
+            BakedTexture.Encode();
         }
 
         public static AppearanceManager.BakeType BakeTypeFor(AppearanceManager.TextureIndex index)

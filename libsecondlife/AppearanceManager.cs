@@ -37,378 +37,11 @@ using libsecondlife.Baking;
 
 namespace libsecondlife
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class Wearable
+    public class InvalidOutfitException : Exception
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum WearableType : byte
-        {
-            /// <summary></summary>
-            Shape = 0,
-            /// <summary></summary>
-            Skin,
-            /// <summary></summary>
-            Hair,
-            /// <summary></summary>
-            Eyes,
-            /// <summary></summary>
-            Shirt,
-            /// <summary></summary>
-            Pants,
-            /// <summary></summary>
-            Shoes,
-            /// <summary></summary>
-            Socks,
-            /// <summary></summary>
-            Jacket,
-            /// <summary></summary>
-            Gloves,
-            /// <summary></summary>
-            Undershirt,
-            /// <summary></summary>
-            Underpants,
-            /// <summary></summary>
-            Skirt,
-            /// <summary></summary>
-            Invalid = 255
-        };
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public enum ForSale
-        {
-            /// <summary>Not for sale</summary>
-            Not = 0,
-            /// <summary>The original is for sale</summary>
-            Original = 1,
-            /// <summary>Copies are for sale</summary>
-            Copy = 2,
-            /// <summary>The contents of the object are for sale</summary>
-            Contents = 3
-        }
-
-
-        public string Name = String.Empty;
-        public string Description = String.Empty;
-        public WearableType Type = WearableType.Shape;
-        public ForSale Sale = ForSale.Not;
-        public int SalePrice = 0;
-        public LLUUID Creator = LLUUID.Zero;
-        public LLUUID Owner = LLUUID.Zero;
-        public LLUUID LastOwner = LLUUID.Zero;
-        public LLUUID Group = LLUUID.Zero;
-        public bool GroupOwned = false;
-        public Permissions Permissions;
-        public Dictionary<int, float> Params = new Dictionary<int, float>();
-        public Dictionary<AppearanceManager.TextureIndex, LLUUID> Textures = new Dictionary<AppearanceManager.TextureIndex, LLUUID>();
-
-
-        private SecondLife Client;
-        private string[] ForSaleNames = new string[]
-        {
-            "not",
-            "orig",
-            "copy",
-            "cntn"
-        };
-
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="client">Reference to the SecondLife client</param>
-        public Wearable(SecondLife client)
-        {
-            Client = client;
-        }
-
-        public static AssetType WearableTypeToAssetType(WearableType type)
-        {
-            switch (type)
-            {
-                case WearableType.Shape:
-                case WearableType.Skin:
-                case WearableType.Hair:
-                case WearableType.Eyes:
-                    return AssetType.Bodypart;
-                case WearableType.Shirt:
-                case WearableType.Pants:
-                case WearableType.Shoes:
-                case WearableType.Socks:
-                case WearableType.Jacket:
-                case WearableType.Gloves:
-                case WearableType.Undershirt:
-                case WearableType.Underpants:
-                    return AssetType.Clothing;
-                default:
-                    return AssetType.Unknown;
-            }
-        }
-
-        public bool ImportAsset(string data)
-        {
-            int version = -1;
-            int n = -1;
-
-            try
-            {
-                n = data.IndexOf('\n');
-                version = Int32.Parse(data.Substring(19, n - 18));
-                data = data.Remove(0, n);
-
-                if (version != 22)
-                {
-                    Client.Log("Wearable asset has unrecognized version " + version, Helpers.LogLevel.Warning);
-                    return false;
-                }
-                
-                n = data.IndexOf('\n');
-                Name = data.Substring(0, n);
-                data = data.Remove(0, n);
-
-                n = data.IndexOf('\n');
-                Description = data.Substring(0, n);
-                data = data.Remove(0, n);
-
-                // Split in to an upper and lower half
-                string[] parts = data.Split(new string[] { "parameters" }, StringSplitOptions.None);
-                parts[1] = "parameters" + parts[1];
-
-                Permissions = new Permissions();
-
-                // Parse the upper half
-                string[] lines = parts[0].Split('\n');
-                foreach (string thisline in lines)
-                {
-                    string line = thisline.Trim();
-                    string[] fields = line.Split('\t');
-
-                    if (fields.Length == 2)
-                    {
-                        if (fields[0] == "creator_mask")
-                        {
-                            // Deprecated, apply this as the base mask
-                            Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                        }
-                        else if (fields[0] == "base_mask")
-                        {
-                            Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                        }
-                        else if (fields[0] == "owner_mask")
-                        {
-                            Permissions.OwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                        }
-                        else if (fields[0] == "group_mask")
-                        {
-                            Permissions.GroupMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                        }
-                        else if (fields[0] == "everyone_mask")
-                        {
-                            Permissions.EveryoneMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                        }
-                        else if (fields[0] == "next_owner_mask")
-                        {
-                            Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                        }
-                        else if (fields[0] == "creator_id")
-                        {
-                            Creator = new LLUUID(fields[1]);
-                        }
-                        else if (fields[0] == "owner_id")
-                        {
-                            Owner = new LLUUID(fields[1]);
-                        }
-                        else if (fields[0] == "last_owner_id")
-                        {
-                            LastOwner = new LLUUID(fields[1]);
-                        }
-                        else if (fields[0] == "group_id")
-                        {
-                            Group = new LLUUID(fields[1]);
-                        }
-                        else if (fields[0] == "group_owned")
-                        {
-                            GroupOwned = (Int32.Parse(fields[1]) != 0);
-                        }
-                        else if (fields[0] == "sale_type")
-                        {
-                            for (int i = 0; i < ForSaleNames.Length; i++)
-                            {
-                                if (fields[1] == ForSaleNames[i])
-                                {
-                                    Sale = (ForSale)i;
-                                    break;
-                                }
-                            }
-                        }
-                        else if (fields[0] == "sale_price")
-                        {
-                            SalePrice = Int32.Parse(fields[1]);
-                        }
-                        else if (fields[0] == "perm_mask")
-                        {
-                            Client.Log("Wearable asset has deprecated perm_mask field, ignoring", Helpers.LogLevel.Warning);
-                        }
-                    }
-                    else if (line.StartsWith("type "))
-                    {
-                        Type = (WearableType)Int32.Parse(line.Substring(5));
-                        break;
-                    }
-                }
-
-                // Break up the lower half in to parameters and textures
-                string[] lowerparts = parts[1].Split(new string[] { "textures" }, StringSplitOptions.None);
-                lowerparts[1] = "textures" + lowerparts[1];
-
-                // Parse the parameters
-                lines = lowerparts[0].Split('\n');
-                foreach (string line in lines)
-                {
-                    string[] fields = line.Split(' ');
-
-                    // Use exception handling to deal with all the lines we aren't interested in
-                    try
-                    {
-                        int id = Int32.Parse(fields[0]);
-                        float weight = Single.Parse(fields[1], System.Globalization.NumberStyles.Float, 
-                            Helpers.EnUsCulture.NumberFormat);
-
-                        Params[id] = weight;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
-                // Parse the textures
-                lines = lowerparts[1].Split('\n');
-                foreach (string line in lines)
-                {
-                    string[] fields = line.Split(' ');
-
-                    // Use exception handling to deal with all the lines we aren't interested in
-                    try
-                    {
-                        AppearanceManager.TextureIndex id = (AppearanceManager.TextureIndex)Int32.Parse(fields[0]);
-                        LLUUID texture = new LLUUID(fields[1]);
-
-                        Textures[id] = texture;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                Client.Log("Failed to parse wearable asset: " + e.ToString(), Helpers.LogLevel.Warning);
-            }
-
-            return false;
-        }
-
-        public string ExportAsset()
-        {
-            StringBuilder data = new StringBuilder("LLWearable version 22\n");
-            data.Append(Name); data.Append("\n\n");
-            data.Append("\tpermissions 0\n\t{\n");
-            data.Append("\t\tbase_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.BaseMask)); data.Append("\n");
-            data.Append("\t\towner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.OwnerMask)); data.Append("\n");
-            data.Append("\t\tgroup_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.GroupMask)); data.Append("\n");
-            data.Append("\t\teveryone_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.EveryoneMask)); data.Append("\n");
-            data.Append("\t\tnext_owner_mask\t"); data.Append(Helpers.UIntToHexString((uint)Permissions.NextOwnerMask)); data.Append("\n");
-            data.Append("\t\tcreator_id\t"); data.Append(Creator.ToStringHyphenated()); data.Append("\n");
-            data.Append("\t\towner_id\t"); data.Append(Owner.ToStringHyphenated()); data.Append("\n");
-            data.Append("\t\tlast_owner_id\t"); data.Append(LastOwner.ToStringHyphenated()); data.Append("\n");
-            data.Append("\t\tgroup_id\t"); data.Append(Group.ToStringHyphenated()); data.Append("\n");
-            if (GroupOwned) data.Append("\t\tgroup_owned\t1\n");
-            data.Append("\t}\n");
-            data.Append("\tsale_info\t0\n");
-            data.Append("\t{\n");
-            data.Append("\t\tsale_type\t"); data.Append(ForSaleNames[(int)Sale]); data.Append("\n");
-            data.Append("\t\tsale_price\t"); data.Append(SalePrice); data.Append("\n");
-            data.Append("\t}\n");
-            data.Append("type "); data.Append((int)Type); data.Append("\n");
-
-            data.Append("parameters "); data.Append(Params.Count); data.Append("\n");
-            foreach (KeyValuePair<int, float> param in Params)
-            {
-                data.Append(param.Key); data.Append(" "); data.Append(Helpers.FloatToTerseString(param.Value)); data.Append("\n");
-            }
-
-            data.Append("textures "); data.Append(Textures.Count); data.Append("\n");
-            foreach (KeyValuePair<AppearanceManager.TextureIndex, LLUUID> texture in Textures)
-            {
-                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToStringHyphenated()); data.Append("\n");
-            }
-
-            return data.ToString();
-        }
-
-        /// <summary>
-        /// Create a new Wearable from an AssetWearable
-        /// </summary>
-        /// <param name="client">SecondLife client</param>
-        /// <param name="aw">AssetWearable to convert</param>
-        /// <returns></returns>
-        
-        /*public static Wearable FromAssetWearable(SecondLife client, libsecondlife.AssetSystem.AssetWearable aw)
-        {
-            Wearable w = new Wearable(client);
-            w.Creator = aw.Creator_ID;
-            w.Description = aw.Description;
-            w.Group = aw.Group_ID;
-            w.GroupOwned = aw.Group_Owned;
-            w.LastOwner = aw.Last_Owner_ID;
-            w.Name = aw.Name;
-            w.Owner = aw.Owner_ID;
-            w.Params = new Dictionary<int, float>(aw.Parameters);
-            w.SalePrice = (int)aw.Sale_Price;
-            w.Textures = new Dictionary<AppearanceManager.TextureIndex, LLUUID>(aw.Textures.Count);
-
-            foreach (KeyValuePair<uint, LLUUID> i in aw.Textures)
-                w.Textures.Add((AppearanceManager.TextureIndex)i.Key, i.Value);
-
-            w.Permissions.BaseMask = (PermissionMask)aw.Permission_Base_Mask;
-            w.Permissions.EveryoneMask = (PermissionMask)aw.Permission_Everyone_Mask;
-            w.Permissions.GroupMask = (PermissionMask)aw.Permission_Group_Mask;
-            w.Permissions.NextOwnerMask = (PermissionMask)aw.Permission_Next_Owner_Mask;
-            w.Permissions.OwnerMask = (PermissionMask)aw.Permission_Owner_Mask;
-
-            w.Type = (Wearable.WearableType)aw.AppearanceLayer; // assumes these two enums are identical
-
-            return w;
-        }*/
+        public InvalidOutfitException(string message) : base(message) { }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public struct WearableData
-    {
-        public Wearable Wearable;
-        public LLUUID AssetID;
-        public LLUUID ItemID;
-
-        /*public static WearableData FromInventoryWearable(SecondLife client, InventorySystem.InventoryWearable iw)
-        {
-            WearableData wd = new WearableData();
-            wd.Wearable = Wearable.FromAssetWearable(client,(libsecondlife.AssetSystem.AssetWearable)iw.Asset);
-            wd.AssetID = iw.AssetID;
-            wd.ItemID = iw.ItemID;
-
-            return wd;
-        }*/
-    }
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -455,13 +88,18 @@ namespace libsecondlife
             Skirt = 4
         }
 
+        public class WearableData
+        {
+            public InventoryWearable Item;
+            public AssetWearable Asset;
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="wearables">A mapping of WearableTypes to KeyValuePairs
         /// with Asset ID of the wearable as key and Item ID as value</param>
-        public delegate void AgentWearablesCallback(Dictionary<Wearable.WearableType, KeyValuePair<LLUUID, LLUUID>> wearables);
+        public delegate void AgentWearablesCallback(Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables);
 
 
         /// <summary></summary>
@@ -476,13 +114,13 @@ namespace libsecondlife
         /// <summary></summary>
         public const int AVATAR_TEXTURE_COUNT = 20;
         /// <summary>Map of what wearables are included in each bake</summary>
-        public static readonly Wearable.WearableType[][] WEARABLE_BAKE_MAP = new Wearable.WearableType[][]
+        public static readonly WearableType[][] WEARABLE_BAKE_MAP = new WearableType[][]
         {
-            new Wearable.WearableType[] { Wearable.WearableType.Shape, Wearable.WearableType.Skin,    Wearable.WearableType.Hair,    Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid,    Wearable.WearableType.Invalid    },
-            new Wearable.WearableType[] { Wearable.WearableType.Shape, Wearable.WearableType.Skin,    Wearable.WearableType.Shirt,   Wearable.WearableType.Jacket,  Wearable.WearableType.Gloves,  Wearable.WearableType.Undershirt, Wearable.WearableType.Invalid    },
-            new Wearable.WearableType[] { Wearable.WearableType.Shape, Wearable.WearableType.Skin,    Wearable.WearableType.Pants,   Wearable.WearableType.Shoes,   Wearable.WearableType.Socks,   Wearable.WearableType.Jacket,     Wearable.WearableType.Underpants },
-            new Wearable.WearableType[] { Wearable.WearableType.Eyes,  Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid,    Wearable.WearableType.Invalid    },
-            new Wearable.WearableType[] { Wearable.WearableType.Skin,  Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid, Wearable.WearableType.Invalid,    Wearable.WearableType.Invalid    }
+            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Hair,    WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    },
+            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Shirt,   WearableType.Jacket,  WearableType.Gloves,  WearableType.Undershirt, WearableType.Invalid    },
+            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Pants,   WearableType.Shoes,   WearableType.Socks,   WearableType.Jacket,     WearableType.Underpants },
+            new WearableType[] { WearableType.Eyes,  WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    },
+            new WearableType[] { WearableType.Skin,  WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    }
         };
         /// <summary>Secret values to finalize the cache check hashes for each
         /// bake</summary>
@@ -501,7 +139,7 @@ namespace libsecondlife
 
         private SecondLife Client;
         private AssetManager Assets;
-        private Dictionary<Wearable.WearableType, WearableData> Wearables = new Dictionary<Wearable.WearableType, WearableData>();
+        private Dictionary<WearableType, WearableData> Wearables = new Dictionary<WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this array
         private LLUUID[] AgentTextures = new LLUUID[AVATAR_TEXTURE_COUNT];
 
@@ -519,7 +157,7 @@ namespace libsecondlife
         
         // Wearable assets are downloaded one at a time, a new request is pulled off the queue
         // and started when the previous one completes
-        private Queue<PendingAssetDownload> DownloadQueue = new Queue<PendingAssetDownload>();
+        private Queue<PendingAssetDownload> AssetDownloads = new Queue<PendingAssetDownload>();
         // A list of all the images we are currently downloading, prior to baking
         private Dictionary<LLUUID, TextureIndex> ImageDownloads = new Dictionary<LLUUID, TextureIndex>();
         // A list of all the bakes we need to complete
@@ -530,6 +168,7 @@ namespace libsecondlife
         private bool DownloadWearables = false;
         private static int CacheCheckSerialNum = 1; //FIXME
         private static uint SetAppearanceSerialNum = 1; //FIXME
+        private AutoResetEvent WearablesRequestEvent = new AutoResetEvent(false);
         private AutoResetEvent WearablesDownloadedEvent = new AutoResetEvent(false);
         private AutoResetEvent CachedResponseEvent = new AutoResetEvent(false);
         // FIXME: Create a class-level appearance thread so multiple threads can't be launched
@@ -548,7 +187,7 @@ namespace libsecondlife
             for (int i = 0; i < AgentTextures.Length; i++)
                 AgentTextures[i] = LLUUID.Zero;
 
-            Client.Network.RegisterCallback(PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesHandler));
+            Client.Network.RegisterCallback(PacketType.AgentWearablesUpdate, new NetworkManager.PacketCallback(AgentWearablesUpdateHandler));
             Client.Network.RegisterCallback(PacketType.AgentCachedTextureResponse, new NetworkManager.PacketCallback(AgentCachedTextureResponseHandler));
         }
 
@@ -561,134 +200,255 @@ namespace libsecondlife
             CachedResponseEvent.Set();
         }
 
+        private static AssetType WearableTypeToAssetType(WearableType type)
+        {
+            switch (type)
+            {
+                case WearableType.Shape:
+                case WearableType.Skin:
+                case WearableType.Hair:
+                case WearableType.Eyes:
+                    return AssetType.Bodypart;
+                case WearableType.Shirt:
+                case WearableType.Pants:
+                case WearableType.Shoes:
+                case WearableType.Socks:
+                case WearableType.Jacket:
+                case WearableType.Gloves:
+                case WearableType.Undershirt:
+                case WearableType.Underpants:
+                    return AssetType.Clothing;
+                default:
+                    return AssetType.Unknown;
+            }
+        }
+
         /// <summary>
         /// Returns the assetID for a given WearableType 
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public LLUUID GetWearableAsset(Wearable.WearableType type)
+        public LLUUID GetWearableAsset(WearableType type)
         {
             WearableData wearable;
 
             if (Wearables.TryGetValue(type, out wearable))
-                return wearable.AssetID;
+                return wearable.Item.AssetUUID;
             else
                 return LLUUID.Zero;
         }
 
         /// <summary>
-        /// 
+        /// Ask the server what we are wearing and set appearance based on that
         /// </summary>
-        /// <returns></returns>
         public void SetPreviousAppearance()
         {
-            // Clear out any previous data
-            DownloadWearables = false;
-            lock (Wearables) Wearables.Clear();
-            lock (AgentTextures)
-            {
-                for (int i = 0; i < AgentTextures.Length; i++)
-                    AgentTextures[i] = LLUUID.Zero;
-            }
-            lock (DownloadQueue) DownloadQueue.Clear();
+            SetPreviousAppearance(true);
+        }
 
-            Thread appearanceThread = new Thread(new ThreadStart(StartSetPreviousAppearance));
-            appearanceThread.Start();
+        public void SetPreviousAppearance(bool bake)
+        {
+            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartSetPreviousAppearance));
+            appearanceThread.Start(bake);
+        }
+
+        private void StartSetPreviousAppearance(object _bake)
+        {
+            bool bake = (bool)_bake;
+            SendAgentWearablesRequest();
+            WearablesRequestEvent.WaitOne();
+            UpdateAppearanceFromWearables(bake);
+        }
+
+        private class WearParams
+        {
+            public object Param;
+            public bool Bake;
+
+            public WearParams(object param, bool bake)
+            {
+                Param = param;
+                Bake = bake;
+            }
+        }
+        
+        /// <summary>
+        /// Replace the current outfit with a list of wearables and set appearance
+        /// </summary>
+        /// <param name="iws">List of wearables that define the new outfit</param>
+        public void WearOutfit(List<InventoryBase> ibs, bool bake)
+        {
+            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartWearOutfit));
+            appearanceThread.Start(new WearParams(ibs,bake));
+        }
+
+        public void WearOutfit(List<InventoryBase> ibs)
+        {
+            WearOutfit(ibs, true);
+        }
+
+        private void StartWearOutfit(object _wp)
+        {
+            WearParams wp = (WearParams)_wp;
+            List<InventoryBase> ibs = (List<InventoryBase>)wp.Param;
+            List<InventoryWearable> wearables = new List<InventoryWearable>();
+            List<InventoryAttachment> attachments = new List<InventoryAttachment>();
+
+            foreach (InventoryBase ib in ibs)
+            {
+                if (ib is InventoryWearable)
+                    wearables.Add((InventoryWearable)ib);
+                else if (ib is InventoryAttachment)
+                    attachments.Add((InventoryAttachment)ib);
+            }
+
+            SendAgentWearablesRequest();
+            WearablesRequestEvent.WaitOne();
+            ReplaceOutfitWearables(wearables);
+            UpdateAppearanceFromWearables(wp.Bake);
+            AddAttachments(attachments, true);
         }
 
         /// <summary>
-        /// Add a single wearable to your outfit, replacing if nessesary.
+        /// Replace the current outfit with a folder and set appearance
         /// </summary>
-        /// <param name="wearable"></param>
-        /*public void Wear(libsecondlife.InventorySystem.InventoryWearable wearable)
+        /// <param name="folder">Folder containing the new outfit</param>
+        public void WearOutfit(LLUUID folder, bool bake)
         {
-            List<libsecondlife.InventorySystem.InventoryWearable> x = new List<libsecondlife.InventorySystem.InventoryWearable>();
-            x.Add(wearable);
-            Wear(x);
+            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartWearOutfitFolder));
+            appearanceThread.Start(new WearParams(folder,bake));
         }
 
-        public void Wear(List<libsecondlife.InventorySystem.InventoryWearable> iws)
+        public void WearOutfit(LLUUID folder)
         {
-            DownloadWearables = false;
+            WearOutfit(folder, true);
+        }
+
+        /// <summary>
+        /// Replace the current outfit with a folder and set appearance
+        /// </summary>
+        /// <param name="path">Path of folder containing the new outfit</param>
+        public void WearOutfit(string[] path, bool bake)
+        {
+            Thread appearanceThread = new Thread(new ParameterizedThreadStart(StartWearOutfitFolder));
+            appearanceThread.Start(new WearParams(path,bake));
+        }
+
+        public void WearOutfit(string[] path)
+        {
+            WearOutfit(path, true);
+        }
+
+        private void StartWearOutfitFolder(object _wp)
+        {
+            WearParams wp = (WearParams)_wp;
+            SendAgentWearablesRequest(); // request current wearables async
+            List<InventoryWearable> wearables;
+            List<InventoryAttachment> attachments;
+
+            if (!GetFolderWearables(wp.Param, out wearables, out attachments)) // get wearables in outfit folder
+                return; // TODO: this error condition should be passed back to the client somehow
             
-            lock (Wearables)
+            WearablesRequestEvent.WaitOne(); // wait for current wearables
+            ReplaceOutfitWearables(wearables); // replace current wearables with outfit folder
+            UpdateAppearanceFromWearables(wp.Bake);
+            AddAttachments(attachments, true);
+        }
+
+        private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryAttachment> attachments)
+        {
+            LLUUID folder;
+            wearables = null;
+            attachments = null;
+
+            if (_folder is string[])
             {
-                Dictionary<Wearable.WearableType,WearableData> preserve = new Dictionary<Wearable.WearableType,WearableData>(4);
+                List<InventoryBase> pathMatches = Client.Inventory.FindObjectsByPath(Client.Inventory.Store.RootFolder.UUID, (string[])_folder, true, true);
 
-                foreach (KeyValuePair<Wearable.WearableType, WearableData> kvp in Wearables)
+                if (pathMatches.Count == 0)
                 {
-                    if (
-                        kvp.Key == Wearable.WearableType.Shape ||
-                        kvp.Key == Wearable.WearableType.Skin ||
-                        kvp.Key == Wearable.WearableType.Eyes ||
-                        kvp.Key == Wearable.WearableType.Hair
-                        )
-                    {
-                        preserve.Add(kvp.Key,kvp.Value);
-                        Client.DebugLog("Keeping " + kvp.Key.ToString() + " " + kvp.Value.Wearable.Name);
-                    }
+                    Client.Log("Outfit path not found", Helpers.LogLevel.Error);
+                    return false;
                 }
-                
-                Wearables = preserve;
 
-                foreach (libsecondlife.InventorySystem.InventoryWearable iw in iws)
+                if (!(pathMatches[0] is InventoryFolder))
                 {
-                    WearableData wd = WearableData.FromInventoryWearable(Client,iw);
-                    Wearables[wd.Wearable.Type] = wd;
-                    Client.DebugLog("Found " + iw.Name);
+                    Client.Log("Outfit path is not a folder", Helpers.LogLevel.Error);
+                    return false;
                 }
+
+                folder = ((InventoryFolder)pathMatches[0]).UUID;
             }
-
-            lock (DownloadQueue) DownloadQueue.Clear();
-            lock (ImageDownloads) ImageDownloads.Clear();
-            lock (PendingBakes) PendingBakes.Clear();
-            lock (PendingUploads) PendingUploads.Clear();
-
-            lock (AgentTextures)
-            {
-                for (int i = 0; i < AgentTextures.Length; i++)
-                    AgentTextures[i] = LLUUID.Zero;
-            }
-
-            Thread appearanceThread = new Thread(new ThreadStart(StartWear));
-            appearanceThread.Start();
-        }
-
-        public void WearOutfit(InventoryFolder folder)
-        {
-            Thread wearOutfitThread = new Thread(new ParameterizedThreadStart(WearOutfitAsync));
-            wearOutfitThread.Start(folder);
-        }
-
-        public void WearOutfit(string folder)
-        {
-            Thread wearOutfitThread = new Thread(new ParameterizedThreadStart(WearOutfitAsync));
-            wearOutfitThread.Start(folder);
-        }
-
-        public void WearOutfitAsync(string _folder)
-        {
-            InventoryFolder rootFolder = Client.Inventory;
-            InventoryFolder.
-
-            if (_folder is string)
-                folder = Client.Inventory.
-
             else
-                folder = (InventoryFolder)_folder;
-            
-            List<InventoryWearable> iws = new List<InventoryWearable>();
-            folder.RequestDownloadContents(false, false, true).RequestComplete.WaitOne();
+                folder = (LLUUID)_folder;
 
-            foreach (InventoryBase ib in folder.GetContents())
+            wearables = new List<InventoryWearable>();
+            attachments = new List<InventoryAttachment>();
+            Client.Inventory.RequestFolderContents(folder, Client.Network.AgentID, false, true, false, InventorySortOrder.ByName);
+
+            foreach (InventoryBase ib in Client.Inventory.Store.GetContents(folder))
             {
                 if (ib is InventoryWearable)
-                    iws.Add((InventoryWearable)ib);
+                    wearables.Add((InventoryWearable)ib);
+                else if (ib is InventoryAttachment)
+                    attachments.Add((InventoryAttachment)ib);
             }
 
-            Wear(iws);
+            return true;
         }
-        */
+
+        // this method will download the assets for all inventory items in iws
+        private void ReplaceOutfitWearables(List<InventoryWearable> iws)
+        {
+            lock (Wearables)
+            {
+                Dictionary<WearableType, WearableData> preserve = new Dictionary<WearableType,WearableData>();
+                
+                foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
+                {
+                    if (kvp.Value.Item.AssetType == AssetType.Bodypart)
+                        preserve.Add(kvp.Key,kvp.Value);
+                }
+
+                Wearables = preserve;
+            
+                foreach (InventoryWearable iw in iws)
+                {
+                    WearableData wd = new WearableData();
+                    wd.Item = iw;
+                    Wearables[wd.Item.WearableType] = wd;
+                }
+            }
+        }
+
+        public void AddAttachments(List<InventoryAttachment> attachments, bool removeExistingFirst)
+        {
+            // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
+            RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
+            attachmentsPacket.AgentData.AgentID = Client.Network.AgentID;
+            attachmentsPacket.AgentData.SessionID = Client.Network.SessionID;
+
+            attachmentsPacket.HeaderData.CompoundMsgID = LLUUID.Random();
+            attachmentsPacket.HeaderData.FirstDetachAll = true;
+            attachmentsPacket.HeaderData.TotalObjects = (byte)attachments.Count;
+
+            attachmentsPacket.ObjectData = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock[attachments.Count];
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
+                attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachments[i].Permissions.EveryoneMask;
+                attachmentsPacket.ObjectData[i].GroupMask = (uint)attachments[i].Permissions.GroupMask;
+                attachmentsPacket.ObjectData[i].ItemFlags = attachments[i].Flags;
+                attachmentsPacket.ObjectData[i].ItemID = attachments[i].UUID;
+                attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachments[i].Name);
+                attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachments[i].Description);
+                attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachments[i].Permissions.NextOwnerMask;
+                attachmentsPacket.ObjectData[i].OwnerID = attachments[i].OwnerID;
+            }
+
+            Client.Network.SendPacket(attachmentsPacket);
+        }
 
         public void Attach(InventoryItem item, ObjectManager.AttachmentPoint attachPoint)
         {
@@ -734,6 +494,56 @@ namespace libsecondlife
             Client.Network.SendPacket(detach);
         }
 
+        private void UpdateAppearanceFromWearables(bool bake)
+        {
+            lock (AgentTextures)
+            {
+                for (int i = 0; i < AgentTextures.Length; i++)
+                    AgentTextures[i] = LLUUID.Zero;
+            }
+
+            // Register an asset download callback to get wearable data
+            AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
+            AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
+            Assets.OnAssetReceived += assetCallback;
+            Assets.OnImageReceived += imageCallback;
+            Assets.OnAssetUploaded += uploadCallback;
+
+            // Download assets for what we are wearing and fill in AgentTextures
+            DownloadWearableAssets();
+            WearablesDownloadedEvent.WaitOne();
+
+            // Unregister the asset download callback
+            Assets.OnAssetReceived -= assetCallback;
+
+            string tex = "";
+
+            for (int i = 0; i < AgentTextures.Length; i++)
+                if (AgentTextures[i] != LLUUID.Zero)
+                    tex += ((TextureIndex)i).ToString() + " = " + AgentTextures[i] + "\n";
+
+            Client.DebugLog("AgentTextures:\n" + tex);
+
+            // Check if anything needs to be rebaked
+            if (bake) RequestCachedBakes();
+
+            // Tell the sim what we are wearing
+            SendAgentIsNowWearing();
+
+            // Wait for cached layer check to finish
+            if (bake) CachedResponseEvent.WaitOne();
+
+            // Unregister the image download and asset upload callbacks
+            Assets.OnImageReceived -= imageCallback;
+            Assets.OnAssetUploaded -= uploadCallback;
+
+            Client.DebugLog("CachedResponseEvent completed");
+
+            // Send all of the visual params and textures for our agent
+            SendAgentSetAppearance();
+        }
+
         /// <summary>
         /// Build hashes out of the texture assetIDs for each baking layer to
         /// ask the simulator whether it has cached copies of each baked texture
@@ -754,14 +564,14 @@ namespace libsecondlife
             {
                 // Don't do a cache request for a skirt bake if we're not wearing a skirt
                 if (bakedIndex == (int)BakeType.Skirt && 
-                    (!Wearables.ContainsKey(Wearable.WearableType.Skirt) || Wearables[Wearable.WearableType.Skirt].AssetID == LLUUID.Zero))
+                    (!Wearables.ContainsKey(WearableType.Skirt) || Wearables[WearableType.Skirt].Asset.AssetID == LLUUID.Zero))
                     continue;
 
                 LLUUID hash = new LLUUID();
 
                 for (int wearableIndex = 0; wearableIndex < WEARABLES_PER_LAYER; wearableIndex++)
                 {
-                    Wearable.WearableType type = WEARABLE_BAKE_MAP[bakedIndex][wearableIndex];
+                    WearableType type = WEARABLE_BAKE_MAP[bakedIndex][wearableIndex];
                     LLUUID assetID = GetWearableAsset(type);
 
                     // Build a hash of all the texture asset IDs in this baking layer
@@ -804,7 +614,7 @@ namespace libsecondlife
         /// <summary>
         /// Ask the server what textures our avatar is currently wearing
         /// </summary>
-        public void RequestAgentWearables()
+        public void SendAgentWearablesRequest()
         {
             AgentWearablesRequestPacket request = new AgentWearablesRequestPacket();
             request.AgentData.AgentID = Client.Network.AgentID;
@@ -813,94 +623,34 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
-        private void StartWear()
+        private void AgentWearablesUpdateHandler(Packet packet, Simulator simulator)
         {
-            Client.DebugLog("StartWear()");
-            
-            DownloadWearables = true;
+            // Lock to prevent a race condition with multiple AgentWearables packets
+            lock (WearablesRequestEvent)
+            {
+                AgentWearablesUpdatePacket update = (AgentWearablesUpdatePacket)packet;
 
-            // Register an asset download callback to get wearable data
-            AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
-            AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
-            AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
-            Assets.OnAssetReceived += assetCallback;
-            Assets.OnImageReceived += imageCallback;
-            Assets.OnAssetUploaded += uploadCallback;
+                // Reset the Wearables collection
+                lock (Wearables) Wearables.Clear();
 
-            // Download assets for what we are wearing and fill in AgentTextures
-            DownloadWearableAssets();
-            WearablesDownloadedEvent.WaitOne();
+                for (int i = 0; i < update.WearableData.Length; i++)
+                {
+                    if (update.WearableData[i].AssetID != LLUUID.Zero)
+                    {
+                        WearableType type = (WearableType)update.WearableData[i].WearableType;
+                        WearableData data = new WearableData();
+                        data.Item = new InventoryWearable(update.WearableData[i].ItemID);
+                        data.Item.WearableType = type;
+                        data.Item.AssetType = WearableTypeToAssetType(type);
+                        data.Item.AssetUUID = update.WearableData[i].AssetID;
 
-            // Unregister the asset download callback
-            Assets.OnAssetReceived -= assetCallback;
+                        // Add this wearable to our collection
+                        lock (Wearables) Wearables[type] = data;
+                    }
+                }
+            }
 
-            string tex = "";
-
-            for (int i = 0; i < AgentTextures.Length; i++)
-                if (AgentTextures[i] != LLUUID.Zero)
-                    tex += ((TextureIndex)i).ToString() + " = " + AgentTextures[i] + "\n";
-
-            Client.DebugLog("AgentTextures:\n" + tex);
-
-            // Check if anything needs to be rebaked
-            RequestCachedBakes();
-
-            // Tell the sim what we are wearing
-            SendAgentIsNowWearing();
-
-            // Wait for cached layer check to finish
-            CachedResponseEvent.WaitOne();
-
-            // Unregister the image download and asset upload callbacks
-            Assets.OnImageReceived -= imageCallback;
-            Assets.OnAssetUploaded -= uploadCallback;
-
-            Client.DebugLog("CachedResponseEvent completed");
-
-            // Send all of the visual params and textures for our agent
-            SendAgentSetAppearance();
-        }
-        
-        private void StartSetPreviousAppearance()
-        {
-            DownloadWearables = true;
-
-            // Register an asset download callback to get wearable data
-            AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
-            AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
-            AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
-            Assets.OnAssetReceived += assetCallback;
-            Assets.OnImageReceived += imageCallback;
-            Assets.OnAssetUploaded += uploadCallback;
-
-            // Ask the server what we are currently wearing
-            RequestAgentWearables();
-
-            WearablesDownloadedEvent.WaitOne();
-
-            // Unregister the asset download callback
-            Assets.OnAssetReceived -= assetCallback;
-
-            Client.DebugLog("WearablesDownloadEvent completed");
-
-            /* FIXME: Baking disabled
-            // Now that we know what the avatar is wearing, we can check if anything needs to be rebaked
-            RequestCachedBakes();
-
-            CachedResponseEvent.WaitOne();
-            */
-
-            // Send a list of what we are currently wearing
-            SendAgentIsNowWearing();
-
-            // Unregister the image download and asset upload callbacks
-            Assets.OnImageReceived -= imageCallback;
-            Assets.OnAssetUploaded -= uploadCallback;
-
-            Client.DebugLog("CachedResponseEvent completed");
-
-            // Send all of the visual params and textures for our agent
-            SendAgentSetAppearance();
+            WearablesRequestEvent.Set();
         }
 
         private void SendAgentSetAppearance()
@@ -926,9 +676,9 @@ namespace libsecondlife
                     // Try and find this value in our collection of downloaded wearables
                     foreach (WearableData data in Wearables.Values)
                     {
-                        if (data.Wearable.Params.ContainsKey(vp.ParamID))
+                        if (data.Asset.Params.ContainsKey(vp.ParamID))
                         {
-                            set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Wearable.Params[vp.ParamID], 
+                            set.VisualParam[vpIndex].ParamValue = Helpers.FloatToByte(data.Asset.Params[vp.ParamID], 
                                 vp.MinValue, vp.MaxValue);
                             found = true;
                             count++;
@@ -966,7 +716,7 @@ namespace libsecondlife
 
                 foreach (WearableData data in Wearables.Values)
                 {
-                    foreach (KeyValuePair<TextureIndex, LLUUID> texture in data.Wearable.Textures)
+                    foreach (KeyValuePair<TextureIndex, LLUUID> texture in data.Asset.Textures)
                     {
                         LLObject.TextureEntryFace face = te.CreateFace((uint)texture.Key);
                         face.TextureID = texture.Value;
@@ -996,7 +746,7 @@ namespace libsecondlife
 
                 for (int wearableIndex = 0; wearableIndex < WEARABLES_PER_LAYER; wearableIndex++)
                 {
-                    Wearable.WearableType type = WEARABLE_BAKE_MAP[bakedIndex][wearableIndex];
+                    WearableType type = WEARABLE_BAKE_MAP[bakedIndex][wearableIndex];
                     LLUUID assetID = GetWearableAsset(type);
 
                     // Build a hash of all the texture asset IDs in this baking layer
@@ -1030,12 +780,12 @@ namespace libsecondlife
 
             for (int i = 0; i < WEARABLE_COUNT; i++)
             {
-                Wearable.WearableType type = (Wearable.WearableType)i;
+                WearableType type = (WearableType)i;
                 wearing.WearableData[i] = new AgentIsNowWearingPacket.WearableDataBlock();
                 wearing.WearableData[i].WearableType = (byte)i;
 
                 if (Wearables.ContainsKey(type))
-                    wearing.WearableData[i].ItemID = Wearables[type].ItemID;
+                    wearing.WearableData[i].ItemID = Wearables[type].Item.UUID;
                 else
                     wearing.WearableData[i].ItemID = LLUUID.Zero;
             }
@@ -1066,66 +816,14 @@ namespace libsecondlife
         {
             Client.DebugLog("DownloadWearableAssets()");
             
-            foreach (KeyValuePair<Wearable.WearableType,WearableData> kvp in Wearables)
-                DownloadQueue.Enqueue(new PendingAssetDownload(kvp.Value.AssetID,Wearable.WearableTypeToAssetType(kvp.Value.Wearable.Type)));
+            foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
+                AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
 
-            if (DownloadQueue.Count > 0)
+            if (AssetDownloads.Count > 0)
             {
-                PendingAssetDownload download = DownloadQueue.Dequeue();
-                Assets.RequestAsset(download.Id, download.Type, true);
+                PendingAssetDownload pad = AssetDownloads.Dequeue();
+                Assets.RequestAsset(pad.Id, pad.Type, true);
             }
-        }
-        
-        private void AgentWearablesHandler(Packet packet, Simulator simulator)
-        {
-            // Lock to prevent a race condition with multiple AgentWearables packets
-            lock (WearablesDownloadedEvent)
-            {
-                AgentWearablesUpdatePacket update = (AgentWearablesUpdatePacket)packet;
-
-                // Reset the Wearables collection
-                lock (Wearables) Wearables.Clear();
-
-                for (int i = 0; i < update.WearableData.Length; i++)
-                {
-                    if (update.WearableData[i].AssetID != LLUUID.Zero)
-                    {
-                        Wearable.WearableType type = (Wearable.WearableType)update.WearableData[i].WearableType;
-                        WearableData data = new WearableData();
-                        data.AssetID = update.WearableData[i].AssetID;
-                        data.ItemID = update.WearableData[i].ItemID;
-                        data.Wearable = new Wearable(Client);
-                        data.Wearable.Type = type;
-
-                        // Add this wearable to our collection
-                        lock (Wearables) Wearables[type] = data;
-
-                        // Convert WearableType to AssetType
-                        AssetType assetType = Wearable.WearableTypeToAssetType(type);
-
-                        Client.DebugLog("Downloading wearable " + type.ToString() + ": " +
-                            data.AssetID.ToStringHyphenated());
-
-                        // Add this wearable asset to the download queue
-                        if (DownloadWearables)
-                        {
-                            PendingAssetDownload download = new PendingAssetDownload(data.AssetID, assetType);
-                            DownloadQueue.Enqueue(download);
-                        }
-                    }
-                }
-
-                if (DownloadQueue.Count > 0)
-                {
-                    PendingAssetDownload download = DownloadQueue.Dequeue();
-                    Assets.RequestAsset(download.Id, download.Type, true);
-                }
-
-                // Don't download wearables twice in a row
-                DownloadWearables = false;
-            }
-
-            CallOnAgentWearables();
         }
 
         private void CallOnAgentWearables()
@@ -1133,13 +831,13 @@ namespace libsecondlife
             if (OnAgentWearables != null)
             {
                 // Refactor our internal Wearables dictionary in to something for the callback
-                Dictionary<Wearable.WearableType, KeyValuePair<LLUUID, LLUUID>> wearables =
-                    new Dictionary<Wearable.WearableType, KeyValuePair<LLUUID, LLUUID>>();
+                Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>> wearables =
+                    new Dictionary<WearableType, KeyValuePair<LLUUID, LLUUID>>();
 
                 lock (Wearables)
                 {
-                    foreach (KeyValuePair<Wearable.WearableType, WearableData> data in Wearables)
-                        wearables.Add(data.Key, new KeyValuePair<LLUUID, LLUUID>(data.Value.AssetID, data.Value.ItemID));
+                    foreach (KeyValuePair<WearableType, WearableData> data in Wearables)
+                        wearables.Add(data.Key, new KeyValuePair<LLUUID, LLUUID>(data.Value.Item.AssetUUID, data.Value.Item.UUID));
                 }
 
                 try { OnAgentWearables(wearables); }
@@ -1163,9 +861,9 @@ namespace libsecondlife
                 // Try and find this value in our collection of downloaded wearables
                 foreach (WearableData data in Wearables.Values)
                 {
-                    if (data.Wearable.Params.ContainsKey(vp.ParamID))
+                    if (data.Asset.Params.ContainsKey(vp.ParamID))
                     {
-                        paramValues.Add(vp.ParamID,data.Wearable.Params[vp.ParamID]);
+                        paramValues.Add(vp.ParamID,data.Asset.Params[vp.ParamID]);
                         found = true;
                         break;
                     }
@@ -1237,7 +935,7 @@ namespace libsecondlife
                                 }
                                 break;
                             case BakeType.Skirt:
-                                if (Wearables.ContainsKey(Wearable.WearableType.Skirt))
+                                if (Wearables.ContainsKey(WearableType.Skirt))
                                 {
                                     lock (ImageDownloads)
                                     {
@@ -1311,49 +1009,38 @@ namespace libsecondlife
             return 0;
         }
 
-        private void Assets_OnAssetReceived(AssetDownload asset, Asset blah)
+        private void Assets_OnAssetReceived(AssetDownload download, Asset asset)
         {
             Client.DebugLog("Assets_OnAssetReceived()");
             
             lock (Wearables)
             {
                 // Check if this is a wearable we were waiting on
-                foreach (WearableData data in Wearables.Values)
+                foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
                 {
-                    if (data.AssetID == asset.AssetID)
+                    if (kvp.Value.Item.AssetUUID == download.AssetID)
                     {
                         // Make sure the download succeeded
-                        if (asset.Success)
+                        if (download.Success)
                         {
-                            // Convert the downloaded asset to a string
-                            string wearableData = Helpers.FieldToUTF8String(asset.AssetData);
+                            kvp.Value.Asset = (AssetWearable)asset;
+                            kvp.Value.Asset.Decode();
 
-                            // Attempt to parse the wearable data
-                            if (data.Wearable.ImportAsset(wearableData))
+                            lock (AgentTextures)
                             {
-                                Client.DebugLog("Imported wearable asset " + data.Wearable.Type.ToString());
-                                Client.DebugLog(wearableData);
-
-                                lock (AgentTextures)
+                                foreach (KeyValuePair<AppearanceManager.TextureIndex, LLUUID> texture in kvp.Value.Asset.Textures)
                                 {
-                                    foreach (KeyValuePair<AppearanceManager.TextureIndex, LLUUID> texture in data.Wearable.Textures)
+                                    if (texture.Value != DEFAULT_AVATAR_TEXTURE) // this texture is not meant to be displayed
                                     {
                                         Client.DebugLog("Setting " + texture.Key + " to " + texture.Value);
                                         AgentTextures[(int)texture.Key] = texture.Value;
                                     }
                                 }
                             }
-                            else
-                            {
-                                Client.Log("Failed to decode wearable asset " + asset.AssetID.ToStringHyphenated(),
-                                    Helpers.LogLevel.Warning);
-                            }
                         }
                         else
                         {
-                            Client.Log("Wearable " + data.Wearable.Type.ToString() + "(" +
-                                asset.AssetID.ToStringHyphenated() + ") failed to download, " + asset.Status.ToString(),
-                                Helpers.LogLevel.Warning);
+                            Client.Log("Wearable " + kvp.Key + "(" + download.AssetID.ToStringHyphenated() + ") failed to download, " + download.Status.ToString(),Helpers.LogLevel.Warning);
                         }
 
                         break;
@@ -1361,11 +1048,11 @@ namespace libsecondlife
                 }
             }
 
-            if (DownloadQueue.Count > 0)
+            if (AssetDownloads.Count > 0)
             {
                 // Dowload the next wearable in line
-                PendingAssetDownload download = DownloadQueue.Dequeue();
-                Assets.RequestAsset(download.Id, download.Type, true);
+                PendingAssetDownload pad = AssetDownloads.Dequeue();
+                Assets.RequestAsset(pad.Id, pad.Type, true);
             }
             else
             {
@@ -1374,7 +1061,7 @@ namespace libsecondlife
             }
         }
 
-        private void Assets_OnImageReceived(ImageDownload image)
+        private void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
         {
             lock (ImageDownloads)
             {
@@ -1398,7 +1085,7 @@ namespace libsecondlife
                             if (PendingBakes.ContainsKey(type))
                             {
                                 if (image.Success)
-                                    baked = PendingBakes[type].AddTexture(index, image.AssetData);
+                                    baked = PendingBakes[type].AddTexture(index, assetTexture);
                                 else
                                 {
                                     Client.Log("Texture for " + index.ToString() + " failed to download, " +
@@ -1440,13 +1127,12 @@ namespace libsecondlife
         private void UploadBake(Baker bake)
         {
             // Upload the completed layer data
-            LLUUID assetID;
-            LLUUID transactionID = Assets.RequestUpload(out assetID, AssetType.Texture, bake.EncodedBake, true, true, false);
+            LLUUID transactionID = Assets.RequestUpload(bake.BakedTexture, true, true, false);
 
-            Client.DebugLog("Bake " + bake.BakeType.ToString() + " completed. Uploading asset " + assetID.ToStringHyphenated());
+            Client.DebugLog("Bake " + bake.BakeType.ToString() + " completed. Uploading asset " + bake.BakedTexture.AssetID.ToStringHyphenated());
 
             // Add it to a pending uploads list
-            lock (PendingUploads) PendingUploads.Add(assetID, BakeTypeToAgentTextureIndex(bake.BakeType));
+            lock (PendingUploads) PendingUploads.Add(bake.BakedTexture.AssetID, BakeTypeToAgentTextureIndex(bake.BakeType));
         }
 
         private void Assets_OnAssetUploaded(AssetUpload upload)
