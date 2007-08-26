@@ -1425,7 +1425,7 @@ namespace libsecondlife
             autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
             autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
             autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString("{0:00.0000}"));
+            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
 
             Client.Network.SendPacket(autopilot);
         }
