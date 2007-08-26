@@ -114,6 +114,7 @@ namespace libsecondlife
         public Permissions Permissions;
         public AssetType AssetType;
         public InventoryType InventoryType;
+        public LLUUID CreatorID;
         public string Description;
         public LLUUID GroupID;
         public bool GroupOwned;
@@ -905,7 +906,88 @@ namespace libsecondlife
                         Store.RemoveNodeFor(Store[folders[i]]);
                 }
             }
+        }
 
+        /// <summary>
+        /// Rez an object from inventory
+        /// </summary>
+        /// <param name="simulator">Simulator to place object in</param>
+        /// <param name="rotation">Rotation of the object when rezzed</param>
+        /// <param name="position">Vector of where to place object</param>
+        /// <param name="item">InventoryObject object containing item details</param>
+        public LLUUID RezFromInventory(Simulator simulator, LLQuaternion rotation, LLVector3 position, InventoryObject item)
+        {
+            return RezFromInventory(simulator, rotation, position, item, Client.Self.ActiveGroup, LLUUID.Zero);
+        }
+
+        /// <summary>
+        /// Rez an object from inventory
+        /// </summary>
+        /// <param name="simulator">Simulator to place object in</param>
+        /// <param name="rotation">Rotation of the object when rezzed</param>
+        /// <param name="position">Vector of where to place object</param>
+        /// <param name="item">InventoryObject object containing item details</param>
+        /// <param name="groupOwner">LLUUID of group to own the object</param>
+        public LLUUID RezFromInventory(Simulator simulator, LLQuaternion rotation, LLVector3 position, InventoryObject item, 
+            LLUUID groupOwner)
+        {
+            return RezFromInventory(simulator, rotation, position, item, groupOwner, LLUUID.Zero);
+        }
+
+        /// <summary>
+        /// Rez an object from inventory
+        /// </summary>
+        /// <param name="simulator">Simulator to place object in</param>
+        /// <param name="rotation">Rotation of the object when rezzed</param>
+        /// <param name="position">Vector of where to place object</param>
+        /// <param name="item">InventoryObject object containing item details</param>
+        /// <param name="groupOwner">LLUUID of group to own the object.</param>        
+        /// <param name="queryID">User defined queryID to correlate replies.</param>
+        public LLUUID RezFromInventory(Simulator simulator, LLQuaternion rotation, LLVector3 position, InventoryObject item, 
+            LLUUID groupOwner, LLUUID queryID)
+        {
+            RezObjectPacket add = new RezObjectPacket();
+
+            add.AgentData.AgentID = Client.Network.AgentID;
+            add.AgentData.SessionID = Client.Network.SessionID;
+            add.AgentData.GroupID = groupOwner;
+
+            add.RezData.FromTaskID = LLUUID.Zero;
+            add.RezData.BypassRaycast = 1;
+            add.RezData.RayStart = position;
+            add.RezData.RayEnd = position;
+            add.RezData.RayTargetID = LLUUID.Zero;
+            add.RezData.RayEndIsIntersection = false;
+            add.RezData.RezSelected = false;
+            add.RezData.RemoveItem = false;
+            add.RezData.ItemFlags = item.Flags;
+            add.RezData.GroupMask = (uint)item.Permissions.GroupMask;
+            add.RezData.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            add.RezData.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+
+            add.InventoryData.ItemID = item.UUID;
+            add.InventoryData.FolderID = item.ParentUUID;
+            add.InventoryData.CreatorID = item.CreatorID;
+            add.InventoryData.OwnerID = item.OwnerID;
+            add.InventoryData.GroupID = item.GroupID;
+            add.InventoryData.BaseMask = (uint)item.Permissions.BaseMask;
+            add.InventoryData.OwnerMask = (uint)item.Permissions.OwnerMask;
+            add.InventoryData.GroupMask = (uint)item.Permissions.GroupMask;
+            add.InventoryData.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            add.InventoryData.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+            add.InventoryData.GroupOwned = item.GroupOwned;
+            add.InventoryData.TransactionID = queryID;
+            add.InventoryData.Type = (sbyte)item.InventoryType;
+            add.InventoryData.InvType = (sbyte)item.InventoryType;
+            add.InventoryData.Flags = item.Flags;
+            add.InventoryData.SaleType = (byte)item.SaleType;
+            add.InventoryData.SalePrice = item.SalePrice;
+            add.InventoryData.Name = Helpers.StringToField(item.Name);
+            add.InventoryData.Description = Helpers.StringToField(item.Description);
+            add.InventoryData.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+
+            Client.Network.SendPacket(add, simulator);
+            return queryID;
         }
 
         #region Callbacks
@@ -963,6 +1045,7 @@ namespace libsecondlife
                         {
                             InventoryItem item = CreateInventoryItem((InventoryType)reply.ItemData[i].InvType,reply.ItemData[i].ItemID);
                             item.ParentUUID = reply.ItemData[i].FolderID;
+                            item.CreatorID = reply.ItemData[i].CreatorID;
                             item.AssetType = (AssetType)reply.ItemData[i].Type;
                             item.AssetUUID = reply.ItemData[i].AssetID;
                             item.CreationDate = Helpers.UnixTimeToDateTime((uint)reply.ItemData[i].CreationDate);

@@ -502,9 +502,7 @@ namespace libsecondlife
             find.QueryData.Category = (sbyte)searchCategory;
             find.QueryData.SimName = Helpers.StringToField(simulatorName);
             
-            
             Client.Network.SendPacket(find);
-            Console.WriteLine(find.ToString());
             return transactionID;
         }
 

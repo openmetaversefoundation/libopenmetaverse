@@ -470,6 +470,14 @@ namespace libsecondlife
             public AccessList Flags;
         }
 
+        public struct ParcelPrimOwners
+        {
+            public LLUUID OwnerID;
+            public bool IsGroupOwned;
+            public int Count;
+            public bool OnlineStatus;
+        }
+
         #endregion Structs
 
         #region Delegates
@@ -504,6 +512,14 @@ namespace libsecondlife
         /// <param name="accessEntries"></param>
         public delegate void ParcelAccessListReplyCallback(Simulator simulator, int sequenceID, int localID, uint flags, List<ParcelAccessEntry> accessEntries);
 
+        /// <summary>
+        /// Responses to a request for prim owners on a parcel.
+        /// </summary>
+        /// <param name="simulator">simulator parcel is in</param>
+        /// <param name="localID">LocalID of parcel.</param>
+        /// <param name="primownersEntries">List containing details or prim ownership.</param>
+        public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator,  List<ParcelPrimOwners> primOwners);
+
         #endregion Delegates
 
         #region Events
@@ -516,6 +532,8 @@ namespace libsecondlife
         public event ParcelPropertiesCallback OnParcelProperties;
         /// <summary></summary>
         public event ParcelAccessListReplyCallback OnAccessListReply;
+        /// <summary></summary>
+        public event ParcelObjectOwnersListReplyCallback OnPrimOwnersListReply;
 
         #endregion Events
 
@@ -535,6 +553,7 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.ParcelProperties, new NetworkManager.PacketCallback(ParcelPropertiesHandler));
             Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new NetworkManager.PacketCallback(ParcelDwellReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
+            Client.Network.RegisterCallback(PacketType.ParcelObjectOwnersReply, new NetworkManager.PacketCallback(ParcelObjectOwnersReplyHandler));
         }
 
         /// <summary>
@@ -701,6 +720,23 @@ namespace libsecondlife
             request.Data.GroupID = groupID;
 
             Client.Network.SendPacket(request, simulator);
+        }
+
+        /// <summary>
+        /// Request prim owners of a parcel of land.
+        /// </summary>
+        /// <param name="simulator">Simulator parcel is in</param>
+        /// <param name="localID">local ID # of parcel</param>
+        public void ObjectOwnersRequest(Simulator simulator, int localID)
+        {
+            ParcelObjectOwnersRequestPacket request = new ParcelObjectOwnersRequestPacket();
+
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+
+            request.ParcelData.LocalID = localID;
+            Client.Network.SendPacket(request, simulator);
+            Console.WriteLine(request.ToString());
         }
 
         /// <summary>
@@ -915,6 +951,29 @@ namespace libsecondlife
                     accessList); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
             }
+        }
+
+        private void ParcelObjectOwnersReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnPrimOwnersListReply != null)
+            {
+                ParcelObjectOwnersReplyPacket reply = (ParcelObjectOwnersReplyPacket)packet;
+                List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
+                
+                for (int i = 0; i < reply.Data.Length; i++)
+                {
+                    ParcelPrimOwners poe = new ParcelPrimOwners();
+                    
+                    poe.OwnerID = reply.Data[i].OwnerID;
+                    poe.IsGroupOwned = reply.Data[i].IsGroupOwned;
+                    poe.Count = reply.Data[i].Count;
+                    poe.OnlineStatus = reply.Data[i].OnlineStatus;
+                    primOwners.Add(poe);
+                }
+                try { OnPrimOwnersListReply(simulator, primOwners); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+
         }
 
         #endregion Packet Handlers
