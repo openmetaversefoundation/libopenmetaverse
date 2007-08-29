@@ -48,26 +48,11 @@ namespace libsecondlife.TestClient
                 return "Unable to obtain UUID for \"" + masterName + "\". Master unchanged.";
             }
             
-            // If we see this avatar standing around, IM them. Otherwise don't bother
-            // because they may be offline
-            lock (Client.Network.Simulators)
-            {
-                for (int i = 0; i < Client.Network.Simulators.Count; i++)
-                {
-                    lock (Client.Network.Simulators[i].Objects.Avatars)
-                    {
-                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
-                        {
-                            if (avatar.ID == Client.MasterKey)
-                            {
-                                Client.Self.InstantMessage(avatar.ID, 
-                                    "You are now my master.  IM me with \"help\" for a command list.");
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            // Send an Online-only IM to the new master
+            Client.Self.InstantMessage(Client.Self.Name, Client.MasterKey,
+                "You are now my master.  IM me with \"help\" for a command list.", LLUUID.Random(),
+                InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Online, Client.Self.Position,
+                Client.Network.CurrentSim.ID, new byte[0]);
 
             return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToStringHyphenated());
 		}

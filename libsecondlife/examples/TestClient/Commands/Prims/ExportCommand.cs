@@ -35,8 +35,8 @@ namespace libsecondlife.TestClient
                 return "Usage: export uuid outputfile.xml";
 
             LLUUID id;
-            uint localid = 0;
-            int count = 0;
+            uint localid;
+            int count;
             string file;
 
             if (args.Length == 2)
@@ -51,27 +51,25 @@ namespace libsecondlife.TestClient
                 id = SelectedObject;
             }
 
-            lock (Client.Network.CurrentSim.Objects.Prims)
-            {
-                foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
-                {
-                    if (prim.ID == id)
-                    {
-                        if (prim.ParentID != 0)
-                            localid = prim.ParentID;
-                        else
-                            localid = prim.LocalID;
+            Primitive exportPrim;
 
-                        break;
-                    }
+            exportPrim = Client.Network.CurrentSim.Objects.Find(
+                delegate(Primitive prim)
+                {
+                    return prim.ID == id;
                 }
-            }
-            
-            if (localid != 0)
+            );
+
+            if (exportPrim != null)
             {
+                if (exportPrim.ParentID != 0)
+                    localid = exportPrim.ParentID;
+                else
+                    localid = exportPrim.LocalID;
+
                 // Check for export permission first
                 Client.Objects.RequestObjectPropertiesFamily(Client.Network.CurrentSim, id);
-                GotPermissionsEvent.WaitOne(8000, false);
+                GotPermissionsEvent.WaitOne(1000 * 10, false);
 
                 if (!GotPermissions)
                 {
@@ -97,19 +95,13 @@ namespace libsecondlife.TestClient
 
 					try
 					{
-                        List<Primitive> prims = new List<Primitive>();
-
-                        lock (Client.Network.CurrentSim.Objects.Prims)
-                        {
-                            foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
+                        List<Primitive> prims = Client.Network.CurrentSim.Objects.FindAll(
+                            delegate(Primitive prim)
                             {
-								if (prim.LocalID == localid || prim.ParentID == localid)
-								{
-									prims.Add(prim);
-									count++;
-								}
-							}
-						}
+                                return (prim.LocalID == localid || prim.ParentID == localid);
+                            }
+                        );
+                        count = prims.Count;
 
                         bool complete = RequestObjectProperties(prims, 250);
 						
@@ -141,7 +133,7 @@ namespace libsecondlife.TestClient
             else
             {
                 return "Couldn't find UUID " + id.ToString() + " in the " + 
-                    Client.Network.CurrentSim.Objects.Prims.Count + 
+                    Client.Network.CurrentSim.Objects.PrimCount + 
                     "objects currently indexed in the current simulator";
             }
         }

@@ -23,15 +23,24 @@ namespace libsecondlife.TestClient
             if (!LLUUID.TryParse(args[0], out id))
                 return "Usage: exportparticles [prim-uuid]";
 
-            lock (Client.Network.CurrentSim.Objects.Prims)
+            lock (Client.Network.Simulators)
             {
-                foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
+                for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    if (prim.ID == id)
+                    Primitive exportPrim = Client.Network.Simulators[i].Objects.Find(
+                        delegate(Primitive prim)
+                        {
+                            return prim.ID == id;
+                        }
+                    );
+
+                    if (exportPrim != null)
                     {
-                        if (prim.ParticleSys.CRC != 0)
+                        if (exportPrim.ParticleSys.CRC != 0)
                         {
                             StringBuilder lsl = new StringBuilder();
+
+                            #region Particle System to LSL
 
                             lsl.Append("default" + Environment.NewLine);
                             lsl.Append("{" + Environment.NewLine);
@@ -41,70 +50,72 @@ namespace libsecondlife.TestClient
 
                             lsl.Append("         PSYS_PART_FLAGS, 0");
 
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.InterpColor) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.InterpColor) != 0)
                                 lsl.Append(" | PSYS_PART_INTERP_COLOR_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.InterpScale) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.InterpScale) != 0)
                                 lsl.Append(" | PSYS_PART_INTERP_SCALE_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Bounce) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Bounce) != 0)
                                 lsl.Append(" | PSYS_PART_BOUNCE_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Wind) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Wind) != 0)
                                 lsl.Append(" | PSYS_PART_WIND_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.FollowSrc) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.FollowSrc) != 0)
                                 lsl.Append(" | PSYS_PART_FOLLOW_SRC_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.FollowVelocity) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.FollowVelocity) != 0)
                                 lsl.Append(" | PSYS_PART_FOLLOW_VELOCITY_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.TargetPos) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.TargetPos) != 0)
                                 lsl.Append(" | PSYS_PART_TARGET_POS_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.TargetLinear) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.TargetLinear) != 0)
                                 lsl.Append(" | PSYS_PART_TARGET_LINEAR_MASK");
-                            if ((prim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Emissive) != 0)
+                            if ((exportPrim.ParticleSys.PartDataFlags & Primitive.ParticleSystem.ParticleDataFlags.Emissive) != 0)
                                 lsl.Append(" | PSYS_PART_EMISSIVE_MASK");
 
                             lsl.Append(","); lsl.Append(Environment.NewLine);
                             lsl.Append("         PSYS_SRC_PATTERN, 0");
 
-                            if ((prim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.Drop) != 0)
+                            if ((exportPrim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.Drop) != 0)
                                 lsl.Append(" | PSYS_SRC_PATTERN_DROP");
-                            if ((prim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.Explode) != 0)
+                            if ((exportPrim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.Explode) != 0)
                                 lsl.Append(" | PSYS_SRC_PATTERN_EXPLODE");
-                            if ((prim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.Angle) != 0)
+                            if ((exportPrim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.Angle) != 0)
                                 lsl.Append(" | PSYS_SRC_PATTERN_ANGLE");
-                            if ((prim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.AngleCone) != 0)
+                            if ((exportPrim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.AngleCone) != 0)
                                 lsl.Append(" | PSYS_SRC_PATTERN_ANGLE_CONE");
-                            if ((prim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.AngleConeEmpty) != 0)
+                            if ((exportPrim.ParticleSys.Pattern & Primitive.ParticleSystem.SourcePattern.AngleConeEmpty) != 0)
                                 lsl.Append(" | PSYS_SRC_PATTERN_ANGLE_CONE_EMPTY");
 
                             lsl.Append("," + Environment.NewLine);
 
-                            lsl.Append("         PSYS_PART_START_ALPHA, " + String.Format("{0:0.00000}", prim.ParticleSys.PartStartColor.A) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_END_ALPHA, " + String.Format("{0:0.00000}", prim.ParticleSys.PartEndColor.A) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_START_COLOR, " + prim.ParticleSys.PartStartColor.ToStringRGB() + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_END_COLOR, " + prim.ParticleSys.PartEndColor.ToStringRGB() + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_START_SCALE, <" + String.Format("{0:0.00000}", prim.ParticleSys.PartStartScaleX) + ", " + String.Format("{0:0.00000}", prim.ParticleSys.PartStartScaleY) + ", 0>, " + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_END_SCALE, <" + String.Format("{0:0.00000}", prim.ParticleSys.PartEndScaleX) + ", " + String.Format("{0:0.00000}", prim.ParticleSys.PartEndScaleY) + ", 0>, " + Environment.NewLine);
-                            lsl.Append("         PSYS_PART_MAX_AGE, " + String.Format("{0:0.00000}", prim.ParticleSys.PartMaxAge) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_MAX_AGE, " + String.Format("{0:0.00000}", prim.ParticleSys.MaxAge) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_ACCEL, " + prim.ParticleSys.PartAcceleration.ToString() + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_BURST_PART_COUNT, " + String.Format("{0:0}", prim.ParticleSys.BurstPartCount) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_BURST_RADIUS, " + String.Format("{0:0.00000}", prim.ParticleSys.BurstRadius) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_BURST_RATE, " + String.Format("{0:0.00000}", prim.ParticleSys.BurstRate) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_BURST_SPEED_MIN, " + String.Format("{0:0.00000}", prim.ParticleSys.BurstSpeedMin) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_BURST_SPEED_MAX, " + String.Format("{0:0.00000}", prim.ParticleSys.BurstSpeedMax) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_INNERANGLE, " + String.Format("{0:0.00000}", prim.ParticleSys.InnerAngle) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_OUTERANGLE, " + String.Format("{0:0.00000}", prim.ParticleSys.OuterAngle) + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_OMEGA, " + prim.ParticleSys.AngularVelocity.ToString() + "," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_TEXTURE, (key)\"" + prim.ParticleSys.Texture.ToStringHyphenated() + "\"," + Environment.NewLine);
-                            lsl.Append("         PSYS_SRC_TARGET_KEY, (key)\"" + prim.ParticleSys.Target.ToStringHyphenated() + "\"" + Environment.NewLine);
-                            
+                            lsl.Append("         PSYS_PART_START_ALPHA, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartStartColor.A) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_END_ALPHA, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartEndColor.A) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_START_COLOR, " + exportPrim.ParticleSys.PartStartColor.ToStringRGB() + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_END_COLOR, " + exportPrim.ParticleSys.PartEndColor.ToStringRGB() + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_START_SCALE, <" + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartStartScaleX) + ", " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartStartScaleY) + ", 0>, " + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_END_SCALE, <" + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartEndScaleX) + ", " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartEndScaleY) + ", 0>, " + Environment.NewLine);
+                            lsl.Append("         PSYS_PART_MAX_AGE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.PartMaxAge) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_MAX_AGE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.MaxAge) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_ACCEL, " + exportPrim.ParticleSys.PartAcceleration.ToString() + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_BURST_PART_COUNT, " + String.Format("{0:0}", exportPrim.ParticleSys.BurstPartCount) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_BURST_RADIUS, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.BurstRadius) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_BURST_RATE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.BurstRate) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_BURST_SPEED_MIN, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.BurstSpeedMin) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_BURST_SPEED_MAX, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.BurstSpeedMax) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_INNERANGLE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.InnerAngle) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_OUTERANGLE, " + String.Format("{0:0.00000}", exportPrim.ParticleSys.OuterAngle) + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_OMEGA, " + exportPrim.ParticleSys.AngularVelocity.ToString() + "," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_TEXTURE, (key)\"" + exportPrim.ParticleSys.Texture.ToStringHyphenated() + "\"," + Environment.NewLine);
+                            lsl.Append("         PSYS_SRC_TARGET_KEY, (key)\"" + exportPrim.ParticleSys.Target.ToStringHyphenated() + "\"" + Environment.NewLine);
+
                             lsl.Append("         ]);" + Environment.NewLine);
                             lsl.Append("    }" + Environment.NewLine);
                             lsl.Append("}" + Environment.NewLine);
+
+                            #endregion Particle System to LSL
 
                             return lsl.ToString();
                         }
                         else
                         {
-                            return "Prim " + prim.LocalID + " does not have a particle system";
+                            return "Prim " + exportPrim.LocalID + " does not have a particle system";
                         }
                     }
                 }

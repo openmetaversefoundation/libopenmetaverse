@@ -923,7 +923,7 @@ namespace libsecondlife
         /// <param name="notice"></param>
         public void SendGroupNotice(LLUUID group, GroupNotice notice)
         {
-            Client.Self.InstantMessage(Client.ToString(), group, notice.Subject + "|" + notice.Message,
+            Client.Self.InstantMessage(Client.Self.Name, group, notice.Subject + "|" + notice.Message,
                 LLUUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online, 
                 LLVector3.Zero, LLUUID.Zero, notice.SerializeAttachment());
         }

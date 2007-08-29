@@ -24,17 +24,18 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    lock (Client.Network.Simulators[i].Objects.Avatars)
-                    {
-                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                    Avatar master = Client.Network.Simulators[i].Objects.Find(
+                        delegate(Avatar avatar)
                         {
-                            if (avatar.ID == Client.MasterKey)
-                            {
-                                Client.Self.InstantMessage(avatar.ID, 
-                                    "You are now my master. IM me with \"help\" for a command list.");
-                                break;
-                            }
+                            return avatar.ID == Client.MasterKey;
                         }
+                    );
+
+                    if (master != null)
+                    {
+                        Client.Self.InstantMessage(master.ID,
+                            "You are now my master. IM me with \"help\" for a command list.");
+                        break;
                     }
                 }
             }

@@ -19,19 +19,18 @@ namespace libsecondlife.TestClient
             Primitive closest = null;
 		    double closestDistance = Double.MaxValue;
 
-		    lock (Client.Network.CurrentSim.Objects.Prims)
-		    {
-                foreach (Primitive p in Client.Network.CurrentSim.Objects.Prims.Values)
+            Client.Network.CurrentSim.Objects.ForEach(
+                delegate(Primitive prim)
                 {
-                    float distance = Helpers.VecDist(Client.Self.Position, p.Position);
+                    float distance = Helpers.VecDist(Client.Self.Position, prim.Position);
 
                     if (closest == null || distance < closestDistance)
                     {
-                        closest = p;
+                        closest = prim;
                         closestDistance = distance;
                     }
                 }
-		    }
+            );
 
             if (closest != null)
             {

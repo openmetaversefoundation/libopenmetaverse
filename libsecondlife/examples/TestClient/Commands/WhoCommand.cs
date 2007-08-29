@@ -22,16 +22,15 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    lock (Client.Network.Simulators[i].Objects.Avatars)
-                    {
-                        foreach (Avatar av in Client.Network.Simulators[i].Objects.Avatars.Values)
+                    Client.Network.Simulators[i].Objects.ForEach(
+                        delegate(Avatar av)
                         {
                             result.AppendLine();
-                            result.AppendFormat("{0} (Group: {1}, Location: {2}/{3}, UUID: {4})", av.Name, 
-                                av.GroupName, (av.CurrentSim != null ? av.CurrentSim.Name : String.Empty), 
+                            result.AppendFormat("{0} (Group: {1}, Location: {2}/{3}, UUID: {4})", av.Name,
+                                av.GroupName, (av.CurrentSim != null ? av.CurrentSim.Name : String.Empty),
                                 av.Position, av.ID.ToStringHyphenated());
                         }
-                    }
+                    );
                 }
             }
 

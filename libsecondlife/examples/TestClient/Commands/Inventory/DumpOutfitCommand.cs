@@ -32,47 +32,50 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    lock (Client.Network.Simulators[i].Objects.Avatars)
-                    {
-                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                    Avatar targetAv;
+
+                    targetAv = Client.Network.Simulators[i].Objects.Find(
+                        delegate(Avatar avatar)
                         {
-                            if (avatar.ID == target)
+                            return avatar.ID == target;
+                        }
+                    );
+
+                    if (targetAv != null)
+                    {
+                        StringBuilder output = new StringBuilder("Downloading ");
+
+                        lock (OutfitAssets) OutfitAssets.Clear();
+                        Client.Assets.OnImageReceived += ImageReceivedHandler;
+
+                        for (int j = 0; j < targetAv.Textures.FaceTextures.Length; j++)
+                        {
+                            LLObject.TextureEntryFace face = targetAv.Textures.FaceTextures[j];
+
+                            if (face != null)
                             {
-                                StringBuilder output = new StringBuilder("Downloading ");
+                                ImageType type = ImageType.Normal;
 
-                                lock (OutfitAssets) OutfitAssets.Clear();
-                                Client.Assets.OnImageReceived += ImageReceivedHandler;
-
-                                for (int j = 0; j < avatar.Textures.FaceTextures.Length; j++)
+                                switch ((AppearanceManager.TextureIndex)j)
                                 {
-                                    LLObject.TextureEntryFace face = avatar.Textures.FaceTextures[j];
-
-                                    if (face != null)
-                                    {
-                                        ImageType type = ImageType.Normal;
-
-                                        switch ((AppearanceManager.TextureIndex)j)
-                                        {
-                                            case AppearanceManager.TextureIndex.HeadBaked:
-                                            case AppearanceManager.TextureIndex.EyesBaked:
-                                            case AppearanceManager.TextureIndex.UpperBaked:
-                                            case AppearanceManager.TextureIndex.LowerBaked:
-                                            case AppearanceManager.TextureIndex.SkirtBaked:
-                                                type = ImageType.Baked;
-                                                break;
-                                        }
-
-                                        OutfitAssets.Add(face.TextureID);
-                                        Client.Assets.RequestImage(face.TextureID, type, 100000.0f, 0);
-
-                                        output.Append(((AppearanceManager.TextureIndex)j).ToString());
-                                        output.Append(" ");
-                                    }
+                                    case AppearanceManager.TextureIndex.HeadBaked:
+                                    case AppearanceManager.TextureIndex.EyesBaked:
+                                    case AppearanceManager.TextureIndex.UpperBaked:
+                                    case AppearanceManager.TextureIndex.LowerBaked:
+                                    case AppearanceManager.TextureIndex.SkirtBaked:
+                                        type = ImageType.Baked;
+                                        break;
                                 }
 
-                                return output.ToString();
+                                OutfitAssets.Add(face.TextureID);
+                                Client.Assets.RequestImage(face.TextureID, type, 100000.0f, 0);
+
+                                output.Append(((AppearanceManager.TextureIndex)j).ToString());
+                                output.Append(" ");
                             }
                         }
+
+                        return output.ToString();
                     }
                 }
             }

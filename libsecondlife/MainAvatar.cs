@@ -595,9 +595,9 @@ namespace libsecondlife
         // FIXME: Most all of these should change from public variables to read-only public properties
 
         /// <summary>Your (client) avatar UUID</summary>
-        public LLUUID ID = LLUUID.Zero;
+        public LLUUID ID;
         /// <summary>Your (client) avatar ID, local to the current region/sim</summary>
-        public uint LocalID = 0;
+        public uint LocalID;
         /// <summary>Where the avatar started at login. Can be "last", "home" 
         /// or a login URI</summary>
         public string StartLocation = String.Empty;
@@ -606,46 +606,58 @@ namespace libsecondlife
         /// <summary>Positive and negative ratings</summary>
         /// <remarks>This information is read-only and any changes will not be
         /// reflected on the server</remarks>
-        public Avatar.Statistics ProfileStatistics = new Avatar.Statistics();
+        public Avatar.Statistics ProfileStatistics;
         /// <summary>Avatar properties including about text, profile URL, image IDs and 
         /// publishing settings</summary>
         /// <remarks>If you change fields in this struct, the changes will not
         /// be reflected on the server until you call SetAvatarInformation</remarks>
-        public Avatar.AvatarProperties ProfileProperties = new Avatar.AvatarProperties();
+        public Avatar.AvatarProperties ProfileProperties;
         /// <summary>Avatar interests including spoken languages, skills, and "want to"
         /// choices</summary>
         /// <remarks>If you change fields in this struct, the changes will not
         /// be reflected on the server until you call SetAvatarInformation</remarks>
-        public Avatar.Interests ProfileInterests = new Avatar.Interests();
+        public Avatar.Interests ProfileInterests;
         /// <summary>Current position of avatar</summary>
-        public LLVector3 Position = LLVector3.Zero;
+        public LLVector3 Position;
         /// <summary>Current rotation of avatar</summary>
         public LLQuaternion Rotation = LLQuaternion.Identity;
         /// <summary></summary>
-        public LLVector4 CollisionPlane = LLVector4.Zero;
+        public LLVector4 CollisionPlane;
         /// <summary></summary>
-        public LLVector3 Velocity = LLVector3.Zero;
+        public LLVector3 Velocity;
         /// <summary></summary>
-        public LLVector3 Acceleration = LLVector3.Zero;
+        public LLVector3 Acceleration;
         /// <summary></summary>
-        public LLVector3 AngularVelocity = LLVector3.Zero;
+        public LLVector3 AngularVelocity;
         /// <summary>The point the avatar is currently looking at
         /// (may not stay updated)</summary>
-        public LLVector3 LookAt = LLVector3.Zero;
+        public LLVector3 LookAt;
         /// <summary>Position avatar client will goto when login to 'home' or during
         /// teleport request to 'home' region.</summary>
-        public LLVector3 HomePosition = LLVector3.Zero;
+        public LLVector3 HomePosition;
         /// <summary>LookAt point saved/restored with HomePosition</summary>
-        public LLVector3 HomeLookAt = LLVector3.Zero;
+        public LLVector3 HomeLookAt;
         /// <summary>Used for camera and control key state tracking</summary>
         public MainAvatarStatus Status;
         /// <summary>The UUID of your root inventory folder</summary>
-        public LLUUID InventoryRootFolderUUID = LLUUID.Zero;
+        public LLUUID InventoryRootFolderUUID;
 
         /// <summary>Avatar First Name (i.e. Philip)</summary>
         public string FirstName { get { return firstName; } }
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
         public string LastName { get { return lastName; } }
+        /// <summary>Avatar Full Name (i.e. Philip Linden)</summary>
+        public string Name
+        {
+            get
+            {
+                // This is a fairly common request, so assume the name doesn't
+                // change mid-session and cache the result
+                if (fullName == null)
+                    fullName = String.Format("{0} {1}", firstName, lastName);
+                return fullName;
+            }
+        }
         /// <summary>Gets the health of the agent</summary>
         public float Health { get { return health; } }
         /// <summary>Gets the current balance of the agent</summary>
@@ -681,15 +693,16 @@ namespace libsecondlife
         internal string firstName = String.Empty;
         internal string lastName = String.Empty;
         internal string teleportMessage = String.Empty;
-        internal uint sittingOn = 0;
+        internal uint sittingOn;
         internal DateTime lastInterpolation;
 
+        private string fullName;
         private TeleportStatus TeleportStat = TeleportStatus.None;
         private ManualResetEvent TeleportEvent = new ManualResetEvent(false);
-        private uint HeightWidthGenCounter = 0;
-        private float health = 0.0f;
-        private int balance = 0;
-		private LLUUID activeGroup = LLUUID.Zero;
+        private uint HeightWidthGenCounter;
+        private float health;
+        private int balance;
+		private LLUUID activeGroup;
 
         #region AgentUpdate Constants
 
@@ -740,6 +753,8 @@ namespace libsecondlife
             Status = new MainAvatarStatus(Client);
             NetworkManager.PacketCallback callback;
 
+            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+
             // Teleport callbacks
             callback = new NetworkManager.PacketCallback(TeleportHandler);
             Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
@@ -786,7 +801,7 @@ namespace libsecondlife
         /// <param name="message">Text message being sent</param>
         public void InstantMessage(LLUUID target, string message)
         {
-            InstantMessage(Client.ToString(), target, message, LLUUID.Random(),
+            InstantMessage(Name, target, message, LLUUID.Random(),
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.Position,
                 LLUUID.Zero, new byte[0]);
         }
@@ -799,7 +814,7 @@ namespace libsecondlife
         /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
         public void InstantMessage(LLUUID target, string message, LLUUID imSessionID)
         {
-            InstantMessage(Client.ToString(), target, message, imSessionID,
+            InstantMessage(Name, target, message, imSessionID,
                 InstantMessageDialog.MessageFromAgent, InstantMessageOnline.Offline, this.Position,
                 LLUUID.Zero, new byte[0]);
         }
@@ -883,7 +898,7 @@ namespace libsecondlife
         /// <param name="message">Text Message being sent.</param>
         public void InstantMessageGroup(LLUUID groupUUID, string message)
         {
-            InstantMessageGroup(Client.ToString(), groupUUID, message);
+            InstantMessageGroup(Name, groupUUID, message);
         }
 
         /// <summary>
@@ -1657,7 +1672,7 @@ namespace libsecondlife
         /// <param name="accept">Accept the teleport request or deny it</param>
         public void TeleportLureRespond(LLUUID requesterID, bool accept)
         {
-            InstantMessage(Client.ToString(), requesterID, String.Empty, LLUUID.Random(), 
+            InstantMessage(Name, requesterID, String.Empty, LLUUID.Random(), 
                 accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
                 InstantMessageOnline.Offline, this.Position, LLUUID.Zero, new byte[0]);
 
@@ -1927,7 +1942,7 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Used for parsing llDialog's
+        /// Used for parsing llDialogs
         /// </summary>
         /// <param name="packet">Incoming ScriptDialog packet</param>
         /// <param name="simulator">Unused</param>
@@ -2001,9 +2016,7 @@ namespace libsecondlife
             health = ((HealthMessagePacket)packet).HealthData.Health;
         }
 
-        
-
-        public void AgentDataUpdateHandler(Packet packet, Simulator simulator)
+        private void AgentDataUpdateHandler(Packet packet, Simulator simulator)
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
 
@@ -2079,7 +2092,7 @@ namespace libsecondlife
 
                 Client.DebugLog(String.Format(
                     "Received a TeleportFinish event from {0}, SimIP: {1}, Location: {2}, RegionHandle: {3}",
-                    caps.Simulator.ToString(), packet.Info.SimIP, packet.Info.LocationID, packet.Info.RegionHandle));
+                    caps.Simulator, packet.Info.SimIP, packet.Info.LocationID, packet.Info.RegionHandle));
 
                 TeleportHandler(packet, Client.Network.CurrentSim);
             }
@@ -2218,7 +2231,15 @@ namespace libsecondlife
 
             if (finished) TeleportEvent.Set();
         }
-    }
 
-    #endregion Packet Handlers
+        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            // Null out the cached fullName since it can change after logging
+            // in again (with a different account name or different login
+            // server but using the same SecondLife object
+            fullName = null;
+        }
+
+        #endregion Packet Handlers
+    }
 }

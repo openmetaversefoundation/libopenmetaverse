@@ -22,13 +22,14 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Console.WriteLine("{0} (Avatars: {1} Primitives: {2})", 
-                        Client.Network.Simulators[i].Name,
-                        Client.Network.Simulators[i].Objects.Avatars.Count,
-                        Client.Network.Simulators[i].Objects.Prims.Count);
+                    int avcount = Client.Network.Simulators[i].Objects.AvatarCount;
+                    int primcount = Client.Network.Simulators[i].Objects.PrimCount;
 
-                    count += Client.Network.Simulators[i].Objects.Avatars.Count;
-                    count += Client.Network.Simulators[i].Objects.Prims.Count;
+                    Console.WriteLine("{0} (Avatars: {1} Primitives: {2})", 
+                        Client.Network.Simulators[i].Name, avcount, primcount);
+
+                    count += avcount;
+                    count += primcount;
                 }
             }
 

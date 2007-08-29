@@ -31,7 +31,128 @@ namespace libsecondlife
 {
     public class ObjectTracker
     {
-        public Dictionary<uint, Avatar> Avatars = new Dictionary<uint, Avatar>();
-        public Dictionary<uint, Primitive> Prims = new Dictionary<uint, Primitive>();
+        internal Dictionary<uint, Avatar> Avatars = new Dictionary<uint, Avatar>();
+        internal Dictionary<uint, Primitive> Prims = new Dictionary<uint, Primitive>();
+
+        #region Properties
+
+        public int AvatarCount
+        {
+            get { return Avatars.Count; }
+        }
+
+        public int PrimCount
+        {
+            get { return Prims.Count; }
+        }
+
+        #endregion Properties
+
+        public bool TryGetValue(uint objectLocalID, out LLObject obj)
+        {
+            Avatar avatar;
+            Primitive prim;
+
+            if (Avatars.TryGetValue(objectLocalID, out avatar))
+            {
+                obj = avatar;
+                return true;
+            }
+
+            if (Prims.TryGetValue(objectLocalID, out prim))
+            {
+                obj = prim;
+                return true;
+            }
+
+            obj = null;
+            return false;
+        }
+
+        public bool TryGetAvatar(uint avatarLocalID, out Avatar avatar)
+        {
+            return Avatars.TryGetValue(avatarLocalID, out avatar);
+        }
+
+        public bool TryGetPrimitive(uint primLocalID, out Primitive prim)
+        {
+            return Prims.TryGetValue(primLocalID, out prim);
+        }
+
+        public List<Primitive> FindAll(Predicate<Primitive> match)
+        {
+            List<Primitive> found = new List<Primitive>();
+            lock (Prims)
+            {
+                foreach (KeyValuePair<uint, Primitive> kvp in Prims)
+                {
+                    if (match(kvp.Value))
+                        found.Add(kvp.Value);
+                }
+            }
+            return found;
+        }
+
+        public List<Avatar> FindAll(Predicate<Avatar> match)
+        {
+            List<Avatar> found = new List<Avatar>();
+            lock (Avatars)
+            {
+                foreach (KeyValuePair<uint, Avatar> kvp in Avatars)
+                {
+                    if (match(kvp.Value))
+                        found.Add(kvp.Value);
+                }
+            }
+            return found;
+        }
+
+        public Primitive Find(Predicate<Primitive> match)
+        {
+            lock (Prims)
+            {
+                foreach (Primitive prim in Prims.Values)
+                {
+                    if (match(prim))
+                        return prim;
+                }
+            }
+            return null;
+        }
+
+        public Avatar Find(Predicate<Avatar> match)
+        {
+            lock (Avatars)
+            {
+                foreach (Avatar avatar in Avatars.Values)
+                {
+                    if (match(avatar))
+                        return avatar;
+                }
+            }
+            return null;
+        }
+
+        public void ForEach(Action<Primitive> action)
+        {
+            lock (Avatars)
+            {
+                foreach (Primitive prim in Prims.Values)
+                {
+                    action(prim);
+                }
+            }
+        }
+
+        public void ForEach(Action<Avatar> action)
+        {
+            lock (Prims)
+            {
+                foreach (Avatar avatar in Avatars.Values)
+                {
+                    action(avatar);
+                }
+            }
+        }
     }
 }

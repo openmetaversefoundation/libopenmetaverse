@@ -48,17 +48,18 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    lock (Client.Network.Simulators[i].Objects.Avatars)
-                    {
-                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                    Avatar target = Client.Network.Simulators[i].Objects.Find(
+                        delegate(Avatar avatar)
                         {
-                            if (avatar.Name == name)
-                            {
-                                targetLocalID = avatar.LocalID;
-                                Active = true;
-                                return true;
-                            }
+                            return avatar.Name == name;
                         }
+                    );
+
+                    if (target != null)
+                    {
+                        targetLocalID = target.LocalID;
+                        Active = true;
+                        return true;
                     }
                 }
             }
@@ -73,17 +74,18 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    lock (Client.Network.Simulators[i].Objects.Avatars)
-                    {
-                        foreach (Avatar avatar in Client.Network.Simulators[i].Objects.Avatars.Values)
+                    Avatar target = Client.Network.Simulators[i].Objects.Find(
+                        delegate(Avatar avatar)
                         {
-                            if (avatar.ID == id)
-                            {
-                                targetLocalID = avatar.LocalID;
-                                Active = true;
-                                return true;
-                            }
+                            return avatar.ID == id;
                         }
+                    );
+
+                    if (target != null)
+                    {
+                        targetLocalID = target.LocalID;
+                        Active = true;
+                        return true;
                     }
                 }
             }
@@ -99,9 +101,10 @@ namespace libsecondlife.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    if (Client.Network.Simulators[i].Objects.Avatars.ContainsKey(targetLocalID))
+                    Avatar targetAv;
+
+                    if (Client.Network.Simulators[i].Objects.TryGetAvatar(targetLocalID, out targetAv))
                     {
-                        Avatar targetAv = Client.Network.Simulators[i].Objects.Avatars[targetLocalID];
                         float distance = 0.0f;
 
                         if (Client.Network.Simulators[i] == Client.Network.CurrentSim)

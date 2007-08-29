@@ -23,16 +23,17 @@ namespace libsecondlife.TestClient
             
             if (LLUUID.TryParse(args[0], out target))
             {
-                lock (Client.Network.CurrentSim.Objects.Prims)
-                {
-                    foreach (Primitive prim in Client.Network.CurrentSim.Objects.Prims.Values)
+                Primitive targetPrim = Client.Network.CurrentSim.Objects.Find(
+                    delegate(Primitive prim)
                     {
-                        if (prim.ID == target)
-                        {
-                            Client.Self.Touch(prim.LocalID);
-                            return "Touched prim " + prim.LocalID;
-                        }
+                        return prim.ID == target;
                     }
+                );
+
+                if (targetPrim != null)
+                {
+                    Client.Self.Touch(targetPrim.LocalID);
+                    return "Touched prim " + targetPrim.LocalID;
                 }
             }
 

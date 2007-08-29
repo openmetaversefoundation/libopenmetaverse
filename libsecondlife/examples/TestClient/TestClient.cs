@@ -105,11 +105,14 @@ namespace libsecondlife.TestClient
 
 		public void DoCommand(string cmd, LLUUID fromAgentID, LLUUID imSessionID)
         {
-			string[] tokens = Parsing.ParseArguments(cmd);
+			string[] tokens;
+
+            try { tokens = Parsing.ParseArguments(cmd); }
+            catch (FormatException ex) { Console.WriteLine(ex.Message); return; }
 
             if (tokens.Length == 0)
                 return;
-				
+			
 			string firstToken = tokens[0].ToLower();
 
             // "all balance" will send the balance command to all currently logged in bots

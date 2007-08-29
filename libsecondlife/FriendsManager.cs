@@ -374,7 +374,7 @@ namespace libsecondlife
         {
             // HACK: folder id stored as "message"
             LLUUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
-            Client.Self.InstantMessage(Client.ToString(),
+            Client.Self.InstantMessage(Client.Self.Name,
                 agentID,
                 callingCardFolder.ToString(),
                 LLUUID.Random(),

@@ -917,7 +917,7 @@ namespace libsecondlife
         /// <param name="item">InventoryObject object containing item details</param>
         public LLUUID RezFromInventory(Simulator simulator, LLQuaternion rotation, LLVector3 position, InventoryObject item)
         {
-            return RezFromInventory(simulator, rotation, position, item, Client.Self.ActiveGroup, LLUUID.Zero);
+            return RezFromInventory(simulator, rotation, position, item, Client.Self.ActiveGroup, LLUUID.Random());
         }
 
         /// <summary>
@@ -931,7 +931,7 @@ namespace libsecondlife
         public LLUUID RezFromInventory(Simulator simulator, LLQuaternion rotation, LLVector3 position, InventoryObject item, 
             LLUUID groupOwner)
         {
-            return RezFromInventory(simulator, rotation, position, item, groupOwner, LLUUID.Zero);
+            return RezFromInventory(simulator, rotation, position, item, groupOwner, LLUUID.Random());
         }
 
         /// <summary>
@@ -1266,7 +1266,7 @@ namespace libsecondlife
                     imp.MessageBlock.Offline = 0;
                     imp.MessageBlock.ID = im.IMSessionID;
                     imp.MessageBlock.Timestamp = 0;
-                    imp.MessageBlock.FromAgentName = Helpers.StringToField(Client.ToString());
+                    imp.MessageBlock.FromAgentName = Helpers.StringToField(Client.Self.Name);
                     imp.MessageBlock.Message = new byte[0];
                     imp.MessageBlock.ParentEstateID = 0;
                     imp.MessageBlock.RegionID = LLUUID.Zero;

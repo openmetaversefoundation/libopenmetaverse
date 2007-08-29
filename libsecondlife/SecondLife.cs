@@ -116,7 +116,7 @@ namespace libsecondlife
         /// <returns>Client avatars full name</returns>
         public override string ToString()
         {
-            return Self.FirstName + " " + Self.LastName;
+            return Self.Name;
         }
 
         /// <summary>
