@@ -135,7 +135,7 @@ namespace libsecondlife
 
         public void ForEach(Action<Primitive> action)
         {
-            lock (Avatars)
+            lock (Prims)
             {
                 foreach (Primitive prim in Prims.Values)
                 {
@@ -146,7 +146,7 @@ namespace libsecondlife
 
         public void ForEach(Action<Avatar> action)
         {
-            lock (Prims)
+            lock (Avatars)
             {
                 foreach (Avatar avatar in Avatars.Values)
                 {
