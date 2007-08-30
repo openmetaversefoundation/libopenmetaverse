@@ -1120,6 +1120,54 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Deed an object (prim) to a group.
+        /// </summary>
+        /// <param name="simulator">Simulator containing object</param>
+        /// <param name="LocalID">LocalID of Object</param>
+        /// <param name="group">Group to deed object to</param>
+        public void DeedObject(Simulator simulator, uint LocalID, LLUUID group)
+        {
+            ObjectOwnerPacket packet = new ObjectOwnerPacket();
+            packet.AgentData.AgentID = Client.Self.ID;
+            packet.AgentData.SessionID = Client.Network.SessionID;
+
+            // Can only be use in God mode
+            packet.HeaderData.Override = false;
+            packet.HeaderData.OwnerID = LLUUID.Zero;
+            packet.HeaderData.GroupID = group;
+
+            packet.ObjectData[0].ObjectLocalID = LocalID;
+
+            Client.Network.SendPacket(packet, simulator);
+
+        }
+
+        /// <summary>
+        /// Deed multiple objects (prims) to a group
+        /// </summary>
+        /// <param name="simulator">Simulator containing objects</param>
+        /// <param name="LocalIDs">List of LocalIDs</param>
+        /// <param name="group">Group to deed objects to.</param>
+        public void DeedObjects(Simulator simulator, List<uint> localIDs, LLUUID group)
+        {
+            ObjectOwnerPacket packet = new ObjectOwnerPacket();
+            packet.AgentData.AgentID = Client.Self.ID;
+            packet.AgentData.SessionID = Client.Network.SessionID;
+
+            // Can only be use in God mode
+            packet.HeaderData.Override = false;
+            packet.HeaderData.OwnerID = LLUUID.Zero;
+            packet.HeaderData.GroupID = group;
+
+            for (int i = 0; i < localIDs.Count; i++)
+            {
+                packet.ObjectData[i] = new ObjectOwnerPacket.ObjectDataBlock();
+                packet.ObjectData[i].ObjectLocalID = localIDs[i];
+            }
+            Client.Network.SendPacket(packet, simulator);
+        }
+            
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="simulator"></param>
