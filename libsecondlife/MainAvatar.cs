@@ -936,7 +936,9 @@ namespace libsecondlife
         /// <param name="targetObject"></param>
         /// <param name="globalOffset"></param>
         /// <param name="type"></param>
-        public void PointAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, PointAtType type)
+        /// <param name="effectID"></param>
+        public void PointAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, PointAtType type,
+            LLUUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
 
@@ -948,7 +950,7 @@ namespace libsecondlife
             effect.Effect[0].AgentID = Client.Network.AgentID;
             effect.Effect[0].Color = LLColor.Black.GetBytes();
             effect.Effect[0].Duration = (type == PointAtType.Clear) ? 0.0f : Single.MaxValue / 4.0f;
-            effect.Effect[0].ID = LLUUID.Random();
+            effect.Effect[0].ID = effectID;
             effect.Effect[0].Type = (byte)EffectType.PointAt;
 
             byte[] typeData = new byte[57];
@@ -971,7 +973,9 @@ namespace libsecondlife
         /// <param name="targetObject"></param>
         /// <param name="globalOffset"></param>
         /// <param name="type"></param>
-        public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type)
+        /// <param name="effectID"></param>
+        public void LookAtEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LookAtType type,
+            LLUUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
 
@@ -1015,7 +1019,7 @@ namespace libsecondlife
             effect.Effect[0].AgentID = Client.Network.AgentID;
             effect.Effect[0].Color = LLColor.Black.GetBytes();
             effect.Effect[0].Duration = duration;
-            effect.Effect[0].ID = LLUUID.Random();
+            effect.Effect[0].ID = effectID;
             effect.Effect[0].Type = (byte)EffectType.LookAt;
 
             byte[] typeData = new byte[57];
@@ -1038,8 +1042,9 @@ namespace libsecondlife
         /// <param name="globalOffset"></param>
         /// <param name="color"></param>
         /// <param name="duration"></param>
+        /// <param name="effectID"></param>
         public void BeamEffect(LLUUID sourceAvatar, LLUUID targetObject, LLVector3d globalOffset, LLColor color, 
-            float duration)
+            float duration, LLUUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
 
@@ -1051,7 +1056,7 @@ namespace libsecondlife
             effect.Effect[0].AgentID = Client.Network.AgentID;
             effect.Effect[0].Color = color.GetBytes();
             effect.Effect[0].Duration = duration;
-            effect.Effect[0].ID = LLUUID.Random();
+            effect.Effect[0].ID = effectID;
             effect.Effect[0].Type = (byte)EffectType.Beam;
 
             byte[] typeData = new byte[56];
