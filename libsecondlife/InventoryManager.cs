@@ -128,6 +128,8 @@ namespace libsecondlife
         public InventoryItem(LLUUID itemID) 
             : base(itemID) { }
 
+        public InventoryItem(InventoryType type, LLUUID itemID) : base(itemID) { InventoryType = type; }
+
         public override int GetHashCode()
         {
             return AssetUUID.GetHashCode() ^ Permissions.GetHashCode() ^ AssetType.GetHashCode() ^
@@ -301,7 +303,7 @@ namespace libsecondlife
                 case InventoryType.Wearable: return new InventoryWearable(id);
                 case InventoryType.Animation: return new InventoryAnimation(id);
                 case InventoryType.Gesture: return new InventoryGesture(id);
-                default: return null;
+                default: return new InventoryItem(type,id);
             }
         }
 
