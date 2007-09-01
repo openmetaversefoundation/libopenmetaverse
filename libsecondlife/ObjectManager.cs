@@ -1120,30 +1120,34 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Deed an object (prim) to a group.
+        /// Deed an object (prim) to a group, Object must be shared with group which
+        /// can be accomplished with SetPermissions()
         /// </summary>
         /// <param name="simulator">Simulator containing object</param>
         /// <param name="LocalID">LocalID of Object</param>
         /// <param name="group">Group to deed object to</param>
-        public void DeedObject(Simulator simulator, uint LocalID, LLUUID group)
+        public void DeedObject(Simulator simulator, uint localID, LLUUID group)
         {
-            ObjectOwnerPacket packet = new ObjectOwnerPacket();
-            packet.AgentData.AgentID = Client.Self.ID;
-            packet.AgentData.SessionID = Client.Network.SessionID;
+            ObjectOwnerPacket objDeedPacket = new ObjectOwnerPacket();
+            objDeedPacket.AgentData.AgentID = Client.Self.ID;
+            objDeedPacket.AgentData.SessionID = Client.Network.SessionID;
 
             // Can only be use in God mode
-            packet.HeaderData.Override = false;
-            packet.HeaderData.OwnerID = LLUUID.Zero;
-            packet.HeaderData.GroupID = group;
+            objDeedPacket.HeaderData.Override = false;
+            objDeedPacket.HeaderData.OwnerID = LLUUID.Zero;
+            objDeedPacket.HeaderData.GroupID = group;
 
-            packet.ObjectData[0].ObjectLocalID = LocalID;
-
-            Client.Network.SendPacket(packet, simulator);
-
+            objDeedPacket.ObjectData = new ObjectOwnerPacket.ObjectDataBlock[1];
+            objDeedPacket.ObjectData[0] = new ObjectOwnerPacket.ObjectDataBlock();
+            
+            objDeedPacket.ObjectData[0].ObjectLocalID = localID;
+            
+            Client.Network.SendPacket(objDeedPacket, simulator);
         }
 
         /// <summary>
-        /// Deed multiple objects (prims) to a group
+        /// Deed multiple objects (prims) to a group, Objects must be shared with group which
+        /// can be accomplished with SetPermissions()
         /// </summary>
         /// <param name="simulator">Simulator containing objects</param>
         /// <param name="LocalIDs">List of LocalIDs</param>
@@ -1158,6 +1162,8 @@ namespace libsecondlife
             packet.HeaderData.Override = false;
             packet.HeaderData.OwnerID = LLUUID.Zero;
             packet.HeaderData.GroupID = group;
+
+            packet.ObjectData = new ObjectOwnerPacket.ObjectDataBlock[localIDs.Count];
 
             for (int i = 0; i < localIDs.Count; i++)
             {
@@ -1502,6 +1508,8 @@ namespace libsecondlife
                         prim.Textures = new LLObject.TextureEntry(block.TextureEntry, 0, 
                             block.TextureEntry.Length);
 
+                        LLUUID test = new LLUUID("73818c3a-acc3-30b8-5060-0e6cf693cddf");
+
                         prim.TextureAnim = new Primitive.TextureAnimation(block.TextureAnim, 0);
                         prim.ParticleSys = new Primitive.ParticleSystem(block.PSBlock, 0);
                         prim.SetExtraParamsFromBytes(block.ExtraParams, 0);
@@ -1744,8 +1752,9 @@ namespace libsecondlife
                     obj.CollisionPlane = update.CollisionPlane;
                     obj.Position = update.Position;
                     obj.Rotation = update.Rotation;
-                    obj.Textures = update.Textures;
                     obj.Velocity = update.Velocity;
+                    if (update.Textures != null)
+                        obj.Textures = update.Textures;
                     
                     // Fire the callback
                     FireOnObjectUpdated(simulator, update, terse.RegionData.RegionHandle, terse.RegionData.TimeDilation);
@@ -2019,6 +2028,8 @@ namespace libsecondlife
                             ushort profileHollow = Helpers.BytesToUInt16(block.Data, i); i += 2;
                             prim.Data.ProfileHollow = LLObject.ProfileHollowFloat(profileHollow);
 
+                            LLUUID test = new LLUUID("73818c3a-acc3-30b8-5060-0e6cf693cddf");
+
                             // TextureEntry
                             int textureEntryLength = (int)(block.Data[i++] + (block.Data[i++] << 8) +
                                 (block.Data[i++] << 16) + (block.Data[i++] << 24));
@@ -2168,21 +2179,21 @@ namespace libsecondlife
             LLObject.ObjectPropertiesFamily props = new LLObject.ObjectPropertiesFamily();
 
             props.RequestFlags = (LLObject.ObjectPropertiesFamily.RequestFlagsType)op.ObjectData.RequestFlags;
-            props.BaseMask = op.ObjectData.BaseMask;
             props.Category = op.ObjectData.Category;
             props.Description = Helpers.FieldToUTF8String(op.ObjectData.Description);
-            props.EveryoneMask = op.ObjectData.EveryoneMask;
             props.GroupID = op.ObjectData.GroupID;
-            props.GroupMask = op.ObjectData.GroupMask;
             props.LastOwnerID = op.ObjectData.LastOwnerID;
             props.Name = Helpers.FieldToUTF8String(op.ObjectData.Name);
-            props.NextOwnerMask = op.ObjectData.NextOwnerMask;
             props.ObjectID = op.ObjectData.ObjectID;
             props.OwnerID = op.ObjectData.OwnerID;
-            props.OwnerMask = op.ObjectData.OwnerMask;
             props.OwnershipCost = op.ObjectData.OwnershipCost;
             props.SalePrice = op.ObjectData.SalePrice;
             props.SaleType = op.ObjectData.SaleType;
+            props.Permissions.BaseMask = (PermissionMask)op.ObjectData.BaseMask;
+            props.Permissions.EveryoneMask = (PermissionMask)op.ObjectData.EveryoneMask;
+            props.Permissions.GroupMask = (PermissionMask)op.ObjectData.GroupMask;
+            props.Permissions.NextOwnerMask = (PermissionMask)op.ObjectData.NextOwnerMask;
+            props.Permissions.OwnerMask = (PermissionMask)op.ObjectData.OwnerMask;
 
             FireOnObjectPropertiesFamily(sim, props);
         }

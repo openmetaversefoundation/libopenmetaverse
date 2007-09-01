@@ -16,6 +16,11 @@ namespace libsecondlife.TestClient
         {
             StringBuilder output = new StringBuilder();
             output.AppendLine(Client.Network.CurrentSim.ToString());
+            output.Append("UUID: ");
+            output.AppendLine(Client.Network.CurrentSim.ID.ToStringHyphenated());
+            uint x, y;
+            Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);
+            output.AppendLine(String.Format("Handle: {0} (X: {1} Y: {2})", Client.Network.CurrentSim.Handle, x, y));
             output.Append("Access: ");
             output.AppendLine(Client.Network.CurrentSim.Access.ToString());
             output.Append("Flags: ");

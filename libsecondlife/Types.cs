@@ -336,6 +336,17 @@ namespace libsecondlife
         public float Z;
 
         /// <summary>
+        /// Constructor, copies a single-precision vector
+        /// </summary>
+        /// <param name="vector">Single-precision vector to copy</param>
+        public LLVector3(LLVector3 vector)
+        {
+            X = vector.X;
+            Y = vector.Y;
+            Z = vector.Z;
+        }
+
+        /// <summary>
         /// Constructor, builds a single-precision vector from a 
         /// double-precision one
         /// </summary>

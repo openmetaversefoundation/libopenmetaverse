@@ -201,12 +201,13 @@ namespace libsecondlife
                 else
                 {
                     // Client mode
-
+                    IPEndPoint ipep = new IPEndPoint(IPAddress.Any, udpPort);
                     udpSocket = new Socket(
                         AddressFamily.InterNetwork,
                         SocketType.Dgram,
                         ProtocolType.Udp);
-                    udpSocket.Connect(remoteEndPoint);
+                    udpSocket.Bind(ipep);
+                    //udpSocket.Connect(remoteEndPoint);
                 }
 
                 // we're not shutting down, we're starting up

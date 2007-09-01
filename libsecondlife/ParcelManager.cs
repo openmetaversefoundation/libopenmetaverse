@@ -736,7 +736,6 @@ namespace libsecondlife
 
             request.ParcelData.LocalID = localID;
             Client.Network.SendPacket(request, simulator);
-            Console.WriteLine(request.ToString());
         }
 
         /// <summary>

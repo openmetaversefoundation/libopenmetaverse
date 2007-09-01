@@ -708,6 +708,14 @@ namespace libsecondlife
         {
             Packet packet = null;
 
+            // Check if this packet came from the server we expected it to come from
+            if (!ipEndPoint.Address.Equals(((IPEndPoint)buffer.RemoteEndPoint).Address))
+            {
+                Client.Log("Received " + buffer.DataLength + " bytes of data from unrecognized source " +
+                    ((IPEndPoint)buffer.RemoteEndPoint).ToString(), Helpers.LogLevel.Warning);
+                return;
+            }
+
             // Update the disconnect flag so this sim doesn't time out
             DisconnectCandidate = false;
 

@@ -761,6 +761,22 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Return the cross product of two vectors
+        /// </summary>
+        /// <param name="v1">First vector</param>
+        /// <param name="v2">Second vector</param>
+        /// <returns>Cross product of first and second vector</returns>
+        public static LLVector3 VecCross(LLVector3 v1, LLVector3 v2)
+        {
+            return new LLVector3
+            (
+                v1.Y * v2.Z - v1.Z * v2.Y,
+                v1.Z * v2.X - v1.X * v2.Z,
+                v1.X * v2.Y - v1.Y * v2.X
+            );
+        }
+
+        /// <summary>
         /// Calculate the rotation between two vectors
         /// </summary>
         /// <param name="a">Directional vector, such as 1,0,0 for the forward face</param>

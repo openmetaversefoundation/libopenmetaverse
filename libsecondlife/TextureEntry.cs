@@ -140,7 +140,7 @@ namespace libsecondlife
         /// methods in TextureEntry
         /// </summary>
         [Serializable]
-        public class TextureEntryFace
+        public class TextureEntryFace : ICloneable
         {
             // +----------+ S = Shiny
             // | SSFBBBBB | F = Fullbright
@@ -423,6 +423,28 @@ namespace libsecondlife
                     "TextureAttributes: {6} Material: {7} Media: {8} ID: {9}", rgba, repeatU, repeatV, offsetU, 
                     offsetV, rotation, hasAttribute.ToString(), material, media, textureID.ToStringHyphenated());
             }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            object ICloneable.Clone()
+            {
+                return this.Clone();
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public virtual TextureEntryFace Clone()
+            {
+                TextureEntryFace clone = this.MemberwiseClone() as TextureEntryFace;
+
+                // No extra deep copying needed
+
+                return clone;
+            }
         }
 
         /// <summary>
@@ -435,14 +457,14 @@ namespace libsecondlife
         /// face 18 that uses Y. In practice however, primitives utilize a maximum
         /// of nine faces</remarks>
         [Serializable]
-        public class TextureEntry
+        public class TextureEntry : ICloneable
         {
             /// <summary></summary>
             public TextureEntryFace DefaultTexture;
             /// <summary></summary>
             public TextureEntryFace[] FaceTextures;
 
-            private const int MAX_FACES = 32;
+            public const int MAX_FACES = 32;
 
             /// <summary>
             /// Default constructor, DefaultTexture will be null
@@ -874,6 +896,35 @@ namespace libsecondlife
                 }
 
                 return output;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            object ICloneable.Clone()
+            {
+                return this.Clone();
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public virtual TextureEntry Clone()
+            {
+                TextureEntry clone = new TextureEntry();
+                clone.DefaultTexture = DefaultTexture.Clone();
+
+                clone.FaceTextures = new TextureEntryFace[FaceTextures.Length];
+
+                for (int i = 0; i < FaceTextures.Length; i++)
+                {
+                    if (FaceTextures[i] != null)
+                        clone.FaceTextures[i] = FaceTextures[i].Clone();
+                }
+
+                return clone;
             }
 
             private void InitializeArray(ref uint[] array)

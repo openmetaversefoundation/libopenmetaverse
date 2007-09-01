@@ -272,15 +272,7 @@ namespace libsecondlife
             /// <summary></summary>
             public LLUUID GroupID;
             /// <summary></summary>
-            public uint BaseMask;
-            /// <summary></summary>
-            public uint OwnerMask;
-            /// <summary></summary>
-            public uint GroupMask;
-            /// <summary></summary>
-            public uint EveryoneMask;
-            /// <summary></summary>
-            public uint NextOwnerMask;
+            public Permissions Permissions;
             /// <summary></summary>
             public int OwnershipCost;
             /// <summary></summary>
@@ -295,6 +287,21 @@ namespace libsecondlife
             public string Name;
             /// <summary></summary>
             public string Description;
+
+            //public bool IsOwnedBy(SecondLife client)
+            //{
+            //    if (GroupID != LLUUID.Zero)
+            //    {
+            //        // Group owned, iterate through all of this clients groups
+            //        // and see if it is a member
+            //        //client.Groups.
+            //        // FIXME: Current groups should be stored in GroupManager and auto-requested (with a setting to turn off)
+            //    }
+            //    else
+            //    {
+            //        // Avatar owned
+            //    }
+            //}
         }
 
         #endregion Structs

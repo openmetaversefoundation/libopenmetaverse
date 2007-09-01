@@ -97,6 +97,13 @@ namespace libsecondlife
         /// <param name="inventoryItems"></param>
         public delegate void LogoutCallback(List<LLUUID> inventoryItems);
         /// <summary>
+        /// Triggered before a new connection to a simulator is established
+        /// </summary>
+        /// <remarks>The connection to the new simulator won't be established
+        /// until this callback returns</remarks>
+        /// <param name="simulator">The simulator that is being connected to</param>
+        public delegate void SimConnectingCallback(Simulator simulator);
+        /// <summary>
         /// Triggered when a new connection to a simulator is established
         /// </summary>
         /// <param name="simulator">The simulator that is being connected to</param>
@@ -132,6 +139,11 @@ namespace libsecondlife
         /// Event raised when a logout is confirmed by the simulator
         /// </summary>
         public event LogoutCallback OnLogoutReply;
+        /// <summary>
+        /// Event raised when a before a connection to a simulator is 
+        /// initialized
+        /// </summary>
+        public event SimConnectingCallback OnSimConnecting;
         /// <summary>
         /// Event raised when a connection to a simulator is established
         /// </summary>
@@ -197,7 +209,6 @@ namespace libsecondlife
         public NetworkManager(SecondLife client)
         {
             Client = client;
-            CurrentSim = null;
 
             PacketEvents = new PacketEventDictionary(client);
             CapsEvents = new CapsEventDictionary(client);
@@ -348,14 +359,19 @@ namespace libsecondlife
             {
                 if (!connected)
                 {
-                    // Mark that we are connected to the grid
-                    // HACK: This sucks but right now decodeThread loops while connected 
-                    // is true, so we have to be "connected" before we start connecting
+                    // Mark that we are connecting/connected to the grid
                     connected = true;
 
                     // Start the packet decoding thread
                     Thread decodeThread = new Thread(new ThreadStart(PacketHandler));
                     decodeThread.Start();
+                }
+
+                // Fire the OnSimConnecting event
+                if (OnSimConnecting != null)
+                {
+                    try { OnSimConnecting(simulator); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
                 // We're not connected to this simulator, attempt to establish a connection
@@ -380,7 +396,6 @@ namespace libsecondlife
                 {
                     // Connection failed, so remove this simulator from our list and destroy it
                     lock (Simulators) Simulators.Remove(simulator);
-                    simulator = null;
                 }
             }
             else if (setDefault)
@@ -469,15 +484,8 @@ namespace libsecondlife
                 // Fire the SimDisconnected event if a handler is registered
                 if (OnSimDisconnected != null)
                 {
-                    try
-                    {
-                        OnSimDisconnected(sim, DisconnectType.NetworkTimeout);
-                    }
-                    catch (Exception e)
-                    {
-                        Client.Log("Caught an exception in OnSimDisconnected(): " + e.ToString(),
-                            Helpers.LogLevel.Error);
-                    }
+                    try { OnSimDisconnected(sim, DisconnectType.NetworkTimeout); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
                 lock (Simulators) Simulators.Remove(sim);
@@ -680,9 +688,6 @@ namespace libsecondlife
                     try { OnSimDisconnected(CurrentSim, type); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
-
-                // Destroy the CurrentSim object
-                lock (Simulators) CurrentSim = null;
             }
 
 
