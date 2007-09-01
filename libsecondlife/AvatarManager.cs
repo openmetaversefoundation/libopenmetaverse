@@ -265,11 +265,7 @@ namespace libsecondlife
                 properties.FirstLifeText = Helpers.FieldToUTF8String(reply.PropertiesData.FLAboutText);
                 properties.BornOn = Helpers.FieldToUTF8String(reply.PropertiesData.BornOn);
                 properties.CharterMember = Helpers.FieldToUTF8String(reply.PropertiesData.CharterMember);
-                // FIXME: These have been converted in to a Flags field, build an enum and fix this!
-                //properties.AllowPublish = reply.PropertiesData.AllowPublish;
-                //properties.MaturePublish = reply.PropertiesData.MaturePublish;
-                //properties.Identified = reply.PropertiesData.Identified;
-                //properties.Transacted = reply.PropertiesData.Transacted;
+                properties.Flags = (Avatar.ProfileFlags)reply.PropertiesData.Flags;
                 properties.ProfileURL = Helpers.FieldToUTF8String(reply.PropertiesData.ProfileURL);
 
                 OnAvatarProperties(reply.AgentData.AvatarID, properties);

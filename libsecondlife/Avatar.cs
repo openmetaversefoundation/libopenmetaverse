@@ -37,6 +37,19 @@ namespace libsecondlife
     /// </summary>
     public class Avatar : LLObject
     {
+        /// <summary>
+        /// Avatar profile flags
+        /// </summary>
+        [Flags]
+        public enum ProfileFlags
+        {
+            ALLOW_PUBLISH = 1,
+            MATURE_PUBLISH = 2,
+            IDENTIFIED = 4,
+            TRANSACTED = 8,
+            ONLINE = 16
+        }
+
         #region Avatar Structs
 
         /// <summary>
@@ -68,8 +81,6 @@ namespace libsecondlife
         /// </summary>
         public struct AvatarProperties
         {
-            /// <summary>Should this profile be published on the web</summary>
-            public bool AllowPublish;
             /// <summary>First Life about text</summary>
             public string FirstLifeText;
             /// <summary>First Life image ID</summary>
@@ -84,16 +95,112 @@ namespace libsecondlife
             public string CharterMember;
             /// <summary>Profile image ID</summary>
             public LLUUID ProfileImage;
-            /// <summary>Is this a mature profile</summary>
-            public bool MaturePublish;
-            /// <summary></summary>
-            public bool Identified;
-            /// <summary></summary>
-            public bool Transacted;
+            /// <summary>Flags of the profile</summary>
+            public ProfileFlags Flags;
             /// <summary>Web URL for this profile</summary>
             public string ProfileURL;
-        }
 
+            #region Properties
+
+            /// <summary>Should this profile be published on the web</summary>
+            public bool AllowPublish
+            {
+                get
+                {
+                    return ((Flags & ProfileFlags.ALLOW_PUBLISH) != 0);
+                }
+                set
+                {
+                    if (value == true)
+                    {
+                        Flags |= ProfileFlags.ALLOW_PUBLISH;
+                    }
+                    else
+                    {
+                        Flags &= ~ProfileFlags.ALLOW_PUBLISH;
+                    }
+                }
+            }
+            /// <summary>Avatar Online Status</summary>
+            public bool Online
+            {
+                get
+                {
+                    return ((Flags & ProfileFlags.ONLINE) != 0);
+                }
+                set
+                {
+                    if (value == true)
+                    {
+                        Flags |= ProfileFlags.ONLINE;
+                    }
+                    else
+                    {
+                        Flags &= ~ProfileFlags.ONLINE;
+                    }
+                }
+            }
+            /// <summary>Is this a mature profile</summary>
+            public bool MaturePublish
+            {
+                get
+                {
+                    return ((Flags & ProfileFlags.MATURE_PUBLISH) != 0);
+                }
+                set
+                {
+                    if (value == true)
+                    {
+                        Flags |= ProfileFlags.MATURE_PUBLISH;
+                    }
+                    else
+                    {
+                        Flags &= ~ProfileFlags.MATURE_PUBLISH;
+                    }
+                }
+            }
+            /// <summary></summary>
+            public bool Identified
+            {
+                get
+                {
+                    return ((Flags & ProfileFlags.IDENTIFIED) != 0);
+                }
+                set
+                {
+                    if (value == true)
+                    {
+                        Flags |= ProfileFlags.IDENTIFIED;
+                    }
+                    else
+                    {
+                        Flags &= ~ProfileFlags.IDENTIFIED;
+                    }
+                }
+            }
+            ///// <summary></summary>
+            public bool Transacted
+            {
+                get
+                {
+                    return ((Flags & ProfileFlags.TRANSACTED) != 0);
+                }
+                set
+                {
+                    if (value == true)
+                    {
+                        Flags |= ProfileFlags.TRANSACTED;
+                    }
+                    else
+                    {
+                        Flags &= ~ProfileFlags.TRANSACTED;
+                    }
+                }
+            }
+
+            #endregion Properties
+        }
+        
         /// <summary>
         /// Avatar interests including spoken languages, skills, and "want to"
         /// choices
