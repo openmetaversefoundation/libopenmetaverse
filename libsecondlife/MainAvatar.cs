@@ -1483,6 +1483,15 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>Requests missed/offline messages</summary>
+        public void RetrieveInstantMessages()
+        {
+            RetrieveInstantMessagesPacket p = new RetrieveInstantMessagesPacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            Client.Network.SendPacket(p);
+        }
+
         /// <summary>Stands up from sitting on a prim or the ground</summary>
         public bool Stand()
         {
