@@ -44,6 +44,8 @@ namespace libsecondlife
         protected LLVector3 yAxis;
         protected LLVector3 zAxis;
 
+        #region Constructors
+
         public CoordinateFrame()
         {
         }
@@ -56,15 +58,24 @@ namespace libsecondlife
             this.zAxis = zAxis;
         }
 
-        //public void SetAxes(LLQuaternion rotation)
-        //{
-        //    // FIXME: Convert to a matrix and call SetAxes()
-        //}
+        #endregion Constructors
 
-        //public void SetAxes(LLMatrix3 rotation)
-        //{
-        //    // FIXME: Implement
-        //}
+        #region Public Methods
+
+        public void ResetAxes()
+        {
+            xAxis = new LLVector3(1f, 0f, 0f);
+            yAxis = new LLVector3(0f, 1f, 0f);
+            zAxis = new LLVector3(0f, 0f, 1f);
+        }
+
+        public bool IsFinite()
+        {
+            if (xAxis.IsFinite() && yAxis.IsFinite() && zAxis.IsFinite())
+                return true;
+            else
+                return false;
+        }
 
         /// <summary>
         /// 
@@ -74,28 +85,102 @@ namespace libsecondlife
         public void LookDirection(LLVector3 at, LLVector3 upDirection)
         {
             // The two parameters cannot be parallel
-            LLVector3 left = Helpers.VecCross(upDirection, at);
+            LLVector3 left = LLVector3.Cross(upDirection, at);
             if (left == LLVector3.Zero)
             {
                 // Prevent left from being zero
                 at.X += 0.01f;
-                at = Helpers.VecNorm(at);
-                left = Helpers.VecCross(upDirection, at);
+                at = LLVector3.Norm(at);
+                left = LLVector3.Cross(upDirection, at);
             }
-            left = Helpers.VecNorm(left);
+            left = LLVector3.Norm(left);
 
             xAxis = at;
             yAxis = left;
-            zAxis = Helpers.VecCross(at, left);
+            zAxis = LLVector3.Cross(at, left);
+        }
+
+        public void Orthonormalize()
+        {
+            // Make sure the axis are orthagonal and normalized
+            xAxis = LLVector3.Norm(xAxis);
+            yAxis -= xAxis * (xAxis * yAxis);
+            yAxis = LLVector3.Norm(yAxis);
+            zAxis = LLVector3.Cross(xAxis, yAxis);
+        }
+
+        public void Rotate(float angle, LLVector3 rotationAxis)
+        {
+            LLQuaternion q = new LLQuaternion(angle, rotationAxis);
+            Rotate(q);
+        }
+
+        public void Rotate(LLQuaternion q)
+        {
+            LLMatrix3 m = new LLMatrix3(q);
+            Rotate(m);
+        }
+
+        public void Rotate(LLMatrix3 m)
+        {
+            xAxis = LLVector3.Rot(xAxis, m);
+            yAxis = LLVector3.Rot(yAxis, m);
+
+            Orthonormalize();
+
+            if (!IsFinite())
+                throw new Exception("Non-finite in CoordinateFrame.Rotate()");
+        }
+
+        public void Roll(float angle)
+        {
+            LLQuaternion q = new LLQuaternion(angle, xAxis);
+            LLMatrix3 m = new LLMatrix3(q);
+            Rotate(m);
+
+            if (!yAxis.IsFinite() || !zAxis.IsFinite())
+                throw new Exception("Non-finite in CoordinateFrame.Roll()");
+        }
+
+        public void Pitch(float angle)
+        {
+            LLQuaternion q = new LLQuaternion(angle, yAxis);
+            LLMatrix3 m = new LLMatrix3(q);
+            Rotate(m);
+
+            if (!xAxis.IsFinite() || !zAxis.IsFinite())
+                throw new Exception("Non-finite in CoordinateFrame.Pitch()");
+        }
+
+        public void Yaw(float angle)
+        {
+            LLQuaternion q = new LLQuaternion(angle, zAxis);
+            LLMatrix3 m = new LLMatrix3(q);
+            Rotate(m);
+
+            if (!xAxis.IsFinite() || !yAxis.IsFinite())
+                throw new Exception("Non-finite in CoordinateFrame.Yaw()");
+        }
+
+        public void LookDirection(LLVector3 at)
+        {
+            LookDirection(at, new LLVector3(0f, 0f, 1f));
         }
 
         public void LookAt(LLVector3 origin, LLVector3 target, LLVector3 upDirection)
         {
             this.origin = origin;
             LLVector3 at = new LLVector3(target - origin);
-            at = Helpers.VecNorm(at);
+            at = LLVector3.Norm(at);
 
             LookDirection(at, upDirection);
         }
+
+        public void LookAt(LLVector3 origin, LLVector3 target)
+        {
+            LookAt(origin, target, new LLVector3(0f, 0f, 1f));
+        }
+
+        #endregion Public Methods
     }
 }

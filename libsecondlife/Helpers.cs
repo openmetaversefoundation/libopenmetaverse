@@ -685,120 +685,24 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Converts a vector style rotation to a quaternion
+        /// Swap two values
         /// </summary>
-        /// <param name="a">Axis rotation, such as 0,0,90 for 90 degrees to the right</param>
-        /// <returns>A quaternion representing the axes of the supplied vector</returns>
-        public static LLQuaternion Axis2Rot(LLVector3 a)
+        /// <typeparam name="T">Type of the values to swap</typeparam>
+        /// <param name="lhs">First value</param>
+        /// <param name="rhs">Second value</param>
+        public static void Swap<T>(ref T lhs, ref T rhs)
         {
-            if (a.X > 180) a.X -= 360; if (a.Y > 180) a.Y -= 360; if (a.Z > 180) a.Z -= 360;
-            if (a.X < -180) a.X += 360; if (a.Y < -180) a.Y += 360; if (a.Z < -180) a.Z += 360;
-
-            LLQuaternion rot = LLQuaternion.Identity;
-            rot.X = (float)(a.X * DEG_TO_RAD);
-            rot.Y = (float)(a.Y * DEG_TO_RAD);
-            rot.Z = (float)(a.Z * DEG_TO_RAD);
-            if (a.Z > 180) rot.W = 0;
-
-            return rot;
+            T temp = lhs;
+            lhs = rhs;
+            rhs = temp;
         }
 
         /// <summary>
-        /// Calculates the distance between two vectors
+        /// Test if a single precision float is a finite number
         /// </summary>
-        public static float VecDist(LLVector3 pointA, LLVector3 pointB)
+        public static bool IsFinite(float value)
         {
-            float xd = pointB.X - pointA.X;
-            float yd = pointB.Y - pointA.Y;
-            float zd = pointB.Z - pointA.Z;
-            return (float)Math.Sqrt(xd * xd + yd * yd + zd * zd);
-        }
-
-        /// <summary>
-        /// Calculates the distance between two vectors
-        /// </summary>
-        public static double VecDist(LLVector3d pointA, LLVector3d pointB)
-        {
-            double xd = pointB.X - pointA.X;
-            double yd = pointB.Y - pointA.Y;
-            double zd = pointB.Z - pointA.Z;
-            return Math.Sqrt(xd * xd + yd * yd + zd * zd);
-        }
-
-        /// <summary>
-        /// Calculate the magnitude of the supplied vector
-        /// </summary>
-        public static float VecMag(LLVector3 v)
-        {
-            return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
-        }
-
-        /// <summary>
-        /// Calculate the squared magnitude of the supplied vector
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static float VecMagSquared(LLVector3 v)
-        {
-            return v.X * v.X + v.Y * v.Y + v.Z * v.Z;
-        }
-
-        /// <summary>
-        /// Calculate the magnitude of the supplied quaternion
-        /// </summary>
-        public static float RotMag(LLQuaternion q)
-        {
-            return (float)Math.Sqrt(q.W * q.W + q.X * q.X + q.Y * q.Y + q.Z * q.Z);
-        }
-
-        /// <summary>
-        /// Return the supplied vector in normalized form
-        /// </summary>
-        public static LLVector3 VecNorm(LLVector3 vector)
-        {
-            float mag = VecMag(vector);
-            return new LLVector3(vector.X / mag, vector.Y / mag, vector.Z / mag);
-        }
-
-        /// <summary>
-        /// Return the cross product of two vectors
-        /// </summary>
-        /// <param name="v1">First vector</param>
-        /// <param name="v2">Second vector</param>
-        /// <returns>Cross product of first and second vector</returns>
-        public static LLVector3 VecCross(LLVector3 v1, LLVector3 v2)
-        {
-            return new LLVector3
-            (
-                v1.Y * v2.Z - v1.Z * v2.Y,
-                v1.Z * v2.X - v1.X * v2.Z,
-                v1.X * v2.Y - v1.Y * v2.X
-            );
-        }
-
-        /// <summary>
-        /// Calculate the rotation between two vectors
-        /// </summary>
-        /// <param name="a">Directional vector, such as 1,0,0 for the forward face</param>
-        /// <param name="b">Target vector - normalize first with VecNorm</param>
-        public static LLQuaternion RotBetween(LLVector3 a, LLVector3 b)
-        {
-            //A and B should both be normalized
-            //dotProduct is 0 if a and b are perpendicular. I think that's normal?
-            float dotProduct = (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z);
-
-            LLVector3 crossProduct = new LLVector3();
-            crossProduct.X = a.Y * b.Z - a.Z * b.Y;
-            crossProduct.Y = a.Z * b.X - a.X * b.Z;
-            crossProduct.Z = a.X * b.Y - a.Y * b.X;
-
-            //float scalarProduct = (a.X * b.Y) + (a.Y * b.Z) + (a.Z * b.X); //not used?
-            float magProduct = VecMag(a) * VecMag(b);
-            double angle = Math.Acos(dotProduct / magProduct);
-
-            LLVector3 axis = VecNorm(crossProduct);
-            float s = (float)Math.Sin(angle / 2);
-            return new LLQuaternion(axis.X * s, axis.Y * s, axis.Z * s, (float)Math.Cos(angle / 2));
+            return !(Single.IsNaN(value) || Single.IsInfinity(value));
         }
 
         /// <summary>

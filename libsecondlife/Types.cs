@@ -335,6 +335,8 @@ namespace libsecondlife
         [XmlAttribute]
         public float Z;
 
+        #region Constructors
+
         /// <summary>
         /// Constructor, copies a single-precision vector
         /// </summary>
@@ -397,7 +399,22 @@ namespace libsecondlife
 			X = x;
 			Y = y;
 			Z = z;
-		}
+        }
+
+        #endregion Constructors
+
+        #region Public Methods
+
+        /// <summary>
+        /// Test if this vector is composed of all finite numbers
+        /// </summary>
+        public bool IsFinite()
+        {
+            if (Helpers.IsFinite(X) && Helpers.IsFinite(Y) && Helpers.IsFinite(Z))
+                return true;
+            else
+                return false;
+        }
 
         /// <summary>
         /// Returns the raw bytes for this vector
@@ -418,36 +435,121 @@ namespace libsecondlife
 			}
 
 			return byteArray;
-		}
+        }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         /// <summary>
-        /// Get the distance to point
+        /// Calculate the magnitude of the supplied vector
         /// </summary>
-        /// <param name="Pt"></param>
-        /// <returns></returns>
-        public double GetDistanceTo(LLVector3 Pt)
+        public static float Mag(LLVector3 v)
         {
-            return Math.Sqrt(((X - Pt.X) * (X - Pt.X)) + ((Y - Pt.Y) * (Y - Pt.Y)) + ((Z - Pt.Z) * (Z - Pt.Z)));
+            return (float)Math.Sqrt(v.X * v.X + v.Y * v.Y + v.Z * v.Z);
         }
 
         /// <summary>
-        /// Get a formatted string representation of the vector
+        /// Calculate the squared magnitude of the supplied vector
         /// </summary>
-        /// <returns>A string representation of the vector, similar to the LSL
-        /// vector to string conversion in Second Life</returns>
-		public override string ToString()
-		{
-            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
-		}
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static float MagSquared(LLVector3 v)
+        {
+            return v.X * v.X + v.Y * v.Y + v.Z * v.Z;
+        }
 
         /// <summary>
-        /// A hash of the vector, used by .NET for hash tables
+        /// Return the supplied vector in normalized form
         /// </summary>
-        /// <returns>The hashes of the individual components XORed together</returns>
-		public override int GetHashCode()
-		{
-			return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
-		}
+        public static LLVector3 Norm(LLVector3 vector)
+        {
+            float mag = Mag(vector);
+            return new LLVector3(vector.X / mag, vector.Y / mag, vector.Z / mag);
+        }
+
+        /// <summary>
+        /// Return the cross product of two vectors
+        /// </summary>
+        /// <param name="v1">First vector</param>
+        /// <param name="v2">Second vector</param>
+        /// <returns>Cross product of first and second vector</returns>
+        public static LLVector3 Cross(LLVector3 v1, LLVector3 v2)
+        {
+            return new LLVector3
+            (
+                v1.Y * v2.Z - v1.Z * v2.Y,
+                v1.Z * v2.X - v1.X * v2.Z,
+                v1.X * v2.Y - v1.Y * v2.X
+            );
+        }
+
+        /// <summary>
+        /// Returns the dot product of two vectors
+        /// </summary>
+        public static float Dot(LLVector3 v1, LLVector3 v2)
+        {
+            return (v1.X * v2.X) + (v1.Y * v2.Y) + (v1.Z * v2.Z);
+        }
+
+        /// <summary>
+        /// Calculates the distance between two vectors
+        /// </summary>
+        public static float Dist(LLVector3 pointA, LLVector3 pointB)
+        {
+            float xd = pointB.X - pointA.X;
+            float yd = pointB.Y - pointA.Y;
+            float zd = pointB.Z - pointA.Z;
+            return (float)Math.Sqrt(xd * xd + yd * yd + zd * zd);
+        }
+
+        public static LLVector3 Rot(LLVector3 vector, LLQuaternion rotation)
+        {
+            return vector * rotation;
+        }
+
+        public static LLVector3 Rot(LLVector3 vector, LLMatrix3 rotation)
+        {
+            return vector * rotation;
+        }
+
+        /// <summary>
+        /// Calculate the rotation between two vectors
+        /// </summary>
+        /// <param name="a">Directional vector, such as 1,0,0 for the forward face</param>
+        /// <param name="b">Target vector - normalize first with VecNorm</param>
+        public static LLQuaternion RotBetween(LLVector3 a, LLVector3 b)
+        {
+            //A and B should both be normalized
+
+            float dotProduct = Dot(a, b);
+            LLVector3 crossProduct = Cross(a, b);
+            float magProduct = Mag(a) * Mag(b);
+            double angle = Math.Acos(dotProduct / magProduct);
+            LLVector3 axis = Norm(crossProduct);
+            float s = (float)Math.Sin(angle / 2);
+
+            return new LLQuaternion(axis.X * s, axis.Y * s, axis.Z * s, (float)Math.Cos(angle / 2));
+        }
+
+        /// <summary>
+        /// Converts a vector style rotation to a quaternion
+        /// </summary>
+        /// <param name="a">Axis rotation, such as 0,0,90 for 90 degrees to the right</param>
+        /// <returns>A quaternion representing the axes of the supplied vector</returns>
+        public static LLQuaternion Axis2Rot(LLVector3 a)
+        {
+            if (a.X > 180) a.X -= 360; if (a.Y > 180) a.Y -= 360; if (a.Z > 180) a.Z -= 360;
+            if (a.X < -180) a.X += 360; if (a.Y < -180) a.Y += 360; if (a.Z < -180) a.Z += 360;
+
+            LLQuaternion rot = LLQuaternion.Identity;
+            rot.X = (float)(a.X * Helpers.DEG_TO_RAD);
+            rot.Y = (float)(a.Y * Helpers.DEG_TO_RAD);
+            rot.Z = (float)(a.Z * Helpers.DEG_TO_RAD);
+            if (a.Z > 180) rot.W = 0;
+
+            return rot;
+        }
 
         /// <summary>
         /// Generate an LLVector3 from a string
@@ -475,6 +577,19 @@ namespace libsecondlife
             }
         }
 
+        #endregion Static Methods
+
+        #region Overrides
+
+        /// <summary>
+        /// A hash of the vector, used by .NET for hash tables
+        /// </summary>
+        /// <returns>The hashes of the individual components XORed together</returns>
+        public override int GetHashCode()
+        {
+            return (X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -487,7 +602,21 @@ namespace libsecondlife
 			LLVector3 vector = (LLVector3)o;
 
 			return (X == vector.X && Y == vector.Y && Z == vector.Z);
-		}
+        }
+
+        /// <summary>
+        /// Get a formatted string representation of the vector
+        /// </summary>
+        /// <returns>A string representation of the vector, similar to the LSL
+        /// vector to string conversion in Second Life</returns>
+        public override string ToString()
+        {
+            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
+        }
+
+        #endregion Overrides
+
+        #region Operators
 
         /// <summary>
         /// 
@@ -570,6 +699,8 @@ namespace libsecondlife
             return new LLVector3(result.X, result.Y, result.Z);
         }
 
+        #endregion Operators
+
         /// <summary>
         /// An LLVector3 with a value of 0,0,0
         /// </summary>
@@ -591,6 +722,8 @@ namespace libsecondlife
         /// <summary>Z value</summary>
         [XmlAttribute]
         public double Z;
+
+        #region Constructors
 
         /// <summary>
         /// 
@@ -642,7 +775,52 @@ namespace libsecondlife
                 Y = BitConverter.ToDouble(byteArray, pos + 8);
                 Z = BitConverter.ToDouble(byteArray, pos + 16);
             }
-		}
+        }
+
+        #endregion Constructors
+
+        #region Public Methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GetBytes()
+        {
+            byte[] byteArray = new byte[24];
+
+            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 8, 8);
+            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 16, 8);
+
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(byteArray, 0, 8);
+                Array.Reverse(byteArray, 8, 8);
+                Array.Reverse(byteArray, 16, 8);
+            }
+
+            return byteArray;
+        }
+
+        #endregion Public Methods
+
+        #region Static Methods
+
+        /// <summary>
+        /// Calculates the distance between two vectors
+        /// </summary>
+        public static double Dist(LLVector3d pointA, LLVector3d pointB)
+        {
+            double xd = pointB.X - pointA.X;
+            double yd = pointB.Y - pointA.Y;
+            double zd = pointB.Z - pointA.Z;
+            return Math.Sqrt(xd * xd + yd * yd + zd * zd);
+        }
+
+        #endregion Static Methods
+
+        #region Overrides
 
         /// <summary>
         /// A hash of the vector, used by .NET for hash tables
@@ -670,6 +848,19 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
+        }
+
+        #endregion Overrides
+
+        #region Operators
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
         /// <returns></returns>
@@ -689,46 +880,7 @@ namespace libsecondlife
             return !(lhs == rhs);
         }
 
-        /// <summary>
-        /// Get the distance to point
-        /// </summary>
-        /// <param name="Pt"></param>
-        /// <returns></returns>
-        public double GetDistanceTo(LLVector3d Pt)
-        {
-            return Math.Sqrt(((X - Pt.X) * (X - Pt.X)) + ((Y - Pt.Y) * (Y - Pt.Y)) + ((Z - Pt.Z) * (Z - Pt.Z)));
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-		public byte[] GetBytes()
-		{
-			byte[] byteArray = new byte[24];
-
-            Buffer.BlockCopy(BitConverter.GetBytes(X), 0, byteArray, 0, 8);
-            Buffer.BlockCopy(BitConverter.GetBytes(Y), 0, byteArray, 8, 8);
-            Buffer.BlockCopy(BitConverter.GetBytes(Z), 0, byteArray, 16, 8);
-
-			if(!BitConverter.IsLittleEndian)
-            {
-				Array.Reverse(byteArray, 0, 8);
-				Array.Reverse(byteArray, 8, 8);
-				Array.Reverse(byteArray, 16, 8);
-			}
-
-			return byteArray;
-		}
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-		public override string ToString()
-		{
-            return String.Format("<{0}, {1}, {2}>", X, Y, Z);
-		}
+        #endregion Operators
 
         /// <summary>
         /// An LLVector3d with a value of 0,0,0
@@ -935,6 +1087,8 @@ namespace libsecondlife
         [XmlAttribute]
         public float W;
 
+        #region Constructors
+
         /// <summary>
         /// Build a quaternion object from a byte array
         /// </summary>
@@ -1035,7 +1189,7 @@ namespace libsecondlife
         /// <param name="vector">Vector value</param>
         public LLQuaternion(float angle, LLVector3 vector)
         {
-            vector = Helpers.VecNorm(vector);
+            vector = LLVector3.Norm(vector);
             angle *= 0.5f;
 
             float c = (float)Math.Cos(angle);
@@ -1046,14 +1200,24 @@ namespace libsecondlife
             Z = vector.Z * s;
             W = c;
 
-            Normalize();
+            Norm();
+        }
+
+        #endregion Constructors
+
+        /// <summary>
+        /// Calculate the magnitude of the supplied quaternion
+        /// </summary>
+        public static float RotMag(LLQuaternion q)
+        {
+            return (float)Math.Sqrt(q.W * q.W + q.X * q.X + q.Y * q.Y + q.Z * q.Z);
         }
 
         /// <summary>
         /// Normalize this quaternion
         /// </summary>
         /// <returns>Magnitude of the quaternion</returns>
-        public float Normalize()
+        public float Norm()
         {
             const float MAG_THRESHOLD = 0.0000001f;
 
@@ -1076,6 +1240,43 @@ namespace libsecondlife
             }
 
             return mag;
+        }
+
+        /// <summary>
+        /// Returns the inverse matrix from this quaternion, or the correct
+        /// matrix if this quaternion is inverse
+        /// </summary>
+        /// <returns></returns>
+        public LLMatrix3 GetMatrix()
+        {
+            LLMatrix3 m;
+            float xx, xy, xz, xw, yy, yz, yw, zz, zw;
+
+            xx = X * X;
+            xy = X * Y;
+            xz = X * Z;
+            xw = X * W;
+
+            yy = Y * Y;
+            yz = Y * Z;
+            yw = Y * W;
+
+            zz = Z * Z;
+            zw = Z * W;
+
+            m.M11 = 1f - 2f * (yy + zz);
+            m.M12 = 2f * (xy + zw);
+            m.M13 = 2f * (xz - yw);
+
+            m.M21 = 2f * (xy - zw);
+            m.M22 = 1f - 2f * (xx + zz);
+            m.M23 = 2f * (yz + xw);
+
+            m.M31 = 2f * (xz + yw);
+            m.M32 = 2f * (yz - xw);
+            m.M33 = 1f - 2f * (xx + yy);
+
+            return m;
         }
 
         /// <summary>
@@ -1189,4 +1390,385 @@ namespace libsecondlife
         /// </summary>
         public readonly static LLQuaternion Identity = new LLQuaternion(0, 0, 0, 1);
 	}
+
+    [Serializable]
+    public struct LLMatrix3
+    {
+        public float M11, M12, M13;
+        public float M21, M22, M23;
+        public float M31, M32, M33;
+
+        #region Properties
+
+        public float Trace
+        {
+            get
+            {
+                return M11 + M22 + M33;
+            }
+        }
+
+        public float Determinant
+        {
+            get
+            {
+                return M11 * M22 * M33 + M12 * M23 * M31 + M13 * M21 * M32 - 
+                       M13 * M22 * M31 - M11 * M23 * M32 - M12 * M21 * M33;
+            }
+        }
+
+        #endregion Properties
+
+        public LLMatrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33)
+        {
+            M11 = m11;
+            M12 = m12;
+            M13 = m13;
+            M21 = m21;
+            M22 = m22;
+            M23 = m23;
+            M31 = m31;
+            M32 = m32;
+            M33 = m33;
+        }
+
+        public LLMatrix3(LLMatrix3 m)
+        {
+            M11 = m.M11;
+            M12 = m.M12;
+            M13 = m.M13;
+            M21 = m.M21;
+            M22 = m.M22;
+            M23 = m.M23;
+            M31 = m.M31;
+            M32 = m.M32;
+            M33 = m.M33;
+        }
+
+        public LLMatrix3(LLQuaternion q)
+        {
+            this = q.GetMatrix();
+        }
+        
+        /// <summary>
+        /// Transposes this matrix
+        /// </summary>
+        public void Transpose()
+        {
+            Helpers.Swap<float>(ref M12, ref M21);
+            Helpers.Swap<float>(ref M13, ref M31);
+            Helpers.Swap<float>(ref M23, ref M32);
+        }
+
+        public void Orthogonalize()
+        {
+            LLVector3 xAxis = this[0];
+            LLVector3 yAxis = this[1];
+            LLVector3 zAxis = this[2];
+
+            xAxis = LLVector3.Norm(xAxis);
+            yAxis -= xAxis * (xAxis * yAxis);
+            yAxis = LLVector3.Norm(yAxis);
+            zAxis = LLVector3.Cross(xAxis, yAxis);
+
+            this[0] = xAxis;
+            this[1] = yAxis;
+            this[2] = zAxis;
+        }
+
+        public void GetEulerAngles(out float roll, out float pitch, out float yaw)
+        {
+            // From the Matrix and Quaternion FAQ: http://www.j3d.org/matrix_faq/matrfaq_latest.html
+
+            double angleX, angleY, angleZ;
+            double cx, cy, cz; // cosines
+            double sx, sz; // sines
+
+            angleY = Math.Asin(Helpers.Clamp(M31, -1f, 1f));
+            cy = Math.Cos(angleY);
+
+            if (Math.Abs(cy) > 0.005f)
+            {
+                // No gimbal lock
+                cx = M33 / cy;
+                sx = (-M32) / cy;
+
+                angleX = (float)Math.Atan2(sx, cx);
+
+                cz = M11 / cy;
+                sz = (-M21) / cy;
+
+                angleZ = (float)Math.Atan2(sz, cz);
+            }
+            else
+            {
+                // Gimbal lock
+                angleX = 0;
+                
+                cz = M22;
+                sz = M12;
+
+                angleZ = Math.Atan2(sz, cz);
+            }
+
+            roll = (float)angleX;
+            pitch = (float)angleY;
+            yaw = (float)angleZ;
+        }
+
+        #region Static Methods
+
+        public static LLMatrix3 Add(LLMatrix3 left, LLMatrix3 right)
+        {
+            return new LLMatrix3(
+                left.M11 + right.M11, left.M12 + right.M12, left.M13 + right.M13,
+                left.M21 + right.M21, left.M22 + right.M22, left.M23 + right.M23,
+                left.M31 + right.M31, left.M32 + right.M32, left.M33 + right.M33
+            );
+        }
+
+        public static LLMatrix3 Add(LLMatrix3 matrix, float scalar)
+        {
+            return new LLMatrix3(
+                matrix.M11 + scalar, matrix.M12 + scalar, matrix.M13 + scalar,
+                matrix.M21 + scalar, matrix.M22 + scalar, matrix.M23 + scalar,
+                matrix.M31 + scalar, matrix.M32 + scalar, matrix.M33 + scalar
+            );
+        }
+
+        public static LLMatrix3 Subtract(LLMatrix3 left, LLMatrix3 right)
+        {
+            return new LLMatrix3(
+                left.M11 - right.M11, left.M12 - right.M12, left.M13 - right.M13,
+                left.M21 - right.M21, left.M22 - right.M22, left.M23 - right.M23,
+                left.M31 - right.M31, left.M32 - right.M32, left.M33 - right.M33
+                );
+        }
+
+        public static LLMatrix3 Subtract(LLMatrix3 matrix, float scalar)
+        {
+            return new LLMatrix3(
+                matrix.M11 - scalar, matrix.M12 - scalar, matrix.M13 - scalar,
+                matrix.M21 - scalar, matrix.M22 - scalar, matrix.M23 - scalar,
+                matrix.M31 - scalar, matrix.M32 - scalar, matrix.M33 - scalar
+                );
+        }
+
+        public static LLMatrix3 Multiply(LLMatrix3 left, LLMatrix3 right)
+        {
+            return new LLMatrix3(
+                left.M11 * right.M11 + left.M12 * right.M21 + left.M13 * right.M31,
+                left.M11 * right.M12 + left.M12 * right.M22 + left.M13 * right.M32,
+                left.M11 * right.M13 + left.M12 * right.M23 + left.M13 * right.M33,
+
+                left.M21 * right.M11 + left.M22 * right.M21 + left.M23 * right.M31,
+                left.M21 * right.M12 + left.M22 * right.M22 + left.M23 * right.M32,
+                left.M21 * right.M13 + left.M22 * right.M23 + left.M23 * right.M33,
+
+                left.M31 * right.M11 + left.M32 * right.M21 + left.M33 * right.M31,
+                left.M31 * right.M12 + left.M32 * right.M22 + left.M33 * right.M32,
+                left.M31 * right.M13 + left.M32 * right.M23 + left.M33 * right.M33
+            );
+        }
+
+        public static LLVector3 Transform(LLVector3 vector, LLMatrix3 matrix)
+        {
+            // Operates "from the right" on row vector
+            return new LLVector3(
+                vector.X * matrix.M11 + vector.Y * matrix.M21 + vector.Z * matrix.M31,
+                vector.X * matrix.M12 + vector.Y * matrix.M22 + vector.Z * matrix.M32,
+                vector.X * matrix.M13 + vector.Y * matrix.M23 + vector.Z * matrix.M33
+            );
+        }
+
+        public static LLMatrix3 Transpose(LLMatrix3 m)
+        {
+            LLMatrix3 t = new LLMatrix3(m);
+            t.Transpose();
+            return t;
+        }
+
+        #endregion Static Methods
+
+        #region Overrides
+
+        public override int GetHashCode()
+        {
+            return
+                M11.GetHashCode() ^ M12.GetHashCode() ^ M13.GetHashCode() ^
+                M21.GetHashCode() ^ M22.GetHashCode() ^ M23.GetHashCode() ^
+                M31.GetHashCode() ^ M32.GetHashCode() ^ M33.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is LLMatrix3)
+            {
+                LLMatrix3 m = (LLMatrix3)obj;
+                return
+                    (M11 == m.M11) && (M12 == m.M12) && (M13 == m.M13) &&
+                    (M21 == m.M21) && (M22 == m.M22) && (M23 == m.M23) &&
+                    (M31 == m.M31) && (M32 == m.M32) && (M33 == m.M33);
+            }
+            return false;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}]",
+                M11, M12, M13, M21, M22, M23, M31, M32, M33);
+        }
+
+        #endregion Overrides
+
+        #region Operators
+
+        public static bool operator ==(LLMatrix3 left, LLMatrix3 right)
+        {
+            return ValueType.Equals(left, right);
+        }
+
+        public static bool operator !=(LLMatrix3 left, LLMatrix3 right)
+        {
+            return !ValueType.Equals(left, right);
+        }
+
+        public static LLMatrix3 operator +(LLMatrix3 left, LLMatrix3 right)
+        {
+            return LLMatrix3.Add(left, right);
+        }
+
+        public static LLMatrix3 operator +(LLMatrix3 matrix, float scalar)
+        {
+            return LLMatrix3.Add(matrix, scalar);
+        }
+
+        public static LLMatrix3 operator +(float scalar, LLMatrix3 matrix)
+        {
+            return LLMatrix3.Add(matrix, scalar);
+        }
+
+        public static LLMatrix3 operator -(LLMatrix3 left, LLMatrix3 right)
+        {
+            return LLMatrix3.Subtract(left, right); ;
+        }
+
+        public static LLMatrix3 operator -(LLMatrix3 matrix, float scalar)
+        {
+            return LLMatrix3.Subtract(matrix, scalar);
+        }
+
+        public static LLMatrix3 operator *(LLMatrix3 left, LLMatrix3 right)
+        {
+            return LLMatrix3.Multiply(left, right); ;
+        }
+
+        public static LLVector3 operator *(LLVector3 vector, LLMatrix3 matrix)
+        {
+            return LLMatrix3.Transform(vector, matrix);
+        }
+
+        public LLVector3 this[int row]
+        {
+            get
+            {
+                switch (row)
+                {
+                    case 0:
+                        return new LLVector3(M11, M12, M13);
+                    case 1:
+                        return new LLVector3(M21, M22, M23);
+                    case 2:
+                        return new LLVector3(M31, M32, M33);
+                    default:
+                        throw new IndexOutOfRangeException("LLMatrix3 row index must be from 0-2");
+                }
+            }
+            set
+            {
+                switch (row)
+                {
+                    case 0:
+                        M11 = value.X;
+                        M12 = value.Y;
+                        M13 = value.Z;
+                        break;
+                    case 1:
+                        M21 = value.X;
+                        M22 = value.Y;
+                        M23 = value.Z;
+                        break;
+                    case 2:
+                        M31 = value.X;
+                        M32 = value.Y;
+                        M33 = value.Z;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException("LLMatrix3 row index must be from 0-2");
+                }
+            }
+        }
+
+        public float this[int row, int column]
+        {
+            get
+            {
+                switch (row)
+                {
+                    case 0:
+                        switch (column)
+                        {
+                            case 0:
+                                return M11;
+                            case 1:
+                                return M12;
+                            case 2:
+                                return M13;
+                            default:
+                                throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                        }
+                    case 1:
+                        switch (column)
+                        {
+                            case 0:
+                                return M21;
+                            case 1:
+                                return M22;
+                            case 2:
+                                return M23;
+                            default:
+                                throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                        }
+                    case 2:
+                        switch (column)
+                        {
+                            case 0:
+                                return M31;
+                            case 1:
+                                return M32;
+                            case 2:
+                                return M33;
+                            default:
+                                throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                        }
+                    default:
+                        throw new IndexOutOfRangeException("LLMatrix3 row and column values must be from 0-2");
+                }
+            }
+            set
+            {
+                //FIXME:
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion Operators
+
+        public static readonly LLMatrix3 Zero = new LLMatrix3();
+        public static readonly LLMatrix3 Identity = new LLMatrix3(
+            1f, 0f, 0f,
+            0f, 1f, 0f,
+            0f, 0f, 1f
+        );
+    }
 }

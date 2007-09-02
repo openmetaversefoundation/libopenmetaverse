@@ -2421,7 +2421,7 @@ namespace libsecondlife
                                 {
                                     #region Angular Velocity
                                     LLVector3 angVel = prim.AngularVelocity;
-                                    float omega = Helpers.VecMagSquared(angVel);
+                                    float omega = LLVector3.MagSquared(angVel);
 
                                     if (omega > 0.00001f)
                                     {

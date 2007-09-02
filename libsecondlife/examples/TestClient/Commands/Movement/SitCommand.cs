@@ -22,7 +22,7 @@ namespace libsecondlife.TestClient
             Client.Network.CurrentSim.Objects.ForEach(
                 delegate(Primitive prim)
                 {
-                    float distance = Helpers.VecDist(Client.Self.Position, prim.Position);
+                    float distance = LLVector3.Dist(Client.Self.Position, prim.Position);
 
                     if (closest == null || distance < closestDistance)
                     {

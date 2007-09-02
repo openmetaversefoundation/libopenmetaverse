@@ -1763,7 +1763,7 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                LLQuaternion newRot = Helpers.RotBetween(new LLVector3(1, 0, 0), Helpers.VecNorm(target - Client.Self.Position));
+                LLQuaternion newRot = LLVector3.RotBetween(new LLVector3(1f, 0f, 0f), LLVector3.Norm(target - Client.Self.Position));
                 Client.Self.Status.Camera.BodyRotation = newRot;
                 Client.Self.Status.SendUpdate();
                 return true;

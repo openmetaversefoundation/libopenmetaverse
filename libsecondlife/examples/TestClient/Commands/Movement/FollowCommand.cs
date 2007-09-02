@@ -109,7 +109,7 @@ namespace libsecondlife.TestClient
 
                         if (Client.Network.Simulators[i] == Client.Network.CurrentSim)
                         {
-                            distance = Helpers.VecDist(targetAv.Position, Client.Self.Position);
+                            distance = LLVector3.Dist(targetAv.Position, Client.Self.Position);
                         }
                         else
                         {
