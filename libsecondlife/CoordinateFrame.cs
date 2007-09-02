@@ -30,14 +30,54 @@ namespace libsecondlife
 {
     public class CoordinateFrame
     {
-        public LLVector3 Origin { get { return origin; } }
-        public LLVector3 XAxis { get { return xAxis; } }
-        public LLVector3 YAxis { get { return yAxis; } }
-        public LLVector3 ZAxis { get { return zAxis; } }
+        public static readonly LLVector3 X_AXIS = new LLVector3(1f, 0f, 0f);
+        public static readonly LLVector3 Y_AXIS = new LLVector3(0f, 1f, 0f);
+        public static readonly LLVector3 Z_AXIS = new LLVector3(0f, 0f, 1f);
 
-        public LLVector3 AtAxis { get { return xAxis; } }
-        public LLVector3 LeftAxis { get { return yAxis; } }
-        public LLVector3 UpAxis { get { return zAxis; } }
+        /// <summary>Origin position of this coordinate frame</summary>
+        public LLVector3 Origin
+        {
+            get { return origin; }
+            set
+            {
+                if (!value.IsFinite())
+                    throw new ArgumentException("Non-finite in CoordinateFrame.Origin assignment");
+                origin = value;
+            }
+        }
+        /// <summary>X axis of this coordinate frame, or Forward/At in Second Life terms</summary>
+        public LLVector3 XAxis
+        {
+            get { return xAxis; }
+            set
+            {
+                if (!value.IsFinite())
+                    throw new ArgumentException("Non-finite in CoordinateFrame.XAxis assignment");
+                xAxis = value;
+            }
+        }
+        /// <summary>Y axis of this coordinate frame, or Left in Second Life terms</summary>
+        public LLVector3 YAxis
+        {
+            get { return yAxis; }
+            set
+            {
+                if (!value.IsFinite())
+                    throw new ArgumentException("Non-finite in CoordinateFrame.YAxis assignment");
+                yAxis = value;
+            }
+        }
+        /// <summary>Z axis of this coordinate frame, or Up in Second Life terms</summary>
+        public LLVector3 ZAxis
+        {
+            get { return zAxis; }
+            set
+            {
+                if (!value.IsFinite())
+                    throw new ArgumentException("Non-finite in CoordinateFrame.ZAxis assignment");
+                zAxis = value;
+            }
+        }
 
         protected LLVector3 origin;
         protected LLVector3 xAxis;
@@ -48,6 +88,29 @@ namespace libsecondlife
 
         public CoordinateFrame()
         {
+            xAxis = X_AXIS;
+            yAxis = Y_AXIS;
+            zAxis = Z_AXIS;
+        }
+
+        public CoordinateFrame(LLVector3 origin)
+        {
+            this.origin = origin;
+            xAxis = X_AXIS;
+            yAxis = Y_AXIS;
+            zAxis = Z_AXIS;
+
+            if (!origin.IsFinite())
+                throw new ArgumentException("Non-finite in CoordinateFrame constructor");
+        }
+
+        public CoordinateFrame(LLVector3 origin, LLVector3 direction)
+        {
+            this.origin = origin;
+            LookDirection(direction);
+
+            if (!IsFinite())
+                throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
         public CoordinateFrame(LLVector3 origin, LLVector3 xAxis, LLVector3 yAxis, LLVector3 zAxis)
@@ -56,6 +119,33 @@ namespace libsecondlife
             this.xAxis = xAxis;
             this.yAxis = yAxis;
             this.zAxis = zAxis;
+
+            if (!IsFinite())
+                throw new ArgumentException("Non-finite in CoordinateFrame constructor");
+        }
+
+        public CoordinateFrame(LLVector3 origin, LLMatrix3 rotation)
+        {
+            this.origin = origin;
+            xAxis = rotation[0];
+            yAxis = rotation[1];
+            zAxis = rotation[2];
+
+            if (!IsFinite())
+                throw new ArgumentException("Non-finite in CoordinateFrame constructor");
+        }
+
+        public CoordinateFrame(LLVector3 origin, LLQuaternion rotation)
+        {
+            LLMatrix3 m = new LLMatrix3(rotation);
+
+            this.origin = origin;
+            xAxis = m[0];
+            yAxis = m[1];
+            zAxis = m[2];
+
+            if (!IsFinite())
+                throw new ArgumentException("Non-finite in CoordinateFrame constructor");
         }
 
         #endregion Constructors
@@ -64,9 +154,9 @@ namespace libsecondlife
 
         public void ResetAxes()
         {
-            xAxis = new LLVector3(1f, 0f, 0f);
-            yAxis = new LLVector3(0f, 1f, 0f);
-            zAxis = new LLVector3(0f, 0f, 1f);
+            xAxis = X_AXIS;
+            yAxis = Y_AXIS;
+            zAxis = Z_AXIS;
         }
 
         public bool IsFinite()

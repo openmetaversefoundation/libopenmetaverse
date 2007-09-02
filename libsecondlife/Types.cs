@@ -1458,7 +1458,7 @@ namespace libsecondlife
         #endregion Operators
 
         /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
-        public readonly static LLQuaternion Identity = new LLQuaternion(0, 0, 0, 1);
+        public readonly static LLQuaternion Identity = new LLQuaternion(0f, 0f, 0f, 1f);
 	}
 
     [Serializable]
