@@ -437,7 +437,7 @@ namespace libsecondlife
             upload.AssetData = data;
             upload.AssetType = type;
             upload.ID = LLUUID.Random();
-            assetID = upload.ID.Combine(Client.Network.SecureSessionID);
+            assetID = LLUUID.Combine(upload.ID, Client.Network.SecureSessionID);
             upload.AssetID = assetID;
             upload.Size = data.Length;
             upload.XferID = 0;

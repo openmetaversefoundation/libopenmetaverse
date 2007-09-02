@@ -38,27 +38,18 @@ namespace libsecondlife
     [Serializable]
     public struct LLUUID : IComparable
     {
-        /// <summary>
-        /// IComparable.CompareTo implementation.
-        /// </summary>
-        public int CompareTo(object obj)
-        {
-            if (obj is LLUUID)
-            {
-                LLUUID ID = (LLUUID)obj;
-                return this.UUID.CompareTo(ID.UUID);
-            }
-
-            throw new ArgumentException("object is not a LLUUID");
-        }
-
-	
         /// <summary>The System.Guid object this struct wraps around</summary>
         [XmlAttribute]
         public Guid UUID;
 
+        #region Properties
+
         /// <summary>Get a byte array of the 16 raw bytes making up the UUID</summary>
         public byte[] Data { get { return GetBytes(); } }
+
+        #endregion Properties
+
+        #region Constructors
 
         /// <summary>
         /// Constructor that takes a string UUID representation
@@ -66,13 +57,13 @@ namespace libsecondlife
         /// <param name="val">A string representation of a UUID, case 
         /// insensitive and can either be hyphenated or non-hyphenated</param>
         /// <example>LLUUID("11f8aa9c-b071-4242-836b-13b7abe0d489")</example>
-		public LLUUID(string val)
-		{
+        public LLUUID(string val)
+        {
             if (val == null)
                 UUID = new Guid();
             else
                 UUID = new Guid(val);
-		}
+        }
 
         /// <summary>
         /// Constructor that takes a System.Guid object
@@ -95,7 +86,7 @@ namespace libsecondlife
                 (source[pos + 0] << 24) | (source[pos + 1] << 16) | (source[pos + 2] << 8) | source[pos + 3],
                 (short)((source[pos + 4] << 8) | source[pos + 5]),
                 (short)((source[pos + 6] << 8) | source[pos + 7]),
-                source[pos +  8], source[pos +  9], source[pos + 10], source[pos + 11],
+                source[pos + 8], source[pos + 9], source[pos + 10], source[pos + 11],
                 source[pos + 12], source[pos + 13], source[pos + 14], source[pos + 15]);
         }
 
@@ -107,6 +98,24 @@ namespace libsecondlife
         public LLUUID(ulong val)
         {
             UUID = new Guid(0, 0, 0, BitConverter.GetBytes(val));
+        }
+
+        #endregion Constructors
+
+        #region Public Methods
+
+        /// <summary>
+        /// IComparable.CompareTo implementation.
+        /// </summary>
+        public int CompareTo(object obj)
+        {
+            if (obj is LLUUID)
+            {
+                LLUUID ID = (LLUUID)obj;
+                return this.UUID.CompareTo(ID.UUID);
+            }
+
+            throw new ArgumentException("object is not a LLUUID");
         }
 
         /// <summary>
@@ -156,20 +165,19 @@ namespace libsecondlife
 		}
 
         /// <summary>
-        /// Combine two UUIDs together by taking the MD5 hash of a byte array
-        /// containing both UUIDs
+        /// Get a hyphenated string representation of this UUID
         /// </summary>
-        /// <param name="other">The UUID to combine with this one</param>
-        /// <returns>The UUID product of the combination</returns>
-        public LLUUID Combine(LLUUID other)
+        /// <returns>A string representation of this UUID, lowercase and 
+        /// with hyphens</returns>
+        /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
+        public string ToStringHyphenated()
         {
-            // Build the buffer to MD5
-            byte[] input = new byte[32];
-            Buffer.BlockCopy(GetBytes(), 0, input, 0, 16);
-            Buffer.BlockCopy(other.GetBytes(), 0, input, 16, 16);
-
-            return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
+            return UUID.ToString();
         }
+
+        #endregion Public Methods
+
+        #region Static Methods
 
         /// <summary>
         /// Generate a LLUUID from a string
@@ -206,13 +214,34 @@ namespace libsecondlife
         }
 
         /// <summary>
+        /// Combine two UUIDs together by taking the MD5 hash of a byte array
+        /// containing both UUIDs
+        /// </summary>
+        /// <param name="first">First LLUUID to combine</param>
+        /// <param name="second">Second LLUUID to combine</param>
+        /// <returns>The UUID product of the combination</returns>
+        public static LLUUID Combine(LLUUID first, LLUUID second)
+        {
+            // Construct the buffer that MD5ed
+            byte[] input = new byte[32];
+            Buffer.BlockCopy(first.GetBytes(), 0, input, 0, 16);
+            Buffer.BlockCopy(second.GetBytes(), 0, input, 16, 16);
+
+            return new LLUUID(Helpers.MD5Builder.ComputeHash(input), 0);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
 		public static LLUUID Random()
 		{
 			return new LLUUID(Guid.NewGuid());
-		}
+        }
+
+        #endregion Static Methods
+
+        #region Overrides
 
         /// <summary>
         /// Return a hash code for this UUID, used by .NET for hash tables
@@ -235,7 +264,23 @@ namespace libsecondlife
 
 			LLUUID uuid = (LLUUID)o;
             return UUID == uuid.UUID;
-		}
+        }
+
+        /// <summary>
+        /// Get a string representation of this UUID
+        /// </summary>
+        /// <returns>A string representation of this UUID, lowercase and 
+        /// without hyphens</returns>
+        /// <example>11f8aa9cb0714242836b13b7abe0d489</example>
+        public override string ToString()
+        {
+            string uuid = UUID.ToString();
+            return uuid.Replace("-", String.Empty);
+        }
+
+        #endregion Overrides
+
+        #region Operators
 
         /// <summary>
         /// Equals operator
@@ -288,34 +333,11 @@ namespace libsecondlife
         public static implicit operator LLUUID(string val)
 		{
 			return new LLUUID(val);
-		}
+        }
 
-        /// <summary>
-        /// Get a string representation of this UUID
-        /// </summary>
-        /// <returns>A string representation of this UUID, lowercase and 
-        /// without hyphens</returns>
-        /// <example>11f8aa9cb0714242836b13b7abe0d489</example>
-		public override string ToString()
-		{
-			string uuid = UUID.ToString();
-			return uuid.Replace("-", String.Empty);
-		}
+        #endregion Operators
 
-        /// <summary>
-        /// Get a hyphenated string representation of this UUID
-        /// </summary>
-        /// <returns>A string representation of this UUID, lowercase and 
-        /// with hyphens</returns>
-        /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
-		public string ToStringHyphenated()
-		{
-            return UUID.ToString();
-		}
-
-        /// <summary>
-        /// An LLUUID with a value of all zeroes
-        /// </summary>
+        /// <summary>An LLUUID with a value of all zeroes</summary>
         public static readonly LLUUID Zero = new LLUUID();
 	}
 
@@ -460,8 +482,10 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Return the supplied vector in normalized form
+        /// Returns a normalized version of the supplied vector
         /// </summary>
+        /// <param name="vector">The vector to normalize</param>
+        /// <returns>A normalized version of the vector</returns>
         public static LLVector3 Norm(LLVector3 vector)
         {
             float mag = Mag(vector);
@@ -701,9 +725,7 @@ namespace libsecondlife
 
         #endregion Operators
 
-        /// <summary>
-        /// An LLVector3 with a value of 0,0,0
-        /// </summary>
+        /// <summary>An LLVector3 with a value of 0,0,0</summary>
         public readonly static LLVector3 Zero = new LLVector3();
 	}
 
@@ -882,9 +904,7 @@ namespace libsecondlife
 
         #endregion Operators
 
-        /// <summary>
-        /// An LLVector3d with a value of 0,0,0
-        /// </summary>
+        /// <summary>An LLVector3d with a value of 0,0,0</summary>
         public static readonly LLVector3d Zero = new LLVector3d();
 	}
 
@@ -906,6 +926,23 @@ namespace libsecondlife
         /// <summary></summary>
         [XmlAttribute]
         public float S;
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor, sets the vector members according to parameters
+        /// </summary>
+        /// <param name="x">X value</param>
+        /// <param name="y">Y value</param>
+        /// <param name="z">Z value</param>
+        /// <param name="s">S value</param>
+        public LLVector4(float x, float y, float z, float s)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            S = s;
+        }
 
         /// <summary>
         /// 
@@ -936,7 +973,11 @@ namespace libsecondlife
                 Z = BitConverter.ToSingle(byteArray, pos + 8);
                 S = BitConverter.ToSingle(byteArray, pos + 12);
             }
-		}
+        }
+
+        #endregion Constructors
+
+        #region Public Methods
 
         /// <summary>
         /// 
@@ -960,7 +1001,11 @@ namespace libsecondlife
 			}
 
 			return byteArray;
-		}
+        }
+
+        #endregion Public Methods
+
+        #region Overrides
 
         /// <summary>
         /// 
@@ -969,11 +1014,11 @@ namespace libsecondlife
 		public override string ToString()
 		{
             return String.Format("<{0}, {1}, {2}, {3}>", X, Y, Z, S);
-		}
+        }
 
-        /// <summary>
-        /// An LLVector4 with a value of 0,0,0,0
-        /// </summary>
+        #endregion Overrides
+
+        /// <summary>An LLVector4 with a value of 0,0,0,0</summary>
         public readonly static LLVector4 Zero = new LLVector4();
 	}
 
@@ -995,6 +1040,8 @@ namespace libsecondlife
         /// <summary>Alpha</summary>
         [XmlAttribute]
         public float A;
+
+        #region Constructors
 
         /// <summary>
         /// 
@@ -1028,6 +1075,10 @@ namespace libsecondlife
             A = (float)byteArray[pos + 3] * quanta;
         }
 
+        #endregion Constructors
+
+        #region Public Methods
+
         /// <summary>
         /// 
         /// </summary>
@@ -1048,23 +1099,27 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
-        {
-            return String.Format("<{0}, {1}, {2}, {3}>", R, G, B, A);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         public string ToStringRGB()
         {
             return String.Format("<{0}, {1}, {2}>", R, G, B);
         }
 
+        #endregion Public Methods
+
+        #region Overrides
+
         /// <summary>
-        /// An LLColor with a value of 0,0,0,255
+        /// 
         /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return String.Format("<{0}, {1}, {2}, {3}>", R, G, B, A);
+        }
+
+        #endregion Overrides
+
+        /// <summary>An LLColor with a value of 0,0,0,255</summary>
         public readonly static LLColor Black = new LLColor(0, 0, 0, 255);
     }
 
@@ -1200,96 +1255,24 @@ namespace libsecondlife
             Z = vector.Z * s;
             W = c;
 
-            Norm();
+            this = Norm(this);
         }
 
         #endregion Constructors
 
-        /// <summary>
-        /// Calculate the magnitude of the supplied quaternion
-        /// </summary>
-        public static float RotMag(LLQuaternion q)
-        {
-            return (float)Math.Sqrt(q.W * q.W + q.X * q.X + q.Y * q.Y + q.Z * q.Z);
-        }
-
-        /// <summary>
-        /// Normalize this quaternion
-        /// </summary>
-        /// <returns>Magnitude of the quaternion</returns>
-        public float Norm()
-        {
-            const float MAG_THRESHOLD = 0.0000001f;
-
-            float mag = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
-
-            if (mag > MAG_THRESHOLD)
-            {
-                float oomag = 1.0f / mag;
-                X *= oomag;
-                Y *= oomag;
-                Z *= oomag;
-                W *= oomag;
-            }
-            else
-            {
-                X = 0.0f;
-                Y = 0.0f;
-                Z = 0.0f;
-                W = 1.0f;
-            }
-
-            return mag;
-        }
-
-        /// <summary>
-        /// Returns the inverse matrix from this quaternion, or the correct
-        /// matrix if this quaternion is inverse
-        /// </summary>
-        /// <returns></returns>
-        public LLMatrix3 GetMatrix()
-        {
-            LLMatrix3 m;
-            float xx, xy, xz, xw, yy, yz, yw, zz, zw;
-
-            xx = X * X;
-            xy = X * Y;
-            xz = X * Z;
-            xw = X * W;
-
-            yy = Y * Y;
-            yz = Y * Z;
-            yw = Y * W;
-
-            zz = Z * Z;
-            zw = Z * W;
-
-            m.M11 = 1f - 2f * (yy + zz);
-            m.M12 = 2f * (xy + zw);
-            m.M13 = 2f * (xz - yw);
-
-            m.M21 = 2f * (xy - zw);
-            m.M22 = 1f - 2f * (xx + zz);
-            m.M23 = 2f * (yz + xw);
-
-            m.M31 = 2f * (xz + yw);
-            m.M32 = 2f * (yz - xw);
-            m.M33 = 1f - 2f * (xx + yy);
-
-            return m;
-        }
+        #region Public Methods
 
         /// <summary>
         /// Normalize this quaternion and serialize it to a byte array
         /// </summary>
         /// <returns>A 12 byte array containing normalized X, Y, and Z floating
         /// point values in order using little endian byte ordering</returns>
-		public byte[] GetBytes()
-		{
+        public byte[] GetBytes()
+        {
             byte[] bytes = new byte[12];
             float norm;
 
-            norm = (float)Math.Sqrt(X*X + Y*Y + Z*Z + W*W);
+            norm = (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);
 
             if (norm != 0)
             {
@@ -1311,8 +1294,91 @@ namespace libsecondlife
                 throw new Exception("Quaternion " + this.ToString() + " normalized to zero");
             }
 
-			return bytes;
-		}
+            return bytes;
+        }
+
+        #endregion Public Methods
+
+        #region Static Methods
+
+        /// <summary>
+        /// Calculate the magnitude of the supplied quaternion
+        /// </summary>
+        public static float Mag(LLQuaternion q)
+        {
+            return (float)Math.Sqrt(q.W * q.W + q.X * q.X + q.Y * q.Y + q.Z * q.Z);
+        }
+
+        /// <summary>
+        /// Returns a normalized version of the supplied quaternion
+        /// </summary>
+        /// <param name="q">The quaternion to normalize</param>
+        /// <returns>A normalized version of the quaternion</returns>
+        public static LLQuaternion Norm(LLQuaternion q)
+        {
+            const float MAG_THRESHOLD = 0.0000001f;
+            float mag = (float)Math.Sqrt(q.X * q.X + q.Y * q.Y + q.Z * q.Z + q.W * q.W);
+
+            if (mag > MAG_THRESHOLD)
+            {
+                float oomag = 1.0f / mag;
+                q.X *= oomag;
+                q.Y *= oomag;
+                q.Z *= oomag;
+                q.W *= oomag;
+            }
+            else
+            {
+                q.X = 0.0f;
+                q.Y = 0.0f;
+                q.Z = 0.0f;
+                q.W = 1.0f;
+            }
+
+            return q;
+        }
+
+        /// <summary>
+        /// Returns the inverse matrix from a quaternion, or the correct
+        /// matrix if the quaternion is inverse
+        /// </summary>
+        /// <param name="q">Quaternion to convert to a matrix</param>
+        /// <returns>A matrix representation of the quaternion</returns>
+        public static LLMatrix3 GetMatrix(LLQuaternion q)
+        {
+            LLMatrix3 m;
+            float xx, xy, xz, xw, yy, yz, yw, zz, zw;
+
+            xx = q.X * q.X;
+            xy = q.X * q.Y;
+            xz = q.X * q.Z;
+            xw = q.X * q.W;
+
+            yy = q.Y * q.Y;
+            yz = q.Y * q.Z;
+            yw = q.Y * q.W;
+
+            zz = q.Z * q.Z;
+            zw = q.Z * q.W;
+
+            m.M11 = 1f - 2f * (yy + zz);
+            m.M12 = 2f * (xy + zw);
+            m.M13 = 2f * (xz - yw);
+
+            m.M21 = 2f * (xy - zw);
+            m.M22 = 1f - 2f * (xx + zz);
+            m.M23 = 2f * (yz + xw);
+
+            m.M31 = 2f * (xz + yw);
+            m.M32 = 2f * (yz - xw);
+            m.M33 = 1f - 2f * (xx + yy);
+
+            return m;
+        }
+
+        #endregion Static Methods
+
+        #region Overrides
 
         /// <summary>
         /// 
@@ -1336,6 +1402,19 @@ namespace libsecondlife
 
             return X == quaternion.X && Y == quaternion.Y && Z == quaternion.Z && W == quaternion.W;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ", " + W.ToString() + ">";
+        }
+
+        #endregion Overrides
+
+        #region Operators
 
         /// <summary>
         /// Comparison operator
@@ -1376,18 +1455,9 @@ namespace libsecondlife
             return ret;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-		public override string ToString()
-		{
-			return "<" + X.ToString() + ", " + Y.ToString() + ", " + Z.ToString() + ", " + W.ToString() + ">";
-		}
+        #endregion Operators
 
-        /// <summary>
-        /// An LLQuaternion with a value of 0,0,0,1
-        /// </summary>
+        /// <summary>An LLQuaternion with a value of 0,0,0,1</summary>
         public readonly static LLQuaternion Identity = new LLQuaternion(0, 0, 0, 1);
 	}
 
@@ -1419,6 +1489,8 @@ namespace libsecondlife
 
         #endregion Properties
 
+        #region Constructors
+
         public LLMatrix3(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33)
         {
             M11 = m11;
@@ -1447,9 +1519,13 @@ namespace libsecondlife
 
         public LLMatrix3(LLQuaternion q)
         {
-            this = q.GetMatrix();
+            this = LLQuaternion.GetMatrix(q);
         }
-        
+
+        #endregion Constructors
+
+        #region Public Methods
+
         /// <summary>
         /// Transposes this matrix
         /// </summary>
@@ -1515,6 +1591,8 @@ namespace libsecondlife
             pitch = (float)angleY;
             yaw = (float)angleZ;
         }
+
+        #endregion Public Methods
 
         #region Static Methods
 
@@ -1764,7 +1842,9 @@ namespace libsecondlife
 
         #endregion Operators
 
+        /// <summary>A 3x3 matrix set to all zeroes</summary>
         public static readonly LLMatrix3 Zero = new LLMatrix3();
+        /// <summary>A 3x3 identity matrix</summary>
         public static readonly LLMatrix3 Identity = new LLMatrix3(
             1f, 0f, 0f,
             0f, 1f, 0f,
