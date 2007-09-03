@@ -1798,10 +1798,12 @@ namespace libsecondlife
 
                 Client.Self.Status.MLButtonUp = true;
                 Client.Self.Status.MLButtonDown = false;
+                Client.Self.Status.FinishAnim = true;
                 Client.Self.Status.SendUpdate();
 
                 Client.Self.Status.Mouselook = false;
                 Client.Self.Status.MLButtonUp = false;
+                Client.Self.Status.FinishAnim = false;
                 Client.Self.Status.SendUpdate();
 
                 return true;
