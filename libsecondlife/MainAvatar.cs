@@ -1763,9 +1763,18 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                LLQuaternion newRot = LLVector3.RotBetween(new LLVector3(1f, 0f, 0f), LLVector3.Norm(target - Client.Self.Position));
+                LLVector3 myPos = Client.Self.Position;
+                LLVector3 forward = new LLVector3(1, 0, 0);
+                LLVector3 offset = LLVector3.Norm(target - myPos);
+                LLQuaternion newRot = LLVector3.RotBetween(forward, offset);
+
                 Client.Self.Status.Camera.BodyRotation = newRot;
+                Client.Self.Status.Camera.HeadRotation = newRot;
+
+                //TODO - include CoordinateFrame for at/left/up camera axes
+
                 Client.Self.Status.SendUpdate();
+
                 return true;
             }
             else
@@ -1773,6 +1782,46 @@ namespace libsecondlife
                 Client.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
+        /// </summary>
+        /// <returns></returns>
+        public bool Shoot()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Client.Self.Status.Mouselook = true;
+                Client.Self.Status.MLButtonDown = true;
+                Client.Self.Status.SendUpdate();
+
+                Client.Self.Status.MLButtonUp = true;
+                Client.Self.Status.MLButtonDown = false;
+                Client.Self.Status.SendUpdate();
+
+                Client.Self.Status.Mouselook = false;
+                Client.Self.Status.MLButtonUp = false;
+                Client.Self.Status.SendUpdate();
+
+                return true;
+            }
+            else
+            {
+                Client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Aims at the specified position before shooting
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public bool Shoot(LLVector3 target)
+        {
+            if (TurnToward(target)) return Shoot();
+            else return false;
         }
 
         /// <summary>
