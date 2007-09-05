@@ -20,7 +20,7 @@ namespace libsecondlife.TestClient
 				return "Unable to send money to console.  This command only works when IMed.";
 
 		    int amount = Client.Self.Balance;
-		    Client.Self.GiveMoney(fromAgentID, Client.Self.Balance, String.Empty);
+		    Client.Self.GiveAvatarMoney(fromAgentID, Client.Self.Balance, "TestClient.GiveAll");
 		    return "Gave $" + amount + " to " + fromAgentID;
 		}
     }

@@ -196,7 +196,7 @@ namespace importprimscript
                 if (CurrentUpload.Success)
                 {
                     // Pay for the upload
-                    Client.Self.GiveMoney(LLUUID.Zero, Client.Settings.UPLOAD_COST, "importprimscript");
+                    Client.Self.PayUploadFee("importprimscript");
 
                     Console.WriteLine("Finished uploading image " + filename + ", AssetID: " +
                         CurrentUpload.AssetID.ToStringHyphenated());

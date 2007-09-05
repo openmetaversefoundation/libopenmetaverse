@@ -51,6 +51,9 @@ namespace libsecondlife
 
 	    // Timeouts
 
+        /// <summary>Number of milliseconds before an asset transfer will time
+        /// out</summary>
+        public const int TRANSFER_TIMEOUT = 30 * 1000;
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
         public int TELEPORT_TIMEOUT = 40 * 1000;
@@ -169,6 +172,11 @@ namespace libsecondlife
         /// false, a new Avatar or Primitive object will be created each time
         /// an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
+
+        // Misc
+
+        /// <summary>Default color used for viewer particle effects</summary>
+        public LLColor DEFAULT_EFFECT_COLOR = new LLColor(255, 0, 0, 255);
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

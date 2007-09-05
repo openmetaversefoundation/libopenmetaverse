@@ -485,9 +485,12 @@ namespace libsecondlife
             try
             {
                 ILoginProxy proxy = XmlRpcProxyGen.Create<ILoginProxy>();
+                proxy.KeepAlive = false;
+                proxy.Expect100Continue = false;
                 proxy.ResponseEvent += new XmlRpcResponseEventHandler(proxy_ResponseEvent);
                 proxy.Url = CurrentContext.Params.URI;
                 proxy.XmlRpcMethod = CurrentContext.Params.MethodName; // make sure this isnt evil.
+
                 // Start the request
                 proxy.BeginLoginToSimulator(loginParams, new AsyncCallback(LoginMethodCallback), new object[] { proxy, CurrentContext });
             }

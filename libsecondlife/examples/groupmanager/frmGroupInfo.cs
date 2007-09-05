@@ -218,7 +218,7 @@ namespace groupmanager
                             memberData.ID = member.ID;
                             memberData.IsOwner = member.IsOwner;
                             memberData.LastOnline = member.OnlineStatus;
-                            memberData.Powers = member.Powers;
+                            memberData.Powers = (ulong)member.Powers;
                             memberData.Title = member.Title;
                             memberData.Contribution = member.Contribution;
 

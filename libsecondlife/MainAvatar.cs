@@ -237,34 +237,34 @@ namespace libsecondlife
 	/// </summary>
 	public enum EffectType : byte
 	{
-		/// <summary>Place floating text above an object</summary>
+		/// <summary></summary>
 		Text = 0,
-		/// <summary>Unknown, probably places an icon above an object</summary>
+		/// <summary></summary>
 		Icon,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		Connector,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		FlexibleObject,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		AnimalControls,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		AnimationObject,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		Cloth,
 		/// <summary>Project a beam from a source to a destination, such as
 		/// the one used when editing an object</summary>
 		Beam,
-		/// <summary>Not implemented yet</summary>
+		/// <summary></summary>
 		Glow,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		Point,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		Trail,
 		/// <summary>Create a swirl of particles around an object</summary>
 		Sphere,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		Spiral,
-		/// <summary>Unknown</summary>
+		/// <summary></summary>
 		Edit,
 		/// <summary>Cause an avatar to look at an object</summary>
 		LookAt,
@@ -291,6 +291,7 @@ namespace libsecondlife
 		/// <summary></summary>
 		Hover,
 		/// <summary>Deprecated</summary>
+        [Obsolete]
 		Conversation,
 		/// <summary></summary>
 		Select,
@@ -318,6 +319,71 @@ namespace libsecondlife
 		Clear
     }
     
+    public enum MoneyTransactionType : int
+    {
+        None = 0,
+        FailSimulatorTimeout = 1,
+        FailDataserverTimeout = 2,
+        ObjectClaim = 1000,
+        LandClaim = 1001,
+        GroupCreate = 1002,
+        ObjectPublicClaim = 1003,
+        GroupJoin = 1004,
+        TeleportCharge = 1100,
+        UploadCharge = 1101,
+        LandAuction = 1102,
+        ClassifiedCharge = 1103,
+        ObjectTax = 2000,
+        LandTax = 2001,
+        LightTax = 2002,
+        ParcelDirFee = 2003,
+        GroupTax = 2004,
+        ClassifiedRenew = 2005,
+        GiveInventory = 3000,
+        ObjectSale = 5000,
+        Gift = 5001,
+        LandSale = 5002,
+        ReferBonus = 5003,
+        InventorySale = 5004,
+        RefundPurchase = 5005,
+        LandPassSale = 5006,
+        DwellBonus = 5007,
+        PayObject = 5008,
+        ObjectPays = 5009,
+        GroupLandDeed = 6001,
+        GroupObjectDeed = 6002,
+        GroupLiability = 6003,
+        GroupDividend = 6004,
+        GroupMembershipDues = 6005,
+        ObjectRelease = 8000,
+        LandRelease = 8001,
+        ObjectDelete = 8002,
+        ObjectPublicDecay = 8003,
+        ObjectPublicDelete = 8004,
+        LindenAdjustment = 9000,
+        LindenGrant = 9001,
+        LindenPenalty = 9002,
+        EventFee = 9003,
+        EventPrize = 9004,
+        StipendBasic = 10000,
+        StipendDeveloper = 10001,
+        StipendAlways = 10002,
+        StipendDaily = 10003,
+        StipendRating = 10004,
+        StipendDelta = 10005
+    }
+
+    [Flags]
+    public enum TransactionFlags : byte
+    {
+        None = 0,
+        SourceGroup = 1,
+        DestGroup = 2,
+        OwnerGroup = 4,
+        SimultaneousContribution = 8,
+        ContributionRemoval = 16
+    }
+
     #endregion Enums
     
     #region Structs
@@ -1003,7 +1069,6 @@ namespace libsecondlife
                     duration = 4.0f;
                     break;
                 case LookAtType.None:
-                case LookAtType.Conversation:
                 case LookAtType.Select:
                 case LookAtType.Focus:
                 case LookAtType.Mouselook:
@@ -1318,14 +1383,72 @@ namespace libsecondlife
         /// </summary>
         /// <param name="target">UUID of the Target Avatar</param>
         /// <param name="amount">Amount in L$</param>
-        /// <param name="description">Reason (optional normally)</param>
-        public void GiveMoney(LLUUID target, int amount, string description)
+        public void GiveAvatarMoney(LLUUID target, int amount)
         {
-            // 5001 - transaction type for av to av money transfers
-            if (amount > 0)
-                GiveMoney(target, amount, description, 5001);
-            else
-                Client.Log("Attempted to pay zero or negative value " + amount, Helpers.LogLevel.Warning);
+            GiveMoney(target, amount, String.Empty, MoneyTransactionType.Gift, TransactionFlags.None);
+        }
+
+        /// <summary>
+        /// Give Money to destination Avatar
+        /// </summary>
+        /// <param name="target">UUID of the Target Avatar</param>
+        /// <param name="amount">Amount in L$</param>
+        /// <param name="description">Description that will show up in the
+        /// recipients transaction history</param>
+        public void GiveAvatarMoney(LLUUID target, int amount, string description)
+        {
+            GiveMoney(target, amount, description, MoneyTransactionType.Gift, TransactionFlags.None);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="amount"></param>
+        /// <param name="objectName"></param>
+        public void GiveObjectMoney(LLUUID target, int amount, string objectName)
+        {
+            GiveMoney(target, amount, objectName, MoneyTransactionType.PayObject, TransactionFlags.None);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="amount"></param>
+        public void GiveGroupMoney(LLUUID target, int amount)
+        {
+            GiveMoney(target, amount, String.Empty, MoneyTransactionType.Gift, TransactionFlags.DestGroup);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="amount"></param>
+        /// <param name="description"></param>
+        public void GiveGroupMoney(LLUUID target, int amount, string description)
+        {
+            GiveMoney(target, amount, description, MoneyTransactionType.Gift, TransactionFlags.DestGroup);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void PayUploadFee()
+        {
+            GiveMoney(LLUUID.Zero, Client.Settings.UPLOAD_COST, String.Empty, MoneyTransactionType.UploadCharge, 
+                TransactionFlags.None);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="description"></param>
+        public void PayUploadFee(string description)
+        {
+            GiveMoney(LLUUID.Zero, Client.Settings.UPLOAD_COST, description, MoneyTransactionType.UploadCharge, 
+                TransactionFlags.None);
         }
 
         /// <summary>
@@ -1334,9 +1457,10 @@ namespace libsecondlife
         /// <param name="target">UUID of the Target Object/Avatar</param>
         /// <param name="amount">Amount in L$</param>
         /// <param name="description">Reason (Optional normally)</param>
-        /// <param name="transactiontype">The type of transaction.  Currently only 5001 is
-        /// documented for Av->Av money transfers.</param>
-        public void GiveMoney(LLUUID target, int amount, string description, int transactiontype)
+        /// <param name="type">The type of transaction</param>
+        /// <param name="flags">Transaction flags, mostly for identifying group
+        /// transactions</param>
+        public void GiveMoney(LLUUID target, int amount, string description, MoneyTransactionType type, TransactionFlags flags)
         {
             MoneyTransferRequestPacket money = new MoneyTransferRequestPacket();
             money.AgentData.AgentID = this.ID;
@@ -1344,10 +1468,10 @@ namespace libsecondlife
             money.MoneyData.Description = Helpers.StringToField(description);
             money.MoneyData.DestID = target;
             money.MoneyData.SourceID = this.ID;
-            money.MoneyData.TransactionType = transactiontype;
-            money.MoneyData.AggregatePermInventory = 0; //TODO: whats this?
-            money.MoneyData.AggregatePermNextOwner = 0; //TODO: whats this?
-            money.MoneyData.Flags = 0; //TODO: whats this?
+            money.MoneyData.TransactionType = (int)type;
+            money.MoneyData.AggregatePermInventory = 0; // This is weird, apparently always set to zero though
+            money.MoneyData.AggregatePermNextOwner = 0; // This is weird, apparently always set to zero though
+            money.MoneyData.Flags = (byte)flags;
             money.MoneyData.Amount = amount;
 
             Client.Network.SendPacket(money);
@@ -1640,7 +1764,7 @@ namespace libsecondlife
         /// <param name="lookAt">Target to look at</param>
         public void RequestTeleport(ulong regionHandle, LLVector3 position, LLVector3 lookAt)
         {
-            if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.SimCaps != null && Client.Network.CurrentSim.SimCaps.IsEventQueueRunning)
+            if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null && Client.Network.CurrentSim.Caps.IsEventQueueRunning)
             {
                 TeleportLocationRequestPacket teleport = new TeleportLocationRequestPacket();
                 teleport.AgentData.AgentID = Client.Network.AgentID;

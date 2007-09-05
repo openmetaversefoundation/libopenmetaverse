@@ -320,9 +320,9 @@ namespace libsecondlife.Utilities
         {
             if (Enabled && Client.Network.Connected)
             {
-                if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.SimCaps != null)
+                if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null)
                 {
-                    string requestURI = Client.Network.CurrentSim.SimCaps.CapabilityURI("ProvisionVoiceAccountRequest");
+                    string requestURI = Client.Network.CurrentSim.Caps.CapabilityURI("ProvisionVoiceAccountRequest");
 
                     if (requestURI != String.Empty)
                     {

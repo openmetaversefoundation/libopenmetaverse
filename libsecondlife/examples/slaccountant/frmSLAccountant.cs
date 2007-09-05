@@ -496,7 +496,7 @@ namespace SLAccountant
 				return;
 			}
 			
-			client.Self.GiveMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
+			client.Self.GiveAvatarMoney(new LLUUID(lstFind.SelectedItems[0].SubItems[2].Text),
 			    amount, "SLAccountant payment");
 		}
 	}

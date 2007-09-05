@@ -207,7 +207,7 @@ namespace libsecondlife
         /// <summary></summary>
         public LLUUID ID = LLUUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
-        public Capabilities SimCaps = null;
+        public Capabilities Caps = null;
         /// <summary></summary>
         public ulong Handle;
         /// <summary></summary>
@@ -358,9 +358,9 @@ namespace libsecondlife
         public void Dispose()
         {
             // Force all the CAPS connections closed for this simulator
-            if (SimCaps != null)
+            if (Caps != null)
             {
-                SimCaps.Disconnect(true);
+                Caps.Disconnect(true);
             }
         }
 
@@ -430,20 +430,20 @@ namespace libsecondlife
 
         public void SetSeedCaps(string seedcaps)
         {
-            if (SimCaps != null)
+            if (Caps != null)
             {
-                if (SimCaps._SeedCapsURI == seedcaps) return;
+                if (Caps._SeedCapsURI == seedcaps) return;
 
                 Client.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
-                SimCaps.Disconnect(true);
-                SimCaps = null;
+                Caps.Disconnect(true);
+                Caps = null;
             }
 
             if (Client.Settings.ENABLE_CAPS)
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))
-                    SimCaps = new Capabilities(this, seedcaps);
+                    Caps = new Capabilities(this, seedcaps);
                 else
                     Client.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
             }
@@ -464,10 +464,10 @@ namespace libsecondlife
                 if (Client.Settings.SEND_PINGS) PingTimer.Stop();
 
                 // Kill the current CAPS system
-                if (SimCaps != null)
+                if (Caps != null)
                 {
-                    SimCaps.Disconnect(true);
-                    SimCaps = null;
+                    Caps.Disconnect(true);
+                    Caps = null;
                 }
 
                 if (sendCloseCircuit)
@@ -824,6 +824,7 @@ namespace libsecondlife
                                     packet.Header.Sequence, packet.GetType(), now - packet.TickCount));
 
                             packet.Header.Resent = true;
+                            packet.TickCount = now;
                             ++Stats.ResentPackets;
                             SendPacket(packet, false);
                         }

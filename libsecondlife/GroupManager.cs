@@ -44,7 +44,7 @@ namespace libsecondlife
         /// <summary>Online status information</summary>
         public string OnlineStatus;
         /// <summary>Abilities that the Group Member has</summary>
-        public ulong Powers;
+        public GroupPowers Powers;
         /// <summary>Current group title</summary>
         public string Title;
         /// <summary>Is a group owner</summary>
@@ -65,7 +65,7 @@ namespace libsecondlife
         /// <summary>Description of Role</summary>
         public string Description;
         /// <summary>Abilities Associated with Role</summary>
-        public ulong Powers;
+        public GroupPowers Powers;
         /// <summary>
         /// Returns the role's title
         /// </summary>
@@ -111,7 +111,7 @@ namespace libsecondlife
         /// <summary>Will group show up in search</summary>
         public bool ShowInList;
         /// <summary></summary>
-        public ulong Powers;
+        public GroupPowers Powers;
         /// <summary></summary>
         public bool AcceptNotices;
         /// <summary></summary>
@@ -163,7 +163,7 @@ namespace libsecondlife
         /// <summary></summary>
         public bool ShowInList;
         /// <summary></summary>
-        public ulong Powers;
+        public GroupPowers Powers;
         /// <summary></summary>
         public bool AcceptNotices;
         /// <summary></summary>
@@ -395,6 +395,55 @@ namespace libsecondlife
         ReceiveNotices = 1 << 43,
         StartProposal = 1 << 44,
         VoteOnProposal = 1 << 45
+    }
+
+    [Flags]
+    public enum GroupPowers : ulong
+    {
+        MemberInvite = 2,
+        MemberEject = 4,
+        MemberOptions = 8,
+        MemberVisibleInDir = 140737488355328,
+        RoleCreate = 16,
+        RoleDelete = 32,
+        RoleProperties = 64,
+        RoleAssignMemberLimited = 128,
+        RoleAssignMember = 256,
+        RoleRemoveMember = 512,
+        RoleChangeActions = 1024,
+        GroupChangeIdentity = 2048,
+        LandDeed = 4096,
+        LandRelease = 8192,
+        LandSetSaleInfo = 16384,
+        LandDivideJoin = 32768,
+        LandFindPlaces = 131072,
+        LandChangeIdentity = 262144,
+        LandSetLandingPoint = 524288,
+        LandChangeMedia = 1048576,
+        LandEdit = 2097152,
+        LandOptions = 4194304,
+        LandAllowEditLand = 8388608,
+        LandAllowFly = 16777216,
+        LandAllowCreate = 33554432,
+        LandAllowLandmark = 67108864,
+        LandAllowSetHome = 268435456,
+        LandManageAllowed = 536870912,
+        LandManageBanned = 1073741824,
+        LandManagePasses = 2147483648,
+        LandAdmin = 4294967296,
+        LandReturnGroupOwned = 281474976710656,
+        LandReturnGroupSet = 8589934592,
+        LandReturnNonGroup = 17179869184,
+        LandReturn = LandReturnGroupOwned | LandReturnGroupSet | LandReturnNonGroup,
+        LandGardening = 34359738368,
+        ObjectDeed = 68719476736,
+        ObjectManipulate = 274877906944,
+        ObjectSetSale = 549755813888,
+        AccountingAccountable = 1099511627776,
+        NoticesSend = 4398046511104,
+        NoticesReceive = 8796093022208,
+        ProposalStart = 17592186044416,
+        ProposalVote = 35184372088832
     }
 
     #endregion Enums
@@ -846,7 +895,7 @@ namespace libsecondlife
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
             gru.RoleData[0].Name = Helpers.StringToField(role.Name);
             gru.RoleData[0].Description = Helpers.StringToField(role.Description);
-            gru.RoleData[0].Powers = role.Powers;
+            gru.RoleData[0].Powers = (ulong)role.Powers;
             gru.RoleData[0].Title = Helpers.StringToField(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.UpdateAll;
             Client.Network.SendPacket(gru);
@@ -866,7 +915,7 @@ namespace libsecondlife
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
             gru.RoleData[0].Name = Helpers.StringToField(role.Name);
             gru.RoleData[0].Description = Helpers.StringToField(role.Description);
-            gru.RoleData[0].Powers = role.Powers;
+            gru.RoleData[0].Powers = (ulong)role.Powers;
             gru.RoleData[0].Title = Helpers.StringToField(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.Create;
             Client.Network.SendPacket(gru);
@@ -976,7 +1025,7 @@ namespace libsecondlife
                     group.ID = block.GroupID;
                     group.InsigniaID = block.GroupInsigniaID;
                     group.Name = Helpers.FieldToUTF8String(block.GroupName);
-                    group.Powers = block.GroupPowers;
+                    group.Powers = (GroupPowers)block.GroupPowers;
                     group.Contribution = block.Contribution;
                     group.AcceptNotices = block.AcceptNotices;
 
@@ -1018,7 +1067,7 @@ namespace libsecondlife
                 group.Name = Helpers.FieldToUTF8String(profile.GroupData.Name);
                 group.OpenEnrollment = profile.GroupData.OpenEnrollment;
                 group.OwnerRole = profile.GroupData.OwnerRole;
-                group.Powers = profile.GroupData.PowersMask;
+                group.Powers = (GroupPowers)profile.GroupData.PowersMask;
                 group.ShowInList = profile.GroupData.ShowInList;
 
                 try { OnGroupProfile(group); }
@@ -1068,7 +1117,7 @@ namespace libsecondlife
                         groupMember.Contribution = block.Contribution;
                         groupMember.IsOwner = block.IsOwner;
                         groupMember.OnlineStatus = Helpers.FieldToUTF8String(block.OnlineStatus);
-                        groupMember.Powers = block.AgentPowers;
+                        groupMember.Powers = (GroupPowers)block.AgentPowers;
                         groupMember.Title = Helpers.FieldToUTF8String(block.Title);
 
                         groupMemberCache[block.AgentID] = groupMember;
@@ -1103,7 +1152,7 @@ namespace libsecondlife
                         groupRole.ID = block.RoleID;
                         groupRole.Description = Helpers.FieldToUTF8String(block.Description);
                         groupRole.Name = Helpers.FieldToUTF8String(block.Name);
-                        groupRole.Powers = block.Powers;
+                        groupRole.Powers = (GroupPowers)block.Powers;
                         groupRole.Title = Helpers.FieldToUTF8String(block.Title);
 
                         groupRoleCache[block.RoleID] = groupRole;
