@@ -115,6 +115,7 @@
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />
     <Compile Include="LLSD.cs" />
+    <Compile Include="LocationTracker.cs" />
     <Compile Include="Login.cs" />
     <Compile Include="MainAvatarStatus.cs" />
     <Compile Include="MainAvatar.cs" />
