@@ -12,10 +12,12 @@ namespace SLImageUpload
 {
     public partial class frmSLImageUpload : Form
     {
-        SecondLife Client;
-        AssetManager Assets;
-        byte[] UploadData = null;
-        int Transferred = 0;
+        private SecondLife Client;
+        private AssetManager Assets;
+        private byte[] UploadData = null;
+        private int Transferred = 0;
+        private string FileName = String.Empty;
+        private LLUUID SendToID;
 
         public frmSLImageUpload()
         {
@@ -26,6 +28,13 @@ namespace SLImageUpload
             Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
             Assets.OnAssetUploaded += new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
 
+            // Turn almost everything off since we are only interested in uploading textures
+            Client.Settings.ALWAYS_DECODE_OBJECTS = false;
+            Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
+            Client.Settings.CONTINUOUS_AGENT_UPDATES = false;
+            Client.Settings.OBJECT_TRACKING = false;
+            Client.Settings.SEND_AGENT_UPDATES = true;
+            Client.Settings.STORE_LAND_PATCHES = false;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Self.Status.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
@@ -36,6 +45,95 @@ namespace SLImageUpload
         private void EnableUpload(bool enable)
         {
             if (UploadData != null) cmdUpload.Enabled = enable;
+        }
+
+        private void LoadImage()
+        {
+            string lowfilename = FileName.ToLower();
+            Bitmap bitmap = null;
+
+            try
+            {
+                if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
+                {
+                    // Upload JPEG2000 images untouched
+                    UploadData = System.IO.File.ReadAllBytes(FileName);
+                    bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData);
+
+                    Client.Log("Loaded raw JPEG2000 data " + FileName, Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    if (lowfilename.EndsWith(".tga"))
+                        bitmap = OpenJPEGNet.LoadTGAClass.LoadTGA(FileName);
+                    else
+                        bitmap = (Bitmap)System.Drawing.Image.FromFile(FileName);
+
+                    Client.Log("Loaded image " + FileName, Helpers.LogLevel.Info);
+
+                    int oldwidth = bitmap.Width;
+                    int oldheight = bitmap.Height;
+
+                    if (!IsPowerOfTwo((uint)oldwidth) || !IsPowerOfTwo((uint)oldheight))
+                    {
+                        Client.Log("Image has irregular dimensions " + oldwidth + "x" + oldheight + ", resizing to 256x256",
+                            Helpers.LogLevel.Info);
+
+                        Bitmap resized = new Bitmap(256, 256, bitmap.PixelFormat);
+                        Graphics graphics = Graphics.FromImage(resized);
+
+                        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                        graphics.InterpolationMode =
+                           System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        graphics.DrawImage(bitmap, 0, 0, 256, 256);
+
+                        bitmap.Dispose();
+                        bitmap = resized;
+
+                        oldwidth = 256;
+                        oldheight = 256;
+                    }
+
+                    // Handle resizing to prevent excessively large images
+                    if (oldwidth > 1024 || oldheight > 1024)
+                    {
+                        int newwidth = (oldwidth > 1024) ? 1024 : oldwidth;
+                        int newheight = (oldheight > 1024) ? 1024 : oldheight;
+
+                        Client.Log("Image has oversized dimensions " + oldwidth + "x" + oldheight + ", resizing to " +
+                            newwidth + "x" + newheight, Helpers.LogLevel.Info);
+
+                        Bitmap resized = new Bitmap(newwidth, newheight, bitmap.PixelFormat);
+                        Graphics graphics = Graphics.FromImage(resized);
+
+                        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                        graphics.InterpolationMode =
+                           System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        graphics.DrawImage(bitmap, 0, 0, newwidth, newheight);
+
+                        bitmap.Dispose();
+                        bitmap = resized;
+                    }
+
+                    Client.Log("Encoding image...", Helpers.LogLevel.Info);
+
+                    UploadData = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, chkLossless.Checked);
+
+                    Client.Log("Finished encoding", Helpers.LogLevel.Info);
+                }
+            }
+            catch (Exception ex)
+            {
+                UploadData = null;
+                cmdUpload.Enabled = false;
+                MessageBox.Show(ex.ToString(), "SL Image Upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            picPreview.Image = bitmap;
+            lblSize.Text = Math.Round((double)UploadData.Length / 1024.0d, 2) + "KB";
+            prgUpload.Maximum = UploadData.Length;
+            if (Client.Network.Connected) cmdUpload.Enabled = true;
         }
 
         private void cmdConnect_Click(object sender, EventArgs e)
@@ -77,62 +175,54 @@ namespace SLImageUpload
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                string lowfilename = dialog.FileName.ToLower();
-                Bitmap bitmap = null;
-
-                try
-                {
-                    if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
-                    {
-                        // Upload JPEG2000 images untouched
-                        UploadData = System.IO.File.ReadAllBytes(dialog.FileName);
-                        bitmap = (Bitmap)OpenJPEGNet.OpenJPEG.DecodeToImage(UploadData);
-                    }
-                    else
-                    {
-                        if (lowfilename.EndsWith(".tga"))
-                            bitmap = OpenJPEGNet.LoadTGAClass.LoadTGA(dialog.FileName);
-                        else
-                            bitmap = (Bitmap)System.Drawing.Image.FromFile(dialog.FileName);
-
-                        // Handle resizing to prevent excessively large images
-                        if (bitmap.Width > 1024 || bitmap.Height > 1024)
-                        {
-                            int newwidth = (bitmap.Width > 1024) ? 1024 : bitmap.Width;
-                            int newheight = (bitmap.Height > 1024) ? 1024: bitmap.Height;
-
-                            Bitmap resized = new Bitmap(newwidth, newheight, bitmap.PixelFormat);
-                            Graphics graphics = Graphics.FromImage(resized);
-
-                            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                            graphics.InterpolationMode =
-                               System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                            graphics.DrawImage(bitmap, 0, 0, newwidth, newheight);
-
-                            bitmap.Dispose();
-                            bitmap = resized;
-                        }
-
-                        UploadData = OpenJPEGNet.OpenJPEG.EncodeFromImage(bitmap, chkLossless.Checked);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    UploadData = null;
-                    cmdUpload.Enabled = false;
-                    MessageBox.Show(ex.ToString(), "SL Image Upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                picPreview.Image = bitmap;
-                lblSize.Text = Math.Round((double)UploadData.Length / 1024.0d, 2) + "KB";
-                prgUpload.Maximum = UploadData.Length;
-                if (Client.Network.Connected) cmdUpload.Enabled = true;
+                FileName = dialog.FileName;
+                LoadImage();
             }
         }
 
         private void cmdUpload_Click(object sender, EventArgs e)
         {
+            SendToID = LLUUID.Zero;
+            string sendTo = txtSendtoName.Text.Trim();
+
+            if (sendTo.Length > 0)
+            {
+                AutoResetEvent lookupEvent = new AutoResetEvent(false);
+                LLUUID thisQueryID = LLUUID.Random();
+                bool lookupSuccess = false;
+
+                DirectoryManager.DirPeopleReplyCallback callback =
+                    delegate(LLUUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                    {
+                        if (queryID == thisQueryID)
+                        {
+                            if (matchedPeople.Count > 0)
+                            {
+                                SendToID = matchedPeople[0].AgentID;
+                                lookupSuccess = true;
+                            }
+
+                            lookupEvent.Set();
+                        }
+                    };
+
+                Client.Directory.OnDirPeopleReply += callback;
+                Client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, sendTo, 0, thisQueryID);
+
+                bool eventSuccess = lookupEvent.WaitOne(10 * 1000, false);
+                Client.Directory.OnDirPeopleReply -= callback;
+
+                if (eventSuccess && lookupSuccess)
+                {
+                    Client.Log("Will send uploaded image to avatar " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    MessageBox.Show("Could not find avatar \"" + sendTo + "\", upload cancelled");
+                    return;
+                }
+            }
+
             if (UploadData != null)
             {
                 prgUpload.Value = 0;
@@ -141,8 +231,40 @@ namespace SLImageUpload
                 grpLogin.Enabled = false;
 
                 LLUUID assetID;
-                LLUUID transactionid = Assets.RequestUpload(out assetID, AssetType.Texture, UploadData, false, false, true);
-                txtAssetID.Text = assetID.ToStringHyphenated();
+                string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
+
+                Client.Inventory.BeginCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
+                    InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
+                    delegate(bool success, InventoryItem item)
+                    {
+                        if (success)
+                        {
+                            // Pay for the upload
+                            Client.Self.PayUploadFee("SL Image Upload");
+
+                            Client.Log("Created inventory item " + item.Name, Helpers.LogLevel.Info);
+
+                            if (SendToID != LLUUID.Zero)
+                            {
+                                Client.Log("Sending item to " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                                Client.Inventory.GiveItem(item.UUID, item.Name, item.AssetType, SendToID, true);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Failed to create an inventory item for the upload, the asset exists but is not in " +
+                                "your inventory. You will not be charged for this upload");
+                        }
+
+                        if (this.InvokeRequired)
+                            BeginInvoke(new MethodInvoker(EnableControls));
+                        else
+                            EnableControls();
+                    }
+                );
+
+                //LLUUID transactionid = Assets.RequestUpload(out assetID, AssetType.Texture, UploadData, false, false, true);
+                //txtAssetID.Text = assetID.ToStringHyphenated();
             }
         }
 
@@ -168,15 +290,41 @@ namespace SLImageUpload
             else
                 EnableControls();
 
-            // Pay for the upload
-            Client.Self.GiveMoney(LLUUID.Zero, Client.Settings.UPLOAD_COST, "SL Image Upload");
-
             if (upload.Success)
+            {
                 MessageBox.Show("Image uploaded successfully");
-            else
-                MessageBox.Show("Image upload rejected (unknown cause)");
 
-            // FIXME: Save this in to inventory and send it to the sendto name if there is one
+                string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
+
+                //// Save this image to inventory
+                //Client.Inventory.BeginCreateItemFromAsset(name, "Uploaded with SL Image Upload", AssetType.Texture, InventoryType.Texture,
+                //    delegate(bool success, InventoryItem item)
+                //    {
+                //        if (success)
+                //        {
+                //            // Pay for the upload
+                //            Client.Self.PayUploadFee("SL Image Upload");
+
+                //            Client.Log("Created inventory item " + item.Name, Helpers.LogLevel.Info);
+
+                //            if (SendToID != LLUUID.Zero)
+                //            {
+                //                Client.Log("Sending item to " + SendToID.ToStringHyphenated(), Helpers.LogLevel.Info);
+                //                Client.Inventory.GiveItem(item.UUID, item.Name, item.AssetType, SendToID, true);
+                //            }
+                //        }
+                //        else
+                //        {
+                //            MessageBox.Show("Failed to create an inventory item for the upload, the asset exists but is not in " +
+                //                "your inventory. You will not be charged for this upload");
+                //        }
+                //    }
+                //);
+            }
+            else
+            {
+                MessageBox.Show("Image upload rejected (unknown cause)");
+            }
         }
 
         private void EnableControls()
@@ -190,6 +338,16 @@ namespace SLImageUpload
         {
             if (Client.Network.Connected)
                 Client.Network.Logout();
+        }
+
+        private void chkLossless_CheckedChanged(object sender, EventArgs e)
+        {
+            LoadImage();
+        }
+
+        private bool IsPowerOfTwo(uint n)
+        {
+            return (n & (n - 1)) == 0 && n != 0;
         }
     }
 }

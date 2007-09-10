@@ -37,6 +37,8 @@ namespace SLImageUpload
             this.label1 = new System.Windows.Forms.Label();
             this.txtFirstName = new System.Windows.Forms.TextBox();
             this.grpUpload = new System.Windows.Forms.GroupBox();
+            this.txtAssetID = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.lblSize = new System.Windows.Forms.Label();
             this.prgUpload = new System.Windows.Forms.ProgressBar();
             this.picPreview = new System.Windows.Forms.PictureBox();
@@ -45,8 +47,6 @@ namespace SLImageUpload
             this.label6 = new System.Windows.Forms.Label();
             this.chkLossless = new System.Windows.Forms.CheckBox();
             this.cmdUpload = new System.Windows.Forms.Button();
-            this.txtAssetID = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
             this.grpLogin.SuspendLayout();
             this.grpUpload.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPreview)).BeginInit();
@@ -140,6 +140,24 @@ namespace SLImageUpload
             this.grpUpload.TabIndex = 68;
             this.grpUpload.TabStop = false;
             // 
+            // txtAssetID
+            // 
+            this.txtAssetID.Location = new System.Drawing.Point(90, 204);
+            this.txtAssetID.Name = "txtAssetID";
+            this.txtAssetID.ReadOnly = true;
+            this.txtAssetID.Size = new System.Drawing.Size(280, 20);
+            this.txtAssetID.TabIndex = 8;
+            this.txtAssetID.TabStop = false;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(6, 207);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(66, 13);
+            this.label4.TabIndex = 79;
+            this.label4.Text = "Asset UUID:";
+            // 
             // lblSize
             // 
             this.lblSize.AutoSize = true;
@@ -176,10 +194,9 @@ namespace SLImageUpload
             // 
             // txtSendtoName
             // 
-            this.txtSendtoName.Enabled = false;
-            this.txtSendtoName.Location = new System.Drawing.Point(187, 62);
+            this.txtSendtoName.Location = new System.Drawing.Point(131, 64);
             this.txtSendtoName.Name = "txtSendtoName";
-            this.txtSendtoName.Size = new System.Drawing.Size(183, 20);
+            this.txtSendtoName.Size = new System.Drawing.Size(239, 20);
             this.txtSendtoName.TabIndex = 5;
             // 
             // label6
@@ -187,9 +204,9 @@ namespace SLImageUpload
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(6, 67);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(175, 13);
+            this.label6.Size = new System.Drawing.Size(112, 13);
             this.label6.TabIndex = 71;
-            this.label6.Text = "Send Copy To (under construction):";
+            this.label6.Text = "Send Copy To Avatar:";
             // 
             // chkLossless
             // 
@@ -200,6 +217,7 @@ namespace SLImageUpload
             this.chkLossless.Text = "Single Layer Lossless (only useful for pixel perfect reproductions of small image" +
                 "s, such as sculpt maps)";
             this.chkLossless.UseVisualStyleBackColor = true;
+            this.chkLossless.CheckedChanged += new System.EventHandler(this.chkLossless_CheckedChanged);
             // 
             // cmdUpload
             // 
@@ -211,24 +229,6 @@ namespace SLImageUpload
             this.cmdUpload.Text = "Upload Texture";
             this.cmdUpload.UseVisualStyleBackColor = true;
             this.cmdUpload.Click += new System.EventHandler(this.cmdUpload_Click);
-            // 
-            // txtAssetID
-            // 
-            this.txtAssetID.Location = new System.Drawing.Point(90, 204);
-            this.txtAssetID.Name = "txtAssetID";
-            this.txtAssetID.ReadOnly = true;
-            this.txtAssetID.Size = new System.Drawing.Size(280, 20);
-            this.txtAssetID.TabIndex = 8;
-            this.txtAssetID.TabStop = false;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 207);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(66, 13);
-            this.label4.TabIndex = 79;
-            this.label4.Text = "Asset UUID:";
             // 
             // frmSLImageUpload
             // 
