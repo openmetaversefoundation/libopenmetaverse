@@ -44,17 +44,14 @@ namespace libsecondlife
         public HttpWebRequest WebRequest;
         public HttpWebResponse WebResponse;
         public Stream ResponseStream;
+        public object State;
 
         internal int ResponseDataPos = 0;
 
         public HttpRequestState(HttpWebRequest webRequest)
         {
             WebRequest = webRequest;
-
             BufferRead = new byte[BUFFER_SIZE];
-            RequestData = null;
-            ResponseData = null;
-            ResponseStream = null;
         }
     }
 
@@ -85,14 +82,15 @@ namespace libsecondlife
 
         public void MakeRequest()
         {
-            MakeRequest(null);
+            MakeRequest(null, null, 0, null);
         }
 
-        public void MakeRequest(byte[] postData)
+        public void MakeRequest(byte[] postData, string contentType, int udpListeningPort, object state)
         {
             // Create a new HttpWebRequest
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
             _RequestState = new HttpRequestState(httpRequest);
+            _RequestState.State = state;
 
             if (_ProxyURL != String.Empty)
             {
@@ -118,6 +116,12 @@ namespace libsecondlife
                     // POST request
                     _RequestState.WebRequest.Method = "POST";
                     _RequestState.WebRequest.ContentLength = postData.Length;
+                    if (udpListeningPort > 0)
+                        _RequestState.WebRequest.Headers.Add("X-SecondLife-UDP-Listen-Port", udpListeningPort.ToString());
+                    if (String.IsNullOrEmpty(contentType))
+                        _RequestState.WebRequest.ContentType = "application/xml";
+                    else
+                        _RequestState.WebRequest.ContentType = contentType;
                     _RequestState.RequestData = postData;
 
                     IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(

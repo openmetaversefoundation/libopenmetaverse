@@ -128,7 +128,7 @@ namespace libsecondlife
         protected abstract void PacketSent(UDPPacketBuffer buffer, int bytesSent);
 
         // the port to listen on
-        protected int udpPort;
+        internal int udpPort;
 
         // the UDP socket
         private Socket udpSocket;

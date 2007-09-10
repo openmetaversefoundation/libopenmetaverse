@@ -62,7 +62,7 @@ namespace libsecondlife
 
         public new void MakeRequest()
         {
-            base.MakeRequest(new byte[0]);
+            base.MakeRequest(new byte[0], null, Simulator.udpPort, null);
         }
 
         protected override void Log(string message, Helpers.LogLevel level)
@@ -89,7 +89,7 @@ namespace libsecondlife
             else if (exception != null && exception.Message.Contains("502"))
             {
                 // These are normal, retry the request automatically
-                MakeRequest(state.RequestData);
+                MakeRequest(state.RequestData, "application/xml", Simulator.udpPort, null);
 
                 return;
             }

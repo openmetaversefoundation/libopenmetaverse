@@ -48,7 +48,7 @@ namespace libsecondlife.TestClient
 
             Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
-            Inventory.OnInventoryObjectReceived += new InventoryManager.InventoryObjectReceived(Inventory_OnInventoryObjectReceived);
+            Inventory.OnInventoryObjectReceived += new InventoryManager.ObjectReceivedCallback(Inventory_OnInventoryObjectReceived);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
             Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));

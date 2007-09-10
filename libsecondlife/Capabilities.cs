@@ -154,9 +154,9 @@ namespace libsecondlife
 
             Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
 
-            _SeedRequest = new CapsRequest(_SeedCapsURI);
+            _SeedRequest = new CapsRequest(_SeedCapsURI, String.Empty, null);
             _SeedRequest.OnCapsResponse += new CapsRequest.CapsResponseCallback(seedRequest_OnCapsResponse);
-            _SeedRequest.MakeRequest(postData);
+            _SeedRequest.MakeRequest(postData, "application/xml", Simulator.udpPort, null);
         }
 
         private void seedRequest_OnCapsResponse(object response, HttpRequestState state)

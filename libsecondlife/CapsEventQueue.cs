@@ -91,13 +91,15 @@ namespace libsecondlife
             // POST request
             _RequestState.WebRequest.Method = "POST";
             _RequestState.WebRequest.ContentLength = postData.Length;
+            _RequestState.WebRequest.Headers.Add("X-SecondLife-UDP-Listen-Port", Simulator.udpPort.ToString());
+            _RequestState.WebRequest.ContentType = "application/xml";
             _RequestState.RequestData = postData;
 
             IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
                 new AsyncCallback(EventRequestStreamCallback), _RequestState);
         }
 
-        public new void MakeRequest(byte[] postData)
+        public new void MakeRequest(byte[] postData, string contentType, int udpListeningPort, object state)
         {
             // Create a new HttpWebRequest
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
@@ -127,6 +129,8 @@ namespace libsecondlife
                     // POST request
                     _RequestState.WebRequest.Method = "POST";
                     _RequestState.WebRequest.ContentLength = postData.Length;
+                    _RequestState.WebRequest.Headers.Add("X-SecondLife-UDP-Listen-Port", Simulator.udpPort.ToString());
+                    _RequestState.WebRequest.ContentType = "application/xml";
                     _RequestState.RequestData = postData;
 
                     IAsyncResult result = (IAsyncResult)_RequestState.WebRequest.BeginGetRequestStream(
@@ -278,7 +282,7 @@ namespace libsecondlife
 
                 byte[] postData = LLSD.LLSDSerialize(request);
 
-                MakeRequest(postData);
+                MakeRequest(postData, "application/xml", Simulator.udpPort, null);
 
                 // If the event queue is dead at this point, turn it off since
                 // that was the last thing we want to do

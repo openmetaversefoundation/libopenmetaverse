@@ -30,6 +30,15 @@ using System.Collections.Generic;
 namespace libsecondlife
 {
     /// <summary>
+    /// Exception class to identify inventory exceptions
+    /// </summary>
+    public class InventoryException : Exception
+    {
+        public InventoryException(string message)
+            : base(message) { }
+    }
+
+    /// <summary>
     /// Responsible for maintaining inventory structure. Inventory constructs nodes
     /// and manages node children as is necessary to maintain a coherant hirarchy.
     /// Other classes should not manipulate or create InventoryNodes explicitly. When
@@ -45,20 +54,16 @@ namespace libsecondlife
         /// <param name="oldObject">The state of the InventoryObject before the update occured.</param>
         /// <param name="newObject">The state of the InventoryObject after the update occured.</param>
         public delegate void InventoryObjectUpdated(InventoryBase oldObject, InventoryBase newObject);
-
-        /// <summary>
-        /// Called when an InventoryObject's state is changed.
-        /// </summary>
-        public event InventoryObjectUpdated OnInventoryObjectUpdated;
-
-
         /// <summary>
         /// Delegate to use for the OnInventoryObjectRemoved event.
         /// </summary>
         /// <param name="obj">The InventoryObject that was removed.</param>
         public delegate void InventoryObjectRemoved(InventoryBase obj);
 
-
+        /// <summary>
+        /// Called when an InventoryObject's state is changed.
+        /// </summary>
+        public event InventoryObjectUpdated OnInventoryObjectUpdated;
         /// <summary>
         /// Called when an item or folder is removed from inventory.
         /// </summary>
@@ -75,42 +80,7 @@ namespace libsecondlife
 
         private SecondLife Client;
         private InventoryManager Manager;
-        private Dictionary<LLUUID, InventoryNode> Items;
-
-        /// <summary>
-        /// By using the bracket operator on this class, the program can get the 
-        /// InventoryObject designated by the specified uuid. If the value for the corresponding
-        /// UUID is null, the call is equivelant to a call to <code>RemoveNodeFor(this[uuid])</code>.
-        /// If the value is non-null, it is equivelant to a call to <code>UpdateNodeFor(value)</code>,
-        /// the uuid parameter is ignored.
-        /// </summary>
-        /// <param name="uuid">The UUID of the InventoryObject to get or set, ignored if set to non-null value.</param>
-        /// <returns>The InventoryObject corresponding to <code>uuid</code>.</returns>
-        public InventoryBase this[LLUUID uuid]
-        {
-            get
-            {
-                InventoryNode node = Items[uuid];
-                return node.Data;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    // what if value.UUID != uuid? :-O
-                    // should we check for this?
-                    UpdateNodeFor(value);
-                }
-                else
-                {
-                    InventoryNode node;
-                    if (Items.TryGetValue(uuid, out node))
-                    {
-                        RemoveNodeFor(node.Data);
-                    }
-                }
-            }
-        }
+        private Dictionary<LLUUID, InventoryNode> Items = new Dictionary<LLUUID, InventoryNode>();
 
         public Inventory(SecondLife client, InventoryManager manager, InventoryFolder rootFolder)
         {
@@ -118,10 +88,8 @@ namespace libsecondlife
             Manager = manager;
             RootFolder = rootFolder;
             RootNode = new InventoryNode(rootFolder);
-            Items = new Dictionary<LLUUID, InventoryNode>();
             Items[rootFolder.UUID] = RootNode;
         }
-
 
         public List<InventoryBase> GetContents(InventoryFolder folder)
         {
@@ -129,11 +97,11 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// Returns the contents of the specified folder.
+        /// Returns the contents of the specified folder
         /// </summary>
-        /// <param name="folder">A folder's UUID.</param>
-        /// <returns>The contents of the folder corresponding to <code>folder</code>.</returns>
-        /// <exception cref="InventoryException">When <code>folder</code> does not exist in the inventory.</exception>
+        /// <param name="folder">A folder's UUID</param>
+        /// <returns>The contents of the folder corresponding to <code>folder</code></returns>
+        /// <exception cref="InventoryException">When <code>folder</code> does not exist in the inventory</exception>
         public List<InventoryBase> GetContents(LLUUID folder)
         {
             InventoryNode folderNode;
@@ -150,17 +118,16 @@ namespace libsecondlife
             }
         }
 
-
         /// <summary>
         /// Updates the state of the InventoryNode and inventory data structure that
         /// is responsible for the InventoryObject. If the item was previously not added to inventory,
         /// it adds the item, and updates structure accordingly. If it was, it updates the 
         /// InventoryNode, changing the parent node if <code>item.parentUUID</code> does 
-        /// not match <code>node.Parent.Data.UUID</code>. 
+        /// not match <code>node.Parent.Data.UUID</code>.
         /// 
-        /// You can not set the inventory root folder using this method.
+        /// You can not set the inventory root folder using this method
         /// </summary>
-        /// <param name="item">The InventoryObject to store.</param>
+        /// <param name="item">The InventoryObject to store</param>
         public void UpdateNodeFor(InventoryBase item)
         {
             lock (Items)
@@ -268,28 +235,68 @@ namespace libsecondlife
             return Contains(obj.UUID);
         }
 
+        #region Operators
+
+        /// <summary>
+        /// By using the bracket operator on this class, the program can get the 
+        /// InventoryObject designated by the specified uuid. If the value for the corresponding
+        /// UUID is null, the call is equivelant to a call to <code>RemoveNodeFor(this[uuid])</code>.
+        /// If the value is non-null, it is equivelant to a call to <code>UpdateNodeFor(value)</code>,
+        /// the uuid parameter is ignored.
+        /// </summary>
+        /// <param name="uuid">The UUID of the InventoryObject to get or set, ignored if set to non-null value.</param>
+        /// <returns>The InventoryObject corresponding to <code>uuid</code>.</returns>
+        public InventoryBase this[LLUUID uuid]
+        {
+            get
+            {
+                InventoryNode node = Items[uuid];
+                return node.Data;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    // Log a warning if there is a UUID mismatch, this will cause problems
+                    if (value.UUID != uuid)
+                        Client.Log("Inventory[uuid]: uuid " + uuid.ToStringHyphenated() + " is not equal to value.UUID " +
+                            value.UUID.ToStringHyphenated(), Helpers.LogLevel.Warning);
+
+                    UpdateNodeFor(value);
+                }
+                else
+                {
+                    InventoryNode node;
+                    if (Items.TryGetValue(uuid, out node))
+                    {
+                        RemoveNodeFor(node.Data);
+                    }
+                }
+            }
+        }
+
+        #endregion Operators
+
         #region Event Firing
+
         protected void FireOnInventoryObjectUpdated(InventoryBase oldObject, InventoryBase newObject)
         {
             if (OnInventoryObjectUpdated != null)
-                OnInventoryObjectUpdated(oldObject, newObject);
+            {
+                try { OnInventoryObjectUpdated(oldObject, newObject); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
+
         protected void FireOnInventoryObjectRemoved(InventoryBase obj)
         {
             if (OnInventoryObjectRemoved != null)
-                OnInventoryObjectRemoved(obj);
+            {
+                try { OnInventoryObjectRemoved(obj); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
         }
+
         #endregion
-
-    }
-
-    /// <summary>
-    /// A rudimentary Exception subclass, so exceptions thrown by the Inventory class
-    /// can be easily identified and caught.
-    /// </summary>
-    public class InventoryException : Exception
-    {
-        public InventoryException(string message)
-            : base(message) { }
     }
 }

@@ -183,12 +183,19 @@ namespace libsecondlife
                 SimIP = IPAddress.Parse(reply.sim_ip);
                 SeedCapability = reply.seed_capability;
 
-                BuddyList = new FriendsManager.FriendInfo[reply.buddy_list.Length];
-                for (int i = 0; i < BuddyList.Length; ++i)
+                if (reply.buddy_list != null)
                 {
-                    BuddyListEntry buddy = reply.buddy_list[i];
-                    BuddyList[i] = new FriendsManager.FriendInfo(buddy.buddy_id, (FriendsManager.RightsFlags)buddy.buddy_rights_given,
-                            (FriendsManager.RightsFlags)buddy.buddy_rights_has);
+                    BuddyList = new FriendsManager.FriendInfo[reply.buddy_list.Length];
+                    for (int i = 0; i < BuddyList.Length; ++i)
+                    {
+                        BuddyListEntry buddy = reply.buddy_list[i];
+                        BuddyList[i] = new FriendsManager.FriendInfo(buddy.buddy_id, (FriendsManager.RightsFlags)buddy.buddy_rights_given,
+                                (FriendsManager.RightsFlags)buddy.buddy_rights_has);
+                    }
+                }
+                else
+                {
+                    BuddyList = new FriendsManager.FriendInfo[0];
                 }
 
                 InventoryRoot = LLUUID.Parse(reply.inventory_root[0].folder_id);

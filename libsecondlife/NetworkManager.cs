@@ -102,7 +102,9 @@ namespace libsecondlife
         /// <remarks>The connection to the new simulator won't be established
         /// until this callback returns</remarks>
         /// <param name="simulator">The simulator that is being connected to</param>
-        public delegate void SimConnectingCallback(Simulator simulator);
+        /// <returns>Whether to continue connecting to the simulator or abort
+        /// the connection</returns>
+        public delegate bool SimConnectingCallback(Simulator simulator);
         /// <summary>
         /// Triggered when a new connection to a simulator is established
         /// </summary>
@@ -370,11 +372,19 @@ namespace libsecondlife
                 // Fire the OnSimConnecting event
                 if (OnSimConnecting != null)
                 {
-                    try { OnSimConnecting(simulator); }
+                    try
+                    {
+                        if (!OnSimConnecting(simulator))
+                        {
+                            // Callback is requesting that we abort this connection
+                            lock (Simulators) Simulators.Remove(simulator);
+                            return null;
+                        }
+                    }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
 
-                // We're not connected to this simulator, attempt to establish a connection
+                // Attempt to establish a connection to the simulator
                 if (simulator.Connect(setDefault))
                 {
                     // Start a timer that checks if we've been disconnected
@@ -391,11 +401,14 @@ namespace libsecondlife
 
                     // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
                     if (Client.Settings.SEND_AGENT_THROTTLE) Client.Throttle.Set(simulator);
+
+                    return simulator;
                 }
                 else
                 {
-                    // Connection failed, so remove this simulator from our list and destroy it
+                    // Connection failed, remove this simulator from our list and destroy it
                     lock (Simulators) Simulators.Remove(simulator);
+                    return null;
                 }
             }
             else if (setDefault)
@@ -409,9 +422,15 @@ namespace libsecondlife
                 // Send an initial AgentUpdate to complete our movement in to the sim
                 if (Client.Settings.SEND_AGENT_UPDATES)
                     Client.Self.Status.SendUpdate(true, simulator);
-            }
 
-            return simulator;
+                return simulator;
+            }
+            else
+            {
+                // Already connected to this simulator and wasn't asked to set it as the default,
+                // just return a reference to the existing object
+                return simulator;
+            }
         }
 
         /// <summary>

@@ -103,7 +103,7 @@ namespace libsecondlife
 
         private void GatherCaps()
         {
-            CapsRequest request = new CapsRequest(RegistrationApiCaps.AbsoluteUri);
+            CapsRequest request = new CapsRequest(RegistrationApiCaps.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(GatherCapsResponse);
 
             // build post data
@@ -112,7 +112,7 @@ namespace libsecondlife
                 _userInfo.Password));
 
             // send
-            request.MakeRequest(postData);
+            request.MakeRequest(postData, "application/xml", 0, null);
         }
 
         private void GatherCapsResponse(object response, HttpRequestState state)
@@ -141,7 +141,7 @@ namespace libsecondlife
             if (_caps.GetErrorCodes == null)
                 throw new InvalidOperationException("access denied");	// this should work even for not-approved users
 
-            CapsRequest request = new CapsRequest(_caps.GetErrorCodes.AbsoluteUri);
+            CapsRequest request = new CapsRequest(_caps.GetErrorCodes.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(GatherErrorMessagesResponse);
             request.MakeRequest();
         }
@@ -177,7 +177,7 @@ namespace libsecondlife
             if (_caps.GetLastNames == null)
                 throw new InvalidOperationException("access denied: only approved developers have access to the registration api");
 
-            CapsRequest request = new CapsRequest(_caps.GetLastNames.AbsoluteUri);
+            CapsRequest request = new CapsRequest(_caps.GetLastNames.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(GatherLastNamesResponse);
             request.MakeRequest();
 
@@ -220,9 +220,9 @@ namespace libsecondlife
             query.Add("last_name_id", lastName.ID);
             byte[] postData = LLSD.LLSDSerialize(query);
 
-            CapsRequest request = new CapsRequest(_caps.CheckName.AbsoluteUri);
+            CapsRequest request = new CapsRequest(_caps.CheckName.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CheckNameResponse);
-            request.MakeRequest(postData);
+            request.MakeRequest(postData, "application/xml", 0, null);
 
             // FIXME:
             return false;
@@ -286,9 +286,9 @@ namespace libsecondlife
             byte[] postData = LLSD.LLSDSerialize(query);
 
             // Make the request
-            CapsRequest request = new CapsRequest(_caps.CreateUser.AbsoluteUri);
+            CapsRequest request = new CapsRequest(_caps.CreateUser.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateUserResponse);
-            request.MakeRequest(postData);
+            request.MakeRequest(postData, "application/xml", 0, null);
 
             // FIXME: Block
             return LLUUID.Zero;
