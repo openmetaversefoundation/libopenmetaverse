@@ -457,13 +457,13 @@ namespace libsecondlife
             // Set the sim disconnect timer interval
             DisconnectTimer.Interval = Client.Settings.SIMULATOR_TIMEOUT;
 
-            // Override SSL authentication mechanisms
+            // Override SSL authentication mechanisms. DO NOT convert this to the 
+            // .NET 2.0 preferred method, the equivalent function in Mono has a 
+            // different name and it will break compatibility!
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
-            //ServicePointManager.ServerCertificateValidationCallback = delegate(
-            //    object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors errors)
-            //    { return true; // TODO: At some point, maybe we should check the cert? };
+            // TODO: At some point, maybe we should check the cert?
 
-            LoginMethodParams loginParams = new LoginMethodParams();
+            LoginMethodParams loginParams;
             loginParams.first = CurrentContext.Params.FirstName;
             loginParams.last = CurrentContext.Params.LastName;
             loginParams.passwd = CurrentContext.Params.Password;
@@ -496,7 +496,7 @@ namespace libsecondlife
                 proxy.Expect100Continue = false;
                 proxy.ResponseEvent += new XmlRpcResponseEventHandler(proxy_ResponseEvent);
                 proxy.Url = CurrentContext.Params.URI;
-                proxy.XmlRpcMethod = CurrentContext.Params.MethodName; // make sure this isnt evil.
+                proxy.XmlRpcMethod = CurrentContext.Params.MethodName;
 
                 // Start the request
                 proxy.BeginLoginToSimulator(loginParams, new AsyncCallback(LoginMethodCallback), new object[] { proxy, CurrentContext });
@@ -554,6 +554,8 @@ namespace libsecondlife
         {
             InternalStatusCode = status;
             InternalLoginMessage = message;
+
+            Client.DebugLog("Login status: " + status.ToString() + ": " + message);
 
             if (OnLogin != null)
             {
@@ -733,12 +735,10 @@ namespace libsecondlife
                 UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
 
                 // Handle indeterminate logins
-                CurrentContext = new LoginContext();
-                CurrentContext.Params = context.Params;
-                CurrentContext.Params.Options = new List<string>(reply.next_options.Length);
-                CurrentContext.Params.Options.AddRange(reply.next_options);
                 CurrentContext.Params.URI = reply.next_url;
-                CurrentContext.Params.MethodName = reply.next_method; // FIXME: XMLRPC runtime method invoking?
+                CurrentContext.Params.MethodName = reply.next_method;
+
+                // Ignore next_options and next_duration for now
                 BeginLogin();
             }
             else if (loginSuccess)
