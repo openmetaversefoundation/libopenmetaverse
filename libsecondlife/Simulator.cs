@@ -271,11 +271,6 @@ namespace libsecondlife
         /// avatars and primitives found in this simulator</summary>
         public ObjectTracker Objects = new ObjectTracker();
 
-        /// <summary>Provides access to the most recent CoarseLocationUpdate
-        /// information, which can be used to populate the mini-map.
-        /// </summary>
-        public LocationTracker CoarseLocations;
-
         /// <summary>Used to obtain a lock on the sequence number for packets
         /// sent to this simulator. Only useful for applications manipulating
         /// sequence numbers</summary>
@@ -340,7 +335,6 @@ namespace libsecondlife
 
             ipEndPoint = address;
             Handle = handle;
-            CoarseLocations = new LocationTracker(Client);
             Estate = new EstateTools(Client);
             Network = Client.Network;
             PacketArchive = new Queue<uint>(Settings.PACKET_ARCHIVE_SIZE);
