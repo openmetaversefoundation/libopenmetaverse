@@ -291,6 +291,10 @@ namespace libsecondlife
         public bool Connected { get { return connected; } }
         /// <summary>Coarse locations of avatars in this simulator</summary>
         public List<LLVector3> AvatarPositions { get { return avatarPositions; } }
+        /// <summary>AvatarPositions index representing your avatar</summary>
+        public int PositionIndexYou { get { return positionIndexYou; } }
+        /// <summary>AvatarPositions index representing TrackAgent target</summary>
+        public int PositionIndexPrey { get { return positionIndexPrey; } }
 
         #endregion Properties
 
@@ -306,6 +310,10 @@ namespace libsecondlife
         internal bool connected;
         /// <summary>Coarse locations of avatars in this simulator</summary>
         internal List<LLVector3> avatarPositions = new List<LLVector3>();
+        /// <summary>AvatarPositions index representing your avatar</summary>
+        internal int positionIndexYou;
+        /// <summary>AvatarPositions index representing TrackAgent target</summary>
+        internal int positionIndexPrey;
         /// <summary>Sequence numbers of packets we've finished processing 
         /// (for duplicate checking)</summary>
         internal Queue<uint> PacketArchive;

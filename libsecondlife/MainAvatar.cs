@@ -1827,6 +1827,17 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>Tracks the specified avatar on your map</summary>
+        /// <param name="preyID">Avatar ID to track</param>
+        public void TrackAgent(LLUUID preyID)
+        {
+            TrackAgentPacket p = new TrackAgentPacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            p.TargetData.PreyID = preyID;
+            Client.Network.SendPacket(p);
+        }
+
         /// <summary>
         /// Grabs an object
         /// </summary>

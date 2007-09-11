@@ -361,15 +361,16 @@ namespace libsecondlife
 
                 for (int i = 0; i < coarse.Location.Length; i++)
                 {
-                    if (i == coarse.Index.Prey)
+                    if (i == coarse.Index.You)
                     {
-                        // TODO: Handle the coarse target position
+                        simulator.positionIndexYou = i;
                     }
-                    else if (i != coarse.Index.You)
+                    else if (i == coarse.Index.Prey)
                     {
-                        simulator.avatarPositions.Add(new LLVector3(coarse.Location[i].X, coarse.Location[i].Y,
-                            coarse.Location[i].Z));
+                        simulator.positionIndexPrey = i;
                     }
+                    simulator.avatarPositions.Add(new LLVector3(coarse.Location[i].X, coarse.Location[i].Y,
+                        coarse.Location[i].Z));
                 }
             }
         }
