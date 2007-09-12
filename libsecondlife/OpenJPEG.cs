@@ -19,6 +19,7 @@ namespace OpenJPEGNet
         {
             public IntPtr encoded;             // encoded image data
             public int length;                 // encoded image length
+            public int dummy; // padding for 64-bit alignment
 
             public IntPtr decoded;             // decoded image, contiguous components
             public int width;                  // width of decoded image

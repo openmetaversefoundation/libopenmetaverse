@@ -7,6 +7,7 @@ struct MarshalledImage
 {
 	unsigned char* encoded;
 	int length;
+	int dummy; // padding for 64-bit alignment
 
 	unsigned char* decoded;
 	int width;
