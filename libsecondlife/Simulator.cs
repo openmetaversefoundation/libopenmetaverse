@@ -311,9 +311,9 @@ namespace libsecondlife
         /// <summary>Coarse locations of avatars in this simulator</summary>
         internal List<LLVector3> avatarPositions = new List<LLVector3>();
         /// <summary>AvatarPositions index representing your avatar</summary>
-        internal int positionIndexYou;
+        internal int positionIndexYou = -1;
         /// <summary>AvatarPositions index representing TrackAgent target</summary>
-        internal int positionIndexPrey;
+        internal int positionIndexPrey = -1;
         /// <summary>Sequence numbers of packets we've finished processing 
         /// (for duplicate checking)</summary>
         internal Queue<uint> PacketArchive;
