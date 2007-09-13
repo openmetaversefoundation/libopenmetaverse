@@ -342,10 +342,6 @@ namespace libsecondlife.TestClient
                     // remove the entry
                     CurrentDownloads.Remove(r);
                 }
-                else
-                {
-                    Client.DebugLog(Name + ": Unexpected asset " + asset.AssetID.ToStringHyphenated());
-                }
             }
         }
 

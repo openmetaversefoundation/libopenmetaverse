@@ -81,19 +81,14 @@ namespace libsecondlife
             if ((channels & ImageChannels.Bump) != 0) Bump = new byte[n];
 
             if ((channels & ImageChannels.Alpha) != 0)
-            {
                 Alpha = new byte[n];
-
-                // init alpha to fully opaque
-                Fill(Alpha, 255);
-            }
         }
 
         /// <summary>
         /// Convert the channels in the image. Channels are created or destroyed as required.
         /// </summary>
         /// <param name="channels">new channel flags</param>
-        public void ConvertComponents(ImageChannels channels)
+        public void ConvertChannels(ImageChannels channels)
         {
             if (Channels == channels)
                 return;
@@ -206,12 +201,25 @@ namespace libsecondlife
 
             if ((Channels & ImageChannels.Alpha) != 0)
             {
-                for (int i = 0; i < n; i++)
+                if ((Channels & ImageChannels.Color) != 0)
                 {
-                    tga[di++] = Blue[i];
-                    tga[di++] = Green[i];
-                    tga[di++] = Red[i];
-                    tga[di++] = Alpha[i];
+                    for (int i = 0; i < n; i++)
+                    {
+                        tga[di++] = Blue[i];
+                        tga[di++] = Green[i];
+                        tga[di++] = Red[i];
+                        tga[di++] = Alpha[i];
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < n; i++)
+                    {
+                        tga[di++] = Alpha[i];
+                        tga[di++] = Alpha[i];
+                        tga[di++] = Alpha[i];
+                        tga[di++] = Alpha[i];
+                    }
                 }
             }
             else
@@ -229,8 +237,31 @@ namespace libsecondlife
 
         private void Fill(byte[] array, byte value)
         {
-            for (int i = 0; i < array.Length; i++)
-                array[i] = value;
+            if (array != null)
+            {
+                for (int i = 0; i < array.Length; i++)
+                    array[i] = value;
+            }
+        }
+
+        public void Clear()
+        {
+            Fill(Red, 0);
+            Fill(Green, 0);
+            Fill(Blue, 0);
+            Fill(Alpha, 0);
+            Fill(Bump, 0);
+        }
+
+        public Image Clone()
+        {
+            Image image = new Image(Width, Height, Channels);
+            if (Red != null) image.Red = (byte[])Red.Clone();
+            if (Green != null) image.Green = (byte[])Green.Clone();
+            if (Blue != null) image.Blue = (byte[])Blue.Clone();
+            if (Alpha != null) image.Alpha = (byte[])Alpha.Clone();
+            if (Bump != null) image.Bump = (byte[])Bump.Clone();
+            return image;
         }
     }
 }

@@ -993,7 +993,8 @@ namespace libsecondlife
             try
             {
                 System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-                return a.GetManifestResourceStream("libsecondlife.Resources." + resourceName);
+                System.IO.Stream s = a.GetManifestResourceStream("libsecondlife.Resources." + resourceName);
+                if (s != null) return s;
             }
             catch (Exception)
             {
@@ -1002,8 +1003,7 @@ namespace libsecondlife
 
             try
             {
-                return new System.IO.FileStream(searchPath + System.IO.Path.DirectorySeparatorChar + resourceName,
-                    System.IO.FileMode.Open);
+                return new System.IO.FileStream(searchPath + System.IO.Path.DirectorySeparatorChar + resourceName,System.IO.FileMode.Open);
             }
             catch (Exception)
             {

@@ -467,7 +467,12 @@ namespace OpenJPEGNet
             return b;
         }
 
-        public static unsafe byte[] LoadTGARaw(System.IO.Stream source)
+        public static unsafe libsecondlife.Image LoadTGAImage(System.IO.Stream source)
+        {
+            return LoadTGAImage(source, false);
+        }
+        
+        public static unsafe libsecondlife.Image LoadTGAImage(System.IO.Stream source, bool mask)
         {
             byte[] buffer = new byte[source.Length];
             source.Read(buffer, 0, buffer.Length);
@@ -528,17 +533,36 @@ namespace OpenJPEGNet
                 }
             }
 
-            // swap red and blue channels (TGA is BGRA)
-            byte tmp;
-            for (int i = 0; i < decoded.Length; i += 4)
+            int n = header.ImageSpec.Width * header.ImageSpec.Height;
+            libsecondlife.Image image;
+            
+            if (mask && header.ImageSpec.AlphaBits == 0 && header.ImageSpec.PixelDepth == 8)
             {
-                tmp = decoded[i];
-                decoded[i] = decoded[i + 2];
-                decoded[i + 2] = tmp;
+                image = new libsecondlife.Image(header.ImageSpec.Width, header.ImageSpec.Height, libsecondlife.ImageChannels.Alpha);
+                int p = 3;
+
+                for (int i = 0; i < n; i++)
+                {
+                    image.Alpha[i] = decoded[p];
+                    p += 4;
+                }
+            }
+            else
+            {
+                image = new libsecondlife.Image(header.ImageSpec.Width, header.ImageSpec.Height, libsecondlife.ImageChannels.Color | libsecondlife.ImageChannels.Alpha);
+                int p = 0;
+
+                for (int i = 0; i < n; i++)
+                {
+                    image.Blue[i] = decoded[p++];
+                    image.Green[i] = decoded[p++];
+                    image.Red[i] = decoded[p++];
+                    image.Alpha[i] = decoded[p++];
+                }
             }
 
             br.Close();
-            return decoded;
+            return image;
         }
 
         public static System.Drawing.Bitmap LoadTGA(string filename)
