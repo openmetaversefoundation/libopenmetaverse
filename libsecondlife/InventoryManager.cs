@@ -286,6 +286,8 @@ namespace libsecondlife
         private Dictionary<LLUUID, List<DescendantsResult>> _FolderRequests = new Dictionary<LLUUID, List<DescendantsResult>>();
         private Dictionary<uint, ItemCreatedCallback> _ItemCreatedCallbacks = new Dictionary<uint, ItemCreatedCallback>();
         private uint _ItemCreatedCallbackPos = 0;
+        
+        private List<FetchResult> FetchRequests = new List<FetchResult>();
 
         /// <summary>Partial mapping of AssetTypes to folder names</summary>
         private static readonly string[] _NewFolderNames = new string[]
@@ -375,6 +377,7 @@ namespace libsecondlife
         public InventoryManager(SecondLife client)
         {
             _Client = client;
+            _Store = new Inventory(client, this);
 
             _Client.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
             _Client.Network.RegisterCallback(PacketType.SaveAssetIntoInventory, new NetworkManager.PacketCallback(SaveAssetIntoInventoryHandler));
@@ -384,6 +387,7 @@ namespace libsecondlife
             _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
             // Watch for inventory given to us through instant message
             _Client.Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
+            _Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponce), new string[] {"inventory-root", "inventory-skeleton", "inventory-lib-root", "inventory-lib-owner", "inventory-skel-lib"} );
         }
 
         #region File & Folder Public Methods
@@ -393,8 +397,20 @@ namespace libsecondlife
         /// you can use this function to request an update from the server for those items.
         /// </summary>
         /// <param name="itemIDs">A list of LLUUIDs of the items to request.</param>
-        public void FetchInventory(List<LLUUID> itemIDs)
+        public ICollection<InventoryBase> FetchInventory(List<LLUUID> itemIDs)
         {
+            return EndFetchInventory(BeginFetchInventory(itemIDs, null, null));
+        }
+
+        public IAsyncResult BeginFetchInventory(List<LLUUID> itemIDs, AsyncCallback callback, object asyncState)
+        {
+            FetchResult req = new FetchResult(itemIDs, callback);
+            req.AsyncState = asyncState;
+            lock (FetchRequests)
+            {
+                FetchRequests.Add(req);
+            }
+                        
             FetchInventoryPacket fetch = new FetchInventoryPacket();
             fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
             fetch.AgentData.AgentID = _Client.Network.AgentID;
@@ -410,6 +426,16 @@ namespace libsecondlife
             }
 
             _Client.Network.SendPacket(fetch);
+            return req;
+        }
+
+        public ICollection<InventoryBase> EndFetchInventory(IAsyncResult result)
+        {
+            if (!(result is FetchResult))
+                throw new ArgumentException("result parameter must be the return value of InventoryManager.BeginFetchInventory");
+            FetchResult fetch = result as FetchResult;
+            fetch.AsyncWaitHandle.WaitOne();
+            return fetch.CompletedItems;
         }
 
         /// <summary>
@@ -1164,11 +1190,7 @@ namespace libsecondlife
 
         internal void InitializeRootNode(LLUUID rootFolderID)
         {
-            InventoryFolder rootFolder = new InventoryFolder(rootFolderID);
-            rootFolder.Name = String.Empty;
-            rootFolder.ParentUUID = LLUUID.Zero;
 
-            _Store = new Inventory(_Client, this, rootFolder);
         }
 
         #region Private Helper Functions
@@ -1314,27 +1336,6 @@ namespace libsecondlife
         private void InventoryDescendentsHandler(Packet packet, Simulator simulator)
         {
             InventoryDescendentsPacket reply = (InventoryDescendentsPacket)packet;
-            InventoryFolder parentFolder = null;
-
-            if (_Store.Contains(reply.AgentData.FolderID) && 
-                _Store[reply.AgentData.FolderID] is InventoryFolder)
-            {
-                parentFolder = _Store[reply.AgentData.FolderID] as InventoryFolder;
-            }
-            else
-            {
-                _Client.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToStringHyphenated() +
-                    " or it is not a folder", Helpers.LogLevel.Error);
-                return;
-            }
-
-            if (reply.AgentData.Version < parentFolder.Version)
-            {
-                _Client.Log("Got an outdated InventoryDescendents packet for folder " + parentFolder.Name +
-                    ", this version = " + reply.AgentData.Version + ", latest version = " + parentFolder.Version,
-                    Helpers.LogLevel.Warning);
-                return;
-            }
 
             if (reply.AgentData.Descendents > 0)
             {
@@ -1389,6 +1390,28 @@ namespace libsecondlife
                         }
                     }
                 }
+            }
+
+            InventoryFolder parentFolder = null;
+
+            if (Store.Contains(reply.AgentData.FolderID) &&
+                Store[reply.AgentData.FolderID] is InventoryFolder)
+            {
+                parentFolder = Store[reply.AgentData.FolderID] as InventoryFolder;
+            }
+            else
+            {
+                _Client.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToStringHyphenated() +
+                    " or it is not a folder", Helpers.LogLevel.Error);
+                return;
+            }
+
+            if (reply.AgentData.Version < parentFolder.Version)
+            {
+                _Client.Log("Got an outdated InventoryDescendents packet for folder " + parentFolder.Name +
+                    ", this version = " + reply.AgentData.Version + ", latest version = " + parentFolder.Version,
+                    Helpers.LogLevel.Warning);
+                return;
             }
 
             parentFolder.Version = reply.AgentData.Version;
@@ -1543,7 +1566,7 @@ namespace libsecondlife
         private void FetchInventoryReplyHandler(Packet packet, Simulator simulator)
         {
             FetchInventoryReplyPacket reply = packet as FetchInventoryReplyPacket;
-
+            List<FetchResult> CompletedFetches = new List<FetchResult>();
             foreach (FetchInventoryReplyPacket.InventoryDataBlock dataBlock in reply.InventoryData) 
             {
                 if (dataBlock.InvType == (sbyte)InventoryType.Folder)
@@ -1573,8 +1596,23 @@ namespace libsecondlife
                 item.SaleType = (SaleType)dataBlock.SaleType;
 
                 _Store[item.UUID] = item;
+                lock (FetchRequests)
+                {
+                    foreach (FetchResult request in FetchRequests)
+                    {
+                        request.ItemCompleted(item);
+                        if (request.IsCompleted)
+                            CompletedFetches.Add(request);
+                    }
+                }
+            }
+            lock (FetchRequests)
+            {
+                foreach (FetchResult result in CompletedFetches)
+                    FetchRequests.Remove(result);
             }
         }
+
         private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
         {
             // TODO: MainAvatar.InstantMessageDialog.GroupNotice can also be an inventory offer, should we
@@ -1680,6 +1718,17 @@ namespace libsecondlife
                     _Client.Log(e.ToString(), Helpers.LogLevel.Error);
                 }
             }
+        }
+        
+        void Network_OnLoginResponce(bool loginSuccess, bool redirect, string message, string reason, NetworkManager.LoginResponseData replyData)
+        {
+            _Client.DebugLog("Received OnLoginResponce, Inventory root is " + replyData.InventoryRoot);
+            InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
+            rootFolder.Name = String.Empty;
+            rootFolder.ParentUUID = LLUUID.Zero;
+            Store.RootFolder = rootFolder;
+            foreach (InventoryFolder folder in replyData.InventorySkeleton)
+                Store.UpdateNodeFor(folder);
         }
 
         #endregion Callbacks
@@ -1852,5 +1901,68 @@ namespace libsecondlife
                     IsCompleted = true;
             }
         }
+    }
+    public class FetchResult : IAsyncResult {
+        private Dictionary<LLUUID, object> RequestIDs;
+        private Dictionary<InventoryBase, object> _CompletedItems;
+        public ICollection<InventoryBase> CompletedItems {
+            get { return _CompletedItems.Keys; }
+        }
+
+        private AsyncCallback Callback;
+        public FetchResult(List<LLUUID> requestIDs, AsyncCallback callback) {
+            Callback = callback;
+            _CompletedItems = new Dictionary<InventoryBase, object>(requestIDs.Count);
+
+            RequestIDs = new Dictionary<LLUUID, object>(requestIDs.Count);
+            foreach (LLUUID id in requestIDs)
+                RequestIDs[id] = null;
+        }
+
+        public void ItemCompleted(InventoryBase item) {
+            if (RequestIDs.ContainsKey(item.UUID))
+                _CompletedItems[item] = null;
+            if (CompletedItems.Count == RequestIDs.Count) {
+                IsCompleted = true;
+            }
+        }
+
+        #region IAsyncResult Members
+        private object _AsyncState;
+        public object  AsyncState
+        {
+	        get { return _AsyncState; }
+            set { _AsyncState = value; }
+        }
+
+        private ManualResetEvent _AsyncWaitHandle = new ManualResetEvent(false);
+        public WaitHandle  AsyncWaitHandle
+        {
+	        get { return _AsyncWaitHandle; }
+        }
+
+        private bool _CompletedSynchronously = false;
+        public bool  CompletedSynchronously
+        {
+	        get { return _CompletedSynchronously; }
+            set { _CompletedSynchronously = value; }
+        }
+
+
+        private bool _IsCompleted = false;
+        public bool  IsCompleted
+        {
+	        get { return _IsCompleted; }
+            set {
+                if (value && !_IsCompleted) {
+                    _AsyncWaitHandle.Set();
+                    if (Callback != null)
+                        Callback(this);
+                }
+                _IsCompleted = value;
+            }
+        }
+
+        #endregion
     }
 }
