@@ -288,7 +288,8 @@ namespace libsecondlife
         private uint _ItemCreatedCallbackPos = 0;
         
         private List<FetchResult> FetchRequests = new List<FetchResult>();
-
+        private Dictionary<LLUUID, List<DescendantsResult>> folderRequests = new Dictionary<LLUUID, List<DescendantsResult>>();
+        
         /// <summary>Partial mapping of AssetTypes to folder names</summary>
         private static readonly string[] _NewFolderNames = new string[]
         {
@@ -397,12 +398,12 @@ namespace libsecondlife
         /// you can use this function to request an update from the server for those items.
         /// </summary>
         /// <param name="itemIDs">A list of LLUUIDs of the items to request.</param>
-        public ICollection<InventoryBase> FetchInventory(List<LLUUID> itemIDs)
+        public ICollection<InventoryItem> FetchInventory(ICollection<LLUUID> itemIDs)
         {
-            return EndFetchInventory(BeginFetchInventory(itemIDs, null, null));
+            return FetchInventory(itemIDs, _Client.Network.AgentID);
         }
 
-        public IAsyncResult BeginFetchInventory(List<LLUUID> itemIDs, AsyncCallback callback, object asyncState)
+        public IAsyncResult BeginFetchInventory(ICollection<LLUUID> itemIDs, LLUUID ownerID, AsyncCallback callback, object asyncState)
         {
             FetchResult req = new FetchResult(itemIDs, callback);
             req.AsyncState = asyncState;
@@ -418,18 +419,20 @@ namespace libsecondlife
 
             fetch.InventoryData = new FetchInventoryPacket.InventoryDataBlock[itemIDs.Count];
             // TODO: Make sure the packet doesnt overflow.
-            for (int i = 0; i < itemIDs.Count; ++i)
+            int index = 0;
+            foreach (LLUUID item in itemIDs)
             {
-                fetch.InventoryData[i] = new FetchInventoryPacket.InventoryDataBlock();
-                fetch.InventoryData[i].ItemID = itemIDs[i];
-                fetch.InventoryData[i].OwnerID = _Client.Network.AgentID;
+                fetch.InventoryData[index] = new FetchInventoryPacket.InventoryDataBlock();
+                fetch.InventoryData[index].ItemID = item;
+                fetch.InventoryData[index].OwnerID = ownerID;
+                index++;
             }
 
             _Client.Network.SendPacket(fetch);
             return req;
         }
 
-        public ICollection<InventoryBase> EndFetchInventory(IAsyncResult result)
+        public ICollection<InventoryItem> EndFetchInventory(IAsyncResult result)
         {
             if (!(result is FetchResult))
                 throw new ArgumentException("result parameter must be the return value of InventoryManager.BeginFetchInventory");
@@ -442,11 +445,43 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="itemID"></param>
-        public void FetchInventory(LLUUID itemID)
+        /// <param name="ownerID">The inventory owner's UUID.</param>
+        public ICollection<InventoryItem> FetchInventory(ICollection<LLUUID> itemIDs, LLUUID ownerID)
+         {
+            return EndFetchInventory(BeginFetchInventory(itemIDs, ownerID, null, null));
+        }
+        public void Move(InventoryBase item, InventoryFolder newParent)
         {
-            List<LLUUID> list = new List<LLUUID>(1);
-            list.Add(itemID);
-            FetchInventory(list);
+            if (item is InventoryFolder)
+            {
+                MoveFolder(item.UUID, newParent.UUID);
+            }
+            else
+            {
+                MoveItem(item.UUID, newParent.UUID);
+            }
+        }
+        private void Move(Dictionary<InventoryBase, InventoryFolder> stuff)
+        {
+            Dictionary<LLUUID, LLUUID> itemsNewParents = new Dictionary<LLUUID, LLUUID>(stuff.Count);
+            Dictionary<LLUUID, LLUUID> foldersNewParents = new Dictionary<LLUUID, LLUUID>(stuff.Count);
+
+            foreach (KeyValuePair<InventoryBase, InventoryFolder> entry in stuff)
+            {
+                if (entry.Key is InventoryItem)
+                {
+                    itemsNewParents.Add(entry.Key.UUID, entry.Value.UUID);
+                }
+                else if (entry.Key is InventoryFolder)
+                {
+                    foldersNewParents.Add(entry.Key.UUID, entry.Value.UUID);
+                }
+            }
+            if (itemsNewParents.Count > 0)
+                MoveItems(itemsNewParents);
+
+            if (foldersNewParents.Count > 0)
+                MoveFolders(foldersNewParents);
         }
 
         /// <summary>
@@ -464,7 +499,7 @@ namespace libsecondlife
         /// 
         /// </summary>
         /// <param name="objects"></param>
-        public void Remove(List<InventoryBase> objects)
+        public void Remove(ICollection<InventoryBase> objects)
         {
             List<LLUUID> items = new List<LLUUID>(objects.Count);
             List<LLUUID> folders = new List<LLUUID>(objects.Count);
@@ -487,7 +522,7 @@ namespace libsecondlife
         /// </summary>
         /// <param name="items"></param>
         /// <param name="folders"></param>
-        public void Remove(List<LLUUID> items, List<LLUUID> folders)
+        public void Remove(ICollection<LLUUID> items, ICollection<LLUUID> folders)
         {
             if ((items == null && items.Count == 0) && (folders == null && folders.Count == 0))
                 return;
@@ -506,12 +541,18 @@ namespace libsecondlife
             else
             {
                 rem.ItemData = new RemoveInventoryObjectsPacket.ItemDataBlock[items.Count];
-                for (int i = 0; i < items.Count; ++i)
+                int index = 0;
+                foreach (LLUUID item in items)
                 {
-                    rem.ItemData[i] = new RemoveInventoryObjectsPacket.ItemDataBlock();
-                    rem.ItemData[i].ItemID = items[i];
+                    rem.ItemData[index] = new RemoveInventoryObjectsPacket.ItemDataBlock();
+                    rem.ItemData[index].ItemID = item;
                     // Update local copy
-                    _Store.RemoveNodeFor(_Store[items[i]]);
+                    lock (Store)
+                    {
+                        if (Store.Contains(item))
+                            Store.RemoveNodeFor(Store[item]);
+                    }
+                    ++index;
                 }
             }
 
@@ -525,12 +566,18 @@ namespace libsecondlife
             else
             {
                 rem.FolderData = new RemoveInventoryObjectsPacket.FolderDataBlock[folders.Count];
-                for (int i = 0; i < folders.Count; ++i)
+                int index = 0;
+                foreach (LLUUID folder in folders)
                 {
-                    rem.FolderData[i] = new RemoveInventoryObjectsPacket.FolderDataBlock();
-                    rem.FolderData[i].FolderID = folders[i];
+                    rem.FolderData[index] = new RemoveInventoryObjectsPacket.FolderDataBlock();
+                    rem.FolderData[index].FolderID = folder;
                     // Update local copy:
-                    _Store.RemoveNodeFor(_Store[folders[i]]);
+                    lock (Store)
+                    {
+                        if (Store.Contains(folder))
+                            Store.RemoveNodeFor(Store[folder]);
+                    }
+                    ++index;
                 }
             }
         }
@@ -682,32 +729,17 @@ namespace libsecondlife
             return objects;
         }
 
-        private class FindObjectsByPathState
-        {
-            public FindResult Result;
-            public LLUUID Folder;
-            public int Level;
-
-            public FindObjectsByPathState(FindResult result, LLUUID folder, int level)
-            {
-                Result = result;
-                Folder = folder;
-                Level = level;
-            }
-        }
-
         public List<InventoryBase> FindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly)
         {
-            IAsyncResult r = BeginFindObjectsByPath(baseFolder, path, refresh, firstOnly, null, null);
+            IAsyncResult r = BeginFindObjectsByPath(baseFolder, path, refresh, firstOnly, null, null, true);
             return EndFindObjects(r);
         }
         
-        public IAsyncResult BeginFindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState)
+        public IAsyncResult BeginFindObjectsByPath(LLUUID baseFolder, string[] path, bool refresh, bool firstOnly, AsyncCallback callback, object asyncState, bool recurse)
         {
             if (path.Length == 0)
                 throw new ArgumentException("Empty path is not supported");
-            
-            FindResult result = new FindResult(path, callback);
+            FindResult result = new FindResult(new Regex(String.Join("/",path)), recurse, callback);
             result.FirstOnly = firstOnly;
             result.AsyncState = asyncState;
             
@@ -802,9 +834,12 @@ namespace libsecondlife
         #endregion
 
         #region Folder Actions
-
-        public void RequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, bool recurse,
-            InventorySortOrder order)
+        public void RequestFolderContents(LLUUID folder, bool folders, bool items, bool recurse, InventorySortOrder order)
+        {
+            RequestFolderContents(folder, _Client.Network.AgentID, folders, items, recurse, order);
+        }
+                
+        public void RequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, bool recurse, InventorySortOrder order)
         {
             EndRequestFolderContents(BeginRequestFolderContents(folder, owner, folders, items, recurse, order, null, null));
         }
@@ -820,6 +855,7 @@ namespace libsecondlife
             return InternalFolderContentsRequest(folder, owner, result);
         }
 
+        #endregion
         /// <summary>
         /// Returns the UUID of the folder (category) that defaults to
         /// containing 'type'. The folder is not necessarily only for that
@@ -918,23 +954,67 @@ namespace libsecondlife
             _Client.Network.SendPacket(purge);
 
             // Update our local copy:
-            if (_Store.Contains(folder))
+            lock (Store)
             {
-                List<InventoryBase> contents = _Store.GetContents(folder);
-                foreach (InventoryBase obj in contents) {
-                    _Store.RemoveNodeFor(obj);
+                if (Store.Contains(folder))
+                {
+                    List<InventoryBase> contents = Store.GetContents(folder);
+                    foreach (InventoryBase obj in contents)
+                    {
+                        Store.RemoveNodeFor(obj);
+                    }
                 }
             }
         }
 
+        #region MoveFolders
+        public void MoveFolder(LLUUID folder, LLUUID newParent)
+        {
+            Dictionary<LLUUID,LLUUID> dict = new Dictionary<LLUUID,LLUUID>(1);
+            dict.Add(folder, newParent);
+            MoveFolders(dict);
+        }
+ 
+        /// <summary>
+        /// Moves the folders, the keys in the Dictionary parameter,
+        /// to a new parents, the value of that folder's key.
+        /// </summary>
+        /// <param name="FoldersNewParents"></param>
+        private void MoveFolders(Dictionary<LLUUID, LLUUID> FoldersNewParents)
+        {
+            lock (Store)
+            {
+                foreach (KeyValuePair<LLUUID, LLUUID> entry in FoldersNewParents)
+                {
+                    if (Store.Contains(entry.Key))
+                    {
+                        InventoryBase inv = Store[entry.Key];
+                        inv.ParentUUID = entry.Value;
+                        Store.UpdateNodeFor(inv);
+                    }
+                }
+            }
+            //TODO: Test if this truly supports multiple-folder move.
+            MoveInventoryFolderPacket move = new MoveInventoryFolderPacket();
+            move.AgentData.AgentID = _Client.Network.AgentID;
+            move.AgentData.SessionID = _Client.Network.SessionID;
+            move.AgentData.Stamp = false; // ??
+            move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[FoldersNewParents.Count];
+            int index = 0;
+            foreach (KeyValuePair<LLUUID, LLUUID> folder in FoldersNewParents) {
+                MoveInventoryFolderPacket.InventoryDataBlock block = new MoveInventoryFolderPacket.InventoryDataBlock();
+                block.FolderID = folder.Key;
+                block.ParentID = folder.Value;
+                move.InventoryData[index++] = block;
+            }
+            _Client.Network.SendPacket(move);
+        }
+        #endregion
+
         public void RemoveFolder(LLUUID folder)
         {
-            List<LLUUID> folders = new List<LLUUID>(1);
-            folders.Add(folder);
-            Remove(null, folders);
+            Remove(null, new LLUUID[] { folder });
         }
-
-        #endregion Folder Actions
 
         #region Item Actions
 
@@ -1047,16 +1127,209 @@ namespace libsecondlife
             _Client.Network.SendPacket(copy);
         }
 
-        public void MoveItem(LLUUID itemID, LLUUID parentID, string newName)
-        {
-            throw new NotImplementedException();
-        }
-
         public void RemoveItem(LLUUID item)
         {
-            List<LLUUID> items = new List<LLUUID>(1);
-            items.Add(item);
-            Remove(items, null);
+            Remove(null, new LLUUID[] { item });
+        }
+        
+        #region CopyItems
+        private Dictionary<uint, CopyResult> CopyRequests = new Dictionary<uint, CopyResult>();
+        private static Random rand = new Random();
+
+        public IAsyncResult BeginCopyItem(LLUUID item, LLUUID targetFolder, string newName, AsyncCallback callback, object asyncState)
+        {
+            return BeginCopyItem(item, targetFolder, newName, _Client.Network.AgentID, callback, asyncState);
+        }
+
+        public IAsyncResult BeginCopyItem(LLUUID item, LLUUID targetFolder, string newName, LLUUID oldOwnerID, AsyncCallback callback, object asyncState)
+        {
+            LLUUID[] items = new LLUUID[] { item };
+            LLUUID[] targetFolders = new LLUUID[] { targetFolder };
+            string[] newNames = new string[] { newName };
+            return BeginCopyItems(items, targetFolders, newNames, oldOwnerID, callback, asyncState);
+        }
+
+        private IAsyncResult BeginCopyItems(LLUUID[] items, LLUUID[] targetFolders, string[] newNames, LLUUID oldOwnerID, AsyncCallback callback, object asyncState)
+        {
+            if (items.Length != targetFolders.Length)
+                throw new ArgumentException("Item IDs array not the same length as targetFolders array.");
+
+            CopyResult result = new CopyResult(callback, items.Length);
+            result.AsyncState = asyncState;
+            result.ExpectedCount = items.Length;
+            if (items.Length == 0)
+            {
+                result.CompletedSynchronously = true;
+                result.IsCompleted = true;
+                return result;
+            }
+
+            uint callbackID = (uint)rand.Next();
+            lock (CopyRequests)
+            {
+                CopyRequests.Add(callbackID, result);
+            }
+
+            CopyInventoryItemPacket copy = new CopyInventoryItemPacket();
+            copy.AgentData.AgentID = _Client.Network.AgentID;
+            copy.AgentData.SessionID = _Client.Network.SessionID;
+            copy.InventoryData = new CopyInventoryItemPacket.InventoryDataBlock[items.Length];
+            for (int i = 0; i < items.Length; ++i)
+            {
+                copy.InventoryData[i] = new CopyInventoryItemPacket.InventoryDataBlock();
+                copy.InventoryData[i].NewFolderID = targetFolders[i];
+                copy.InventoryData[i].OldAgentID = oldOwnerID;
+                copy.InventoryData[i].OldItemID = items[i];
+                if (newNames != null && i < newNames.Length && newNames[i] != null)
+                    copy.InventoryData[i].NewName = Helpers.StringToField(newNames[i]);
+                copy.InventoryData[i].CallbackID = callbackID;
+            }
+            _Client.Network.SendPacket(copy);
+
+            return result;
+        }
+
+        public InventoryItem[] EndCopyItems(IAsyncResult result)
+        {
+            if (!(result is CopyResult))
+                throw new ArgumentException("Argument to EndCopyItems must be return value of BeginCopyItems.");
+
+            CopyResult copy = result as CopyResult;
+            result.AsyncWaitHandle.WaitOne();
+            return copy.Result;
+        }
+
+        public InventoryItem[] CopyItem(LLUUID item, LLUUID targetFolder, string newName)
+        {
+            return CopyItem(item, targetFolder, newName, _Client.Network.AgentID);
+        }
+
+        public InventoryItem[] CopyItem(LLUUID item, LLUUID targetFolder, string newName, LLUUID oldOwnerID)
+        {
+            return CopyItems(new LLUUID[] { item }, new LLUUID[] { targetFolder }, new string[] { newName }, oldOwnerID);
+        }
+
+        private InventoryItem[] CopyItems(LLUUID[] items, LLUUID[] targetFolders, string[] newNames, LLUUID oldOwnerID)
+        {
+            return EndCopyItems(BeginCopyItems(items, targetFolders, newNames, oldOwnerID, null, null));
+        }
+
+        #endregion
+        
+        #region MoveItems
+        
+        public void MoveItem(LLUUID item, LLUUID folder)
+        {
+            Dictionary<LLUUID, LLUUID> temp = new Dictionary<LLUUID, LLUUID>(1);
+            temp.Add(item, folder);
+            MoveItems(temp);
+        }
+        private void MoveItems(Dictionary<LLUUID, LLUUID> itemsNewParents)
+         {
+            lock (Store)
+            {
+                foreach (KeyValuePair<LLUUID, LLUUID> entry in itemsNewParents)
+                {
+                    if (Store.Contains(entry.Key))
+                    {
+                        InventoryBase inv = Store[entry.Key];
+                        inv.ParentUUID = entry.Value;
+                        Store.UpdateNodeFor(inv);
+                    }
+                }
+            }
+            MoveInventoryItemPacket move = new MoveInventoryItemPacket();
+            move.AgentData.AgentID = _Client.Network.AgentID;
+            move.AgentData.SessionID = _Client.Network.SessionID;
+            move.AgentData.Stamp = false; // ???
+            int index = 0;
+            foreach (KeyValuePair<LLUUID, LLUUID> entry in itemsNewParents)
+            {
+                MoveInventoryItemPacket.InventoryDataBlock block = new MoveInventoryItemPacket.InventoryDataBlock();
+                block.ItemID = entry.Key;
+                block.FolderID = entry.Value;
+                move.InventoryData[index++] = block;
+            }
+            _Client.Network.SendPacket(move);
+         }
+        #endregion
+        
+        private void UpdateItem(InventoryItem item, LLUUID assetTransactionID)
+        {
+            UpdateInventoryItemPacket update = new UpdateInventoryItemPacket();
+            update.AgentData.AgentID = _Client.Network.AgentID;
+            update.AgentData.SessionID = _Client.Network.SessionID;
+            update.AgentData.TransactionID = assetTransactionID;
+            update.InventoryData = new UpdateInventoryItemPacket.InventoryDataBlock[1];
+            UpdateInventoryItemPacket.InventoryDataBlock block = new UpdateInventoryItemPacket.InventoryDataBlock();
+            block.BaseMask = (uint)item.Permissions.BaseMask;
+            block.CRC = ItemCRC(item);
+            block.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+            block.CreatorID = item.CreatorID;
+            block.Description = Helpers.StringToField(item.Description);
+            block.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            block.Flags = item.Flags;
+            block.FolderID = item.ParentUUID;
+            block.GroupID = item.GroupID;
+            block.GroupMask = (uint)item.Permissions.GroupMask;
+            block.GroupOwned = item.GroupOwned;
+            block.InvType = (sbyte)item.InventoryType;
+            block.ItemID = item.UUID;
+            block.Name = Helpers.StringToField(item.Name);
+            block.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+            block.OwnerID = item.OwnerID;
+            block.OwnerMask = (uint)item.Permissions.OwnerMask;
+            block.SalePrice = item.SalePrice;
+            block.SaleType = (byte)item.SaleType;
+            block.TransactionID = assetTransactionID;
+            block.Type = (sbyte)item.AssetType;
+            update.InventoryData[0] = block;
+
+            _Client.Network.SendPacket(update);
+        }
+
+
+        public void UpdateItem(InventoryItem item)
+        {
+            UpdateItems(new InventoryItem[] { item });
+        }
+
+        private void UpdateItems(ICollection<InventoryItem> items)
+        {
+            UpdateInventoryItemPacket update = new UpdateInventoryItemPacket();
+            update.AgentData.AgentID = _Client.Network.AgentID;
+            update.AgentData.SessionID = _Client.Network.SessionID;
+            update.AgentData.TransactionID = LLUUID.Zero;
+
+            update.InventoryData = new UpdateInventoryItemPacket.InventoryDataBlock[items.Count];
+            int index = 0;
+            foreach (InventoryItem item in items)
+            {
+                UpdateInventoryItemPacket.InventoryDataBlock block = new UpdateInventoryItemPacket.InventoryDataBlock();
+                update.InventoryData[index++] = block;
+                block.BaseMask = (uint)item.Permissions.BaseMask;
+                block.CRC = ItemCRC(item);
+                block.CreationDate = (int)Helpers.DateTimeToUnixTime(item.CreationDate);
+                block.CreatorID = item.CreatorID;
+                block.Description = Helpers.StringToField(item.Description);
+                block.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+                block.Flags = item.Flags;
+                block.FolderID = item.ParentUUID;
+                block.GroupID = item.GroupID;
+                block.GroupMask = (uint)item.Permissions.GroupMask;
+                block.GroupOwned = item.GroupOwned;
+                block.InvType = (sbyte)item.InventoryType;
+                block.ItemID = item.UUID;
+                block.Name = Helpers.StringToField(item.Name);
+                block.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+                block.OwnerID = item.OwnerID;
+                block.OwnerMask = (uint)item.Permissions.OwnerMask;
+                block.SalePrice = item.SalePrice;
+                block.SaleType = (byte)item.SaleType;
+                block.TransactionID = LLUUID.Zero;
+                block.Type = (sbyte)item.AssetType;
+            }   
+            _Client.Network.SendPacket(update);
         }
 
         public void GiveItem(LLUUID itemID, string itemName, AssetType assetType, LLUUID recipient, bool doEffect)
@@ -1188,10 +1461,8 @@ namespace libsecondlife
             return _InventoryTypeNames[(int)type];
         }
 
-        internal void InitializeRootNode(LLUUID rootFolderID)
-        {
-
-        }
+        [Obsolete("InventoryManager initilizes itself via its OnLoginResponce callback.")]
+        internal void InitializeRootNode(LLUUID rootFolderID) { }
 
         #region Private Helper Functions
 
@@ -1321,6 +1592,38 @@ namespace libsecondlife
             }
             return ret;
         }
+        
+        public static uint ItemCRC(InventoryItem iitem)
+        {
+            uint CRC = 0;
+
+            /* IDs */
+            CRC += iitem.AssetUUID.CRC(); // AssetID
+            CRC += iitem.ParentUUID.CRC(); // FolderID
+            CRC += iitem.UUID == null ? LLUUID.Zero.CRC() : iitem.UUID.CRC(); // ItemID
+
+            /* Permission stuff */
+            CRC += iitem.CreatorID.CRC(); // CreatorID
+            CRC += iitem.OwnerID.CRC(); // OwnerID
+            CRC += iitem.GroupID.CRC(); // GroupID
+
+            /* CRC += another 4 words which always seem to be zero -- unclear if this is a LLUUID or what */
+            CRC += (uint)iitem.Permissions.OwnerMask; //owner_mask;      // Either owner_mask or next_owner_mask may need to be
+            CRC += (uint)iitem.Permissions.NextOwnerMask; //next_owner_mask; // switched with base_mask -- 2 values go here and in my
+            CRC += (uint)iitem.Permissions.EveryoneMask; //everyone_mask;   // study item, the three were identical.
+            CRC += (uint)iitem.Permissions.GroupMask; //group_mask;
+
+            /* The rest of the CRC fields */
+            CRC += iitem.Flags; // Flags
+            CRC += (uint)iitem.InventoryType; // InvType
+            CRC += (uint)iitem.AssetType; // Type 
+            CRC += (uint)Helpers.DateTimeToUnixTime(iitem.CreationDate); // CreationDate
+            CRC += (uint)iitem.SalePrice;    // SalePrice
+            CRC += (uint)((uint)iitem.SaleType * 0x07073096); // SaleType
+
+            return CRC;
+        }
+
         #endregion Private Helper Functions
 
         #region Callbacks
@@ -1415,6 +1718,7 @@ namespace libsecondlife
             }
 
             parentFolder.Version = reply.AgentData.Version;
+            // FIXME: reply.AgentData.Descendants is not parentFolder.DescendentCount if we didnt request items and folders.
             parentFolder.DescendentCount = reply.AgentData.Descendents;
 
             if (OnInventoryFolderUpdated != null)
@@ -1449,6 +1753,7 @@ namespace libsecondlife
                 item.AssetType = (AssetType)dataBlock.Type;
                 item.AssetUUID = dataBlock.AssetID;
                 item.CreationDate = DateTime.FromBinary(dataBlock.CreationDate);
+                item.CreatorID = dataBlock.CreatorID;
                 item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
                 item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
@@ -1467,6 +1772,16 @@ namespace libsecondlife
                 try {
                     _Store[item.UUID] = item;
                 } catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                lock (CopyRequests) 
+                {
+                    CopyResult result;
+                    if (CopyRequests.TryGetValue(dataBlock.CallbackID, out result))
+                    {
+                        result.AddItem(item);
+                        if (result.IsCompleted)
+                            CopyRequests.Remove(dataBlock.CallbackID);
+                    }
+                }
                 ItemCreatedCallback callback;
                 if (_ItemCreatedCallbacks.TryGetValue(dataBlock.CallbackID, out callback))
                 {
@@ -1533,6 +1848,7 @@ namespace libsecondlife
                     item.AssetType = (AssetType)dataBlock.Type;
                     if (dataBlock.AssetID != LLUUID.Zero) item.AssetUUID = dataBlock.AssetID;
                     item.CreationDate = DateTime.FromBinary(dataBlock.CreationDate);
+                    item.CreatorID = dataBlock.CreatorID;
                     item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
                     item.Flags = dataBlock.Flags;
                     item.GroupID = dataBlock.GroupID;
@@ -1579,6 +1895,7 @@ namespace libsecondlife
                 item.AssetType = (AssetType)dataBlock.Type;
                 item.AssetUUID = dataBlock.AssetID;
                 item.CreationDate = DateTime.FromBinary(dataBlock.CreationDate);
+                item.CreatorID = dataBlock.CreatorID;
                 item.Description = Helpers.FieldToUTF8String(dataBlock.Description);
                 item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
@@ -1720,101 +2037,122 @@ namespace libsecondlife
             }
         }
         
-        void Network_OnLoginResponce(bool loginSuccess, bool redirect, string message, string reason, NetworkManager.LoginResponseData replyData)
+        private void Network_OnLoginResponce(bool loginSuccess, bool redirect, string message, string reason, NetworkManager.LoginResponseData replyData)
         {
-            _Client.DebugLog("Received OnLoginResponce, Inventory root is " + replyData.InventoryRoot);
-            InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
-            rootFolder.Name = String.Empty;
-            rootFolder.ParentUUID = LLUUID.Zero;
-            Store.RootFolder = rootFolder;
-            foreach (InventoryFolder folder in replyData.InventorySkeleton)
-                Store.UpdateNodeFor(folder);
-        }
-
-        #endregion Callbacks
-    }
-
-    class FindResult : IAsyncResult
-    {
-        public List<InventoryBase> Result;
-        public int FoldersWaiting;
-        public bool FirstOnly;
-
-        private AsyncCallback callback;
-        private Regex regex;
-        private string[] path;
-        private bool recurse;
-        private AutoResetEvent waitHandle;
-        private bool complete;
-        private bool sync;
-        private object asyncstate;
-
-        #region Properties
-
-        public bool Recurse { get { return recurse; } }
-        public Regex Regex { get { return regex; } }
-        public string[] Path { get { return path; } }
-        public AsyncCallback Callback { get { return callback; } }
-
-        #region IAsyncResult Members
-
-        public object AsyncState
-        {
-            get { return asyncstate; }
-            set { asyncstate = value; }
-        }
-
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return waitHandle; }
-        }
-
-        public bool CompletedSynchronously
-        {
-            get { return sync; }
-            set { sync = value; }
-        }
-
-        public bool IsCompleted
-        {
-            get { return complete; }
-            set
-            {
-                if (value)
-                {
-                    waitHandle.Set();
-                    if (callback != null)
-                    {
-                        callback(this);
-                    }
-                }
-                complete = value;
+            if ( loginSuccess ) {
+                _Client.DebugLog("Received OnLoginResponce, Inventory root is " + replyData.InventoryRoot);
+                InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
+                rootFolder.Name = String.Empty;
+                rootFolder.ParentUUID = LLUUID.Zero;
+                Store.RootFolder = rootFolder;
+                foreach (InventoryFolder folder in replyData.InventorySkeleton)
+                    Store.UpdateNodeFor(folder);
+            } else {
+                _Client.DebugLog("Login failed, inventory unavailable.");
             }
         }
 
+        #endregion Callbacks
+        
+        private class FindObjectsByPathState
+        {
+            public FindResult Result;
+            public LLUUID Folder;
+            public int Level;
+
+            public FindObjectsByPathState(FindResult result, LLUUID folder, int level)
+            {
+                Result = result;
+                Folder = folder;
+                Level = level;
+            }
+        }
+    }
+
+    #region AsyncResult classes
+    class InventoryResultBase : IAsyncResult
+    {
+        private AsyncCallback Callback;
+        public InventoryResultBase(AsyncCallback callback)
+        {
+            Callback = callback;
+        }
+
+        private string[] path;
+        
+        public string[] Path { get { return path; } }
+
+        #region Properties
+
+        #region IAsyncResult Members
+        
+        
+        private object _AsyncState;
+        public object AsyncState
+        {
+            get { return _AsyncState; }
+            set { _AsyncState = value; }
+        }
+        private ManualResetEvent _AsyncWaitHandle;
+        public WaitHandle AsyncWaitHandle
+        {
+            get { return _AsyncWaitHandle; }
+        }
+        private bool _CompletedSynchronously = false;
+        public bool CompletedSynchronously
+        {
+            get { return _CompletedSynchronously; }
+            set { _CompletedSynchronously = value; }
+        }
+
+        private bool _IsCompleted = false;
+        public virtual bool IsCompleted
+         {
+            get { return _IsCompleted; }
+             set
+             {
+                if (value && !_IsCompleted)
+                 {
+                    _AsyncWaitHandle.Set();
+                    if (Callback != null)
+                        Callback(this);
+                 }
+                _IsCompleted = value;
+             }
+         }
         #endregion
 
         #endregion Properties
+    }
+
+    class FindResult : InventoryResultBase
+    {
+        public List<InventoryBase> Result;
+
+        public bool Recurse
+        {
+            get { return recurse; }
+        }
+
+        public Regex Regex
+        {
+            get { return regex; }
+        }
+        public int FoldersWaiting;
+        public bool FirstOnly;
+        private Regex regex;
+        private bool recurse;
 
         public FindResult(Regex regex, bool recurse, AsyncCallback callback)
+            : base (callback)
         {
-            this.waitHandle = new AutoResetEvent(false);
-            this.callback = callback;
             this.recurse = recurse;
             this.regex = regex;
             this.Result = new List<InventoryBase>();
         }
-
-        public FindResult(string[] path, AsyncCallback callback)
-        {
-            this.waitHandle = new AutoResetEvent(false);
-            this.callback = callback;
-            this.path = path;
-            this.Result = new List<InventoryBase>();
-        }
     }
 
-    class DescendantsResult : IAsyncResult
+    class DescendantsResult : InventoryResultBase
     {
         public bool Folders = true;
         public bool Items = true;
@@ -1822,67 +2160,19 @@ namespace libsecondlife
         public InventorySortOrder SortOrder = InventorySortOrder.ByName;
         public DescendantsResult Parent;
 
-        private AsyncCallback _Callback;
-        private ManualResetEvent _AsyncWaitHandle;
-        private object _AsyncState;
-        private bool _IsCompleted;
         private List<DescendantsResult> _ChildrenWaiting = new List<DescendantsResult>();
 
         #region Properties
 
         #region IAsyncResult Members
 
-        public object AsyncState
-        {
-            get { return _AsyncState; }
-            set { _AsyncState = value; }
-        }
-
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return _AsyncWaitHandle; }
-        }
-
-        public bool CompletedSynchronously
-        {
-            get { return false; }
-        }
-
-        public bool IsCompleted
-        {
-            get { return _IsCompleted; }
-            set
-            {
-                _IsCompleted = value;
-                if (value)
-                {
-                    if (_ChildrenWaiting.Count == 0)
-                    {
-                        if (Parent != null)
-                        {
-                            Parent.ChildComplete(this);
-                        }
-                        else
-                        {
-                            _AsyncWaitHandle.Set();
-                            if (_Callback != null)
-                                _Callback(this);
-                        }
-                    }
-                }
-            }
-        }
-
         #endregion
 
         #endregion Properties
 
-        public DescendantsResult(AsyncCallback callback)
-        {
-            _Callback = callback;
-            _AsyncWaitHandle = new ManualResetEvent(false);
-        }
-
+        public DescendantsResult(AsyncCallback callback) 
+            : base(callback) { }
+        
         public void AddChild(DescendantsResult child)
         {
             lock (_ChildrenWaiting)
@@ -1902,67 +2192,55 @@ namespace libsecondlife
             }
         }
     }
-    public class FetchResult : IAsyncResult {
+
+    class FetchResult : InventoryResultBase {
         private Dictionary<LLUUID, object> RequestIDs;
-        private Dictionary<InventoryBase, object> _CompletedItems;
-        public ICollection<InventoryBase> CompletedItems {
+        private Dictionary<InventoryItem, object> _CompletedItems;
+        public ICollection<InventoryItem> CompletedItems {
             get { return _CompletedItems.Keys; }
         }
 
-        private AsyncCallback Callback;
-        public FetchResult(List<LLUUID> requestIDs, AsyncCallback callback) {
-            Callback = callback;
-            _CompletedItems = new Dictionary<InventoryBase, object>(requestIDs.Count);
+        public FetchResult(ICollection<LLUUID> requestIDs, AsyncCallback callback) 
+            : base(callback)
+         {
+            _CompletedItems = new Dictionary<InventoryItem, object>(requestIDs.Count);
 
             RequestIDs = new Dictionary<LLUUID, object>(requestIDs.Count);
             foreach (LLUUID id in requestIDs)
                 RequestIDs[id] = null;
-        }
+         }
 
-        public void ItemCompleted(InventoryBase item) {
+        private ManualResetEvent _AsyncWaitHandle = new ManualResetEvent(false);
+        
+        public void ItemCompleted(InventoryItem item) {
             if (RequestIDs.ContainsKey(item.UUID))
                 _CompletedItems[item] = null;
             if (CompletedItems.Count == RequestIDs.Count) {
                 IsCompleted = true;
             }
         }
-
-        #region IAsyncResult Members
-        private object _AsyncState;
-        public object  AsyncState
-        {
-	        get { return _AsyncState; }
-            set { _AsyncState = value; }
-        }
-
-        private ManualResetEvent _AsyncWaitHandle = new ManualResetEvent(false);
-        public WaitHandle  AsyncWaitHandle
-        {
-	        get { return _AsyncWaitHandle; }
-        }
-
-        private bool _CompletedSynchronously = false;
-        public bool  CompletedSynchronously
-        {
-	        get { return _CompletedSynchronously; }
-            set { _CompletedSynchronously = value; }
-        }
-
-
-        private bool _IsCompleted = false;
-        public bool  IsCompleted
-        {
-	        get { return _IsCompleted; }
-            set {
-                if (value && !_IsCompleted) {
-                    _AsyncWaitHandle.Set();
-                    if (Callback != null)
-                        Callback(this);
-                }
-                _IsCompleted = value;
-            }
-        }
-
-        #endregion
     }
+
+    class CopyResult : InventoryResultBase {
+        public int ExpectedCount;
+        public InventoryItem[] Result
+         {
+            get { return _Result.ToArray(); }
+         }
+         private List<InventoryItem> _Result;
+        public CopyResult(AsyncCallback callback, int expectedItemCount)
+            : base(callback) 
+         {
+            _Result = new List<InventoryItem>(expectedItemCount);
+            ExpectedCount = expectedItemCount;
+         }
+
+        public void AddItem(InventoryItem item)
+        {
+            _Result.Add(item);
+            if (_Result.Count == ExpectedCount)
+                IsCompleted = true;
+        }
+     }
+    #endregion
 }
