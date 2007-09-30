@@ -1504,7 +1504,10 @@ namespace libsecondlife
 
         private void EndRequestFolderContents(IAsyncResult result)
         {
-            result.AsyncWaitHandle.WaitOne();
+            if (!(result is DescendantsResult))
+                throw new ArgumentException("result parameter must be the return value of InventoryManager.BeginRequestFolderContents");
+            DescendantsResult req = result as DescendantsResult;
+            req.AsyncWaitHandle.WaitOne();
         }
 
         private DescendantsResult InternalFolderContentsRequest(LLUUID folder, LLUUID owner, DescendantsResult parameters)
@@ -1570,7 +1573,13 @@ namespace libsecondlife
                             }
                         }
                         if (done)
-                            result.IsCompleted = true;
+                        {
+                             result.IsCompleted = true;
+                            if (result.Parent != null)
+                            {
+                                result.Parent.ChildComplete(result);
+                            }
+                        }
                     }
                     else
                     {
@@ -2073,10 +2082,15 @@ namespace libsecondlife
     class InventoryResultBase : IAsyncResult
     {
         private AsyncCallback Callback;
-        public InventoryResultBase(AsyncCallback callback)
-        {
-            Callback = callback;
+         public InventoryResultBase(AsyncCallback callback)
+         {
+            Callback = callback;            
         }
+        public InventoryResultBase(AsyncCallback callback, ManualResetEvent waitHandle)
+        {
+             Callback = callback;
+            _AsyncWaitHandle = waitHandle;
+         }
 
         private string[] path;
         
@@ -2171,7 +2185,7 @@ namespace libsecondlife
         #endregion Properties
 
         public DescendantsResult(AsyncCallback callback) 
-            : base(callback) { }
+            : base(callback, new ManualResetEvent(false)) {}
         
         public void AddChild(DescendantsResult child)
         {
@@ -2188,7 +2202,13 @@ namespace libsecondlife
             {
                 _ChildrenWaiting.Remove(child);
                 if (_ChildrenWaiting.Count == 0)
-                    IsCompleted = true;
+                {
+                     IsCompleted = true;
+                    if (Parent != null)
+                    {
+                        Parent.ChildComplete(this);
+                    }
+                }
             }
         }
     }
