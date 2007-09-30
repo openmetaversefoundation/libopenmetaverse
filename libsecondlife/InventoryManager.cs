@@ -1129,7 +1129,7 @@ namespace libsecondlife
 
         public void RemoveItem(LLUUID item)
         {
-            Remove(null, new LLUUID[] { item });
+					Remove(new LLUUID[] { item },null);
         }
         
         #region CopyItems
