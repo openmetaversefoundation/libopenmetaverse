@@ -388,7 +388,7 @@ namespace libsecondlife
             _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
             // Watch for inventory given to us through instant message
             _Client.Self.OnInstantMessage += new MainAvatar.InstantMessageCallback(Self_OnInstantMessage);
-            _Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponce), new string[] {"inventory-root", "inventory-skeleton", "inventory-lib-root", "inventory-lib-owner", "inventory-skel-lib"} );
+            _Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse), new string[] {"inventory-root", "inventory-skeleton", "inventory-lib-root", "inventory-lib-owner", "inventory-skel-lib"} );
         }
 
         #region File & Folder Public Methods
@@ -1129,7 +1129,7 @@ namespace libsecondlife
 
         public void RemoveItem(LLUUID item)
         {
-					Remove(new LLUUID[] { item },null);
+            Remove(new LLUUID[] { item },null);
         }
         
         #region CopyItems
@@ -1461,7 +1461,7 @@ namespace libsecondlife
             return _InventoryTypeNames[(int)type];
         }
 
-        [Obsolete("InventoryManager initilizes itself via its OnLoginResponce callback.")]
+        [Obsolete("InventoryManager initilizes itself via its OnLoginResponse callback.")]
         internal void InitializeRootNode(LLUUID rootFolderID) { }
 
         #region Private Helper Functions
@@ -2046,10 +2046,10 @@ namespace libsecondlife
             }
         }
         
-        private void Network_OnLoginResponce(bool loginSuccess, bool redirect, string message, string reason, NetworkManager.LoginResponseData replyData)
+        private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason, NetworkManager.LoginResponseData replyData)
         {
             if ( loginSuccess ) {
-                _Client.DebugLog("Received OnLoginResponce, Inventory root is " + replyData.InventoryRoot);
+                _Client.DebugLog("Received OnLoginResponse, Inventory root is " + replyData.InventoryRoot);
                 InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
                 rootFolder.Name = String.Empty;
                 rootFolder.ParentUUID = LLUUID.Zero;
@@ -2082,15 +2082,15 @@ namespace libsecondlife
     class InventoryResultBase : IAsyncResult
     {
         private AsyncCallback Callback;
-         public InventoryResultBase(AsyncCallback callback)
-         {
+        public InventoryResultBase(AsyncCallback callback)
+        {
             Callback = callback;            
         }
         public InventoryResultBase(AsyncCallback callback, ManualResetEvent waitHandle)
         {
              Callback = callback;
             _AsyncWaitHandle = waitHandle;
-         }
+        }
 
         private string[] path;
         
@@ -2121,19 +2121,19 @@ namespace libsecondlife
 
         private bool _IsCompleted = false;
         public virtual bool IsCompleted
-         {
+        {
             get { return _IsCompleted; }
-             set
-             {
+            set
+            {
                 if (value && !_IsCompleted)
-                 {
+                {
                     _AsyncWaitHandle.Set();
                     if (Callback != null)
                         Callback(this);
-                 }
+                }
                 _IsCompleted = value;
-             }
-         }
+            }
+        }
         #endregion
 
         #endregion Properties
@@ -2221,7 +2221,7 @@ namespace libsecondlife
         }
 
         public FetchResult(ICollection<LLUUID> requestIDs, AsyncCallback callback) 
-            : base(callback)
+            : base(callback, new ManualResetEvent(false))
          {
             _CompletedItems = new Dictionary<InventoryItem, object>(requestIDs.Count);
 
@@ -2230,15 +2230,17 @@ namespace libsecondlife
                 RequestIDs[id] = null;
          }
 
-        private ManualResetEvent _AsyncWaitHandle = new ManualResetEvent(false);
-        
-        public void ItemCompleted(InventoryItem item) {
-            if (RequestIDs.ContainsKey(item.UUID))
-                _CompletedItems[item] = null;
-            if (CompletedItems.Count == RequestIDs.Count) {
-                IsCompleted = true;
+        public void ItemCompleted(InventoryItem item) 
+        {
+             if (RequestIDs.ContainsKey(item.UUID))
+            {
+                 _CompletedItems[item] = null;
             }
-        }
+            if (CompletedItems.Count == RequestIDs.Count) 
+            {
+                 IsCompleted = true;
+             }
+         }
     }
 
     class CopyResult : InventoryResultBase {

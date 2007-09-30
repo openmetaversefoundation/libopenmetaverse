@@ -169,7 +169,7 @@ namespace libsecondlife
                         // Fetch the parent
                         List<LLUUID> fetchreq = new List<LLUUID>(1);
                         fetchreq.Add(item.ParentUUID);
-                        Manager.FetchInventory(fetchreq); // we cant fetch folder data! :-O
+                        //Manager.FetchInventory(fetchreq); // we cant fetch folder data! :-O
                     }
                 }
 
