@@ -855,7 +855,6 @@ namespace libsecondlife
             return InternalFolderContentsRequest(folder, owner, result);
         }
 
-        #endregion
         /// <summary>
         /// Returns the UUID of the folder (category) that defaults to
         /// containing 'type'. The folder is not necessarily only for that
@@ -1015,6 +1014,7 @@ namespace libsecondlife
         {
             Remove(null, new LLUUID[] { folder });
         }
+        #endregion
 
         #region Item Actions
 
@@ -1242,12 +1242,17 @@ namespace libsecondlife
             move.AgentData.AgentID = _Client.Network.AgentID;
             move.AgentData.SessionID = _Client.Network.SessionID;
             move.AgentData.Stamp = false; // ???
+
+            move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[itemsNewParents.Count];
             int index = 0;
             foreach (KeyValuePair<LLUUID, LLUUID> entry in itemsNewParents)
             {
                 MoveInventoryItemPacket.InventoryDataBlock block = new MoveInventoryItemPacket.InventoryDataBlock();
                 block.ItemID = entry.Key;
                 block.FolderID = entry.Value;
+                //maybe we want to restructure this method to take in new names,
+                //then it would work as a rename as well.
+                block.NewName = new byte[0];
                 move.InventoryData[index++] = block;
             }
             _Client.Network.SendPacket(move);
@@ -2054,6 +2059,7 @@ namespace libsecondlife
                 rootFolder.Name = String.Empty;
                 rootFolder.ParentUUID = LLUUID.Zero;
                 Store.RootFolder = rootFolder;
+
                 foreach (InventoryFolder folder in replyData.InventorySkeleton)
                     Store.UpdateNodeFor(folder);
             } else {
