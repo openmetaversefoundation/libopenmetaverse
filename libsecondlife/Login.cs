@@ -609,6 +609,9 @@ namespace libsecondlife
             {
                 loginSuccess = true;
 
+                // FIXME: No information should be set here, everything can take care of itself
+                // through login reply handlers
+
                 // Remove the quotes around our first name.
                 if (reply.first_name[0] == '"')
                     reply.first_name = reply.first_name.Remove(0, 1);
@@ -672,10 +675,6 @@ namespace libsecondlife
 
                 #endregion Critical Information
 
-                // Inventory:
-                if (reply.inventory_root != null && reply.inventory_root.Length > 0 && reply.inventory_root[0].folder_id != null)
-                    Client.Inventory.InitializeRootNode(reply.inventory_root[0].folder_id);
-
                 // Buddies:
                 if (reply.buddy_list != null)
                 {
@@ -687,8 +686,8 @@ namespace libsecondlife
                 }
 
                 // Misc:
-                uint timestamp = (uint)reply.seconds_since_epoch;
-                DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
+                //uint timestamp = (uint)reply.seconds_since_epoch;
+                //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
 
                 // Unhandled:
                 // reply.gestures
@@ -698,10 +697,6 @@ namespace libsecondlife
                 // reply.ui_config
                 // reply.login_flags
                 // reply.global_textures
-                // reply.inventory_lib_root
-                // reply.inventory_lib_owner
-                // reply.inventory_skeleton
-                // reply.inventory_skel_lib
                 // reply.initial_outfit
             }
 

@@ -131,7 +131,8 @@ namespace importprimscript
                 prim.PCode = ObjectManager.PCode.Prim;
                 prim.Material = LLObject.MaterialType.Wood;
                 prim.PathScaleY = 0.5f;
-                prim.PathCurve = 32;
+                prim.PathCurve = LLObject.PathCurve.Circle;
+                prim.ProfileCurve = LLObject.ProfileCurve.ProfileCircle;
 
                 // Rez this prim
                 CurrentSculpt = sculpties[i];

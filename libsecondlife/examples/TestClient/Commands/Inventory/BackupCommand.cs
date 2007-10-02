@@ -233,9 +233,9 @@ namespace libsecondlife.TestClient
 
             lock (CurrentDownloads) CurrentDownloads.Clear();
 
-            // this call blocks
-            Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, 
-                true, true, false, InventorySortOrder.ByName);
+            // FIXME:
+            //Client.Inventory.RequestFolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, 
+            //    true, true, false, InventorySortOrder.ByName);
 
             DirectoryInfo di = new DirectoryInfo(args[1]);
 
@@ -252,9 +252,9 @@ namespace libsecondlife.TestClient
         {
             StringBuilder sbRequests = new StringBuilder();
 
-            // blocking call
-            Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Network.AgentID, true, true, false, 
-                InventorySortOrder.ByName);
+            // FIXME:
+            //Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Network.AgentID, true, true, false, 
+            //    InventorySortOrder.ByName);
 
             // first scan this folder for text
             foreach (InventoryNode iNode in folder.Nodes.Values)

@@ -1320,8 +1320,8 @@ namespace libsecondlife
                 LLObject.ObjectData data = new LLObject.ObjectData();
                 data.State = block.State;
                 data.Material = (LLObject.MaterialType)block.Material;
-                data.PathCurve = block.PathCurve;
-                data.ProfileCurve = block.ProfileCurve;
+                data.PathCurve = (LLObject.PathCurve)block.PathCurve;
+                data.ProfileCurve = (LLObject.ProfileCurve)block.ProfileCurve;
                 data.PathBegin = LLObject.PathBeginFloat(block.PathBegin);
                 data.PathEnd = LLObject.PathEndFloat(block.PathEnd);
                 data.PathScaleX = LLObject.PathScaleFloat(block.PathScaleX);
@@ -1994,7 +1994,7 @@ namespace libsecondlife
                                 }
                             }
 
-                            prim.Data.PathCurve = (uint)block.Data[i++];
+                            prim.Data.PathCurve = (LLObject.PathCurve)block.Data[i++];
                             ushort pathBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
                             prim.Data.PathBegin = LLObject.PathBeginFloat(pathBegin);
                             ushort pathEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
@@ -2011,7 +2011,7 @@ namespace libsecondlife
                             prim.Data.PathRevolutions = LLObject.PathRevolutionsFloat(block.Data[i++]);
                             prim.Data.PathSkew = LLObject.PathSkewFloat((sbyte)block.Data[i++]);
 
-                            prim.Data.ProfileCurve = (uint)block.Data[i++];
+                            prim.Data.ProfileCurve = (LLObject.ProfileCurve)block.Data[i++];
                             ushort profileBegin = Helpers.BytesToUInt16(block.Data, i); i += 2;
                             prim.Data.ProfileBegin = LLObject.ProfileBeginFloat(profileBegin);
                             ushort profileEnd = Helpers.BytesToUInt16(block.Data, i); i += 2;
@@ -2203,8 +2203,8 @@ namespace libsecondlife
 
             prim.PCode = ObjectManager.PCode.Prim;
             prim.Material = LLObject.MaterialType.Wood;
-            prim.ProfileCurve = 0x01;
-            prim.PathCurve = 0x10;
+            prim.ProfileCurve = LLObject.ProfileCurve.ProfileSquare;
+            prim.PathCurve = LLObject.PathCurve.Line;
             prim.ProfileEnd = 1.0f;
             prim.PathEnd = 1.0f;
             prim.PathRevolutions = 1.0f;

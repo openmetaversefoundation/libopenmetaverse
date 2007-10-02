@@ -363,28 +363,23 @@ namespace libsecondlife
 
             if (_folder is string[])
             {
-                List<InventoryBase> pathMatches = Client.Inventory.FindObjectsByPath(Client.Inventory.Store.RootFolder.UUID, (string[])_folder, true, true);
+                string[] path = (string[])_folder;
 
-                if (pathMatches.Count == 0)
+                folder = Client.Inventory.FindObjectByPath(
+                    Client.Inventory.Store.RootFolder.UUID, Client.Network.AgentID, String.Join("/", path), 1000 * 20);
+
+                if (folder == LLUUID.Zero)
                 {
                     Client.Log("Outfit path not found", Helpers.LogLevel.Error);
                     return false;
                 }
-
-                if (!(pathMatches[0] is InventoryFolder))
-                {
-                    Client.Log("Outfit path is not a folder", Helpers.LogLevel.Error);
-                    return false;
-                }
-
-                folder = ((InventoryFolder)pathMatches[0]).UUID;
             }
             else
                 folder = (LLUUID)_folder;
 
             wearables = new List<InventoryWearable>();
             attachments = new List<InventoryAttachment>();
-            Client.Inventory.RequestFolderContents(folder, Client.Network.AgentID, false, true, false, InventorySortOrder.ByName);
+            Client.Inventory.RequestFolderContents(folder, Client.Network.AgentID, false, true, InventorySortOrder.ByName);
 
             foreach (InventoryBase ib in Client.Inventory.Store.GetContents(folder))
             {

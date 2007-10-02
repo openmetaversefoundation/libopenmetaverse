@@ -87,6 +87,31 @@ namespace libsecondlife
             Cylinder = 4
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum FaceType : ushort
+        {
+            /// <summary></summary>
+            PathBegin = 0x1 << 0,
+            /// <summary></summary>
+            PathEnd = 0x1 << 1,
+            /// <summary></summary>
+            InnerSide = 0x1 << 2,
+            /// <summary></summary>
+            ProfileBegin = 0x1 << 3,
+            /// <summary></summary>
+            ProfileEnd = 0x1 << 4,
+            /// <summary></summary>
+            OuterSide0 = 0x1 << 5,
+            /// <summary></summary>
+            OuterSide1 = 0x1 << 6,
+            /// <summary></summary>
+            OuterSide2 = 0x1 << 7,
+            /// <summary></summary>
+            OuterSide3 = 0x1 << 8
+        }
+
         #endregion Enums
 
 

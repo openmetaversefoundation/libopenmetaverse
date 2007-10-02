@@ -642,7 +642,8 @@ namespace libsecondlife
         /// <param name="groupTitle"></param>
         /// <param name="groupPowers"></param>
         /// <param name="groupName"></param>
-        public delegate void AgentDataCallback(string firstName, string lastName, LLUUID activeGroupID, string groupTitle, ulong groupPowers, string groupName);
+        public delegate void AgentDataCallback(string firstName, string lastName, LLUUID activeGroupID, 
+            string groupTitle, GroupPowers groupPowers, string groupName);
 
 
         /// <summary>Callback for incoming chat packets</summary>
@@ -2244,7 +2245,7 @@ namespace libsecondlife
                     string groupTitle = Helpers.FieldToUTF8String(p.AgentData.GroupTitle);
                     string groupName = Helpers.FieldToUTF8String(p.AgentData.GroupName);
 
-                    try { OnAgentDataUpdated(firstName, lastName, activeGroup, groupTitle, p.AgentData.GroupPowers, groupName); }
+                    try { OnAgentDataUpdated(firstName, lastName, activeGroup, groupTitle, (GroupPowers)p.AgentData.GroupPowers, groupName); }
                     catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
