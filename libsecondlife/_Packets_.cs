@@ -35593,11 +35593,72 @@ namespace libsecondlife.Packets
             }
         }
 
+        /// <exclude/>
+        [XmlType("agentmovementcomplete_simdata")]
+        public class SimDataBlock
+        {
+            private byte[] _channelversion;
+            public byte[] ChannelVersion
+            {
+                get { return _channelversion; }
+                set
+                {
+                    if (value == null) { _channelversion = null; return; }
+                    if (value.Length > 1500) { throw new OverflowException("Value exceeds 1500 characters"); }
+                    else { _channelversion = new byte[value.Length]; Buffer.BlockCopy(value, 0, _channelversion, 0, value.Length); }
+                }
+            }
+
+            [XmlIgnore]
+            public int Length
+            {
+                get
+                {
+                    int length = 0;
+                    if (ChannelVersion != null) { length += 2 + ChannelVersion.Length; }
+                    return length;
+                }
+            }
+
+            public SimDataBlock() { }
+            public SimDataBlock(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
+                    _channelversion = new byte[length];
+                    Buffer.BlockCopy(bytes, i, _channelversion, 0, length); i += length;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public void ToBytes(byte[] bytes, ref int i)
+            {
+                if(ChannelVersion == null) { Console.WriteLine("Warning: ChannelVersion is null, in " + this.GetType()); }
+                bytes[i++] = (byte)(ChannelVersion.Length % 256);
+                bytes[i++] = (byte)((ChannelVersion.Length >> 8) % 256);
+                Buffer.BlockCopy(ChannelVersion, 0, bytes, i, ChannelVersion.Length); i += ChannelVersion.Length;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder output = new StringBuilder();
+                output.AppendLine("-- SimData --");
+                Helpers.FieldToString(output, ChannelVersion, "ChannelVersion");
+                return output.ToString();
+            }
+        }
+
         private Header header;
         public override Header Header { get { return header; } set { header = value; } }
         public override PacketType Type { get { return PacketType.AgentMovementComplete; } }
         public AgentDataBlock AgentData;
         public DataBlock Data;
+        public SimDataBlock SimData;
 
         public AgentMovementCompletePacket()
         {
@@ -35606,6 +35667,7 @@ namespace libsecondlife.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
+            SimData = new SimDataBlock();
         }
 
         public AgentMovementCompletePacket(byte[] bytes, ref int i)
@@ -35614,6 +35676,7 @@ namespace libsecondlife.Packets
             Header = new LowHeader(bytes, ref i, ref packetEnd);
             AgentData = new AgentDataBlock(bytes, ref i);
             Data = new DataBlock(bytes, ref i);
+            SimData = new SimDataBlock(bytes, ref i);
         }
 
         public AgentMovementCompletePacket(Header head, byte[] bytes, ref int i)
@@ -35621,18 +35684,20 @@ namespace libsecondlife.Packets
             Header = head;
             AgentData = new AgentDataBlock(bytes, ref i);
             Data = new DataBlock(bytes, ref i);
+            SimData = new SimDataBlock(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
-            length += AgentData.Length;            length += Data.Length;;
+            length += AgentData.Length;            length += Data.Length;            length += SimData.Length;;
             if (header.AckList.Length > 0) { length += header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             Data.ToBytes(bytes, ref i);
+            SimData.ToBytes(bytes, ref i);
             if (header.AckList.Length > 0) { header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -35642,6 +35707,7 @@ namespace libsecondlife.Packets
             string output = "--- AgentMovementComplete ---" + Environment.NewLine;
                 output += AgentData.ToString() + Environment.NewLine;
                 output += Data.ToString() + Environment.NewLine;
+                output += SimData.ToString() + Environment.NewLine;
             return output;
         }
 
