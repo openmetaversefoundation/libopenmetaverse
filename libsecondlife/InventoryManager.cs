@@ -288,7 +288,9 @@ namespace libsecondlife
             LLUUID regionID, LLVector3 position, DateTime timestamp, AssetType type, LLUUID objectID, bool fromTask);
         /// <summary>
         /// Callback when an inventory object is accepted and received from a
-        /// task inventory
+        /// task inventory. This is the callback in which you actually get
+        /// the ItemID, as in ObjectOfferedCallback it is null when received
+        /// from a task.
         /// </summary>
         /// <param name="ItemID"></param>
         /// <param name="FolderID"></param>
@@ -1642,6 +1644,14 @@ namespace libsecondlife
                     _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { copyCallback(item); }
+                    catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+                
+                //This is triggered when an item is received from a task
+                if (OnTaskItemReceived != null)
+                {
+                    try { OnTaskItemReceived(item.UUID, dataBlock.FolderID, item.CreatorID, item.AssetUUID, 
+                        item.InventoryType); }
                     catch (Exception e) { _Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                 }
             }
