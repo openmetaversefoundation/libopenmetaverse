@@ -781,7 +781,8 @@ namespace libsecondlife
             move.AgentData.SessionID = _Client.Network.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
-            move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[0];
+            move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[1];
+            move.InventoryData[0] = new MoveInventoryItemPacket.InventoryDataBlock();
             move.InventoryData[0].ItemID = item;
             move.InventoryData[0].FolderID = folder;
             move.InventoryData[0].NewName = Helpers.StringToField(newItemName);
