@@ -292,14 +292,14 @@ namespace libsecondlife
             WearParams wp = (WearParams)_wp;
             List<InventoryBase> ibs = (List<InventoryBase>)wp.Param;
             List<InventoryWearable> wearables = new List<InventoryWearable>();
-            List<InventoryAttachment> attachments = new List<InventoryAttachment>();
+            List<InventoryBase> attachments = new List<InventoryBase>();
 
             foreach (InventoryBase ib in ibs)
             {
                 if (ib is InventoryWearable)
                     wearables.Add((InventoryWearable)ib);
-                else if (ib is InventoryAttachment)
-                    attachments.Add((InventoryAttachment)ib);
+                else if (ib is InventoryAttachment || ib is InventoryObject)
+                    attachments.Add(ib);
             }
 
             SendAgentWearablesRequest();
@@ -344,7 +344,7 @@ namespace libsecondlife
             WearParams wp = (WearParams)_wp;
             SendAgentWearablesRequest(); // request current wearables async
             List<InventoryWearable> wearables;
-            List<InventoryAttachment> attachments;
+            List<InventoryBase> attachments;
 
             if (!GetFolderWearables(wp.Param, out wearables, out attachments)) // get wearables in outfit folder
                 return; // TODO: this error condition should be passed back to the client somehow
@@ -355,7 +355,7 @@ namespace libsecondlife
             AddAttachments(attachments, true);
         }
 
-        private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryAttachment> attachments)
+        private bool GetFolderWearables(object _folder, out List<InventoryWearable> wearables, out List<InventoryBase> attachments)
         {
             LLUUID folder;
             wearables = null;
@@ -370,7 +370,7 @@ namespace libsecondlife
 
                 if (folder == LLUUID.Zero)
                 {
-                    Client.Log("Outfit path not found", Helpers.LogLevel.Error);
+                    Client.Log("Outfit path " + path + " not found", Helpers.LogLevel.Error);
                     return false;
                 }
             }
@@ -378,15 +378,40 @@ namespace libsecondlife
                 folder = (LLUUID)_folder;
 
             wearables = new List<InventoryWearable>();
-            attachments = new List<InventoryAttachment>();
-            Client.Inventory.RequestFolderContents(folder, Client.Network.AgentID, false, true, InventorySortOrder.ByName);
+            attachments = new List<InventoryBase>();
+            List<InventoryBase> objects = Client.Inventory.FolderContents(folder, Client.Network.AgentID, 
+                false, true, InventorySortOrder.ByName, 1000 * 20);
 
-            foreach (InventoryBase ib in Client.Inventory.Store.GetContents(folder))
+            if (objects != null)
             {
-                if (ib is InventoryWearable)
-                    wearables.Add((InventoryWearable)ib);
-                else if (ib is InventoryAttachment)
-                    attachments.Add((InventoryAttachment)ib);
+                foreach (InventoryBase ib in objects)
+                {
+                    if (ib is InventoryWearable)
+                    {
+                        Client.DebugLog("Adding wearable " + ib.Name);
+                        wearables.Add((InventoryWearable)ib);
+                    }
+                    else if (ib is InventoryAttachment)
+                    {
+                        Client.DebugLog("Adding attachment (attachment) " + ib.Name);
+                        attachments.Add(ib);
+                    }
+                    else if (ib is InventoryObject)
+                    {
+                        Client.DebugLog("Adding attachment (object) " + ib.Name);
+                        attachments.Add(ib);
+                    }
+                    else
+                    {
+                        Client.DebugLog("Ignoring inventory item " + ib.Name);
+                    }
+                }
+            }
+            else
+            {
+                Client.Log("Failed to download folder contents of + " + folder.ToStringHyphenated(), 
+                    Helpers.LogLevel.Error);
+                return false;
             }
 
             return true;
@@ -416,8 +441,11 @@ namespace libsecondlife
             }
         }
 
-        public void AddAttachments(List<InventoryAttachment> attachments, bool removeExistingFirst)
+        public void AddAttachments(List<InventoryBase> attachments, bool removeExistingFirst)
         {
+            // FIXME: Obey this
+            const int OBJECTS_PER_PACKET = 4;
+
             // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
             RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
             attachmentsPacket.AgentData.AgentID = Client.Network.AgentID;
@@ -430,16 +458,41 @@ namespace libsecondlife
             attachmentsPacket.ObjectData = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock[attachments.Count];
             for (int i = 0; i < attachments.Count; i++)
             {
-                attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
-                attachmentsPacket.ObjectData[i].AttachmentPt = 0;
-                attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachments[i].Permissions.EveryoneMask;
-                attachmentsPacket.ObjectData[i].GroupMask = (uint)attachments[i].Permissions.GroupMask;
-                attachmentsPacket.ObjectData[i].ItemFlags = attachments[i].Flags;
-                attachmentsPacket.ObjectData[i].ItemID = attachments[i].UUID;
-                attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachments[i].Name);
-                attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachments[i].Description);
-                attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachments[i].Permissions.NextOwnerMask;
-                attachmentsPacket.ObjectData[i].OwnerID = attachments[i].OwnerID;
+                if (attachments[i] is InventoryAttachment)
+                {
+                    InventoryAttachment attachment = (InventoryAttachment)attachments[i];
+
+                    attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
+                    attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                    attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
+                    attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
+                    attachmentsPacket.ObjectData[i].ItemFlags = attachment.Flags;
+                    attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
+                    attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
+                    attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
+                    attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
+                    attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
+                }
+                else if (attachments[i] is InventoryObject)
+                {
+                    InventoryObject attachment = (InventoryObject)attachments[i];
+
+                    attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
+                    attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                    attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
+                    attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
+                    attachmentsPacket.ObjectData[i].ItemFlags = attachment.Flags;
+                    attachmentsPacket.ObjectData[i].ItemID = attachment.UUID;
+                    attachmentsPacket.ObjectData[i].Name = Helpers.StringToField(attachment.Name);
+                    attachmentsPacket.ObjectData[i].Description = Helpers.StringToField(attachment.Description);
+                    attachmentsPacket.ObjectData[i].NextOwnerMask = (uint)attachment.Permissions.NextOwnerMask;
+                    attachmentsPacket.ObjectData[i].OwnerID = attachment.OwnerID;
+                }
+                else
+                {
+                    Client.Log("Cannot attach inventory item of type " + attachments[i].GetType().ToString(),
+                        Helpers.LogLevel.Warning);
+                }
             }
 
             Client.Network.SendPacket(attachmentsPacket);

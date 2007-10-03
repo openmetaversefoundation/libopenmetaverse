@@ -555,6 +555,30 @@ namespace libsecondlife
             _Client.Network.SendPacket(fetch);
         }
 
+        public List<InventoryBase> FolderContents(LLUUID folder, LLUUID owner, bool folders, bool items,
+            InventorySortOrder order, int timeoutMS)
+        {
+            List<InventoryBase> objects = null;
+            AutoResetEvent fetchEvent = new AutoResetEvent(false);
+
+            FolderUpdatedCallback callback =
+                delegate(LLUUID folderID)
+                {
+                    if (folderID == folder)
+                        fetchEvent.Set();
+                };
+
+            OnFolderUpdated += callback;
+
+            RequestFolderContents(folder, owner, folders, items, order);
+            if (fetchEvent.WaitOne(timeoutMS, false))
+                objects = _Store.GetContents(folder);
+
+            OnFolderUpdated -= callback;
+
+            return objects;
+        }
+
         public void RequestFolderContents(LLUUID folder, LLUUID owner, bool folders, bool items, 
             InventorySortOrder order)
         {

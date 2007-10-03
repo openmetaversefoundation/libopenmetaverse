@@ -16,7 +16,7 @@ namespace libsecondlife.TestClient
         {
             Client = testClient;
             Name = "wear";
-            Description = "Wear an outfit folder from inventory. Usage: wear [outfit name]";
+            Description = "Wear an outfit folder from inventory. Usage: wear [outfit name] [nobake]";
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
@@ -38,7 +38,6 @@ namespace libsecondlife.TestClient
             {
                 Client.Appearance.WearOutfit(target.Split('/'), bake);
             }
-
             catch (InvalidOutfitException ex)
             {
                 return "Invalid outfit (" + ex.Message + ")";
