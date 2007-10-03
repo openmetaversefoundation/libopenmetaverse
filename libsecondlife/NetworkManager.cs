@@ -131,6 +131,11 @@ namespace libsecondlife
         /// </summary>
         /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
         public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
+        /// <summary>
+        /// Triggered when an event queue makes the initial connection
+        /// </summary>
+        /// <param name="simulator">Simulator this event queue is tied to</param>
+        public delegate void EventQueueRunningCallback(Simulator simulator);
 
         /// <summary>
         /// Event raised when the client was able to connected successfully.
@@ -167,6 +172,10 @@ namespace libsecondlife
         /// An event for when CurrentSim changes
         /// </summary>
         public event CurrentSimChangedCallback OnCurrentSimChanged;
+        /// <summary>
+        /// Triggered when an event queue makes the initial connection
+        /// </summary>
+        public event EventQueueRunningCallback OnEventQueueRunning;
 
 
         /// <summary>The permanent UUID for the logged in avatar</summary>
@@ -517,6 +526,39 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Searches through the list of currently connected simulators to find
+        /// one attached to the given IPEndPoint
+        /// </summary>
+        /// <param name="endPoint">IPEndPoint of the Simulator to search for</param>
+        /// <returns>A Simulator reference on success, otherwise null</returns>
+        public Simulator FindSimulator(IPEndPoint endPoint)
+        {
+            lock (Simulators)
+            {
+                for (int i = 0; i < Simulators.Count; i++)
+                {
+                    if (Simulators[i].IPEndPoint.Equals(endPoint))
+                        return Simulators[i];
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Fire an event when an event queue connects for capabilities
+        /// </summary>
+        /// <param name="simulator">Simulator the event queue is attached to</param>
+        internal void BeginRaiseConnectedEvent(Simulator simulator)
+        {
+            if (OnEventQueueRunning != null)
+            {
+                try { OnEventQueueRunning(simulator); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
+
         private void PacketHandler()
         {
             IncomingPacket incomingPacket = new IncomingPacket();
@@ -714,20 +756,6 @@ namespace libsecondlife
             lock (PacketInbox) PacketInbox.Clear();
 
             connected = false;
-        }
-
-        public Simulator FindSimulator(IPEndPoint endPoint)
-        {
-            lock (Simulators)
-            {
-                for (int i = 0; i < Simulators.Count; i++)
-                {
-                    if (Simulators[i].IPEndPoint.Equals(endPoint))
-                        return Simulators[i];
-                }
-            }
-
-            return null;
         }
 
         #region Timers

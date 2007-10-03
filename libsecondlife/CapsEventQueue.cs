@@ -184,6 +184,12 @@ namespace libsecondlife
         {
             if (!_Dead)
             {
+                if (!_Running)
+                {
+                    // The event queue is starting up for the first time
+                    Simulator.Client.Network.BeginRaiseConnectedEvent(Simulator);
+                }
+
                 // We are connected to the event queue
                 _Running = true;
 
@@ -203,6 +209,7 @@ namespace libsecondlife
             catch (WebException e)
             {
                 Abort(false, e);
+                return;
             }
         }
 
