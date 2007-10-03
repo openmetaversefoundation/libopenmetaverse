@@ -233,7 +233,7 @@ namespace SLImageUpload
                 LLUUID assetID;
                 string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
 
-                Client.Inventory.BeginCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
+                Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
                     InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
                     delegate(bool success, InventoryItem item)
                     {
