@@ -550,7 +550,7 @@ namespace libsecondlife
         /// Fire an event when an event queue connects for capabilities
         /// </summary>
         /// <param name="simulator">Simulator the event queue is attached to</param>
-        internal void BeginRaiseConnectedEvent(Simulator simulator)
+        internal void RaiseConnectedEvent(Simulator simulator)
         {
             if (OnEventQueueRunning != null)
             {
@@ -577,68 +577,71 @@ namespace libsecondlife
 
                     if (packet != null)
                     {
-                        #region Archive Duplicate Search
-
-                        // TODO: Replace PacketArchive Queue<> with something more efficient
-
-                        // Check the archives to see whether we already received this packet
-                        lock (simulator.PacketArchive)
+                        if (packet.Header.Frequency != PacketFrequency.Caps)
                         {
-                            if (simulator.PacketArchive.Contains(packet.Header.Sequence))
+                            #region Archive Duplicate Search
+
+                            // TODO: Replace PacketArchive Queue<> with something more efficient
+
+                            // Check the archives to see whether we already received this packet
+                            lock (simulator.PacketArchive)
                             {
-                                if (packet.Header.Resent)
+                                if (simulator.PacketArchive.Contains(packet.Header.Sequence))
                                 {
-                                    Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                    if (packet.Header.Resent)
+                                    {
+                                        Client.DebugLog("Received resent packet #" + packet.Header.Sequence);
+                                    }
+                                    else
+                                    {
+                                        Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
+                                            Helpers.LogLevel.Error);
+                                    }
+
+                                    // Avoid firing a callback twice for the same packet
+                                    goto End;
                                 }
                                 else
                                 {
-                                    Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
-                                        Helpers.LogLevel.Error);
-                                }
+                                    // Keep the PacketArchive size within a certain capacity
+                                    while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
+                                    {
+                                        simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                        simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                    }
 
-                                // Avoid firing a callback twice for the same packet
-                                goto End;
+                                    simulator.PacketArchive.Enqueue(packet.Header.Sequence);
+                                }
                             }
-                            else
+
+                            #endregion Archive Duplicate Search
+
+                            #region ACK handling
+
+                            // Handle appended ACKs
+                            if (packet.Header.AppendedAcks)
                             {
-                                // Keep the PacketArchive size within a certain capacity
-                                while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
+                                lock (simulator.NeedAck)
                                 {
-                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                                    simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
+                                    for (int i = 0; i < packet.Header.AckList.Length; i++)
+                                        simulator.NeedAck.Remove(packet.Header.AckList[i]);
                                 }
-
-                                simulator.PacketArchive.Enqueue(packet.Header.Sequence);
                             }
-                        }
 
-                        #endregion Archive Duplicate Search
-
-                        #region ACK handling
-
-                        // Handle appended ACKs
-                        if (packet.Header.AppendedAcks)
-                        {
-                            lock (simulator.NeedAck)
+                            // Handle PacketAck packets
+                            if (packet.Type == PacketType.PacketAck)
                             {
-                                for (int i = 0; i < packet.Header.AckList.Length; i++)
-                                    simulator.NeedAck.Remove(packet.Header.AckList[i]);
+                                PacketAckPacket ackPacket = (PacketAckPacket)packet;
+
+                                lock (simulator.NeedAck)
+                                {
+                                    for (int i = 0; i < ackPacket.Packets.Length; i++)
+                                        simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
+                                }
                             }
+
+                            #endregion ACK handling
                         }
-
-                        // Handle PacketAck packets
-                        if (packet.Type == PacketType.PacketAck)
-                        {
-                            PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                            lock (simulator.NeedAck)
-                            {
-                                for (int i = 0; i < ackPacket.Packets.Length; i++)
-                                    simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
-                            }
-                        }
-
-                        #endregion ACK handling
 
                         #region FireCallbacks
 

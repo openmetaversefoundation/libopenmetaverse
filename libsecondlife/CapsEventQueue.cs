@@ -182,13 +182,11 @@ namespace libsecondlife
 
         protected void EventRequestStreamCallback(IAsyncResult result)
         {
+            bool raiseEvent = false;
+
             if (!_Dead)
             {
-                if (!_Running)
-                {
-                    // The event queue is starting up for the first time
-                    Simulator.Client.Network.BeginRaiseConnectedEvent(Simulator);
-                }
+                if (!_Running) raiseEvent = true;
 
                 // We are connected to the event queue
                 _Running = true;
@@ -210,6 +208,12 @@ namespace libsecondlife
             {
                 Abort(false, e);
                 return;
+            }
+
+            if (raiseEvent)
+            {
+                // The event queue is starting up for the first time
+                Simulator.Client.Network.RaiseConnectedEvent(Simulator);
             }
         }
 

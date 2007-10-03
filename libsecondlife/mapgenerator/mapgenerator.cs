@@ -805,7 +805,7 @@ namespace mapgenerator
 
             // Write the base Packet class
             writer.WriteLine(
-                "    public abstract class Packet" + Environment.NewLine + "    {" + Environment.NewLine + 
+                "    public abstract partial class Packet" + Environment.NewLine + "    {" + Environment.NewLine + 
                 "        public abstract Header Header { get; set; }" + Environment.NewLine +
                 "        public abstract PacketType Type { get; }" + Environment.NewLine +
                 "        public int TickCount;" + Environment.NewLine + Environment.NewLine +

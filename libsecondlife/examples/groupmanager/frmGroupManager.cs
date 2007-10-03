@@ -19,14 +19,27 @@ namespace groupmanager
         {
             Client = new SecondLife();
 
+            Client.Settings.MULTIPLE_SIMS = false;
+
             // Throttle unnecessary things down
             Client.Throttle.Land = 0;
             Client.Throttle.Wind = 0;
             Client.Throttle.Cloud = 0;
 
+            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
             Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(GroupsUpdatedHandler);
             
             InitializeComponent();
+        }
+
+        void Network_OnEventQueueRunning(Simulator simulator)
+        {
+            if (simulator == Client.Network.CurrentSim)
+            {
+                Console.WriteLine("Event queue connected for the primary simulator, requesting group info");
+
+                Client.Groups.RequestCurrentGroups();
+            }
         }
 
         void GroupsUpdatedHandler(Dictionary<LLUUID, Group> groups)
@@ -71,8 +84,6 @@ namespace groupmanager
                     "jhurliman@metaverseindustries.com"))
                 {
                     groupBox.Enabled = true;
-
-                    Client.Groups.RequestCurrentGroups();
                 }
                 else
                 {

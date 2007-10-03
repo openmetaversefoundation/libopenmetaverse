@@ -231,6 +231,7 @@ namespace libsecondlife
         {
             Capabilities.EventQueueCallback callback;
 
+            // Explicit handlers first
             if (_EventTable.TryGetValue(capsEvent, out callback))
             {
                 if (callback != null)
@@ -250,7 +251,20 @@ namespace libsecondlife
 
             if (capsEvent != String.Empty)
             {
-                Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
+                // Generic handler second
+                Packet packet = Packet.BuildPacket(capsEvent, body);
+                if (packet != null)
+                {
+                    NetworkManager.IncomingPacket incomingPacket;
+                    incomingPacket.Simulator = eventQueue.Simulator;
+                    incomingPacket.Packet = packet;
+
+                    Client.Network.PacketInbox.Enqueue(incomingPacket);
+                }
+                else
+                {
+                    Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
+                }
             }
         }
 
@@ -267,6 +281,7 @@ namespace libsecondlife
         {
             Capabilities.EventQueueCallback callback;
 
+            // Explicit handlers first
             if (_EventTable.TryGetValue(capsEvent, out callback))
             {
                 if (callback != null)
@@ -284,7 +299,20 @@ namespace libsecondlife
 
             if (capsEvent != String.Empty)
             {
-                Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
+                // Generic handler second
+                Packet packet = Packet.BuildPacket(capsEvent, body);
+                if (packet != null)
+                {
+                    NetworkManager.IncomingPacket incomingPacket;
+                    incomingPacket.Simulator = eventQueue.Simulator;
+                    incomingPacket.Packet = packet;
+
+                    Client.Network.PacketInbox.Enqueue(incomingPacket);
+                }
+                else
+                {
+                    Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
+                }
             }
         }
 

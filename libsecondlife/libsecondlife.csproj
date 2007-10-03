@@ -105,6 +105,7 @@
     <Compile Include="Capabilities.cs" />
     <Compile Include="CapsEventQueue.cs" />
     <Compile Include="CapsRequest.cs" />
+    <Compile Include="CapsToPacket.cs" />
     <Compile Include="CoordinateFrame.cs" />
     <Compile Include="EventDictionary.cs" />
     <Compile Include="DirectoryManager.cs" />
