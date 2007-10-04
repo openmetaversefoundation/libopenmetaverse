@@ -217,9 +217,10 @@ namespace libsecondlife
                 case WearableType.Gloves:
                 case WearableType.Undershirt:
                 case WearableType.Underpants:
+                case WearableType.Skirt:
                     return AssetType.Clothing;
                 default:
-                    return AssetType.Unknown;
+                    throw new Exception("Unhandled wearable type " + type);
             }
         }
 
@@ -862,10 +863,11 @@ namespace libsecondlife
 
         private void DownloadWearableAssets()
         {
-            Client.DebugLog("DownloadWearableAssets()");
-            
-            foreach (KeyValuePair<WearableType,WearableData> kvp in Wearables)
+            foreach (KeyValuePair<WearableType, WearableData> kvp in Wearables)
+            {
+                Client.DebugLog("Requesting asset for wearable item" + kvp.Value.Item.Name + " (" + kvp.Value.Item.AssetUUID + ")");
                 AssetDownloads.Enqueue(new PendingAssetDownload(kvp.Value.Item.AssetUUID, kvp.Value.Item.AssetType));
+            }
 
             if (AssetDownloads.Count > 0)
             {
@@ -1059,8 +1061,6 @@ namespace libsecondlife
 
         private void Assets_OnAssetReceived(AssetDownload download, Asset asset)
         {
-            Client.DebugLog("Assets_OnAssetReceived()");
-            
             lock (Wearables)
             {
                 // Check if this is a wearable we were waiting on
@@ -1073,6 +1073,8 @@ namespace libsecondlife
                         {
                             kvp.Value.Asset = (AssetWearable)asset;
                             kvp.Value.Asset.Decode();
+
+                            Client.DebugLog("Downloaded wearable asset " + kvp.Value.Asset.Name);
 
                             lock (AgentTextures)
                             {
