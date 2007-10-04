@@ -280,6 +280,31 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
+        public List<GridItem> MapItems(ulong regionHandle, GridItemType item, GridLayerType layer, int timeoutMS)
+        {
+            List<GridItem> itemList = null;
+            AutoResetEvent itemsEvent = new AutoResetEvent(false);
+
+            GridItemsCallback callback =
+                delegate(GridItemType type, List<GridItem> items)
+                {
+                    if (type == GridItemType.AgentLocations)
+                    {
+                        itemList = items;
+                        itemsEvent.Set();
+                    }
+                };
+
+            OnGridItems += callback;
+
+            RequestMapItems(regionHandle, item, layer);
+            itemsEvent.WaitOne(timeoutMS, false);
+
+            OnGridItems -= callback;
+
+            return itemList;
+        }
+
         public void RequestMapItems(ulong regionHandle, GridItemType item, GridLayerType layer)
         {
             MapItemRequestPacket request = new MapItemRequestPacket();
