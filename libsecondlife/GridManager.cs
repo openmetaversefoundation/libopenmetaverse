@@ -26,14 +26,42 @@
 
 using System;
 using System.Text;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using libsecondlife.Packets;
 
 namespace libsecondlife
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GridLayerType : uint
+    {
+        /// <summary>Objects and terrain are shown</summary>
+        Objects = 0,
+        /// <summary>Only the terrain is shown, no objects</summary>
+        Terrain = 1,
+        /// <summary>Overlay showing land for sale and for auction</summary>
+        LandForSale = 2
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum GridItemType : uint
+    {
+        Telehub = 1,
+        PgEvent = 2,
+        MatureEvent = 3,
+        Popular = 4,
+        AgentLocations = 6,
+        LandForSale = 7,
+        Classified = 8
+    }
+
 	/// <summary>
-	/// Region information returned from the spaceserver, used for the world map
+	/// Information about a region on the grid map
 	/// </summary>
 	public struct GridRegion
 	{
@@ -105,6 +133,43 @@ namespace libsecondlife
         }
 	}
 
+    /// <summary>
+    /// Visual chunk of the grid map
+    /// </summary>
+    public struct GridLayer
+    {
+        public int Bottom;
+        public int Left;
+        public int Top;
+        public int Right;
+        public LLUUID ImageID;
+
+        public bool ContainsRegion(int x, int y)
+        {
+            return (x >= Left && x <= Right && y >= Bottom && y <= Top);
+        }
+    }
+
+    public abstract class GridItem
+    {
+    }
+
+    public class GridAgentLocation : GridItem
+    {
+        public uint GlobalX;
+        public uint GlobalY;
+        public int AvatarCount;
+        public string Identifier;
+
+        public uint LocalX { get { return GlobalX % 256; } }
+        public uint LocalY { get { return GlobalY % 256; } }
+
+        public ulong RegionHandle
+        {
+            get { return Helpers.UIntsToLong((uint)(GlobalX - (GlobalX % 256)), (uint)(GlobalY - (GlobalY % 256))); }
+        }
+    }
+
 	/// <summary>
 	/// Manages grid-wide tasks such as the world map
 	/// </summary>
@@ -113,41 +178,39 @@ namespace libsecondlife
         /// <summary>
         /// 
         /// </summary>
-        public enum MapLayerType : uint
-        {
-            /// <summary>Objects and terrain are shown</summary>
-            Objects = 0,
-            /// <summary>Only the terrain is shown, no objects</summary>
-            Terrain = 1,
-            /// <summary>Overlay showing land for sale and for auction</summary>
-            LandForSale = 2
-        }
-
-
+        /// <param name="region"></param>
+        public delegate void GridRegionCallback(GridRegion region);
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="region"></param>
-        public delegate void GridRegionCallback(GridRegion region);
+        /// <param name="layer"></param>
+        public delegate void GridLayerCallback(GridLayer layer);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="items"></param>
+        public delegate void GridItemsCallback(GridItemType type, List<GridItem> items);
 
 
         /// <summary>
         /// Triggered when a new region is discovered through GridManager
         /// </summary>
-        public event GridRegionCallback OnRegionAdd;
+        public event GridRegionCallback OnGridRegion;
+        public event GridLayerCallback OnGridLayer;
+        public event GridItemsCallback OnGridItems;
 
-        // FIXME: These publically accessible dictionaries are a recipe for multi-threading disaster
-
-        /// <summary>A dictionary of all the regions, indexed by region ID</summary>
-		public Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
-		/// <summary>A dictionary of all the regions, indexed by region handle</summary>
-		public Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong,GridRegion>();
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
 		/// <summary>Current direction of the sun</summary>
         public LLVector3 SunDirection { get { return sunDirection; } }
         /// <summary>Current angular velocity of the sun</summary>
         public LLVector3 SunAngVelocity { get { return sunAngVelocity; } }
+
+        /// <summary>A dictionary of all the regions, indexed by region name</summary>
+        internal Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
+        /// <summary>A dictionary of all the regions, indexed by region handle</summary>
+        internal Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong, GridRegion>();
 
 		private SecondLife Client;
         private float sunPhase = 0.0f;
@@ -164,45 +227,40 @@ namespace libsecondlife
 			Client = client;
 
             Client.Network.RegisterCallback(PacketType.MapBlockReply, new NetworkManager.PacketCallback(MapBlockReplyHandler));
+            Client.Network.RegisterCallback(PacketType.MapItemReply, new NetworkManager.PacketCallback(MapItemReplyHandler));
             Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, new NetworkManager.PacketCallback(TimeMessageHandler));
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, new NetworkManager.PacketCallback(CoarseLocationHandler));
 		}
 
-        public void RequestMapLayer(MapLayerType layer)
+        public void RequestMapLayer(GridLayerType layer)
         {
-            //if (Client.Network.CurrentCaps.Capabilities.ContainsKey("MapLayer"))
-            //if (false)
-            //{
-                //string url = Client.Network.CurrentCaps.Capabilities["MapLayer"];
+            string url = Client.Network.CurrentSim.Caps.CapabilityURI("MapLayer");
 
-                // FIXME: CAPS is currently disabled until the message pumps are implemented
-            //}
-            //else
-            //{
-                MapLayerRequestPacket request = new MapLayerRequestPacket();
+            if (!String.IsNullOrEmpty(url))
+            {
+                Hashtable body = new Hashtable();
+                body["Flags"] = (int)layer;
 
-                request.AgentData.AgentID = Client.Network.AgentID;
-                request.AgentData.SessionID = Client.Network.SessionID;
-                request.AgentData.Godlike = false; // Filled in at the simulator
-                request.AgentData.Flags = (uint)layer;
-                request.AgentData.EstateID = 0; // Filled in at the simulator
-
-                Client.Network.SendPacket(request);
-            //}
+                Client.Network.SendCapsRequest(url, body,
+                    new CapsRequest.CapsResponseCallback(MapLayerResponseHandler));
+            }
         }
 
-        public void RequestMapRegion(string regionName)
+        public void RequestMapRegion(string regionName, GridLayerType layer)
         {
             MapNameRequestPacket request = new MapNameRequestPacket();
 
             request.AgentData.AgentID = Client.Network.AgentID;
             request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.Flags = (uint)layer;
+            request.AgentData.EstateID = 0; // Filled in on the sim
+            request.AgentData.Godlike = false; // Filled in on the sim
             request.NameData.Name = Helpers.StringToField(regionName.ToLower());
 
             Client.Network.SendPacket(request);
         }
 
-        public void RequestMapBlocks(MapLayerType layer, ushort minX, ushort minY, ushort maxX, ushort maxY, 
+        public void RequestMapBlocks(GridLayerType layer, ushort minX, ushort minY, ushort maxX, ushort maxY, 
             bool returnNonExistent)
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
@@ -222,10 +280,25 @@ namespace libsecondlife
             Client.Network.SendPacket(request);
         }
 
+        public void RequestMapItems(ulong regionHandle, GridItemType item, GridLayerType layer)
+        {
+            MapItemRequestPacket request = new MapItemRequestPacket();
+            request.AgentData.AgentID = Client.Network.AgentID;
+            request.AgentData.SessionID = Client.Network.SessionID;
+            request.AgentData.Flags = (uint)layer;
+            request.AgentData.Godlike = false; // Filled in on the sim
+            request.AgentData.EstateID = 0; // Filled in on the sim
+
+            request.RequestData.ItemType = (uint)item;
+            request.RequestData.RegionHandle = regionHandle;
+
+            Client.Network.SendPacket(request);
+        }
+
         /// <summary>
         /// Request data for all mainland (Linden managed) simulators
         /// </summary>
-        public void RequestMainlandSims(MapLayerType layer)
+        public void RequestMainlandSims(GridLayerType layer)
         {
             RequestMapBlocks(layer, 0, 0, 65535, 65535, false);
         }
@@ -235,12 +308,12 @@ namespace libsecondlife
         /// will block until it can find the region or gives up
         /// </summary>
         /// <param name="name">Name of sim you're looking for</param>
+        /// <param name="layer">Layer that you are requesting</param>
         /// <param name="region">Will contain a GridRegion for the sim you're
         /// looking for if successful, otherwise an empty structure</param>
         /// <returns>True if the GridRegion was successfully fetched, otherwise
         /// false</returns>
-        /// <example>bool success = GetGridRegion("Ahern", out myGridRegion);</example>
-        public bool GetGridRegion(string name, out GridRegion region)
+        public bool GetGridRegion(string name, GridLayerType layer, out GridRegion region)
         {
             name = name.ToLower();
 
@@ -268,7 +341,7 @@ namespace libsecondlife
                 }
 
                 // Make the request
-                RequestMapRegion(name);
+                RequestMapRegion(name, layer);
 
                 // Wait until an answer is retrieved
                 requestEvent.WaitOne(Client.Settings.MAP_REQUEST_TIMEOUT, false);
@@ -291,21 +364,50 @@ namespace libsecondlife
             }
         }
 
+        private void MapLayerResponseHandler(object response, HttpRequestState state)
+        {
+            Hashtable body = (Hashtable)response;
+            ArrayList layerData = (ArrayList)body["LayerData"];
+
+            if (OnGridLayer != null)
+            {
+                for (int i = 0; i < layerData.Count; i++)
+                {
+                    Hashtable thisLayerData = (Hashtable)layerData[i];
+
+                    GridLayer layer;
+                    layer.Bottom = (int)thisLayerData["Bottom"];
+                    layer.Left = (int)thisLayerData["Left"];
+                    layer.Top = (int)thisLayerData["Top"];
+                    layer.Right = (int)thisLayerData["Right"];
+                    layer.ImageID = (LLUUID)thisLayerData["ImageID"];
+
+                    try { OnGridLayer(layer); }
+                    catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+                }
+            }
+
+            if (body.ContainsKey("MapBlocks"))
+            {
+                // TODO: At one point this will become activated
+                Client.Log("Got MapBlocks through CAPS, please finish this function!", Helpers.LogLevel.Error);
+            }
+        }
+
         /// <summary>
         /// Populate Grid info based on data from MapBlockReplyPacket
         /// </summary>
         /// <param name="packet">Incoming MapBlockReplyPacket packet</param>
         /// <param name="simulator">Unused</param>
-		private void MapBlockReplyHandler(Packet packet, Simulator simulator) 
-		{
-			GridRegion region;
+        private void MapBlockReplyHandler(Packet packet, Simulator simulator)
+        {
             MapBlockReplyPacket map = (MapBlockReplyPacket)packet;
 
             foreach (MapBlockReplyPacket.DataBlock block in map.Data)
             {
                 if (block.X != 0 && block.Y != 0)
                 {
-                    region = new GridRegion();
+                    GridRegion region;
 
                     region.X = block.X;
                     region.Y = block.Y;
@@ -319,21 +421,77 @@ namespace libsecondlife
                     region.RegionHandle = Helpers.UIntsToLong((uint)(region.X * 256), (uint)(region.Y * 256));
 
                     lock (Regions) Regions[region.Name.ToLower()] = region;
-					lock (RegionsByHandle) RegionsByHandle[region.RegionHandle] = region;
+                    lock (RegionsByHandle) RegionsByHandle[region.RegionHandle] = region;
                     lock (RequestingRegions)
                     {
                         if (RequestingRegions.ContainsKey(region.Name.ToLower()))
                             RequestingRegions[region.Name.ToLower()].Set();
                     }
 
-                    if (OnRegionAdd != null)
+                    if (OnGridRegion != null)
                     {
-                        try { OnRegionAdd(region); }
+                        try { OnGridRegion(region); }
                         catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
             }
-		}
+        }
+
+        private void MapItemReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (OnGridItems != null)
+            {
+                MapItemReplyPacket reply = (MapItemReplyPacket)packet;
+                GridItemType type = (GridItemType)reply.RequestData.ItemType;
+                List<GridItem> items = new List<GridItem>();
+
+                for (int i = 0; i < reply.Data.Length; i++)
+                {
+                    string name = Helpers.FieldToUTF8String(reply.Data[i].Name);
+
+                    switch (type)
+                    {
+                        case GridItemType.AgentLocations:
+                            GridAgentLocation location = new GridAgentLocation();
+                            location.GlobalX = reply.Data[i].X;
+                            location.GlobalY = reply.Data[i].Y;
+                            location.Identifier = name;
+                            location.AvatarCount = reply.Data[i].Extra;
+
+                            items.Add(location);
+
+                            break;
+                        case GridItemType.Classified:
+                            //FIXME:
+                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            break;
+                        case GridItemType.LandForSale:
+                            //FIXME:
+                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            break;
+                        case GridItemType.MatureEvent:
+                        case GridItemType.PgEvent:
+                            //FIXME:
+                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            break;
+                        case GridItemType.Popular:
+                            //FIXME:
+                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            break;
+                        case GridItemType.Telehub:
+                            //FIXME:
+                            Client.Log("FIXME", Helpers.LogLevel.Error);
+                            break;
+                        default:
+                            Client.Log("Unknown map item type " + type, Helpers.LogLevel.Warning);
+                            break;
+                    }
+                }
+
+                try { OnGridItems(type, items); }
+                catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
+            }
+        }
 
         /// <summary>
         /// Get sim time from the appropriate packet

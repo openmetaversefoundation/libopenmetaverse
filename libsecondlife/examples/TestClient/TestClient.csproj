@@ -42,6 +42,7 @@
     <Compile Include="Commands\Communication\SayCommand.cs" />
     <Compile Include="Commands\Communication\ShoutCommand.cs" />
     <Compile Include="Commands\Communication\WhisperCommand.cs" />
+    <Compile Include="Commands\DetectBotCommand.cs" />
     <Compile Include="Commands\GoHome.cs" />
     <Compile Include="Commands\GotoLandmark.cs" />
     <Compile Include="Commands\Inventory\AppearanceCommand.cs" />
@@ -55,6 +56,9 @@
     <Compile Include="Commands\Inventory\InventoryCommand.cs" />
     <Compile Include="Commands\Inventory\WearCommand.cs" />
     <Compile Include="Commands\Land\FindSimCommand.cs" />
+    <Compile Include="Commands\Land\AgentLocationsCommand.cs" />
+    <Compile Include="Commands\Land\GridLayerCommand.cs" />
+    <Compile Include="Commands\Land\GridMapCommand.cs" />
     <Compile Include="Commands\Land\ParcelInfoCommand.cs" />
     <Compile Include="Commands\Movement\FollowCommand.cs" />
     <Compile Include="Commands\Movement\GotoCommand.cs" />

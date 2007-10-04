@@ -112,6 +112,12 @@ namespace libsecondlife
             }
         }
 
+        /// <summary>
+        /// Request the URI of a named capability
+        /// </summary>
+        /// <param name="capability">Name of the capability to request</param>
+        /// <returns>The URI of the requested capability, or String.Empty if
+        /// the capability does not exist</returns>
         public string CapabilityURI(string capability)
         {
             string cap;

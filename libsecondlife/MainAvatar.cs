@@ -1703,7 +1703,7 @@ namespace libsecondlife
                 // Teleporting to a foreign sim
                 GridRegion region;
 
-                if (Client.Grid.GetGridRegion(simName, out region))
+                if (Client.Grid.GetGridRegion(simName, GridLayerType.Objects, out region))
                 {
                     return Teleport(region.RegionHandle, position, lookAt);
                 }

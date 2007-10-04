@@ -34,7 +34,7 @@ namespace libsecondlife.TestClient
 
             GridRegion region;
 
-            if (Client.Grid.GetGridRegion(simName, out region))
+            if (Client.Grid.GetGridRegion(simName, GridLayerType.Objects, out region))
                 return String.Format("{0}: handle={1} ({2},{3})", region.Name, region.RegionHandle, region.X, region.Y);
             else
                 return "Lookup of " + simName + " failed";

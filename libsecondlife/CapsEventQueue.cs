@@ -190,8 +190,6 @@ namespace libsecondlife
 
                 // We are connected to the event queue
                 _Running = true;
-
-                Simulator.Client.DebugLog("Capabilities event queue connected for " + Simulator.ToString());
             }
 
             try
@@ -212,6 +210,8 @@ namespace libsecondlife
 
             if (raiseEvent)
             {
+                Simulator.Client.DebugLog("Capabilities event queue connected for " + Simulator.ToString());
+
                 // The event queue is starting up for the first time
                 Simulator.Client.Network.RaiseConnectedEvent(Simulator);
             }

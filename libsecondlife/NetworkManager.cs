@@ -339,6 +339,13 @@ namespace libsecondlife
                 simulator.SendPacket(payload, setSequence);
         }
 
+        public void SendCapsRequest(string uri, Hashtable body, CapsRequest.CapsResponseCallback callback)
+        {
+            CapsRequest request = new CapsRequest(uri, Client.Network.CurrentSim);
+            request.OnCapsResponse += new CapsRequest.CapsResponseCallback(callback);
+            request.MakeRequest();
+        }
+
         /// <summary>
         /// Connect to a simulator
         /// </summary>
