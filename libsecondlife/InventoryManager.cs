@@ -947,6 +947,7 @@ namespace libsecondlife
                     }
                 }
             }
+            _Client.Network.SendPacket(rem);
         }
 
         #endregion Remove
