@@ -869,7 +869,6 @@ namespace libsecondlife
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
 	        // CAPS callbacks
-	        Client.Network.RegisterEventCallback("TeleportFinish", new Capabilities.EventQueueCallback(TeleportFinishEventHandler));
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Capabilities.EventQueueCallback(EstablishAgentCommunicationEventHandler));
         }
 
@@ -2282,33 +2281,6 @@ namespace libsecondlife
             {
                 try { OnBalanceUpdated(balance); }
                 catch (Exception e) { Client.Log(e.ToString(), Helpers.LogLevel.Error); }
-            }
-        }
-
-        private void TeleportFinishEventHandler(string message, Hashtable body, CapsEventQueue caps)
-        {
-            if (body.ContainsKey("Info"))
-            {
-                ArrayList infoList = (ArrayList)body["Info"];
-                Hashtable info = (Hashtable)infoList[0];
-
-                // Backwards compatibility hack 
-                TeleportFinishPacket packet = new TeleportFinishPacket();
-
-                packet.Info.SimIP = Helpers.BytesToUIntBig((byte[])info["SimIP"]);
-                packet.Info.LocationID = Helpers.BytesToUInt((byte[])info["LocationID"]);
-                packet.Info.TeleportFlags = Helpers.BytesToUInt((byte[])info["TeleportFlags"]);
-                packet.Info.AgentID = (LLUUID)info["AgentID"];
-                packet.Info.RegionHandle = Helpers.BytesToUInt64((byte[])info["RegionHandle"]);
-                packet.Info.SeedCapability = Helpers.StringToField((string)info["SeedCapability"]);
-                packet.Info.SimPort = (ushort)(int)info["SimPort"];
-                packet.Info.SimAccess = (byte)(int)info["SimAccess"];
-
-                Client.DebugLog(String.Format(
-                    "Received a TeleportFinish event from {0}, SimIP: {1}, Location: {2}, RegionHandle: {3}",
-                    caps.Simulator, packet.Info.SimIP, packet.Info.LocationID, packet.Info.RegionHandle));
-
-                TeleportHandler(packet, Client.Network.CurrentSim);
             }
         }
 

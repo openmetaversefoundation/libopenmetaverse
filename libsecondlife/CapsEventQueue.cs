@@ -322,15 +322,9 @@ namespace libsecondlife
                     //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));
 
                     if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
-                    {
-                        Simulator.Client.Network.CapsEvents.RaiseEvent(String.Empty, msg, body, this);
-                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, msg, body, this);
-                    }
+                        Simulator.Client.Network.CapsEvents.RaiseEvent(msg, body, this);
                     else
-                    {
-                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(String.Empty, msg, body, this);
-                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, msg, body, this);
-                    }
+                        Simulator.Client.Network.CapsEvents.BeginRaiseEvent(msg, body, this);
                 }
             }
 

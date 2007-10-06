@@ -306,7 +306,7 @@ namespace libsecondlife
         internal bool DisconnectCandidate = false;
         /// <summary>Event that is triggered when the simulator successfully
         /// establishes a connection</summary>
-        internal ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
+        internal AutoResetEvent ConnectedEvent = new AutoResetEvent(false);
         /// <summary>Whether this sim is currently connected or not. Hooked up
         /// to the property Connected</summary>
         internal bool connected;
@@ -352,7 +352,7 @@ namespace libsecondlife
             OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
 
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new System.Timers.Timer(Settings.NETWORK_TICK_LENGTH);
+            AckTimer = new System.Timers.Timer(Settings.NETWORK_TICK_INTERVAL);
             AckTimer.Elapsed += new System.Timers.ElapsedEventHandler(AckTimer_Elapsed);
             // Timer for recording simulator connection statistics
             StatsTimer = new System.Timers.Timer(1000);
@@ -397,8 +397,6 @@ namespace libsecondlife
 
             try
             {
-                ConnectedEvent.Reset();
-
                 // Create the UDP connection
                 Start();
 

@@ -110,6 +110,23 @@ namespace libsecondlife.Packets
                         ulong value = Helpers.BytesToUInt64(bytes);
                         field.SetValue(block, value);
                     }
+                    else if (fieldType == typeof(uint))
+                    {
+                        // uints come in as a byte array, convert it manually here
+                        byte[] bytes = (byte[])blockData[field.Name];
+                        uint value = Helpers.BytesToUInt(bytes);
+                        field.SetValue(block, value);
+                    }
+                    else if (fieldType == typeof(ushort))
+                    {
+                        // Just need a bit of manual typecasting love here
+                        field.SetValue(block, (ushort)(int)blockData[field.Name]);
+                    }
+                    else if (fieldType == typeof(byte))
+                    {
+                        // Just need a bit of manual typecasting love here
+                        field.SetValue(block, (byte)(int)blockData[field.Name]);
+                    }
                     else
                     {
                         field.SetValue(block, blockData[field.Name]);

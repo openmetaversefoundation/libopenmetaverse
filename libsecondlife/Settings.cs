@@ -49,7 +49,7 @@ namespace libsecondlife
         /// <summary>The relative directory where files needed for baking are kept</summary>
         public string RESOURCE_DIR = "avatar_data";
 
-	    // Timeouts
+	    // Timeouts and Intervals
 
         /// <summary>Number of milliseconds before an asset transfer will time
         /// out</summary>
@@ -76,6 +76,17 @@ namespace libsecondlife
         /// the grid interface</summary>
         public int MAP_REQUEST_TIMEOUT = 5 * 1000;
 
+        /// <summary>Number of milliseconds between sending pings to each sim</summary>
+        public const int PING_INTERVAL = 2200;
+        /// <summary>Number of milliseconds between sending camera updates</summary>
+        public const int AGENT_UPDATE_INTERVAL = 500;
+        /// <summary>Number of milliseconds between updating the current
+        /// positions of moving, non-accelerating and non-colliding objects</summary>
+        public const int INTERPOLATION_INTERVAL = 250;
+        /// <summary>Millisecond interval between ticks, where all ACKs are 
+        /// sent out and the age of unACKed packets is checked</summary>
+        public const int NETWORK_TICK_INTERVAL = 500;
+
 	    // Sizes
 
         /// <summary>The initial size of the packet inbox, where packets are
@@ -83,22 +94,12 @@ namespace libsecondlife
         public const int PACKET_INBOX_SIZE = 100;
         /// <summary>Maximum size of packet that we want to send over the wire</summary>
         public const int MAX_PACKET_SIZE = 1200;
-        /// <summary>Millisecond interval between ticks, where all ACKs are 
-        /// sent out and the age of unACKed packets is checked</summary>
-        public const int NETWORK_TICK_LENGTH = 500;
         /// <summary>The maximum value of a packet sequence number before it
         /// rolls over back to one</summary>
         public const int MAX_SEQUENCE = 0xFFFFFF;
         /// <summary>The maximum size of the sequence number archive, used to
         /// check for resent and/or duplicate packets</summary>
         public const int PACKET_ARCHIVE_SIZE = 200;
-        /// <summary>Number of milliseconds between sending pings to each sim</summary>
-        public const int PING_INTERVAL = 2200;
-        /// <summary>Number of milliseconds between sending camera updates</summary>
-        public const int AGENT_UPDATE_INTERVAL = 500;
-        /// <summary>Number of milliseconds between updating the current
-        /// positions of moving, non-accelerating and non-colliding objects</summary>
-        public const int INTERPOLATION_UPDATE = 250;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
         public int MAX_PENDING_ACKS = 10;

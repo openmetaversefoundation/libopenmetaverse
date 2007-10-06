@@ -506,7 +506,7 @@ namespace libsecondlife
 
             // If the callbacks aren't registered there's not point in doing client-side path prediction,
             // so we set it up here
-            InterpolationTimer = new System.Timers.Timer(Settings.INTERPOLATION_UPDATE);
+            InterpolationTimer = new System.Timers.Timer(Settings.INTERPOLATION_INTERVAL);
             InterpolationTimer.Elapsed += new System.Timers.ElapsedEventHandler(InterpolationTimer_Elapsed);
             InterpolationTimer.Start();
         }

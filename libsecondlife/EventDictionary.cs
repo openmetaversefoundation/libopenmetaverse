@@ -221,99 +221,107 @@ namespace libsecondlife
         /// <summary>
         /// Fire the events registered for this event type synchronously
         /// </summary>
-        /// <param name="capsEvent">Capability name, or String.Empty for a
-        /// default handler</param>
-        /// <param name="eventName">Actual capability name</param>
+        /// <param name="capsEvent">Capability name</param>
         /// <param name="body">Decoded event body</param>
         /// <param name="eventQueue">Reference to the event queue that 
         /// generated this event</param>
-        internal void RaiseEvent(string capsEvent, string eventName, System.Collections.Hashtable body, CapsEventQueue eventQueue)
+        internal void RaiseEvent(string capsEvent, System.Collections.Hashtable body, CapsEventQueue eventQueue)
         {
+            bool specialHandler = false;
             Capabilities.EventQueueCallback callback;
 
-            // Explicit handlers first
+            // Default handler first, if one exists
             if (_EventTable.TryGetValue(capsEvent, out callback))
             {
                 if (callback != null)
                 {
-                    try
-                    {
-                        callback(eventName, body, eventQueue);
-                    }
-                    catch (Exception ex)
-                    {
-                        Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
-                    }
-
-                    return;
+                    try { callback(capsEvent, body, eventQueue); }
+                    catch (Exception ex) { Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
                 }
             }
 
-            if (capsEvent != String.Empty)
+            // Generic parser next
+            Packet packet = Packet.BuildPacket(capsEvent, body);
+            if (packet != null)
             {
-                // Generic handler second
-                Packet packet = Packet.BuildPacket(capsEvent, body);
-                if (packet != null)
-                {
-                    NetworkManager.IncomingPacket incomingPacket;
-                    incomingPacket.Simulator = eventQueue.Simulator;
-                    incomingPacket.Packet = packet;
+                NetworkManager.IncomingPacket incomingPacket;
+                incomingPacket.Simulator = eventQueue.Simulator;
+                incomingPacket.Packet = packet;
 
-                    Client.Network.PacketInbox.Enqueue(incomingPacket);
-                }
-                else
-                {
-                    Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
-                }
+                Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
+
+                Client.Network.PacketInbox.Enqueue(incomingPacket);
+                specialHandler = true;
             }
+
+            // Explicit handler next
+            if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
+            {
+                try { callback(capsEvent, body, eventQueue); }
+                catch (Exception ex) { Client.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
+
+                specialHandler = true;
+            }
+
+            if (!specialHandler)
+                Client.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning);
         }
 
         /// <summary>
         /// Fire the events registered for this event type asynchronously
         /// </summary>
-        /// <param name="capsEvent">Capability name, or String.Empty for a
-        /// default handler</param>
-        /// <param name="eventName">Actual capability name</param>
+        /// <param name="capsEvent">Capability name</param>
         /// <param name="body">Decoded event body</param>
         /// <param name="eventQueue">Reference to the event queue that 
         /// generated this event</param>
-        internal void BeginRaiseEvent(string capsEvent, string eventName, System.Collections.Hashtable body, CapsEventQueue eventQueue)
+        internal void BeginRaiseEvent(string capsEvent, System.Collections.Hashtable body, CapsEventQueue eventQueue)
         {
+            bool specialHandler = false;
             Capabilities.EventQueueCallback callback;
 
-            // Explicit handlers first
-            if (_EventTable.TryGetValue(capsEvent, out callback))
+            // Default handler first, if one exists
+            if (_EventTable.TryGetValue(String.Empty, out callback))
             {
                 if (callback != null)
                 {
                     CapsCallbackWrapper wrapper;
                     wrapper.Callback = callback;
-                    wrapper.CapsEvent = eventName;
+                    wrapper.CapsEvent = capsEvent;
                     wrapper.Body = body;
                     wrapper.EventQueue = eventQueue;
                     ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
-
-                    return;
                 }
             }
 
-            if (capsEvent != String.Empty)
+            // Generic parser next
+            Packet packet = Packet.BuildPacket(capsEvent, body);
+            if (packet != null)
             {
-                // Generic handler second
-                Packet packet = Packet.BuildPacket(capsEvent, body);
-                if (packet != null)
-                {
-                    NetworkManager.IncomingPacket incomingPacket;
-                    incomingPacket.Simulator = eventQueue.Simulator;
-                    incomingPacket.Packet = packet;
+                NetworkManager.IncomingPacket incomingPacket;
+                incomingPacket.Simulator = eventQueue.Simulator;
+                incomingPacket.Packet = packet;
 
-                    Client.Network.PacketInbox.Enqueue(incomingPacket);
-                }
-                else
-                {
-                    Client.Log("No handler registered for CAPS event " + capsEvent, Helpers.LogLevel.Debug);
-                }
+                Client.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
+
+                Client.Network.PacketInbox.Enqueue(incomingPacket);
+                specialHandler = true;
             }
+            
+            // Explicit handler next
+            if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
+            {
+                CapsCallbackWrapper wrapper;
+                wrapper.Callback = callback;
+                wrapper.CapsEvent = capsEvent;
+                wrapper.Body = body;
+                wrapper.EventQueue = eventQueue;
+                ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+
+                specialHandler = true;
+            }
+
+            if (!specialHandler)
+                Client.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning);
         }
 
         private void ThreadPoolDelegate(Object state)
