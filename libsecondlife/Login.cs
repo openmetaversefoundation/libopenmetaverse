@@ -163,18 +163,21 @@ namespace libsecondlife
                     (float)(double)look_at[1],
                     (float)(double)look_at[2]);
 
-                Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
-                ArrayList array = (ArrayList)home["position"];
-                HomePosition = new LLVector3(
-                    (float)(double)array[0],
-                    (float)(double)array[1],
-                    (float)(double)array[2]);
+                if (reply.home != null)
+                {
+                    Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
+                    ArrayList array = (ArrayList)home["position"];
+                    HomePosition = new LLVector3(
+                        (float)(double)array[0],
+                        (float)(double)array[1],
+                        (float)(double)array[2]);
 
-                array = (ArrayList)home["look_at"];
-                HomeLookAt = new LLVector3(
-                    (float)(double)array[0],
-                    (float)(double)array[1],
-                    (float)(double)array[2]);
+                    array = (ArrayList)home["look_at"];
+                    HomeLookAt = new LLVector3(
+                        (float)(double)array[0],
+                        (float)(double)array[1],
+                        (float)(double)array[2]);
+                }
 
                 CircuitCode = (uint)reply.circuit_code;
                 RegionX = (uint)reply.region_x;
@@ -233,9 +236,13 @@ namespace libsecondlife
                     }
                 }
 
-                foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren) {
-                    InventoryFolder parentFolder = Folders[pair.Key];
-                    parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
+                foreach (KeyValuePair<LLUUID, List<InventoryFolder>> pair in FoldersChildren)
+                {
+                    if (Folders.ContainsKey(pair.Key))
+                    {
+                        InventoryFolder parentFolder = Folders[pair.Key];
+                        parentFolder.DescendentCount = pair.Value.Count; // Should we set this here? it's just the folders, not the items!
+                    }
                 }
 
                 // Should we do this or just return an IEnumerable?
@@ -697,6 +704,10 @@ namespace libsecondlife
                 // reply.ui_config
                 // reply.login_flags
                 // reply.global_textures
+                // reply.inventory_lib_root
+                // reply.inventory_lib_owner
+                // reply.inventory_skeleton
+                // reply.inventory_skel_lib
                 // reply.initial_outfit
             }
 
