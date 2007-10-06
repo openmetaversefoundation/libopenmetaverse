@@ -114,7 +114,7 @@ namespace libsecondlife.Packets
                     {
                         // uints come in as a byte array, convert it manually here
                         byte[] bytes = (byte[])blockData[field.Name];
-                        uint value = Helpers.BytesToUInt(bytes);
+                        uint value = Helpers.BytesToUIntBig(bytes);
                         field.SetValue(block, value);
                     }
                     else if (fieldType == typeof(ushort))
