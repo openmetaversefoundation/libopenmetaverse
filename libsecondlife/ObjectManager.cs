@@ -2214,7 +2214,7 @@ namespace libsecondlife
 
         protected void SetAvatarSittingOn(Simulator sim, Avatar av, uint localid, uint oldSeatID)
         {
-            if (localid == Client.Self.LocalID) Client.Self.sittingOn = localid;
+            if (av.LocalID == Client.Self.LocalID) Client.Self.sittingOn = localid;
             av.sittingOn = localid;
                         
 
