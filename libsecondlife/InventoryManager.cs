@@ -735,6 +735,7 @@ namespace libsecondlife
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[1];
+            move.InventoryData[0] = new MoveInventoryFolderPacket.InventoryDataBlock();
             move.InventoryData[0].FolderID = folder;
             move.InventoryData[0].ParentID = newParent;
 
@@ -893,7 +894,7 @@ namespace libsecondlife
 
         public void Remove(List<LLUUID> items, List<LLUUID> folders)
         {
-            if ((items == null && items.Count == 0) && (folders == null && folders.Count == 0))
+            if ((items == null || items.Count == 0) && (folders == null || folders.Count == 0))
                 return;
 
             RemoveInventoryObjectsPacket rem = new RemoveInventoryObjectsPacket();
@@ -949,7 +950,48 @@ namespace libsecondlife
             }
             _Client.Network.SendPacket(rem);
         }
+    
+        public void EmptyLostAndFound()
+        {
+            EmptySystemFolder(AssetType.LostAndFoundFolder);
+        }
+        public void EmptyTrash()
+        {
+            EmptySystemFolder(AssetType.TrashFolder);
+        }
+        private void EmptySystemFolder(AssetType folderType)
+        {
+            List<InventoryBase> items = _Store.GetContents(_Store.RootFolder);
 
+            LLUUID folderKey = LLUUID.Zero;
+            foreach (InventoryBase item in items)
+            {
+                if ((item as InventoryFolder) != null)
+                {
+                    InventoryFolder folder = item as InventoryFolder;
+                    if (folder.PreferredType == folderType)
+                    {
+                        folderKey = folder.UUID;
+                        break;
+                    }
+                }
+            }
+            items = _Store.GetContents(folderKey);
+            List<LLUUID> remItems = new List<LLUUID>();
+            List<LLUUID> remFolders = new List<LLUUID>();
+            foreach (InventoryBase item in items)
+            {
+                if ((item as InventoryFolder) != null)
+                {
+                    remFolders.Add(item.UUID);
+                }
+                else
+                {
+                    remItems.Add(item.UUID);
+                }
+            }
+            Remove(remItems, remFolders);
+        }   
         #endregion Remove
 
         #region Create
