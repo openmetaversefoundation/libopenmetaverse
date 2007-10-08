@@ -1602,7 +1602,7 @@ namespace libsecondlife
                         List<InventoryBase> folderContents = _Store.GetContents(search.Folder);
 
                         // Iterate over all of the inventory objects in the base search folder
-                        for (int j = 0; i < folderContents.Count; j++)
+                        for (int j = 0; j < folderContents.Count; j++)
                         {
                             // Check if this inventory object matches the current path node
                             if (folderContents[j].Name == search.Path[search.Level])
