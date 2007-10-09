@@ -281,6 +281,8 @@ namespace libsecondlife
 
         private SecondLife Client;
         private Dictionary<LLUUID, Transfer> Transfers = new Dictionary<LLUUID, Transfer>();
+        private AssetUpload PendingUpload;
+        private AutoResetEvent PendingUploadEvent = new AutoResetEvent(true);
 
         /// <summary>
         /// Default constructor
@@ -511,14 +513,24 @@ namespace libsecondlife
 
             //Client.DebugLog(request.ToString());
 
+            /*
             // Add this upload to the Transfers dictionary using the assetID as the key.
             // Once the simulator assigns an actual identifier for this upload it will be
             // removed from Transfers and reinserted with the proper identifier
             lock (Transfers) Transfers[upload.AssetID] = upload;
+            */
 
-            Client.Network.SendPacket(request);
+            // Wait for the previous upload to receive a RequestXferPacket
+            if (PendingUploadEvent.WaitOne(10000, false))
+            {
+                PendingUpload = upload;
 
-            return upload.ID;
+                Client.Network.SendPacket(request);
+
+                return upload.ID;
+            }
+            else
+                throw new Exception("Timeout waiting for previous asset upload to begin");
         }
 
         private void SendNextUploadPacket(AssetUpload upload)
@@ -792,41 +804,23 @@ namespace libsecondlife
 
         private void RequestXferHandler(Packet packet, Simulator simulator)
         {
-            AssetUpload upload = null;
-            RequestXferPacket request = (RequestXferPacket)packet;
-
-            // The Xfer system sucks. This will thankfully die soon when uploads are
-            // moved to HTTP
-            lock (Transfers)
+            if (PendingUpload == null)
+                Client.Log("Received a RequestXferPacket for an unknown asset upload", Helpers.LogLevel.Warning);
+            else
             {
-                // Associate the XferID with an upload. If an upload is initiated
-                // before the previous one is associated with an XferID one or both
-                // of them will undoubtedly fail
-                foreach (Transfer transfer in Transfers.Values)
-                {
-                    if (transfer is AssetUpload)
-                    {
-                        if (((AssetUpload)transfer).XferID == 0)
-                        {
-                            // First match, use it
-                            upload = (AssetUpload)transfer;
-                            upload.XferID = request.XferID.ID;
-                            upload.Type = (AssetType)request.XferID.VFileType;
+                AssetUpload upload = PendingUpload;
+                PendingUpload = null;
+                PendingUploadEvent.Set();
+                RequestXferPacket request = (RequestXferPacket)packet;
 
-                            // Remove this upload from the Transfers dictionary and re-insert
-                            // it using the transferID as the key instead of the assetID
-                            Transfers.Remove(upload.AssetID);
+                upload.XferID = request.XferID.ID;
+                upload.Type = (AssetType)request.XferID.VFileType;
 
-                            LLUUID transferID = new LLUUID(upload.XferID);
-                            Transfers[transferID] = upload;
+                LLUUID transferID = new LLUUID(upload.XferID);
+                Transfers[transferID] = upload;
 
-                            // Send the first packet containing actual asset data
-                            SendNextUploadPacket(upload);
-
-                            return;
-                        }
-                    }
-                }
+                // Send the first packet containing actual asset data
+                SendNextUploadPacket(upload);
             }
         }
 
