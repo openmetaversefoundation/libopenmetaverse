@@ -116,6 +116,10 @@
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />
     <Compile Include="LLSD.cs" />
+    <Compile Include="LLSD\BinaryLLSD.cs" />
+    <Compile Include="LLSD\LLSD.cs" />
+    <Compile Include="LLSD\NotationLLSD.cs" />
+    <Compile Include="LLSD\XmlLLSD.cs" />
     <Compile Include="Login.cs" />
     <Compile Include="MainAvatarStatus.cs" />
     <Compile Include="MainAvatar.cs" />

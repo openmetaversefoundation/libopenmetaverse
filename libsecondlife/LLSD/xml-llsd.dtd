@@ -1,0 +1,19 @@
+<!ELEMENT llsd (DATA)>
+<!ELEMENT DATA (ATOMIC|map|array)>
+<!ELEMENT ATOMIC (undef|boolean|integer|real|uuid|string|date|uri|binary)>
+<!ELEMENT KEYDATA (key,DATA)>
+<!ELEMENT key (#PCDATA)>
+<!ELEMENT map (KEYDATA*)>
+<!ELEMENT array (DATA*)>
+<!ELEMENT undef (EMPTY)>
+<!ELEMENT boolean (#PCDATA)>
+<!ELEMENT integer (#PCDATA)>
+<!ELEMENT real (#PCDATA)>
+<!ELEMENT uuid (#PCDATA)>
+<!ELEMENT string (#PCDATA)>
+<!ELEMENT date (#PCDATA)>
+<!ELEMENT uri (#PCDATA)>
+<!ELEMENT binary (#PCDATA)>
+
+<!ATTLIST string xml:space (default|preserve) 'preserve'>
+<!ATTLIST binary encoding CDATA "base64">
