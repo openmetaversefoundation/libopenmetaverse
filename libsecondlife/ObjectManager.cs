@@ -2171,7 +2171,8 @@ namespace libsecondlife
                 
                 lock (sim.Objects.Prims)
                 {
-                    sim.Objects.Prims[findPrim.LocalID].Properties = props;
+                    if (sim.Objects.Prims.ContainsKey(findPrim.LocalID))
+                        sim.Objects.Prims[findPrim.LocalID].Properties = props;
                 }
 
                 FireOnObjectProperties(sim, props);
