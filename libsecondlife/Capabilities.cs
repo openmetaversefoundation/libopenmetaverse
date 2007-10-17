@@ -162,7 +162,7 @@ namespace libsecondlife
 
             _SeedRequest = new CapsRequest(_SeedCapsURI, String.Empty, null);
             _SeedRequest.OnCapsResponse += new CapsRequest.CapsResponseCallback(seedRequest_OnCapsResponse);
-            _SeedRequest.MakeRequest(postData, "application/xml", Simulator.udpPort, null);
+            _SeedRequest.MakeRequest(postData, "application/xml", 0, null);
         }
 
         private void seedRequest_OnCapsResponse(object response, HttpRequestState state)

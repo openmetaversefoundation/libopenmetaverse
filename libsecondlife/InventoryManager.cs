@@ -1089,8 +1089,7 @@ namespace libsecondlife
                 // Make the request
                 CapsRequest request = new CapsRequest(url, _Client.Network.CurrentSim);
                 request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateItemFromAssetResponse);
-                request.MakeRequest(postData, "application/xml", _Client.Network.CurrentSim.udpPort,
-                    new KeyValuePair<ItemCreatedCallback, byte[]>(callback, data));
+                request.MakeRequest(postData, "application/xml", 0, new KeyValuePair<ItemCreatedCallback, byte[]>(callback, data));
             }
             else
             {
@@ -1478,7 +1477,7 @@ namespace libsecondlife
                 // the problem of HttpRequestState not knowing anything about simulators
                 CapsRequest upload = new CapsRequest(uploadURL, _Client.Network.CurrentSim);
                 upload.OnCapsResponse += new CapsRequest.CapsResponseCallback(CreateItemFromAssetResponse);
-                upload.MakeRequest(itemData, "application/octet-stream", _Client.Network.CurrentSim.udpPort, kvp);
+                upload.MakeRequest(itemData, "application/octet-stream", 0, kvp);
             }
             else if (status == "complete")
             {

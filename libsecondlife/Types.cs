@@ -584,7 +584,7 @@ namespace libsecondlife
         {
             IFormatProvider formatProvider = Helpers.EnUsCulture;
             char[] splitChar = { ',', ' ' };
-            string[] split = val.Replace("<","").Replace(">","").Split(splitChar, StringSplitOptions.RemoveEmptyEntries);
+            string[] split = val.Replace("<", String.Empty).Replace(">", String.Empty).Split(splitChar, StringSplitOptions.RemoveEmptyEntries);
             return new LLVector3(float.Parse( split[0].Trim(), formatProvider ), float.Parse(split[1].Trim(), formatProvider), float.Parse(split[2].Trim(), formatProvider));
         }
 

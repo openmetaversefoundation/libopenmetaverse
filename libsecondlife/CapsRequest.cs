@@ -62,15 +62,7 @@ namespace libsecondlife
 
         public new void MakeRequest()
         {
-            base.MakeRequest(new byte[0], null, Simulator.udpPort, null);
-        }
-
-        protected override void Log(string message, Helpers.LogLevel level)
-        {
-            if (Simulator != null)
-                Simulator.Client.Log(String.Format("[Caps request for {0}] {1}", Simulator, message), level);
-            else
-                SecondLife.LogStatic(message, level);
+            base.MakeRequest(new byte[0], null, 0, null);
         }
 
         protected override void RequestSent(HttpRequestState request)
@@ -89,7 +81,7 @@ namespace libsecondlife
             else if (exception != null && exception.Message.Contains("502"))
             {
                 // These are normal, retry the request automatically
-                MakeRequest(state.RequestData, "application/xml", Simulator.udpPort, null);
+                MakeRequest(state.RequestData, "application/xml", 0, null);
 
                 return;
             }

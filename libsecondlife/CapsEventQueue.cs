@@ -147,7 +147,7 @@ namespace libsecondlife
             }
             catch (Exception e)
             {
-                Log(String.Format("CapsEventQueue.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
+                SecondLife.LogStatic(String.Format("CapsEventQueue.MakeRequest(): {0} (Source: {1})", e.Message, e.Source),
                     Helpers.LogLevel.Warning);
 
                 Abort(false, null);
@@ -173,11 +173,6 @@ namespace libsecondlife
                 // Abort the callback if it hasn't been already
                 _RequestState.WebRequest.Abort();
             }
-        }
-
-        protected override void Log(string message, Helpers.LogLevel level)
-        {
-            Simulator.Client.Log(String.Format("[Caps event queue for {0}] {1}", Simulator, message), level);
         }
 
         protected void EventRequestStreamCallback(IAsyncResult result)
