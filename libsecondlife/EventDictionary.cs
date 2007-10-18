@@ -163,7 +163,7 @@ namespace libsecondlife
             /// <summary>Name of the CAPS event</summary>
             public string CapsEvent;
             /// <summary>Decoded body of the CAPS event</summary>
-            public System.Collections.Hashtable Body;
+            public Dictionary<string, object> Body;
             /// <summary>Reference to the event queue that generated this event</summary>
             public CapsEventQueue EventQueue;
         }
@@ -225,7 +225,7 @@ namespace libsecondlife
         /// <param name="body">Decoded event body</param>
         /// <param name="eventQueue">Reference to the event queue that 
         /// generated this event</param>
-        internal void RaiseEvent(string capsEvent, System.Collections.Hashtable body, CapsEventQueue eventQueue)
+        internal void RaiseEvent(string capsEvent, Dictionary<string, object> body, CapsEventQueue eventQueue)
         {
             bool specialHandler = false;
             Capabilities.EventQueueCallback callback;
@@ -274,7 +274,7 @@ namespace libsecondlife
         /// <param name="body">Decoded event body</param>
         /// <param name="eventQueue">Reference to the event queue that 
         /// generated this event</param>
-        internal void BeginRaiseEvent(string capsEvent, System.Collections.Hashtable body, CapsEventQueue eventQueue)
+        internal void BeginRaiseEvent(string capsEvent, Dictionary<string, object> body, CapsEventQueue eventQueue)
         {
             bool specialHandler = false;
             Capabilities.EventQueueCallback callback;

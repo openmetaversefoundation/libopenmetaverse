@@ -25,11 +25,12 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.IO;
 using System.Threading;
+using libsecondlife.LLSD;
 
 namespace libsecondlife
 {
@@ -61,11 +62,11 @@ namespace libsecondlife
         public new void MakeRequest()
         {
             // Create an EventQueueGet request
-            Hashtable request = new Hashtable();
+            Dictionary<string, object> request = new Dictionary<string, object>();
             request["ack"] = null;
             request["done"] = false;
 
-            byte[] postData = LLSD.LLSDSerialize(request);
+            byte[] postData = LLSDParser.SerializeXmlToBinary(request);
 
             // Create a new HttpWebRequest
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(_RequestURL);
@@ -235,7 +236,7 @@ namespace libsecondlife
 
         protected override void RequestReply(HttpRequestState state, bool success, WebException exception)
         {
-            ArrayList events = null;
+            List<object> events = null;
             int ack = 0;
 
             #region Exception Handling
@@ -265,12 +266,12 @@ namespace libsecondlife
             // Decode successful replies from the event queue
             if (success)
             {
-                Hashtable response = (Hashtable)LLSD.LLSDDeserialize(state.ResponseData);
+                Dictionary<string, object> response = (Dictionary<string, object>)LLSDParser.DeserializeXml(state.ResponseData);
 
                 if (response != null)
                 {
                     // Parse any events returned by the event queue
-                    events = (ArrayList)response["events"];
+                    events = (List<object>)response["events"];
                     ack = (int)response["id"];
                 }
             }
@@ -281,23 +282,21 @@ namespace libsecondlife
 
             if (_Running)
             {
-                Hashtable request = new Hashtable();
+                Dictionary<string, object> request = new Dictionary<string, object>();
                 if (ack != 0) request["ack"] = ack;
                 else request["ack"] = null;
                 request["done"] = _Dead;
 
-                byte[] postData = LLSD.LLSDSerialize(request);
+                byte[] postData = LLSDParser.SerializeXmlToBinary(request);
 
-                MakeRequest(postData, "application/xml", Simulator.udpPort, null);
+                MakeRequest(postData, "application/xml", 0, null);
 
                 // If the event queue is dead at this point, turn it off since
                 // that was the last thing we want to do
                 if (_Dead)
                 {
                     _Running = false;
-
-                    Simulator.Client.Log("Sent event queue shutdown message to " + Simulator.ToString(), 
-                        Helpers.LogLevel.Info);
+                    SecondLife.DebugLogStatic("Sent event queue shutdown message");
                 }
             }
 
@@ -308,10 +307,10 @@ namespace libsecondlife
             if (events != null && events.Count > 0)
             {
                 // Fire callbacks for each event received
-                foreach (Hashtable evt in events)
+                foreach (Dictionary<string, object> evt in events)
                 {
                     string msg = (string)evt["message"];
-                    Hashtable body = (Hashtable)evt["body"];
+                    Dictionary<string, object> body = (Dictionary<string, object>)evt["body"];
 
                     //Simulator.Client.DebugLog(
                     //    String.Format("[{0}] Event {1}: {2}{3}", Simulator, msg, Environment.NewLine, LLSD.LLSDDump(body, 0)));

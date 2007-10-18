@@ -27,7 +27,6 @@
 using System;
 using System.Timers;
 using System.Net;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
@@ -2284,7 +2283,7 @@ namespace libsecondlife
             }
         }
 
-        private void EstablishAgentCommunicationEventHandler(string message, Hashtable body, CapsEventQueue caps)
+        private void EstablishAgentCommunicationEventHandler(string message, Dictionary<string, object> body, CapsEventQueue caps)
         {
             if (Client.Settings.MULTIPLE_SIMS && body.ContainsKey("sim-ip-and-port"))
             {

@@ -46,6 +46,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using libsecondlife;
+using libsecondlife.LLSD;
 using libsecondlife.Packets;
 
 // SLProxy: proxy library for Second Life
@@ -590,7 +591,7 @@ namespace SLProxy
                 
                 if (cap.ReqFmt == CapsDataFormat.LLSD)
                 {
-                    capReq.Request = LLSD.LLSDDeserialize(content);
+                    capReq.Request = LLSDParser.DeserializeXml(content);
                 }
                 else
                 {
@@ -604,7 +605,7 @@ namespace SLProxy
 
                 if (cap.ReqFmt == CapsDataFormat.LLSD)
                 {
-                    content = LLSD.LLSDSerialize(capReq.Request);
+                    content = LLSDParser.SerializeXmlToBinary(capReq.Request);
                 }
                 else
                 {
@@ -699,7 +700,7 @@ namespace SLProxy
                     {
                         if (cap.RespFmt == CapsDataFormat.LLSD)
                         {
-                            capReq.Response = LLSD.LLSDDeserialize(respBuf);
+                            capReq.Response = LLSDParser.DeserializeXml(respBuf);
                         }
                         else
                         {
@@ -747,7 +748,7 @@ namespace SLProxy
 
                 if (cap.RespFmt == CapsDataFormat.LLSD)
                 {
-                    respBuf = LLSD.LLSDSerialize(capReq.Response);
+                    respBuf = LLSDParser.SerializeXmlToBinary(capReq.Response);
                 }
                 else
                 {

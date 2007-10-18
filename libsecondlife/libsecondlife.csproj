@@ -110,12 +110,12 @@
     <Compile Include="EventDictionary.cs" />
     <Compile Include="DirectoryManager.cs" />
     <Compile Include="FriendsManager.cs" />
-    <Compile Include="Image.cs" />
     <Compile Include="HttpBase.cs" />
+    <Compile Include="Image.cs" />
+    <Compile Include="Capabilities\HttpBase.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="InventoryManager.cs" />
     <Compile Include="LLObject.cs" />
-    <Compile Include="LLSD.cs" />
     <Compile Include="LLSD\BinaryLLSD.cs" />
     <Compile Include="LLSD\LLSD.cs" />
     <Compile Include="LLSD\NotationLLSD.cs" />

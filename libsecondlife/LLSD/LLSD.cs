@@ -1,13 +1,13 @@
 using System;
 
-namespace libsecondlife.LSD
+namespace libsecondlife.LLSD
 {
     public class LLSDException : Exception
     {
         public LLSDException(string message) : base(message) { }
     }
 
-    public static partial class LLSD
+    public static partial class LLSDParser
     {
     }
 }

@@ -25,7 +25,7 @@
  */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace libsecondlife.Packets
@@ -39,7 +39,7 @@ namespace libsecondlife.Packets
         /// packet name for a Packet to be successfully built</param>
         /// <param name="body">LLSD to convert to a Packet</param>
         /// <returns>A Packet on success, otherwise null</returns>
-        public static Packet BuildPacket(string capsEventName, Hashtable body)
+        public static Packet BuildPacket(string capsEventName, Dictionary<string, object> body)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
 
@@ -64,13 +64,13 @@ namespace libsecondlife.Packets
 
                         if (blockType.IsArray)
                         {
-                            ArrayList array = (ArrayList)body[field.Name];
+                            List<object> array = (List<object>)body[field.Name];
                             Type elementType = blockType.GetElementType();
                             object[] blockArray = (object[])Array.CreateInstance(elementType, array.Count);
 
                             for (int i = 0; i < array.Count; i++)
                             {
-                                Hashtable hashtable = (Hashtable)array[i];
+                                Dictionary<string, object> hashtable = (Dictionary<string, object>)array[i];
                                 blockArray[i] = ParseCapsBlock(hashtable, elementType);
                             }
 
@@ -78,7 +78,7 @@ namespace libsecondlife.Packets
                         }
                         else
                         {
-                            Hashtable hashtable = (Hashtable)((ArrayList)body[field.Name])[0];
+                            Dictionary<string, object> hashtable = (Dictionary<string, object>)((List<object>)body[field.Name])[0];
                             field.SetValue(packet, ParseCapsBlock(hashtable, blockType));
                         }
                     }
@@ -92,7 +92,7 @@ namespace libsecondlife.Packets
             return (Packet)packet;
         }
 
-        public static object ParseCapsBlock(Hashtable blockData, Type blockType)
+        public static object ParseCapsBlock(Dictionary<string, object> blockData, Type blockType)
         {
             object block = Activator.CreateInstance(blockType);
 

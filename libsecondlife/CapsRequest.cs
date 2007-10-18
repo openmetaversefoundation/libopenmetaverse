@@ -28,6 +28,7 @@ using System;
 using System.Collections;
 using System.Net;
 using System.Text;
+using libsecondlife.LLSD;
 
 namespace libsecondlife
 {
@@ -76,7 +77,7 @@ namespace libsecondlife
 
             if (success)
             {
-                response = LLSD.LLSDDeserialize(state.ResponseData);
+                response = LLSDParser.DeserializeXml(state.ResponseData);
             }
             else if (exception != null && exception.Message.Contains("502"))
             {

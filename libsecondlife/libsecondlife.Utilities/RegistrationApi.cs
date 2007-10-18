@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
+using libsecondlife.LLSD;
 
 namespace libsecondlife
 {
@@ -117,9 +117,9 @@ namespace libsecondlife
 
         private void GatherCapsResponse(object response, HttpRequestState state)
         {
-            if (response is Hashtable)
+            if (response is Dictionary<string, object>)
             {
-                Hashtable respTable = (Hashtable)response;
+                Dictionary<string, object> respTable = (Dictionary<string, object>)response;
 
                 // parse
                 _caps = new RegistrationCaps();
@@ -148,20 +148,22 @@ namespace libsecondlife
 
         private void GatherErrorMessagesResponse(object response, HttpRequestState state)
         {
-            if (response is Hashtable)
+            if (response is Dictionary<string, object>)
             {
                 // parse
-                foreach (ArrayList error in (Hashtable)response)
+
+                //FIXME: wtf?
+                foreach (KeyValuePair<string, object> error in (Dictionary<string, object>)response)
                 {
-                    StringBuilder sb = new StringBuilder();
+                    //StringBuilder sb = new StringBuilder();
 
-                    sb.Append(error[1]);
-                    sb.Append(" (");
-                    sb.Append(error[0]);
-                    sb.Append("): ");
-                    sb.Append(error[2]);
+                    //sb.Append(error[1]);
+                    //sb.Append(" (");
+                    //sb.Append(error[0]);
+                    //sb.Append("): ");
+                    //sb.Append(error[2]);
 
-                    _errors.Add((int)error[0], sb.ToString());
+                    //_errors.Add((int)error[0], sb.ToString());
                 }
 
                 // finalize
@@ -186,18 +188,18 @@ namespace libsecondlife
 
         private void GatherLastNamesResponse(object response, HttpRequestState state)
         {
-            if (response is Hashtable)
+            if (response is Dictionary<string, object>)
             {
-                Hashtable respTable = (Hashtable)response;
+                Dictionary<string, object> respTable = (Dictionary<string, object>)response;
 
                 _lastNames = new List<LastName>(respTable.Count);
 
-                for (IDictionaryEnumerator it = respTable.GetEnumerator(); it.MoveNext(); )
+                for (Dictionary<string, object>.Enumerator it = respTable.GetEnumerator(); it.MoveNext(); )
                 {
                     LastName ln = new LastName();
 
-                    ln.ID = int.Parse(it.Key.ToString());
-                    ln.Name = it.Value.ToString();
+                    ln.ID = int.Parse(it.Current.Key.ToString());
+                    ln.Name = it.Current.Value.ToString();
 
                     _lastNames.Add(ln);
                 }
@@ -215,10 +217,10 @@ namespace libsecondlife
                 throw new InvalidOperationException("access denied; only approved developers have access to the registration api");
 
             // Create the POST data
-            Hashtable query = new Hashtable();
+            Dictionary<string, object> query = new Dictionary<string, object>();
             query.Add("username", firstName);
             query.Add("last_name_id", lastName.ID);
-            byte[] postData = LLSD.LLSDSerialize(query);
+            byte[] postData = LLSDParser.SerializeXmlToBinary(query);
 
             CapsRequest request = new CapsRequest(_caps.CheckName.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CheckNameResponse);
@@ -256,7 +258,7 @@ namespace libsecondlife
                 throw new InvalidOperationException("access denied; only approved developers have access to the registration api");
 
             // Create the POST data
-            Hashtable query = new Hashtable();
+            Dictionary<string, object> query = new Dictionary<string, object>();
             query.Add("username", user.FirstName);
             query.Add("last_name_id", user.LastName.ID);
             query.Add("email", user.Email);
@@ -283,7 +285,7 @@ namespace libsecondlife
                 query.Add("start_look_at_z", user.StartLookAt.Value.Z);
             }
 
-            byte[] postData = LLSD.LLSDSerialize(query);
+            byte[] postData = LLSDParser.SerializeXmlToBinary(query);
 
             // Make the request
             CapsRequest request = new CapsRequest(_caps.CreateUser.AbsoluteUri, String.Empty, null);
@@ -296,16 +298,16 @@ namespace libsecondlife
 
         private void CreateUserResponse(object response, HttpRequestState state)
         {
-            if (response is Hashtable)
+            if (response is Dictionary<string, object>)
             {
                 // everything is okay
                 // FIXME:
-                //return new LLUUID(((Hashtable)response)["agent_id"].ToString());
+                //return new LLUUID(((Dictionary<string, object>)response)["agent_id"].ToString());
             }
             else
             {
                 // an error happened
-                ArrayList al = (ArrayList)response;
+                List<object> al = (List<object>)response;
 
                 StringBuilder sb = new StringBuilder();
 

@@ -25,13 +25,13 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using libsecondlife.LLSD;
 using libsecondlife.Packets;
 using CookComputing.XmlRpc;
 
@@ -157,7 +157,7 @@ namespace libsecondlife
                 StartLocation = reply.start_location;
                 AgentAccess = reply.agent_access;
 
-                ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);
+                List<object> look_at = (List<object>)LLSDParser.DeserializeNotation(reply.look_at);
                 LookAt = new LLVector3(
                     (float)(double)look_at[0],
                     (float)(double)look_at[1],
@@ -165,14 +165,14 @@ namespace libsecondlife
 
                 if (reply.home != null)
                 {
-                    Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
-                    ArrayList array = (ArrayList)home["position"];
+                    Dictionary<string, object> home = (Dictionary<string, object>)LLSDParser.DeserializeNotation(reply.home);
+                    List<object> array = (List<object>)home["position"];
                     HomePosition = new LLVector3(
                         (float)(double)array[0],
                         (float)(double)array[1],
                         (float)(double)array[2]);
 
-                    array = (ArrayList)home["look_at"];
+                    array = (List<object>)home["look_at"];
                     HomeLookAt = new LLVector3(
                         (float)(double)array[0],
                         (float)(double)array[1],
@@ -635,7 +635,7 @@ namespace libsecondlife
                     Client.Self.lastName = reply.last_name;
                     Client.Self.StartLocation = reply.start_location;
                     Client.Self.AgentAccess = reply.agent_access;
-                    ArrayList look_at = (ArrayList)LLSD.ParseTerseLLSD(reply.look_at);
+                    List<object> look_at = (List<object>)LLSDParser.DeserializeNotation(reply.look_at);
                     Client.Self.LookAt = new LLVector3(
                         (float)(double)look_at[0],
                         (float)(double)look_at[1],
@@ -644,14 +644,14 @@ namespace libsecondlife
                     // Home
                     if (reply.home != null)
                     {
-                        Hashtable home = (Hashtable)LLSD.ParseTerseLLSD(reply.home);
-                        ArrayList array = (ArrayList)home["position"];
+                        Dictionary<string, object> home = (Dictionary<string, object>)LLSDParser.DeserializeNotation(reply.home);
+                        List<object> array = (List<object>)home["position"];
                         Client.Self.HomePosition = new LLVector3(
                             (float)(double)array[0],
                             (float)(double)array[1],
                             (float)(double)array[2]);
 
-                        array = (ArrayList)home["look_at"];
+                        array = (List<object>)home["look_at"];
                         Client.Self.HomeLookAt = new LLVector3(
                             (float)(double)array[0],
                             (float)(double)array[1],

@@ -25,7 +25,6 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -1077,14 +1076,14 @@ namespace libsecondlife
 
             if (url != String.Empty)
             {
-                Hashtable query = new Hashtable();
+                Dictionary<string, object> query = new Dictionary<string, object>();
                 query.Add("folder_id", folderID);
                 query.Add("asset_type", AssetTypeToString(assetType));
                 query.Add("inventory_type", InventoryTypeToString(invType));
                 query.Add("name", name);
                 query.Add("description", description);
 
-                byte[] postData = LLSD.LLSDSerialize(query);
+                byte[] postData = LLSD.LLSDParser.SerializeXmlToBinary(query);
 
                 // Make the request
                 CapsRequest request = new CapsRequest(url, _Client.Network.CurrentSim);
@@ -1462,7 +1461,7 @@ namespace libsecondlife
 
         private void CreateItemFromAssetResponse(object response, HttpRequestState state)
         {
-            Hashtable contents = (Hashtable)response;
+            Dictionary<string, object> contents = (Dictionary<string, object>)response;
             KeyValuePair<ItemCreatedCallback, byte[]> kvp = (KeyValuePair<ItemCreatedCallback, byte[]>)state.State;
             ItemCreatedCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;

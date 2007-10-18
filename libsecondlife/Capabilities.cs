@@ -25,10 +25,10 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using libsecondlife.LLSD;
 
 namespace libsecondlife
 {
@@ -46,14 +46,14 @@ namespace libsecondlife
         /// <param name="message">Event name</param>
         /// <param name="body">Decoded event data</param>
         /// <param name="caps">The CAPS system that made the call</param>
-        public delegate void EventQueueCallback(string message, Hashtable body, CapsEventQueue eventQueue);
+        public delegate void EventQueueCallback(string message, Dictionary<string, object> body, CapsEventQueue eventQueue);
         /// <summary>
         /// Triggered when an HTTP call in the queue is executed and a response
         /// is received
         /// </summary>
         /// <param name="body">Decoded response</param>
         /// <param name="request">Original capability request</param>
-        public delegate void CapsResponseCallback(Hashtable body, HttpRequestState request);
+        public delegate void CapsResponseCallback(Dictionary<string, object> body, HttpRequestState request);
 
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
@@ -134,7 +134,7 @@ namespace libsecondlife
                 return;
 
             // Create a request list
-            ArrayList req = new ArrayList();
+            List<object> req = new List<object>();
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
@@ -156,7 +156,7 @@ namespace libsecondlife
             req.Add("ChatSessionRequest");
             req.Add("ProvisionVoiceAccountRequest");
 
-            byte[] postData = LLSD.LLSDSerialize(req);
+            byte[] postData = LLSDParser.SerializeXmlToBinary(req);
 
             Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
 
@@ -167,9 +167,9 @@ namespace libsecondlife
 
         private void seedRequest_OnCapsResponse(object response, HttpRequestState state)
         {
-            if (response is Hashtable)
+            if (response is Dictionary<string, object>)
             {
-                Hashtable respTable = (Hashtable)response;
+                Dictionary<string, object> respTable = (Dictionary<string, object>)response;
 
                 StringBuilder capsList = new StringBuilder();
 

@@ -5,15 +5,20 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Text;
 
-namespace libsecondlife.LSD
+namespace libsecondlife.LLSD
 {
-    public static partial class LLSD
+    public static partial class LLSDParser
     {
         private static XmlSchema XmlSchema;
         private static XmlTextReader XmlTextReader;
         private static string LastXmlErrors = String.Empty;
         private static object XmlValidationLock = new object();
         private static DateTime Epoch = new DateTime(1970, 1, 1);
+
+        public static object DeserializeXml(byte[] xmlData)
+        {
+            return DeserializeXml(new XmlTextReader(new MemoryStream(xmlData, false)));
+        }
 
         public static object DeserializeXml(XmlTextReader xmlData)
         {
@@ -24,6 +29,11 @@ namespace libsecondlife.LSD
             object ret = ParseXmlElement(xmlData);
 
             return ret;
+        }
+
+        public static byte[] SerializeXmlToBinary(object data)
+        {
+            return Encoding.UTF8.GetBytes(SerializeXml(data));
         }
 
         public static string SerializeXml(object data)
@@ -82,21 +92,26 @@ namespace libsecondlife.LSD
 
         private static object ParseXmlElement(XmlTextReader reader)
         {
-            while (reader.NodeType != XmlNodeType.Element)
-            {
-                if (!reader.Read())
-                    throw new LLSDException("Couldn't find an element to parse");
-            }
+            SkipWhitespace(reader);
+
+            if (reader.NodeType != XmlNodeType.Element)
+                throw new LLSDException("Expected an element");
 
             string type = reader.LocalName;
+            object ret = null;
 
             switch (type)
             {
                 case "undef":
                     if (reader.IsEmptyElement)
+                    {
                         reader.Read();
+                    }
 
-                    return null;
+                    reader.Read();
+                    SkipWhitespace(reader);
+                    ret = null;
+                    break;
                 case "boolean":
                     if (reader.IsEmptyElement)
                     {
@@ -109,10 +124,14 @@ namespace libsecondlife.LSD
                         string s = reader.ReadString().Trim();
 
                         if (!String.IsNullOrEmpty(s) && (s == "true" || s == "1"))
-                            return true;
+                        {
+                            ret = true;
+                            break;
+                        }
                     }
 
-                    return false;
+                    ret = false;
+                    break;
                 case "integer":
                     if (reader.IsEmptyElement)
                     {
@@ -124,10 +143,12 @@ namespace libsecondlife.LSD
                     {
                         int value = 0;
                         Int32.TryParse(reader.ReadString().Trim(), out value);
-                        return value;
+                        ret = value;
+                        break;
                     }
 
-                    return 0;
+                    ret = 0;
+                    break;
                 case "real":
                     if (reader.IsEmptyElement)
                     {
@@ -145,10 +166,12 @@ namespace libsecondlife.LSD
                         else
                             Double.TryParse(str, out value);
 
-                        return value;
+                        ret = value;
+                        break;
                     }
 
-                    return 0d;
+                    ret = 0d;
+                    break;
                 case "uuid":
                     if (reader.IsEmptyElement)
                     {
@@ -160,10 +183,12 @@ namespace libsecondlife.LSD
                     {
                         LLUUID value = LLUUID.Zero;
                         LLUUID.TryParse(reader.ReadString().Trim(), out value);
-                        return value;
+                        ret = value;
+                        break;
                     }
 
-                    return LLUUID.Zero;
+                    ret = LLUUID.Zero;
+                    break;
                 case "date":
                     if (reader.IsEmptyElement)
                     {
@@ -175,10 +200,12 @@ namespace libsecondlife.LSD
                     {
                         DateTime value = Epoch;
                         DateTime.TryParse(reader.ReadString().Trim(), out value);
-                        return value;
+                        ret = value;
+                        break;
                     }
 
-                    return Epoch;
+                    ret = Epoch;
+                    break;
                 case "string":
                     if (reader.IsEmptyElement)
                     {
@@ -187,9 +214,13 @@ namespace libsecondlife.LSD
                     }
 
                     if (reader.Read())
-                        return reader.ReadString();
+                    {
+                        ret = reader.ReadString();
+                        break;
+                    }
 
-                    return String.Empty;
+                    ret = String.Empty;
+                    break;
                 case "binary":
                     if (reader.IsEmptyElement)
                     {
@@ -202,17 +233,37 @@ namespace libsecondlife.LSD
 
                     if (reader.Read())
                     {
-                        try { return Convert.FromBase64String(reader.ReadString().Trim()); }
-                        catch (FormatException ex) { throw new LLSDException("Binary decoding exception: " + ex.Message); }
+                        try
+                        {
+                            ret = Convert.FromBase64String(reader.ReadString().Trim());
+                            break;
+                        }
+                        catch (FormatException ex)
+                        {
+                            throw new LLSDException("Binary decoding exception: " + ex.Message);
+                        }
                     }
 
-                    return new byte[0];
+                    ret = new byte[0];
+                    break;
                 case "map":
                     return ParseXmlMap(reader);
                 case "array":
                     return ParseXmlArray(reader);
                 default:
-                    return null;
+                    reader.Read();
+                    ret = null;
+                    break;
+            }
+
+            if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != type)
+            {
+                throw new LLSDException("Expected </" + type + ">");
+            }
+            else
+            {
+                reader.Read();
+                return ret;
             }
         }
 
@@ -220,11 +271,14 @@ namespace libsecondlife.LSD
         {
             Dictionary<string, object> dict = new Dictionary<string, object>();
 
-            while (reader.NodeType != XmlNodeType.Element && reader.LocalName != "map")
-            {
-                if (!reader.Read())
-                    throw new LLSDException("Couldn't find a map to parse");
-            }
+            if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "map")
+                throw new NotImplementedException("Expected <map>");
+
+            //while (reader.NodeType != XmlNodeType.Element && reader.LocalName != "map")
+            //{
+            //    if (!reader.Read())
+            //        throw new LLSDException("Couldn't find a map to parse");
+            //}
 
             if (reader.IsEmptyElement)
             {
@@ -245,14 +299,17 @@ namespace libsecondlife.LSD
                     }
 
                     if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "key")
-                        break;
+                        throw new LLSDException("Expected <key>");
 
                     string key = reader.ReadString();
 
-                    if (reader.NodeType == XmlNodeType.EndElement && reader.LocalName == "key")
-                        reader.Read();
+                    if (reader.NodeType != XmlNodeType.EndElement || reader.LocalName != "key")
+                        throw new LLSDException("Expected </key>");
 
-                    dict[key] = ParseXmlElement(reader);
+                    if (reader.Read())
+                        dict[key] = ParseXmlElement(reader);
+                    else
+                        throw new LLSDException("Failed to parse a value for key " + key);
                 }
             }
 
@@ -263,11 +320,14 @@ namespace libsecondlife.LSD
         {
             List<object> list = new List<object>();
 
-            while (reader.NodeType != XmlNodeType.Element && reader.LocalName != "array")
-            {
-                if (!reader.Read())
-                    throw new LLSDException("Couldn't find an array to parse");
-            }
+            if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "array")
+                throw new LLSDException("Expected <array>");
+
+            //while (reader.NodeType != XmlNodeType.Element && reader.LocalName != "array")
+            //{
+            //    if (!reader.Read())
+            //        throw new LLSDException("Couldn't find an array to parse");
+            //}
 
             if (reader.IsEmptyElement)
             {
@@ -450,8 +510,7 @@ namespace libsecondlife.LSD
                 reader.NodeType == XmlNodeType.Comment ||
                 reader.NodeType == XmlNodeType.Whitespace ||
                 reader.NodeType == XmlNodeType.SignificantWhitespace ||
-                reader.NodeType == XmlNodeType.XmlDeclaration ||
-                reader.NodeType == XmlNodeType.EndElement)
+                reader.NodeType == XmlNodeType.XmlDeclaration)
             {
                 reader.Read();
             }

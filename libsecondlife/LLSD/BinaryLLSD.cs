@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace libsecondlife.LSD
+namespace libsecondlife.LLSD
 {
-    public static partial class LLSD
+    public static partial class LLSDParser
     {
         public static object DeserializeBinary(byte[] binaryData)
         {
