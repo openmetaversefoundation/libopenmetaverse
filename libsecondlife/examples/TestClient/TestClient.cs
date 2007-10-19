@@ -39,6 +39,7 @@ namespace libsecondlife.TestClient
             RegisterAllCommands(Assembly.GetExecutingAssembly());
 
             Settings.DEBUG = true;
+            Settings.LOG_RESENDS = false;
             Settings.STORE_LAND_PATCHES = true;
             Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;

@@ -156,7 +156,7 @@ namespace libsecondlife
             req.Add("ChatSessionRequest");
             req.Add("ProvisionVoiceAccountRequest");
 
-            byte[] postData = LLSDParser.SerializeXmlToBinary(req);
+            byte[] postData = LLSDParser.SerializeXmlToBytes(req);
 
             Simulator.Client.DebugLog("Making initial capabilities connection for " + Simulator.ToString());
 

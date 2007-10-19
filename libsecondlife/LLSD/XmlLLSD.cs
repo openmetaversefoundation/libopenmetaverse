@@ -31,7 +31,7 @@ namespace libsecondlife.LLSD
             return ret;
         }
 
-        public static byte[] SerializeXmlToBinary(object data)
+        public static byte[] SerializeXmlToBytes(object data)
         {
             return Encoding.UTF8.GetBytes(SerializeXml(data));
         }
@@ -367,7 +367,7 @@ namespace libsecondlife.LLSD
                 writer.WriteString((string)obj);
                 writer.WriteEndElement();
             }
-            else if (obj is int || obj is uint)
+            else if (obj is int || obj is uint || obj is short || obj is ushort || obj is byte || obj is sbyte)
             {
                 writer.WriteStartElement(String.Empty, "integer", String.Empty);
                 writer.WriteString(obj.ToString());

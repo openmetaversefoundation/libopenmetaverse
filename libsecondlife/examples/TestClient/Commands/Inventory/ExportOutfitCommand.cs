@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Xml;
 using libsecondlife;
 using libsecondlife.Packets;
 
@@ -12,24 +11,27 @@ namespace libsecondlife.TestClient
         public ExportOutfitCommand(TestClient testClient)
         {
             Name = "exportoutfit";
-            Description = "Exports an avatars outfit to an xml file. Usage: exportoutfit avataruuid outputfile.xml";
+            Description = "Exports an avatars outfit to an xml file. Usage: exportoutfit [avataruuid] outputfile.xml";
         }
 
         public override string Execute(string[] args, LLUUID fromAgentID)
         {
-            if (args.Length != 2)
-                return "Usage: exportoutfit avataruuid outputfile.xml";
-
             LLUUID id;
+            string path;
 
-            try
+            if (args.Length == 1)
             {
-                id = new LLUUID(args[0]);
+                id = Client.Network.AgentID;
+                path = args[0];
             }
-            catch (Exception)
+            else if (args.Length == 2)
             {
-                return "Usage: exportoutfit avataruuid outputfile.xml";
+                if (!LLUUID.TryParse(args[0], out id))
+                    return "Usage: exportoutfit [avataruuid] outputfile.xml";
+                path = args[1];
             }
+            else
+                return "Usage: exportoutfit [avataruuid] outputfile.xml";
 
             lock (Client.Appearances)
             {
@@ -37,17 +39,7 @@ namespace libsecondlife.TestClient
                 {
                     try
                     {
-						XmlWriterSettings settings = new XmlWriterSettings();
-						settings.Indent = true;
-						XmlWriter writer = XmlWriter.Create(args[1], settings);
-						try
-						{
-							Client.Appearances[id].ToXml(writer);
-						}
-						finally
-						{
-							writer.Close();
-						}
+                        File.WriteAllText(path, Packet.SerializeToXml(Client.Appearances[id]));
                     }
                     catch (Exception e)
                     {

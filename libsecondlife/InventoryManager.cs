@@ -1083,7 +1083,7 @@ namespace libsecondlife
                 query.Add("name", name);
                 query.Add("description", description);
 
-                byte[] postData = LLSD.LLSDParser.SerializeXmlToBinary(query);
+                byte[] postData = LLSD.LLSDParser.SerializeXmlToBytes(query);
 
                 // Make the request
                 CapsRequest request = new CapsRequest(url, _Client.Network.CurrentSim);

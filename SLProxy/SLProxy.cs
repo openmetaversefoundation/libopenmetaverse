@@ -605,7 +605,7 @@ namespace SLProxy
 
                 if (cap.ReqFmt == CapsDataFormat.LLSD)
                 {
-                    content = LLSDParser.SerializeXmlToBinary(capReq.Request);
+                    content = LLSDParser.SerializeXmlToBytes(capReq.Request);
                 }
                 else
                 {
@@ -748,7 +748,7 @@ namespace SLProxy
 
                 if (cap.RespFmt == CapsDataFormat.LLSD)
                 {
-                    respBuf = LLSDParser.SerializeXmlToBinary(capReq.Response);
+                    respBuf = LLSDParser.SerializeXmlToBytes(capReq.Response);
                 }
                 else
                 {

@@ -25,13 +25,62 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using libsecondlife.LLSD;
 
 namespace libsecondlife.Packets
 {
     public abstract partial class Packet
     {
+        public static string SerializeToXml(Packet packet)
+        {
+            return LLSDParser.SerializeXml(SerializeToLLSD(packet));
+        }
+
+        public static object SerializeToLLSD(Packet packet)
+        {
+            Dictionary<string, object> body = new Dictionary<string, object>();
+            Type type = packet.GetType();
+
+            foreach (FieldInfo field in type.GetFields())
+            {
+                if (field.IsPublic)
+                {
+                    Type blockType = field.FieldType;
+
+                    if (blockType.IsArray)
+                    {
+                        object blockArray = field.GetValue(packet);
+                        Array array = (Array)blockArray;
+                        List<object> blockList = new List<object>(array.Length);
+                        IEnumerator ie = array.GetEnumerator();
+
+                        while (ie.MoveNext())
+                        {
+                            object block = ie.Current;
+                            blockList.Add(BuildLLSDBlock(block));
+                        }
+
+                        body[field.Name] = blockList;
+                    }
+                    else
+                    {
+                        object block = field.GetValue(packet);
+                        body[field.Name] = BuildLLSDBlock(block);
+                    }
+                }
+            }
+
+            return body;
+        }
+
+        public static string SerializeToBinary(Packet packet)
+        {
+            throw new NotImplementedException("Need to finish BinaryLLSD first");
+        }
+
         /// <summary>
         /// Attempts to convert an LLSD structure to a known Packet type
         /// </summary>
@@ -71,7 +120,7 @@ namespace libsecondlife.Packets
                             for (int i = 0; i < array.Count; i++)
                             {
                                 Dictionary<string, object> hashtable = (Dictionary<string, object>)array[i];
-                                blockArray[i] = ParseCapsBlock(hashtable, elementType);
+                                blockArray[i] = ParseLLSDBlock(hashtable, elementType);
                             }
 
                             field.SetValue(packet, blockArray);
@@ -79,7 +128,7 @@ namespace libsecondlife.Packets
                         else
                         {
                             Dictionary<string, object> hashtable = (Dictionary<string, object>)((List<object>)body[field.Name])[0];
-                            field.SetValue(packet, ParseCapsBlock(hashtable, blockType));
+                            field.SetValue(packet, ParseLLSDBlock(hashtable, blockType));
                         }
                     }
                 }
@@ -92,7 +141,7 @@ namespace libsecondlife.Packets
             return (Packet)packet;
         }
 
-        public static object ParseCapsBlock(Dictionary<string, object> blockData, Type blockType)
+        private static object ParseLLSDBlock(Dictionary<string, object> blockData, Type blockType)
         {
             object block = Activator.CreateInstance(blockType);
 
@@ -145,6 +194,30 @@ namespace libsecondlife.Packets
             }
 
             return block;
+        }
+
+        private static Dictionary<string, object> BuildLLSDBlock(object block)
+        {
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+            Type blockType = block.GetType();
+
+            foreach (FieldInfo field in blockType.GetFields())
+            {
+                if (field.IsPublic)
+                {
+                    dict[field.Name] = field.GetValue(block);
+                }
+            }
+
+            foreach (PropertyInfo property in blockType.GetProperties())
+            {
+                if (property.Name != "Length")
+                {
+                    dict[property.Name] = property.GetValue(block, null);
+                }
+            }
+
+            return dict;
         }
     }
 }

@@ -220,7 +220,7 @@ namespace libsecondlife
             Dictionary<string, object> query = new Dictionary<string, object>();
             query.Add("username", firstName);
             query.Add("last_name_id", lastName.ID);
-            byte[] postData = LLSDParser.SerializeXmlToBinary(query);
+            byte[] postData = LLSDParser.SerializeXmlToBytes(query);
 
             CapsRequest request = new CapsRequest(_caps.CheckName.AbsoluteUri, String.Empty, null);
             request.OnCapsResponse += new CapsRequest.CapsResponseCallback(CheckNameResponse);
@@ -285,7 +285,7 @@ namespace libsecondlife
                 query.Add("start_look_at_z", user.StartLookAt.Value.Z);
             }
 
-            byte[] postData = LLSDParser.SerializeXmlToBinary(query);
+            byte[] postData = LLSDParser.SerializeXmlToBytes(query);
 
             // Make the request
             CapsRequest request = new CapsRequest(_caps.CreateUser.AbsoluteUri, String.Empty, null);
