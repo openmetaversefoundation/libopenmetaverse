@@ -70,7 +70,7 @@ namespace importprimscript
             Client.OnLogMessage += new SecondLife.LogCallback(Client_OnLogMessage);
 
             // Optimize the connection for our purposes
-            Client.Self.Status.Camera.Far = 32.0f;
+            Client.Self.Movement.Camera.Far = 32.0f;
             Client.Settings.MULTIPLE_SIMS = false;
             Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.ENABLE_CAPS = false;

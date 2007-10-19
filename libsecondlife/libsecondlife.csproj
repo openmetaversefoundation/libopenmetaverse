@@ -121,7 +121,6 @@
     <Compile Include="LLSD\NotationLLSD.cs" />
     <Compile Include="LLSD\XmlLLSD.cs" />
     <Compile Include="Login.cs" />
-    <Compile Include="MainAvatarStatus.cs" />
     <Compile Include="MainAvatar.cs" />
     <Compile Include="EstateTools.cs">
       <SubType>Code</SubType>
@@ -131,6 +130,7 @@
     </Compile>
     <Compile Include="GroupManager.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="MainAvatarMovement.cs" />
     <Compile Include="NameValue.cs" />
     <Compile Include="NetworkManager.cs">
       <SubType>Code</SubType>

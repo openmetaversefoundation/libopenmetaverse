@@ -79,7 +79,7 @@ namespace libsecondlife
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public const int PING_INTERVAL = 2200;
         /// <summary>Number of milliseconds between sending camera updates</summary>
-        public const int AGENT_UPDATE_INTERVAL = 500;
+        public const int DEFAULT_AGENT_UPDATE_INTERVAL = 500;
         /// <summary>Number of milliseconds between updating the current
         /// positions of moving, non-accelerating and non-colliding objects</summary>
         public const int INTERPOLATION_INTERVAL = 250;

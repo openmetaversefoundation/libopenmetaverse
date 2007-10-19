@@ -69,7 +69,7 @@ namespace libsecondlife.TestClient
             // Attempt to join all the groups
             foreach (LLUUID groupID in Groups)
             {
-                Client.Self.RequestJoinGroup(groupID);
+                Client.Groups.RequestJoinGroup(groupID);
             }
 
             return "Synchronized our profile to the profile of " + targetID.ToStringHyphenated();
@@ -124,7 +124,7 @@ namespace libsecondlife.TestClient
             {
                 Console.WriteLine(Client.ToString() + " setting " + groupID.ToStringHyphenated() +
                     " as the active group");
-                Client.Self.ActivateGroup(groupID);
+                Client.Groups.ActivateGroup(groupID);
             }
         }
     }

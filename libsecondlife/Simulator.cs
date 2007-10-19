@@ -418,7 +418,7 @@ namespace libsecondlife
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
                 if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Status.SendUpdate(true, this);
+                    Client.Self.Movement.SendUpdate(true, this);
 
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {

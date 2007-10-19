@@ -437,7 +437,7 @@ namespace libsecondlife
 
                 // Send an initial AgentUpdate to complete our movement in to the sim
                 if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Status.SendUpdate(true, simulator);
+                    Client.Self.Movement.SendUpdate(true, simulator);
 
                 return simulator;
             }
@@ -601,12 +601,12 @@ namespace libsecondlife
                                     }
                                     else
                                     {
-                                        Client.Log("Received a duplicate " + packet.Type.ToString() + " packet!",
-                                            Helpers.LogLevel.Error);
+                                        Client.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
+                                            packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning);
                                     }
 
                                     // Avoid firing a callback twice for the same packet
-                                    goto End;
+                                    continue;
                                 }
                                 else
                                 {
@@ -664,8 +664,6 @@ namespace libsecondlife
                         }
 
                         #endregion FireCallbacks
-
-                    End: ;
                     }
                 }
             }

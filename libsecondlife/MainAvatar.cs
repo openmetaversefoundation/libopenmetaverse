@@ -715,8 +715,8 @@ namespace libsecondlife
         public LLVector3 HomePosition;
         /// <summary>LookAt point saved/restored with HomePosition</summary>
         public LLVector3 HomeLookAt;
-        /// <summary>Used for camera and control key state tracking</summary>
-        public MainAvatarStatus Status;
+        /// <summary>Used for movement and camera tracking</summary>
+        public MainAvatarMovement Movement;
         /// <summary>The UUID of your root inventory folder</summary>
         public LLUUID InventoryRootFolderUUID;
 
@@ -828,7 +828,7 @@ namespace libsecondlife
         public MainAvatar(SecondLife client)
         {
             Client = client;
-            Status = new MainAvatarStatus(Client);
+            Movement = new MainAvatarMovement(Client);
             NetworkManager.PacketCallback callback;
 
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
@@ -844,31 +844,53 @@ namespace libsecondlife
 
             // Instant Message callback
             Client.Network.RegisterCallback(PacketType.ImprovedInstantMessage, new NetworkManager.PacketCallback(InstantMessageHandler));
-
             // Chat callback
             Client.Network.RegisterCallback(PacketType.ChatFromSimulator, new NetworkManager.PacketCallback(ChatHandler));
-
             // Script dialog callback
             Client.Network.RegisterCallback(PacketType.ScriptDialog, new NetworkManager.PacketCallback(ScriptDialogHandler));
-
             // Script question callback
             Client.Network.RegisterCallback(PacketType.ScriptQuestion, new NetworkManager.PacketCallback(ScriptQuestionHandler));
-
             // Movement complete callback
             Client.Network.RegisterCallback(PacketType.AgentMovementComplete, new NetworkManager.PacketCallback(MovementCompleteHandler));
-
             // Health callback
             Client.Network.RegisterCallback(PacketType.HealthMessage, new NetworkManager.PacketCallback(HealthHandler));
-
-            // Money callbacks
-            callback = new NetworkManager.PacketCallback(BalanceHandler);
-            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, callback);
-
+            // Money callback
+            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
 			//Agent Update Callback
 			Client.Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
 
 	        // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Capabilities.EventQueueCallback(EstablishAgentCommunicationEventHandler));
+        }
+
+        #region Chat and instant messages
+
+        /// <summary>
+        /// Send a chat message
+        /// </summary>
+        /// <param name="message">The Message you're sending out.</param>
+        /// <param name="channel">Channel number (0 would be default 'Say' message, other numbers 
+        /// denote the equivalent of /# in normal client).</param>
+        /// <param name="type">Chat Type, see above.</param>
+        public void Chat(string message, int channel, ChatType type)
+        {
+            ChatFromViewerPacket chat = new ChatFromViewerPacket();
+            chat.AgentData.AgentID = this.ID;
+            chat.AgentData.SessionID = Client.Network.SessionID;
+            chat.ChatData.Channel = channel;
+            chat.ChatData.Message = Helpers.StringToField(message);
+            chat.ChatData.Type = (byte)type;
+
+            Client.Network.SendPacket(chat);
+        }
+
+        /// <summary>Requests missed/offline messages</summary>
+        public void RetrieveInstantMessages()
+        {
+            RetrieveInstantMessagesPacket p = new RetrieveInstantMessagesPacket();
+            p.AgentData.AgentID = Client.Network.AgentID;
+            p.AgentData.SessionID = Client.Network.SessionID;
+            Client.Network.SendPacket(p);
         }
 
         /// <summary>
@@ -1005,6 +1027,10 @@ namespace libsecondlife
             // Send the message
             Client.Network.SendPacket(im);
         }
+
+        #endregion Chat and instant messages
+
+        #region Viewer Effects
 
         /// <summary>
         /// 
@@ -1147,75 +1173,9 @@ namespace libsecondlife
             Client.Network.SendPacket(effect);
         }
 
-        /// <summary>
-        /// Synchronize the local profile and interests information to the server
-        /// </summary>
-        public void SetAvatarInformation()
-        {
-            // Basic profile properties
-            AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
-            apup.AgentData.AgentID = this.ID;
-            apup.AgentData.SessionID = Client.Network.SessionID;
-            apup.PropertiesData.AboutText = Helpers.StringToField(this.ProfileProperties.AboutText);
-            apup.PropertiesData.AllowPublish = this.ProfileProperties.AllowPublish;
-            apup.PropertiesData.FLAboutText = Helpers.StringToField(this.ProfileProperties.FirstLifeText);
-            apup.PropertiesData.FLImageID = this.ProfileProperties.FirstLifeImage;
-            apup.PropertiesData.ImageID = this.ProfileProperties.ProfileImage;
-            apup.PropertiesData.MaturePublish = this.ProfileProperties.MaturePublish;
-            apup.PropertiesData.ProfileURL = Helpers.StringToField(this.ProfileProperties.ProfileURL);
+        #endregion Viewer Effects
 
-            Client.Network.SendPacket(apup);
-
-            // Interests
-            AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
-            aiup.AgentData.AgentID = this.ID;
-            aiup.AgentData.SessionID = Client.Network.SessionID;
-            aiup.PropertiesData.LanguagesText = Helpers.StringToField(this.ProfileInterests.LanguagesText);
-            aiup.PropertiesData.SkillsMask = this.ProfileInterests.SkillsMask;
-            aiup.PropertiesData.SkillsText = Helpers.StringToField(this.ProfileInterests.SkillsText);
-            aiup.PropertiesData.WantToMask = this.ProfileInterests.WantToMask;
-            aiup.PropertiesData.WantToText = Helpers.StringToField(this.ProfileInterests.WantToText);
-
-            Client.Network.SendPacket(aiup);
-        }
-
-        /// <summary>
-        /// Send a chat message
-        /// </summary>
-        /// <param name="message">The Message you're sending out.</param>
-        /// <param name="channel">Channel number (0 would be default 'Say' message, other numbers 
-        /// denote the equivalent of /# in normal client).</param>
-        /// <param name="type">Chat Type, see above.</param>
-        public void Chat(string message, int channel, ChatType type)
-        {
-            ChatFromViewerPacket chat = new ChatFromViewerPacket();
-            chat.AgentData.AgentID = this.ID;
-            chat.AgentData.SessionID = Client.Network.SessionID;
-            chat.ChatData.Channel = channel;
-            chat.ChatData.Message = Helpers.StringToField(message);
-            chat.ChatData.Type = (byte)type;
-
-            Client.Network.SendPacket(chat);
-        }
-
-        /// <summary>
-        /// Set the height and the width of the client window. This is used
-        /// by the server to build a virtual camera frustum for our avatar
-        /// </summary>
-        /// <param name="height">New height of the viewer window</param>
-        /// <param name="width">New width of the viewer window</param>
-        public void SetHeightWidth(ushort height, ushort width)
-        {
-            AgentHeightWidthPacket heightwidth = new AgentHeightWidthPacket();
-            heightwidth.AgentData.AgentID = Client.Network.AgentID;
-            heightwidth.AgentData.SessionID = Client.Network.SessionID;
-            heightwidth.AgentData.CircuitCode = Client.Network.CircuitCode;
-            heightwidth.HeightWidthBlock.Height = height;
-            heightwidth.HeightWidthBlock.Width = width;
-            heightwidth.HeightWidthBlock.GenCounter = HeightWidthGenCounter++;
-
-            Client.Network.SendPacket(heightwidth);
-        }
+        #region Movement Actions
 
         /// <summary>
         /// Sends a request to sit on the specified object
@@ -1232,56 +1192,24 @@ namespace libsecondlife
             Client.Network.SendPacket(requestSit);
         }
 
-        /// <summary>
-        /// Request the list of muted things for this avatar
-        /// </summary>
-        public void RequestMuteList()
+        /// <summary>Stands up from sitting on a prim or the ground</summary>
+        public bool Stand()
         {
-            MuteListRequestPacket mute = new MuteListRequestPacket();
-            mute.AgentData.AgentID = Client.Network.AgentID;
-            mute.AgentData.SessionID = Client.Network.SessionID;
-            mute.MuteData.MuteCRC = 0;
-
-            Client.Network.SendPacket(mute);
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Movement.StandUp = true;
+                Movement.SendUpdate();
+                Movement.StandUp = false;
+                Movement.SendUpdate();
+                return true;
+            }
+            else
+            {
+                Client.Log("Attempted Stand but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
         }
 
-        /// <summary>
-        /// Request the current L$ balance
-        /// </summary>
-        public void RequestBalance()
-        {
-            MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
-            money.AgentData.AgentID = Client.Network.AgentID;
-            money.AgentData.SessionID = Client.Network.SessionID;
-            money.MoneyData.TransactionID = LLUUID.Zero;
-
-            Client.Network.SendPacket(money);
-        }
-
-		/// <summary>
-		/// Sets home location
-		/// </summary>		
-		public void SetHome()
-		{
-			SetStartLocationRequestPacket s = new SetStartLocationRequestPacket();
-			s.AgentData = new SetStartLocationRequestPacket.AgentDataBlock();
-			s.AgentData.AgentID = Client.Network.AgentID;
-			s.AgentData.SessionID = Client.Network.SessionID;
-			s.StartLocationData = new SetStartLocationRequestPacket.StartLocationDataBlock();
-			s.StartLocationData.LocationPos = Client.Self.Position;
-			s.StartLocationData.LocationID = 1;
-			s.StartLocationData.SimName = Helpers.StringToField("");
-			s.StartLocationData.LocationLookAt = Client.Self.LookAt;
-			Client.Network.SendPacket(s);
-		}
-		
-		/// <summary>
-		/// Teleports the avatar home
-		/// </summary>
-		public bool GoHome()
-		{
-			return Teleport(LLUUID.Zero);
-		}
 		/// <summary>
         /// Follows a call to RequestSit() to actually sit on the object
         /// </summary>
@@ -1300,10 +1228,10 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                Client.Self.Status.SitOnGround = true;
-                Client.Self.Status.SendUpdate(true);
-                Client.Self.Status.SitOnGround = false;
-                Client.Self.Status.SendUpdate(true);
+                Movement.SitOnGround = true;
+                Movement.SendUpdate(true);
+                Movement.SitOnGround = false;
+                Movement.SendUpdate(true);
                 return true;
             }
             else
@@ -1321,8 +1249,8 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                Client.Self.Status.UpNeg = true;
-                Client.Self.Status.SendUpdate(true);
+                Movement.UpNeg = true;
+                Movement.SendUpdate(true);
                 return true;
             }
             else
@@ -1339,8 +1267,8 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                Client.Self.Status.UpNeg = false;
-                Client.Self.Status.SendUpdate(true);
+                Movement.UpNeg = false;
+                Movement.SendUpdate(true);
                 return true;
             }
             else
@@ -1357,8 +1285,8 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                Client.Self.Status.UpPos = true;
-                Client.Self.Status.SendUpdate(true);
+                Movement.UpPos = true;
+                Movement.SendUpdate(true);
                 return true;
             }
             else
@@ -1375,11 +1303,11 @@ namespace libsecondlife
         {
             if (Client.Settings.SEND_AGENT_UPDATES)
             {
-                Client.Self.Status.UpPos = false;
-                Client.Self.Status.FinishAnim = true;
-                Client.Self.Status.SendUpdate(true);
-                Client.Self.Status.FinishAnim = false;
-                Client.Self.Status.SendUpdate(true);
+                Movement.UpPos = false;
+                Movement.FinishAnim = true;
+                Movement.SendUpdate(true);
+                Movement.FinishAnim = false;
+                Movement.SendUpdate(true);
                 return true;
             }
             else
@@ -1387,6 +1315,167 @@ namespace libsecondlife
                 Client.Log("Attempted StopJump but agent updates are disabled", Helpers.LogLevel.Warning);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Use the autopilot sim function to move the avatar to a new
+        /// position. Uses double precision to get precise movements
+        /// </summary>
+        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
+        /// <param name="globalX">Global X coordinate to move to</param>
+        /// <param name="globalY">Global Y coordinate to move to</param>
+        /// <param name="z">Z coordinate to move to</param>
+        public void AutoPilot(double globalX, double globalY, double z)
+        {
+            GenericMessagePacket autopilot = new GenericMessagePacket();
+
+            autopilot.AgentData.AgentID = Client.Network.AgentID;
+            autopilot.AgentData.SessionID = Client.Network.SessionID;
+            autopilot.AgentData.TransactionID = LLUUID.Zero;
+            autopilot.MethodData.Invoice = LLUUID.Zero;
+            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
+            autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
+            autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
+            autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
+            autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+
+            Client.Network.SendPacket(autopilot);
+        }
+
+        /// <summary>
+        /// Use the autopilot sim function to move the avatar to a new position
+        /// </summary>
+        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
+        /// <param name="globalX">Integer value for the global X coordinate to move to</param>
+        /// <param name="globalY">Integer value for the global Y coordinate to move to</param>
+        /// <param name="z">Floating-point value for the Z coordinate to move to</param>
+        public void AutoPilot(ulong globalX, ulong globalY, float z)
+        {
+            GenericMessagePacket autopilot = new GenericMessagePacket();
+
+            autopilot.AgentData.AgentID = Client.Network.AgentID;
+            autopilot.AgentData.SessionID = Client.Network.SessionID;
+            autopilot.AgentData.TransactionID = LLUUID.Zero;
+            autopilot.MethodData.Invoice = LLUUID.Zero;
+            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
+            autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
+            autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
+            autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
+            autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
+            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
+
+            Client.Network.SendPacket(autopilot);
+        }
+
+        /// <summary>
+        /// Use the autopilot sim function to move the avatar to a new position
+        /// </summary>
+        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
+        /// <param name="localX">Integer value for the local X coordinate to move to</param>
+        /// <param name="localY">Integer value for the local Y coordinate to move to</param>
+        /// <param name="z">Floating-point value for the Z coordinate to move to</param>
+        public void AutoPilotLocal(int localX, int localY, float z)
+        {
+            uint x, y;
+            Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);
+            AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
+        }
+
+        /// <summary>Cancels autopilot sim function</summary>
+        /// <remarks>Not certain if this is how it is really done</remarks>
+        public bool AutoPilotCancel()
+        {
+            if (Client.Settings.SEND_AGENT_UPDATES)
+            {
+                Movement.AtPos = true;
+                Movement.SendUpdate();
+                Movement.AtPos = false;
+                Movement.SendUpdate();
+                return true;
+            }
+            else
+            {
+                Client.Log("Attempted AutoPilotCancel but agent updates are disabled", Helpers.LogLevel.Warning);
+                return false;
+            }
+        }
+
+        #endregion Movement actions
+
+        #region Touch and grab
+
+        /// <summary>
+        /// Grabs an object
+        /// </summary>
+        /// <param name="objectLocalID">Local ID of Object to grab</param>
+        public void Grab(uint objectLocalID)
+        {
+            ObjectGrabPacket grab = new ObjectGrabPacket();
+            grab.AgentData.AgentID = Client.Network.AgentID;
+            grab.AgentData.SessionID = Client.Network.SessionID;
+            grab.ObjectData.LocalID = objectLocalID;
+            grab.ObjectData.GrabOffset = new LLVector3(0, 0, 0);
+            Client.Network.SendPacket(grab);
+        }
+
+        /// <summary>
+        /// Drags on an object
+        /// </summary>
+        /// <param name="objectID">LLUUID of the object to drag</param>
+        /// <param name="grabPosition">Drag target in region coordinates</param>
+        public void GrabUpdate(LLUUID objectID, LLVector3 grabPosition)
+        {
+            ObjectGrabUpdatePacket grab = new ObjectGrabUpdatePacket();
+            grab.AgentData.AgentID = Client.Network.AgentID;
+            grab.AgentData.SessionID = Client.Network.SessionID;
+            grab.ObjectData.ObjectID = objectID;
+            grab.ObjectData.GrabOffsetInitial = new LLVector3(0, 0, 0);
+            grab.ObjectData.GrabPosition = grabPosition;
+            grab.ObjectData.TimeSinceLast = 0;
+            Client.Network.SendPacket(grab);
+        }
+
+        /// <summary>
+        /// Releases a grabbed object
+        /// </summary>
+        public void DeGrab(uint objectLocalID)
+        {
+            ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
+            degrab.AgentData.AgentID = Client.Network.AgentID;
+            degrab.AgentData.SessionID = Client.Network.SessionID;
+            degrab.ObjectData.LocalID = objectLocalID;
+            Client.Network.SendPacket(degrab);
+        }
+
+        /// <summary>
+        /// Touches an object
+        /// </summary>
+        public void Touch(uint objectLocalID)
+        {
+            Client.Self.Grab(objectLocalID);
+            Client.Self.DeGrab(objectLocalID);
+        }
+
+        #endregion Touch and grab
+
+        #region Money
+
+        /// <summary>
+        /// Request the current L$ balance
+        /// </summary>
+        public void RequestBalance()
+        {
+            MoneyBalanceRequestPacket money = new MoneyBalanceRequestPacket();
+            money.AgentData.AgentID = Client.Network.AgentID;
+            money.AgentData.SessionID = Client.Network.SessionID;
+            money.MoneyData.TransactionID = LLUUID.Zero;
+
+            Client.Network.SendPacket(money);
         }
 
         /// <summary>
@@ -1488,6 +1577,10 @@ namespace libsecondlife
             Client.Network.SendPacket(money);
         }
 
+        #endregion Money
+
+        #region Animations
+
         /// <summary>
         /// Send an AgentAnimation packet that toggles a single animation on
         /// </summary>
@@ -1538,111 +1631,16 @@ namespace libsecondlife
             Client.Network.SendPacket(animate);
         }
 
-        public void AutoPilot(double globalX, double globalY, double z)
-        {
-            GenericMessagePacket autopilot = new GenericMessagePacket();
+        #endregion Animations
 
-            autopilot.AgentData.AgentID = Client.Network.AgentID;
-            autopilot.AgentData.SessionID = Client.Network.SessionID;
-            autopilot.AgentData.TransactionID = LLUUID.Zero;
-            autopilot.MethodData.Invoice = LLUUID.Zero;
-            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
-            autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
-            autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
-            autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
-            autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
-
-            Client.Network.SendPacket(autopilot);
-        }
+        #region Teleporting
 
         /// <summary>
-        /// Use the autopilot sim function to move the avatar to a new position
+        /// Teleports the avatar home
         /// </summary>
-        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
-        /// <param name="globalX">Integer value for the global X coordinate to move to</param>
-        /// <param name="globalY">Integer value for the global Y coordinate to move to</param>
-        /// <param name="z">Floating-point value for the Z coordinate to move to</param>
-        public void AutoPilot(ulong globalX, ulong globalY, float z)
+        public bool GoHome()
         {
-            GenericMessagePacket autopilot = new GenericMessagePacket();
-
-            autopilot.AgentData.AgentID = Client.Network.AgentID;
-            autopilot.AgentData.SessionID = Client.Network.SessionID;
-            autopilot.AgentData.TransactionID = LLUUID.Zero;
-            autopilot.MethodData.Invoice = LLUUID.Zero;
-            autopilot.MethodData.Method = Helpers.StringToField("autopilot");
-            autopilot.ParamList = new GenericMessagePacket.ParamListBlock[3];
-            autopilot.ParamList[0] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[0].Parameter = Helpers.StringToField(globalX.ToString());
-            autopilot.ParamList[1] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[1].Parameter = Helpers.StringToField(globalY.ToString());
-            autopilot.ParamList[2] = new GenericMessagePacket.ParamListBlock();
-            autopilot.ParamList[2].Parameter = Helpers.StringToField(z.ToString());
-
-            Client.Network.SendPacket(autopilot);
-        }
-
-        /// <summary>
-        /// Use the autopilot sim function to move the avatar to a new position
-        /// </summary>
-        /// <remarks>The z value is currently not handled properly by the simulator</remarks>
-        /// <param name="localX">Integer value for the local X coordinate to move to</param>
-        /// <param name="localY">Integer value for the local Y coordinate to move to</param>
-        /// <param name="z">Floating-point value for the Z coordinate to move to</param>
-        public void AutoPilotLocal(int localX, int localY, float z)
-        {
-            uint x, y;
-            Helpers.LongToUInts(Client.Network.CurrentSim.Handle, out x, out y);
-            AutoPilot((ulong)(x + localX), (ulong)(y + localY), z);
-        }
-
-        /// <summary>Cancels autopilot sim function</summary>
-        /// <remarks>Not certain if this is how it is really done</remarks>
-        public bool AutoPilotCancel()
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Client.Self.Status.AtPos = true;
-                Client.Self.Status.SendUpdate();
-                Client.Self.Status.AtPos = false;
-                Client.Self.Status.SendUpdate();
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted AutoPilotCancel but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
-        }
-
-        /// <summary>Requests missed/offline messages</summary>
-        public void RetrieveInstantMessages()
-        {
-            RetrieveInstantMessagesPacket p = new RetrieveInstantMessagesPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
-            Client.Network.SendPacket(p);
-        }
-
-        /// <summary>Stands up from sitting on a prim or the ground</summary>
-        public bool Stand()
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Client.Self.Status.StandUp = true;
-                Client.Self.Status.SendUpdate();
-                Client.Self.Status.StandUp = false;
-                Client.Self.Status.SendUpdate();
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted Stand but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
+            return Teleport(LLUUID.Zero);
         }
 
 		/// <summary>Attempt teleport to specified LLUUID</summary>
@@ -1669,6 +1667,7 @@ namespace libsecondlife
 
             return (TeleportStat == TeleportStatus.Finished);
 		}
+
         /// <summary>
         /// Attempt to look up a simulator name and teleport to the discovered
         /// destination
@@ -1838,185 +1837,91 @@ namespace libsecondlife
             }
         }
 
-        /// <summary>Tracks the specified avatar on your map</summary>
-        /// <param name="preyID">Avatar ID to track</param>
-        public void TrackAgent(LLUUID preyID)
+        #endregion Teleporting
+
+        #region Misc
+
+        /// <summary>
+        /// Synchronize the local profile and interests information to the server
+        /// </summary>
+        public void SetAvatarInformation()
         {
-            TrackAgentPacket p = new TrackAgentPacket();
-            p.AgentData.AgentID = Client.Network.AgentID;
-            p.AgentData.SessionID = Client.Network.SessionID;
-            p.TargetData.PreyID = preyID;
-            Client.Network.SendPacket(p);
+            // Basic profile properties
+            AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
+            apup.AgentData.AgentID = this.ID;
+            apup.AgentData.SessionID = Client.Network.SessionID;
+            apup.PropertiesData.AboutText = Helpers.StringToField(this.ProfileProperties.AboutText);
+            apup.PropertiesData.AllowPublish = this.ProfileProperties.AllowPublish;
+            apup.PropertiesData.FLAboutText = Helpers.StringToField(this.ProfileProperties.FirstLifeText);
+            apup.PropertiesData.FLImageID = this.ProfileProperties.FirstLifeImage;
+            apup.PropertiesData.ImageID = this.ProfileProperties.ProfileImage;
+            apup.PropertiesData.MaturePublish = this.ProfileProperties.MaturePublish;
+            apup.PropertiesData.ProfileURL = Helpers.StringToField(this.ProfileProperties.ProfileURL);
+
+            Client.Network.SendPacket(apup);
+
+            // Interests
+            AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
+            aiup.AgentData.AgentID = this.ID;
+            aiup.AgentData.SessionID = Client.Network.SessionID;
+            aiup.PropertiesData.LanguagesText = Helpers.StringToField(this.ProfileInterests.LanguagesText);
+            aiup.PropertiesData.SkillsMask = this.ProfileInterests.SkillsMask;
+            aiup.PropertiesData.SkillsText = Helpers.StringToField(this.ProfileInterests.SkillsText);
+            aiup.PropertiesData.WantToMask = this.ProfileInterests.WantToMask;
+            aiup.PropertiesData.WantToText = Helpers.StringToField(this.ProfileInterests.WantToText);
+
+            Client.Network.SendPacket(aiup);
+        }
+
+        
+
+        /// <summary>
+        /// Set the height and the width of the client window. This is used
+        /// by the server to build a virtual camera frustum for our avatar
+        /// </summary>
+        /// <param name="height">New height of the viewer window</param>
+        /// <param name="width">New width of the viewer window</param>
+        public void SetHeightWidth(ushort height, ushort width)
+        {
+            AgentHeightWidthPacket heightwidth = new AgentHeightWidthPacket();
+            heightwidth.AgentData.AgentID = Client.Network.AgentID;
+            heightwidth.AgentData.SessionID = Client.Network.SessionID;
+            heightwidth.AgentData.CircuitCode = Client.Network.CircuitCode;
+            heightwidth.HeightWidthBlock.Height = height;
+            heightwidth.HeightWidthBlock.Width = width;
+            heightwidth.HeightWidthBlock.GenCounter = HeightWidthGenCounter++;
+
+            Client.Network.SendPacket(heightwidth);
         }
 
         /// <summary>
-        /// Grabs an object
+        /// Request the list of muted things for this avatar
         /// </summary>
-        /// <param name="objectLocalID">Local ID of Object to grab</param>
-        public void Grab(uint objectLocalID)
+        public void RequestMuteList()
         {
-            ObjectGrabPacket grab = new ObjectGrabPacket();
-            grab.AgentData.AgentID = Client.Network.AgentID;
-            grab.AgentData.SessionID = Client.Network.SessionID;
-            grab.ObjectData.LocalID = objectLocalID;
-            grab.ObjectData.GrabOffset = new LLVector3(0, 0, 0);
-            Client.Network.SendPacket(grab);
+            MuteListRequestPacket mute = new MuteListRequestPacket();
+            mute.AgentData.AgentID = Client.Network.AgentID;
+            mute.AgentData.SessionID = Client.Network.SessionID;
+            mute.MuteData.MuteCRC = 0;
+
+            Client.Network.SendPacket(mute);
         }
 
         /// <summary>
-        /// Drags on an object
-        /// </summary>
-        /// <param name="objectID">Strangely, LLUID instead of local ID</param>
-        /// <param name="grabPosition">Drag target in region coordinates</param>
-        public void GrabUpdate(LLUUID objectID, LLVector3 grabPosition)
+        /// Sets home location
+        /// </summary>		
+        public void SetHome()
         {
-            ObjectGrabUpdatePacket grab = new ObjectGrabUpdatePacket();
-            grab.AgentData.AgentID = Client.Network.AgentID;
-            grab.AgentData.SessionID = Client.Network.SessionID;
-            grab.ObjectData.ObjectID = objectID;
-            grab.ObjectData.GrabOffsetInitial = new LLVector3(0, 0, 0);
-            grab.ObjectData.GrabPosition = grabPosition;
-            grab.ObjectData.TimeSinceLast = 0;
-            Client.Network.SendPacket(grab);
-        }
-
-        /// <summary>
-        /// Releases a grabbed object
-        /// </summary>
-        public void DeGrab(uint objectLocalID)
-        {
-            ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
-            degrab.AgentData.AgentID = Client.Network.AgentID;
-            degrab.AgentData.SessionID = Client.Network.SessionID;
-            degrab.ObjectData.LocalID = objectLocalID;
-            Client.Network.SendPacket(degrab);
-        }
-
-        /// <summary>
-        /// Touches an object
-        /// </summary>
-        public void Touch(uint objectLocalID)
-        {
-            Client.Self.Grab(objectLocalID);
-            Client.Self.DeGrab(objectLocalID);
-        }
-
-        /// <summary>
-        /// Rotates body toward target position
-        /// </summary>
-        /// <param name="target">Region coordinates to turn toward</param>
-        public bool TurnToward(LLVector3 target)
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                LLVector3 myPos = Client.Self.Position;
-                LLVector3 forward = new LLVector3(1, 0, 0);
-                LLVector3 offset = LLVector3.Norm(target - myPos);
-                LLQuaternion newRot = LLVector3.RotBetween(forward, offset);
-
-                Client.Self.Status.Camera.BodyRotation = newRot;
-                Client.Self.Status.Camera.HeadRotation = newRot;
-
-                //TODO - include CoordinateFrame for at/left/up camera axes
-
-                Client.Self.Status.SendUpdate();
-
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
-        /// </summary>
-        /// <returns></returns>
-        public bool Shoot()
-        {
-            if (Client.Settings.SEND_AGENT_UPDATES)
-            {
-                Client.Self.Status.Mouselook = true;
-                Client.Self.Status.MLButtonDown = true;
-                Client.Self.Status.SendUpdate();
-
-                Client.Self.Status.MLButtonUp = true;
-                Client.Self.Status.MLButtonDown = false;
-                Client.Self.Status.FinishAnim = true;
-                Client.Self.Status.SendUpdate();
-
-                Client.Self.Status.Mouselook = false;
-                Client.Self.Status.MLButtonUp = false;
-                Client.Self.Status.FinishAnim = false;
-                Client.Self.Status.SendUpdate();
-
-                return true;
-            }
-            else
-            {
-                Client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Aims at the specified position before shooting
-        /// </summary>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public bool Shoot(LLVector3 target)
-        {
-            if (TurnToward(target)) return Shoot();
-            else return false;
-        }
-
-        /// <summary>
-        /// Request to join a group. If there is an enrollment fee it will 
-        /// automatically be deducted from your balance
-        /// </summary>
-        /// <param name="groupID">The group to attempt to join</param>
-        public void RequestJoinGroup(LLUUID groupID)
-        {
-            JoinGroupRequestPacket join = new JoinGroupRequestPacket();
-
-            join.AgentData.AgentID = Client.Network.AgentID;
-            join.AgentData.SessionID = Client.Network.SessionID;
-            join.GroupData.GroupID = groupID;
-
-            Client.Network.SendPacket(join);
-        }
-
-        /// <summary>
-        /// Request to leave a group
-        /// </summary>
-        /// <param name="groupID">The group to attempt to leave</param>
-        public void RequestLeaveGroup(LLUUID groupID)
-        {
-            LeaveGroupRequestPacket leave = new LeaveGroupRequestPacket();
-
-            leave.AgentData.AgentID = Client.Network.AgentID;
-            leave.AgentData.SessionID = Client.Network.SessionID;
-            leave.GroupData.GroupID = groupID;
-
-            Client.Network.SendPacket(leave);
-        }
-
-        /// <summary>
-        /// Set our current active group
-        /// </summary>
-        /// <param name="groupID">The group we are a member of that we want to 
-        /// activate</param>
-        public void ActivateGroup(LLUUID groupID)
-        {
-            ActivateGroupPacket activate = new ActivateGroupPacket();
-
-            activate.AgentData.AgentID = Client.Network.AgentID;
-            activate.AgentData.SessionID = Client.Network.SessionID;
-            activate.AgentData.GroupID = groupID;
-
-            Client.Network.SendPacket(activate);
+            SetStartLocationRequestPacket s = new SetStartLocationRequestPacket();
+            s.AgentData = new SetStartLocationRequestPacket.AgentDataBlock();
+            s.AgentData.AgentID = Client.Network.AgentID;
+            s.AgentData.SessionID = Client.Network.SessionID;
+            s.StartLocationData = new SetStartLocationRequestPacket.StartLocationDataBlock();
+            s.StartLocationData.LocationPos = Client.Self.Position;
+            s.StartLocationData.LocationID = 1;
+            s.StartLocationData.SimName = Helpers.StringToField(String.Empty);
+            s.StartLocationData.LocationLookAt = Client.Self.LookAt;
+            Client.Network.SendPacket(s);
         }
 
         /// <summary>
@@ -2033,43 +1938,6 @@ namespace libsecondlife
             move.AgentData.CircuitCode = Client.Network.CircuitCode;
 
             Client.Network.SendPacket(move, simulator);
-        }
-
-        /// <summary>
-        /// Sends camera and action updates to the server including the 
-        /// position and orientation of our camera, and a ControlFlags field
-        /// specifying our current movement actions
-        /// </summary>
-        /// <param name="controlFlags"></param>
-        /// <param name="position"></param>
-        /// <param name="forwardAxis"></param>
-        /// <param name="leftAxis"></param>
-        /// <param name="upAxis"></param>
-        /// <param name="bodyRotation"></param>
-        /// <param name="headRotation"></param>
-        /// <param name="farClip"></param>
-        /// <param name="reliable"></param>
-        public void UpdateCamera(MainAvatar.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
-            LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
-            AgentFlags flags, AgentState state, bool reliable)
-        {
-            AgentUpdatePacket update = new AgentUpdatePacket();
-
-            update.AgentData.AgentID = Client.Network.AgentID;
-            update.AgentData.SessionID = Client.Network.SessionID;
-            update.AgentData.BodyRotation = bodyRotation;
-            update.AgentData.HeadRotation = headRotation;
-            update.AgentData.CameraCenter = position;
-            update.AgentData.CameraAtAxis = forwardAxis;
-            update.AgentData.CameraLeftAxis = leftAxis;
-            update.AgentData.CameraUpAxis = upAxis;
-            update.AgentData.Far = farClip;
-            update.AgentData.ControlFlags = (uint)controlFlags;
-            update.AgentData.Flags = (byte)flags;
-            update.AgentData.State = (byte)state;
-            update.Header.Reliable = reliable;
-
-            Client.Network.SendPacket(update);
         }
 
         /// <summary>
@@ -2090,6 +1958,8 @@ namespace libsecondlife
 
             Client.Network.SendPacket(yes, simulator);
         }
+
+        #endregion Misc
 
         #region Packet Handlers
 

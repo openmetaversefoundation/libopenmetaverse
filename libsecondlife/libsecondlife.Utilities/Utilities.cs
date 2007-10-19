@@ -336,10 +336,10 @@ namespace libsecondlife.Utilities
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
-                                    Client.Self.Status.Camera.CameraCenter.X = (float)(x * 4 + x1);
-                                    Client.Self.Status.Camera.CameraCenter.Y = (float)(y * 4 + y1);
-                                    Client.Self.Status.Camera.CameraCenter.Z = Client.Self.Position.Z;
-                                    Client.Self.Status.SendUpdate(true);
+                                    Client.Self.Movement.Camera.CameraCenter.X = (float)(x * 4 + x1);
+                                    Client.Self.Movement.Camera.CameraCenter.Y = (float)(y * 4 + y1);
+                                    Client.Self.Movement.Camera.CameraCenter.Z = Client.Self.Position.Z;
+                                    Client.Self.Movement.SendUpdate(true);
 
                                     Thread.Sleep(1000);
                                     goto CheckHeight;
@@ -425,10 +425,10 @@ namespace libsecondlife.Utilities
 
                                     // Terrain at this point hasn't been downloaded, move the camera to this spot
                                     // and try again
-                                    Client.Self.Status.Camera.CameraCenter.X = (float)(x * 4 + x1);
-                                    Client.Self.Status.Camera.CameraCenter.Y = (float)(y * 4 + y1);
-                                    Client.Self.Status.Camera.CameraCenter.Z = Client.Self.Position.Z;
-                                    Client.Self.Status.SendUpdate(true);
+                                    Client.Self.Movement.Camera.CameraCenter.X = (float)(x * 4 + x1);
+                                    Client.Self.Movement.Camera.CameraCenter.Y = (float)(y * 4 + y1);
+                                    Client.Self.Movement.Camera.CameraCenter.Z = Client.Self.Position.Z;
+                                    Client.Self.Movement.SendUpdate(true);
 
                                     Thread.Sleep(1000);
                                     goto CheckHeight;

@@ -36,7 +36,7 @@ namespace SLImageUpload
             Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.STORE_LAND_PATCHES = false;
             Client.Settings.MULTIPLE_SIMS = false;
-            Client.Self.Status.Camera.Far = 32.0f;
+            Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
             Client.Throttle.Land = 0.0f;
             Client.Throttle.Wind = 0.0f;

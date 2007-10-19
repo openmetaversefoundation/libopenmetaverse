@@ -115,7 +115,7 @@ namespace libsecondlife
         /// <summary> 
         /// Holds current camera and control key status
         /// </summary> 
-        public class MainAvatarStatus
+        public class MainAvatarMovement
         {
             #region Structs
 
@@ -377,12 +377,44 @@ namespace libsecondlife
                     return agentControls;
                 }
             }
+            /// <summary>Gets or sets the interval in milliseconds at which
+            /// AgentUpdate packets are sent to the current simulator. Setting
+            /// this to a non-zero value will also enable the packet sending if
+            /// it was previously off, and setting it to zero will disable</summary>
+            public double UpdateInterval
+            {
+                get
+                {
+                    if (updateTimer.Enabled)
+                        return updateTimer.Interval;
+                    else
+                        return 0d;
+                }
+                set
+                {
+                    if (value != 0d)
+                    {
+                        updateTimer.Interval = value;
+                        updateTimer.Start();
+                    }
+                    else
+                    {
+                        updateTimer.Stop();
+                        updateTimer.Interval = 0d;
+                    }
+                }
+            }
+            /// <summary>Gets or sets whether AgentUpdate packets are sent to
+            /// the current simulator</summary>
+            public bool UpdateEnabled
+            {
+                get { return updateTimer.Enabled; }
+                set { updateTimer.Enabled = value; }
+            }
 
             #endregion Properties
 
 
-            /// <summary>Timer for sending AgentUpdate packets</summary>
-            public Timer UpdateTimer;
             /// <summary>Holds camera flags</summary>
             public CameraStatus Camera;
             /// <summary>Currently only used for hiding your group title</summary>
@@ -396,25 +428,27 @@ namespace libsecondlife
             private uint agentControls;
             private int duplicateCount = 0;
             private AgentState lastState;
+            /// <summary>Timer for sending AgentUpdate packets</summary>
+            private Timer updateTimer;
 
 
-            /// <summary>Constructor for class MainAvatarStatus</summary>
-            public MainAvatarStatus(SecondLife client)
+            /// <summary>Default constructor</summary>
+            public MainAvatarMovement(SecondLife client)
             {
                 Client = client;
 
                 // Lets set some default camera values
                 Camera.BodyRotation = LLQuaternion.Identity;
                 Camera.HeadRotation = LLQuaternion.Identity;
-                Camera.CameraCenter = new LLVector3(128,128,20);
-                Camera.CameraAtAxis = new LLVector3(0, 0.9999f, 0);
-                Camera.CameraLeftAxis = new LLVector3(0.9999f, 0, 0);
-                Camera.CameraUpAxis = new LLVector3(0, 0, 0.9999f);
-                Camera.Far = 128.0f;
+                Camera.CameraCenter = new LLVector3(128f, 128f, 20f);
+                Camera.CameraAtAxis = new LLVector3(0f, 0.9999f, 0f);
+                Camera.CameraLeftAxis = new LLVector3(0.9999f, 0f, 0f);
+                Camera.CameraUpAxis = new LLVector3(0f, 0f, 0.9999f);
+                Camera.Far = 128f;
 
-                UpdateTimer = new Timer(Settings.AGENT_UPDATE_INTERVAL);
-                UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
-                UpdateTimer.Start();
+                updateTimer = new Timer(Settings.DEFAULT_AGENT_UPDATE_INTERVAL);
+                updateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
+                updateTimer.Start();
             }
 
             /// <summary>
@@ -433,9 +467,84 @@ namespace libsecondlife
                 Camera.CameraLeftAxis.Y = (float)Math.Cos(heading);
                 Camera.BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
                 Camera.BodyRotation.W = (float)Math.Cos(heading / 2.0d);
-                Camera.HeadRotation = Client.Self.Status.Camera.BodyRotation;
+                Camera.HeadRotation = Camera.BodyRotation;
 
-                Client.Self.Status.SendUpdate(reliable);
+                SendUpdate(reliable);
+            }
+
+            /// <summary>
+            /// Rotates the avatar body and camera toward a target position.
+            /// This will also anchor the camera position on the avatar
+            /// </summary>
+            /// <param name="target">Region coordinates to turn toward</param>
+            public bool TurnToward(LLVector3 target)
+            {
+                if (Client.Settings.SEND_AGENT_UPDATES)
+                {
+                    LLVector3 myPos = Client.Self.Position;
+                    LLVector3 forward = new LLVector3(1, 0, 0);
+                    LLVector3 offset = LLVector3.Norm(target - myPos);
+                    LLQuaternion newRot = LLVector3.RotBetween(forward, offset);
+
+                    Camera.BodyRotation = newRot;
+                    Camera.HeadRotation = newRot;
+
+                    //TODO - include CoordinateFrame for at/left/up camera axes
+
+                    SendUpdate();
+
+                    return true;
+                }
+                else
+                {
+                    Client.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning);
+                    return false;
+                }
+            }
+
+            /// <summary>
+            /// Aims at the specified position, enters mouselook, presses and
+            /// releases the left mouse button, and leaves mouselook
+            /// </summary>
+            /// <param name="target">Target to shoot at</param>
+            /// <returns></returns>
+            public bool Shoot(LLVector3 target)
+            {
+                if (TurnToward(target))
+                    return Shoot();
+                else
+                    return false;
+            }
+
+            /// <summary>
+            /// Enters mouselook, presses and releases the left mouse button, and leaves mouselook
+            /// </summary>
+            /// <returns></returns>
+            public bool Shoot()
+            {
+                if (Client.Settings.SEND_AGENT_UPDATES)
+                {
+                    Mouselook = true;
+                    MLButtonDown = true;
+                    SendUpdate();
+
+                    MLButtonUp = true;
+                    MLButtonDown = false;
+                    FinishAnim = true;
+                    SendUpdate();
+
+                    Mouselook = false;
+                    MLButtonUp = false;
+                    FinishAnim = false;
+                    SendUpdate();
+
+                    return true;
+                }
+                else
+                {
+                    Client.Log("Attempted Shoot but agent updates are disabled", Helpers.LogLevel.Warning);
+                    return false;
+                }
             }
 
             /// <summary>
@@ -518,6 +627,45 @@ namespace libsecondlife
                 }
             }
 
+            /// <summary>
+            /// Builds an AgentUpdate packet entirely from parameters. This
+            /// will not touch the state of Self.Movement or
+            /// Self.Movement.Camera in any way
+            /// </summary>
+            /// <param name="controlFlags"></param>
+            /// <param name="position"></param>
+            /// <param name="forwardAxis"></param>
+            /// <param name="leftAxis"></param>
+            /// <param name="upAxis"></param>
+            /// <param name="bodyRotation"></param>
+            /// <param name="headRotation"></param>
+            /// <param name="farClip"></param>
+            /// <param name="reliable"></param>
+            public void SendManualUpdate(MainAvatar.ControlFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
+                LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
+                AgentFlags flags, AgentState state, bool reliable)
+            {
+                AgentUpdatePacket update = new AgentUpdatePacket();
+
+                update.AgentData.AgentID = Client.Network.AgentID;
+                update.AgentData.SessionID = Client.Network.SessionID;
+                update.AgentData.BodyRotation = bodyRotation;
+                update.AgentData.HeadRotation = headRotation;
+                update.AgentData.CameraCenter = position;
+                update.AgentData.CameraAtAxis = forwardAxis;
+                update.AgentData.CameraLeftAxis = leftAxis;
+                update.AgentData.CameraUpAxis = upAxis;
+                update.AgentData.Far = farClip;
+                update.AgentData.ControlFlags = (uint)controlFlags;
+                update.AgentData.Flags = (byte)flags;
+                update.AgentData.State = (byte)state;
+
+                update.Header.Reliable = reliable;
+
+                Client.Network.SendPacket(update);
+            }
+
+
             private bool GetControlFlag(MainAvatar.ControlFlags flag)
             {
                 return (agentControls & (uint)flag) != 0;
@@ -534,7 +682,7 @@ namespace libsecondlife
                 if (Client.Network.Connected && Client.Settings.SEND_AGENT_UPDATES)
                 {
                     //Send an AgentUpdate packet
-                    SendUpdate();
+                    SendUpdate(false, Client.Network.CurrentSim);
                 }
             }
         }
